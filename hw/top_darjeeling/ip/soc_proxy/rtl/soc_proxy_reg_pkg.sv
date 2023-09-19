@@ -7,7 +7,7 @@
 package soc_proxy_reg_pkg;
 
   // Param list
-  parameter int unsigned NumExternalIrqs = 4;
+  parameter int unsigned NumExternalIrqs = 8;
   parameter int NumAlerts = 9;
 
   // Address widths within the block
@@ -19,15 +19,15 @@ package soc_proxy_reg_pkg;
   ///////////////////////////////////////////////
 
   typedef struct packed {
-    logic [3:0]  q;
+    logic [7:0]  q;
   } soc_proxy_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    logic [3:0]  q;
+    logic [7:0]  q;
   } soc_proxy_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
-    logic [3:0]  q;
+    logic [7:0]  q;
     logic        qe;
   } soc_proxy_reg2hw_intr_test_reg_t;
 
@@ -71,21 +71,21 @@ package soc_proxy_reg_pkg;
   } soc_proxy_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic [3:0]  d;
+    logic [7:0]  d;
     logic        de;
   } soc_proxy_hw2reg_intr_state_reg_t;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    soc_proxy_reg2hw_intr_state_reg_t intr_state; // [30:27]
-    soc_proxy_reg2hw_intr_enable_reg_t intr_enable; // [26:23]
-    soc_proxy_reg2hw_intr_test_reg_t intr_test; // [22:18]
+    soc_proxy_reg2hw_intr_state_reg_t intr_state; // [42:35]
+    soc_proxy_reg2hw_intr_enable_reg_t intr_enable; // [34:27]
+    soc_proxy_reg2hw_intr_test_reg_t intr_test; // [26:18]
     soc_proxy_reg2hw_alert_test_reg_t alert_test; // [17:0]
   } soc_proxy_core_reg2hw_t;
 
   // HW -> register type for core interface
   typedef struct packed {
-    soc_proxy_hw2reg_intr_state_reg_t intr_state; // [4:0]
+    soc_proxy_hw2reg_intr_state_reg_t intr_state; // [8:0]
   } soc_proxy_core_hw2reg_t;
 
   // Register offsets for core interface
@@ -95,8 +95,8 @@ package soc_proxy_reg_pkg;
   parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 4'h c;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [3:0] SOC_PROXY_INTR_TEST_RESVAL = 4'h 0;
-  parameter logic [3:0] SOC_PROXY_INTR_TEST_EXTERNAL_RESVAL = 4'h 0;
+  parameter logic [7:0] SOC_PROXY_INTR_TEST_RESVAL = 8'h 0;
+  parameter logic [7:0] SOC_PROXY_INTR_TEST_EXTERNAL_RESVAL = 8'h 0;
   parameter logic [8:0] SOC_PROXY_ALERT_TEST_RESVAL = 9'h 0;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_INTG_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_0_RESVAL = 1'h 0;
