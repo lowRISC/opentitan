@@ -370,7 +370,7 @@ module dma
   );
 
   logic use_inline_hashing;
-  logic sha2_en, sha2_hash_start, sha2_hash_process;
+  logic sha2_hash_start, sha2_hash_process;
   logic sha2_valid, sha2_ready, sha2_digest_we;
   sha_fifo32_t sha2_data;
   logic [127:0] sha2_msg_len;
@@ -380,8 +380,6 @@ module dma
   // SHA2 message length is in bits
   assign sha2_msg_len       = reg2hw.total_data_size.q << 3;
   assign use_inline_hashing = reg2hw.control.opcode.q inside {OpcSha256,  OpcSha384, OpcSha512};
-  // Enable the SHA2 engine
-  assign sha2_en = (ctrl_state_q != DmaIdle) && (ctrl_state_q != DmaError) && use_inline_hashing;
   // We consume data until we are in the finalizing state
   assign sha2_hash_process = (ctrl_state_q != DmaShaFinalize);
 
@@ -393,16 +391,6 @@ module dma
     .rst_ni( rst_ni          ),
     .d_i   ( sha2_consumed_d ),
     .q_o   ( sha2_consumed_q )
-  );
-
-  logic sha2_started_d, sha2_started_q;
-  prim_flop #(
-    .Width(1)
-  ) u_sha2_started (
-    .clk_i ( gated_clk      ),
-    .rst_ni( rst_ni         ),
-    .d_i   ( sha2_started_d ),
-    .q_o   ( sha2_started_q )
   );
 
   logic sha2_hash_done_d, sha2_hash_done_q;
@@ -444,7 +432,7 @@ module dma
     .fifo_rvalid      ( sha2_valid        ),
     .fifo_rdata       ( sha2_data         ),
     .word_buffer_ready( sha2_ready        ),
-    .sha_en           ( sha2_en           ),
+    .sha_en           ( 1'b1              ),
     .hash_start       ( sha2_hash_start   ),
     .digest_mode      ( sha2_mode         ),
     .hash_process     ( sha2_hash_process ),
@@ -518,7 +506,6 @@ module dma
     sha2_valid       = 1'b0;
     sha2_digest_we   = 1'b0;
     sha2_consumed_d  = sha2_consumed_q;
-    sha2_started_d   = sha2_started_q;
 
     // Make SHA2 Done sticky to not miss a single done event during any outstanding writes
     if (ctrl_state_q == DmaIdle) begin
@@ -531,7 +518,6 @@ module dma
       DmaIdle: begin
         transfer_byte_d       = '0;
         capture_transfer_byte = 1'b1;
-        sha2_started_d         = 1'b0;
         // Wait for go bit to be set to proceed with data movement
         if (reg2hw.control.go.q) begin
           // if not handshake start transfer
@@ -781,7 +767,7 @@ module dma
           bad_src_addr = 1'b1;
         end
 
-        // If the desitination ASID is the SOC control port, the OT internal port or the external
+        // If the destination ASID is the SOC control port, the OT internal port or the external
         // flash, we are accessing a 32-bit address space. Thus the upper bits of the destination
         // address must be zero
         if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
@@ -816,10 +802,10 @@ module dma
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else begin
-          // Start the hashing if we want inline hashing and have a valid config
-          if (use_inline_hashing & ~sha2_started_q) begin
-            sha2_hash_start = 1'b1;
-            sha2_started_d   = 1'b1;
+          // Start the hashing if we want inline hashing and have a valid config but only if
+          // starting is enabled
+          if (use_inline_hashing & reg2hw.control.start_hashing.q) begin
+            sha2_hash_start  = 1'b1;
           end
 
           if ((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
@@ -991,7 +977,7 @@ module dma
           capture_transfer_byte = 1'b1;
 
           if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing) begin
+            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
               ctrl_state_d = DmaIdle;
@@ -1030,7 +1016,7 @@ module dma
           capture_transfer_byte = 1'b1;
 
           if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing) begin
+            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
               ctrl_state_d = DmaIdle;
@@ -1072,7 +1058,7 @@ module dma
           end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
             ctrl_state_d = DmaShaWait;
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing) begin
+            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
               ctrl_state_d = DmaIdle;
@@ -1091,7 +1077,11 @@ module dma
           ctrl_state_d = DmaIdle;
         end else if (sha2_ready) begin
           if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            ctrl_state_d = DmaShaFinalize;
+            if (reg2hw.control.stop_hashing.q) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else begin
+              ctrl_state_d = DmaIdle;
+            end
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
@@ -1276,6 +1266,12 @@ module dma
       end else begin
         update_destination_addr_reg = 1'b1;
       end
+    end
+
+    // Clear the inline hashing starting flag when leaving the DmaAddrSetup
+    if ((ctrl_state_q == DmaAddrSetup) & use_inline_hashing & reg2hw.control.start_hashing.q) begin
+      // Clear the init hash flag on the first transfer
+      hw2reg.control.start_hashing.de = 1'b1;
     end
 
     // Write digest to CSRs when needed. The digest is a 64-bit datatype, which leads to assign
