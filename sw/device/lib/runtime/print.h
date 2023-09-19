@@ -93,7 +93,7 @@ typedef struct buffer_sink {
  * Note that for logging in DV, the following script updates the format
  * specifiers supported in C above and changes them to match the SystemVerilog
  * language semantics: util/device_sw_utils/extract_sw_logs.py
- * It also makes fixes as needed for custom speficiers such as %!s.
+ * It also makes fixes as needed for custom specifiers such as %!s.
  *
  * @param format the format spec.
  * @param ... values to interpolate in the format spec.

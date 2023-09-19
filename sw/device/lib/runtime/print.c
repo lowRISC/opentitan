@@ -687,6 +687,10 @@ size_t base_snhexdump_with(char *out, size_t out_len, base_hexdump_fmt_t fmt,
 
 size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
                           const char *buf, size_t len) {
+  if (out.sink == NULL) {
+    out.sink = &base_dev_null;
+  }
+
   size_t bytes_written = 0;
   size_t bytes_per_line = fmt.bytes_per_word * fmt.words_per_line;
 
