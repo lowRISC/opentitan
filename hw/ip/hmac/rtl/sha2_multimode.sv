@@ -2,47 +2,53 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// SHA-256 algorithm
+// SHA-256/384/512 configurable mode engine (64-bit word datapath)
 //
 
-module sha2 import hmac_pkg::*; (
+module sha2_multimode import hmac_multimode_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input            wipe_secret,
-  input sha_word_t wipe_v,
+  input              wipe_secret,
+  input sha_word64_t wipe_v,
 
-  // FIFO read signal
-  input             fifo_rvalid,
-  input  sha_fifo_t fifo_rdata,
-  output logic      fifo_rready,
+  // Control signals and message words input to the message FIFO
+  input               fifo_rvalid, // indicates that the message FIFO (prim_sync_fifo) has words
+                                   // ready to write into the SHA-2 padding buffer
+  input  sha_fifo64_t fifo_rdata,
+  output logic        fifo_rready, // indicates that the internal padding buffer is ready to receive
+                                  // words from the message FIFO
 
   // Control signals
-  input        sha_en,   // If disabled, it clears internal content.
-  input        hash_start,
-  input        hash_process,
-  output logic hash_done,
+  input               sha_en,   // if disabled, it clears internal content
+  input               hash_start,
+  input digest_mode_e digest_mode,
+  input               hash_process,
+  output logic        hash_done,
 
-  input        [63:0] message_length,   // bits but byte based
-  output sha_word_t [7:0] digest,
+  input  [127:0]            message_length, // bits but byte based
+  output sha_word64_t [7:0] digest,
 
   output logic idle
 );
 
-  localparam int unsigned RoundWidth = $clog2(NumRound);
+  localparam int unsigned RoundWidth256 = $clog2(NumRound256);
+  localparam int unsigned RoundWidth512 = $clog2(NumRound512);
 
-  logic msg_feed_complete;
+  localparam sha_word64_t ZeroWord = '0;
 
-  logic      shaf_rready;
-  sha_word_t shaf_rdata;
-  logic      shaf_rvalid;
+  logic        msg_feed_complete;
+  logic        shaf_rready;
+  sha_word64_t shaf_rdata;
+  logic        shaf_rvalid;
 
-  logic [RoundWidth-1:0] round;
+  logic [RoundWidth512-1:0] round;
 
-  logic      [3:0]  w_index;
-  sha_word_t [15:0] w;
+  logic         [3:0] w_index;
+  sha_word64_t [15:0] w;
 
-  localparam sha_word_t ZeroWord = '0;
+  digest_mode_e digest_mode_flag;
+
 
   // w, hash, digest update logic control signals
   logic update_w_from_fifo, calculate_next_w;
@@ -51,7 +57,7 @@ module sha2 import hmac_pkg::*; (
 
   logic hash_done_next; // to meet the phase with digest value.
 
-  sha_word_t [7:0] hash;    // a,b,c,d,e,f,g,h
+  sha_word64_t [7:0] hash;    // a,b,c,d,e,f,g,h
 
   // Fill up w
   always_ff @(posedge clk_i or negedge rst_ni) begin : fill_w
@@ -62,29 +68,18 @@ module sha2 import hmac_pkg::*; (
     end else if (!sha_en) begin
       w <= '0;
     end else if (!run_hash && update_w_from_fifo) begin
-      // this logic runs at the first stage of SHA.
+      // this logic runs at the first stage of SHA: hash not running yet,
+      // still filling in first 16 words
       w <= {shaf_rdata, w[15:1]};
-    end else if (calculate_next_w) begin
-      w <= {calc_w(w[0], w[1], w[9], w[14]), w[15:1]};
-    //end else if (run_hash && update_w_from_fifo) begin
-    //  // This code runs when round is in [48, 63]. At this time, it reads from the fifo
-    //  // to fill the register if available. If FIFO goes to empty, w_index doesn't increase
-    //  // and it cannot reach 15. Then the sha engine doesn't start, which introduces latency.
-    //  //
-    //  // But in this case, still w should be shifted to feed SHA compress engine. Then
-    //  // fifo_rdata should be inserted in the middle of w index.
-    //  // w[64-round + w_index] <= fifo_rdata;
-    //  for (int i = 0 ; i < 16 ; i++) begin
-    //    if (i == (64 - round + w_index)) begin
-    //      w[i] <= shaf_rdata;
-    //    end else if (i == 15) begin
-    //      w[i] <= '0;
-    //    end else begin
-    //      w[i] <= w[i+1];
-    //    end
-    //  end
+    end else if (calculate_next_w) begin // message scheduling/derivation for last 48/64 rounds
+      if (digest_mode_flag == SHA2_256) begin
+        // this computes the next w[16] and shifts out w[0] into compression (see compress() below)
+        w <= {calc_w_256(w[0], w[1], w[9], w[14]), w[15:1]};
+      end else if ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) begin
+        w <= {calc_w_512(w[0], w[1], w[9], w[14]), w[15:1]};
+      end
     end else if (run_hash) begin
-      // Just shift-out. There's no incoming data
+      // Just shift-out the words as they get consumed. There's no incoming data.
       w <= {ZeroWord, w[15:1]};
     end
   end : fill_w
@@ -100,7 +95,11 @@ module sha2 import hmac_pkg::*; (
     end else if (init_hash) begin
       hash <= digest;
     end else if (run_hash) begin
-      hash <= compress( w[0], CubicRootPrime[round], hash);
+      if (digest_mode_flag == SHA2_256) begin
+        hash <= compress_256( w[0][31:0], CubicRootPrime256[round], hash); //32-bit slice of w[0]
+      end else if ((digest_mode_flag == SHA2_512) || (digest_mode_flag == SHA2_384)) begin
+        hash <= compress_512( w[0], CubicRootPrime512[round], hash);
+      end
     end
   end : compress_round
 
@@ -114,7 +113,13 @@ module sha2 import hmac_pkg::*; (
       end
     end else if (hash_start) begin
       for (int i = 0 ; i < 8 ; i++) begin
-        digest[i] <= InitHash[i];
+        if (digest_mode == SHA2_256) begin
+          digest[i] <= InitHash_256[i];
+        end else if (digest_mode == SHA2_384) begin
+          digest[i] <= InitHash_384[i];
+        end else if (digest_mode == SHA2_512) begin
+          digest[i] <= InitHash_512[i];
+        end
       end
     end else if (!sha_en || clear_digest) begin
       digest <= '0;
@@ -122,17 +127,34 @@ module sha2 import hmac_pkg::*; (
       for (int i = 0 ; i < 8 ; i++) begin
         digest[i] <= digest[i] + hash[i];
       end
+      if (hash_done == 1'b1 && digest_mode_flag == SHA2_384) begin
+        // final digest truncation for SHA-2 384
+        digest[6] <= '0;
+        digest[7] <= '0;
+      end else if (hash_done == 1'b1 && digest_mode_flag == SHA2_256) begin
+        // make sure to clear out most significant 32-bits of each digest word (zero-padding)
+        digest[0][63:32] <= '0;
+        digest[1][63:32] <= '0;
+        digest[2][63:32] <= '0;
+        digest[3][63:32] <= '0;
+        digest[4][63:32] <= '0;
+        digest[5][63:32] <= '0;
+        digest[6][63:32] <= '0;
+        digest[7][63:32] <= '0;
+      end
     end
   end
 
-  // round
+  // round counter
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       round <= '0;
     end else if (!sha_en) begin
       round <= '0;
     end else if (run_hash) begin
-      if (round == RoundWidth'(unsigned'(NumRound-1))) begin
+      if (((round == RoundWidth256'(unsigned'(NumRound256-1))) && digest_mode_flag == SHA2_256) ||
+         ((round == RoundWidth512'(unsigned'(NumRound512-1))) && ((digest_mode_flag == SHA2_384) ||
+         (digest_mode_flag == SHA2_512)))) begin
         round <= '0;
       end else begin
         round <= round + 1;
@@ -151,6 +173,7 @@ module sha2 import hmac_pkg::*; (
     end
   end
 
+  // ready for a word from the padding buffer in sha2_pad
   assign shaf_rready = update_w_from_fifo;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -198,6 +221,7 @@ module sha2 import hmac_pkg::*; (
           update_w_from_fifo = 1'b0;
         end else if (w_index == 4'd 15) begin
           fifo_st_d = FifoWait;
+          // To increment w_index and it rolls over to 0
           update_w_from_fifo = 1'b1;
         end else begin
           fifo_st_d = FifoLoadFromFifo;
@@ -206,10 +230,10 @@ module sha2 import hmac_pkg::*; (
       end
 
       FifoWait: begin
-        // Wait until next fetch begins (begin at round == 48)a
+        // Wait until next fetch begins (begin at round == 48)
         if (msg_feed_complete && complete_one_chunk) begin
           fifo_st_d = FifoIdle;
-
+          // hashing the full message is done
           hash_done_next = 1'b1;
         end else if (complete_one_chunk) begin
           fifo_st_d = FifoLoadFromFifo;
@@ -222,6 +246,17 @@ module sha2 import hmac_pkg::*; (
         fifo_st_d = FifoIdle;
       end
     endcase
+  end
+
+  // Latch SHA-2 configured mode at hash_start
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      digest_mode_flag <= None;
+    end else if (hash_start) begin
+      digest_mode_flag <= digest_mode;
+    end else if (hash_done == 1'b1) begin
+      digest_mode_flag <= None;
+    end
   end
 
   // SHA control
@@ -246,7 +281,6 @@ module sha2 import hmac_pkg::*; (
   always_comb begin
     update_digest    = 1'b0;
     calculate_next_w = 1'b0;
-
     init_hash        = 1'b0;
     run_hash         = 1'b0;
 
@@ -263,7 +297,8 @@ module sha2 import hmac_pkg::*; (
       ShaCompress: begin
         run_hash = 1'b1;
 
-        if (round < 48) begin
+        if ((digest_mode_flag == SHA2_256 && round < 48) || (((digest_mode_flag == SHA2_384) ||
+           (digest_mode_flag == SHA2_512)) && round < 64)) begin
           calculate_next_w = 1'b1;
         end
 
@@ -290,10 +325,11 @@ module sha2 import hmac_pkg::*; (
     endcase
   end
 
-  // complete_one_chunk
-  assign complete_one_chunk = (round == 6'd63);
+  assign complete_one_chunk = ((digest_mode_flag == SHA2_256) && (round == 7'd63)) ? 1'b1 :
+                              (((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512))
+                              && (round == 7'd79)) ? 1'b1 : 1'b0;
 
-  sha2_pad u_pad (
+  sha2_multimode_pad u_pad (
     .clk_i,
     .rst_ni,
 
@@ -304,12 +340,13 @@ module sha2 import hmac_pkg::*; (
     .fifo_rdata,
     .fifo_rready,
 
-    .shaf_rvalid,
+    .shaf_rvalid, // set when the 512-bit chunk is ready in the padding buffer and can load into w
     .shaf_rdata,
-    .shaf_rready,
+    .shaf_rready, // indicates that w is ready for more words from padding buffer
 
     .sha_en,
     .hash_start,
+    .digest_mode,
     .hash_process,
     .hash_done,
 
@@ -319,5 +356,4 @@ module sha2 import hmac_pkg::*; (
 
   // Idle
   assign idle = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_start;
-
-endmodule : sha2
+endmodule : sha2_multimode

@@ -2,50 +2,51 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// SHA-256 Padding logic
+// Multi-mode SHA-2 engine padding logic
 //
 
 `include "prim_assert.sv"
 
-module sha2_pad import hmac_pkg::*; (
+module sha2_multimode_pad import hmac_multimode_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input            wipe_secret,
-  input sha_word_t wipe_v,
+  input                 wipe_secret,
+  input sha_word64_t    wipe_v,
 
-  // To actual FIFO
+  // to actual FIFO
   input                 fifo_rvalid,
-  input  sha_fifo_t     fifo_rdata,
+  input  sha_fifo64_t   fifo_rdata,
   output logic          fifo_rready,
 
-  // from SHA2 compress engine
+  // from SHA2 compression engine
   output logic          shaf_rvalid,
-  output sha_word_t     shaf_rdata,
+  output sha_word64_t   shaf_rdata,
   input                 shaf_rready,
 
-  input sha_en,
-  input hash_start,
-  input hash_process,
-  input hash_done,
+  input                 sha_en,
+  input                 hash_start,
+  input digest_mode_e   digest_mode,
+  input                 hash_process,
+  input                 hash_done,
 
-  input        [63:0] message_length, // # of bytes in bits (8 bits granularity)
-  output logic        msg_feed_complete // Indicates, all message is feeded
+  input        [127:0]  message_length, // # of bytes in bits (8 bits granularity)
+  output logic          msg_feed_complete // indicates all message is feeded
 );
 
-  //logic [8:0] length_added;
-
-  logic [63:0] tx_count;    // fin received data count.
-
-  logic inc_txcount;
-  logic fifo_partial;
-  logic txcnt_eq_1a0;
-  logic hash_process_flag; // Set by hash_process, clear by hash_done
+  logic [127:0] tx_count;    // fin received data count.
+  logic         inc_txcount;
+  logic         fifo_partial;
+  logic         txcnt_eq_1a0;
+  logic         hash_process_flag; // set by hash_process, clear by hash_done
+  digest_mode_e digest_mode_flag;
 
   assign fifo_partial = ~&fifo_rdata.mask;
 
   // tx_count[8:0] == 'h1c0 --> should send LenHi
-  assign txcnt_eq_1a0 = (tx_count[8:0] == 9'h1a0);
+  assign txcnt_eq_1a0 = (digest_mode_flag == SHA2_256) ? (tx_count[8:0] == 9'h1a0) :
+                        ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) ?
+                        (tx_count[9:0] == 10'h340) : '0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -79,13 +80,27 @@ module sha2_pad import hmac_pkg::*; (
         // msglen[4:3] == 01 |-> {msg,  'h80, 'h00, 'h00}
         // msglen[4:3] == 10 |-> {msg[15:0],  'h80, 'h00}
         // msglen[4:3] == 11 |-> {msg[23:0],        'h80}
-        unique case (message_length[4:3])
-          2'b 00: shaf_rdata = 32'h 8000_0000;
-          2'b 01: shaf_rdata = {fifo_rdata.data[31:24], 24'h 8000_00};
-          2'b 10: shaf_rdata = {fifo_rdata.data[31:16], 16'h 8000};
-          2'b 11: shaf_rdata = {fifo_rdata.data[31: 8],  8'h 80};
-          default: shaf_rdata = 32'h0;
-        endcase
+        if (digest_mode_flag == SHA2_256) begin
+          unique case (message_length[4:3])
+            2'b 00:  shaf_rdata = 64'h 0000_0000_8000_0000;
+            2'b 01:  shaf_rdata = {32'h 0000_0000, fifo_rdata.data[31:24], 24'h 8000_00};
+            2'b 10:  shaf_rdata = {32'h 0000_0000, fifo_rdata.data[31:16], 16'h 8000};
+            2'b 11:  shaf_rdata = {32'h 0000_0000, fifo_rdata.data[31: 8],  8'h 80};
+            default: shaf_rdata = 64'h0;
+          endcase
+        end else if ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) begin
+          unique case (message_length[5:3])
+            3'b 000: shaf_rdata = 64'h 8000_0000_0000_0000;
+            3'b 001: shaf_rdata = {fifo_rdata.data[63:56], 56'h 8000_0000_0000_00};
+            3'b 010: shaf_rdata = {fifo_rdata.data[63:48], 48'h 8000_0000_0000};
+            3'b 011: shaf_rdata = {fifo_rdata.data[63:40], 40'h 8000_0000_00};
+            3'b 100: shaf_rdata = {fifo_rdata.data[63:32], 32'h 8000_0000};
+            3'b 101: shaf_rdata = {fifo_rdata.data[63:24], 24'h 8000_00};
+            3'b 110: shaf_rdata = {fifo_rdata.data[63:16], 16'h 8000};
+            3'b 111: shaf_rdata = {fifo_rdata.data[63:8],  8'h 80};
+            default: shaf_rdata = 64'h0;
+          endcase
+        end
       end
 
       Pad00: begin
@@ -93,11 +108,15 @@ module sha2_pad import hmac_pkg::*; (
       end
 
       LenHi: begin
-        shaf_rdata = message_length[63:32];
+        shaf_rdata = (digest_mode_flag == SHA2_256) ? {32'b0, message_length[63:32]}:
+                     ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) ?
+                     message_length[127:64] : '0;
       end
 
       LenLo: begin
-        shaf_rdata = message_length[31:0];
+        shaf_rdata = (digest_mode_flag == SHA2_256) ? {32'b0, message_length[31:0]}:
+                     ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) ?
+                     message_length[63:0]: '0;
       end
 
       default: begin
@@ -168,7 +187,7 @@ module sha2_pad import hmac_pkg::*; (
         sel_data = FifoIn;
 
         if (fifo_partial && fifo_rvalid) begin
-          // End of the message, assume hash_process_flag is set
+          // End of the message (last bit is not word-aligned) , assume hash_process_flag is set
           shaf_rvalid  = 1'b0; // Update entry at StPad80
           inc_txcount = 1'b0;
           fifo_rready = 1'b0;
@@ -200,9 +219,12 @@ module sha2_pad import hmac_pkg::*; (
         sel_data = Pad80;
 
         shaf_rvalid = 1'b1;
-        fifo_rready = shaf_rready && |message_length[4:3]; // Only when partial
 
-        // exactly 96 bits left, do not need to pad00's
+        fifo_rready = (digest_mode_flag == SHA2_256) ? shaf_rready && |message_length[4:3]:
+                      ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) ?
+                      shaf_rready && |message_length[5:3] : '0; // Only when partial
+
+        // exactly 192 bits left, do not need to pad00's
         if (shaf_rready && txcnt_eq_1a0) begin
           st_d = StLenHi;
           inc_txcount = 1'b1;
@@ -302,7 +324,22 @@ module sha2_pad import hmac_pkg::*; (
     end else if (hash_start) begin
       tx_count <= '0;
     end else if (inc_txcount) begin
-      tx_count[63:5] <= tx_count[63:5] + 1'b1;
+      if (digest_mode_flag == SHA2_256) begin
+        tx_count[127:5] <= tx_count[127:5] + 1'b1;
+      end else if ((digest_mode_flag == SHA2_384) ||(digest_mode_flag == SHA2_512)) begin
+        tx_count[127:6] <= tx_count[127:6] + 1'b1;
+      end
+    end
+  end
+
+  // Latch SHA-2 configured mode
+   always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      digest_mode_flag <= None;
+    end else if (hash_start) begin
+      digest_mode_flag <= digest_mode;
+    end else if (hash_done == 1'b1) begin
+      digest_mode_flag <= None;
     end
   end
 
