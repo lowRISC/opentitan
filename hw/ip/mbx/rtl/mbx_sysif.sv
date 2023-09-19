@@ -119,7 +119,7 @@ module mbx_sysif
   assign hw2reg.sys_status.error.de = sysif_status_error_set_i | sysif_status_error_clear_i;
   assign hw2reg.sys_status.error.d  = sysif_status_error_set_i;
 
-  // Set by the Host firmware (w1s)
+  // Set by OT firmware (w1s)
   // Cleared by the Sys firmware (w1c)
   assign hw2reg.sys_status.ready.de            = sysif_status_ready_valid_i;
   assign hw2reg.sys_status.ready.d             = sysif_status_ready_i;

@@ -19,7 +19,7 @@
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "host" }
+    { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "host",   name: "sram" }
     { protocol: "tlul", direction: "device", name: "sys" }
   ]
@@ -72,9 +72,9 @@
   ]
   regwidth: "32"
   registers: {
-    host: [
+    core: [
       { name: "CONTROL"
-        desc: "DOE mailbox control register visible to the mailbox host"
+        desc: "DOE mailbox control register visible to OpenTitan"
         hwext: "true"
         fields: [
           { name: "abort"
@@ -96,7 +96,7 @@
         ]
       }
       { name: "STATUS"
-        desc: "DOE mailbox status register visible to the mailbox host"
+        desc: "DOE mailbox status register visible to OpenTitan"
         hwext: "true"
         fields: [
           { name: "busy"

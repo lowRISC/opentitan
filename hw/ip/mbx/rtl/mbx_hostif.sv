@@ -56,8 +56,8 @@ module mbx_hostif
   // Control inputs coming from the system registers interface
   input  logic                          sysif_control_abort_set_i
 );
-  mbx_reg_pkg::mbx_host_reg2hw_t reg2hw;
-  mbx_reg_pkg::mbx_host_hw2reg_t hw2reg;
+  mbx_reg_pkg::mbx_core_reg2hw_t reg2hw;
+  mbx_reg_pkg::mbx_core_hw2reg_t hw2reg;
 
   //////////////////////////////////////////////////////////////////////////////
   // Assertions
@@ -92,7 +92,7 @@ module mbx_hostif
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: ADDRESS_RANGE.CONFIG.REGWEN_MUBI
-  mbx_host_reg_top u_regs(
+  mbx_core_reg_top u_regs(
     .clk_i      ( clk_i         ),
     .rst_ni     ( rst_ni        ),
     .tl_i       ( tl_host_i     ),

@@ -26,9 +26,9 @@ module mbx
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
-  // Device port facing OT-host
-  input   tlul_pkg::tl_h2d_t                        tl_host_i,
-  output  tlul_pkg::tl_d2h_t                        tl_host_o,
+  // Device port facing OpenTitan
+  input   tlul_pkg::tl_h2d_t                        core_tl_d_i,
+  output  tlul_pkg::tl_d2h_t                        core_tl_d_o,
   // Device port facing CTN Xbar
   input   tlul_pkg::tl_h2d_t                        tl_sys_i,
   output  tlul_pkg::tl_d2h_t                        tl_sys_o,
@@ -94,8 +94,8 @@ module mbx
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
     // Device port to the host side
-    .tl_host_i                           ( tl_host_i                          ),
-    .tl_host_o                           ( tl_host_o                          ),
+    .tl_host_i                           ( core_tl_d_i                        ),
+    .tl_host_o                           ( core_tl_d_o                        ),
     .event_intr_ready_i                  ( hostif_event_intr_ready            ),
     .event_intr_abort_i                  ( hostif_event_intr_abort            ),
     .intr_ready_o                        ( intr_mbx_ready_o                   ),
