@@ -223,33 +223,17 @@ module soc_proxy
   logic async_wkup;
   assign async_wkup = |{fatal_alert_external, recov_alert_external};
 
-  // Synchronize wakeup signal onto AON domain
-  logic unstable_wkup;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_prim_flop_2sync_wake (
-    .clk_i  (clk_aon_i),
-    .rst_ni (rst_aon_ni),
-    .d_i    (async_wkup),
-    .q_o    (unstable_wkup)
+  // Synchronize wakeup signal onto AON domain and filter out potential glitches
+  prim_filter #(
+    .AsyncOn(1'b1),
+    .Cycles(3)
+  ) u_prim_filter_wkup (
+    .clk_i    (clk_aon_i),
+    .rst_ni   (rst_aon_ni),
+    .enable_i (1'b1),
+    .filter_i (async_wkup),
+    .filter_o (wkup_internal_req_o)
   );
-
-  // Filter out possible glitches from unstable wakeup signal
-  logic wkup_d, wkup_q;
-  logic [2:0] wkup_filter_d, wkup_filter_q;
-  always_ff @(posedge clk_aon_i, negedge rst_aon_ni) begin
-    if (!rst_aon_ni) begin
-      wkup_q <= '0;
-      wkup_filter_q <= '0;
-    end else begin
-      wkup_q <= wkup_d;
-      wkup_filter_q <= wkup_filter_d;
-    end
-  end
-  assign wkup_filter_d = {wkup_filter_q[1:0], unstable_wkup};
-  assign wkup_d = &wkup_filter_q;
-  assign wkup_internal_req_o = wkup_q;
 
   // Collate LSIO trigger inputs into signal for DMA
   assign dma_lsio_trigger_o = {
