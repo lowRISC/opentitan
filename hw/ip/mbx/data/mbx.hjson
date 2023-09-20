@@ -98,6 +98,7 @@
             hwqe: "true"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // alias of another register; no automated CSR tests applicable
       }
       { name: "STATUS"
         desc: "DOE mailbox status register visible to OpenTitan"
@@ -125,6 +126,7 @@
             hwaccess: "hwo"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // alias of another register; no automated CSR tests applicable
       }
       { name: "ADDRESS_RANGE_REGWEN"
         desc: "Used to lock the inbound/outbound base/limit configuration registers."
@@ -142,6 +144,7 @@
             resval: true
           }
         ]
+        tags: ["excl:CsrNonInitTests:CsrExclAll"] // only check initial value because writing will have side effects
       }
       { name: "ADDRESS_RANGE_VALID"
         desc: "Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration."
@@ -154,6 +157,7 @@
             resval: "0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to back up the inbound mailbox data.
@@ -169,6 +173,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_LIMIT_ADDRESS"
         desc: '''Limit Address to mark the end of the inbound mailbox memory range in the private SRAM..
@@ -199,6 +204,7 @@
             hwaccess: "hwo"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to buffer the outbound mailbox data.
@@ -214,6 +220,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_LIMIT_ADDRESS"
         desc: '''Limit Address to mark the end of the outbound mailbox memory range in the private SRAM.
@@ -229,6 +236,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_READ_PTR"
         desc: '''Read pointer for the next outbound data read.
@@ -244,6 +252,7 @@
             hwaccess: "hwo"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_OBJECT_SIZE"
         desc: '''Indicates the size of the data object to be transferred out.
@@ -260,6 +269,7 @@
             hwqe: "true"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "DOE_INTR_MSG_ADDR"
         desc: '''
@@ -276,6 +286,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "DOE_INTR_MSG_DATA"
         desc: '''
@@ -292,6 +303,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
     ]
     soc: [
@@ -356,6 +368,7 @@
             swaccess: "wo"
           }
         ]
+        tags: ["excl:CsrNonInitTests:CsrExclAll"] // only check initial value because writing will have side effects
       }
       { name: "SOC_STATUS"
         desc: "DOE mailbox status register"
@@ -397,6 +410,7 @@
             hwaccess: "hwo"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { window: {
           name: "WDATA"
