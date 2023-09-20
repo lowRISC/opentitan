@@ -431,7 +431,7 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | hmac              | hmac          | 0x21110000 (regs) |
 | kmac              | kmac          | 0x21120000 (regs) |
 | otbn              | otbn          | 0x21130000 (regs) |
-| keymgr            | keymgr        | 0x21140000 (regs) |
+| keymgr_dpe        | keymgr_dpe    | 0x21140000 (regs) |
 | csrng             | csrng         | 0x21150000 (regs) |
 | edn0              | edn           | 0x21170000 (regs) |
 | edn1              | edn           | 0x21180000 (regs) |
