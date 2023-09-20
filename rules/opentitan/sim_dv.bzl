@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimDvBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimDvBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files", "get_override")
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -12,6 +12,7 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
     "extract_software_logs",
     "scramble_flash",
@@ -40,27 +41,42 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     Returns:
       dict: A dict of fields to create in the provider.
     """
-    default = signed_bin if signed_bin else binary
+    if ctx.attr.kind == "rom":
+        rom = convert_to_scrambled_rom_vmem(
+            ctx,
+            name = name,
+            src = elf,
+            suffix = "39.scr.vmem",
+            rom_scramble_config = exec_env.rom_scramble_config,
+            rom_scramble_tool = ctx.executable.rom_scramble_tool,
+        )
+        default = rom
+        vmem = rom
+    elif ctx.attr.kind == "flash":
+        # First convert to VMEM, then scramble according to flash
+        # scrambling settings.
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 64,
+        )
+        vmem = scramble_flash(
+            ctx,
+            name = name,
+            suffix = "64.scr.vmem",
+            src = vmem,
+            otp = get_fallback(ctx, "file.otp", exec_env),
+            otp_mmap = exec_env.otp_mmap,
+            otp_seed = exec_env.otp_seed,
+            otp_data_perm = exec_env.otp_data_perm,
+            _tool = exec_env.flash_scramble_tool.files_to_run,
+        )
+        rom = None
+        default = vmem
+    else:
+        fail("Not implemented: kind ==", ctx.attr.kind)
 
-    # First convert to VMEM, then scramble according to flash
-    # scrambling settings.
-    vmem = convert_to_vmem(
-        ctx,
-        name = name,
-        src = default,
-        word_size = 64,
-    )
-    vmem = scramble_flash(
-        ctx,
-        name = name,
-        suffix = "64.scr.vmem",
-        src = vmem,
-        otp = get_fallback(ctx, "file.otp", exec_env),
-        otp_mmap = exec_env.otp_mmap,
-        otp_seed = exec_env.otp_seed,
-        otp_data_perm = exec_env.otp_data_perm,
-        _tool = exec_env.flash_scramble_tool.files_to_run,
-    )
     logs = extract_software_logs(
         ctx,
         name = name,
@@ -70,7 +86,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     return {
         "elf": elf,
         "binary": binary,
-        "default": vmem,
+        "default": default,
+        "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "logs": logs,
@@ -112,10 +129,11 @@ def _test_dispatch(ctx, exec_env, provider):
 
     # Get the files we'll need to run the test.
     otp = get_fallback(ctx, "file.otp", exec_env)
-    rom = get_fallback(ctx, "file.rom", exec_env)
+    rom = get_fallback(ctx, "attr.rom", exec_env)
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
     if rom:
+        rom = get_one_binary_file(rom, field = "rom", providers = [SimDvBinaryInfo])
         data_files.append(rom)
     if otp:
         data_files.append(otp)

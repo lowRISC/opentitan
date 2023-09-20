@@ -166,11 +166,12 @@ def _build_binary(ctx, exec_env, name, deps):
     Returns:
       (dict, dict): A dict of output artifacts and a dict of signing artifacts.
     """
+    linker_script = get_fallback(ctx, "attr.linker_script", exec_env)
     elf, mapfile = ot_binary(
         ctx,
         name = name,
         deps = deps,
-        linker_script = get_fallback(ctx, "attr.linker_script", exec_env),
+        linker_script = linker_script,
     )
     binary = obj_transform(
         ctx,
@@ -218,7 +219,7 @@ def _opentitan_binary(ctx):
     for exec_env in ctx.attr.exec_env:
         exec_env = exec_env[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
-        deps = [exec_env.lib] + ctx.attr.deps
+        deps = ctx.attr.deps + [exec_env.lib]
         provides, signed = _build_binary(ctx, exec_env, name, deps)
         providers.append(exec_env.create_provider(
             ctx,
@@ -270,11 +271,22 @@ common_binary_attrs = {
         doc = "Naming convention for binary artifacts.",
         default = "{name}_{exec_env}",
     ),
+    "kind": attr.string(
+        doc = "Binary kind: flash, ram or rom",
+        default = "flash",
+        values = ["flash", "ram", "rom"],
+    ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
     "extract_sw_logs": attr.label(
         doc = "Software logs extraction script.",
         default = "//util/device_sw_utils:extract_sw_logs_db",
+        executable = True,
+        cfg = "exec",
+    ),
+    "rom_scramble_tool": attr.label(
+        doc = "ROM scrambling tool.",
+        default = "//hw/ip/rom_ctrl/util:scramble_image",
         executable = True,
         cfg = "exec",
     ),
@@ -308,7 +320,7 @@ def _opentitan_test(ctx):
         p = exec_env.get_provider(ctx.attr.srcs[0])
     else:
         name = _binary_name(ctx, exec_env)
-        deps = [exec_env.lib] + ctx.attr.deps
+        deps = ctx.attr.deps + [exec_env.lib]
         provides, signed = _build_binary(ctx, exec_env, name, deps)
         p = exec_env.create_provider(
             ctx,
@@ -335,7 +347,7 @@ opentitan_test = rv_rule(
             cfg = "exec",
         ),
         "rom": attr.label(
-            allow_single_file = True,
+            allow_files = True,
             doc = "ROM image override for this test",
         ),
         "otp": attr.label(

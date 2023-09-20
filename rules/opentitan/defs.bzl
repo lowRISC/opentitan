@@ -95,12 +95,14 @@ def _hacky_tags(env):
 def opentitan_test(
         name,
         srcs,
+        kind = "flash",
         deps = [],
         copts = [],
         defines = [],
         local_defines = [],
         includes = [],
         linkopts = [],
+        linker_script = None,
         exec_env = {},
         cw310 = _cw310_params(),
         dv = _dv_params(),
@@ -112,11 +114,13 @@ def opentitan_test(
       name: The base name of the test.  The name will be extended with the name
             of the execution environment.
       srcs: The source files (or a binary image) for this test.
+      kind: The kind of test (flash, ram, rom).
       deps: Dependecies for this test.
       copts: Compiler options for this test.
       defines: Compiler defines for this test.
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
+      linker_script: Linker script for this test.
       linkopts: Linker options for this test.
       exec_env: A dictionary of execution environments.  The keys are labels to
                 execution environments.  The values are the kwargs parameter names
@@ -145,11 +149,13 @@ def opentitan_test(
         _opentitan_test(
             name = test_name,
             srcs = srcs,
+            kind = kind,
             deps = deps,
             copts = copts,
             defines = defines,
             local_defines = local_defines,
             includes = includes,
+            linker_script = linker_script,
             linkopts = linkopts,
             exec_env = env,
             naming_convention = "{name}",
