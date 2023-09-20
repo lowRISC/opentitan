@@ -19,6 +19,7 @@ module mbx_ombx #(
   input  logic                          hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_limit_i,
+  output logic                          sys_read_all_o,
   // Control signals from the host and system interface
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                          hostif_control_abort_clear_i,
@@ -100,10 +101,9 @@ module mbx_ombx #(
   assign writer_close_mbx = mbx_empty & ombx_sram_read_resp_valid_i;
 
   // Terminate mbx_read state (Ready = 1 -> 0) if ombx is already drained (sram_read is not issued)
-  logic sys_read_all;
-  assign  sys_read_all = mbx_read                       &
-                         sysif_read_data_write_valid_i  &
-                         (sram_read_ptr_q == sram_read_ptr_limit_q);
+  assign  sys_read_all_o = mbx_read                       &
+                           sysif_read_data_write_valid_i  &
+                           (sram_read_ptr_q == sram_read_ptr_limit_q);
 
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
@@ -112,7 +112,7 @@ module mbx_ombx #(
   logic load_read_ptr, advance_read_ptr;
 
   // Rewind the read pointer to the base
-  assign load_read_ptr = set_first_req | sys_read_all | host_clear_abort;
+  assign load_read_ptr = set_first_req | sys_read_all_o | host_clear_abort;
 
   // Advance the read pointer when one request went through
   assign  advance_read_ptr = ombx_sram_read_req_o & ombx_sram_read_gnt_i;
@@ -141,7 +141,7 @@ module mbx_ombx #(
   // Clear ombx read data register in case of all data is read, an error happens,
   // or the requester aborts the transaction
   logic clear_read_data;
-  assign clear_read_data = sys_read_all              |
+  assign clear_read_data = sys_read_all_o             |
                            hostif_control_error_set_i |
                            sysif_control_abort_set_i;
   // Advance the SRAM read response to read data
@@ -224,7 +224,7 @@ module mbx_ombx #(
     .q_o   ( first_req_q                                      )
   );
 
-  // Create an DOE interrupt request when the obmx FSM turns into the ready state or when an error
+  // Create a DOE interrupt request when the obmx FSM turns into the ready state or when an error
   // is raised
   assign ombx_doe_intr_state_set_o = (ombx_status_ready_o & ombx_status_ready_update_o) |
                                       hostif_control_error_set_i;
@@ -236,10 +236,9 @@ module mbx_ombx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_status_busy_clear_i( 1'b0                         ),
     .hostif_control_error_set_i( hostif_control_error_set_i   ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
-    .sys_read_all_i            ( sys_read_all                 ),
+    .sys_read_all_i            ( sys_read_all_o               ),
     .writer_close_mbx_i        ( writer_close_mbx             ),
     .writer_write_valid_i      ( 1'b0                         ),
     // Status signals

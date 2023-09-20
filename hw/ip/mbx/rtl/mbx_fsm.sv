@@ -12,7 +12,6 @@ module mbx_fsm #(
   // Control input signals
   input  logic mbx_range_valid_i,
   input  logic hostif_abort_ack_i,
-  input  logic hostif_status_busy_clear_i,
   input  logic hostif_control_error_set_i,
   input  logic sysif_control_abort_set_i,
   input  logic sys_read_all_i,
@@ -116,9 +115,9 @@ module mbx_fsm #(
           ctrl_state_d = MbxIdle;
         end else if (sysif_control_abort_set_i) begin   // System wants to abort
           ctrl_state_d = MbxSysAbortHost;
-        end else if (sys_read_all_i | hostif_status_busy_clear_i) begin
-          // Inbound mailbox: Host (FW) finishes the read
-          // Outbound mailbox: Object reader (HW) finishes the read
+        end else if (sys_read_all_i) begin
+          // Inbound and outbound mailbox go back to idle after all data has
+          // been read by the sys requester
           ctrl_state_d = MbxIdle;
         end
       end
