@@ -10,6 +10,9 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_handshake_smoke_vseq)
   `uvm_object_new
 
+  // Handshake interrupt value
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_value;
+
   constraint transactions_c {num_txns == valid_combinations.size();}
 
   // Function : Randomise dma_seq_item with valid and random asid combination
@@ -28,6 +31,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; //disable hardware handhake mode
+      handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
       opcode == OpcCopy;)
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
@@ -43,6 +47,10 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
       randomise_item(dma_config);
       run_common_config(dma_config);
+      // Toggle random bit in hardware handshake input interrupt
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(handshake_value,
+                                         handshake_value &
+                                         dma_config.handshake_intr_en != 0;)
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
                            dma_config.handshake, // Handshake Enable
@@ -50,7 +58,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                            dma_config.auto_inc_fifo, // Auto-increment FIFO Address
                            dma_config.direction, // Direction
                            1'b1); // Go
-      set_hardware_handshake_intr(dma_config);
+      set_hardware_handshake_intr(handshake_value);
       poll_status();
       release_hardware_handshake_intr();
       clear();

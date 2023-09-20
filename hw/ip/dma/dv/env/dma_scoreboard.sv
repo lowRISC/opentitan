@@ -46,6 +46,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit clear_via_reg_write;
   // True if in hardware handshake mode and the FIFO interrupt has been cleared
   bit fifo_intr_cleared;
+  // Variable to indicate number of writes expected to clear FIFO interrupts
+  uint num_fifo_reg_write;
+  // Variable to store clear_int_src register intended for use in monitor_lsio_trigger task
+  // since ref argument can not be used in fork-join_none
+  bit[31:0] clear_int_src;
+  bit handshake; // Bit to indicate if handshake mode is enabled
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -256,8 +262,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
     fork
       forever begin
         dir_fifo.get(dir);
-        `uvm_info(`gfn, $sformatf("dma_config\n %s",
-                                  dma_config.sprint()), UVM_HIGH)
         // Check if transaction is expected for a valid configuration
         `DV_CHECK_EQ_FATAL(dma_config.is_valid_config, 1,
                            $sformatf("transaction observed on %s for invalid configuration",
@@ -274,8 +278,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                       item.a_addr,
                                       item.a_data), UVM_HIGH)
             process_tl_addr_txn(if_name, item);
-            // Clear status bit after first transaction
-            fifo_intr_cleared = !fifo_intr_cleared;
+            // Update num_fifo_reg_write
+            if (num_fifo_reg_write > 0) begin
+              `uvm_info(`gfn, $sformatf("Processed FIFO clear_int_src addr: %0x0x", item.a_addr),
+                        UVM_DEBUG)
+              num_fifo_reg_write--;
+            end else begin
+              // Set status bit after all FIFO interrupt clear register writes are done
+              fifo_intr_cleared = 1;
+            end
           end
           DataChannel: begin
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
@@ -337,6 +348,30 @@ class dma_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+  // Task to monitor LSIO trigger and update scoreboard internal variables
+  task monitor_lsio_trigger();
+    fork
+      begin
+        forever begin
+          uvm_reg_data_t handshake_en;
+          uvm_reg_data_t handshake_intr_en;
+          // Wait for at least one LSIoO trigger to be active and it is eanbled
+          @(posedge cfg.dma_vif.handshake_i);
+          handshake_en = `gmv(ral.control.hardware_handshake_enable);
+          handshake_intr_en = `gmv(ral.handshake_interrupt_enable);
+          // Update number of register writes expected in case at least one
+          // of the enabled handshake interrupt is asserted
+          if (handshake_en && (cfg.dma_vif.handshake_i & handshake_intr_en)) begin
+            num_fifo_reg_write = $countones(clear_int_src);
+            `uvm_info(`gfn,
+                      $sformatf("Handshake mode: num_fifo_reg_write:%0d", num_fifo_reg_write),
+                      UVM_HIGH)
+          end
+        end
+      end
+    join_none
+  endtask
+
   function void check_phase(uvm_phase phase);
     // Check if there are unprocessed source items
     uint size = src_queue.size();
@@ -350,6 +385,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    num_fifo_reg_write = 0;
     // Call process methods on TL fifo
     foreach (cfg.fifo_names[i]) begin
       process_tl_txn(cfg.fifo_names[i],
@@ -358,6 +394,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                      tl_d_chan_fifos[cfg.dma_d_fifo[cfg.fifo_names[i]]]);
     end
     monitor_and_check_dma_interrupts(dma_config);
+    monitor_lsio_trigger();
   endtask
 
   // Function to get the memory model data at provided address
@@ -486,6 +523,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "clear_int_src": begin
         dma_config.clear_int_src = `gmv(ral.clear_int_src.source);
+        clear_int_src = dma_config.clear_int_src;
       end
       "int_source_addr_0",
       "int_source_addr_1",
@@ -522,6 +560,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
         // Get handshake mode enable bit
         dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
+        handshake = dma_config.handshake;
         `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
                   UVM_HIGH)
         // Update the value of abort as this stops the DMA operation
@@ -533,6 +572,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
         dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
         if (go) begin
+          `uvm_info(`gfn, $sformatf("dma_config\n %s",
+                                    dma_config.sprint()), UVM_HIGH)
           // Check if configuration is valid
           operation_in_progress = 1'b1;
           last_src_addr = dma_config.src_addr - 1;
@@ -595,6 +636,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
         if (done || aborted || error) begin
           operation_in_progress = 1'b0;
           `uvm_info(`gfn, "Detected end of DMA operation", UVM_MEDIUM)
+          // Clear variables
+          num_fifo_reg_write = 0;
         end
         // Check total data transferred at the end of DMA operation
         if (done && // dont bit detected in STATUS
