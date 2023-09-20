@@ -377,8 +377,6 @@ module dma
   digest_mode_e sha2_mode;
   sha_word64_t [7:0] sha2_digest;
 
-  // SHA2 message length is in bits
-  assign sha2_msg_len       = reg2hw.total_data_size.q << 3;
   assign use_inline_hashing = reg2hw.control.opcode.q inside {OpcSha256,  OpcSha384, OpcSha512};
   // We consume data until we are in the finalizing state
   assign sha2_hash_process = (ctrl_state_q != DmaShaFinalize);
@@ -391,6 +389,16 @@ module dma
     .rst_ni( rst_ni          ),
     .d_i   ( sha2_consumed_d ),
     .q_o   ( sha2_consumed_q )
+  );
+
+  logic sha2_started_d, sha2_started_q;
+  prim_flop #(
+    .Width(1)
+  ) u_sha2_started (
+    .clk_i ( gated_clk      ),
+    .rst_ni( rst_ni         ),
+    .d_i   ( sha2_started_d ),
+    .q_o   ( sha2_started_q )
   );
 
   logic sha2_hash_done_d, sha2_hash_done_q;
@@ -413,6 +421,22 @@ module dma
     .q_o   ( sha2_hash_done_sticky_q )
   );
 
+  logic sha2_capture_msg_len;
+  logic [31:0] sha2_message_len_d, sha2_message_len_q;
+  logic [127:0] sha2_message_len_bits;
+  prim_generic_flop_en #(
+    .Width(32)
+  ) u_sha2_message_len (
+    .clk_i ( gated_clk            ),
+    .rst_ni( rst_ni               ),
+    .en_i  ( sha2_capture_msg_len ),
+    .d_i   ( sha2_message_len_d   ),
+    .q_o   ( sha2_message_len_q   )
+  );
+
+  // The SHA engine requires the message length in bits
+  assign sha2_message_len_bits = sha2_message_len_bits << 3;
+
   // Translate the DMA opcode to the SHA2 digest mode
   always_comb begin
     unique case (reg2hw.control.opcode.q)
@@ -425,21 +449,21 @@ module dma
 
   // SHA2 engine for inline hashing operations
   sha2_multimode32 u_sha2 (
-    .clk_i            ( clk_i             ),
-    .rst_ni           ( rst_ni            ),
-    .wipe_secret      ( 1'b0              ),
-    .wipe_v           ( 32'b0             ),
-    .fifo_rvalid      ( sha2_valid        ),
-    .fifo_rdata       ( sha2_data         ),
-    .word_buffer_ready( sha2_ready        ),
-    .sha_en           ( 1'b1              ),
-    .hash_start       ( sha2_hash_start   ),
-    .digest_mode      ( sha2_mode         ),
-    .hash_process     ( sha2_hash_process ),
-    .hash_done        ( sha2_hash_done_d  ),
-    .message_length   ( sha2_msg_len      ),
-    .digest           ( sha2_digest       ),
-    .idle             (                   )
+    .clk_i            ( clk_i                 ),
+    .rst_ni           ( rst_ni                ),
+    .wipe_secret      ( 1'b0                  ),
+    .wipe_v           ( 32'b0                 ),
+    .fifo_rvalid      ( sha2_valid            ),
+    .fifo_rdata       ( sha2_data             ),
+    .word_buffer_ready( sha2_ready            ),
+    .sha_en           ( 1'b1                  ),
+    .hash_start       ( sha2_hash_start       ),
+    .digest_mode      ( sha2_mode             ),
+    .hash_process     ( sha2_hash_process     ),
+    .hash_done        ( sha2_hash_done_d      ),
+    .message_length   ( sha2_message_len_bits ),
+    .digest           ( sha2_digest           ),
+    .idle             (                       )
   );
 
   always_comb begin
@@ -502,10 +526,13 @@ module dma
     read_rsp_error  = 1'b0;
     dma_state_error = 1'b0;
 
-    sha2_hash_start  = 1'b0;
-    sha2_valid       = 1'b0;
-    sha2_digest_we   = 1'b0;
-    sha2_consumed_d  = sha2_consumed_q;
+    sha2_hash_start      = 1'b0;
+    sha2_valid           = 1'b0;
+    sha2_digest_we       = 1'b0;
+    sha2_consumed_d      = sha2_consumed_q;
+    sha2_started_d       = sha2_started_q;
+    sha2_capture_msg_len = 1'b0;
+    sha2_message_len_d   = sha2_message_len_q;
 
     // Make SHA2 Done sticky to not miss a single done event during any outstanding writes
     if (ctrl_state_q == DmaIdle) begin
@@ -518,6 +545,7 @@ module dma
       DmaIdle: begin
         transfer_byte_d       = '0;
         capture_transfer_byte = 1'b1;
+        sha2_started_d        = 1'b1;
         // Wait for go bit to be set to proceed with data movement
         if (reg2hw.control.go.q) begin
           // if not handshake start transfer
@@ -802,10 +830,22 @@ module dma
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else begin
-          // Start the hashing if we want inline hashing and have a valid config but only if
-          // starting is enabled
-          if (use_inline_hashing & reg2hw.control.start_hashing.q) begin
-            sha2_hash_start  = 1'b1;
+          // Start the inline hashing if we are in the very first transfer. If we are in the first
+          // iteration of a transfer, which is not the very first transfer, only capture the
+          // transfer length to compute the final message length
+          if (use_inline_hashing & ~sha2_started_q) begin
+            // Capture the transfer length
+            sha2_started_d       = 1'b1;
+            sha2_capture_msg_len = 1'b1;
+
+            if (reg2hw.control.start_hashing.q) begin
+              sha2_hash_start = 1'b1;
+              // Reset the message length and start with the current transfer size. If we are not
+              // starting a new hashing operation, increment the message length the transfer size
+              sha2_message_len_d = reg2hw.total_data_size.q;
+            end else begin
+              sha2_message_len_d = sha2_message_len_q + reg2hw.total_data_size.q;
+            end
           end
 
           if ((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
@@ -962,7 +1002,7 @@ module dma
           dma_host_tlul_req_be    = req_dst_be_q;
         end
 
-        // If using inline hashing and data is not yet comsumed, apply it
+        // If using inline hashing and data is not yet consumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
           sha2_valid = 1'b1;
           sha2_consumed_d = sha2_ready;
@@ -1001,7 +1041,7 @@ module dma
           dma_ctn_tlul_req_be    = req_dst_be_q;
         end
 
-        // If using inline hashing and data is not yet comsumed, apply it
+        // If using inline hashing and data is not yet consumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
           sha2_valid = 1'b1;
           sha2_consumed_d = sha2_ready;
