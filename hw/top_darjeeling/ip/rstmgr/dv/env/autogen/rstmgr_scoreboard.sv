@@ -99,24 +99,20 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
   local function bit blocked_by_regwen(string ral_name);
     bit blocked = 0;
 
-    if (ral_name == "alert_info_ctrl")
-      blocked = `gmv(ral.alert_regwen) == 0;
-    if (ral_name == "cpu_info_ctrl")
-      blocked = `gmv(ral.cpu_regwen) == 0;
-    // And only the various "sw_rst_ctrl_n may be blocked, so ignore all others.
-    if (uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, ral_name))
-      return 0;
-    case (ral_name[sw_rst_ctrl_n_preffix.len()])
-      "0": blocked = `gmv(ral.sw_rst_regwen[0]) == 0;
-      "1": blocked = `gmv(ral.sw_rst_regwen[1]) == 0;
-      "2": blocked = `gmv(ral.sw_rst_regwen[2]) == 0;
-      "3": blocked = `gmv(ral.sw_rst_regwen[3]) == 0;
-      "4": blocked = `gmv(ral.sw_rst_regwen[4]) == 0;
-      "5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
-      "6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
-      "7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
+    case (ral_name)
+      "alert_info_ctrl": blocked = `gmv(ral.alert_regwen) == 0;
+      "cpu_info_ctrl": blocked = `gmv(ral.cpu_regwen) == 0;
+      "sw_rst_ctrl_n_0": blocked = `gmv(ral.sw_rst_regwen[0]) == 0;
+      "sw_rst_ctrl_n_1": blocked = `gmv(ral.sw_rst_regwen[1]) == 0;
+      "sw_rst_ctrl_n_2": blocked = `gmv(ral.sw_rst_regwen[2]) == 0;
+      "sw_rst_ctrl_n_3": blocked = `gmv(ral.sw_rst_regwen[3]) == 0;
+      "sw_rst_ctrl_n_4": blocked = `gmv(ral.sw_rst_regwen[4]) == 0;
+      "sw_rst_ctrl_n_5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
+      "sw_rst_ctrl_n_6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
+      "sw_rst_ctrl_n_7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
       default:
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", ral_name))
+        // No others are blocked.
+        return 0;
     endcase
     `uvm_info(`gfn, $sformatf(
               "blocked_by_regwen: csr = %0s is %0sblocked", ral_name, blocked ? "" : "not "),
@@ -207,20 +203,82 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         // Set by hardware.
         do_read_check = 1'b0;
       end
-      default: begin
-        if (!uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, csr.get_name())) begin
-          `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
-                    UVM_MEDIUM)
-          if (cfg.en_cov && addr_phase_write) begin
-            int i = get_index_from_multibit_name(csr.get_name());
-            logic enable = ral.sw_rst_regwen[i].get();
-            cov.sw_rst_cg_wrap[i].sample(enable, item.a_data);
-          end
-        end else if (!uvm_re_match("sw_rst_regwen_*", csr.get_name())) begin
-          // RW0C, so check.
-        end else begin
-          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+      "sw_rst_ctrl_n_0": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[0].get();
+          cov.sw_rst_cg_wrap[0].sample(enable, item.a_data);
         end
+      end
+      "sw_rst_ctrl_n_1": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[1].get();
+          cov.sw_rst_cg_wrap[1].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_2": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[2].get();
+          cov.sw_rst_cg_wrap[2].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_3": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[3].get();
+          cov.sw_rst_cg_wrap[3].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_4": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[4].get();
+          cov.sw_rst_cg_wrap[4].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_5": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[5].get();
+          cov.sw_rst_cg_wrap[5].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_6": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[6].get();
+          cov.sw_rst_cg_wrap[6].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_ctrl_n_7": begin
+        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                  UVM_MEDIUM)
+        if (cfg.en_cov && addr_phase_write) begin
+          logic enable = ral.sw_rst_regwen[7].get();
+          cov.sw_rst_cg_wrap[7].sample(enable, item.a_data);
+        end
+      end
+      "sw_rst_regwen_0",
+      "sw_rst_regwen_1",
+      "sw_rst_regwen_2",
+      "sw_rst_regwen_3",
+      "sw_rst_regwen_4",
+      "sw_rst_regwen_5",
+      "sw_rst_regwen_6",
+      "sw_rst_regwen_7": begin
+        // RW0C, so check.
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
 

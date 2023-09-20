@@ -34,50 +34,34 @@ package rstmgr_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
   parameter uint NUM_ALERTS = 2;
 
-  // Sorted instances of rstmgr_leaf_rst modules in {top_chip}'s rstmgr.
-  // This can be generated from the source using
-  //   grep -A 5 rstmgr_leaf_rst <path to rstmgr.sv> | \
-  //     egrep '^[ ]+\) u_' | sed 's/[ )(]//g' | sort | \
-  //     sed 's/\(.*\)/    \"\1\",/'
   parameter string LIST_OF_LEAFS[] = {
-    "u_d0_i2c0",
-    "u_d0_i2c1",
-    "u_d0_i2c2",
-    "u_d0_lc",
-    "u_d0_lc_io",
-    "u_d0_lc_io_div2",
-    // There are 4 rstmgr_leaf_rst instances with security checks disabled.
-    // "u_d0_lc_io_div4",
-    // "u_d0_lc_io_div4_shadowed",
-    "u_d0_lc_usb",
-    "u_d0_spi_device",
-    "u_d0_spi_host0",
-    "u_d0_spi_host1",
-    "u_d0_sys",
-    "u_d0_usb",
-    "u_d0_usb_aon",
-    "u_daon_lc",
-    "u_daon_lc_aon",
-    "u_daon_lc_io",
-    "u_daon_lc_io_div2",
-    // Same as comment above.
-    // "u_daon_lc_io_div4",
-    // "u_daon_lc_io_div4_shadowed",
-    "u_daon_lc_shadowed",
-    "u_daon_lc_usb",
-    "u_daon_por",
-    "u_daon_por_io",
-    "u_daon_por_io_div2",
-    "u_daon_por_io_div4",
-    "u_daon_por_usb",
-    "u_daon_sys_io_div4"
+<%
+  list_of_leafs = []
+  for rst in leaf_rsts:
+    if rst.name != rst_ni:
+      for domain in rst.domains:
+        list_of_leafs.append(f"u_d{domain.lower()}_{rst.name}")
+        if rst.shadowed:
+          list_of_leafs.append(f"u_d{domain.lower()}_{rst.name}_shadowed")
+%>\
+% for leaf in list_of_leafs:
+    "${leaf}"${"" if loop.last else ","}
+% endfor
   };
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.
   parameter string LIST_OF_SHADOW_LEAFS[] = {
-    "u_d0_lc_io_div4",
-    "u_daon_lc",
-    "u_daon_lc_io_div4"
+<%
+  list_of_shadowed_leafs = []
+  for rst in leaf_rsts:
+    if rst.shadowed:
+      for domain in rst.domains:
+        list_of_shadowed_leafs.append(
+            f"u_d{domain.lower()}_{rst.name}")
+%>\
+% for shadowed_leaf in list_of_shadowed_leafs:
+    "${shadowed_leaf}"${"" if loop.last else ","}
+% endfor
   };
 
   // types
