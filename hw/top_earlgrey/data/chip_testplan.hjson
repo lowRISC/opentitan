@@ -27,6 +27,7 @@
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
   ]
 
   testpoints: [
@@ -928,111 +929,6 @@
               separately.
             '''
       stage: V3
-      tests: ["chip_sw_all_escalation_resets"]
-    }
-
-    // RSTMGR tests:
-    {
-      name: chip_sw_rstmgr_non_sys_reset_info
-      desc: '''Verify the `reset_info` CSR register for lc or higher resets.
-
-            Generate the 5 types of reset at `lc` level or higher, and check the retention SRAM's
-            reset_reason to show that `reset_info` CSR is as expected. This and other rstmgr
-            testpoints that require different resets cross-reference the individual IP tests that
-            generate those resets, and this testpoint merely adds reset checks in them. Those IP
-            blocks are `pwrmgr`, `alert_handler`, `aon_timer`, and `sysrst_ctrl`.
-
-            This should also check the reset's destination IP to make sure some reset side-effect
-            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
-            after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
-            need special consideration.
-            TODO(maturana) Add specific tests once they are developed.
-            '''
-      stage: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
-    }
-    {
-      name: chip_sw_rstmgr_sys_reset_info
-      desc: '''Verify the `reset_info` CSR register for sys reset.
-
-            Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
-            retention SRAM's reset_reason to show that the `reset_info` CSR is as expected. This
-            testpoint cross-reference the `rv_dm` tests that generate this reset, and this
-            testpoint merely adds reset checks in them.
-
-            This should also check the reset's destination IP to make sure some reset side-effect
-            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
-            after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
-            need special consideration.
-
-            X-ref with chip_rv_dm_ndm_reset_req.
-
-            '''
-      stage: V2
-      tests: ["chip_rv_dm_ndm_reset_req"]
-    }
-    {
-      name: chip_sw_rstmgr_cpu_info
-      desc: '''Verify the expected values from the `cpu_info` CSR on reset.
-
-            For some software induced resets we can predict the expected contents of `cpu_info`;
-            reads of writes to unmapped addresses for example. Generate these resets and verify
-            the `cpu_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstmgr_reset_info`.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_cpu_info"]
-    }
-    {
-      name: chip_sw_rstmgr_sw_req_reset
-      desc: '''Verify software requested device reset.
-
-            Generate a reset request by directly writing the `reset_req` CSR.
-            The reset created should be identical to those caused by hardware sources.
-            After reset, the retention SRAM's reset_reason should show that the `reset_info` CSR
-            reflects that a software request was the reset cause.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_sw_req"]
-    }
-    {
-      name: chip_sw_rstmgr_alert_info
-      desc: '''Verify the expected values from the `alert_info` CSR on reset.
-
-            Various alerts can be created, for example, timeouts, and integrity errors, and at
-            least part of the `alert_info` CSR can be predicted. To cause some of these to
-            cause a reset, mask the relevant processor interrupts. Trigger these resets and
-            verify the `alert_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstmgr_reset_info`.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_alert_info"]
-    }
-    {
-      name: chip_sw_rstmgr_sw_rst
-      desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
-
-            - Pick a rw type CSR in each peripheral and program arbitrary value
-              that does not cause any adverse side-effects.
-            - Pulse the reset to the peripheral via software.
-            - Read the resister after reset and verify it returns the reset value.
-            - Repeat these steps for each of these software resettable peripherals:
-              `spi_device`, `spi_host0`, `spi_host1`, `usb`, `i2c0`, `i2c1`, `i2c2`.
-
-            Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_sw_rst"]
-    }
-    {
-      name: chip_sw_rstmgr_escalation_reset
-      desc: '''Verify the reset manager resets to a clean state after an escalation reset.
-
-            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
-            reset. Upon alert escalation reset, the internal status should be clear and rstmgr
-            should not attempt to send out more alerts.
-            '''
-      stage: V2
       tests: ["chip_sw_all_escalation_resets"]
     }
 
