@@ -112,6 +112,50 @@
       package: "lc_ctrl_pkg"
     }
   ],
+  features: [
+    {
+      name: "CSRNG.INTERFACE.SOFTWARE",
+      desc: '''
+            CSRNG has an application interface for the software to interact with.
+
+            Note that for software to actually retrieve random numbers from this interface, the otp_en_csrng_sw_app_read input from OTP needs to be `kMultiBitBool8True` and !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
+            Otherwise the !!GENBITS register always reads 0.
+            '''
+    }
+    {
+      name: "CSRNG.INTERFACE.HARDWARE0",
+      desc: "CSRNG has an application interface intended for hardware; this interface is labelled zero."
+    }
+    {
+      name: "CSRNG.INTERFACE.HARDWARE1",
+      desc: "CSRNG has an application interface intended for hardware; this interface is labelled one."
+    }
+    {
+      name: "CSRNG.MODE.DETERMINISTIC",
+      desc: "CSRNG can be set up to deterministically generate the same sequence of random values by using a fixed seed."
+    }
+    {
+      name: "CSRNG.MODE.NONDETERMINISTIC",
+      desc: "CSRNG can be set up to generate non-deterministic random values by using a random seed from the entropy source."
+    }
+    {
+      name: "CSRNG.READ_INT_STATE",
+      desc: '''
+            CSRNG allows reading the internal state of the three CTR_DRBG instances corresponding to the three interfaces.
+            This is useful for debugging and validation testing.
+
+            Note that for this to work the `otp_en_csrng_sw_app_read` input from OTP needs to be `kMultiBitBool8True`.
+            '''
+    }
+    {
+      name: "CSRNG.LIFECYCLE.DEBUGENABLE",
+      desc: '''
+            CSRNG has a debug enable signal, which allows for seed diversification.
+            Depending on this value it will use the non-production seed constant or the production seed constant.
+            This state is controlled by the life-cycle controller and so debug is enabled only in test mode.
+            '''
+    }
+  ],
   countermeasures: [
     { name: "CONFIG.REGWEN"
       desc: "Registers are protected from writes."
