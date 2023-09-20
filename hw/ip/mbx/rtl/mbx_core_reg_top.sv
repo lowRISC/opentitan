@@ -141,14 +141,14 @@ module mbx_core_reg_top (
   logic control_we;
   logic control_abort_qs;
   logic control_abort_wd;
-  logic control_doe_intr_en_qs;
   logic control_error_qs;
   logic control_error_wd;
   logic status_re;
   logic status_we;
   logic status_busy_qs;
   logic status_busy_wd;
-  logic status_doe_intr_status_qs;
+  logic status_sys_intr_state_qs;
+  logic status_sys_intr_enable_qs;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -368,11 +368,8 @@ module mbx_core_reg_top (
 
   // R[control]: V(True)
   logic control_qe;
-  logic [2:0] control_flds_we;
-  // This ignores QEs that are set to constant 0 due to read-only fields.
-  logic unused_control_flds_we;
-  assign unused_control_flds_we = ^(control_flds_we & 3'h2);
-  assign control_qe = &(control_flds_we | 3'h2);
+  logic [1:0] control_flds_we;
+  assign control_qe = &control_flds_we;
   //   F[abort]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -389,22 +386,7 @@ module mbx_core_reg_top (
   );
   assign reg2hw.control.abort.qe = control_qe;
 
-  //   F[doe_intr_en]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_control_doe_intr_en (
-    .re     (control_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.control.doe_intr_en.d),
-    .qre    (),
-    .qe     (control_flds_we[1]),
-    .q      (),
-    .ds     (),
-    .qs     (control_doe_intr_en_qs)
-  );
-
-  //   F[error]: 2:2
+  //   F[error]: 1:1
   prim_subreg_ext #(
     .DW    (1)
   ) u_control_error (
@@ -413,7 +395,7 @@ module mbx_core_reg_top (
     .wd     (control_error_wd),
     .d      (hw2reg.control.error.d),
     .qre    (),
-    .qe     (control_flds_we[2]),
+    .qe     (control_flds_we[1]),
     .q      (reg2hw.control.error.q),
     .ds     (),
     .qs     (control_error_qs)
@@ -423,11 +405,11 @@ module mbx_core_reg_top (
 
   // R[status]: V(True)
   logic status_qe;
-  logic [1:0] status_flds_we;
+  logic [2:0] status_flds_we;
   // This ignores QEs that are set to constant 0 due to read-only fields.
   logic unused_status_flds_we;
-  assign unused_status_flds_we = ^(status_flds_we & 2'h2);
-  assign status_qe = &(status_flds_we | 2'h2);
+  assign unused_status_flds_we = ^(status_flds_we & 3'h6);
+  assign status_qe = &(status_flds_we | 3'h6);
   //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -444,19 +426,34 @@ module mbx_core_reg_top (
   );
   assign reg2hw.status.busy.qe = status_qe;
 
-  //   F[doe_intr_status]: 1:1
+  //   F[sys_intr_state]: 1:1
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_doe_intr_status (
+  ) u_status_sys_intr_state (
     .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.doe_intr_status.d),
+    .d      (hw2reg.status.sys_intr_state.d),
     .qre    (),
     .qe     (status_flds_we[1]),
     .q      (),
     .ds     (),
-    .qs     (status_doe_intr_status_qs)
+    .qs     (status_sys_intr_state_qs)
+  );
+
+  //   F[sys_intr_enable]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_sys_intr_enable (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.sys_intr_enable.d),
+    .qre    (),
+    .qe     (status_flds_we[2]),
+    .q      (),
+    .ds     (),
+    .qs     (status_sys_intr_enable_qs)
   );
 
 
@@ -825,7 +822,7 @@ module mbx_core_reg_top (
 
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_error_wd = reg_wdata[2];
+  assign control_error_wd = reg_wdata[1];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign status_we = addr_hit[5] & reg_we & !reg_error;
 
@@ -904,13 +901,13 @@ module mbx_core_reg_top (
 
       addr_hit[4]: begin
         reg_rdata_next[0] = control_abort_qs;
-        reg_rdata_next[1] = control_doe_intr_en_qs;
-        reg_rdata_next[2] = control_error_qs;
+        reg_rdata_next[1] = control_error_qs;
       end
 
       addr_hit[5]: begin
         reg_rdata_next[0] = status_busy_qs;
-        reg_rdata_next[1] = status_doe_intr_status_qs;
+        reg_rdata_next[1] = status_sys_intr_state_qs;
+        reg_rdata_next[2] = status_sys_intr_enable_qs;
       end
 
       addr_hit[6]: begin
