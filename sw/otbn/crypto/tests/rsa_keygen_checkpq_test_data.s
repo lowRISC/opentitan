@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Standalone test for checks on RSA keygen p and q values.
+ * Data to test checks on RSA keygen p and q values.
  *
  * See FIPS 186-5 section A.1.3 for the full specification of requirements on p
  * and q. The value for p must satisfy:
@@ -16,171 +16,13 @@
  * not be too close to p.  Specifically, we need to reject the value if:
  *   |p-q| < 2^(nlen/2 - 100).
  *
- * We don't test the oddness requirement here, since the `check_*` routines
- * require oddness as a precondition. However, all other requirements are
- * tested.
+ * This test data includes values of p and q that each fail exactly one
+ * condition, as well as two "good" values of p and q that are compatible with
+ * each other.
  *
- * For we use 4-limb (1024-bit) values for p and q in this test, which
- * correspond to RSA-2048.
+ * This test data uses 4-limb (1024-bit) values for p and q, which correspond
+ * to RSA-2048.
  */
-
-.section .text.start
-
-main:
-  /* Init all-zero register. */
-  bn.xor    w31, w31, w31
-
-  /* Load the number of limbs for this test. */
-  li        x30, 4
-  li        x31, 3
-
-  /* Load required constants. */
-  li        x20, 20
-  li        x21, 21
-
-  /* Zeroize the buffer for q so that, if we never get to checking it and
-     writing any real data there, we don't get DMEM integrity errors when we
-     try to load it to registers. */
-  la        x2, zero
-  jal       x1, copy_to_rsa_q
-
-  /* Check a value of p that is too small. */
-  la        x16, too_small
-  jal       x1, test_bad_p
-
-  /* Check a value of p such that GCD(p-1, 65537) != 1. */
-  la        x16, not_relprime
-  jal       x1, test_bad_p
-
-  /* Check a value of p that is not prime. */
-  la        x16, not_prime
-  jal       x1, test_bad_p
-
-  /* Check a value of p that is acceptable. */
-  la        x16, good_p
-  jal       x1, check_p
-  jal       x1, last_check_to_x2
-
-  /* Copy the good value of p into dmem[rsa_p] for the q checks. */
-  la        x3, rsa_p
-  loop      x30, 2
-    bn.lid   x20, 0(x16++)
-    bn.sid   x20, 0(x3++)
-
-  /* If x2 != 0, the check failed; point to zeroes and exit. */
-  la        x16, zero
-  bne       x2, x0, _program_exit
-
-  /* Check a value of q that is too small. */
-  la        x2, too_small
-  jal       x1, test_bad_q
-
-  /* Check a value of q that is too close to p. */
-  la        x2, too_close
-  jal       x1, test_bad_q
-
-  /* Check a value of q that is acceptable. */
-  la        x2, good_q
-  jal       x1, copy_to_rsa_q
-  jal       x1, check_q
-  jal       x1, last_check_to_x2
-
-  /* If x2 == 0, the check passed; jump to exit without zeroing q. */
-  beq      x2, x0, _program_exit_load_p
-
-  /* If we get here, the good value of q failed; zeroize rsa_q. */
-  la        x2, zero
-  jal       x1, copy_to_rsa_q
-
-_program_exit_load_p:
-  /* This jump point sets x16=rsa_p so p is loaded from that buffer instead of
-     whatever's in x16. */
-  la        x16, rsa_p
-
-_program_exit:
-  /* Load the selected value of p (or bad value) into registers.
-       w0,w1,w2,w3 <= dmem[x16..x16+(4*32)] */
-  li         x3, 0
-  loop       x30, 2
-    bn.lid     x3, 0(x16++)
-    addi       x3, x3, 1
-
-  /* Load the selected value of q into registers.
-       w4,w5,w6,w7 <= dmem[rsa_q..rsa_q+(4*32)] */
-  la         x2, rsa_q
-  loop       x30, 2
-    bn.lid     x3, 0(x2++)
-    addi       x3, x3, 1
-
-  ecall
-
-/**
- * Copy the value to dmem[rsa_q].
- *
- * @param[in] x2: pointer to value to copy
- * @param[in] x30: number of limbs
- */
-copy_to_rsa_q:
-  la        x3, rsa_q
-  loop      x30, 2
-    bn.lid   x20, 0(x2++)
-    bn.sid   x20, 0(x3++)
-  ret
-
-/**
- * Test a bad value for p.
- *
- * @param[in] x16: pointer to value for test
- */
-test_bad_p:
-  /* Run checks and ensure they failed. */
-  jal       x1, check_p
-  jal       x1, last_check_to_x2
-
-  /* If x2 == 0, the check passed, so jump to the exit sequence. */
-  beq      x2, x0, _program_exit
-
-  /* If we get here, all is well; return to the caller. */
-  ret
-
-/**
- * Test a bad value for q.
- *
- * @param[in] x2: pointer to value for test
- */
-test_bad_q:
-  /* Copy the test value into dmem[rsa_q]. */
-  jal       x1, copy_to_rsa_q
-
-  /* Run checks and ensure they failed. */
-  jal       x1, check_q
-  jal       x1, last_check_to_x2
-
-  /* If x2 == 0, the check passed, so jump to the exit sequence. */
-  beq      x2, x0, _program_exit_load_p
-
-  /* If we get here, all is well; return to the caller. */
-  ret
-
-/**
- * Get the result of the last check in a register.
- *
- * The result is nonzero if the check FAILED, and zero if it passed.
- *
- * @param[in] w24: result of last check (all-1 or all-0).
- * @param[in] w31: all-zero.
- * @param[out] x2: 0 if w24 == 0, otherwise nonzero
- */
-last_check_to_x2:
-  /* Compare the result of the check to zero.
-       FG0.Z <= (w24 == 0) */
-  bn.cmp   w24, w31
-
-  /* Get the FG0.Z flag into a register.
-       x2 <= CSRs[FG0] & 8 = FG0.Z << 3 */
-  csrrs    x2, 0x7c0, x0
-  andi     x2, x2, 8
-  ret
 
 .data
 
@@ -217,6 +59,7 @@ while True:
  * 0xb504f333f9de6484597d89b3754abe9f1d6f60ba893ba84ced17ac85833399154afc83043ab8a2c3a8b1fe6fdc83db390f74a85e439c7b4a780487363dfa2768d2202e8742af1f4e53059c6011bc337bcab1bc911688458a460abc722f7c4e33c6d5a8a38bb7e9dccb2a634331f3c84df52f120f836e582eeaa4a0899040c619
  */
 .balign 32
+.globl too_small
 too_small:
   .word 0x9040c619
   .word 0xeaa4a089
@@ -270,6 +113,7 @@ not_relprime = y+1
  * 0xf36b245b0051285df9f46be79c821a95584a00007b907c4102578d6c8c5d459c4328a174859c703e66bc706a9224e20f387da68e80a362fb1f0f36a912df95c26dc8b40902bff546d3aff671eea79a86df507180e0fba265c0ab601e582580f9fb18a62f9ff4e92d8d698408be08d7c24507244c6d3859be3804f2a7d9f16867
  */
 .balign 32
+.globl not_relprime
 not_relprime:
   .word 0xd9f16867
   .word 0x3804f2a7
@@ -321,6 +165,7 @@ while True:
  * 0xecbbd72477e406de8ff72a93afbe19ed4258d3dd8cfa5b2a8b5c76d22053504710a8460c30c5141fc581df484e58a2bd019c03a1acab6c7fd70f9865ac6dcdcce4cca95266e4d2dea9a408b8ded6591daa4416bb7ca78357cad5c7d527d46a06807337d6845484589c8010eb6b674194608e1b9732db4e8cee053d2572158cf5
  */
 .balign 32
+.globl not_prime
 not_prime:
   .word 0x72158cf5
   .word 0xee053d25
@@ -382,6 +227,7 @@ while True:
  * 0xe85547c5336579f83a2d50a611f489a4f2c3a918d2027fbc3f25c2de2dd36cdedc8901266de144a223b2c78a5a11024488a4aa2f4ef71f0fb93dfdbb2280b4d99dc9b3b77b039fd9fefcc3fe439e2bcb3db3ee3c0378a4d1297c1a5eebcd0d4ab3c0b50eb1511605c7c0907af31564ec5cc635e3de465e99cf6169c933ca0ab5
  */
 .balign 32
+.globl good_p
 good_p:
   .word 0x33ca0ab5
   .word 0xcf6169c9
@@ -436,6 +282,7 @@ while True:
  * 0xe85547c5336579f83a2d50a60364d13462f8746c6177f91a902b276464b8c39d0ffeb8d77af899a932ed3198d0d3ca66948d678bf7e95f30e95014fdb0a3b13c56927a70b14191134664a3374ada1d0a3d3dfb0a8fbf3704ef0e8588eafebd9e81f0dca5b7b5cca8b753862a472ed36b8c820c618110ca8936e79789e4ec8b71
  */
 .balign 32
+.globl too_close
 too_close:
   .word 0xe4ec8b71
   .word 0x36e79789
@@ -489,6 +336,7 @@ while True:
  * 0xb863a172d3d5562b582f38e251e540b424d4cbadd5da0ce64cb755227227b9535e0ab2437c1522415a70211eaa1dc4b4192b33148b1226da2ed107b64beeac72b112d99b960df54e21336a13aef97b5ec8646752af38385314a81a531bced7da5a781f6b19d119805941c47777a7aa9580a35b9f75c7dd97545d70790d7e8e9d
  */
 .balign 32
+.globl good_q
 good_q:
   .word 0x0d7e8e9d
   .word 0x545d7079
@@ -522,10 +370,3 @@ good_q:
   .word 0x582f38e2
   .word 0xd3d5562b
   .word 0xb863a172
-
-/**
- * Zeroes to point to for the "good value failed" case.
- */
-.balign 32
-zero:
-.zero 128

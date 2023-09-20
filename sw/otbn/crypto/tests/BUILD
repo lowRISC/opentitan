@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_sim_test")
+load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -544,6 +544,13 @@ otbn_consttime_test(
     ],
 )
 
+otbn_library(
+    name = "fake_primality",
+    srcs = [
+        "fake_primality.s",
+    ],
+)
+
 otbn_sim_test(
     name = "primality_test",
     timeout = "long",
@@ -707,21 +714,175 @@ otbn_consttime_test(
     ],
 )
 
-otbn_sim_test(
-    name = "rsa_keygen_checkpq_test",
-    # This test is very long because it runs multiple primality tests.
-    timeout = "eternal",
+otbn_library(
+    name = "rsa_keygen_checkpq_test_data",
     srcs = [
-        "rsa_keygen_checkpq_test.s",
+        "rsa_keygen_checkpq_test_data.s",
     ],
-    exp = "rsa_keygen_checkpq_test.exp",
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkp_good_test",
+    timeout = "long",  # runs a primality test
+    srcs = [
+        "rsa_keygen_checkp_good_test.s",
+    ],
+    exp = "rsa_keygen_checkp_good_test.exp",
     deps = [
+        ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:lcm",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkp_not_relprime_test",
+    srcs = [
+        "rsa_keygen_checkp_not_relprime_test.s",
+    ],
+    exp = "rsa_keygen_checkp_not_relprime_test.exp",
+    deps = [
+        ":fake_primality",
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkp_not_prime_test",
+    timeout = "long",  # runs a primality test
+    srcs = [
+        "rsa_keygen_checkp_not_prime_test.s",
+    ],
+    exp = "rsa_keygen_checkp_not_prime_test.exp",
+    deps = [
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkp_too_small_test",
+    srcs = [
+        "rsa_keygen_checkp_too_small_test.s",
+    ],
+    exp = "rsa_keygen_checkp_too_small_test.exp",
+    deps = [
+        ":fake_primality",
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkq_good_test",
+    timeout = "long",  # runs a primality test
+    srcs = [
+        "rsa_keygen_checkq_good_test.s",
+    ],
+    exp = "rsa_keygen_checkq_good_test.exp",
+    deps = [
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkq_not_prime_test",
+    timeout = "long",  # runs a primality test
+    srcs = [
+        "rsa_keygen_checkq_not_prime_test.s",
+    ],
+    exp = "rsa_keygen_checkq_not_prime_test.exp",
+    deps = [
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkq_not_relprime_test",
+    srcs = [
+        "rsa_keygen_checkq_not_relprime_test.s",
+    ],
+    exp = "rsa_keygen_checkq_not_relprime_test.exp",
+    deps = [
+        ":fake_primality",
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkq_too_close_test",
+    srcs = [
+        "rsa_keygen_checkq_too_close_test.s",
+    ],
+    exp = "rsa_keygen_checkq_too_close_test.exp",
+    deps = [
+        ":fake_primality",
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_keygen_checkq_too_small_test",
+    srcs = [
+        "rsa_keygen_checkq_too_small_test.s",
+    ],
+    exp = "rsa_keygen_checkq_too_small_test.exp",
+    deps = [
+        ":fake_primality",
+        ":rsa_keygen_checkpq_test_data",
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
         "//sw/otbn/crypto:rsa_keygen",
     ],
 )
