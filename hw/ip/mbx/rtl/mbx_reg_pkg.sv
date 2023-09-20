@@ -65,10 +65,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } doe_intr_en;
-    struct packed {
-      logic        q;
-      logic        qe;
     } abort;
   } mbx_reg2hw_control_reg_t;
 
@@ -76,16 +72,8 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } doe_intr_status;
-    struct packed {
-      logic        q;
-      logic        qe;
     } busy;
   } mbx_reg2hw_status_reg_t;
-
-  typedef struct packed {
-    logic [3:0]  q;
-  } mbx_reg2hw_address_range_regwen_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -93,46 +81,24 @@ package mbx_reg_pkg;
 
   typedef struct packed {
     logic [29:0] q;
-    logic        qe;
   } mbx_reg2hw_inbound_base_address_reg_t;
 
   typedef struct packed {
     logic [29:0] q;
-    logic        qe;
   } mbx_reg2hw_inbound_limit_address_reg_t;
 
   typedef struct packed {
     logic [29:0] q;
-    logic        qe;
-  } mbx_reg2hw_inbound_write_ptr_reg_t;
-
-  typedef struct packed {
-    logic [29:0] q;
-    logic        qe;
   } mbx_reg2hw_outbound_base_address_reg_t;
 
   typedef struct packed {
     logic [29:0] q;
-    logic        qe;
   } mbx_reg2hw_outbound_limit_address_reg_t;
-
-  typedef struct packed {
-    logic [29:0] q;
-    logic        qe;
-  } mbx_reg2hw_outbound_read_ptr_reg_t;
 
   typedef struct packed {
     logic [10:0] q;
     logic        qe;
   } mbx_reg2hw_outbound_object_size_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-  } mbx_reg2hw_doe_intr_msg_addr_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-  } mbx_reg2hw_doe_intr_msg_data_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -189,23 +155,18 @@ package mbx_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [288:287]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [286:285]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [284:281]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [280:277]
-    mbx_reg2hw_control_reg_t control; // [276:271]
-    mbx_reg2hw_status_reg_t status; // [270:267]
-    mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [266:263]
-    mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [262:262]
-    mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [261:231]
-    mbx_reg2hw_inbound_limit_address_reg_t inbound_limit_address; // [230:200]
-    mbx_reg2hw_inbound_write_ptr_reg_t inbound_write_ptr; // [199:169]
-    mbx_reg2hw_outbound_base_address_reg_t outbound_base_address; // [168:138]
-    mbx_reg2hw_outbound_limit_address_reg_t outbound_limit_address; // [137:107]
-    mbx_reg2hw_outbound_read_ptr_reg_t outbound_read_ptr; // [106:76]
-    mbx_reg2hw_outbound_object_size_reg_t outbound_object_size; // [75:64]
-    mbx_reg2hw_doe_intr_msg_addr_reg_t doe_intr_msg_addr; // [63:32]
-    mbx_reg2hw_doe_intr_msg_data_reg_t doe_intr_msg_data; // [31:0]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [150:149]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [148:147]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [146:143]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [142:139]
+    mbx_reg2hw_control_reg_t control; // [138:135]
+    mbx_reg2hw_status_reg_t status; // [134:133]
+    mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [132:132]
+    mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [131:102]
+    mbx_reg2hw_inbound_limit_address_reg_t inbound_limit_address; // [101:72]
+    mbx_reg2hw_outbound_base_address_reg_t outbound_base_address; // [71:42]
+    mbx_reg2hw_outbound_limit_address_reg_t outbound_limit_address; // [41:12]
+    mbx_reg2hw_outbound_object_size_reg_t outbound_object_size; // [11:0]
   } mbx_core_reg2hw_t;
 
   // HW -> register type for core interface
@@ -310,12 +271,10 @@ package mbx_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } mbx_reg2hw_soc_doe_intr_msg_addr_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } mbx_reg2hw_soc_doe_intr_msg_data_reg_t;
 
   typedef struct packed {
@@ -336,13 +295,9 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } ready;
-    struct packed {
-      logic        q;
     } error;
     struct packed {
       logic        q;
-      logic        qe;
     } doe_intr_status;
     struct packed {
       logic        q;
@@ -382,10 +337,10 @@ package mbx_reg_pkg;
 
   // Register -> HW type for soc interface
   typedef struct packed {
-    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [76:44]
-    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [43:11]
-    mbx_reg2hw_soc_control_reg_t soc_control; // [10:5]
-    mbx_reg2hw_soc_status_reg_t soc_status; // [4:0]
+    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [72:41]
+    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [40:9]
+    mbx_reg2hw_soc_control_reg_t soc_control; // [8:3]
+    mbx_reg2hw_soc_status_reg_t soc_status; // [2:0]
   } mbx_soc_reg2hw_t;
 
   // HW -> register type for soc interface

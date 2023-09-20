@@ -33,7 +33,6 @@ module mbx_hostif
   input  logic                          hostif_control_error_i,
   // Access to the status register
   output logic                          hostif_status_busy_clear_o,
-  output logic                          hostif_status_doe_intr_status_set_o,
   input  logic                          hostif_status_busy_i,
   input  logic                          hostif_status_doe_intr_status_i,
   // Access to the IB/OB RD/WR pointers
@@ -54,7 +53,8 @@ module mbx_hostif
   input  logic [CfgSramAddrWidth-1:0]   sysif_intr_msg_addr_i,
   input  logic [CfgSramDataWidth-1:0]   sysif_intr_msg_data_i,
   // Control inputs coming from the system registers interface
-  input  logic                          sysif_control_abort_set_i
+  input  logic                          sysif_control_abort_set_i,
+  input  logic                          sysif_doe_intr_en_i
 );
   mbx_reg_pkg::mbx_core_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_core_hw2reg_t hw2reg;
@@ -138,6 +138,9 @@ module mbx_hostif
   // Writing a 1 to control.abort means clearing the abort condition
   assign hostif_control_abort_clear_o = reg2hw.control.abort.qe & reg2hw.control.abort.q;
 
+  assign hw2reg.control.doe_intr_en.d  = sysif_doe_intr_en_i;
+
+
   // Abort computation from system and host interface
   always_comb begin
     abort_d = abort_q;
@@ -158,7 +161,7 @@ module mbx_hostif
     .q_o   ( abort_q )
   );
 
-  assign hostif_control_error_set_o = reg2hw.control.error.qe &  reg2hw.control.error.q;
+  assign hostif_control_error_set_o = reg2hw.control.error.qe & reg2hw.control.error.q;
   assign hw2reg.control.error.d      = hostif_control_error_i;
 
   // Status Register
@@ -169,9 +172,7 @@ module mbx_hostif
   assign hw2reg.status.busy.d             = hostif_status_busy_i;
   assign hw2reg.status.doe_intr_status.d  = hostif_status_doe_intr_status_i;
   // External write logic
-  assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
-  assign hostif_status_doe_intr_status_set_o  = reg2hw.status.doe_intr_status.qe &
-                                                reg2hw.status.doe_intr_status.q;
+  assign hostif_status_busy_clear_o = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
 
   // Address config valid
   assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;

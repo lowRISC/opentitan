@@ -142,7 +142,6 @@ module mbx_core_reg_top (
   logic control_abort_qs;
   logic control_abort_wd;
   logic control_doe_intr_en_qs;
-  logic control_doe_intr_en_wd;
   logic control_error_qs;
   logic control_error_wd;
   logic status_re;
@@ -150,7 +149,6 @@ module mbx_core_reg_top (
   logic status_busy_qs;
   logic status_busy_wd;
   logic status_doe_intr_status_qs;
-  logic status_doe_intr_status_wd;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -371,7 +369,10 @@ module mbx_core_reg_top (
   // R[control]: V(True)
   logic control_qe;
   logic [2:0] control_flds_we;
-  assign control_qe = &control_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_control_flds_we;
+  assign unused_control_flds_we = ^(control_flds_we & 3'h2);
+  assign control_qe = &(control_flds_we | 3'h2);
   //   F[abort]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -393,16 +394,15 @@ module mbx_core_reg_top (
     .DW    (1)
   ) u_control_doe_intr_en (
     .re     (control_re),
-    .we     (control_we),
-    .wd     (control_doe_intr_en_wd),
+    .we     (1'b0),
+    .wd     ('0),
     .d      (hw2reg.control.doe_intr_en.d),
     .qre    (),
     .qe     (control_flds_we[1]),
-    .q      (reg2hw.control.doe_intr_en.q),
+    .q      (),
     .ds     (),
     .qs     (control_doe_intr_en_qs)
   );
-  assign reg2hw.control.doe_intr_en.qe = control_qe;
 
   //   F[error]: 2:2
   prim_subreg_ext #(
@@ -424,7 +424,10 @@ module mbx_core_reg_top (
   // R[status]: V(True)
   logic status_qe;
   logic [1:0] status_flds_we;
-  assign status_qe = &status_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_status_flds_we;
+  assign unused_status_flds_we = ^(status_flds_we & 2'h2);
+  assign status_qe = &(status_flds_we | 2'h2);
   //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -446,16 +449,15 @@ module mbx_core_reg_top (
     .DW    (1)
   ) u_status_doe_intr_status (
     .re     (status_re),
-    .we     (status_we),
-    .wd     (status_doe_intr_status_wd),
+    .we     (1'b0),
+    .wd     ('0),
     .d      (hw2reg.status.doe_intr_status.d),
     .qre    (),
     .qe     (status_flds_we[1]),
-    .q      (reg2hw.status.doe_intr_status.q),
+    .q      (),
     .ds     (),
     .qs     (status_doe_intr_status_qs)
   );
-  assign reg2hw.status.doe_intr_status.qe = status_qe;
 
 
   // R[address_range_regwen]: V(False)
@@ -478,7 +480,7 @@ module mbx_core_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.address_range_regwen.q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -515,17 +517,6 @@ module mbx_core_reg_top (
 
 
   // R[inbound_base_address]: V(False)
-  logic inbound_base_address_qe;
-  logic [0:0] inbound_base_address_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_inbound_base_address0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&inbound_base_address_flds_we),
-    .q_o(inbound_base_address_qe)
-  );
   // Create REGWEN-gated WE signal
   logic inbound_base_address_gated_we;
   assign inbound_base_address_gated_we =
@@ -549,28 +540,16 @@ module mbx_core_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (inbound_base_address_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.inbound_base_address.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (inbound_base_address_qs)
   );
-  assign reg2hw.inbound_base_address.qe = inbound_base_address_qe;
 
 
   // R[inbound_limit_address]: V(False)
-  logic inbound_limit_address_qe;
-  logic [0:0] inbound_limit_address_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_inbound_limit_address0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&inbound_limit_address_flds_we),
-    .q_o(inbound_limit_address_qe)
-  );
   // Create REGWEN-gated WE signal
   logic inbound_limit_address_gated_we;
   assign inbound_limit_address_gated_we =
@@ -594,21 +573,16 @@ module mbx_core_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (inbound_limit_address_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.inbound_limit_address.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (inbound_limit_address_qs)
   );
-  assign reg2hw.inbound_limit_address.qe = inbound_limit_address_qe;
 
 
   // R[inbound_write_ptr]: V(True)
-  logic inbound_write_ptr_qe;
-  logic [0:0] inbound_write_ptr_flds_we;
-  // In case all fields are read-only the aggregated register QE will be zero as well.
-  assign inbound_write_ptr_qe = &inbound_write_ptr_flds_we;
   prim_subreg_ext #(
     .DW    (30)
   ) u_inbound_write_ptr (
@@ -617,26 +591,14 @@ module mbx_core_reg_top (
     .wd     ('0),
     .d      (hw2reg.inbound_write_ptr.d),
     .qre    (),
-    .qe     (inbound_write_ptr_flds_we[0]),
-    .q      (reg2hw.inbound_write_ptr.q),
+    .qe     (),
+    .q      (),
     .ds     (),
     .qs     (inbound_write_ptr_qs)
   );
-  assign reg2hw.inbound_write_ptr.qe = inbound_write_ptr_qe;
 
 
   // R[outbound_base_address]: V(False)
-  logic outbound_base_address_qe;
-  logic [0:0] outbound_base_address_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_outbound_base_address0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&outbound_base_address_flds_we),
-    .q_o(outbound_base_address_qe)
-  );
   // Create REGWEN-gated WE signal
   logic outbound_base_address_gated_we;
   assign outbound_base_address_gated_we =
@@ -660,28 +622,16 @@ module mbx_core_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (outbound_base_address_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.outbound_base_address.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (outbound_base_address_qs)
   );
-  assign reg2hw.outbound_base_address.qe = outbound_base_address_qe;
 
 
   // R[outbound_limit_address]: V(False)
-  logic outbound_limit_address_qe;
-  logic [0:0] outbound_limit_address_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_outbound_limit_address0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&outbound_limit_address_flds_we),
-    .q_o(outbound_limit_address_qe)
-  );
   // Create REGWEN-gated WE signal
   logic outbound_limit_address_gated_we;
   assign outbound_limit_address_gated_we =
@@ -705,21 +655,16 @@ module mbx_core_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (outbound_limit_address_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.outbound_limit_address.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (outbound_limit_address_qs)
   );
-  assign reg2hw.outbound_limit_address.qe = outbound_limit_address_qe;
 
 
   // R[outbound_read_ptr]: V(True)
-  logic outbound_read_ptr_qe;
-  logic [0:0] outbound_read_ptr_flds_we;
-  // In case all fields are read-only the aggregated register QE will be zero as well.
-  assign outbound_read_ptr_qe = &outbound_read_ptr_flds_we;
   prim_subreg_ext #(
     .DW    (30)
   ) u_outbound_read_ptr (
@@ -728,12 +673,11 @@ module mbx_core_reg_top (
     .wd     ('0),
     .d      (hw2reg.outbound_read_ptr.d),
     .qre    (),
-    .qe     (outbound_read_ptr_flds_we[0]),
-    .q      (reg2hw.outbound_read_ptr.q),
+    .qe     (),
+    .q      (),
     .ds     (),
     .qs     (outbound_read_ptr_qs)
   );
-  assign reg2hw.outbound_read_ptr.qe = outbound_read_ptr_qe;
 
 
   // R[outbound_object_size]: V(False)
@@ -786,7 +730,7 @@ module mbx_core_reg_top (
     .d      (hw2reg.doe_intr_msg_addr.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.doe_intr_msg_addr.q),
+    .q      (),
     .ds     (),
     .qs     (doe_intr_msg_addr_qs)
   );
@@ -802,7 +746,7 @@ module mbx_core_reg_top (
     .d      (hw2reg.doe_intr_msg_data.d),
     .qre    (),
     .qe     (),
-    .q      (reg2hw.doe_intr_msg_data.q),
+    .q      (),
     .ds     (),
     .qs     (doe_intr_msg_data_qs)
   );
@@ -881,15 +825,11 @@ module mbx_core_reg_top (
 
   assign control_abort_wd = reg_wdata[0];
 
-  assign control_doe_intr_en_wd = reg_wdata[1];
-
   assign control_error_wd = reg_wdata[2];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign status_we = addr_hit[5] & reg_we & !reg_error;
 
   assign status_busy_wd = reg_wdata[0];
-
-  assign status_doe_intr_status_wd = reg_wdata[1];
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign address_range_regwen_wd = reg_wdata[3:0];
