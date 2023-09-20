@@ -37,7 +37,7 @@
 // can indicate error by any illegal value of dev_select_i. 4'b1111 is
 // recommended for visibility
 //
-// The maximum value of N is 15
+// The maximum value of N is 63
 
 `include "prim_assert.sv"
 
@@ -67,7 +67,7 @@ module tlul_socket_1n #(
   input  [NWD-1:0]          dev_select_i
 );
 
-  `ASSERT_INIT(maxN, N < 32)
+  `ASSERT_INIT(maxN, N < 64)
 
   // Since our steering is done after potential FIFOing, we need to
   // shove our device select bits into spare bits of reqfifo
