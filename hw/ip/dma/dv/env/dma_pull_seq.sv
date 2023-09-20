@@ -9,6 +9,13 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   // FIFO enable bits
   bit read_fifo_en;
   bit write_fifo_en;
+  // Bit to indicate if DMA issues a register write to clear FIFO interrupt
+  bit fifo_reg_clear_en;
+  // FIFO interrupt clear register address
+  // with address as key and corresponding write value as value of the associative array
+  bit [31:0] fifo_intr_clear_reg[bit [31:0]];
+  // Indicates if write to fifo register address has been received
+  bit fifo_intr_cleared;
   // FIFO instance
   dma_handshake_mode_fifo #(AddrWidth) fifo;
 
@@ -16,7 +23,18 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     super.new(name);
     min_rsp_delay = 1;
     max_rsp_delay = 4;
+    fifo_intr_cleared = 1'b0;
   endfunction: new
+
+  virtual function void set_fifo_clear(bit en);
+    fifo_reg_clear_en = en;
+    fifo_intr_cleared = 1'b0;
+  endfunction
+
+  virtual function void add_fifo_reg(bit [31:0] addr, bit [31:0] data);
+    `uvm_info(`gfn, $sformatf("Add FIFO addr: 0x%0x wr_val: 0x%0x", addr, data), UVM_DEBUG)
+    fifo_intr_clear_reg[addr] = data;
+  endfunction
 
   virtual function void update_mem(REQ rsp);
     bit [65:0] intg;
@@ -24,15 +42,30 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
       if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin
         bit [tl_agent_pkg::DataWidth-1:0] data;
         data = rsp.a_data;
-        for (int i = 0; i < $bits(rsp.a_mask); i++) begin
-          if (rsp.a_mask[i]) begin
-            if (write_fifo_en) begin
-              fifo.write_byte(rsp.a_addr + i, data[7:0]);
-            end else begin
-              mem.write_byte(rsp.a_addr + i, data[7:0]);
+        // First series of writes will be to clear FIFO interrupts
+        if (fifo_reg_clear_en && !fifo_intr_cleared) begin
+          // Check if the address matches FIFO register address
+          `DV_CHECK(fifo_intr_clear_reg.exists(rsp.a_addr),
+                    $sformatf("Invalid FIFO reg addr: 0x%0x detected", rsp.a_addr))
+          // Check if write value matches FIFO register clear value
+          `DV_CHECK_EQ(fifo_intr_clear_reg[rsp.a_addr], rsp.a_data,
+                       "Invalid FIFO reg value detected")
+          // Delete address entry
+          `uvm_info(`gfn, $sformatf("Delete FIFO addr entry : 0x%0x", rsp.a_addr), UVM_DEBUG)
+          fifo_intr_clear_reg.delete(rsp.a_addr);
+          fifo_intr_cleared = fifo_intr_clear_reg.size() == 0;
+          `uvm_info(`gfn, $sformatf("fifo_intr_cleared = %0b", fifo_intr_cleared), UVM_DEBUG)
+        end else begin
+          for (int i = 0; i < $bits(rsp.a_mask); i++) begin
+            if (rsp.a_mask[i]) begin
+              if (write_fifo_en) begin
+                fifo.write_byte(rsp.a_addr + i, data[7:0]);
+              end else begin
+                mem.write_byte(rsp.a_addr + i, data[7:0]);
+              end
             end
+            data = data >> 8;
           end
-          data = data >> 8;
         end
       end else begin
         for (int i = 2**rsp.a_size - 1; i >= 0; i--) begin

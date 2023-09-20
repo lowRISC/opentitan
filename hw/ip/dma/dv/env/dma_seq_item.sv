@@ -88,6 +88,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(mem_buffer_limit, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
     `uvm_field_int(clear_int_src, UVM_DEFAULT)
+    `uvm_field_int(clear_int_bus, UVM_DEFAULT)
     `uvm_field_array_int(int_src_addr, UVM_DEFAULT)
     `uvm_field_array_int(int_src_wr_val, UVM_DEFAULT)
     `uvm_field_array_int(sha2_digest, UVM_DEFAULT)
@@ -390,6 +391,12 @@ class dma_seq_item extends uvm_sequence_item;
     return handshake && // Handshake mode enabled
            direction == DmaSendData && // Write to FIFO
            !auto_inc_fifo; // FIFO address auto increment disabled
+  endfunction
+
+  // Function to indicate a register write is expected from DMA
+  // to clear LSIO interrupt
+  function bit get_lsio_intr_clear();
+    return (handshake_intr_en && clear_int_src);
   endfunction
 
 endclass : dma_seq_item
