@@ -28,7 +28,6 @@ module mbx_sysif
   input  logic                        sysif_status_busy_i,
   output logic                        sysif_status_busy_o,
   input  logic                        sysif_status_doe_intr_status_set_i,
-  output logic                        sysif_status_doe_intr_status_o,
   input  logic                        sysif_status_error_set_i,
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
@@ -103,9 +102,8 @@ module mbx_sysif
   );
 
   // Fiddle out status register bits for external write logic
-  assign sysif_status_doe_intr_status_o  = reg2hw.soc_status.doe_intr_status.q;
-  assign sysif_status_busy_o             = reg2hw.soc_status.busy.q;
-  assign sysif_status_error_o            = reg2hw.soc_status.error.q;
+  assign sysif_status_busy_o  = reg2hw.soc_status.busy.q;
+  assign sysif_status_error_o = reg2hw.soc_status.error.q;
 
   // External read logic
   assign hw2reg.soc_status.busy.de = sysif_status_busy_valid_i;
