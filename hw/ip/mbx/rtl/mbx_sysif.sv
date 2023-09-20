@@ -64,6 +64,8 @@ module mbx_sysif
     .tl_o       ( tl_sys_o   ),
     .tl_win_o   ( tl_win_h2d ),
     .tl_win_i   ( tl_win_d2h ),
+    .reg2hw     ( reg2hw     ),
+    .hw2reg     ( hw2reg     ),
     .intg_err_o ( intg_err_o ),
     .devmode_i  ( 1'b1       )
   );
