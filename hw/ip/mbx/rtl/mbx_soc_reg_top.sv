@@ -183,6 +183,7 @@ module mbx_soc_reg_top (
   logic soc_control_we;
   logic soc_control_abort_wd;
   logic soc_control_doe_intr_en_qs;
+  logic soc_control_doe_intr_en_wd;
   logic soc_control_go_wd;
   logic soc_status_we;
   logic soc_status_busy_qs;
@@ -251,10 +252,7 @@ module mbx_soc_reg_top (
   // R[soc_control]: V(True)
   logic soc_control_qe;
   logic [2:0] soc_control_flds_we;
-  // This ignores QEs that are set to constant 0 due to read-only fields.
-  logic unused_soc_control_flds_we;
-  assign unused_soc_control_flds_we = ^(soc_control_flds_we & 3'h2);
-  assign soc_control_qe = &(soc_control_flds_we | 3'h2);
+  assign soc_control_qe = &soc_control_flds_we;
   //   F[abort]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -276,8 +274,8 @@ module mbx_soc_reg_top (
     .DW    (1)
   ) u_soc_control_doe_intr_en (
     .re     (soc_control_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (soc_control_we),
+    .wd     (soc_control_doe_intr_en_wd),
     .d      (hw2reg.soc_control.doe_intr_en.d),
     .qre    (),
     .qe     (soc_control_flds_we[1]),
@@ -446,6 +444,8 @@ module mbx_soc_reg_top (
   assign soc_control_we = addr_hit[2] & reg_we & !reg_error;
 
   assign soc_control_abort_wd = reg_wdata[0];
+
+  assign soc_control_doe_intr_en_wd = reg_wdata[1];
 
   assign soc_control_go_wd = reg_wdata[31];
   assign soc_status_we = addr_hit[3] & reg_we & !reg_error;
