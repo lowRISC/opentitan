@@ -58,11 +58,10 @@ module mbx
   logic sysif_control_abort_set;
 
   // Status signal inputs from the sysif to the hostif
-  logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error;
+  logic sysif_status_busy, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_doe_intr_status_set, hostif_status_busy_clear,
-        hostif_control_abort_clear, hostif_control_error_set;
+  logic hostif_status_busy_clear, hostif_control_abort_clear, hostif_control_error_set;
 
   // Alias signals from the sys interface
   logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr;
@@ -111,7 +110,7 @@ module mbx
     // Access to the status register
     .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
     .hostif_status_busy_i                ( sysif_status_busy                  ),
-    .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
+    .hostif_status_doe_intr_status_i     ( doe_intr_o                         ),
     // Access to the IB/OB RD/WR Pointers
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
     .hostif_ombx_read_ptr_i              ( ombx_sram_read_ptr                 ),
@@ -129,8 +128,10 @@ module mbx
     // Alias of the interrupt address and data registers from the SYS interface
     .sysif_intr_msg_addr_i                ( sysif_intr_msg_addr               ),
     .sysif_intr_msg_data_i                ( sysif_intr_msg_data               ),
-    // Control inputs coming from the system registers interface
-    .sysif_control_abort_set_i            ( sysif_control_abort_set           )
+    // Control and status inputs coming from the system registers interface
+    .sysif_control_abort_set_i            ( sysif_control_abort_set           ),
+    .sysif_doe_intr_en_i                  ( doe_intr_en_o                     )
+
   );
 
   //////////////////////////////////////////////////////////////////////////////
@@ -185,7 +186,6 @@ module mbx
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
     .sysif_status_doe_intr_status_set_i  ( ombx_doe_intr_status_set           ),
-    .sysif_status_doe_intr_status_o      ( sysif_status_doe_intr_status       ),
     .sysif_status_error_set_i            ( hostif_control_error_set           ),
     .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
