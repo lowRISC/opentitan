@@ -11,7 +11,7 @@ _FIELDS = {
     "rsa_key": ("attr.rsa_key", False),
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
-    "rom": ("file.rom", False),
+    "rom": ("attr.rom", False),
     "otp": ("file.otp", False),
     "bitstream": ("file.bitstream", False),
     "args": ("attr.args", False),
@@ -23,6 +23,7 @@ _FIELDS = {
     "otp_seed": ("attr.otp_seed", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
+    "rom_scramble_config": ("file.rom_scramble_config", False),
     "_opentitantool": ("executable._opentitantool", True),
 }
 
@@ -124,7 +125,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "rom": attr.label(
             default = kwargs.get("rom"),
-            allow_single_file = True,
+            allow_files = True,
             doc = "ROM image to use in this environment",
         ),
         "otp": attr.label(
@@ -176,6 +177,17 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("flash_scramble_tool"),
             executable = True,
             cfg = "exec",
+        ),
+        "rom_scramble_tool": attr.label(
+            doc = "ROM scrambling tool.",
+            default = "//hw/ip/rom_ctrl/util:scramble_image",
+            executable = True,
+            cfg = "exec",
+        ),
+        "rom_scramble_config": attr.label(
+            default = kwargs.get("rom_scramble_config", None),
+            doc = "ROM scrambling config for this environment",
+            allow_single_file = True,
         ),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",

@@ -233,3 +233,41 @@ def extract_software_logs(ctx, **kwargs):
         executable = tool,
     )
     return (output_logs, output_rodata)
+
+def convert_to_scrambled_rom_vmem(ctx, **kwargs):
+    """Transform a binary to a VMEM file.
+
+    Args:
+      ctx: The context object for this rule.
+      kwargs: Overrides of values normally retrived from the context object.
+        output: The name of the output file.  Constructed from `name` and `suffix`
+                 if not specified.
+        src: The src File object.
+        rom_scramble_config: The scrambling config.
+        rom_scramble_tool: The scrambling tool.
+    Returns:
+      The transformed File.
+    """
+    output = kwargs.get("output")
+    if not output:
+        name = get_override(ctx, "attr.name", kwargs)
+        suffix = get_override(ctx, "attr.suffix", kwargs)
+        output = "{}.{}".format(name, suffix)
+
+    output = ctx.actions.declare_file(output)
+    src = get_override(ctx, "attr.src", kwargs)
+
+    config = get_override(ctx, "file.rom_scramble_config", kwargs)
+    tool = get_override(ctx, "executable.rom_scramble_tool", kwargs)
+
+    ctx.actions.run(
+        outputs = [output],
+        inputs = [src, tool, config],
+        arguments = [
+            config.path,
+            src.path,
+            output.path,
+        ],
+        executable = tool,
+    )
+    return output

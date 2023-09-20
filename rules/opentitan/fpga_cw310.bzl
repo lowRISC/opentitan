@@ -2,13 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "Cw310BinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "Cw310BinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
     "exec_env_as_dict",
     "exec_env_common_attrs",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
 )
 
 _TEST_SCRIPT = """#!/bin/bash
@@ -34,13 +38,27 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
 
-    # The CW310 environment doesn't need any transformations; just
-    # return the files as a dictionary.
-    default = signed_bin if signed_bin else binary
+    if ctx.attr.kind == "rom":
+        rom = convert_to_scrambled_rom_vmem(
+            ctx,
+            name = name,
+            src = elf,
+            suffix = "39.scr.vmem",
+            rom_scramble_config = exec_env.rom_scramble_config,
+            rom_scramble_tool = ctx.executable.rom_scramble_tool,
+        )
+        default = rom
+    elif ctx.attr.kind == "flash":
+        default = signed_bin if signed_bin else binary
+        rom = None
+    else:
+        fail("Not implemented: kind ==", ctx.attr.kind)
+
     return {
         "elf": elf,
         "binary": binary,
         "default": default,
+        "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
@@ -72,6 +90,8 @@ def _test_dispatch(ctx, exec_env, provider):
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
+    if ctx.attr.kind == "rom":
+        fail("CW310 is not capable of executing ROM tests")
 
     # If there is no explicitly specified test_harness, then the harness is opentitantool.
     test_harness = ctx.executable.test_harness
@@ -81,12 +101,13 @@ def _test_dispatch(ctx, exec_env, provider):
     # Get the files we'll need to run the test.
     bitstream = get_fallback(ctx, "file.bitstream", exec_env)
     otp = get_fallback(ctx, "file.otp", exec_env)
-    rom = get_fallback(ctx, "file.rom", exec_env)
+    rom = get_fallback(ctx, "attr.rom", exec_env)
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
     if bitstream:
         data_files.append(bitstream)
     if rom:
+        rom = get_one_binary_file(rom, field = "rom", providers = [Cw310BinaryInfo])
         data_files.append(rom)
     if otp:
         data_files.append(otp)

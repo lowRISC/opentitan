@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files", "get_override")
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -10,7 +10,11 @@ load(
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
-load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "convert_to_vmem")
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_scrambled_rom_vmem",
+    "convert_to_vmem",
+)
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -34,17 +38,34 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     Returns:
       dict: A dict of fields to create in the provider.
     """
-    default = signed_bin if signed_bin else binary
-    vmem = convert_to_vmem(
-        ctx,
-        name = name,
-        src = default,
-        word_size = 64,
-    )
+    if ctx.attr.kind == "rom":
+        rom = convert_to_scrambled_rom_vmem(
+            ctx,
+            name = name,
+            src = elf,
+            suffix = "39.scr.vmem",
+            rom_scramble_config = exec_env.rom_scramble_config,
+            rom_scramble_tool = ctx.executable.rom_scramble_tool,
+        )
+        default = rom
+        vmem = rom
+    elif ctx.attr.kind == "flash":
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 64,
+        )
+        default = vmem
+        rom = None
+    else:
+        fail("Not implemented: kind ==", ctx.attr.kind)
+
     return {
         "elf": elf,
         "binary": binary,
         "default": vmem,
+        "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
@@ -85,15 +106,19 @@ def _test_dispatch(ctx, exec_env, provider):
 
     # Get the files we'll need to run the test.
     otp = get_fallback(ctx, "file.otp", exec_env)
-    rom = get_fallback(ctx, "file.rom", exec_env)
+    rom = get_fallback(ctx, "attr.rom", exec_env)
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
     if rom:
+        rom = get_one_binary_file(rom, field = "rom", providers = [SimVerilatorBinaryInfo])
         data_files.append(rom)
     if otp:
         data_files.append(otp)
     data_files.append(provider.default)
     data_files.append(test_harness)
+    if ctx.attr.kind == "rom":
+        # For a ROM test, the default test binary is the item to load into ROM.
+        rom = provider.default
 
     # Construct a param dictionary by combining the exec_env.param, the rule's
     # param and and some extra file references.
@@ -113,6 +138,12 @@ def _test_dispatch(ctx, exec_env, provider):
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
+    if ctx.attr.kind == "rom":
+        # FIXME: This is a bit of inside-baseball: We know the opentitantool
+        # args for a verilator based test will contain an argument with the
+        # firmware substitution.  For a ROM test, we eliminate this arg because
+        # we don't want to load any firmware.
+        args = [a for a in args if "{firmware}" not in a]
     args = " ".join(args).format(**param)
     args = ctx.expand_location(args, data_labels)
 
