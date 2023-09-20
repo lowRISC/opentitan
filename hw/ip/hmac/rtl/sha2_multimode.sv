@@ -65,7 +65,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
       w <= '0;
     end else if (wipe_secret) begin
       w <= w ^ {16{wipe_v}};
-    end else if (!sha_en) begin
+    end else if (!sha_en || hash_start) begin
       w <= '0;
     end else if (!run_hash && update_w_from_fifo) begin
       // this logic runs at the first stage of SHA: hash not running yet,
@@ -74,7 +74,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
     end else if (calculate_next_w) begin // message scheduling/derivation for last 48/64 rounds
       if (digest_mode_flag == SHA2_256) begin
         // this computes the next w[16] and shifts out w[0] into compression (see compress() below)
-        w <= {calc_w_256(w[0], w[1], w[9], w[14]), w[15:1]};
+        w <= {{32'b0, calc_w_256(w[0][31:0], w[1][31:0], w[9][31:0], w[14][31:0])}, w[15:1]};
       end else if ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) begin
         w <= {calc_w_512(w[0], w[1], w[9], w[14]), w[15:1]};
       end
@@ -96,7 +96,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
       hash <= digest;
     end else if (run_hash) begin
       if (digest_mode_flag == SHA2_256) begin
-        hash <= compress_256( w[0][31:0], CubicRootPrime256[round], hash); //32-bit slice of w[0]
+        hash <= compress_256( w[0][31:0], CubicRootPrime256[round[RoundWidth256-1:0]], hash);
       end else if ((digest_mode_flag == SHA2_512) || (digest_mode_flag == SHA2_384)) begin
         hash <= compress_512( w[0], CubicRootPrime512[round], hash);
       end
@@ -114,7 +114,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
     end else if (hash_start) begin
       for (int i = 0 ; i < 8 ; i++) begin
         if (digest_mode == SHA2_256) begin
-          digest[i] <= InitHash_256[i];
+          digest[i] <= {32'b0, InitHash_256[i]};
         end else if (digest_mode == SHA2_384) begin
           digest[i] <= InitHash_384[i];
         end else if (digest_mode == SHA2_512) begin
@@ -149,12 +149,12 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       round <= '0;
-    end else if (!sha_en) begin
+    end else if (!sha_en || hash_start) begin
       round <= '0;
     end else if (run_hash) begin
-      if (((round == RoundWidth256'(unsigned'(NumRound256-1))) && digest_mode_flag == SHA2_256) ||
-         ((round == RoundWidth512'(unsigned'(NumRound512-1))) && ((digest_mode_flag == SHA2_384) ||
-         (digest_mode_flag == SHA2_512)))) begin
+      if (((round[RoundWidth256-1:0] == RoundWidth256'(unsigned'(NumRound256-1))) &&
+         digest_mode_flag == SHA2_256) || ((round == RoundWidth512'(unsigned'(NumRound512-1))) &&
+         ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)))) begin
         round <= '0;
       end else begin
         round <= round + 1;
@@ -166,7 +166,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       w_index <= '0;
-    end else if (!sha_en) begin
+    end else if (!sha_en || hash_start) begin
       w_index <= '0;
     end else if (update_w_from_fifo) begin
       w_index <= w_index + 1;
@@ -192,6 +192,10 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       fifo_st_q <= FifoIdle;
+    end else if (!sha_en) begin
+      fifo_st_q <= FifoIdle;
+    end else if (hash_start) begin
+      fifo_st_q <= FifoLoadFromFifo;
     end else begin
       fifo_st_q <= fifo_st_d;
     end
@@ -271,6 +275,8 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sha_st_q <= ShaIdle;
+    end else if (!sha_en || hash_start) begin
+      sha_st_q <= ShaIdle;
     end else begin
       sha_st_q <= sha_st_d;
     end
@@ -296,12 +302,10 @@ module sha2_multimode import hmac_multimode_pkg::*; (
 
       ShaCompress: begin
         run_hash = 1'b1;
-
-        if ((digest_mode_flag == SHA2_256 && round < 48) || (((digest_mode_flag == SHA2_384) ||
-           (digest_mode_flag == SHA2_512)) && round < 64)) begin
+        if ((digest_mode_flag == SHA2_256 && round < 48) ||
+           (((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) && round < 64)) begin
           calculate_next_w = 1'b1;
         end
-
         if (complete_one_chunk) begin
           sha_st_d = ShaUpdateDigest;
         end else begin
@@ -332,9 +336,6 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   sha2_multimode_pad u_pad (
     .clk_i,
     .rst_ni,
-
-    .wipe_secret,
-    .wipe_v,
 
     .fifo_rvalid,
     .fifo_rdata,

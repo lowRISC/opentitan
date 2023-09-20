@@ -11,9 +11,6 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input                 wipe_secret,
-  input sha_word64_t    wipe_v,
-
   // to actual FIFO
   input                 fifo_rvalid,
   input  sha_fifo64_t   fifo_rdata,
@@ -51,10 +48,10 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       hash_process_flag <= 1'b0;
+    end else if (!sha_en || hash_start || hash_done) begin
+        hash_process_flag <= 1'b0;
     end else if (hash_process) begin
       hash_process_flag <= 1'b1;
-    end else if (hash_done || hash_start) begin
-      hash_process_flag <= 1'b0;
     end
   end
 
@@ -100,7 +97,8 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
             3'b 111: shaf_rdata = {fifo_rdata.data[63:8],  8'h 80};
             default: shaf_rdata = 64'h0;
           endcase
-        end
+        end else
+            shaf_rdata = '0;
       end
 
       Pad00: begin
@@ -155,9 +153,12 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       st_q <= StIdle;
-    end else begin
-      st_q <= st_d;
-    end
+    end else if (!sha_en) begin
+      st_q <= StIdle;
+    end else if (hash_start) begin // at any point reset to ready to receive words
+      st_q <= StFifoReceive;
+    end else
+       st_q <= st_d;
   end
 
   // Next state

@@ -113,19 +113,19 @@ package hmac_multimode_pkg;
     conv_endian64 = (swap) ? conv_data : v ;
   endfunction : conv_endian64
 
-  function automatic sha_word32_t rotr32( input sha_word32_t v , input int amt );
+  function automatic sha_word32_t rotr32( input sha_word32_t v , input integer amt );
     rotr32 = (v >> amt) | (v << (32-amt));
   endfunction : rotr32
 
-  function automatic sha_word64_t rotr64( input sha_word64_t v , input int amt );
+  function automatic sha_word64_t rotr64( input sha_word64_t v , input integer amt );
     rotr64 = (v >> amt) | (v << (64-amt));
   endfunction : rotr64
 
-  function automatic sha_word32_t shiftr32( input sha_word32_t v, input int amt );
+  function automatic sha_word32_t shiftr32( input sha_word32_t v, input integer amt );
     shiftr32 = (v >> amt);
   endfunction : shiftr32
 
-  function automatic sha_word64_t shiftr64( input sha_word64_t v, input int amt ); //TODO
+  function automatic sha_word64_t shiftr64( input sha_word64_t v, input integer amt );
     shiftr64 = (v >> amt);
   endfunction : shiftr64
 
