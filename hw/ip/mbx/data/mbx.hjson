@@ -132,6 +132,7 @@
       { name: "ADDRESS_RANGE_REGWEN"
         desc: "Used to lock the inbound/outbound base/limit configuration registers."
         swaccess: "rw0c"
+        hwaccess: "hro"
         fields: [
           { name: "regwen"
             desc: '''
@@ -162,13 +163,14 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "base_address"
             desc: "Base address of SRAM region, which is used to back up the inbound mailbox data."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -178,13 +180,14 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "limit"
             desc: "Limit Address to mark the end of the inbound mailbox memory range in the private SRAM."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -209,13 +212,14 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "base_address"
             desc: "Base address of SRAM region, which is used to buffer the outbound mailbox data."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -224,13 +228,14 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "limit"
             desc: "Limit Address to mark the end of the outbound mailbox memory range in the private SRAM."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
