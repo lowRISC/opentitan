@@ -1092,6 +1092,20 @@ def opentitan_multislot_flash_binary(
                 testonly = testonly,
             )
 
+            # TODO: This is for loading the CTN memory. We need to refactor
+            # this into a separate bazel rule.
+            # Generate a VMEM32 from the binary.
+            signed_vmem_name = "{}_vmem32_signed".format(devname)
+            dev_targets.append(":" + signed_vmem_name)
+            bin_to_vmem(
+                name = signed_vmem_name,
+                bin = signed_bin_name,
+                platform = platform,
+                testonly = testonly,
+                # Backdoor-loaded CNT SRAM VMEM image uses 32-bit words
+                word_size = 32,
+            )
+
         # Create a filegroup with just the current device's targets.
         native.filegroup(
             name = devname,
@@ -1241,6 +1255,22 @@ def opentitan_flash_binary(
                         testonly = testonly,
                     )
 
+                    # TODO: This is for loading the CTN memory. We need to refactor
+                    # this into a separate bazel rule.
+                    # Generate a VMEM32 from the signed binary.
+                    signed_vmem_name = "{}_vmem32_signed_{}".format(
+                        devname,
+                        key_name,
+                    )
+                    dev_targets.append(":" + signed_vmem_name)
+                    bin_to_vmem(
+                        name = signed_vmem_name,
+                        bin = signed_bin_name,
+                        platform = platform,
+                        testonly = testonly,
+                        word_size = 32,
+                    )
+
         # We only need to generate VMEM files for sim devices.
         if device in ["sim_dv", "sim_verilator"]:
             # Generate a VMEM64 from the binary.
@@ -1263,6 +1293,19 @@ def opentitan_flash_binary(
                 vmem = vmem_name,
                 platform = platform,
                 testonly = testonly,
+            )
+
+            # TODO: This is for loading the CTN memory. We need to refactor
+            # this into a separate bazel rule.
+            # Generate a VMEM32 from the binary.
+            vmem_name = "{}_vmem32".format(devname)
+            dev_targets.append(":" + vmem_name)
+            bin_to_vmem(
+                name = vmem_name,
+                bin = bin_name,
+                platform = platform,
+                testonly = testonly,
+                word_size = 32,  # Backdoor-load VMEM image uses 64-bit words
             )
 
         # Create a filegroup with just the current device's targets.
