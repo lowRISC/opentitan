@@ -204,6 +204,7 @@
     { name: "ADDRESS_SPACE_ID"
       desc: "Address space that source and destination pointers refer to."
       swaccess: "rw"
+      hwaccess: "hro"
       hwqe: "true"
       fields: [
         { bits: "3:0"
@@ -257,6 +258,7 @@
     { name: "ENABLED_MEMORY_RANGE_BASE"
       desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
       swaccess: "rw"
+      hwaccess: "hro"
       hwqe: "true"
       regwen: "RANGE_UNLOCK_REGWEN"
       fields: [
@@ -270,6 +272,7 @@
     { name: "ENABLED_MEMORY_RANGE_LIMIT"
       desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
       swaccess: "rw"
+      hwaccess: "hro"
       hwqe: "true"
       regwen: "RANGE_UNLOCK_REGWEN"
       fields: [
@@ -283,6 +286,7 @@
     { name: "RANGE_UNLOCK_REGWEN"
       desc: "Used to lock the DMA enabled memory range configuration registers."
       swaccess: "rw0c"
+      hwaccess: "hro"
       fields: [
         { bits: "3:0"
           mubi: "true"
@@ -303,6 +307,7 @@
     { name: "TOTAL_DATA_SIZE"
       desc: "Total size of the data blob involved in DMA movement."
       swaccess: "rw"
+      hwaccess: "hro"
       hwqe: "true"
       fields: [
         { bits: "31:0"
@@ -321,6 +326,7 @@
     { name: "TRANSFER_WIDTH"
       desc: "Denotes the width of each transaction that the DMA shall issue."
       swaccess: "rw"
+      hwaccess: "hro"
       hwqe: "true"
       fields: [
         { bits: "1:0"
@@ -613,7 +619,7 @@
     { name: "CLEAR_STATE"
       desc: "Clear the DMA state."
       swaccess: "rw"
-      hwaccess: "hrw"
+      hwaccess: "hro"
       hwqe: "true"
       fields: [
         { bits: "0"
