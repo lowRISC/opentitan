@@ -1580,8 +1580,8 @@ module dma_reg_top (
     .wd     (clear_state_wd),
 
     // from internal hardware
-    .de     (hw2reg.clear_state.de),
-    .d      (hw2reg.clear_state.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (clear_state_flds_we[0]),
