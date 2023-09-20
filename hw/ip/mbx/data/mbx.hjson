@@ -102,7 +102,6 @@
       { name: "STATUS"
         desc: "DOE mailbox status register visible to OpenTitan"
         hwext: "true"
-        hwqe: "true"
         fields: [
           { name: "busy"
             desc: "Alias of the DoE mailbox busy bit"
@@ -346,7 +345,7 @@
                   '''
             bits: "1"
             resval: "0x0"
-            swaccess: "ro"
+            swaccess: "rw"
           }
           { name: "go"
             desc: '''
