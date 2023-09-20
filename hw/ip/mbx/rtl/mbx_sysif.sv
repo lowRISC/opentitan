@@ -27,7 +27,7 @@ module mbx_sysif
   input  logic                        sysif_status_busy_valid_i,
   input  logic                        sysif_status_busy_i,
   output logic                        sysif_status_busy_o,
-  input  logic                        sysif_status_doe_intr_status_set_i,
+  input  logic                        sysif_status_doe_intr_state_set_i,
   input  logic                        sysif_status_error_set_i,
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
@@ -112,8 +112,8 @@ module mbx_sysif
   // Set by the outbound handler if the DOE interrupt is enabled. Setting this bit creates a DOE
   // interrupt to the system side.
   // Cleared by SoC firmware (w1c)
-  assign hw2reg.soc_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i & doe_intr_en_o;
-  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_status_set_i;
+  assign hw2reg.soc_status.doe_intr_status.de = sysif_status_doe_intr_state_set_i & doe_intr_en_o;
+  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_state_set_i;
 
   // Error is cleared when writing the abort bit
   assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_control_abort_set_o;
