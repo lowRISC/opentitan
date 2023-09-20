@@ -10,8 +10,8 @@ interface rstmgr_if (
   input logic rst_n
 );
 
-  import rstmgr_env_pkg::*;
   import rstmgr_pkg::PowerDomains;
+  import rstmgr_reg_pkg::NumTotalResets;
 
   logic                              [PowerDomains-1:0] por_n;
 

@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_env:0.1"
-description: "RSTMGR DV UVM environment"
+name: "lowrisc:dv:rstmgr_common_env:0.1"
+description: "RSTMGR DV UVM non-top-specific environment components"
 filesets:
   files_rtl:
     depend:
@@ -11,15 +11,12 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
 
     files:
-      - rstmgr_env_pkg.sv
       - rstmgr_env_cfg.sv: {is_include_file: true}
       - rstmgr_env_cov.sv: {is_include_file: true}
       - rstmgr_virtual_sequencer.sv: {is_include_file: true}
-      - rstmgr_scoreboard.sv: {is_include_file: true}
       - rstmgr_env.sv: {is_include_file: true}
       - seq_lib/rstmgr_vseq_list.sv: {is_include_file: true}
       - seq_lib/rstmgr_base_vseq.sv: {is_include_file: true}
@@ -36,17 +33,8 @@ filesets:
       - rstmgr_if.sv
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: rstmgr
-      ip_hjson: ../../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson
-
 targets:
   default:
     filesets:
       - files_dv
       - files_rtl
-    generate:
-      - ral
