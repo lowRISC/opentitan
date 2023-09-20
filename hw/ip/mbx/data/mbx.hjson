@@ -85,21 +85,13 @@
             hwaccess: "hrw"
             hwqe: "true"
           }
-          { name: "doe_intr_en"
-            desc: "Alias of the DoE mailbox interrupt enable bit"
-            bits: "1"
-            resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hrw"
-            hwqe: "true"
-          }
           { name: "error"
             desc: '''
                   Set by firmware to signal an error, i.e., unable to provide a response to request.
                   Set by hardware, on SYS.WDATA or SYS.RDATA performing an invalid access.
                   Cleared by the hardware when SYS sets CONTROL.ABORT.
                   '''
-            bits: "2"
+            bits: "1"
             resval: "0x0"
             swaccess: "rw"
             hwaccess: "hrw"
@@ -110,6 +102,7 @@
       { name: "STATUS"
         desc: "DOE mailbox status register visible to OpenTitan"
         hwext: "true"
+        hwqe: "true"
         fields: [
           { name: "busy"
             desc: "Alias of the DoE mailbox busy bit"
@@ -117,21 +110,27 @@
             resval: "0x1"
             swaccess: "rw"
             hwaccess: "hrw"
-            hwqe: "true"
           }
-          { name: "doe_intr_status"
+          { name: "sys_intr_state"
             desc: "Alias of the DoE mailbox interrupt status bit"
             bits: "1"
             resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hrw"
-            hwqe: "true"
+            swaccess: "ro"
+            hwaccess: "hwo"
+          }
+          { name: "sys_intr_enable"
+            desc: "Alias of the DoE mailbox interrupt enable bit"
+            bits: "2"
+            resval: "0x0"
+            swaccess: "ro"
+            hwaccess: "hwo"
           }
         ]
       }
       { name: "ADDRESS_RANGE_REGWEN"
         desc: "Used to lock the inbound/outbound base/limit configuration registers."
         swaccess: "rw0c"
+        hwaccess: "none"
         fields: [
           { name: "regwen"
             desc: '''
@@ -162,29 +161,28 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "base_address"
             desc: "Base address of SRAM region, which is used to back up the inbound mailbox data."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
-      {
-        name: "INBOUND_LIMIT_ADDRESS"
+      { name: "INBOUND_LIMIT_ADDRESS"
         desc: '''Limit Address to mark the end of the inbound mailbox memory range in the private SRAM..
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "limit"
             desc: "Limit Address to mark the end of the inbound mailbox memory range in the private SRAM."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -199,8 +197,7 @@
             bits: "31:2"
             resval: "0x0"
             swaccess: "ro"
-            hwaccess: "hrw"
-            hwqe: "true"
+            hwaccess: "hwo"
           }
         ]
       }
@@ -209,13 +206,13 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "base_address"
             desc: "Base address of SRAM region, which is used to buffer the outbound mailbox data."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -224,13 +221,13 @@
               This address is 4-byte aligned, the lower 2-bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "limit"
             desc: "Limit Address to mark the end of the outbound mailbox memory range in the private SRAM."
             bits: "31:2"
             resval: "0x0"
-            swaccess: "rw"
-            hwqe: "true"
           }
         ]
       }
@@ -245,8 +242,7 @@
             bits: "31:2"
             resval: "0x0"
             swaccess: "ro"
-            hwaccess: "hrw"
-            hwqe: "true"
+            hwaccess: "hwo"
           }
         ]
       }
@@ -272,7 +268,7 @@
               Defined only for FW-to-FW mailboxes.
               '''
         hwext: "true"
-        hwaccess: "hrw"
+        hwaccess: "hwo"
         swaccess: "ro"
         fields: [
           { name: "doe_intr_msg_addr"
@@ -288,7 +284,7 @@
               Defined only for FW-to-FW mailboxes.
               '''
         hwext: "true"
-        hwaccess: "hrw"
+        hwaccess: "hwo"
         swaccess: "ro"
         fields: [
           { name: "doe_intr_msg_data"
@@ -305,14 +301,13 @@
               Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address.
               Defined only for FW-to-FW mailboxes.
               '''
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "doe_intr_msg_addr"
             desc: "Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address."
             bits: "31:0"
             resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hro"
-            hwqe: "true"
           }
         ]
       }
@@ -321,14 +316,13 @@
               Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register.
               Defined only for FW-to-FW mailboxes.
               '''
+        swaccess: "rw"
+        hwaccess: "hro"
         fields: [
           { name: "doe_intr_msg_data"
             desc: "Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register."
             bits: "31:0"
             resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hro"
-            hwqe: "true"
           }
         ]
       }
@@ -352,7 +346,7 @@
                   '''
             bits: "1"
             resval: "0x0"
-            swaccess: "rw"
+            swaccess: "ro"
           }
           { name: "go"
             desc: '''
@@ -382,7 +376,6 @@
             resval: "0x0"
             swaccess: "rw1c"
             hwaccess: "hrw"
-            hwqe: "true"
           }
           { name: "error"
             desc: '''
@@ -402,7 +395,7 @@
             bits: "31"
             resval: "0x0"
             swaccess: "ro"
-            hwaccess: "hrw"
+            hwaccess: "hwo"
           }
         ]
       }
