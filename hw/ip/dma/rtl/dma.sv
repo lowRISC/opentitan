@@ -373,13 +373,12 @@ module dma
   logic sha2_hash_start, sha2_hash_process;
   logic sha2_valid, sha2_ready, sha2_digest_we;
   sha_fifo32_t sha2_data;
-  logic [127:0] sha2_msg_len;
   digest_mode_e sha2_mode;
   sha_word64_t [7:0] sha2_digest;
 
   assign use_inline_hashing = reg2hw.control.opcode.q inside {OpcSha256,  OpcSha384, OpcSha512};
-  // We consume data until we are in the finalizing state
-  assign sha2_hash_process = (ctrl_state_q != DmaShaFinalize);
+  // When reaching DmaShaFinalize, we are consuming data and start computing the digest value
+  assign sha2_hash_process = (ctrl_state_q == DmaShaFinalize);
 
   logic sha2_consumed_d, sha2_consumed_q;
   prim_flop #(
