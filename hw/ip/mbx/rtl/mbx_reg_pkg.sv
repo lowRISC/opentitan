@@ -61,6 +61,10 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } error;
+    struct packed {
+      logic        q;
+      logic        qe;
     } doe_intr_en;
     struct packed {
       logic        q;
@@ -69,10 +73,6 @@ package mbx_reg_pkg;
   } mbx_reg2hw_control_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-      logic        qe;
-    } error;
     struct packed {
       logic        q;
       logic        qe;
@@ -152,6 +152,9 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
     } doe_intr_en;
+    struct packed {
+      logic        d;
+    } error;
   } mbx_hw2reg_control_reg_t;
 
   typedef struct packed {
@@ -161,9 +164,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
     } doe_intr_status;
-    struct packed {
-      logic        d;
-    } error;
   } mbx_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -193,8 +193,8 @@ package mbx_reg_pkg;
     mbx_reg2hw_intr_enable_reg_t intr_enable; // [286:285]
     mbx_reg2hw_intr_test_reg_t intr_test; // [284:281]
     mbx_reg2hw_alert_test_reg_t alert_test; // [280:277]
-    mbx_reg2hw_control_reg_t control; // [276:273]
-    mbx_reg2hw_status_reg_t status; // [272:267]
+    mbx_reg2hw_control_reg_t control; // [276:271]
+    mbx_reg2hw_status_reg_t status; // [270:267]
     mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [266:263]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [262:262]
     mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [261:231]
@@ -211,8 +211,8 @@ package mbx_reg_pkg;
   // HW -> register type for core interface
   typedef struct packed {
     mbx_hw2reg_intr_state_reg_t intr_state; // [144:141]
-    mbx_hw2reg_control_reg_t control; // [140:139]
-    mbx_hw2reg_status_reg_t status; // [138:136]
+    mbx_hw2reg_control_reg_t control; // [140:138]
+    mbx_hw2reg_status_reg_t status; // [137:136]
     mbx_hw2reg_inbound_write_ptr_reg_t inbound_write_ptr; // [135:106]
     mbx_hw2reg_outbound_read_ptr_reg_t outbound_read_ptr; // [105:76]
     mbx_hw2reg_outbound_object_size_reg_t outbound_object_size; // [75:64]
@@ -246,13 +246,13 @@ package mbx_reg_pkg;
   parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
-  parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;
+  parameter logic [2:0] MBX_CONTROL_RESVAL = 3'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [2:0] MBX_STATUS_RESVAL = 3'h 1;
+  parameter logic [0:0] MBX_CONTROL_ERROR_RESVAL = 1'h 0;
+  parameter logic [1:0] MBX_STATUS_RESVAL = 2'h 1;
   parameter logic [0:0] MBX_STATUS_BUSY_RESVAL = 1'h 1;
   parameter logic [0:0] MBX_STATUS_DOE_INTR_STATUS_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_STATUS_ERROR_RESVAL = 1'h 0;
   parameter logic [31:0] MBX_INBOUND_WRITE_PTR_RESVAL = 32'h 0;
   parameter logic [29:0] MBX_INBOUND_WRITE_PTR_INBOUND_READ_PTR_RESVAL = 30'h 0;
   parameter logic [31:0] MBX_OUTBOUND_READ_PTR_RESVAL = 32'h 0;
