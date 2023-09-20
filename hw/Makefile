@@ -24,6 +24,7 @@ IPS ?= aes           \
        kmac          \
        i2c           \
        keymgr        \
+       keymgr_dpe    \
        lc_ctrl       \
        mbx           \
        otp_ctrl      \
