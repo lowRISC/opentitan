@@ -138,7 +138,7 @@ module tlul_adapter_host
 
   // err_o is transactional.  This allows the host to continue
   // debug without receiving an endless stream of errors.
-  assign err_o   = tl_i.d_error | intg_err;
+  assign err_o   = (tl_i.d_valid & tl_i.d_error) | intg_err;
 
   // intg_err_o is permanent once detected, and should be used
   // to trigger alerts
