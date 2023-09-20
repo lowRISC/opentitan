@@ -224,8 +224,10 @@ module mbx_ombx #(
     .q_o   ( first_req_q                                      )
   );
 
-  // Create an DOE interrupt request when the obmx FSM turns into the ready state
-  assign ombx_doe_intr_state_set_o = ombx_status_ready_o & ombx_status_ready_update_o;
+  // Create an DOE interrupt request when the obmx FSM turns into the ready state or when an error
+  // is raised
+  assign ombx_doe_intr_state_set_o = (ombx_status_ready_o & ombx_status_ready_update_o) |
+                                      hostif_control_error_set_i;
 
   mbx_fsm #(
     .CfgOmbx ( 1 )
