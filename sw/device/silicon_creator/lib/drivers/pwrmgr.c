@@ -16,7 +16,7 @@ enum {
   kSyncConfig = (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT),
 };
 
-static_assert(kAllResetsEnable == 0x1,
+static_assert(kAllResetsEnable == 0x3,
               "Number of reset requests changed, update expectation if this is "
               "intentional");
 static_assert(

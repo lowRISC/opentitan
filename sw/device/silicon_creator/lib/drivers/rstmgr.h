@@ -58,17 +58,18 @@ typedef enum rstmgr_reason {
    */
   kRstmgrReasonSysrstCtrl = 3,
   kRstmgrReasonWatchdog = 4,
-  kRstmgrReasonPowerUnstable = 5,
-  kRstmgrReasonEscalation = 6,
+  kRstmgrReasonExternal = 5,
+  kRstmgrReasonPowerUnstable = 6,
+  kRstmgrReasonEscalation = 7,
   /**
    * Non-debug module (NDM).
    */
-  kRstmgrReasonNonDebugModule = 7,
+  kRstmgrReasonNonDebugModule = 8,
 
   /**
    * Last used bit index (inclusive).
    */
-  kRstmgrReasonLast = 7,
+  kRstmgrReasonLast = 8,
 } rstmgr_reason_t;
 
 /**

@@ -82,7 +82,7 @@ typedef enum dif_rstmgr_reset_info {
    * Device has reset due to a peripheral request. This can be an alert
    * escalation, watchdog or anything else.
    */
-  kDifRstmgrResetInfoHwReq = (0x1f << 3),
+  kDifRstmgrResetInfoHwReq = (0x3f << 3),
   /**
    * Device has reset due to the peripheral system reset control request.
    */
@@ -92,17 +92,21 @@ typedef enum dif_rstmgr_reset_info {
    */
   kDifRstmgrResetInfoWatchdog = (1 << 4),
   /**
+   * Device has reset due to external request.
+   */
+  kDifRstmgrResetInfoExternal = (1 << 5),
+  /**
    * Device has reset due to power unstable.
    */
-  kDifRstmgrResetInfoPowerUnstable = (1 << 5),
+  kDifRstmgrResetInfoPowerUnstable = (1 << 6),
   /**
    * Device has reset due to alert escalation.
    */
-  kDifRstmgrResetInfoEscalation = (1 << 6),
+  kDifRstmgrResetInfoEscalation = (1 << 7),
   /**
    * Device has reset due to non-debug-module request.
    */
-  kDifRstmgrResetInfoNdm = (1 << 7),
+  kDifRstmgrResetInfoNdm = (1 << 8),
 } dif_rstmgr_reset_info_t;
 
 /**
