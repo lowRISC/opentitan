@@ -1751,7 +1751,8 @@ typedef enum top_darjeeling_reset_manager_sw_resets {
 typedef enum top_darjeeling_power_manager_reset_requests {
   kTopDarjeelingPowerManagerResetRequestsSysrstCtrlAonRstReq = 0, /**<  */
   kTopDarjeelingPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 1, /**<  */
-  kTopDarjeelingPowerManagerResetRequestsLast = 1, /**< \internal Last valid pwrmgr reset_request signal */
+  kTopDarjeelingPowerManagerResetRequestsSocProxyRstReqExternal = 2, /**<  */
+  kTopDarjeelingPowerManagerResetRequestsLast = 2, /**< \internal Last valid pwrmgr reset_request signal */
 } top_darjeeling_power_manager_reset_requests_t;
 
 /**

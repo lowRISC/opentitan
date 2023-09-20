@@ -3040,6 +3040,7 @@ pub enum TopDarjeelingResetManagerSwResets {
 pub enum TopDarjeelingPowerManagerResetRequests {
     SysrstCtrlAonRstReq = 0,
     AonTimerAonAonTimerRstReq = 1,
+    SocProxyRstReqExternal = 2,
 }
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.

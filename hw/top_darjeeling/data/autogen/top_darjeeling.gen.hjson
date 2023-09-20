@@ -2749,7 +2749,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 2
+          width: 3
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -4469,6 +4469,18 @@
           index: 7
         }
         {
+          name: rst_req_external
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          top_signame: pwrmgr_aon_rstreqs
+          index: 2
+        }
+        {
           name: ctn_tl_h2d
           desc: TL-UL host port for egress into CTN (request part), synchronous
           struct: tl_h2d
@@ -4607,6 +4619,21 @@
           package: ""
           external: true
           top_signame: soc_wkup_async
+          conn_type: false
+          index: -1
+        }
+        {
+          name: soc_rst_req_async
+          desc: Reset request from SoC, asynchronous, level-encoded
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          external: true
+          top_signame: soc_rst_req_async
           conn_type: false
           index: -1
         }
@@ -8973,6 +9000,7 @@
       [
         sysrst_ctrl_aon.rst_req
         aon_timer_aon.aon_timer_rst_req
+        soc_proxy.rst_req_external
       ]
       main.tl_rv_core_ibex__corei:
       [
@@ -9260,6 +9288,7 @@
       soc_proxy.soc_fatal_alert: soc_fatal_alert
       soc_proxy.soc_recov_alert: soc_recov_alert
       soc_proxy.soc_wkup_async: soc_wkup_async
+      soc_proxy.soc_rst_req_async: soc_rst_req_async
       soc_proxy.soc_intr_async: soc_intr_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
       spi_device.sck_monitor: sck_monitor
@@ -13624,6 +13653,12 @@
         module: aon_timer_aon
         desc: watchdog reset requestt
       }
+      {
+        name: rst_req_external
+        width: "1"
+        module: soc_proxy
+        desc: External reset request
+      }
     ]
     int:
     [
@@ -17143,7 +17178,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 2
+        width: 3
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -18215,6 +18250,18 @@
         index: 7
       }
       {
+        name: rst_req_external
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        top_signame: pwrmgr_aon_rstreqs
+        index: 2
+      }
+      {
         name: ctn_tl_h2d
         desc: TL-UL host port for egress into CTN (request part), synchronous
         struct: tl_h2d
@@ -18353,6 +18400,21 @@
         package: ""
         external: true
         top_signame: soc_wkup_async
+        conn_type: false
+        index: -1
+      }
+      {
+        name: soc_rst_req_async
+        desc: Reset request from SoC, asynchronous, level-encoded
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        external: true
+        top_signame: soc_rst_req_async
         conn_type: false
         index: -1
       }
@@ -21733,6 +21795,18 @@
       {
         package: ""
         struct: logic
+        signame: soc_rst_req_async_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: soc_rst_req_async
+      }
+      {
+        package: ""
+        struct: logic
         signame: soc_intr_async_i
         width: 8
         type: uni
@@ -22770,7 +22844,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_rstreqs
-        width: 2
+        width: 3
         type: uni
         end_idx: -1
         act: rcv

@@ -1262,6 +1262,7 @@
         'soc_proxy.soc_fatal_alert'       : 'soc_fatal_alert',
         'soc_proxy.soc_recov_alert'       : 'soc_recov_alert',
         'soc_proxy.soc_wkup_async'        : 'soc_wkup_async',
+        'soc_proxy.soc_rst_req_async'     : 'soc_rst_req_async',
         'soc_proxy.soc_intr_async'        : 'soc_intr_async',
         'soc_proxy.soc_lsio_trigger'      : 'soc_lsio_trigger',
         'spi_device.sck_monitor'          : 'sck_monitor',

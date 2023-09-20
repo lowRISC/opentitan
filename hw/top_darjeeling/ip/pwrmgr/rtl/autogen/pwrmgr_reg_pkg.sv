@@ -16,12 +16,12 @@ package pwrmgr_reg_pkg;
   parameter int SENSOR_CTRL_WKUP_REQ_IDX = 5;
   parameter int SOC_PROXY_WKUP_INTERNAL_REQ_IDX = 6;
   parameter int SOC_PROXY_WKUP_EXTERNAL_REQ_IDX = 7;
-  parameter int NumRstReqs = 2;
+  parameter int NumRstReqs = 3;
   parameter int NumIntRstReqs = 2;
   parameter int NumDebugRstReqs = 1;
-  parameter int ResetMainPwrIdx = 2;
-  parameter int ResetEscIdx = 3;
-  parameter int ResetNdmIdx = 4;
+  parameter int ResetMainPwrIdx = 3;
+  parameter int ResetEscIdx = 4;
+  parameter int ResetNdmIdx = 5;
   parameter int NumRomInputs = 2;
   parameter int NumAlerts = 1;
 
@@ -180,14 +180,14 @@ package pwrmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [40:40]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [39:39]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [38:37]
-    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [36:35]
-    pwrmgr_reg2hw_control_reg_t control; // [34:29]
-    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [28:27]
-    pwrmgr_reg2hw_wakeup_en_mreg_t [7:0] wakeup_en; // [26:19]
-    pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [18:17]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [41:41]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [40:40]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [39:38]
+    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [37:36]
+    pwrmgr_reg2hw_control_reg_t control; // [35:30]
+    pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [29:28]
+    pwrmgr_reg2hw_wakeup_en_mreg_t [7:0] wakeup_en; // [27:20]
+    pwrmgr_reg2hw_reset_en_mreg_t [2:0] reset_en; // [19:17]
     pwrmgr_reg2hw_wake_info_capture_dis_reg_t wake_info_capture_dis; // [16:16]
     pwrmgr_reg2hw_wake_info_reg_t wake_info; // [15:3]
     pwrmgr_reg2hw_fault_status_reg_t fault_status; // [2:0]
@@ -195,12 +195,12 @@ package pwrmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [44:43]
-    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [42:42]
-    pwrmgr_hw2reg_control_reg_t control; // [41:40]
-    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [39:38]
-    pwrmgr_hw2reg_wake_status_mreg_t [7:0] wake_status; // [37:22]
-    pwrmgr_hw2reg_reset_status_mreg_t [1:0] reset_status; // [21:18]
+    pwrmgr_hw2reg_intr_state_reg_t intr_state; // [46:45]
+    pwrmgr_hw2reg_ctrl_cfg_regwen_reg_t ctrl_cfg_regwen; // [44:44]
+    pwrmgr_hw2reg_control_reg_t control; // [43:42]
+    pwrmgr_hw2reg_cfg_cdc_sync_reg_t cfg_cdc_sync; // [41:40]
+    pwrmgr_hw2reg_wake_status_mreg_t [7:0] wake_status; // [39:24]
+    pwrmgr_hw2reg_reset_status_mreg_t [2:0] reset_status; // [23:18]
     pwrmgr_hw2reg_escalate_reset_status_reg_t escalate_reset_status; // [17:16]
     pwrmgr_hw2reg_wake_info_reg_t wake_info; // [15:6]
     pwrmgr_hw2reg_fault_status_reg_t fault_status; // [5:0]

@@ -87,6 +87,12 @@
     }
   ]
 
+  reset_request_list: [
+    { name: "rst_req_external"
+      desc: "External reset request"
+    }
+  ]
+
   inter_signal_list: [
     { struct:  "logic"
       type:    "uni"
@@ -96,6 +102,11 @@
     { struct:  "logic"
       type:    "uni"
       name:    "wkup_external_req"
+      act:     "req"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "rst_req_external"
       act:     "req"
     }
     { struct:  "tl_h2d"
@@ -165,6 +176,12 @@
       name:    "soc_wkup_async"
       act:     "rcv"
       desc:    "Wakeup request from SoC, asynchronous, level-encoded"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "soc_rst_req_async"
+      act:     "rcv"
+      desc:    "Reset request from SoC, asynchronous, level-encoded"
     }
     { struct:  "logic"
       type:    "uni"

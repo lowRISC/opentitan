@@ -196,6 +196,7 @@ module top_darjeeling #(
   input  soc_proxy_pkg::soc_alert_req_t [3:0] soc_recov_alert_req_i,
   output soc_proxy_pkg::soc_alert_rsp_t [3:0] soc_recov_alert_rsp_o,
   input  logic       soc_wkup_async_i,
+  input  logic       soc_rst_req_async_i,
   input  logic [7:0] soc_intr_async_i,
   input  logic [7:0] soc_lsio_trigger_i,
   output logic       sck_monitor_o,
@@ -582,7 +583,7 @@ module top_darjeeling #(
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
   logic [7:0] pwrmgr_aon_wakeups;
-  logic [1:0] pwrmgr_aon_rstreqs;
+  logic [2:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__cored_req;
@@ -1866,6 +1867,7 @@ module top_darjeeling #(
       // Inter-module signals
       .wkup_internal_req_o(pwrmgr_aon_wakeups[6]),
       .wkup_external_req_o(pwrmgr_aon_wakeups[7]),
+      .rst_req_external_o(pwrmgr_aon_rstreqs[2]),
       .ctn_tl_h2d_o(ctn_tl_h2d_o),
       .ctn_tl_d2h_i(ctn_tl_d2h_i),
       .i2c_lsio_trigger_i(i2c0_lsio_trigger),
@@ -1878,6 +1880,7 @@ module top_darjeeling #(
       .soc_recov_alert_i(soc_recov_alert_req_i),
       .soc_recov_alert_o(soc_recov_alert_rsp_o),
       .soc_wkup_async_i(soc_wkup_async_i),
+      .soc_rst_req_async_i(soc_rst_req_async_i),
       .soc_intr_async_i(soc_intr_async_i),
       .core_tl_i(soc_proxy_core_tl_req),
       .core_tl_o(soc_proxy_core_tl_rsp),
