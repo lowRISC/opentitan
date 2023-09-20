@@ -14,8 +14,6 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   // FIFO interrupt clear register address
   // with address as key and corresponding write value as value of the associative array
   bit [31:0] fifo_intr_clear_reg[bit [31:0]];
-  // Indicates if write to fifo register address has been received
-  bit fifo_intr_cleared;
   // FIFO instance
   dma_handshake_mode_fifo #(AddrWidth) fifo;
 
@@ -26,13 +24,11 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     super.new(name);
     min_rsp_delay = 1;
     max_rsp_delay = 4;
-    fifo_intr_cleared = 1'b0;
     bytes_sent = 0;
   endfunction: new
 
   virtual function void set_fifo_clear(bit en);
     fifo_reg_clear_en = en;
-    fifo_intr_cleared = 1'b0;
     bytes_sent = 0;
   endfunction
 
@@ -48,7 +44,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
         bit [tl_agent_pkg::DataWidth-1:0] data;
         data = rsp.a_data;
         // First series of writes will be to clear FIFO interrupts
-        if (fifo_reg_clear_en && !fifo_intr_cleared) begin
+        if (fifo_reg_clear_en && (fifo_intr_clear_reg.size() > 0)) begin
           // Check if the address matches FIFO register address
           `DV_CHECK(fifo_intr_clear_reg.exists(rsp.a_addr),
                     $sformatf("Invalid FIFO reg addr: 0x%0x detected", rsp.a_addr))
@@ -58,8 +54,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
           // Delete address entry
           `uvm_info(`gfn, $sformatf("Delete FIFO addr entry : 0x%0x", rsp.a_addr), UVM_DEBUG)
           fifo_intr_clear_reg.delete(rsp.a_addr);
-          fifo_intr_cleared = fifo_intr_clear_reg.size() == 0;
-          `uvm_info(`gfn, $sformatf("fifo_intr_cleared = %0b", fifo_intr_cleared), UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf("fifo_intr_clear_reg.size = %0d", fifo_intr_clear_reg.size()),
+                    UVM_DEBUG)
         end else begin
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
             bytes_sent++;
