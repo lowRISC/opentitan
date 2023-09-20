@@ -19,7 +19,10 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ram_binary(
     name = "sram_cp_provision",
-    srcs = ["sram_cp_provision.c"],
+    srcs = [
+        "consts.h",
+        "sram_cp_provision.c",
+    ],
     hdrs = ["sram_cp_provision.h"],
     archive_symbol_prefix = "sram_cp_provision",
     deps = [
@@ -53,9 +56,12 @@ opentitan_ram_binary(
 
 opentitan_ram_binary(
     name = "sram_cp_provision_functest",
-    srcs = ["sram_cp_provision_functest.c"],
+    srcs = [
+        "consts.h",
+        "sram_cp_provision_functest.c",
+    ],
     hdrs = ["sram_cp_provision.h"],
-    archive_symbol_prefix = "sram_cp_provision",
+    archive_symbol_prefix = "sram_cp_provision_functest",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

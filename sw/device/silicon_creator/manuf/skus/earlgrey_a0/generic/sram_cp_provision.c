@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
+#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/consts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
@@ -54,10 +55,10 @@ static status_t device_id_and_manuf_state_flash_info_page_erase(
     manuf_cp_provisioning_data_t *provisioning_data) {
   uint32_t byte_address = 0;
   // DeviceId and ManufState are located on the same flash info page.
-  TRY(flash_ctrl_testutils_info_region_setup(
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
       kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
-      &byte_address));
+      kFlashInfoPage0Permissions, &byte_address));
   TRY(flash_ctrl_testutils_erase_page(&flash_ctrl_state, byte_address,
                                       kFlashInfoFieldDeviceId.partition,
                                       kDifFlashCtrlPartitionTypeInfo));
@@ -66,27 +67,23 @@ static status_t device_id_and_manuf_state_flash_info_page_erase(
 
 static status_t device_id_and_manuf_state_flash_info_page_write(
     manuf_cp_provisioning_data_t *provisioning_data) {
-  // Write DeviceId.
   uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup(
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
       kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
-      &byte_address));
+      kFlashInfoPage0Permissions, &byte_address));
+
+  // Write DeviceId.
   TRY(flash_ctrl_testutils_write(
       &flash_ctrl_state, byte_address, kFlashInfoFieldDeviceId.partition,
       provisioning_data->device_id, kDifFlashCtrlPartitionTypeInfo,
       kHwCfgDeviceIdSizeIn32BitWords));
 
-  // Write ManufState.
-  byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup(
-      &flash_ctrl_state, kFlashInfoFieldManufState.page,
-      kFlashInfoFieldManufState.bank, kFlashInfoFieldManufState.partition,
-      &byte_address));
+  // Write ManufState (on same page as DeviceId).
   TRY(flash_ctrl_testutils_write(
-      &flash_ctrl_state, byte_address, kFlashInfoFieldManufState.partition,
-      provisioning_data->manuf_state, kDifFlashCtrlPartitionTypeInfo,
-      kHwCfgManufStateSizeIn32BitWords));
+      &flash_ctrl_state, byte_address + kFlashInfoFieldManufState.byte_offset,
+      kFlashInfoFieldManufState.partition, provisioning_data->manuf_state,
+      kDifFlashCtrlPartitionTypeInfo, kHwCfgManufStateSizeIn32BitWords));
 
   return OK_STATUS();
 }
@@ -94,10 +91,11 @@ static status_t device_id_and_manuf_state_flash_info_page_write(
 static status_t wafer_auth_secret_flash_info_page_erase(
     manuf_cp_provisioning_data_t *provisioning_data) {
   uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup(
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
       kFlashInfoFieldWaferAuthSecret.bank,
-      kFlashInfoFieldWaferAuthSecret.partition, &byte_address));
+      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3WritePermissions,
+      &byte_address));
   TRY(flash_ctrl_testutils_erase_page(&flash_ctrl_state, byte_address,
                                       kFlashInfoFieldWaferAuthSecret.partition,
                                       kDifFlashCtrlPartitionTypeInfo));
@@ -107,10 +105,11 @@ static status_t wafer_auth_secret_flash_info_page_erase(
 static status_t wafer_auth_secret_flash_info_page_write(
     manuf_cp_provisioning_data_t *provisioning_data) {
   uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup(
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
       kFlashInfoFieldWaferAuthSecret.bank,
-      kFlashInfoFieldWaferAuthSecret.partition, &byte_address));
+      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3WritePermissions,
+      &byte_address));
   TRY(flash_ctrl_testutils_write(
       &flash_ctrl_state, byte_address, kFlashInfoFieldWaferAuthSecret.partition,
       provisioning_data->manuf_state, kDifFlashCtrlPartitionTypeInfo,

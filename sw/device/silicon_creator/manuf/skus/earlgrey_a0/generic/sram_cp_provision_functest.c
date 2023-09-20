@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
+#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/consts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
@@ -50,6 +51,39 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
+static status_t check_device_id_and_manuf_state(
+    manuf_cp_provisioning_data_t *expected_data) {
+  LOG_INFO("Checking expected DeviceId and ManufState data ...");
+  // Configure flash info page 0 permissions.
+  uint32_t byte_address = 0;
+  uint32_t actual_device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
+  uint32_t actual_manuf_state[kHwCfgManufStateSizeIn32BitWords] = {0};
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
+      kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
+      kFlashInfoPage0Permissions, &byte_address));
+
+  // Read and check device_id.
+  TRY(flash_ctrl_testutils_read(
+      &flash_ctrl_state, byte_address, kFlashInfoFieldDeviceId.partition,
+      actual_device_id, kDifFlashCtrlPartitionTypeInfo,
+      kHwCfgDeviceIdSizeIn32BitWords,
+      /*delay_micros=*/0));
+  CHECK_ARRAYS_EQ(actual_device_id, expected_data->device_id,
+                  kHwCfgDeviceIdSizeIn32BitWords);
+
+  // Read and check manuf_state (on same page as device_id).
+  TRY(flash_ctrl_testutils_read(
+      &flash_ctrl_state, byte_address + kFlashInfoFieldManufState.byte_offset,
+      kFlashInfoFieldManufState.partition, actual_manuf_state,
+      kDifFlashCtrlPartitionTypeInfo, kHwCfgManufStateSizeIn32BitWords,
+      /*delay_micros=*/0));
+  CHECK_ARRAYS_EQ(actual_manuf_state, expected_data->manuf_state,
+                  kHwCfgManufStateSizeIn32BitWords);
+
+  return OK_STATUS();
+}
+
 bool sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
@@ -67,11 +101,14 @@ bool sram_main(void) {
   CHECK_STATUS_OK(
       ujson_deserialize_manuf_cp_provisioning_data_t(&uj, &expected_data));
 
-  // TODO: Read and check device_id field from flash info page 0.
-  // TODO: Read and check manuf_state field from flash info page 0.
-  // TODO: Read and check wafer_auth_secret field from flash info page 3.
-  // TODO: Read and check test exit token field from OTP secret0 partition.
-  // TODO: Read and check test unlock token field from OTP secret0 partition.
+  // Read and check device_id and manuf_state fields from flash info page 0.
+  CHECK_STATUS_OK(check_device_id_and_manuf_state(&expected_data));
+
+  // Note: we cannot read/check the wafer_auth_secret field in flash info page
+  // 3, as this page is not readable in the TEST_UNLOCKED* states.
+
+  // Check the secret0 partition has been provisioned / locked.
+  CHECK_STATUS_OK(manuf_individualize_device_secret0_check(&otp_ctrl));
 
   LOG_INFO("Checks complete. Success");
 
