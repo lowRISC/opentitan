@@ -1141,9 +1141,8 @@ module chip_darjeeling_cw310 #(
     .DataBitsPerMask(CtnSramDw),
     .EnableECC(0),
     .EnableParity(0),
-    // TODO: may want to evaluate whether this pipeline stage can be removed.
     .EnableInputPipeline(1),
-    .EnableOutputPipeline(0)
+    .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
     .clk_i    (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
