@@ -9,6 +9,12 @@
 #include <stdexcept>
 
 #include "secded_enc.h"
+#include "sv_scoped.h"
+
+// DPI exports, defined in prim_util_memload.svh
+extern "C" {
+void simutil_memload(const char *file);
+}
 
 Ecc32MemArea::Ecc32MemArea(const std::string &scope, uint32_t size,
                            uint32_t width_32)
@@ -26,8 +32,22 @@ Ecc32MemArea::Ecc32MemArea(const std::string &scope, uint32_t size,
 }
 
 void Ecc32MemArea::LoadVmem(const std::string &path) const {
-  throw std::runtime_error(
-      "vmem files are not supported for memories with ECC bits");
+  std::vector<uint8_t> data;
+  EccWords ecc_data;
+  SVScoped scoped(scope_.c_str());
+  // Bulk-load the image and then recompute the correct ECC bits
+  // in a second pass over the memory array.
+  simutil_memload(path.c_str());
+  data = Read(0, num_words_);
+  // Convert datastructure
+  for (int j = 0; j < num_words_; j++) {
+    uint32_t w32 = 0;
+    for (int k = 0; k < 4; k++) {
+      w32 |= data[j * 4 + k] << (k * 8);
+    }
+    ecc_data.push_back(std::make_pair(true, w32));
+  }
+  WriteWithIntegrity(0, ecc_data);
 }
 
 Ecc32MemArea::EccWords Ecc32MemArea::ReadWithIntegrity(
