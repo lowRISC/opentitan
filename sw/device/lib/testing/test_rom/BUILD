@@ -2,8 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
-load("//rules:opentitan_test.bzl", "opentitan_functest")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "OPENTITAN_CPU",
+    "opentitan_binary",
+    "opentitan_test",
+)
+load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
@@ -20,12 +26,31 @@ ld_library(
     ],
 )
 
-opentitan_rom_binary(
+opentitan_binary(
     name = "test_rom",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = ":linker_script",
     deps = [
-        ":linker_script",
         ":test_rom_lib",
     ],
+)
+
+# Create the legacy ROM target names so that existing opentitan_functest and
+# splicing rules can find the test_rom VMEM files.
+legacy_rom_targets(
+    suffixes = [
+        "fpga_cw310",
+        "fpga_cw340",
+        "sim_dv",
+        "sim_verilator",
+    ],
+    target = "test_rom",
 )
 
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
@@ -154,9 +179,14 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "test_rom_test",
     srcs = ["test_rom_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

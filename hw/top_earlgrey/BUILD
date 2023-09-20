@@ -10,6 +10,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "fpga_cw310",
+    "fpga_cw340",
     "sim_dv",
     "sim_verilator",
 )
@@ -47,6 +48,7 @@ fpga_cw310(
     exec_env = "fpga_cw310",
     lib = "//sw/device/lib/arch:fpga_cw310",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -89,6 +91,50 @@ fpga_cw310(
 )
 
 ###########################################################################
+# FPGA CW340 Environments
+#
+# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# should become a more generic `fpga_chipwhisperer` infrastruture able to
+# handle multiple CW-type boards.
+###########################################################################
+fpga_cw340(
+    name = "fpga_cw340",
+    design = "earlgrey",
+    exec_env = "fpga_cw340",
+    lib = "//sw/device/lib/arch:fpga_cw340",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    test_cmd = "testing-not-supported",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_test_rom",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+    ] + select({
+        "@//ci:lowrisc_fpga_cw340": ["--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0"],
+        "//conditions:default": [],
+    }),
+    base = ":fpga_cw340",
+    bitstream = "//hw/bitstream:test_rom",
+    exec_env = "fpga_cw340_test_rom",
+    param = {
+        "interface": "cw340",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    test_cmd = """
+        --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+###########################################################################
 # Sim Verilator Environments
 #
 # The sim_verilator_base target is only meant to be used for building ROMs
@@ -101,6 +147,7 @@ sim_verilator(
     lib = "//sw/device/lib/arch:sim_verilator",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -126,7 +173,7 @@ sim_verilator(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom = "//sw/device/lib/testing/test_rom:test_rom_sim_verilator_scr_vmem",
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
     test_cmd = """
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
@@ -143,9 +190,15 @@ sim_dv(
     name = "sim_dv_base",
     design = "earlgrey",
     exec_env = "sim_dv",
+    extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
+    flash_scramble_tool = "//util/design:gen-flash-img",
     lib = "//sw/device/lib/arch:sim_dv",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
+    otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+    otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
 )
 
 sim_dv(
@@ -159,16 +212,8 @@ sim_dv(
         "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
     ],
     exec_env = "sim_dv",
-    extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
-    flash_scramble_tool = "//util/design:gen-flash-img",
-    lib = "//sw/device/lib/arch:sim_dv",
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
-    otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
-    otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
     param = {
         "dvsim_config": "$(location //hw/top_earlgrey/dv:chip_sim_cfg.hjson)",
     },
-    rom = "//sw/device/lib/testing/test_rom:test_rom_sim_dv_scr_vmem",
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
