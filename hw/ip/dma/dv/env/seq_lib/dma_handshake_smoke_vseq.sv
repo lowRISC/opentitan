@@ -32,6 +32,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; //disable hardware handhake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
+      clear_int_src == 0; // disable clearing of FIFO interrupt
       opcode == OpcCopy;)
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
@@ -51,6 +52,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(handshake_value,
                                          handshake_value &
                                          dma_config.handshake_intr_en != 0;)
+      `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", handshake_value), UVM_HIGH)
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
                            dma_config.handshake, // Handshake Enable
@@ -59,10 +61,32 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                            dma_config.direction, // Direction
                            1'b1); // Go
       set_hardware_handshake_intr(handshake_value);
-      poll_status();
-      release_hardware_handshake_intr();
+      fork
+        begin
+          // Wait till all transfers are done
+          wait_num_bytes_transfer(dma_config.total_transfer_size);
+        end
+        begin
+          // Wait for transmission of a number of bytes before releasing
+          // hardware handshake interrupt
+          uint num_bytes_per_txn = dma_config.transfer_width_to_num_bytes(
+                                              dma_config.per_transfer_width);
+          uint wait_bytes = $urandom_range(1, dma_config.total_transfer_size - num_bytes_per_txn);
+          `uvm_info(`gfn, $sformatf("wait_bytes = %0d", wait_bytes), UVM_HIGH)
+          wait_num_bytes_transfer(wait_bytes);
+          `uvm_info(`gfn, $sformatf("Release hardware handshake interrupt"), UVM_HIGH)
+          release_hardware_handshake_intr();
+        end
+      join
+      delay(20); // wait to allow for transmission of last data
+      // Clear GO bit
+      `uvm_info(`gfn, "Clear GO bit", UVM_MEDIUM)
+      ral.control.go.set(1'b0);
+      csr_update(ral.control);
+      // Clear DMA state
       clear();
       delay(10);
+      // Stop dma_pull_seq
       stop_device();
       delay(10);
       apply_resets_concurrently();
