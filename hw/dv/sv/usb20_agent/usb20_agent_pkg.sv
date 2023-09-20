@@ -21,11 +21,11 @@ package usb20_agent_pkg;
 
   // add typedef for usb20_driver which is dv_base_driver with the right parameter set
   // usb20_host_driver and usb20_device_driver will extend from this
-  
+
 
   // reuse dv_base_seqeuencer as is with the right parameter set
- // typedef dv_base_sequencer #(.ITEM_T     (usb20_item),
-                              //.CFG_T      (usb20_agent_cfg)) usb20_sequencer;
+  typedef dv_base_sequencer #(.ITEM_T     (usb20_item),
+                              .CFG_T      (usb20_agent_cfg)) usb20_sequencer;
 
   // functions
 

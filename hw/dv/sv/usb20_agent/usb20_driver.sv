@@ -3,19 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*class usb20_driver extends uvm_driver #(usb20_item);
-	`uvm_component_utils(usb20_driver)
+        `uvm_component_utils(usb20_driver)
 
 
  function new (string name, uvm_component parent);
-		super.new(name, parent);
+                super.new(name, parent);
  endfunction*/
 class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   `uvm_component_utils(usb20_driver)
 
-  `uvm_component_new 
+  `uvm_component_new
    virtual usb20_if vif;
    usb20_agent_cfg cfg;
-   
+
    token_pkt tpk;
    data_pkt dpk;
    handshake_pkt hpk;
@@ -30,18 +30,18 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
    bit [3:0] enDpoint_temp;
    bit [4:0] crc_temp;
    bit [23:0] nrzi_out = 0;
-   
+
    localparam bit [7:0] SYNC_PATTERN = 8'b01010100;
    localparam bit [1:0] EOP = 2'b00;
-   
- 
-  
+
+
+
   // the base class provides the following handles for use:
   // usb20_agent_cfg: cfg
-  
-   
 
-  
+
+
+
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
    if (!uvm_config_db#(virtual usb20_if)::get(this, "*.env.m_usb20_agent*", "vif", cfg.vif)) begin
@@ -56,19 +56,19 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
      cfg.vif.usb_vbus = 1'b1;
      @(posedge cfg.vif.rst);
     fork
-   	 clk_divider();
-	 begin
-    	 forever begin
+         clk_divider();
+         begin
+         forever begin
          //drive_item();
          reset_signals();
          get_and_drive();
          #1;
          end
-	end
+        end
    join_none
-  endtask 
-  
-  
+  endtask
+
+
   //DRIVE PACKET
   virtual task get_and_drive();
    usb20_item seq_item;
@@ -91,71 +91,71 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
         end
         //shifted token_pkt LSB to MSB
         for (int i = 0; i < 24; i = i+1)begin
-        token_pkt[i] = {token_pkt[(23-i) % 24]}; 
+        token_pkt[i] = {token_pkt[(23-i) % 24]};
         end
         $display("time=%0t Driver token_packet=%p", $time, token_pkt);
-        
+
         bit_stuffing(token_pkt);
         nrzi_encoder(token_pkt,nrzi_out);
         sync_pattern();
-        
-  
+
+
         //foreach(token_pkt[i])begin
         for (int i = 0; i < 24; i = i+1)begin
         @(posedge cfg.vif.clk)
         wait(clk_en)
-		      cfg.vif.usb_Dp =  token_pkt[i];
-		      cfg.vif.usb_Dn = ~token_pkt[i];
+                      cfg.vif.usb_Dp =  token_pkt[i];
+                      cfg.vif.usb_Dn = ~token_pkt[i];
           $display("time=%0t bit=%0d packed_Dp=%0b packed_Dn=%0b", $time, i,cfg.vif.usb_Dp,cfg.vif.usb_Dn);
          end
        eop();
        seq_item_port.item_done();
   endtask
-  
+
   virtual task sync_pattern();
         for (int i = 0; i <= 7; i = i+1) begin
-     	    @(posedge cfg.vif.clk)
+            @(posedge cfg.vif.clk)
           wait(clk_en);
           cfg.vif.usb_Dp = SYNC_PATTERN[7-i];
           cfg.vif.usb_Dn = ~SYNC_PATTERN[7-i];
           $display("time=%0t bit=%0d packed_Dp=%0b packed_Dn=%0b", $time, i,cfg.vif.usb_Dp,cfg.vif.usb_Dn);
         end
   endtask
-    
-  //EOP   
+
+  //EOP
   virtual task eop();
         for (int i = 0; i < 2; i = i+1) begin
-     	    @(posedge cfg.vif.clk)
+            @(posedge cfg.vif.clk)
           wait(clk_en);
             cfg.vif.usb_Dp = EOP[i];
             cfg.vif.usb_Dn = ~EOP[i];
             $display("time=%0t bit=%0d packed_Dp=%0b packed_Dn=%0b", $time, i,cfg.vif.usb_Dp,cfg.vif.usb_Dn);
          end
   endtask
-  
-  
+
+
   virtual task bit_stuffing(input bit packet[]);
     bit consecutive_ones_count = 0;
-    
-    for (int i = 0; i < packet.size(); i++) begin                                             
+
+    for (int i = 0; i < packet.size(); i++) begin
       if (packet[i] == 1'b1)
         consecutive_ones_count++;
       else
         consecutive_ones_count = 1'b0;
-                                               
+
         if (consecutive_ones_count == 6)
           packet[i] = {packet[i],1'b0};
-        else 
+        else
           packet[i] = packet[i];
     end
       $display("time=%0t bit_stuffing=%p ", $time, packet);
   endtask
-  
-  
-  virtual task nrzi_encoder(input bit packet[], output bit nrzi_out[]);
-    nrzi_out = new[packet.size()] ; 
 
-    for (int i = 0 ; i < packet.size(); i++) begin                                        
+
+  virtual task nrzi_encoder(input bit packet[], output bit nrzi_out[]);
+    nrzi_out = new[packet.size()] ;
+
+    for (int i = 0 ; i < packet.size(); i++) begin
       if (packet[i] == packet[i+1]) begin
         nrzi_out[i] = 1;
       end
@@ -166,7 +166,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     $display("time=%0t nrz_encoded=%p", $time, nrzi_out);
   endtask
 
-  
+
   //Enable signal drive
   virtual task clk_divider ();
       bit [1:0]cnt;
@@ -176,7 +176,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
        cnt = cnt + 1;
        if (cnt == 2'b11)
          clk_en = 1'b1;
-       else 
+       else
          clk_en = 1'b0;
         $display ( " In clk _divider task");
       end
@@ -196,10 +196,18 @@ forever begin
     end
   endtask
 
-virtual task release_bus();
+  virtual task release_bus();
     `uvm_info(`gfn, "Driver released the bus", UVM_HIGH)
-    cfg.vif.usb_dp_o = 1'b1;
-    cfg.vif.usb_dn_o = 1'b0;
+    // JDON: compared to tb connection, this is wrong.
+    //    cfg.vif.usb_dp_o = 1'b1;
+    //    cfg.vif.usb_dn_o = 1'b0;
+    // I initialize these for the temporary.
+    // feel free to modify when it is necessary.
+    // without this init, you will see assertion failure.
+    cfg.vif.usb_dp_i = 1'b1;
+    cfg.vif.usb_dn_i = 1'b0;
+    cfg.vif.usb_rx_d_i = 0;
+    cfg.vif.usb_sense_i = 0;
   endtask : release_bus
 
 endclass
