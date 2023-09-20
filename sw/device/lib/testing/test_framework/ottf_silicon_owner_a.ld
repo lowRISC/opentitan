@@ -17,9 +17,9 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
  * at the BL0 boot stage in slot A.
  */
 /* TODO(#9045): Move ROM_EXT size to a common location. */
-_ottf_size = (LENGTH(eflash) / 2) - 0x10000;
-_ottf_start_address = ORIGIN(eflash) + 0x10000;
+_ottf_size = (LENGTH(ram_ctn) / 2) - 0x10000;
+_ottf_start_address = ORIGIN(ram_ctn) + 0x10000;
 
-REGION_ALIAS("ottf_flash", eflash);
+REGION_ALIAS("ottf_flash", ram_ctn);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld

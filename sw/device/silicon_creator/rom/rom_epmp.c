@@ -40,9 +40,9 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t rom = {.start = TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR,
                              .end = TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR +
                                     TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES};
-  const epmp_region_t eflash = {.start = TOP_DARJEELING_EFLASH_BASE_ADDR,
-                                .end = TOP_DARJEELING_EFLASH_BASE_ADDR +
-                                       TOP_DARJEELING_EFLASH_SIZE_BYTES};
+  const epmp_region_t ram_ctn = {.start = TOP_DARJEELING_RAM_CTN_BASE_ADDR,
+                                 .end = TOP_DARJEELING_RAM_CTN_BASE_ADDR +
+                                        TOP_DARJEELING_RAM_CTN_SIZE_BYTES};
   const epmp_region_t mmio = {
       .start = TOP_DARJEELING_MMIO_BASE_ADDR,
       .end = TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES};
@@ -89,7 +89,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   memset(&epmp_state, 0, sizeof(epmp_state));
   epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
   epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
-  epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(5, ram_ctn, kEpmpPermLockedReadOnly);
   epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);

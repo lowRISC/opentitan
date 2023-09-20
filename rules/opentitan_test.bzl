@@ -151,7 +151,9 @@ def verilator_params(
         "--interface=verilator",
         "--verilator-bin=$(location @//hw/top_darjeeling:verilator)",
         "--verilator-rom=$(location {rom})",
-        "--verilator-flash=$(location {flash})",
+        # TODO: we need to split the build rules here so that both CTN SRAM and
+        # flash options can co-exist.
+        "--verilator-ram-ctn=$(location {flash})",
         "--verilator-otp=$(location {otp})",
     ]
     required_data = [
@@ -462,7 +464,10 @@ def opentitan_functest(
 
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
-            flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
+            # TODO: we need to create a separate rule for backdoor loading the
+            # CTN memory.
+            # flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
+            flash = "{}_{}_vmem32".format(ot_flash_binary, target)
         elif target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
             flash = "{}_fpga_cw310_bin".format(ot_flash_binary)
         else:

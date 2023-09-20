@@ -69,8 +69,9 @@ rom_epmp_init:
   csrw pmpaddr3, zero // ROM_EXT TEXT low
   csrw pmpaddr4, zero // ROM_EXT TEXT high
 
-  // eFLASH
-  li   t0, NAPOT(TOP_DARJEELING_EFLASH_BASE_ADDR, TOP_DARJEELING_EFLASH_SIZE_BYTES)
+  // This used to be the eFLASH region. However, since Darjeeling does not have an eFLASH,
+  // we execute out of the shared CTN SRAM.
+  li   t0, NAPOT(TOP_DARJEELING_RAM_CTN_BASE_ADDR, TOP_DARJEELING_RAM_CTN_SIZE_BYTES)
   csrw pmpaddr5, t0
 
   // MMIO

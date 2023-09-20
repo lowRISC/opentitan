@@ -218,7 +218,7 @@ bool rom_test_main(void) {
 
   // Always select slot a and enable address translation if manifest says to.
   const manifest_t *manifest =
-      (const manifest_t *)TOP_DARJEELING_EFLASH_BASE_ADDR;
+      (const manifest_t *)TOP_DARJEELING_RAM_CTN_BASE_ADDR;
   uintptr_t entry_point = manifest_entry_point_get(manifest);
   if (manifest->address_translation == kHardenedBoolTrue) {
     dif_rv_core_ibex_addr_translation_mapping_t addr_map = {

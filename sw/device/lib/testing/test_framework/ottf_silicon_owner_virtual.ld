@@ -18,7 +18,7 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 /* TODO(#9045): Move BL0 size to a common location. */
 _ottf_size = LENGTH(owner_virtual) - 64K;
 _ottf_start_address = ORIGIN(owner_virtual) + 64K;
-ASSERT((_ottf_size <= (LENGTH(eflash) / 2)),
+ASSERT((_ottf_size <= (LENGTH(ram_ctn) / 2)),
   "Error: BL0 flash is bigger than slot.");
 
 REGION_ALIAS("ottf_flash", owner_virtual);
