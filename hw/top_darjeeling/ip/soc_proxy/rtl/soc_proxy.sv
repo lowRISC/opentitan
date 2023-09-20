@@ -31,6 +31,8 @@ module soc_proxy
   output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
 
+  output logic rst_req_external_o,
+
   input  logic       i2c_lsio_trigger_i,
   input  logic       spi_host_lsio_trigger_i,
   input  logic       uart_lsio_trigger_i,
@@ -46,6 +48,8 @@ module soc_proxy
   output soc_alert_rsp_t [NumRecovExternalAlerts-1:0] soc_recov_alert_o,
 
   input  logic soc_wkup_async_i,
+
+  input  logic soc_rst_req_async_i,
 
   input  logic [NumExternalIrqs-1:0] soc_intr_async_i
 );
@@ -233,6 +237,18 @@ module soc_proxy
     .enable_i (1'b1),
     .filter_i (async_wkup),
     .filter_o (wkup_internal_req_o)
+  );
+
+  // Synchronize reset request onto AON domain and filter out potential glitches
+  prim_filter #(
+    .AsyncOn(1'b1),
+    .Cycles(4)
+  ) u_prim_filter_soc_rst_req (
+    .clk_i    (clk_aon_i),
+    .rst_ni   (rst_aon_ni),
+    .enable_i (1'b1),
+    .filter_i (soc_rst_req_async_i),
+    .filter_o (rst_req_external_o)
   );
 
   // Collate LSIO trigger inputs into signal for DMA
