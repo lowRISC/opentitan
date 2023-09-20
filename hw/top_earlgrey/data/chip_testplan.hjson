@@ -864,7 +864,7 @@
 
     ///////////////////////////////////////////////////////
     // Security Peripherals                              //
-    // AES, CSRNG, ENTROPY_SRC, KEYMGR, OTBN             //
+    // AES, CSRNG, ENTROPY_SRC, EDN, OTBN                //
     ///////////////////////////////////////////////////////
 
     // AES (pre-verified IP) integration tests:
