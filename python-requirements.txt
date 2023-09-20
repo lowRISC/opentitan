@@ -200,6 +200,9 @@ hjson==3.1.0 \
 idna==3.4 \
     --hash=sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4 \
     --hash=sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2
+importlib-metadata==6.8.0 \
+    --hash=sha256:3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb \
+    --hash=sha256:dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743
 importlib-resources==1.4.0 ; python_version >= "3.7" \
     --hash=sha256:4019b6a9082d8ada9def02bece4a76b131518866790d58fdda0b5f8c603b36c2 \
     --hash=sha256:dd98ceeef3f5ad2ef4cc287b8586da4ebad15877f351e9688987ad663a0a29b8
@@ -660,6 +663,9 @@ yapf==0.32.0 \
 zipfile2==0.0.12 \
     --hash=sha256:7376f7c968717ac895ef862da913e790cf1b518caf56c4822c04684c46a8a608 \
     --hash=sha256:b9adf577d825461480e485027116c035f666b72ac3911af71aa93da6e0579eb8
+zipp==3.17.0 \
+    --hash=sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31 \
+    --hash=sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0
 
 # The following packages are considered to be unsafe in a requirements file:
 pip==23.2.1 \
