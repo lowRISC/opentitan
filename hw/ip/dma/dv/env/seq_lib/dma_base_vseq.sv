@@ -256,6 +256,8 @@ class dma_base_vseq extends cip_base_vseq #(
       csr_wr(ral.int_source_addr[i], dma_config.int_src_addr[i]);
       csr_wr(ral.int_source_wr_val[i], dma_config.int_src_wr_val[i]);
     end
+    ral.handshake_interrupt_enable.set(dma_config.handshake_intr_en);
+    csr_update(ral.handshake_interrupt_enable);
   endtask: set_handshake_int_regs
 
   // Task: Run above configurations common to both Generic and Handshake Mode of operations
@@ -350,7 +352,7 @@ class dma_base_vseq extends cip_base_vseq #(
         for (int i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
           // Check if at least one handshake interrupt is asserted and
           // clear_int_src is set
-          if (fifo_interrupt_mask > 0 && dma_config.clear_int_src[i]) begin
+          if (dma_config.clear_int_src[i]) begin
             `uvm_info(`gfn, $sformatf("Detected FIFO reg clear enable at index : %0d", i),
                       UVM_HIGH)
             // Set FIFO interrupt clear address and values in correponding pull sequence instance
@@ -509,6 +511,19 @@ class dma_base_vseq extends cip_base_vseq #(
   virtual task delay(int num = 1);
     cfg.clk_rst_vif.wait_clks(num);
   endtask: delay
+
+  // Task to wait for transfer of specified number of bytes
+   task wait_num_bytes_transfer(uint num_bytes);
+     forever begin
+       if (get_bytes_sent(dma_config) >= num_bytes) begin
+         `uvm_info(`gfn, $sformatf("Got %d", num_bytes), UVM_DEBUG)
+         break;
+       end else begin
+         delay(1);
+       end
+     end
+   endtask
+
 
   // Return number of bytes transferred from interface corresponding to source ASID
   virtual function uint get_bytes_sent(ref dma_seq_item dma_config);
