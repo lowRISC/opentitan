@@ -13,8 +13,19 @@
             - On each command done, verify the reception of edn_cmd_req_done interrupt.
             - Run OTBN randomness test to test the output from EDN0 and EDN1.
             - Check the data returned to EDN via connectivity assertion checks.
+
+            Notes for silicon targets:
+            - In silicon, the connectivity cannot be checked using assertions.
+              However, checking that the OTBN randomness test finishes allows to quickly assess if both EDNs deliver any entropy which is very fundamental.
             '''
+      features: [
+        "CSRNG.INTERFACE.HARDWARE0",
+        "CSRNG.INTERFACE.HARDWARE1",
+        "CSRNG.MODE.NONDETERMINISTIC",
+      ]
       stage: V2
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_csrng"]
     }
     {
@@ -28,8 +39,18 @@
             - Reset the chip and repeat the steps above, but this time, initialized the OTP with
               fuse disabled.
             - Verify that the SW reads back all zeros when reading the internal state values.
+
+            Notes for silicon targets:
+            - The current understanding is that the en_csrng_sw_app_read OTP switch controlling the CSRNG.READ_INT_STATE feature will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
+              Thus, burning the en_csrng_sw_app_read OTP fuses is not advisable for silicon validation.
             '''
+      features: [
+        "CSRNG.INTERFACE.SOFTWARE",
+        "CSRNG.READ_INT_STATE",
+      ]
       stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
     }
     {
@@ -47,8 +68,19 @@
             - Again configure ENTROPY_SRC to bypass the conditioner and use direct injection.
             - Again instantiate CSRNG in non-deterministic mode and have it load the known entropy from ENTROPY_SRCw while in the new state.
             - The newly fetched entropy and the old entropy stored in flash should not match.
+
+            Notes for silicon targets:
+            - This test goes through life-cycle stages that will permanently change the characteristic of the chip.
+            - These tests will need to be done in secure environments where there is access to chips in the TEST_UNLOCKED or DEV life-cycle states.
             '''
+      features: [
+        "CSRNG.INTERFACE.SOFTWARE",
+        "CSRNG.MODE.NONDETERMINISTIC",
+        "CSRNG.LIFECYCLE.DEBUGENABLE",
+      ]
       stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END"]
       tests: ["chip_sw_csrng_lc_hw_debug_en_test"]
     }
     {
@@ -60,8 +92,20 @@
               Read the DRBG internal K and V state using INT_STATE_VAL register and compare the obtained values against the test vector expected values.
             - Perform generate operations as required by the test vector.
             - Compare the results to test expectations.
+
+            Notes for silicon targets:
+            - For the INT_STATE_VAL register to provide read access to the internal K and V state, the en_csrng_sw_app_read OTP switch needs to be in the `kMultiBitBool8True` position.
+              The current understanding is that this will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
+              Thus, the test doesn't need to be run in a secure environment.
             '''
+      features: [
+        "CSRNG.INTERFACE.SOFTWARE",
+        "CSRNG.MODE.DETERMINISTIC",
+        "CSRNG.READ_INT_STATE",
+      ]
       stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_csrng_kat_test"]
     }
   ]
