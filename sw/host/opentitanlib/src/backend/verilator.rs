@@ -21,6 +21,8 @@ pub struct VerilatorOpts {
     verilator_flash: Vec<String>,
     #[structopt(long, default_value)]
     verilator_otp: String,
+    #[structopt(long, default_value)]
+    verilator_ram_ctn: String,
 
     #[structopt(long, required = false)]
     verilator_args: Vec<String>,
@@ -35,6 +37,7 @@ pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
         rom_image: args.verilator_rom.clone(),
         flash_images: args.verilator_flash.clone(),
         otp_image: args.verilator_otp.clone(),
+        ram_ctn_image: args.verilator_ram_ctn.clone(),
         extra_args: args.verilator_args.clone(),
         timeout: args.verilator_timeout,
     };

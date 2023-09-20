@@ -10,6 +10,7 @@
 #include <svdpi.h>
 #include <vector>
 
+#include "ecc32_mem_area.h"
 #include "mem_area.h"
 #include "ranged_map.h"
 

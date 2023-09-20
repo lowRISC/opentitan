@@ -41,6 +41,11 @@ int main(int argc, char **argv) {
           "gen_prim_flash_banks[1].u_prim_flash_bank.u_mem."
           "gen_generic.u_impl_generic",
       0x80000 / 8, 8);
+  Ecc32MemArea ram_ctn(
+      "TOP.chip_sim_tb.u_dut.u_prim_ram_1p_adv_ctn.u_mem."
+      "gen_generic.u_impl_generic",
+      0x100000 / 4, 4);
+
   // Start with the flash region erased. Future loads can overwrite.
   std::vector<uint8_t> all_ones(flash0.GetSizeBytes());
   std::fill(all_ones.begin(), all_ones.end(), 0xffu);
@@ -56,6 +61,7 @@ int main(int argc, char **argv) {
   memutil.RegisterMemoryArea("flash0", 0x34000000u, &flash0);
   memutil.RegisterMemoryArea("flash1", 0x34080000u, &flash1);
   memutil.RegisterMemoryArea("otp", 0x30000000u /* (bogus LMA) */, &otp);
+  memutil.RegisterMemoryArea("ram_ctn", 0x41000000u, &ram_ctn);
   simctrl.RegisterExtension(&memutil);
 
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will
