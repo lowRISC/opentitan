@@ -15,3 +15,19 @@ waive -rules {MISSING_STATE} -location {keymgr_dpe_ctrl.sv} -regexp {.*StCtrlInv
 
 waive -rules {TERMINAL_STATE} -location {keymgr_sideload_key_ctrl.sv} -regexp {.*StSideloadStop.*} \
       -comment "Intentional terminal state."
+
+# TODO(#384): Remove the following waivers
+waive -rules {HIER_NET_NOT_READ} -location {keymgr_dpe.sv} -regexp {.*} \
+      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
+
+waive -rules {NOT_READ} -location {keymgr_dpe.sv} -regexp {.*} \
+      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
+
+waive -rules {HIER_NET_NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
+      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
+
+waive -rules {INPUT_NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
+      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
+
+waive -rules {NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
+      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
