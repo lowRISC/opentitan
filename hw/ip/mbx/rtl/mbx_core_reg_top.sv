@@ -405,10 +405,6 @@ module mbx_core_reg_top (
 
 
   // R[status]: V(True)
-  logic status_qe;
-  logic [2:0] status_flds_we;
-  // In case all fields are read-only the aggregated register QE will be zero as well.
-  assign status_qe = &status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -418,7 +414,7 @@ module mbx_core_reg_top (
     .wd     ('0),
     .d      (hw2reg.status.busy.d),
     .qre    (),
-    .qe     (status_flds_we[0]),
+    .qe     (),
     .q      (),
     .ds     (),
     .qs     (status_busy_qs)
@@ -433,7 +429,7 @@ module mbx_core_reg_top (
     .wd     ('0),
     .d      (hw2reg.status.sys_intr_state.d),
     .qre    (),
-    .qe     (status_flds_we[1]),
+    .qe     (),
     .q      (),
     .ds     (),
     .qs     (status_sys_intr_state_qs)
@@ -448,7 +444,7 @@ module mbx_core_reg_top (
     .wd     ('0),
     .d      (hw2reg.status.sys_intr_enable.d),
     .qre    (),
-    .qe     (status_flds_we[2]),
+    .qe     (),
     .q      (),
     .ds     (),
     .qs     (status_sys_intr_enable_qs)
