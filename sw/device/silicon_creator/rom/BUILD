@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_test")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM", "elf_to_scrambled_rom_vmem", "opentitan_rom_binary")
 load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
@@ -237,22 +238,26 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_epmp_test",
     srcs = [
         "rom_epmp_test.c",
     ],
-    linkopts = [
-        "-Wl,--defsym=rom_test=1",
-    ],
-    # This test doesn't use the OTTF.
-    targets = ["verilator"],  # Can only run in verilator right now.
+    # This test doesn't use the OTTF and can only run in verilator right now.
+    #
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
+    # Setting `kind = "rom"` makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
     # Verilator or CW310 params).
-    test_in_rom = True,
+    exec_env = {
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    kind = "rom",
+    linker_script = ":linker_script",
+    linkopts = [
+        "-Wl,--defsym=rom_test=1",
+    ],
     deps = [
         ":rom_without_keys",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
