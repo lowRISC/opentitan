@@ -238,9 +238,10 @@ impl Dediprog {
         )?;
         let device_id_str = std::str::from_utf8(&device_id_bytes)?;
         let Some(captures) = DEDIPROG_VERSION_REGEX.captures(device_id_str) else {
-            return Err(TransportError::UsbOpenError(
-                format!("Unrecognized Dediprog version: {}", &device_id_str),
-            )
+            return Err(TransportError::UsbOpenError(format!(
+                "Unrecognized Dediprog version: {}",
+                &device_id_str
+            ))
             .into());
         };
         let product = captures.get(1).unwrap().as_str();
