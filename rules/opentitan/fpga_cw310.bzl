@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "Cw310BinaryInfo", "get_one_binary_file")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "Cw310BinaryInfo", "Cw340BinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -64,22 +64,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "mapfile": mapfile,
     }
 
-def _create_provider(ctx, exec_env, **kwargs):
-    """Create a provider for this exec_env."""
-    return Cw310BinaryInfo(**kwargs)
-
-def _get_provider(item):
-    """Given an attr from a rule, return the Cw310BinaryInfo provider if preseent.
-
-    Args:
-      item: a label that may have a provider attached.
-    Returns:
-      Cw310BinaryInfo or None
-    """
-    if Cw310BinaryInfo in item:
-        return item[Cw310BinaryInfo]
-    return None
-
 def _test_dispatch(ctx, exec_env, provider):
     """Dispatch a test for the fpga_cw310 environment.
 
@@ -107,7 +91,7 @@ def _test_dispatch(ctx, exec_env, provider):
     if bitstream:
         data_files.append(bitstream)
     if rom:
-        rom = get_one_binary_file(rom, field = "rom", providers = [Cw310BinaryInfo])
+        rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         data_files.append(rom)
     if otp:
         data_files.append(otp)
@@ -155,15 +139,28 @@ def _test_dispatch(ctx, exec_env, provider):
 def _fpga_cw310(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(
-        get_provider = _get_provider,
+        provider = Cw310BinaryInfo,
         test_dispatch = _test_dispatch,
         transform = _transform,
-        create_provider = _create_provider,
         **fields
     )
 
 fpga_cw310 = rule(
     implementation = _fpga_cw310,
+    attrs = exec_env_common_attrs(),
+)
+
+def _fpga_cw340(ctx):
+    fields = exec_env_as_dict(ctx)
+    return ExecEnvInfo(
+        provider = Cw340BinaryInfo,
+        test_dispatch = _test_dispatch,
+        transform = _transform,
+        **fields
+    )
+
+fpga_cw340 = rule(
+    implementation = _fpga_cw340,
     attrs = exec_env_common_attrs(),
 )
 

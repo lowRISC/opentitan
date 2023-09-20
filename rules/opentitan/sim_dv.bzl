@@ -95,22 +95,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "vmem": vmem,
     }
 
-def _create_provider(ctx, exec_env, **kwargs):
-    """Create a provider for this exec_env."""
-    return SimDvBinaryInfo(**kwargs)
-
-def _get_provider(item):
-    """Given an attr from a rule, return the SimDvBinaryInfo provider if preseent.
-
-    Args:
-      item: a label that may have a provider attached.
-    Returns:
-      SimDvBinaryInfo or None
-    """
-    if SimDvBinaryInfo in item:
-        return item[SimDvBinaryInfo]
-    return None
-
 def _test_dispatch(ctx, exec_env, provider):
     """Dispatch a test for the sim_dv environment.
 
@@ -133,7 +117,7 @@ def _test_dispatch(ctx, exec_env, provider):
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
     if rom:
-        rom = get_one_binary_file(rom, field = "rom", providers = [SimDvBinaryInfo])
+        rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         data_files.append(rom)
     if otp:
         data_files.append(otp)
@@ -179,10 +163,9 @@ def _test_dispatch(ctx, exec_env, provider):
 def _sim_dv(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(
-        get_provider = _get_provider,
+        provider = SimDvBinaryInfo,
         test_dispatch = _test_dispatch,
         transform = _transform,
-        create_provider = _create_provider,
         **fields
     )
 

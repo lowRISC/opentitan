@@ -221,11 +221,7 @@ def _opentitan_binary(ctx):
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + [exec_env.lib]
         provides, signed = _build_binary(ctx, exec_env, name, deps)
-        providers.append(exec_env.create_provider(
-            ctx,
-            exec_env,
-            **provides
-        ))
+        providers.append(exec_env.provider(**provides))
         default_info.append(provides["default"])
 
         # FIXME(cfrantz): logs are a special case and get added into
@@ -316,17 +312,13 @@ def _opentitan_test(ctx):
     # If the test is supplied exactly one file and no deps _and_ that file
     # is a provider for the current exec_env, then we assume that it's a
     # pre-built binary.
-    if len(ctx.attr.srcs) == 1 and len(ctx.attr.deps) == 0 and exec_env.get_provider(ctx.attr.srcs[0]):
-        p = exec_env.get_provider(ctx.attr.srcs[0])
+    if len(ctx.attr.srcs) == 1 and len(ctx.attr.deps) == 0 and exec_env.provider in ctx.attr.srcs[0]:
+        p = ctx.attr.srcs[0][exec_env.provider]
     else:
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + [exec_env.lib]
         provides, signed = _build_binary(ctx, exec_env, name, deps)
-        p = exec_env.create_provider(
-            ctx,
-            exec_env,
-            **provides
-        )
+        p = exec_env.provider(**provides)
 
     executable, runfiles = exec_env.test_dispatch(ctx, exec_env, p)
     return DefaultInfo(

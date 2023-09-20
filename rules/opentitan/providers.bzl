@@ -8,6 +8,10 @@ Cw310BinaryInfo = provider(
     doc = "CW310 Binary Info",
 )
 
+Cw340BinaryInfo = provider(
+    doc = "CW340 Binary Info",
+)
+
 SimDvBinaryInfo = provider(
     doc = "Dv Binary Info",
 )
@@ -18,6 +22,7 @@ SimVerilatorBinaryInfo = provider(
 
 ALL_BINARY_PROVIDERS = [
     Cw310BinaryInfo,
+    Cw340BinaryInfo,
     SimDvBinaryInfo,
     SimVerilatorBinaryInfo,
 ]
