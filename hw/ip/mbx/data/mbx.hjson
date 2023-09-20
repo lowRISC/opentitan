@@ -87,7 +87,7 @@
           }
           { name: "error"
             desc: '''
-                  Set by firmware to signal an error, i.e., unable to provide a response to request.
+                  Set by firmware to signal an error, e.g. unable to provide a response to request.
                   Set by hardware, on SYS.WDATA or SYS.RDATA performing an invalid access.
                   Cleared by the hardware when SYS sets CONTROL.ABORT.
                   '''
@@ -108,8 +108,8 @@
             desc: "Alias of the DoE mailbox busy bit"
             bits: "0"
             resval: "0x1"
-            swaccess: "rw"
-            hwaccess: "hrw"
+            swaccess: "ro"
+            hwaccess: "hwo"
           }
           { name: "sys_intr_state"
             desc: "Alias of the DoE mailbox interrupt status bit"

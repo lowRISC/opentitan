@@ -20,11 +20,11 @@ module mbx_imbx #(
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                        hostif_control_abort_clear_i,
   input  logic                        hostif_control_error_set_i,
-  input  logic                        hostif_status_busy_clear_i,
   // Range configuration for the private SRAM
   input  logic                        hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
+  input  logic                        sys_read_all_i,
   // Device interface from the system side
   input  logic                        sysif_status_busy_i,
   input  logic                        sysif_control_go_set_i,
@@ -68,8 +68,7 @@ module mbx_imbx #(
   assign sys_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
   // Rewind the write pointer to the base
-  assign load_write_ptr = mbx_empty | sys_clear_abort |
-                         (mbx_read & hostif_status_busy_clear_i);
+  assign load_write_ptr = mbx_empty | sys_clear_abort | (mbx_read & sys_read_all_i);
 
   // Advance the write pointer when the valid write command is granted by the tlul_adaptor_host
   assign  advance_write_ptr = hostif_sram_write_req_o & hostif_sram_write_gnt_i;
@@ -115,16 +114,15 @@ module mbx_imbx #(
   logic imbx_set_busy, imbx_clear_busy;
   assign imbx_set_busy  = (mbx_write                   &
                            sysif_control_go_set_i      &
-                           ~hostif_control_error_set_i  &
+                           ~hostif_control_error_set_i &
                            ~sysif_control_abort_set_i) |
                            sysif_control_abort_set_i   |
                            ~hostif_range_valid_i;
 
-  // Exit of mailbox read is used to clear imbx.busy and imbx.ready
-  // Not yet qualified with mbx_read
-  assign imbx_clear_busy = hostif_control_error_set_i |
-                           sysif_control_abort_set_i |
-                           hostif_status_busy_clear_i;
+  // Clear the busy signal if
+  // - all data has been been read from the outbound mailbox
+  // - the host acknowledges an abort request from the sys
+  assign imbx_clear_busy = sys_read_all_i | hostif_control_abort_clear_i;
 
   // External busy update interface
   assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
@@ -143,10 +141,9 @@ module mbx_imbx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_status_busy_clear_i( hostif_status_busy_clear_i   ),
     .hostif_control_error_set_i( hostif_control_error_set_i   ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
-    .sys_read_all_i            ( 1'b0                         ),
+    .sys_read_all_i            ( sys_read_all_i               ),
     .writer_close_mbx_i        ( sysif_control_go_set_i       ),
     .writer_write_valid_i      ( sysif_data_write_valid_i     ),
     // Status signals

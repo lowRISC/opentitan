@@ -144,9 +144,7 @@ module mbx_core_reg_top (
   logic control_error_qs;
   logic control_error_wd;
   logic status_re;
-  logic status_we;
   logic status_busy_qs;
-  logic status_busy_wd;
   logic status_sys_intr_state_qs;
   logic status_sys_intr_enable_qs;
   logic address_range_regwen_we;
@@ -406,25 +404,22 @@ module mbx_core_reg_top (
   // R[status]: V(True)
   logic status_qe;
   logic [2:0] status_flds_we;
-  // This ignores QEs that are set to constant 0 due to read-only fields.
-  logic unused_status_flds_we;
-  assign unused_status_flds_we = ^(status_flds_we & 3'h6);
-  assign status_qe = &(status_flds_we | 3'h6);
+  // In case all fields are read-only the aggregated register QE will be zero as well.
+  assign status_qe = &status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_busy (
     .re     (status_re),
-    .we     (status_we),
-    .wd     (status_busy_wd),
+    .we     (1'b0),
+    .wd     ('0),
     .d      (hw2reg.status.busy.d),
     .qre    (),
     .qe     (status_flds_we[0]),
-    .q      (reg2hw.status.busy.q),
+    .q      (),
     .ds     (),
     .qs     (status_busy_qs)
   );
-  assign reg2hw.status.busy.qe = status_qe;
 
   //   F[sys_intr_state]: 1:1
   prim_subreg_ext #(
@@ -824,9 +819,6 @@ module mbx_core_reg_top (
 
   assign control_error_wd = reg_wdata[1];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign status_we = addr_hit[5] & reg_we & !reg_error;
-
-  assign status_busy_wd = reg_wdata[0];
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign address_range_regwen_wd = reg_wdata[3:0];
@@ -861,7 +853,7 @@ module mbx_core_reg_top (
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
     reg_we_check[4] = control_we;
-    reg_we_check[5] = status_we;
+    reg_we_check[5] = 1'b0;
     reg_we_check[6] = address_range_regwen_we;
     reg_we_check[7] = address_range_valid_we;
     reg_we_check[8] = inbound_base_address_gated_we;

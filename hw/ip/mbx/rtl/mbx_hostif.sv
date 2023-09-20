@@ -32,7 +32,6 @@ module mbx_hostif
   output logic                          hostif_control_error_set_o,
   input  logic                          hostif_control_error_i,
   // Access to the status register
-  output logic                          hostif_status_busy_clear_o,
   input  logic                          hostif_status_busy_i,
   input  logic                          hostif_status_sys_intr_en_i,
   input  logic                          hostif_status_sys_intr_state_i,
@@ -155,7 +154,7 @@ module mbx_hostif
 
   // Writing a 1 to control.abort means clearing the abort condition
   assign hostif_control_abort_clear_o = reg2hw.control.abort.qe & reg2hw.control.abort.q;
-  assign  hw2reg.control.abort.d = abort_q;
+  assign hw2reg.control.abort.d       = abort_q;
 
   assign hostif_control_error_set_o = reg2hw.control.error.qe & reg2hw.control.error.q;
   assign hw2reg.control.error.d     = hostif_control_error_i;
@@ -168,9 +167,6 @@ module mbx_hostif
   assign hw2reg.status.busy.d            = hostif_status_busy_i;
   assign hw2reg.status.sys_intr_enable.d = hostif_status_sys_intr_en_i;
   assign hw2reg.status.sys_intr_state.d  = hostif_status_sys_intr_state_i;
-
-  // External write logic
-  assign hostif_status_busy_clear_o = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
 
   // Address config valid
   assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;

@@ -61,7 +61,7 @@ module mbx
   logic sysif_status_busy, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_busy_clear, hostif_control_abort_clear, hostif_control_error_set;
+  logic hostif_control_abort_clear, hostif_control_error_set;
 
   // Alias signals from the sys interface
   logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr;
@@ -108,7 +108,6 @@ module mbx
     .hostif_control_error_set_o          ( hostif_control_error_set           ),
     .hostif_control_error_i              ( sysif_status_error                 ),
     // Access to the status register
-    .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_sys_intr_en_i         ( doe_intr_en_o                      ),
     .hostif_status_sys_intr_state_i      ( doe_intr_o                         ),
@@ -143,6 +142,9 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
   logic imbx_pending;
   logic imbx_status_busy_valid, imbx_status_busy;
+
+  // Communication from the outbox to the inbox that all data has been read
+  logic sys_read_all;
 
   // Interface signals for SRAM host access to write the incoming data to memory
   logic imbx_sram_write_req, imbx_sram_write_gnt;
@@ -219,7 +221,7 @@ module mbx
     .imbx_status_busy_o          ( imbx_status_busy             ),
     .hostif_control_abort_clear_i( hostif_control_abort_clear   ),
     .hostif_control_error_set_i  ( hostif_control_error_set     ),
-    .hostif_status_busy_clear_i  ( hostif_status_busy_clear     ),
+    .sys_read_all_i              ( sys_read_all                 ),
     // SRAM range configuration
     .hostif_range_valid_i        ( hostif_address_range_valid   ),
     .hostif_base_i               ( hostif_imbx_base             ),
@@ -253,6 +255,7 @@ module mbx
     .hostif_range_valid_i            ( hostif_address_range_valid     ),
     .hostif_base_i                   ( hostif_ombx_base               ),
     .hostif_limit_i                  ( hostif_ombx_limit              ),
+    .sys_read_all_o                  ( sys_read_all                   ),
     // Control signals from the host and system interface
     // Writing a 1 to control.abort register clears the abort condition
     .hostif_control_abort_clear_i    ( hostif_control_abort_clear     ),
