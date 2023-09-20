@@ -12,7 +12,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(dma_base_vseq)
 
-  bit sim_fatal_exit_on_dma_error=1;
+  bit sim_fatal_exit_on_dma_error = 1;
 
   // Valid address space ID conbinations
   addr_space_id_t valid_combinations[] = '{
@@ -179,14 +179,9 @@ class dma_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  // Function: Set hardware handshake interrupt bits based on
-  //           handshake_intr_en variable
-  function void set_hardware_handshake_intr(ref dma_seq_item dma_config);
-    // Toggle random bit in hardware handshake input interrupt
-    // such that at least one enabled interrupt bit is asserted
-    bit [NUM_LSIO_TRIGGERS-1:0] handshake_value;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(handshake_value,
-                                       handshake_value & dma_config.handshake_intr_en != 0;)
+  // Set hardware handshake interrupt bits based on randomized class item
+  function void set_hardware_handshake_intr(
+    bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_value);
     cfg.dma_vif.handshake_i = handshake_value;
   endfunction
 
@@ -296,12 +291,15 @@ class dma_base_vseq extends cip_base_vseq #(
     case (asid)
       OtInternalAddr: begin
         seq_host.read_fifo_en = read_fifo_en;
+        `uvm_info(`gfn, $sformatf("set host read_fifo_en = %0b", read_fifo_en), UVM_HIGH)
       end
       SocControlAddr, OtExtFlashAddr: begin
         seq_ctn.read_fifo_en = read_fifo_en;
+        `uvm_info(`gfn, $sformatf("set ctn read_fifo_en = %0b", read_fifo_en), UVM_HIGH)
       end
       SocSystemAddr: begin
         seq_sys.read_fifo_en = read_fifo_en;
+        `uvm_info(`gfn, $sformatf("set sys read_fifo_en = %0b", read_fifo_en), UVM_HIGH)
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
@@ -313,12 +311,15 @@ class dma_base_vseq extends cip_base_vseq #(
     case (asid)
       OtInternalAddr: begin
         seq_host.write_fifo_en = write_fifo_en;
+        `uvm_info(`gfn, $sformatf("set host write_fifo_en = %0b", write_fifo_en), UVM_HIGH)
       end
       SocControlAddr, OtExtFlashAddr: begin
         seq_ctn.write_fifo_en = write_fifo_en;
+        `uvm_info(`gfn, $sformatf("set ctn write_fifo_en = %0b", write_fifo_en), UVM_HIGH)
       end
       SocSystemAddr: begin
         seq_sys.write_fifo_en = write_fifo_en;
+        `uvm_info(`gfn, $sformatf("set sys write_fifo_en = %0b", write_fifo_en), UVM_HIGH)
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
@@ -328,13 +329,49 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
-    // Assign memory models used in tl_device_vseq instances
-    bit read_fifo_en = dma_config.get_read_fifo_en();
-    bit write_fifo_en = dma_config.get_write_fifo_en();
-
-    // Set fifo enable bit
-    set_seq_fifo_read_mode(dma_config.src_asid, read_fifo_en);
-    set_seq_fifo_write_mode(dma_config.dst_asid, write_fifo_en);
+    if (dma_config.handshake) begin
+      // Assign memory models used in tl_device_vseq instances
+      bit [31:0] fifo_interrupt_mask;
+      bit fifo_intr_clear_en;
+      bit [31:0] fifo_intr_clear_reg_addr;
+      bit [31:0] fifo_intr_clear_val;
+      // Variable to check if any of the handshake interrupt is asserted
+      fifo_interrupt_mask = dma_config.handshake_intr_en & cfg.dma_vif.handshake_i;
+      `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
+                UVM_HIGH)
+      fifo_intr_clear_en = fifo_interrupt_mask > 0;
+      // Set fifo enable bit
+      set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
+      set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
+      // Get FIFO register clear enable
+      if (fifo_intr_clear_en) begin
+        // Get FIFO interrupt register address and value
+        // Find the interrupt index with both handshake interrupt enable and clear_int_src
+        for (int i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
+          // Check if at least one handshake interrupt is asserted and
+          // clear_int_src is set
+          if (fifo_interrupt_mask > 0 && dma_config.clear_int_src[i]) begin
+            `uvm_info(`gfn, $sformatf("Detected FIFO reg clear enable at index : %0d", i),
+                      UVM_HIGH)
+            // Set FIFO interrupt clear address and values in correponding pull sequence instance
+            case (dma_config.clear_int_bus)
+              0: seq_ctn.add_fifo_reg({dma_config.int_src_addr[i][31:2], 2'd0},
+                                       dma_config.int_src_wr_val[i]);
+              1: seq_host.add_fifo_reg({dma_config.int_src_addr[i][31:2], 2'd0},
+                                        dma_config.int_src_wr_val[i]);
+              default: begin end
+            endcase
+            break;
+          end
+        end
+        // Set FIFO interrupt clear in correponding pull sequence instance
+        case (dma_config.clear_int_bus)
+          0: seq_ctn.set_fifo_clear(fifo_intr_clear_en);
+          1: seq_host.set_fifo_clear(fifo_intr_clear_en);
+          default: begin end
+        endcase
+      end
+    end
 
     `uvm_info(`gfn, "DMA: Starting Devices", UVM_HIGH)
     fork
@@ -359,6 +396,10 @@ class dma_base_vseq extends cip_base_vseq #(
     set_seq_fifo_write_mode(OtInternalAddr, 0);
     set_seq_fifo_write_mode(SocControlAddr, 0);
     set_seq_fifo_write_mode(SocSystemAddr, 0);
+    // Clear FIFO write clear enable bit
+    seq_ctn.set_fifo_clear(0);
+    seq_host.set_fifo_clear(0);
+    seq_sys.set_fifo_clear(0);
   endtask
 
   // Method to clear memory contents
