@@ -240,8 +240,12 @@ module top_${top["name"]} #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_otp_device_id =
+  % for mod in top["module"]:
+    % if mod["type"] in ["keymgr", "keymgr_dpe"]:
+  assign ${mod["name"]}_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
+    % endif
+  % endfor
 
   logic unused_otp_broadcast_bits;
   assign unused_otp_broadcast_bits = ^{
