@@ -1736,7 +1736,8 @@ typedef enum top_earlgrey_reset_manager_sw_resets {
 typedef enum top_earlgrey_power_manager_reset_requests {
   kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonRstReq = 0, /**<  */
   kTopEarlgreyPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 1, /**<  */
-  kTopEarlgreyPowerManagerResetRequestsLast = 1, /**< \internal Last valid pwrmgr reset_request signal */
+  kTopEarlgreyPowerManagerResetRequestsSensorCtrlRstReqExternal = 2, /**<  */
+  kTopEarlgreyPowerManagerResetRequestsLast = 2, /**< \internal Last valid pwrmgr reset_request signal */
 } top_earlgrey_power_manager_reset_requests_t;
 
 /**

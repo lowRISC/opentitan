@@ -2963,7 +2963,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 2
+          width: 3
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -4642,6 +4642,18 @@
           package: ""
           top_signame: pwrmgr_aon_wakeups
           index: 5
+        }
+        {
+          name: rst_req_external
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: sensor_ctrl
+          default: ""
+          package: ""
+          top_signame: pwrmgr_aon_rstreqs
+          index: 2
         }
         {
           name: tl
@@ -8677,6 +8689,7 @@
       [
         sysrst_ctrl_aon.rst_req
         aon_timer_aon.aon_timer_rst_req
+        sensor_ctrl.rst_req_external
       ]
       main.tl_rv_core_ibex__corei:
       [
@@ -13486,6 +13499,12 @@
         module: aon_timer_aon
         desc: watchdog reset requestt
       }
+      {
+        name: rst_req_external
+        width: "1"
+        module: sensor_ctrl
+        desc: External reset request
+      }
     ]
     int:
     [
@@ -17176,7 +17195,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 2
+        width: 3
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -18231,6 +18250,18 @@
         package: ""
         top_signame: pwrmgr_aon_wakeups
         index: 5
+      }
+      {
+        name: rst_req_external
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: sensor_ctrl
+        default: ""
+        package: ""
+        top_signame: pwrmgr_aon_rstreqs
+        index: 2
       }
       {
         name: tl
@@ -22464,7 +22495,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_rstreqs
-        width: 2
+        width: 3
         type: uni
         end_idx: -1
         act: rcv

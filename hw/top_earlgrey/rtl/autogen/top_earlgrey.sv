@@ -627,7 +627,7 @@ module top_earlgrey #(
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
   logic [5:0] pwrmgr_aon_wakeups;
-  logic [1:0] pwrmgr_aon_rstreqs;
+  logic [2:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__cored_req;
@@ -2044,6 +2044,7 @@ module top_earlgrey #(
       .ast_init_done_i(ast_init_done_i),
       .ast2pinmux_i(ast2pinmux_i),
       .wkup_req_o(pwrmgr_aon_wakeups[5]),
+      .rst_req_external_o(pwrmgr_aon_rstreqs[2]),
       .tl_i(sensor_ctrl_tl_req),
       .tl_o(sensor_ctrl_tl_rsp),
 

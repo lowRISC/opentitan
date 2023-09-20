@@ -84,6 +84,11 @@
     }
   ]
 
+  reset_request_list: [
+    { name: "rst_req_external"
+      desc: "External reset request"
+    }
+  ]
 
   // Define ast_struct package
   inter_signal_list: [
@@ -122,6 +127,12 @@
       name:    "wkup_req",
       act:     "req",
       package: ""
+    },
+
+    { struct:  "logic"
+      type:    "uni"
+      name:    "rst_req_external"
+      act:     "req"
     },
   ],
 

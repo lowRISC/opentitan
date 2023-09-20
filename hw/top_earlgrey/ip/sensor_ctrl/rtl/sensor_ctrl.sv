@@ -41,12 +41,16 @@ module sensor_ctrl
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  output logic rst_req_external_o,
+
   // wakeup to power manager
   output logic wkup_req_o
 );
 
   // The reg_pkg number of alerts and ast alerts must always match
   `ASSERT_INIT(NumAlertsMatch_A, ast_pkg::NumAlerts == NumAlertEvents)
+
+  assign rst_req_external_o = 1'b0;
 
   ///////////////////////////
   // Incoming event synchronization - alerts can assert asynchronously

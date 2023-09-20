@@ -9,9 +9,9 @@ package rstmgr_reg_pkg;
   // Param list
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
-  parameter int NumHwResets = 5;
+  parameter int NumHwResets = 6;
   parameter int NumSwResets = 8;
-  parameter int NumTotalResets = 8;
+  parameter int NumTotalResets = 9;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
@@ -41,7 +41,7 @@ package rstmgr_reg_pkg;
       logic        q;
     } sw_reset;
     struct packed {
-      logic [4:0]  q;
+      logic [5:0]  q;
     } hw_req;
   } rstmgr_reg2hw_reset_info_reg_t;
 
@@ -94,7 +94,7 @@ package rstmgr_reg_pkg;
       logic        de;
     } sw_reset;
     struct packed {
-      logic [4:0]  d;
+      logic [5:0]  d;
       logic        de;
     } hw_req;
   } rstmgr_hw2reg_reset_info_reg_t;
@@ -146,9 +146,9 @@ package rstmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [34:31]
-    rstmgr_reg2hw_reset_req_reg_t reset_req; // [30:27]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [26:21]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [35:32]
+    rstmgr_reg2hw_reset_req_reg_t reset_req; // [31:28]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [27:21]
     rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [20:16]
     rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [15:11]
     rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [7:0] sw_rst_ctrl_n; // [10:3]
@@ -157,8 +157,8 @@ package rstmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_req_reg_t reset_req; // [96:92]
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [91:82]
+    rstmgr_hw2reg_reset_req_reg_t reset_req; // [97:93]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [92:82]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [81:80]
     rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [79:76]
     rstmgr_hw2reg_alert_info_reg_t alert_info; // [75:44]
@@ -247,7 +247,7 @@ package rstmgr_reg_pkg;
   parameter logic [3:0] RSTMGR_PERMIT [28] = '{
     4'b 0001, // index[ 0] RSTMGR_ALERT_TEST
     4'b 0001, // index[ 1] RSTMGR_RESET_REQ
-    4'b 0001, // index[ 2] RSTMGR_RESET_INFO
+    4'b 0011, // index[ 2] RSTMGR_RESET_INFO
     4'b 0001, // index[ 3] RSTMGR_ALERT_REGWEN
     4'b 0001, // index[ 4] RSTMGR_ALERT_INFO_CTRL
     4'b 0001, // index[ 5] RSTMGR_ALERT_INFO_ATTR

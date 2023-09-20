@@ -3141,6 +3141,7 @@ pub enum TopEarlgreyResetManagerSwResets {
 pub enum TopEarlgreyPowerManagerResetRequests {
     SysrstCtrlAonRstReq = 0,
     AonTimerAonAonTimerRstReq = 1,
+    SensorCtrlRstReqExternal = 2,
 }
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.

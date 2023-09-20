@@ -184,8 +184,11 @@ module pwrmgr_reg_top (
   logic reset_en_en_0_wd;
   logic reset_en_en_1_qs;
   logic reset_en_en_1_wd;
+  logic reset_en_en_2_qs;
+  logic reset_en_en_2_wd;
   logic reset_status_val_0_qs;
   logic reset_status_val_1_qs;
+  logic reset_status_val_2_qs;
   logic escalate_reset_status_qs;
   logic wake_info_capture_dis_we;
   logic wake_info_capture_dis_qs;
@@ -972,6 +975,33 @@ module pwrmgr_reg_top (
     .qs     (reset_en_en_1_qs)
   );
 
+  //   F[en_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_en_en_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (reset_en_gated_we),
+    .wd     (reset_en_en_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_en[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (reset_en_en_2_qs)
+  );
+
 
   // Subregister 0 of Multireg reset_status
   // R[reset_status]: V(False)
@@ -1027,6 +1057,33 @@ module pwrmgr_reg_top (
 
     // to register interface (read)
     .qs     (reset_status_val_1_qs)
+  );
+
+  //   F[val_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_status_val_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.reset_status[2].de),
+    .d      (hw2reg.reset_status[2].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (reset_status_val_2_qs)
   );
 
 
@@ -1326,6 +1383,8 @@ module pwrmgr_reg_top (
   assign reset_en_en_0_wd = reg_wdata[0];
 
   assign reset_en_en_1_wd = reg_wdata[1];
+
+  assign reset_en_en_2_wd = reg_wdata[2];
   assign wake_info_capture_dis_we = addr_hit[14] & reg_we & !reg_error;
 
   assign wake_info_capture_dis_wd = reg_wdata[0];
@@ -1426,11 +1485,13 @@ module pwrmgr_reg_top (
       addr_hit[11]: begin
         reg_rdata_next[0] = reset_en_en_0_qs;
         reg_rdata_next[1] = reset_en_en_1_qs;
+        reg_rdata_next[2] = reset_en_en_2_qs;
       end
 
       addr_hit[12]: begin
         reg_rdata_next[0] = reset_status_val_0_qs;
         reg_rdata_next[1] = reset_status_val_1_qs;
+        reg_rdata_next[2] = reset_status_val_2_qs;
       end
 
       addr_hit[13]: begin
