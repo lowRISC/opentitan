@@ -929,8 +929,6 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_flash_ctrl_ops_jitter_en",
-              "chip_sw_flash_ctrl_access_jitter_en",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
@@ -954,8 +952,6 @@
 
             Test the following functionalities with reduced clock:
 
-            - flash_ctrl initialization
-            - flash_ctrl program, read and erase operations
             - AES, HMAC, KMAC and OTBN operations
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
@@ -963,15 +959,12 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter_reduced_freq",
-              "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
-              "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
               "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
-              "chip_sw_flash_init_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
     {
@@ -1682,14 +1675,9 @@
               - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
               - lc_keymgr_en_o: impacts keymgr
               - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
-              - lc_flash_rma_req_o: impacts flash_ctrl (handshake with lc_flash_ram_ack_i)
-              - lc_flash_rma_seed_o: impacts flash_ctrl
               - lc_check_byp_en_o: impacts otp_ctrl
-              - lc_creator_seed_sw_rw_en_o: impacts flash_ctrl & otp_ctrl
-              - lc_owner_seed_sw_rw_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_rd_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
-              - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
+              - lc_creator_seed_sw_rw_en_o: impacts otp_ctrl
+              - lc_seed_hw_rd_en_o: impacts otp_ctrl
             - These outputs are enabled per the
               [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
 
@@ -1698,7 +1686,6 @@
             Note that the following signals are already verified with connectivity tests and SVAs:
               - lc_dft_en_o (AST connection)
               - lc_cpu_en_o (rv_core_ibex)
-              - lc_nvm_debug_en_o (flash_ctrl)
               - lc_escalate_en_o (multiple)
             '''
       stage: V2
@@ -1718,9 +1705,7 @@
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
         "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
         "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
-        "chip_sw_flash_rma_unlocked",                  // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
-        "chip_sw_flash_ctrl_lc_rw_en",                 // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
         "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
         "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
@@ -2603,14 +2588,12 @@
 
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
-            - chip_sw_flash_scramble
             - chip_sw_keymgr_key_derivation
             - chip_sw_otbn_mem_scramble
             '''
       stage: V2
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
@@ -2624,7 +2607,6 @@
             '''
       stage: V2
       tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
@@ -2752,214 +2734,6 @@
       tests: ["chip_sw_otp_ctrl_escalation"]
     }
 
-    // FLASH (pre-verified IP) integration tests:
-    {
-      name: chip_sw_flash_init
-      desc: '''Verify that flash initialization routine works correctly.
-
-            - Initialize the flash ctrl by writing 1 to the INIT register.
-            - Poll the status register for the initialization to complete.
-            - Verify that during the init process, the flash ctrl requested keys from OTP. Verify
-              with different sets of key values programmed in OTP.
-            - Verify the flash ctrl can read seeds when lc_seed_hw_rd_en is set, otherwise all 1s.
-            - Verify that the flash ctrl sent the creator and owner seeds to keymgr. Verify with
-              different seed values.
-
-            - This test needs to execute as a boot rom image.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_init"]
-    }
-    {
-      name: chip_sw_flash_host_access
-      desc: '''Verify that the flash memory contents can be read by the CPU.
-
-            Nothing extra to do here - most SW based tests fetch code from flash.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_access",
-              "chip_sw_flash_ctrl_access_jitter_en"]
-    }
-    {
-      name: chip_sw_flash_ctrl_ops
-      desc: '''Verify the SW can initiate flash operations via the controller.
-
-            Verify that the CPU can read / program and erase the flash mem. Pick an operation on
-            all data and info partitions. Erase both, bank and page. SW validates the reception of
-            prog empty, prog level, rd full, rd level and op done interrupts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
-    }
-    {
-      name: chip_sw_flash_rma_unlocked
-      desc: '''Verify the flash memory contents can be accessed after in RMA unlock.
-
-            - Provision an RMA_UNLOCK token in OTP.
-            - Repeat the following a few times:
-              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token.
-              - Reset the chip.
-              - Ensure chip revision, device id and manufacturing state can be read through the LC JTAG.
-            - Enable RMA mode, and verify that the SW can access the flash after RMA completion.
-
-            - RMA entry should be done through the  JTAG interface.
-
-            - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing
-              testplan.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_rma_unlocked"]
-    }
-    {
-      name: chip_sw_flash_scramble
-      desc: '''Verify flash scrambling via the controller.
-
-            - Extends the chip_flash_init test.
-            - Verify flash scrambling with different key values programmed in OTP.
-            - Verify read of scrambled contents via both, controller and direct host read.
-
-            - Program a new scramble key in OTP and reboot - this time we need to backdoor load the
-              flash with new test image that is re-scrambled with the new key.
-            - Need to understand the bootstrapping requirements.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_init"]
-    }
-    {
-      name: chip_sw_flash_idle_low_power
-      desc: '''Verify flash_idle signaling to pwrmgr.
-
-            - Initiate flash program or erase over the controller.
-            - Program the pwrmgr to go into deep sleep.
-            - Issue a WFI.
-            - Ensure that the low power entry does not happen due to the ongoing flash operation.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_idle_low_power"]
-    }
-    {
-      name: chip_sw_flash_keymgr_seeds
-      desc: '''Verify the creator and owner seeds are read on flash init provided lc_hw_seed_rd_en
-            is set.
-
-            X-ref'ed with keymgr test.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_key_derivation"]
-    }
-    {
-      name: chip_sw_flash_lc_creator_seed_sw_rw_en
-      desc: '''Verify the lc_creator_seed_sw_rw_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_creator_seed_wipe_on_rma
-      desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_rma_unlocked"]
-    }
-    {
-      name: chip_sw_flash_lc_owner_seed_sw_rw_en
-      desc: '''Verify the lc_owner_seed_sw_rw_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_iso_part_sw_rd_en
-      desc: '''Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
-
-            - Transition from DEV to PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_iso_part_sw_wr_en
-      desc: '''Verify the lc_creator_seed_sw_wr_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_seed_hw_rd_en
-      desc: '''Verify the lc_seed_hw_rd_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the flash ctrl
-              does (or does not) read the creator and owner partitions to fetch the seeds for the
-              keymgr.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_escalate_en
-      desc: '''Verify the lc_escalate_en signal from LC ctrl.
-
-            - Trigger an LC escalation signal by generating an alert.
-            - Verify that all flash accesses are disabled when the escalation kicks in.
-            - Confirm flash accesses are disabled by erroing if the device executes the ISR.
-            - Use assertion based connectivity check to prove that this signal is connected to the
-              flash ctrl.
-
-            X-ref with chip_sw_all_escalation_resets.
-            '''
-      stage: V2
-      tests: ["chip_sw_all_escalation_resets"]
-    }
-    {
-      name: chip_sw_flash_prim_tl_access
-      desc: '''Verify that the SW can read / write the prim tlul interface in flash phy.
-
-            - The prim tlul interface is a open source placeholder for the closed source CSRs that
-              will be implemented in a translation 'shim'.
-            - Verify that this region can be read / written to by the SW in any LC state.
-            '''
-      stage: V2
-      tests: ["chip_prim_tl_access"]
-    }
-    {
-      name: chip_sw_flash_ctrl_clock_freqs
-      desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
-
-            - Enable jitter on the clock while performing erase, write and read operations
-              to the flash.
-            - This sets the test for closed source where the flash access timing matters.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_clock_freqs"]
-    }
-    {
-      name: chip_sw_flash_ctrl_escalation_reset
-      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
-            and operation of ibex core.
-
-            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
-            and let it escalate to reset. Upon alert escalation reset,
-            the internal status should be clean and should not send out more alerts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_crash_alert"]
-    }
-
     ////////////////////////
     // Analog Peripherals //
     // AST, SENSOR_CTRL   //
@@ -3002,8 +2776,6 @@
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_jitter",
-              "chip_sw_flash_ctrl_ops_jitter_en",
-              "chip_sw_flash_ctrl_access_jitter_en",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
@@ -3244,7 +3016,6 @@
               "chip_sw_rstmgr_smoketest",
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
-              "chip_sw_flash_scrambling_smoketest",
             ]
     }
     {

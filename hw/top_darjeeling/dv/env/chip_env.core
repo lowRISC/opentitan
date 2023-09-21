@@ -83,9 +83,6 @@ filesets:
       - seq_lib/chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_flash_init_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_flash_rma_unlocked_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_inject_scramble_seed_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_exit_test_unlocked_bootstrap_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
@@ -128,7 +125,6 @@ filesets:
       - seq_lib/chip_sw_rv_core_ibex_lockstep_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_core_ibex_icache_invalidate_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_aes_masking_off_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_flash_host_gnt_err_inj_vseq.sv: {is_include_file: true}
       - seq_lib/chip_padctrl_attributes_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_shutdown_exception_c_vseq.sv: {is_include_file: true}
