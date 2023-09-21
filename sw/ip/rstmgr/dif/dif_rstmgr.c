@@ -33,7 +33,7 @@ static_assert(kDifRstmgrResetInfoHwReq == (RSTMGR_RESET_INFO_HW_REQ_MASK
               "kDifRstmgrResetInfoHwReq must match the register definition!");
 
 static_assert(
-    RSTMGR_PARAM_NUM_SW_RESETS == 6 ||    // Darjeeling
+    RSTMGR_PARAM_NUM_SW_RESETS == 4 ||    // Darjeeling
         RSTMGR_PARAM_NUM_SW_RESETS == 8,  // Earlgrey
     "Number of software resets has changed, please update this file!");
 

@@ -10,8 +10,6 @@ DARJEELING_ALERTS = [
     "gpio_fatal_fault",
     "spi_device_fatal_fault",
     "i2c0_fatal_fault",
-    "i2c1_fatal_fault",
-    "i2c2_fatal_fault",
     "rv_timer_fatal_fault",
     "otp_ctrl_fatal_macro_error",
     "otp_ctrl_fatal_check_error",
