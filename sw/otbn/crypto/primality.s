@@ -198,50 +198,21 @@ miller_rabin_round:
  *     4.7 Continue.
  *   5. Return PROBABLY PRIME.
  *
- * This routine corresponds to steps 4.3 through 4.7.
- *
- * This loop needs to be constant-time relative to w if w is possibly prime (if
- * we find proof that w is composite we are permitted to break early). To make
- * the algorithm constant-time, we need to:
- *   - Compute b^(w-1) mod w in one loop, rather than separate into b^m mod w
- *     and a squaring loop for trailing zeroes.
- *   - Keep track of whether we have already reached a "step 4.7" condition,
- *     meaning we should return that w is possibly prime regardless of the rest
- *     of the loop.
- *
- * For each bit of (w-1), if we are in the case where all the remaining bits
- * are 0 (steps 4.4-4.5 of the FIPS procedure), then we have four possible
- * cases:
- *   1. If z == w - 1, then b is a witness to the primality of w regardless of
- *      what happens in the rest of the loop (step 4.4/step 4.5.2).
- *   2. If z == 1 and the current bit of (w - 1) is 1, then b is a witness to
- *      the primality of w regardless of what happens in the rest of the loop
- *      (step 4.4).
- *   3. If z == 1 and the current bit of (w - 1) is 0, then w is composite and
- *      we can exit early (optional and not currently implemented).
- *   4. If none of the above, we should continue the exponentiation.
- *
- * In pseudocode, the constant-time variant of steps 4.3-4.7 above looks like:
- *   z = 1
- *   possibly_prime = false // 0 represents "composite"
- *   for i=wlen-1 down to 0 {
- *     // Perform the next step of modular exponentiation.
- *     wi = ((w - 1) >> i) & 1
- *     z = wi ? (z^2 * b) mod w : (z^2) mod w
- *
- *     // Get the lower bits (to see if they're all zero).
- *     w_low = (w - 1) mod (2^i)
- *
- *     // Determine if b is a witness to the primality of w.
- *     possibly_prime |= ((w_low == 0) && (z == w-1))
- *     possibly_prime |= ((w_low == 0) && (wi == 1) && (z == 1))
- *   }
- *   return possibly_prime
+ * If we specialize to the case that w mod 4 = 3, the routine becomes much
+ * simpler and easier to make constant-time, because a in step 1 is always 1.
+ * In pseudocode, the modified version of steps 4.3 through 4.7 is:
+ *   4.3 Compute z = b^((w-1)/2) mod w.
+ *   4.4 If ((z = 1) or (z = w - 1)), then go to step 4.7.
+ *   4.5 No-op.
+ *   4.6 Return COMPOSITE.
+ *   4.7 Continue.
  *
  * Expects the Montgomery constants for w to be precomputed before entry. For
  * this routine, R = 2^(n*256) and R/2 < w < R. None of the input buffers may
  * overlap in DMEM. This routine runs in constant time relative to w if w is
  * possibly prime.
+ *
+ * This routine is constant-time relative to w if w is possibly prime.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -276,207 +247,129 @@ test_witness:
     bn.sid    x8, 0(x21++)
     addi      x8, x8, 1
 
-  /* Initialize work buffer to R mod w (1 in Montgomery form).
-       dmem[dptr_z:dptr_z+n*32] <= montmul(1, RR) = R mod w */
-  addi      x19, x18, 0
-  addi      x21, x15, 0
-  jal       x1, montmul_mul1
-
-  /* Initialize the "possibly prime" tracking register to 0.
-       w21 <= 0 */
-  bn.mov    w21, w31
-
   /* Initialize wide-register pointers. */
   li        x23, 23
   li        x25, 25
 
-  /* Initialize loop counter.
-       x26 <= n */
-  addi      x26, x30, 0
+  /* Clear carry flag.
+       FG0.C <= 0 */
+  bn.sub    w31, w31, w31
 
-  /* Loop through the limbs of (w - 1), most significant first.
+  /* Initialize work buffer to (R - w) mod w (1 in Montgomery form).
+       dmem[dptr_z:dptr_z+n*32] <= (0 - w) mod R = R - w = R mod w */
+  addi      x20, x16, 0
+  addi      x21, x15, 0
+  loop      x30, 3
+    bn.lid    x23, 0(x20++)
+    bn.subb   w23, w31, w23
+    bn.sid    x23, 0(x21++)
 
-     Throughout the loop we maintain a mask that is 0 until all remaining bits
-     of (w - 1) are 0.
-       - We have not yet reached the part of the loop where the remaining bits
-         of (w-1) are all 0 (i.e. step 4.5), OR
-       - We have already discovered that b is a witness to the primality of w
+  /* Initialize loop counter and high limb.
+       x26 <= n - 1
+       w20 <= 0 */
+  addi      x26, x31, 0
+  bn.sub    w20, w20, w20
 
-     Loop invariants at start of loop for iteration i (i=n-1..0):
-       x4  = 0 if w has already been found to be composite, all 1s otherwise
+  /* Perform modular exponentiation to compute b^((w-1)/2).
+
+     Loop through the limbs, most significant first, then iterate through each
+     bit of each limb.
+
+     Loop invariants (i=n-1 to 0):
+       x15 = dptr_z
        x16 = dptr_w
-       x26 = i+1
-       w21 = all 1s if b is already a witness to the primality of w, otherwise 0
-       dmem[dptr_z:dptr_z+n*32] <= (b^((w - 1) >> (i*256)) * R) mod w
-  */
-  loop    x30, 12
-    /* w20 <= 2^256 - 1 */
-    bn.not  w20, w31
+       x26 = i
+       w20 = w[i+1] (or 0 if i=n-1)
+       dmem[dptr_z:dptr_z+n*32] <= (b^((w - 1) >> (i*256)) * R) mod w */
+  loop    x30, 27
+    /* Get the ith limb of w.
+         w25 <= dmem[dptr_w + (i << 5)] = w[i] */
+    slli      x13, x26, 5
+    add       x13, x13, x16
+    bn.lid    x25, 0(x13)
 
-    /* Set flags in preparation for loop.
-         FG0.C <= 1
-         FG0.Z <= 1 */
-    bn.addi  w25, w20, 1
+    /* Get limb i of ((w-1) / 2). Since we know w is odd, we can simply
+       concatenate with the limb above and shift right by 1.
+         w22 <= (w20[0] << 255) | (w[i] >> 1) = (w >> 1)[i] */
+    bn.rshi   w22, w20, w25 >> 1
 
-    /* Compute limb i of (w-1) and set the mask (w20) based on whether
-       the lower limbs are all-zero. */
-    addi     x3, x16, 0
-    loop     x26, 3
-      /* Select mask based on whether the previous limb was 0.
-           w20 <= FG0.Z ? w20 : w31 */
-      bn.sel   w20, w20, w31, FG0.Z
-      /* w25 <= next limb of w */
-      bn.lid   x25, 0(x3++)
-      /* w22 <= (w24 - FG0.C) mod 2^256 = next limb of (w - 1) */
-      bn.subb  w22, w25, w31
+    /* Save the ith limb for the next iteration.
+         w20 <= w[i] */
+    bn.mov    w20, w25
 
-   /* Loop through the bits of this limb. The code is separated in order to
-      make it more readable and to make loop instruction counting easier, even
-      though this is the only call site. We use unconditional branches instead
-      of jal/ret to avoid consuming the call stack unnecessarily. */
-    loopi   256, 2
-      jal      x0, test_witness_step
-_test_witness_step_done:
+   /* Loop through the bits of this limb and multiply/accumulate. */
+    loopi   256, 19
+      /* Perform the next squaring step of modular exponentiation.
+           w4..w[4+(n-1)] = montmul(z, z) */
+      addi      x19, x15, 0
+      addi      x20, x15, 0
+      jal       x1, montmul
+
+      /* Store squaring result in work buffer.
+           dmem[dptr_z:dptr_z+n*32] <= w4..w[4+(n-1)] */
+      addi      x21, x15, 0
+      loop      x30, 2
+        bn.sid    x8, 0(x21++)
+        addi      x8, x8, 1
+
+      /* Perform the next multiplication step of modular exponentiation.
+           w4..w[4+(n-1)] = montmul(z, b) */
+      addi      x19, x14, 0
+      addi      x20, x15, 0
+      jal       x1, montmul
+
+      /* Shift the exponent and update flags; FG0.C will now be the next bit of
+         the exponent.
+           w22 <= (w22 << 1) mod 2^256
+           FG0.C <= w22[255] */
+      bn.add    w22, w22, w22
+
+      /* Select either squared or squared+multiplied result based on FG0.C.
+           dmem[dptr_z:dptr_z+n*32] <=
+             FG0.C ? w4..w[4+(n-1)] : dmem[dptr_z:dptr_z+n*32] */
+      addi      x2, x15, 0
+      li        x8, 4
+      loop      x30, 4
+        /* w23 <= dmem[dptr_z+i*32] */
+        bn.lid    x23, 0(x2)
+        /* w25 <= w[4+i] */
+        bn.movr   x25, x8++
+        /* w23 = FG0.C ? w[4+i] : dmem[dptr_z+i*32] */
+        bn.sel    w23, w25, w23, FG0.C
+        /* dmem[dptr_z+i*32] <= w23 */
+        bn.sid    x23, 0(x2++)
+
+      /* End of inner loop. */
       nop
 
-    /* Update the loop counter.
+    /* Update loop counter.
          x26 <= x26 - 1 = i - 1 */
-    addi     x3, x0, 1
-    sub      x26, x26, x3
-
-  /* TODO: add an FI check here to ensure we completed all loop iterations if
-     the result register is all 1s. */
-
-  ret
-
-/**
- * Inner loop body for the Miller-Rabin primality test.
- *
- * This subroutine expects and maintains the following loop invariants, for
- * loop counter j=0..255:
- *   x9 = 3
- *   x10 = 4
- *   x11 = 2
- *   x23 = 23
- *   x25 = 25
- *   x30 = n
- *   x31 = n-1
- *   w21 = all 1s if b is already a witness to the primality of w, otherwise 0
- *   w22 = ((w - 1)[i] << j) mod 2^256
- *   dmem[dptr_z:dptr_z+n*32] <= (b^((w - 1) >> (i*256+j)) * R) mod w
- *
- * See `test_witness` for more explanation.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  x9: 3, constant
- * @param[in] x10: 4, constant
- * @param[in] x11: 2, constant
- * @param[in] x14: dptr_b, pointer to randomly-generated witness to use for testing
- * @param[in] x15: dptr_z, pointer to temporary working buffer in dmem (n*32 bytes)
- * @param[in] x16: dptr_w, pointer to candidate prime w in dmem
- * @param[in] x17: dptr_m0inv, pointer to Montgomery constant m0' (for w) in dmem
- * @param[in] x23: 23, constant
- * @param[in] x25: 25, constant
- * @param[in] x30: n, number of limbs
- * @param[in] x31: n-1
- * @param[in] w31: all-zero
- * @param[in,out] w21: 2^256-1 if w is possibly prime, 0 otherwise
- * @param[in,out] w22: current limb of exponent, shifted (see invariant)
- * @param[in,out] dmem[dptr_z:dptr_z+n*32]: intermediate value (see invariant)
- *
- * clobbered registers: x2, x3, x5 to x8, x10, x12, x13, x19 to x22,
- *                      w2, w3, w4..w[4+(n-1)], w21 to w30
- * clobbered flag groups: FG0, FG1
- */
-test_witness_step:
-  /* Perform the next squaring step of modular exponentiation.
-       w4..w[4+(n-1)] = montmul(z, z) */
-  addi      x19, x15, 0
-  addi      x20, x15, 0
-  jal       x1, montmul
-
-  /* Store squaring result in work buffer.
-       dmem[dptr_z:dptr_z+n*32] <= w4..w[4+(n-1)] */
-  addi      x21, x15, 0
-  loop      x30, 2
-    bn.sid    x8, 0(x21++)
-    addi      x8, x8, 1
-
-  /* Perform the next multiplication step of modular exponentiation.
-       w4..w[4+(n-1)] = montmul(z, b) */
-  addi      x19, x14, 0
-  addi      x20, x15, 0
-  jal       x1, montmul
-
-  /* Shift the exponent and update flags; FG0.C will now be the next bit of
-     the exponent, and FG0.Z will be 1 if the remaining bits in this limb
-     are zero.
-       w22 <= (w22 << 1) mod 2^256
-       FG0.C <= w22[255]
-       FG0.Z <= w22 mod 2^255 =? 0 */
-  bn.add    w22, w22, w22
-
-  /* Select either squared or squared+multiplied result based on FG0.C.
-       dmem[dptr_z:dptr_z+n*32] <=
-         FG0.C ? w4..w[4+(n-1)] : dmem[dptr_z:dptr_z+n*32] */
-  addi      x2, x15, 0
-  li        x8, 4
-  loop      x30, 4
-    /* w23 <= dmem[dptr_z+i*32] */
-    bn.lid    x23, 0(x2)
-    /* w25 <= w[4+i] */
-    bn.movr   x25, x8++
-    /* w23 = FG0.C ? w[4+i] : dmem[dptr_z+i*32] */
-    bn.sel    w23, w25, w23, FG0.C
-    /* dmem[dptr_z+i*32] <= w23 */
-    bn.sid    x23, 0(x2++)
-
-  /* Select a mask that is all 1s if all the remaining bits of (w-1) are 0.
-     That means BOTH:
-       - the lower limbs are 0 (w20 == 2^256 - 1), AND
-       - the rest of the current limb is 0 (FG0.Z == 1)
-
-       w3  <= FG0.Z ? w20 : w31
-            = all 1s if w mod 2^(i*256+j) is 0, otherwise 0 */
-  bn.sel    w3, w20, w31, FG0.Z
-
-  /* Capture FG0.C, the current bit of (w - 1), as a mask.
-       w24 <= (0 - FG0.C) mod 2^256 = FG0.C ? 2^256 - 1 : 0 */
-  bn.subb   w24, w31, w31
+    li        x3, 1
+    sub       x26, x26, x3
+    /* End of outer loop. */
 
   /* Fully reduce mod w. The `montmul` routine does not guarantee that the
      result is < w, only < R.
        dmem[dptr_z:dptr_z+n*32] <= dmem[dptr_z:dptr_z+n*32] mod w */
   jal       x1, reduce_modw
 
+  /* Check if the intermediate result represents 1 in Montgomery form.
+       w22 <= all 1s if dmem[x15:x15+n*32] is R mod w, otherwise 0 */
+  jal      x1, is_mont1
+  bn.mov   w22, w26
+
   /* Check if the work buffer is (-R) mod w, which is the Montgomery form
      representation of (-1) mod w = w - 1.
         w26 <= all 1s if dmem[x15:x15+n*32] is (-R) mod w, otherwise 0 */
   jal      x1, is_mont_minus1
 
-  /* If the intermediate result is w - 1 (w26) AND the remaining bits of w
-     are all-zero (w3), then b is a witness to the primality of w. This
-     corresponds to steps 4.4 and 4.5.2 of the FIPS procedure.
-       w21 <= w21 | (w3 & w26) */
-  bn.and   w2, w3, w26
-  bn.or    w21, w21, w2
+  /* If either check returned all-ones, then the input is possibly prime. */
+  bn.or    w21, w26, w22
 
-  /* Check if the intermediate result represents 1 in Montgomery form.
-       w26 <= all 1s if dmem[x15:x15+n*32] is R mod w, otherwise 0 */
-  jal      x1, is_mont1
+  /* TODO: add an FI check here to ensure we completed all loop iterations if
+     the result register is all 1s. */
 
-  /* If the intermediate result is 1 (w26) AND the remaining bits of w are
-     all-zero (w3) AND the current bit of w is 1 (w24), then b is a
-     witness to the primality of w. This corresponds to step 4.4 in the
-     FIPS procedure.
-       w21 <= w21 | (w3 & w24 & w26) */
-  bn.and   w2, w3, w26
-  bn.and   w2, w2, w24
-  bn.or    w21, w21, w2
-
-  /* Unconditional branch back to `test_witness`. */
-  jal      x0, _test_witness_step_done
+  ret
 
 /**
  * Fully reduce modulo a candidate prime w.
@@ -592,6 +485,8 @@ is_mont1:
  * specialized and sensitive to the range of w (for some w, 3w - R could also
  * be equivalent to w - 1).
  *
+ * WARNING: this routine clobbers its input in DMEM (dmem[dptr_x..dptr_x+n*32]).
+ *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in] x15: dptr_x, pointer to input buffer x in dmem
@@ -626,22 +521,5 @@ is_mont_minus1:
   /* Check if the input is 1.
        w26 <= all 1s if dmem[dptr_x:dptr_x+n*32] == (-R) mod w, otherwise 0 */
   jal      x1, is_mont1
-
-  /* Clear flags. */
-  bn.sub   w31, w31, w31
-
-  /* Negate the input back to its previous form.
-       dmem[dptr_x:dptr_x+n*32] <= w - dmem[dptr_x:dptr_x+n*32] */
-  addi     x2, x15, 0
-  addi     x3, x16, 0
-  loop     x30, 4
-    /* w23 <= x[i] */
-    bn.lid   x23, 0(x2)
-    /* w25 <= w[i] */
-    bn.lid   x25, 0(x3++)
-    /* w23 <= w[i] - out[i] - FG0.C */
-    bn.subb  w23, w25, w23
-    /* out[i] <= w23 */
-    bn.sid   x23, 0(x2++)
 
   ret

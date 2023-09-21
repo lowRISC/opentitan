@@ -1,7 +1,6 @@
-# For this particular composite/witness pair, we don't hit an early-exit case;
-# expect to finish the loop so w0, w1 == (b^(w-1) * R) % w
-w0 = 0xb470f524ca68f2455a1a85b8dc006872131ceedf6d07883f0f010e0bd222c0e3
-w1 = 0x65a498fbb4f35d9919fea51aaf2e83256c5f624f37bfc26e63a42a3c74f15a65
+# w0, w1 == (- (b^((w-1 / 2)) * R)) % w
+w0 = 0x9b70a02814edc6a217c49109bef18e7aec9a14569efc5bd2002884e71582663f
+w1 = 0xba0e3ecf6d6db86212f9f237bb3c271e9f0bdf2dcdd9645994dbb1a724893d67
 
 # Result from witness test: 0 (indicating "composite")
 w21 = 0

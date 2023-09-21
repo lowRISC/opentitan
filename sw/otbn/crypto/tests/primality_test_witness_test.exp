@@ -1,6 +1,6 @@
-# w0, w1 <= (b^(w-1) * R) % w =  (1 * R) % w
-w0 = 0xf156a85066fa88460f3223454c58b0b878c560be590bf156363935bed6c123f5
-w1 = 0x72e3f25e319a983962943197fd7f7e1a7df76977ec8eb6b6e3d91b8199fb9c6c
+# w0, w1 <= (b^((w-1) / 2) * R) % w =  (-1 * R) % w
+w0 = 0x1d52af5f320aef73e19bb975674e9e8f0e753e834de81d53938d9482527db816
+w1 = 0x1a381b439ccacf8d3ad79cd0050103cb04112d1026e29292384dc8fccc08c726
 
 # Result from witness test: all 1s (indicating "possibly prime")
 w21 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
