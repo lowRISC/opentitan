@@ -62,27 +62,27 @@ These indicators determine:
 - Which bytes should be followed by a STOP symbol.
 
 The format indicator consists of 13-bits.
-That is of one single format byte (entered into the format FIFO through [`FDATA.FBYTE`](registers.md#fdata)), and five 1-bit flags (entered into the format FIFO through registers [`FDATA.READ`](registers.md#fdata), [`FDATA.RCONT`](registers.md#fdata), [`FDATA.START`](registers.md#fdata), [`FDATA.STOP`](registers.md#fdata) and [`FDATA.NAKOK`](registers.md#fdata))
+That is of one single format byte (entered into the format FIFO through [`FDATA.FBYTE`](registers.md#fdata)), and five 1-bit flags (entered into the format FIFO through registers [`FDATA.READB`](registers.md#fdata), [`FDATA.RCONT`](registers.md#fdata), [`FDATA.START`](registers.md#fdata), [`FDATA.STOP`](registers.md#fdata) and [`FDATA.NAKOK`](registers.md#fdata))
 
 The I2C reads each format indicator from the head of FMT_FIFO, and processes them in turn.
 If none of the flags are set for the format indicator, the I2C FSM simply transmits the format byte onto the SCL and SDA pins according to the specification, waits for acknowledgement, and then proceeds to the next format indicator.
 The format flags modulate the behavior as follows.
-- READ (corresponds to [`FDATA.READ`](registers.md#fdata)):
+- READB (corresponds to [`FDATA.READB`](registers.md#fdata)):
 Signifies the format byte ([`FDATA.FBYTE`](registers.md#fdata)) should be treated as an unsigned number, R, and prompts the state machine to read R bytes from the target device.
 Bytes read from the bus are inserted into the RX FIFO where they can be accessed by software.
 A value of 0 is treated as a read of 256 bytes.
 To read a larger byte stream, multiple 256-byte reads can be chained together using the RCONT flag.
-- RCONT (corresponds to FIFO inputs [`FDATA.RCONT`](registers.md#fdata), only used with READ):
+- RCONT (corresponds to FIFO inputs [`FDATA.RCONT`](registers.md#fdata), only used with READB):
     - If RCONT is set, the format byte represents part of a longer sequence of reads, allowing for reads to be chained indefinitely.
     - The RCONT flag indicates the final byte returned with the current read should be responded to with an ACK, allowing the target to continue sending data.
     (Note that the first R-1 bytes read will still be acknowledged regardless of whether RCONT is asserted or not.)
-- START (corresponds to [`FDATA.START`](registers.md#fdata), Ignored when used with READ):
+- START (corresponds to [`FDATA.START`](registers.md#fdata), Ignored when used with READB):
 Issue a START condition before transmitting the format byte on the bus.
 This flag may also be used to issue a repeated start condition.
 - STOP (corresponds to [`FDATA.STOP`](registers.md#fdata)):
 Issue a STOP signal after processing this current entry in the FMT FIFO.
-Note that this flag is not compatible with (READ & RCONT), and will cause bus conflicts.
-- NAKOK (corresponds to [`FDATA.NAKOK`](registers.md#fdata), Not compatible with READ):
+Note that this flag is not compatible with (READB & RCONT), and will cause bus conflicts.
+- NAKOK (corresponds to [`FDATA.NAKOK`](registers.md#fdata), Not compatible with READB):
 Typically every byte transmitted must also receive an ACK signal, and the IP will raise an exception if no ACK is received.
 However, there are some I2C commands which do not require an ACK.
 In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.

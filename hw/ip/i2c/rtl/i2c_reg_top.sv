@@ -226,7 +226,7 @@ module i2c_reg_top (
   logic [7:0] fdata_fbyte_wd;
   logic fdata_start_wd;
   logic fdata_stop_wd;
-  logic fdata_read_wd;
+  logic fdata_readb_wd;
   logic fdata_rcont_wd;
   logic fdata_nakok_wd;
   logic fifo_ctrl_we;
@@ -1728,19 +1728,19 @@ module i2c_reg_top (
   );
   assign reg2hw.fdata.stop.qe = fdata_qe;
 
-  //   F[read]: 10:10
+  //   F[readb]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_fdata_read (
+  ) u_fdata_readb (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (fdata_we),
-    .wd     (fdata_read_wd),
+    .wd     (fdata_readb_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1748,13 +1748,13 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (fdata_flds_we[3]),
-    .q      (reg2hw.fdata.read.q),
+    .q      (reg2hw.fdata.readb.q),
     .ds     (),
 
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.fdata.read.qe = fdata_qe;
+  assign reg2hw.fdata.readb.qe = fdata_qe;
 
   //   F[rcont]: 11:11
   prim_subreg #(
@@ -2884,7 +2884,7 @@ module i2c_reg_top (
 
   assign fdata_stop_wd = reg_wdata[9];
 
-  assign fdata_read_wd = reg_wdata[10];
+  assign fdata_readb_wd = reg_wdata[10];
 
   assign fdata_rcont_wd = reg_wdata[11];
 

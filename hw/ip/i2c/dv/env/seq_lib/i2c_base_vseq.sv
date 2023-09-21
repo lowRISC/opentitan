@@ -431,7 +431,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     ral.fdata.nakok.set(item.nakok);
     ral.fdata.rcont.set(item.rcont);
-    ral.fdata.read.set(item.read);
+    ral.fdata.readb.set(item.read);
     ral.fdata.stop.set(item.stop);
     ral.fdata.start.set(item.start);
     ral.fdata.fbyte.set(item.fbyte);

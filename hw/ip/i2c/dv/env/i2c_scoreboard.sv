@@ -274,7 +274,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             fbyte = get_field_val(ral.fdata.fbyte, item.a_data);
             start = bit'(get_field_val(ral.fdata.start, item.a_data));
             stop  = bit'(get_field_val(ral.fdata.stop, item.a_data));
-            read  = bit'(get_field_val(ral.fdata.read, item.a_data));
+            read  = bit'(get_field_val(ral.fdata.readb, item.a_data));
             rcont = bit'(get_field_val(ral.fdata.rcont, item.a_data));
             nakok = bit'(get_field_val(ral.fdata.nakok, item.a_data));
             if (cfg.en_cov) begin

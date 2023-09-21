@@ -263,13 +263,13 @@ module i2c_core import i2c_pkg::*;
   assign fmt_fifo_wvalid     = reg2hw.fdata.fbyte.qe &
                                reg2hw.fdata.start.qe &
                                reg2hw.fdata.stop.qe  &
-                               reg2hw.fdata.read.qe  &
+                               reg2hw.fdata.readb.qe  &
                                reg2hw.fdata.rcont.qe &
                                reg2hw.fdata.nakok.qe;
   assign fmt_fifo_wdata[7:0] = reg2hw.fdata.fbyte.q;
   assign fmt_fifo_wdata[8]   = reg2hw.fdata.start.q;
   assign fmt_fifo_wdata[9]   = reg2hw.fdata.stop.q;
-  assign fmt_fifo_wdata[10]  = reg2hw.fdata.read.q;
+  assign fmt_fifo_wdata[10]  = reg2hw.fdata.readb.q;
   assign fmt_fifo_wdata[11]  = reg2hw.fdata.rcont.q;
   assign fmt_fifo_wdata[12]  = reg2hw.fdata.nakok.q;
 

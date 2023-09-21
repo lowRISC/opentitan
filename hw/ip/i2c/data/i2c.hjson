@@ -20,7 +20,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_i2c",
   revisions: [
     {
-      version:            "1.0.0",
+      version:            "1.1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2",
@@ -295,7 +295,7 @@
           desc: "Issue a STOP condition after this operation"
         }
         { bits: "10"
-          name: "READ"
+          name: "READB"
           desc: "Read BYTE bytes from I2C. (256 if BYTE==0)"
         }
         { bits: "11"
