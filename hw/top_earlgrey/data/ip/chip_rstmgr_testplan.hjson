@@ -19,10 +19,31 @@
             is present. Setting some `intr_enable` CSR bit when the test starts and checking it
             after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
             need special consideration.
-            TODO(maturana) Add specific tests once they are developed.
+	    SiVal: This testpoint is exercised by a large number of existing reset cases, yet
+	    it would be best to develop a single test that issues all resets realizable by
+	    software, not on error injection. The requirement for this testpoint is to check
+	    the reset info is checked. CPU must be enabled, but no other OTP or lifecycle
+	    dependencies.
             '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "RSTMGR.RESET_INFO.CAPTURE",
+        "RSTMGR.RESET_INFO.CLEAR"
+      ]
+      tests: [
+        "chip_sw_pwrmgr_smoketest",
+	"chip_sw_pwrmgr_random_sleep_all_reset_reqs",
+	"chip_sw_pwrmgr_wdog_reset",
+      ]
+      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sys_reset_info
@@ -37,12 +58,24 @@
             is present. Setting some `intr_enable` CSR bit when the test starts and checking it
             after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
             need special consideration.
-
-            X-ref with chip_rv_dm_ndm_reset_req.
-
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+	    The rv_dm is an important tool for SiVal, so the stage is set to SV2.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "RSTMGR.RESET_INFO.CAPTURE",
+        "RSTMGR.RESET_INFO.CLEAR",
+      ]
       tests: ["chip_rv_dm_ndm_reset_req"]
+      bazel: []
     }
     {
       name: chip_sw_rstmgr_cpu_info
@@ -51,10 +84,25 @@
             For some software induced resets we can predict the expected contents of `cpu_info`;
             reads of writes to unmapped addresses for example. Generate these resets and verify
             the `cpu_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstmgr_reset_info`.
+            Refer to `chip_sw_rstmgr_*sys_reset_info`.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+	    This can be an important diagnostic tool, so setting it to SV2.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "RSTMGR.CPU_INFO.CAPTURE",
+        "RSTMGR.CPU_INFO.ENABLE",
+      ]
       tests: ["chip_sw_rstmgr_cpu_info"]
+      bazel: ["//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sw_req_reset
@@ -64,9 +112,21 @@
             The reset created should be identical to those caused by hardware sources.
             After reset, the retention SRAM's reset_reason should show that the `reset_info` CSR
             reflects that a software request was the reset cause.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+	    For early SiV we could rely on the external reset, so this seems SV3.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
+      bazel: ["//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_alert_info
@@ -75,11 +135,27 @@
             Various alerts can be created, for example, timeouts, and integrity errors, and at
             least part of the `alert_info` CSR can be predicted. To cause some of these to
             cause a reset, mask the relevant processor interrupts. Trigger these resets and
-            verify the `alert_info` register contents when reset is handled.
-            Refer to `chip_*sys_rstmgr_reset_info`.
+            verify the `alert_info` register contents when reset is handled. Disable
+	    capture for some cases and make sure the alert info remains unchanged.
+            Refer to `chip_sw_rstmgr_*sys_reset_info`.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+	    This can be an important diagnostic tool, so setting it to SV2.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "RSTMGR.ALERT_INFO.CAPTURE",
+        "RSTMGR.ALERT_INFO.ENABLE",
+      ]
       tests: ["chip_sw_rstmgr_alert_info"]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sw_rst
@@ -93,9 +169,35 @@
               `spi_device`, `spi_host0`, `spi_host1`, `usb`, `i2c0`, `i2c1`, `i2c2`.
 
             Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "RSTMGR.SW_RST.I2C2_ENABLE",
+        "RSTMGR.SW_RST.I2C2_REQUEST",
+        "RSTMGR.SW_RST.I2C1_ENABLE",
+        "RSTMGR.SW_RST.I2C1_REQUEST",
+        "RSTMGR.SW_RST.I2C0_ENABLE",
+        "RSTMGR.SW_RST.I2C0_REQUEST",
+        "RSTMGR.SW_RST.USB_ENABLE",
+        "RSTMGR.SW_RST.USB_REQUEST",
+        "RSTMGR.SW_RST.SPI_HOST1_ENABLE",
+        "RSTMGR.SW_RST.SPI_HOST1_REQUEST",
+        "RSTMGR.SW_RST.SPI_HOST0_ENABLE",
+        "RSTMGR.SW_RST.SPI_HOST0_REQUEST",
+        "RSTMGR.SW_RST.SPI_DEVICE_ENABLE",
+        "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
+      ]
       tests: ["chip_sw_rstmgr_sw_rst"]
+      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_escalation_reset
@@ -103,10 +205,42 @@
 
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and rstmgr
-            should not attempt to send out more alerts.
+            should not attempt to send out more alerts. In addition, set some CSR to its
+	    non-reset value and check it returns to its reset value after reset.
+	    SiVal: Rather than relying on injecting fatal faults, escalation reset can be
+	    triggered by not responding to software induced alerts interrupts, and properly
+	    configuring the alert handler. CPU must be enabled, but no other OTP or lifecycle
+	    dependencies.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+      	"RSTMGR.RESET_INFO.CAPTURE",
+	"RSTMGR.ALERT_INFO.CAPTURE",
+      ]
       tests: ["chip_sw_all_escalation_resets"]
+      bazel: []
+    }
+    {
+      name: chip_sw_rstmgr_alert_handler_reset_enables
+      desc: '''Verify the reset manager sends the correct information to the alert handler
+            regarding individual resets being active so it can ignore missing ping responses
+	    from them and avoid triggering spurious escalation. This scenario is caused by
+	    software induced peripheral resets among others. The check is that spurious
+	    escalation is not triggered.
+	    '''
+      stage: V2
+      si_stage: SV3
+      features: ["RSTMGR.ALERT_HANDLER.RESET_STATUS"]
+      tests: ["chip_sw_rstmgr_sw_rst"]
+      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom"]
     }
   ]
 }
