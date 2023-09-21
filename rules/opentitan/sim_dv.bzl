@@ -52,6 +52,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
+    elif ctx.attr.kind == "ram":
+        default = elf
+        rom = None
     elif ctx.attr.kind == "flash":
         # First convert to VMEM, then scramble according to flash
         # scrambling settings.

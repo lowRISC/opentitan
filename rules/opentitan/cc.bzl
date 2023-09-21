@@ -368,6 +368,8 @@ opentitan_test = rv_rule(
         ),
         "data": attr.label_list(
             doc = "Additonal dependencies for this test",
+            allow_files = True,
+            cfg = "exec",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     }.items()),

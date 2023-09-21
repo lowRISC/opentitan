@@ -15,6 +15,7 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga_cw310.bzl",
+    _cw310_jtag_params = "cw310_jtag_params",
     _cw310_params = "cw310_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
@@ -44,6 +45,7 @@ fpga_cw310 = _fpga_cw310
 fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
+cw310_jtag_params = _cw310_jtag_params
 
 sim_verilator = _sim_verilator
 verilator_params = _verilator_params
