@@ -300,8 +300,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     .incr_en_i(v_ctr_inc), // count up
     .decr_en_i(1'b0),
     .step_i(CtrLen'(1)),
+    .commit_i(1'b1),
     .cnt_o(v_ctr),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(ctr_drbg_gen_v_ctr_err_o)
   );
 

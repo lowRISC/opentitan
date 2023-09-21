@@ -81,8 +81,9 @@ module entropy_src_markov_ht #(
       .incr_en_i(samples_no_match_pulse[sh]),
       .decr_en_i(1'b0),
       .step_i(RegWidth'(1)),
+      .commit_i(1'b1),
       .cnt_o(pair_cntr[sh]),
-      .cnt_next_o(),
+      .cnt_after_commit_o(),
       .err_o(pair_cntr_err[sh])
     );
   end : gen_cntrs

@@ -226,15 +226,16 @@ module otbn_loop_controller
     ) u_loop_count (
       .clk_i,
       .rst_ni,
-      .clr_i     (state_reset_i),
-      .set_i     (loop_count_set),
-      .set_cnt_i (new_loop.loop_iterations),
-      .incr_en_i (1'b0),
-      .decr_en_i (loop_count_dec), // count down
-      .step_i    (32'd1),
-      .cnt_o     (loop_counters[i_count]),
-      .cnt_next_o(),
-      .err_o     (loop_counter_err[i_count])
+      .clr_i             (state_reset_i),
+      .set_i             (loop_count_set),
+      .set_cnt_i         (new_loop.loop_iterations),
+      .incr_en_i         (1'b0),
+      .decr_en_i         (loop_count_dec), // count down
+      .step_i            (32'd1),
+      .commit_i          (1'b1),
+      .cnt_o             (loop_counters[i_count]),
+      .cnt_after_commit_o(),
+      .err_o             (loop_counter_err[i_count])
     );
 
     assign loop_counter_err_d[i_count] = loop_counter_err_q[i_count] | loop_counter_err[i_count];

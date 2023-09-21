@@ -404,8 +404,9 @@ module kmac_core
     .incr_en_i(inc_keyidx),
     .decr_en_i(1'b0),
     .step_i(sha3_pkg::KeccakMsgAddrW'(1)),
+    .commit_i(1'b1),
     .cnt_o(key_index),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(key_index_error_o)
   );
 

@@ -243,8 +243,9 @@ module sram_ctrl
     .incr_en_i(init_req),
     .decr_en_i(1'b0),
     .step_i(AddrWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(init_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(init_error)
   );
 

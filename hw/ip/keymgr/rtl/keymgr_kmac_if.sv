@@ -147,8 +147,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     .incr_en_i(1'b0),
     .decr_en_i(cnt_en),
     .step_i(CntWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err)
   );
 

@@ -191,8 +191,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .incr_en_i(1'b0),
     .decr_en_i(cmd_gen_cnt_dec), // Count down.
     .step_i(GenBitsCntrWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(cmd_gen_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cmd_gen_cnt_err_o)
   );
 
