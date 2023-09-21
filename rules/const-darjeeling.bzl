@@ -86,6 +86,22 @@ DARJEELING_ALERTS = [
     "dummy77",
     "dummy78",
     "dummy79",
+    "dummy80",
+    "dummy81",
+    "dummy82",
+    "dummy83",
+    "dummy84",
+    "dummy85",
+    "dummy86",
+    "dummy87",
+    "dummy88",
+    "dummy89",
+    "dummy90",
+    "dummy91",
+    "dummy92",
+    "dummy93",
+    "dummy94",
+    "dummy95",
 ]
 
 # Must match with hw/top_darjeeling/ip_autogen/alert_handler/data/alert_handler.hjson
