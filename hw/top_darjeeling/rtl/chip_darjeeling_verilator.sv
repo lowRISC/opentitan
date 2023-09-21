@@ -244,6 +244,117 @@ module chip_darjeeling_verilator (
     aon: clk_aon
   };
 
+  ////////////////////////////////////////////
+  // CTN Address decoding and SRAM Instance //
+  ////////////////////////////////////////////
+
+  // synchronization clocks / rests
+  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+
+  localparam int CtnSramDw = top_pkg::TL_DW + tlul_pkg::DataIntgWidth;
+
+  tlul_pkg::tl_h2d_t ctn_egress_tl_h2d;
+  tlul_pkg::tl_d2h_t ctn_egress_tl_d2h;
+
+  tlul_pkg::tl_h2d_t ctn_s1n_tl_h2d[1];
+  tlul_pkg::tl_d2h_t ctn_s1n_tl_d2h[1];
+
+  // Steering signal for address decoding.
+  logic [0:0] ctn_dev_sel_s1n;
+
+  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
+  logic [top_pkg::CtnSramAw-1:0] sram_addr;
+  logic [CtnSramDw-1:0] sram_wdata, sram_wmask, sram_rdata;
+
+  // Steering of requests.
+  // Addresses leaving the RoT through the CTN port are mapped to an internal 1G address space of
+  // 0x4000_0000 - 0x8000_0000. However, the CTN RAM only covers a 1MB region inside that space,
+  // and hence additional decoding and steering logic is needed here.
+  // TODO: this should in the future be replaced by an automatically generated crossbar.
+  always_comb begin
+    // Default steering to generate error response if address is not within the range
+    ctn_dev_sel_s1n = 1'b1;
+    // Steering to CTN SRAM.
+    if ((ctn_egress_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
+        TOP_DARJEELING_RAM_CTN_BASE_ADDR) begin
+      ctn_dev_sel_s1n = 1'd0;
+    end
+  end
+
+  tlul_socket_1n #(
+    .HReqDepth (4'h0),
+    .HRspDepth (4'h0),
+    .DReqDepth (8'h0),
+    .DRspDepth (8'h0),
+    .N         (1)
+  ) u_ctn_s1n (
+    .clk_i        (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .tl_h_i       (ctn_egress_tl_h2d),
+    .tl_h_o       (ctn_egress_tl_d2h),
+    .tl_d_o       (ctn_s1n_tl_h2d),
+    .tl_d_i       (ctn_s1n_tl_d2h),
+    .dev_select_i (ctn_dev_sel_s1n)
+  );
+
+  tlul_adapter_sram #(
+    .SramAw(top_pkg::CtnSramAw),
+    .SramDw(CtnSramDw - tlul_pkg::DataIntgWidth),
+    .Outstanding(2),
+    .ByteAccess(1),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(0),
+    .EnableDataIntgPt(1),
+    .SecFifoPtr      (0)
+  ) u_tlul_adapter_sram_ctn (
+    .clk_i       (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .tl_i        (ctn_s1n_tl_h2d[0]),
+    .tl_o        (ctn_s1n_tl_d2h[0]),
+    // Ifetch is explicitly allowed
+    .en_ifetch_i (prim_mubi_pkg::MuBi4True),
+    .req_o       (sram_req),
+    .req_type_o  (),
+    // SRAM can always accept a request.
+    .gnt_i       (1),
+    .we_o        (sram_we),
+    .addr_o      (sram_addr),
+    .wdata_o     (sram_wdata),
+    .wmask_o     (sram_wmask),
+    .intg_error_o(),
+    .rdata_i     (sram_rdata),
+    .rvalid_i    (sram_rvalid),
+    .rerror_i    (1'b0)
+  );
+
+  prim_ram_1p_adv #(
+    .Depth(top_pkg::CtnSramDepth),
+    .Width(CtnSramDw),
+    .DataBitsPerMask(CtnSramDw),
+    .EnableECC(0),
+    .EnableParity(0),
+    .EnableInputPipeline(1),
+    .EnableOutputPipeline(1)
+  ) u_prim_ram_1p_adv_ctn (
+    .clk_i    (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .req_i    (sram_req),
+    .write_i  (sram_we),
+    .addr_i   (sram_addr),
+    .wdata_i  (sram_wdata),
+    .wmask_i  (sram_wmask),
+    .rdata_o  (sram_rdata),
+    .rvalid_o (sram_rvalid),
+    // No error detection is enabled inside SRAM.
+    // Bus ECC is checked at the consumer side.
+    .rerror_o (),
+    .cfg_i    ('0)
+  );
+
+
+
   ///////////////////////////////////////
   // AST - Common with other platforms //
   ///////////////////////////////////////
@@ -269,10 +380,6 @@ module chip_darjeeling_verilator (
   tlul_pkg::tl_d2h_t ast_base_bus;
 
   assign ast_base_pwr.main_pok = ast_pwst.main_pok;
-
-  // synchronization clocks / rests
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
 
   // monitored clock
   logic sck_monitor;
@@ -539,6 +646,22 @@ module chip_darjeeling_verilator (
     // TODO: instantiate TAP at this level and connect these ports
     .rv_dm_dmi_h2d_i              ( tlul_pkg::TL_H2D_DEFAULT   ),
     .rv_dm_dmi_d2h_o              (                            ),
+
+    // ingress / egress ports and soc proxy signals
+    .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d ),
+    .ctn_tl_d2h_i                 ( ctn_egress_tl_d2h ),
+    .dma_sys_req_o                ( ),
+    .dma_sys_rsp_i                ( '0 ),
+    .dma_ctn_tl_h2d_o             ( ),
+    .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT ),
+    .soc_fatal_alert_req_i        ( 1'b0 ),
+    .soc_fatal_alert_rsp_o        ( ),
+    .soc_recov_alert_req_i        ( ),
+    .soc_recov_alert_rsp_o        ( ),
+    .soc_intr_async_i             ( '0 ),
+    .soc_wkup_async_i             ( 1'b0 ),
+    .soc_rst_req_async_i          ( 1'b0 ),
+    .soc_lsio_trigger_i           ( '0 ),
 
     // USB signals
     .usb_dp_pullup_en_o           (usb_dp_pullup),
