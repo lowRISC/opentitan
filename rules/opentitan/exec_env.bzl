@@ -153,6 +153,7 @@ def exec_env_common_attrs(**kwargs):
         "data": attr.label_list(
             default = kwargs.get("data", []),
             allow_files = True,
+            cfg = "exec",
             doc = "Additonal dependencies for this environment or test",
         ),
         "extract_sw_logs": attr.label(

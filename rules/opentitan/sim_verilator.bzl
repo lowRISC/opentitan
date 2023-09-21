@@ -58,6 +58,10 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
+    elif ctx.attr.kind == "ram":
+        default = elf
+        rom = None
+        rom32 = None
     elif ctx.attr.kind == "flash":
         vmem = convert_to_vmem(
             ctx,
@@ -93,6 +97,8 @@ def _test_dispatch(ctx, exec_env, provider):
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
+    if ctx.attr.kind == "ram":
+        fail("verilator is not capable of executing RAM tests")
 
     # If there is no explicitly specified test_harness, then the harness is opentitantool.
     test_harness = ctx.executable.test_harness
