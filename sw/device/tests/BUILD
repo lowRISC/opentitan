@@ -2830,6 +2830,34 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "openocd_hyperdebug_test",
+    srcs = ["example_test_from_flash.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
+        interface = "hyper310",
+        test_cmds = [
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    cw340 = cw340_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
+        interface = "hyper340",
+        test_cmds = [
+            "--bitstream=\"$(rootpath {bitstream})\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    targets = ["cw310_rom_with_fake_keys"],
+    test_harness = "//sw/host/tests/chip/jtag:openocd_test",
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
     cw310 = cw310_params(
