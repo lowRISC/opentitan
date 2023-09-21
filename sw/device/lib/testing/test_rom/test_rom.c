@@ -4,15 +4,11 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #endif
-#include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
-#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
@@ -31,7 +27,6 @@
 #include "sw/lib/sw/device/silicon_creator/chip_info.h"
 #include "sw/lib/sw/device/silicon_creator/manifest.h"
 
-#include "flash_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 #include "otp_ctrl_regs.h"
 
@@ -51,7 +46,6 @@ extern char _rom_ext_virtual_size[];
 typedef void ottf_entry_point(void);
 
 static dif_clkmgr_t clkmgr;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
@@ -110,35 +104,6 @@ bool rom_test_main(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  // Initialize the flash.
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
-#if !OT_IS_ENGLISH_BREAKFAST
-  // Check the otp to see if flash scramble should be enabled.
-  otp_val = abs_mmio_read32(
-      TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR +
-      OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
-  if (otp_val != 0) {
-    dif_flash_ctrl_region_properties_t default_properties;
-    CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
-        &flash_ctrl, &default_properties));
-    default_properties.scramble_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING);
-    default_properties.ecc_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC);
-    default_properties.high_endurance_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE);
-    CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
-        &flash_ctrl, default_properties));
-  }
-#endif
-  CHECK_DIF_OK(
-      dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
 
   // Setup the UART for printing messages to the console.
   if (kDeviceType != kDeviceSimDV) {
@@ -200,21 +165,8 @@ bool rom_test_main(void) {
     LOG_INFO("Jitter is enabled");
   }
 
-  if (bootstrap_requested() == kHardenedBoolTrue) {
-    // This log statement is used to synchronize the rom and DV testbench
-    // for specific test cases.
-    LOG_INFO("Boot strap requested");
-
-    rom_error_t bootstrap_err = bootstrap();
-    if (bootstrap_err != kErrorOk) {
-      LOG_ERROR("Bootstrap failed with status code: %08x",
-                (uint32_t)bootstrap_err);
-      // Currently the only way to recover is by a hard reset.
-      test_status_set(kTestStatusFailed);
-    }
-  }
-  CHECK_DIF_OK(
-      dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
+  // TODO: bootstrap has been removed for Darjeeling for now due to removal of
+  // flash_ctrl.
 
   // Always select slot a and enable address translation if manifest says to.
   const manifest_t *manifest =

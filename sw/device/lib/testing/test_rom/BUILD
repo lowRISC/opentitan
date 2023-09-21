@@ -43,7 +43,6 @@ cc_library(
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:multibits",
@@ -56,9 +55,7 @@ cc_library(
 cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
@@ -85,7 +82,6 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
@@ -124,7 +120,6 @@ cc_library(
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_darjeeling/ip/ast/data:ast_regs",
         "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
@@ -141,14 +136,12 @@ cc_library(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/top_darjeeling/sw/dif:clkmgr",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:hmac",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
