@@ -343,7 +343,19 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "hmac_sha512_functest",
+    srcs = ["hmac_sha512_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
