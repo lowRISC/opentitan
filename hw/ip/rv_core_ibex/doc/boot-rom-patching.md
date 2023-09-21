@@ -171,23 +171,17 @@ In this case, the dedicated SRAM can be locked after being loaded so that the pa
 
 ### Patch Match / Redirect logic:
 
-- Patch match registers to hold matching addresses from the ROM that need to be redirected to an alternate execution address in the patch SRAM.
-- Patch match register configuration is also part of the signed patch in OTP.
-- It is configured by the patch loader at the time of patch load.
-- Each patch match register has an enable bit.
-  The redirect is in effect only when the enable bit is set, otherwise it is ignored.
-  The patch enable bit is set by the patch loader only upon successful loading and authentication of the patch code & patch match configuration.
-- The patch redirect logic is used to route the instruction fetch address to an alternate location as specified in the matching register, in between the Ibex core and TL-UL crossbar.
-  To avoid problems with cached instructions, Ibex's instruction cache must be disabled while any instructions that may get patched are executed.
-- The patch match works on the concept of redirecting access to read from a ROM address to a redirect address in the RAM.
-  In order to perform this redirect there are 32 patch match register pairs pa_mb_r0 to pa_mb_r31 and pa_rb_r0 to pa_rb_r31 that are structured as follows:
+A patch is a short sequence of instructions that replace some from the original code.
+The replacement is performed by re-routing instruction fetches to fetch from alternative addresses.
+This re-routing is handled by a block that sits between the Ibex core and TL-UL crossbar.
+The block is configured by 32 *patch match registers*.
 
-![Patch match register layout](patch-match.svg)
+A patch match register is structured as follows.
+The patch applies to a small region of code (4, 8, 16 or 32 bytes), starting at a given address.
+This region is encoded in a field called `M_BASE`.
+The destination of the redirection is given by its address, encoded in a field called `R_BASE`.
 
-- The M_BASE must be a 4, 8, 16, or 32 byte aligned address.
-  The R_BASE alignment must match the alignment of M_BASE.
-  The size of the region is determined as follows.
-  The E bit when set to 1 indicates the range is enabled.:
+- If the source region has address `yyy...yyy`, the `M_BASE` field is:
 
 | `M_BASE`            | Size /bytes |
 |---------------------|-------------|
@@ -196,25 +190,44 @@ In this case, the dedicated SRAM can be locked after being loaded so that the pa
 | `yy yyyy yyyy 0111` | 16          |
 | `yy yyyy yyy0 1111` | 32          |
 
-- The match logic is thus as follows:
+- A bitmask can be derived from this pattern as `mask = ~({M_BASE, 1} ^ ({M_BASE, 1} +1));`.
+  This mask will be `1` in all the positions with a `y` in the table.
+  Then the redirection is defined by saying that it applies to an address `addr` if
 
-  ```
-    mask = ~({M_BASE, 1} ^ ({M_BASE, 1} +1));
-    raddr= (R_BASE,2'b00} | (addr & ~mask))
-    addr = ((addr & mask) == ({M_BASE,1'b0} & mask)) && (E == 1) ?
-           raddr : addr
-  ```
-- The L bit when set to 1, prevents any further writes to the register pair - pa_mb_rx and pa_rb_rx
-- Thus a load from ROM may be redirected to an alternate location, expected to be in SRAM, by this mechanism.
+```
+   (addr & mask) == ({M_BASE, 1'b0} & mask)
+```
+
+- If a redirection applies, the redirected address can be computed by adding the bottom bits of `addr` to `R_BASE`.
+  These bits are those that are zero in `mask`, so the redirected address is:
+
+```
+   raddr = {R_BASE, 2'b00} | (addr & ~mask);
+```
+
+- The patch is ignored unless the enable bit, `E`, is set.
+  This bit should only be set by the patch loader after the patch has been loaded and authenticated.
+
+- Finally there is a lock bit, `L`.
+  When this is set, the system will disallow any writes to the match registers.
+
+The fields above are arranged into two 32-bit registers with the following layout:
+
+![Patch match register layout](patch-match.svg)
+
+Here, "WPRI" has the same meaning as in the RISC-V privileged ISA specification document: Reserved Writes Preserve Values, Reads Ignore Values.
+Software should ignore the values read from WPRI fields, and should preserve their values when writing values to other fields of the same register.
+
+Using these patches implies the following system-level considerations:
+
+- To avoid problems with cached instructions, Ibex's instruction cache must be disabled while any instructions that may get patched are executed.
+
 - The integrity of the patch register fields should be protected by hardware countermeasures (e.g., shadowed registers, ECC, MuBi).
   The specific countermeasures are implementation-defined.
+
 - If a redirection covers a part of the instruction stream that should not be patched, one needs to maintain that behavior in the target redirection.
   In particular, as the minimum granularity of a patch is 4 B but the minimum alignment of instructions in ROM is 2 B when compressed instructions are enabled, 2 B of an instruction that lies on the boundary of a patch but functionally is not part of the patch need to be replicated in the patch.
 
-***Note:** (From RISC-V privileged ISA specification document) WPRI: Reserved Writes Preserve Values, Reads Ignore Values.
-Some whole read/write fields are reserved for future use.
-Software should ignore the values read from these fields, and should preserve the values held in these fields when writing values to other fields of the same register.
-These fields are labeled WPRI in the register descriptions.*
 
 ### ROM patching examples
 
