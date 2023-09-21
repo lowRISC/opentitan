@@ -150,7 +150,8 @@ module otbn_controller
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
-  input  logic        insn_cnt_clear_i,
+  input  logic        insn_cnt_clear_ext_i,
+  input  logic        insn_cnt_clear_int_i,
   output logic        mems_sec_wipe_o,
 
   input  logic        software_errs_fatal_i,
@@ -679,7 +680,10 @@ module otbn_controller
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, otbn_state_e, OtbnStateHalt)
 
   // SEC_CM: CTRL_FLOW.COUNT
-  assign insn_cnt_clear = state_reset_i | (state_q == OtbnStateLocked) | insn_cnt_clear_i;
+  // Two explicit clear controls, one comes from external to otbn_core and the other is generated
+  // internally (by otbn_start_stop_control).
+  assign insn_cnt_clear =
+    (state_q == OtbnStateLocked) | insn_cnt_clear_ext_i | insn_cnt_clear_int_i;
 
   always_comb begin
     if (insn_cnt_clear) begin
