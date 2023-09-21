@@ -207,8 +207,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .incr_en_i(esc_cnt_en),
     .decr_en_i(1'b0),
     .step_i(PING_CNT_DW'(1)),
+    .commit_i(1'b1),
     .cnt_o(esc_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(esc_cnt_error)
   );
 
@@ -240,8 +241,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .incr_en_i(1'b0),
     .decr_en_i(!timer_expired), // we are counting down here.
     .step_i(PING_CNT_DW'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_error)
   );
 

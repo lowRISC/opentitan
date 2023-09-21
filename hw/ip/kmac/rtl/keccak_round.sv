@@ -417,8 +417,9 @@ module keccak_round
     .incr_en_i(inc_rnd_num),
     .decr_en_i(1'b0),
     .step_i(RndW'(1)),
+    .commit_i(1'b1),
     .cnt_o(round),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(round_count_error_o)
   );
 

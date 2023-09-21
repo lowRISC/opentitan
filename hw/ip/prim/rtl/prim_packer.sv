@@ -133,17 +133,18 @@ module prim_packer #(
       .clk_i,
       .rst_ni,
 
-      .clr_i      (flush_done),
+      .clr_i              (flush_done),
 
-      .set_i      (cnt_set_en),
-      .set_cnt_i  (cnt_set   ),
+      .set_i              (cnt_set_en),
+      .set_cnt_i          (cnt_set   ),
 
-      .incr_en_i  (cnt_incr_en),
-      .decr_en_i  (cnt_decr_en),
-      .step_i     (cnt_step   ),
+      .incr_en_i          (cnt_incr_en),
+      .decr_en_i          (cnt_decr_en),
+      .step_i             (cnt_step   ),
+      .commit_i           (1'b1       ),
 
-      .cnt_o      (pos_q     ), // Current counter state
-      .cnt_next_o (          ), // Next counter state
+      .cnt_o              (pos_q     ), // Current counter state
+      .cnt_after_commit_o (          ), // Next counter state
 
       .err_o
     );

@@ -45,8 +45,9 @@ module prim_fifo_sync_cnt #(
       .incr_en_i(incr_wptr_i),
       .decr_en_i(1'b0),
       .step_i(Width'(1'b1)),
+      .commit_i(1'b1),
       .cnt_o(wptr_o),
-      .cnt_next_o(),
+      .cnt_after_commit_o(),
       .err_o(wptr_err)
     );
 
@@ -62,8 +63,9 @@ module prim_fifo_sync_cnt #(
       .incr_en_i(incr_rptr_i),
       .decr_en_i(1'b0),
       .step_i(Width'(1'b1)),
+      .commit_i(1'b1),
       .cnt_o(rptr_o),
-      .cnt_next_o(),
+      .cnt_after_commit_o(),
       .err_o(rptr_err)
     );
 

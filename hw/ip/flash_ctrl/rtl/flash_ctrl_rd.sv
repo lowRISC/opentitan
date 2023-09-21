@@ -77,8 +77,9 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
     .incr_en_i(data_wr_o),
     .decr_en_i(1'b0),
     .step_i(12'h1),
+    .commit_i(1'b1),
     .cnt_o(cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err_o)
   );
 

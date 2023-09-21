@@ -33,8 +33,9 @@ module entropy_src_cntr_reg #(
     .incr_en_i(event_i && (~counter_value != '0)),
     .decr_en_i(1'b0),
     .step_i(RegWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(counter_value),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(err_o)
   );
 

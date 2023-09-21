@@ -67,8 +67,9 @@ module alert_handler_esc_timer import alert_pkg::*; (
     .incr_en_i(cnt_en),
     .decr_en_i(1'b0),
     .step_i(EscCntDw'(1)),
+    .commit_i(1'b1),
     .cnt_o(esc_cnt_o),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_error)
   );
 

@@ -79,15 +79,16 @@ module otbn_stack
   ) u_stack_wr_ptr (
     .clk_i,
     .rst_ni,
-    .clr_i      (clear_i),
-    .set_i      (1'b0),
-    .set_cnt_i  ('0),
-    .incr_en_i  (stack_write),
-    .decr_en_i  (stack_read),
-    .step_i     ((StackDepthW+1)'(1'b1)),
-    .cnt_o      (stack_wr_ptr),
-    .cnt_next_o (next_stack_wr_ptr),
-    .err_o      (cnt_err)
+    .clr_i              (clear_i),
+    .set_i              (1'b0),
+    .set_cnt_i          ('0),
+    .incr_en_i          (stack_write),
+    .decr_en_i          (stack_read),
+    .step_i             ((StackDepthW+1)'(1'b1)),
+    .commit_i           (1'b1),
+    .cnt_o              (stack_wr_ptr),
+    .cnt_after_commit_o (next_stack_wr_ptr),
+    .err_o              (cnt_err)
   );
 
   assign cnt_err_d = cnt_err_q | cnt_err;

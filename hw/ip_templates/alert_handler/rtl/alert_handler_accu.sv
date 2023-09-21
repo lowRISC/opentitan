@@ -48,7 +48,8 @@ module alert_handler_accu import alert_pkg::*; (
     .decr_en_i(1'b0),
     .step_i(AccuCntDw'(1)),
     .cnt_o(accu_cnt_o),
-    .cnt_next_o(),
+    .commit_i(1'b1),
+    .cnt_after_commit_o(),
     .err_o(accu_fail_o)
   );
 
