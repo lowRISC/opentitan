@@ -433,6 +433,32 @@
       tests: ["rv_dm_dataaddr_rw_access"]
     }
     {
+      name: halt_resume
+      desc: '''
+            Verify debug module halt/going/resume behavior.
+            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1
+            - After a few usec, acknowledge halt by setting tl_mem_ral.halted to 0. (ack for hart index 0).
+            - Send a single valid command with following process:
+              - Set jtag_dtm_ral.dmi.op to dm::DTM_WRITE
+              - Set jtag_dtm_ral.dmi.address to dm::Command
+              - Set jtag_dtm_ral.dmi.data[31:24] to 0. (Command type AccessRegister).
+            - Check jtag_dmi_ral.abstractcs.busy is 1.
+            - Check flags[0] to make sure internal state machine is at Go state by checking
+              tl_mem_ral.flags[0] is '1'.
+            - Set tl_mem_ral.going to 1. This will make internal state machine move to CmdExecuting state.
+            - Send an acknowledge by setting tl_mem_ral.halted to 0.
+            - Resuming with following process:
+              - Set jtag_dmi_ral.dmcontrol.haltreq to 0
+              - Set jtag_dmi_ral.dmcontrol.resumereq to 1
+            - Check jtag_dmi_ral.abstractcs.busy is 1.
+            - Check flag[0] to make sure internal state move to Resume state by checking
+              tl_mem_ral.flags[0] is '2'.
+            - Send an acknowledge by setting tl_mem_ral.resuming to 0.
+      '''
+      stage: V1
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
