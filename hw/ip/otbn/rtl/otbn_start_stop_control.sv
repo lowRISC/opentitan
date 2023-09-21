@@ -63,6 +63,7 @@ module otbn_start_stop_control
 
   output logic ispr_init_o,
   output logic state_reset_o,
+  output logic insn_cnt_clear_int_o,
   output logic fatal_error_o
 );
 
@@ -156,6 +157,7 @@ module otbn_start_stop_control
     state_d                   = state_q;
     ispr_init_o               = 1'b0;
     state_reset_o             = 1'b0;
+    insn_cnt_clear_int_o      = 1'b0;
     sec_wipe_wdr_o            = 1'b0;
     sec_wipe_wdr_urnd_o       = 1'b0;
     sec_wipe_base_o           = 1'b0;
@@ -191,11 +193,15 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateHalt: begin
+        // Continue to reset state when halted. This is done to ease timing, so the state_reset_o
+        // output is an early signal (just based on the state_q flop here).
+        state_reset_o = 1'b1;
+
         if (stop && !rma_request) begin
           state_d = OtbnStartStopStateLocked;
         end else if (start_i || rma_request) begin
-          ispr_init_o   = 1'b1;
-          state_reset_o = 1'b1;
+          ispr_init_o          = 1'b1;
+          insn_cnt_clear_int_o = 1'b1;
           if (rma_request) begin
             // Do not reseed URND before secure wipe for RMA, as the entropy complex may not be able
             // to provide entropy at this point.
