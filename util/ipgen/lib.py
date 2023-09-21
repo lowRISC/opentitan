@@ -148,7 +148,7 @@ class IpTemplate:
         where = 'template description file {!r}'.format(str(tpldesc_file))
         if 'template_param_list' not in tpldesc_obj:
             raise TemplateParseError(
-                f"Required key 'variables' not found in {where}")
+                f"Required key 'template_param_list' not found in {where}")
 
         try:
             params = TemplateParams.from_raw(
