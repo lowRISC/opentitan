@@ -137,8 +137,9 @@ module rom_ctrl_compare
     .incr_en_i(addr_incr),
     .decr_en_i(1'b0),
     .step_i(AW'(1)),
+    .commit_i(1'b1),
     .cnt_o(addr_q),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(addr_ctr_alert)
   );
 

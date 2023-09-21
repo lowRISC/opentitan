@@ -703,8 +703,9 @@ module edn_core import edn_pkg::*;
     .incr_en_i(1'b0),
     .decr_en_i(send_gencmd && cmd_sent), // count down
     .step_i(RegWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(max_reqs_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(max_reqs_cnt_err)
   );
 

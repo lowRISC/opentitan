@@ -155,8 +155,9 @@ module otp_ctrl_lfsr_timer
     .incr_en_i(1'b0),
     .decr_en_i(!integ_cnt_zero),
     .step_i(LfsrWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(integ_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(integ_cnt_err)
   );
 
@@ -172,8 +173,9 @@ module otp_ctrl_lfsr_timer
     .incr_en_i(1'b0),
     .decr_en_i(!cnsty_cnt_zero && !cnsty_cnt_pause),
     .step_i(LfsrWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(cnsty_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnsty_cnt_err)
   );
 

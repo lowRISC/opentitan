@@ -198,8 +198,9 @@ module flash_ctrl_lcmgr
     .incr_en_i(seed_cnt_en),
     .decr_en_i(1'b0),
     .step_i(SeedCntWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(seed_cnt_q),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(seed_cnt_err_d)
   );
 
@@ -216,8 +217,9 @@ module flash_ctrl_lcmgr
     .incr_en_i(addr_cnt_en),
     .decr_en_i(1'b0),
     .step_i(SeedRdsWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(addr_cnt_q),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(addr_cnt_err_d)
   );
 
@@ -623,8 +625,9 @@ module flash_ctrl_lcmgr
     .incr_en_i(page_cnt_incr),
     .decr_en_i(1'b0),
     .step_i(PageCntWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(page_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(page_err_d)
   );
 
@@ -641,8 +644,9 @@ module flash_ctrl_lcmgr
     .incr_en_i(word_cnt_incr),
     .decr_en_i(1'b0),
     .step_i(WordCntWidth'(MaxRmaProgBurst)),
+    .commit_i(1'b1),
     .cnt_o(word_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(word_err_d)
   );
 
@@ -659,8 +663,9 @@ module flash_ctrl_lcmgr
     .incr_en_i(rma_wipe_idx_incr),
     .decr_en_i(1'b0),
     .step_i(WipeIdxWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(rma_wipe_idx),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(rma_idx_err_d)
   );
 

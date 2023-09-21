@@ -328,8 +328,9 @@ module kmac_entropy
     .incr_en_i(hash_cnt_en),
     .decr_en_i(1'b0),
     .step_i(HashCntW'(1)),
+    .commit_i(1'b1),
     .cnt_o(hash_cnt_o),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(hash_count_error)
   );
 
@@ -384,8 +385,9 @@ module kmac_entropy
     .incr_en_i(|lfsr_seed_en),
     .decr_en_i(1'b0),
     .step_i(SeedIdxWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(seed_idx),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(seed_idx_count_error)
   );
 

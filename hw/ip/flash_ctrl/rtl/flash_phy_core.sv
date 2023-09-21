@@ -251,8 +251,9 @@ module flash_phy_core
     .incr_en_i(host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)),
     .decr_en_i(!host_gnt && host_req_done_o && |host_outstanding),
     .step_i(OutstandingRdWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(host_outstanding),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err_o)
   );
 

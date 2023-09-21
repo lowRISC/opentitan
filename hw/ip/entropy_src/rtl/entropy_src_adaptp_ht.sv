@@ -58,8 +58,9 @@ module entropy_src_adaptp_ht #(
       .incr_en_i(entropy_bit_vld_i),
       .decr_en_i(1'b0),
       .step_i(RegWidth'(entropy_bit_i[sh])),
+      .commit_i(1'b1),
       .cnt_o(test_cnt[sh]),
-      .cnt_next_o(),
+      .cnt_after_commit_o(),
       .err_o(test_cnt_err[sh])
     );
   end : gen_cntrs

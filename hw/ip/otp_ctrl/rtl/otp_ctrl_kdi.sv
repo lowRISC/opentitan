@@ -225,8 +225,9 @@ module otp_ctrl_kdi
     .incr_en_i(seed_cnt_en),
     .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(seed_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(seed_cnt_err)
   );
 
@@ -242,8 +243,9 @@ module otp_ctrl_kdi
     .incr_en_i(entropy_cnt_en),
     .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(entropy_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(entropy_cnt_err)
   );
 

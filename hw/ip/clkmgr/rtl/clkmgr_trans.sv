@@ -82,8 +82,9 @@ module clkmgr_trans
     .incr_en_i(mubi4_test_true_strict(idle[0]) & ~idle_valid),
     .decr_en_i(1'b0),
     .step_i(IdleCntWidth'(1'b1)),
+    .commit_i(1'b1),
     .cnt_o(idle_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err)
   );
 

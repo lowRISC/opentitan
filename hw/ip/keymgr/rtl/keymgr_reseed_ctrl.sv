@@ -100,8 +100,9 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
     .incr_en_i(cnt_en),
     .decr_en_i(1'b0),
     .step_i(16'h1),
+    .commit_i(1'b1),
     .cnt_o(reseed_cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err_o)
   );
 

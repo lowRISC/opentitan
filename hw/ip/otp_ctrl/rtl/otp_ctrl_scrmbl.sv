@@ -291,8 +291,9 @@ module otp_ctrl_scrmbl
     .incr_en_i(cnt_en),
     .decr_en_i(1'b0),
     .step_i(CntWidth'(1)),
+    .commit_i(1'b1),
     .cnt_o(cnt),
-    .cnt_next_o(),
+    .cnt_after_commit_o(),
     .err_o(cnt_err)
   );
 
