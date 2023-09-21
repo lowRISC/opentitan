@@ -241,6 +241,7 @@ module otbn_core
   logic        controller_start;
 
   logic        state_reset;
+  logic        insn_cnt_clear_int;
   logic [31:0] insn_cnt;
 
   logic secure_wipe_req, secure_wipe_ack;
@@ -314,9 +315,10 @@ module otbn_core
     .sec_wipe_mod_urnd_o(sec_wipe_mod_urnd),
     .sec_wipe_zero_o    (sec_wipe_zero),
 
-    .ispr_init_o  (ispr_init),
-    .state_reset_o(state_reset),
-    .fatal_error_o(start_stop_fatal_error)
+    .ispr_init_o         (ispr_init),
+    .state_reset_o       (state_reset),
+    .insn_cnt_clear_int_o(insn_cnt_clear_int),
+    .fatal_error_o       (start_stop_fatal_error)
   );
 
   // Depending on its usage, the instruction address (program counter) is qualified by two valid
@@ -543,9 +545,10 @@ module otbn_core
     .sec_wipe_zero_i       (sec_wipe_zero),
     .secure_wipe_running_i (secure_wipe_running_o),
 
-    .state_reset_i(state_reset),
-    .insn_cnt_o   (insn_cnt),
-    .insn_cnt_clear_i,
+    .state_reset_i       (state_reset),
+    .insn_cnt_o          (insn_cnt),
+    .insn_cnt_clear_int_i(insn_cnt_clear_int),
+    .insn_cnt_clear_ext_i(insn_cnt_clear_i),
     .mems_sec_wipe_o,
 
     .software_errs_fatal_i,
