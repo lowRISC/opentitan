@@ -1002,8 +1002,13 @@ module dma
           capture_transfer_byte = 1'b1;
           capture_chunk_byte    = 1'b1;
 
-          if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
-            ctrl_state_d = DmaShaFinalize;
+          if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+            if (use_inline_hashing) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else begin
+              // Also clear go from hardware?
+              ctrl_state_d = DmaIdle;
+            end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
             ctrl_state_d = DmaIdle;
           end else begin
@@ -1041,8 +1046,13 @@ module dma
           capture_transfer_byte = 1'b1;
           capture_chunk_byte    = 1'b1;
 
-          if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
-            ctrl_state_d = DmaShaFinalize;
+          if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+            if (use_inline_hashing) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else begin
+              // Also clear go from hardware?
+              ctrl_state_d = DmaIdle;
+            end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
             ctrl_state_d = DmaIdle;
           end else begin
@@ -1073,6 +1083,12 @@ module dma
       end
 
       DmaWaitSysWriteGrant: begin
+        // If using inline hashing and data is not yet consumed, apply it
+        if (use_inline_hashing && !sha2_consumed_q) begin
+          sha2_valid = 1'b1;
+          sha2_consumed_d = sha2_ready;
+        end
+
         if (sys_resp_q.grant_vec[SysCmdWrite]) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
@@ -1083,8 +1099,13 @@ module dma
             ctrl_state_d = DmaIdle;
           end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
             ctrl_state_d = DmaShaWait;
-          end else if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
-            ctrl_state_d = DmaShaFinalize;
+          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+            if (use_inline_hashing) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else begin
+              // Also clear go from hardware?
+              ctrl_state_d = DmaIdle;
+            end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
             ctrl_state_d = DmaIdle;
           end else begin
@@ -1102,6 +1123,8 @@ module dma
         end else if (sha2_ready) begin
           if (transfer_byte_q >= reg2hw.total_data_size.q) begin
             ctrl_state_d = DmaShaFinalize;
+          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+            ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
