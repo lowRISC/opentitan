@@ -1,4 +1,4 @@
-/* Copyright lowRISC contributors. */
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -28,42 +28,42 @@ main:
 .data
 
 /**
- * A 1024-bit value that is a multiple of 17 and NOT 3 or 5.
+ * A 1024-bit value that is a multiple of 17 and NOT 3, 5, 11, 17, or 31.
  *
  * Full value for reference =
- * 0xfbe7d1a3a6642d2eb873e0b4c23eda03f9d299d8b5cbd03e735f18989c2f3e275e1d38306b2de24f70253a17b1197785e775bfbd717249031f4258944965eb3ff3078793cbff7898739b0062121017b7a328b77eddc338ec653f324f08771703909453a99c976fdc385d405480f795117ee9807fbe51cbe4b96770fb961719ba
+ * 0x5143649b8bf054404d0ebedfa7a956dabd297218a15c6410335f8fc10f679ea7b4c0c055a34801e48f9a22cc124580ae9de9fda12300eb6cc6a5ab1e9edb8ff24329ef86ec8833131fbfcbbf8e97f9ac5475dc577367b017cb30d1df1c4baa3c63be79499d79f3e1fda86b6ad1790701b6156e77604ad67d9a8e49e8a4c2a845
  */
 .balign 32
 input:
-.word 0x961719ba
-.word 0xb96770fb
-.word 0xbe51cbe4
-.word 0x7ee9807f
-.word 0x80f79511
-.word 0x385d4054
-.word 0x9c976fdc
-.word 0x909453a9
-.word 0x08771703
-.word 0x653f324f
-.word 0xddc338ec
-.word 0xa328b77e
-.word 0x121017b7
-.word 0x739b0062
-.word 0xcbff7898
-.word 0xf3078793
-.word 0x4965eb3f
-.word 0x1f425894
-.word 0x71724903
-.word 0xe775bfbd
-.word 0xb1197785
-.word 0x70253a17
-.word 0x6b2de24f
-.word 0x5e1d3830
-.word 0x9c2f3e27
-.word 0x735f1898
-.word 0xb5cbd03e
-.word 0xf9d299d8
-.word 0xc23eda03
-.word 0xb873e0b4
-.word 0xa6642d2e
-.word 0xfbe7d1a3
+.word 0xa4c2a845
+.word 0x9a8e49e8
+.word 0x604ad67d
+.word 0xb6156e77
+.word 0xd1790701
+.word 0xfda86b6a
+.word 0x9d79f3e1
+.word 0x63be7949
+.word 0x1c4baa3c
+.word 0xcb30d1df
+.word 0x7367b017
+.word 0x5475dc57
+.word 0x8e97f9ac
+.word 0x1fbfcbbf
+.word 0xec883313
+.word 0x4329ef86
+.word 0x9edb8ff2
+.word 0xc6a5ab1e
+.word 0x2300eb6c
+.word 0x9de9fda1
+.word 0x124580ae
+.word 0x8f9a22cc
+.word 0xa34801e4
+.word 0xb4c0c055
+.word 0x0f679ea7
+.word 0x335f8fc1
+.word 0xa15c6410
+.word 0xbd297218
+.word 0xa7a956da
+.word 0x4d0ebedf
+.word 0x8bf05440
+.word 0x5143649b

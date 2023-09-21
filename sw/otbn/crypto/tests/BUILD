@@ -815,11 +815,62 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "relprime_small_primes_multiple_of_7_test",
+    srcs = [
+        "relprime_small_primes_multiple_of_7_test.s",
+    ],
+    exp = "relprime_small_primes_multiple_of_7_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "relprime_small_primes_multiple_of_11_test",
+    srcs = [
+        "relprime_small_primes_multiple_of_11_test.s",
+    ],
+    exp = "relprime_small_primes_multiple_of_11_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
     name = "relprime_small_primes_multiple_of_17_test",
     srcs = [
         "relprime_small_primes_multiple_of_17_test.s",
     ],
     exp = "relprime_small_primes_multiple_of_17_test.exp",
+    deps = [
+        "//sw/otbn/crypto:div",
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:lcm",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:mul",
+        "//sw/otbn/crypto:primality",
+        "//sw/otbn/crypto:rsa_keygen",
+    ],
+)
+
+otbn_sim_test(
+    name = "relprime_small_primes_multiple_of_31_test",
+    srcs = [
+        "relprime_small_primes_multiple_of_31_test.s",
+    ],
+    exp = "relprime_small_primes_multiple_of_31_test.exp",
     deps = [
         "//sw/otbn/crypto:div",
         "//sw/otbn/crypto:gcd",
