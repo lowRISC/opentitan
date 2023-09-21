@@ -173,7 +173,6 @@ static dif_sram_ctrl_t sram_ctrl_mbox;
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
 static const char *rst_cnsty_check = "rst_cnsty_check";
-static const char *flash_fatal_check = "flash_fatal_check";
 static const char *sw_alert_check = "sw_fatal_alert_check";
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
@@ -211,7 +210,6 @@ static const char *clkmgr_inst_name = "clkmgr";
 static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
-static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
 static const char *i2c0_inst_name = "i2c0";
@@ -266,39 +264,6 @@ static void clkmgr_fault_checker(bool enable, const char *ip_inst,
   uint32_t expected = enable ? kDifClkmgrFatalErrTypeRegfileIntegrity : 0;
   CHECK(codes == expected, "For %s got codes 0x%x, expected 0x%x", ip_inst,
         codes, expected);
-}
-
-static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
-                                     const char *type) {
-  dif_flash_ctrl_faults_t faults;
-  CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
-  uint32_t fault_code = (type == we_check) ? faults.register_integrity_error
-                                           : faults.host_gnt_error;
-
-  CHECK(fault_code == enable, "For %s got codes 0x%x, expected 0x%x", ip_inst,
-        fault_code, enable);
-}
-
-static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
-                                          const char *type) {
-  dif_flash_ctrl_faults_t faults;
-  CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
-
-  CHECK(faults.memory_properties_error == 0,
-        "For flash memory_properties err exp 1 get 0");
-  CHECK(faults.read_error == 0, "For flash read err exp 1 get 0");
-  CHECK(faults.prog_window_error == 0, "For flash prog_window err exp 1 get 0");
-  CHECK(faults.prog_type_error == 0, "For flash prog_type err exp 1 get 0");
-  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
-  CHECK(faults.host_gnt_error == 0, "For flash host_gnt err exp 1 get 0");
-  CHECK(faults.register_integrity_error == 0,
-        "For flash register_integrity err exp 1 get 0");
-  CHECK(faults.phy_integrity_error == 0,
-        "For flash phy_integrity err exp 1 get 0");
-  CHECK(faults.lifecycle_manager_error == 0,
-        "For flash lifecycle_manager err exp 1 get 0");
-  CHECK(faults.shadow_storage_error == 0,
-        "For flash shadow_storage err exp 1 get 0");
 }
 
 /*
@@ -845,21 +810,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker_t fc = {trivial_fault_checker, edn1_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopDarjeelingAlertIdFlashCtrlFatalErr: {
-      fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
-                            flash_fatal_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdFlashCtrlFatalStdErr: {
-      fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert: {
-      fault_checker_t fc = {flash_ctrl_prim_fault_checker, flash_ctrl_inst_name,
-                            flash_fatal_check};
-      fault_checker = fc;
-    } break;
     case kTopDarjeelingAlertIdGpioFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, gpio_inst_name, we_check};
       fault_checker = fc;
@@ -1078,19 +1028,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     LOG_INFO("OTP_CTRL error inject done");
   }
 
-  // FlashCtrlFatalErr test requires host read request.
-  if (kExpectedAlertNumber == kTopDarjeelingAlertIdFlashCtrlFatalErr) {
-    enum {
-      kNumTestWords = 16,
-      kNumTestBytes = kNumTestWords * sizeof(uint32_t),
-    };
-    uint32_t host_data[kNumTestWords];
-    // Send host request to trigger host grant from flash_ctrl.
-    mmio_region_memcpy_from_mmio32(
-        mmio_region_from_addr(TOP_DARJEELING_EFLASH_BASE_ADDR),
-        FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
-  }
-
   IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
   LOG_INFO("Alert IRQ seen");
 
@@ -1212,16 +1149,15 @@ bool test_main(void) {
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
     // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
     // blocks the CPU.
-    if (kExpectedAlertNumber == kTopDarjeelingAlertIdFlashCtrlFatalStdErr ||
-        kExpectedAlertNumber == kTopDarjeelingAlertIdSramCtrlMainFatalError ||
+    if (kExpectedAlertNumber == kTopDarjeelingAlertIdSramCtrlMainFatalError ||
         kExpectedAlertNumber == kTopDarjeelingAlertIdLcCtrlFatalStateError ||
         kExpectedAlertNumber == kTopDarjeelingAlertIdOtpCtrlFatalMacroError ||
         kExpectedAlertNumber == kTopDarjeelingAlertIdOtpCtrlFatalCheckError) {
       CHECK(interrupt_count == 0,
-            "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
+            "Expected regular ISR should not run for lc_ctrl fatal "
             "state, or sram_ctrl_main faults");
       CHECK(nmi_count == 0,
-            "Expected nmi should not run for flash_ctrl, lc_ctrl fatal state, "
+            "Expected nmi should not run for lc_ctrl fatal state, "
             "or sram_ctrl_main faults");
     } else {
       CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");

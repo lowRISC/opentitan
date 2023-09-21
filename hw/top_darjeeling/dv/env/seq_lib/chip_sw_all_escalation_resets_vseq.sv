@@ -21,10 +21,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*csrng*prim_reg_we_check*", TopDarjeelingAlertIdCsrngFatalAlert},
     '{"*edn0*prim_reg_we_check*", TopDarjeelingAlertIdEdn0FatalAlert},
     '{"*edn1*prim_reg_we_check*", TopDarjeelingAlertIdEdn1FatalAlert},
-    '{"*flash_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdFlashCtrlFatalStdErr},
-    // test u_eflash.u_flash alert TopDarjeelingAlertIdFlashCtrlFatalErr is implemented in the
-    // `chip_sw_flash_host_gnt_err_inj_vseq` sequence.
-    '{"*flash_ctrl*.u_flash.*prim_reg_we_check*", TopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert},
     '{"*gpio*prim_reg_we_check*", TopDarjeelingAlertIdGpioFatalFault},
     '{"*hmac*prim_reg_we_check*", TopDarjeelingAlertIdHmacFatalFault},
     '{"*i2c0*prim_reg_we_check*", TopDarjeelingAlertIdI2c0FatalFault},
