@@ -15,9 +15,9 @@
  *
  * The read and write pointers and read and write signals are exposed as `stack_rd_idx_i,
  * `stack_wr_idx_o`, `stack_write_o` and `stack_read_o`. `next_top_data_o` and `next_top_valid_o`
- * provide the top_data_o and top_valid_o output that will be seen in the following cycle. This is
- * to enable users to extend the stack in case where it's not a simple matter of adding extra data
- * bits (e.g. where this is a prim_count instance per stack entry).
+ * provide the top_data_o and top_valid_o output that will be seen in the following cycle if
+ * `commit_i` is set. This is to enable users to extend the stack in case where it's not a simple
+ * matter of adding extra data bits (e.g. where this is a prim_count instance per stack entry).
  */
 module otbn_stack
   import otbn_pkg::*;
@@ -43,6 +43,12 @@ module otbn_stack
   output logic [StackWidth-1:0] top_data_o,  // Data on top of the stack
   output logic                  top_valid_o, // Stack is non empty (`top_data_o` is valid)
 
+  input  logic                  commit_i,    // Commit the push/pop action. If commit is not
+                                             // asserted push/pop will not take effect, though
+                                             // next_top_data_o and next_top_valid_o will still
+                                             // indicate the next stack state if the action did
+                                             // occur.
+
   output logic [StackDepthW-1:0] stack_wr_idx_o,
   output logic                   stack_write_o,
   output logic [StackDepthW-1:0] stack_rd_idx_o,
@@ -64,6 +70,8 @@ module otbn_stack
   logic stack_write;
   logic stack_read;
 
+  logic stack_wr_ptr_commit;
+
   assign stack_empty = stack_wr_ptr == '0;
   assign stack_full  = stack_wr_ptr == StackDepth[StackDepthW:0];
 
@@ -72,6 +80,8 @@ module otbn_stack
 
   assign stack_rd_idx = stack_wr_ptr[StackDepthW-1:0] - 1'b1;
   assign stack_wr_idx = pop_i ? stack_rd_idx : stack_wr_ptr[StackDepthW-1:0];
+
+  assign stack_wr_ptr_commit = clear_i | commit_i;
 
   // SEC_CM: STACK_WR_PTR.CTR.REDUN
   prim_count #(
@@ -85,7 +95,7 @@ module otbn_stack
     .incr_en_i          (stack_write),
     .decr_en_i          (stack_read),
     .step_i             ((StackDepthW+1)'(1'b1)),
-    .commit_i           (1'b1),
+    .commit_i           (stack_wr_ptr_commit),
     .cnt_o              (stack_wr_ptr),
     .cnt_after_commit_o (next_stack_wr_ptr),
     .err_o              (cnt_err)
@@ -107,7 +117,7 @@ module otbn_stack
   assign cnt_err_o = cnt_err_d;
 
   always_ff @(posedge clk_i) begin
-    if (stack_write) begin
+    if (stack_write & commit_i) begin
       stack_storage[stack_wr_idx] <= push_data_i;
     end
   end

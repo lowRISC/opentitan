@@ -157,6 +157,7 @@ module otbn_rf_base
     .push_data_i   (wr_data_intg_mux_out),
 
     .pop_i         (pop_stack),
+    .commit_i      (1'b1),
     .top_data_o    (stack_data_intg),
     .top_valid_o   (stack_data_valid),
 

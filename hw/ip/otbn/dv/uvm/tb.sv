@@ -167,7 +167,7 @@ module tb;
       .current_loop_q_iterations (current_loop.loop_iterations),
 
       .loop_stack_rd_idx,
-      .loop_stack_push,
+      .loop_stack_push_req,
       .loop_stack_pop
     );
 
