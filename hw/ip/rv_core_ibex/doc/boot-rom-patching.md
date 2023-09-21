@@ -162,23 +162,12 @@ The second ROM partition with patching capability is added to the architecture d
 
 ### Patch SRAM:
 
-- Used to hold the patch code to be executed upon redirection.
-  This can either be a dedicated SRAM or part of the main SRAM (Darjeeling currently implements the latter).
+This is an area of SRAM used to hold the short code sequences that can be targets for Ibex redirections.
+This can either be implemented with a dedicated SRAM or as part of the main SRAM.
+Darjeeling currently uses part of the main SRAM.
 
-- After valid patches have been loaded into the Patch SRAM and before execution of the second ROM partition starts, writes to the Patch SRAM shall be disabled until the next reset.
-  To support this functionality, OT's SRAM Controller shall be augmented with a write lock mechanism that gets enabled through a write to a CSR in the SRAM Controller.
-
-- Size of the patch RAM **\<TBD\>** KB
-
-- Address region for patch SRAM \<Start address\> to \<End address\> within the OT private address space.
-
-  - *Alternative*: Patch SRAM may be allocated within a carved out region of the OT private SRAM instead of a dedicated patch SRAM.
-
-- The ROM and SRAM address ranges in OT are as follows:
-
-  - ROM: 'h0000_8000, Size = 'h8000
-
-  - SRAM: 'h0100_0000
+If a dedicated SRAM is used, this should be lockable by writing to an appropriate CSR in its controller.
+In this case, the dedicated SRAM can be locked after being loaded so that the patches cannot be changed until the next reset.
 
 ### Patch Match / Redirect logic:
 
