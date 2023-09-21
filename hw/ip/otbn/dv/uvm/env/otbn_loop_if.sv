@@ -33,7 +33,7 @@ interface otbn_loop_if #(
 
   input logic [LoopStackIdxWidth-1:0] loop_stack_rd_idx,
 
-  input logic loop_stack_push,
+  input logic loop_stack_push_req,
   input logic loop_stack_pop
 );
 

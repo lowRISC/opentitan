@@ -578,7 +578,7 @@ class otbn_base_vseq extends cip_base_vseq #(
 
       // Loop warping assumes we're not manipulating the loop stack (i.e. no new loop starting or
       // current loop finishing the same cycle we warp).
-      `DV_CHECK_FATAL(!(cfg.loop_vif.loop_stack_push || cfg.loop_vif.loop_stack_pop) &&
+      `DV_CHECK_FATAL(!(cfg.loop_vif.loop_stack_push_req || cfg.loop_vif.loop_stack_pop) &&
                       !cfg.trace_vif.locking_o)
 
       // Convert loop warp's remaining iteration count to "RTL view"
