@@ -214,7 +214,7 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } read;
+    } readb;
     struct packed {
       logic        q;
       logic        qe;

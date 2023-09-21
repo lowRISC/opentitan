@@ -209,7 +209,7 @@ I2C Format Data
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FBYTE", "bits": 8, "attr": ["wo"], "rotate": 0}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "STOP", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "READ", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RCONT", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "NAKOK", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "FBYTE", "bits": 8, "attr": ["wo"], "rotate": 0}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "STOP", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "READB", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RCONT", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "NAKOK", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                     |
@@ -217,7 +217,7 @@ I2C Format Data
 | 31:13  |        |         |        | Reserved                                                        |
 |   12   |   wo   |   0x0   | NAKOK  | Do not signal an exception if the current byte is not ACK'd     |
 |   11   |   wo   |   0x0   | RCONT  | Do not NACK the last byte read, let the read operation continue |
-|   10   |   wo   |   0x0   | READ   | Read BYTE bytes from I2C. (256 if BYTE==0)                      |
+|   10   |   wo   |   0x0   | READB  | Read BYTE bytes from I2C. (256 if BYTE==0)                      |
 |   9    |   wo   |   0x0   | STOP   | Issue a STOP condition after this operation                     |
 |   8    |   wo   |   0x0   | START  | Issue a START condition before transmitting BYTE.               |
 |  7:0   |   wo   |   0x0   | FBYTE  | Format Byte. Directly transmitted if no flags are set.          |

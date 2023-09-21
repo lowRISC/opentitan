@@ -684,7 +684,7 @@ TEST_F(FifoTest, WriteRaw) {
 
   EXPECT_WRITE32(I2C_FDATA_REG_OFFSET, {
                                            {I2C_FDATA_FBYTE_OFFSET, 0x00},
-                                           {I2C_FDATA_READ_BIT, 0x1},
+                                           {I2C_FDATA_READB_BIT, 0x1},
                                            {I2C_FDATA_RCONT_BIT, 0x1},
                                        });
   EXPECT_DIF_OK(dif_i2c_write_byte_raw(&i2c_, 0x00,
@@ -695,7 +695,7 @@ TEST_F(FifoTest, WriteRaw) {
 
   EXPECT_WRITE32(I2C_FDATA_REG_OFFSET, {
                                            {I2C_FDATA_FBYTE_OFFSET, 0x77},
-                                           {I2C_FDATA_READ_BIT, 0x1},
+                                           {I2C_FDATA_READB_BIT, 0x1},
                                        });
   EXPECT_DIF_OK(dif_i2c_write_byte_raw(&i2c_, 0x77,
                                        {

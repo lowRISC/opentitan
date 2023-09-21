@@ -477,7 +477,7 @@ dif_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
   fmt_byte = bitfield_field32_write(fmt_byte, I2C_FDATA_FBYTE_FIELD, byte);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_START_BIT, flags.start);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_STOP_BIT, flags.stop);
-  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READ_BIT, flags.read);
+  fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_READB_BIT, flags.read);
   fmt_byte =
       bitfield_bit32_write(fmt_byte, I2C_FDATA_RCONT_BIT, flags.read_cont);
   fmt_byte = bitfield_bit32_write(fmt_byte, I2C_FDATA_NAKOK_BIT,
