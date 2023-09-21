@@ -138,7 +138,7 @@ module xbar_${xbar.name}_tb;
 <%
   clkname = "clk_" + host.clocks[0]
   rstname = "rst_" + host.clocks[0] + "_n"
-  num_dev = len(xbar.get_s1n_if_exist(host).ds)
+  num_dev = len(xbar.get_socket_if_exist(host).ds)
 
   addrs = list(map(xbar.get_addr, xbar.get_devices_from_host(host)))
 %>\
