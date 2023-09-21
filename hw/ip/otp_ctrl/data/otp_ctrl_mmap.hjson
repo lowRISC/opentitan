@@ -447,7 +447,7 @@
                     desc: ''' Creator Ownership transfer state management
                     UNLOCKED - ownership of ROT not yet claimed
                     LOCKED   - ownership claimed and
-                    RELEASED - Release ownership (assets have been cleared, ready to xfer
+                    RELEASED - Release ownership (assets have been cleared, ready to xfer)
                     '''
                 }
                 {
