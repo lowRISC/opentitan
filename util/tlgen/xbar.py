@@ -63,30 +63,33 @@ class Xbar:
         """
         return self.get_downstream_device(node.ds[idx].ds)
 
-    def get_s1n_if_exist(self, node: Node) -> Node:
-        """ return SOCKET_1N if exists down from the node, if not return itself
+    def get_socket_if_exist(self, node):  # Node -> Node
+        """ return SOCKET_1N or SOCKET_M1 if exists down from the node, else
+            return itself
         """
         if isinstance(node, Device):
-            log.error("get_s1n_if_exist hits DEVICE type (unexpected)")
+            log.error("get_socket_if_exist hits DEVICE type (unexpected)")
             return node
         if isinstance(node, Socket1N):
             return node
-        return self.get_s1n_if_exist(node.ds[0].ds)
+        if isinstance(node, SocketM1):
+            return node
+        return self.get_socket_if_exist(node.ds[0].ds)
 
     def get_leaf_from_node(self, node: Node, idx: int) -> Node:
         """ get end device node from any node, idx is given to look down.
         """
-        num_dev = len(self.get_s1n_if_exist(node).ds)
+        num_dev = len(self.get_socket_if_exist(node).ds)
         if idx >= num_dev:
             log.error(
                 "given index is greater than number of devices under the node")
 
-        return self.get_leaf_from_s1n(self.get_s1n_if_exist(node), idx)
+        return self.get_leaf_from_s1n(self.get_socket_if_exist(node), idx)
 
     def get_devices_from_host(self, host: Node) -> List[Device]:
         devices = list(
             map(self.get_downstream_device_from_edge,
-                self.get_s1n_if_exist(host).ds))
+                self.get_socket_if_exist(host).ds))
 
         return devices
 
