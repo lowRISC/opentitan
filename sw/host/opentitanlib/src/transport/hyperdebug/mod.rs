@@ -627,10 +627,29 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut jtag = self.inner.jtag.borrow_mut();
-        if jtag.is_none() {
-            jtag.replace(Rc::new(OpenOcdServer::new(None, None, opts)?));
+        if let Some(existing_jtag) = jtag.as_ref() {
+            return Ok(Rc::clone(existing_jtag));
         }
-        Ok(Rc::clone(jtag.as_ref().unwrap()))
+        ensure!(
+            self.cmsis_interface.is_some(),
+            TransportError::InvalidInterface(TransportInterfaceType::Jtag),
+        );
+        // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
+        // HyperDebug device that we are.
+        let usb_device = self.inner.usb_device.borrow();
+        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdServer::new(
+            None,
+            Some(format!(
+                "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
+                include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
+                usb_device.get_vendor_id(),
+                usb_device.get_product_id(),
+                usb_device.get_serial_number(),
+            )),
+            opts,
+        )?);
+        *jtag = Some(Rc::clone(&new_jtag));
+        Ok(new_jtag)
     }
 }
 

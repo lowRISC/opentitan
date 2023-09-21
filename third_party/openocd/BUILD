@@ -40,6 +40,12 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "jtag_cmsis_dap_adapter_cfg",
+    srcs = ["@openocd//:tcl/interface/cmsis-dap.cfg"],
+    visibility = ["//visibility:public"],
+)
+
 configure_make(
     name = "build_openocd",
     # Speed up the build with multiple jobs, but set an upper bound to constrain
