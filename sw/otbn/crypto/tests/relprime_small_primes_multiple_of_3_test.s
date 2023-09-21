@@ -1,4 +1,4 @@
-/* Copyright lowRISC contributors. */
+/* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
@@ -28,42 +28,42 @@ main:
 .data
 
 /**
- * A 1024-bit value that is a multiple of 3 and NOT 5 or 17.
+ * A 1024-bit value that is a multiple of 3 and NOT 5, 7, 11, 17, or 31.
  *
  * Full value for reference =
- * 0x859619e48009dbf121db2000c823862f3ac30d8806a7babf54e784b3a8e2a63c70cca37ce01839e3c6eb780ce56eed882cb9603835f194b2f93ec68a397229d0159827ceb0881ef9c54bc11956b19b9894b2f99373d4d7996bf59a4bcb592cc0933519023a53e46b311acf7565307ad9a419d45066edbfb174bbb8169d56b246
+ * 0xaf8f432e511b6294ef296e4c0c73fdad210a09a5355a5150cc190b64f9e384fbc3bff603b12bf716d6b7493876ea0aa119eb3cca8706f1cfde452289edf554350bfec6b4812f05bcfd3d799c703a901cf7bc99536b6d1c0df187a62eed3114384bba11b8132de7aed844a98ac7597ea336a01df3664d9ebf3126dc99a5896a45
  */
 .balign 32
 input:
-.word 0x9d56b246
-.word 0x74bbb816
-.word 0x66edbfb1
-.word 0xa419d450
-.word 0x65307ad9
-.word 0x311acf75
-.word 0x3a53e46b
-.word 0x93351902
-.word 0xcb592cc0
-.word 0x6bf59a4b
-.word 0x73d4d799
-.word 0x94b2f993
-.word 0x56b19b98
-.word 0xc54bc119
-.word 0xb0881ef9
-.word 0x159827ce
-.word 0x397229d0
-.word 0xf93ec68a
-.word 0x35f194b2
-.word 0x2cb96038
-.word 0xe56eed88
-.word 0xc6eb780c
-.word 0xe01839e3
-.word 0x70cca37c
-.word 0xa8e2a63c
-.word 0x54e784b3
-.word 0x06a7babf
-.word 0x3ac30d88
-.word 0xc823862f
-.word 0x21db2000
-.word 0x8009dbf1
-.word 0x859619e4
+.word 0xa5896a45
+.word 0x3126dc99
+.word 0x664d9ebf
+.word 0x36a01df3
+.word 0xc7597ea3
+.word 0xd844a98a
+.word 0x132de7ae
+.word 0x4bba11b8
+.word 0xed311438
+.word 0xf187a62e
+.word 0x6b6d1c0d
+.word 0xf7bc9953
+.word 0x703a901c
+.word 0xfd3d799c
+.word 0x812f05bc
+.word 0x0bfec6b4
+.word 0xedf55435
+.word 0xde452289
+.word 0x8706f1cf
+.word 0x19eb3cca
+.word 0x76ea0aa1
+.word 0xd6b74938
+.word 0xb12bf716
+.word 0xc3bff603
+.word 0xf9e384fb
+.word 0xcc190b64
+.word 0x355a5150
+.word 0x210a09a5
+.word 0x0c73fdad
+.word 0xef296e4c
+.word 0x511b6294
+.word 0xaf8f432e
