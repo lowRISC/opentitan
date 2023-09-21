@@ -115,9 +115,10 @@ module mbx_imbx #(
   assign imbx_set_busy  = (mbx_write                   &
                            sysif_control_go_set_i      &
                            ~hostif_control_error_set_i &
-                           ~sysif_control_abort_set_i) |
-                           sysif_control_abort_set_i   |
-                           ~hostif_range_valid_i;
+                           ~sysif_control_abort_set_i
+                          ) |
+                          sysif_control_abort_set_i   |
+                          ~hostif_range_valid_i;
 
   // Clear the busy signal if
   // - all data has been been read from the outbound mailbox

@@ -25,6 +25,7 @@ IPS ?= aes           \
        i2c           \
        keymgr        \
        lc_ctrl       \
+       mbx           \
        otp_ctrl      \
        pattgen       \
        pinmux        \
