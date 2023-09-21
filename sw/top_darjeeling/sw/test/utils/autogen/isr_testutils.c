@@ -22,6 +22,7 @@
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/ip/mbx/dif/dif_mbx.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/pattgen/dif/dif_pattgen.h"
@@ -561,6 +562,45 @@ void isr_testutils_kmac_isr(
   CHECK_DIF_OK(dif_kmac_irq_get_type(kmac_ctx.kmac, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_kmac_irq_acknowledge(kmac_ctx.kmac, irq));
+  }
+
+  // Complete the IRQ at the PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
+                                        plic_irq_id));
+}
+
+void isr_testutils_mbx_isr(
+    plic_isr_ctx_t plic_ctx, mbx_isr_ctx_t mbx_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_mbx_irq_t *irq_serviced) {
+  // Claim the IRQ at the PLIC.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
+
+  // Get the peripheral the IRQ belongs to.
+  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+
+  // Get the IRQ that was fired from the PLIC IRQ ID.
+  dif_mbx_irq_t irq =
+      (dif_mbx_irq_t)(plic_irq_id - mbx_ctx.plic_mbx_start_irq_id);
+  *irq_serviced = irq;
+
+  // Check if it is supposed to be the only IRQ fired.
+  if (mbx_ctx.is_only_irq) {
+    dif_mbx_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(dif_mbx_irq_get_state(mbx_ctx.mbx, &snapshot));
+    CHECK(snapshot == (dif_mbx_irq_state_snapshot_t)(1 << irq),
+          "Only mbx IRQ %d expected to fire. Actual IRQ state = %x", irq,
+          snapshot);
+  }
+
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_mbx_irq_get_type(mbx_ctx.mbx, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_mbx_irq_acknowledge(mbx_ctx.mbx, irq));
   }
 
   // Complete the IRQ at the PLIC.
