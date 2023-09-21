@@ -151,7 +151,40 @@
       expose:  "true"
     },
   ],
-
+  features: [
+    { name: "RSTMGR.SW_RST.CHIP_RESET",
+      desc: "Cause a reset of all but some AON and system debug blocks via CSR."
+    }
+% for sw_rst in sw_rsts:
+    { name: "RSTMGR.SW_RST.${sw_rst.upper()}_REQUEST",
+      desc: "Trigger reset of ${sw_rst.upper()} peripheral via CSR."
+    }
+    { name: "RSTMGR.SW_RST.${sw_rst.upper()}_ENABLE",
+      desc: "Enable reset of ${sw_rst.upper()} peripheral via CSR."
+    }
+% endfor
+    { name: "RSTMGR.RESET_INFO.CAPTURE",
+      desc: "Capture information about the causes of a reset."
+    }
+    { name: "RSTMGR.RESET_INFO.CLEAR",
+      desc: "Clear information about the causes of a reset."
+    }
+    { name: "RSTMGR.ALERT_INFO.CAPTURE",
+      desc: "Capture alert crash dump information upon reset."
+    }
+    { name: "RSTMGR.ALERT_INFO.ENABLE",
+      desc: "Enable capture of alert crash dump information."
+    }
+    { name: "RSTMGR.CPU_INFO.CAPTURE",
+      desc: "Capture cpu crash dump information upon reset."
+    }
+    { name: "RSTMGR.CPU_INFO.ENABLE",
+      desc: "Enable capture of cpu crash dump information."
+    }
+    { name: "RSTMGR.ALERT_HANDLER.RESET_STATUS",
+      desc: "Inform alert handler about reset status for each reset."
+    }
+  ]
   // Define rstmgr struct package
   inter_signal_list: [
     { struct:  "logic",
