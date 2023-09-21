@@ -15,6 +15,12 @@ load(
     "filter_key_structs_for_lc_state",
     "opentitan_ram_binary",
 )
+load(
+    "//rules/opentitan:defs.bzl",
+    "cw310_jtag_params",
+    "opentitan_binary",
+    "opentitan_test",
+)
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
@@ -249,26 +255,29 @@ cc_library(
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
-    opentitan_functest(
+    opentitan_test(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
-        srcs = ["idle_functest.c"],
-        cw310 = cw310_params(
-            bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
-            tags = ["manuf"],
-            test_cmds = [
-                "--clear-bitstream",
-                "--bitstream=\"$(rootpath {bitstream})\"",
-                "--elf=\"$(rootpath :sram_empty_functest_fpga_cw310_elf_transition)\"",
-            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        srcs = ["sram_empty_functest.c"],
+        cw310 = cw310_jtag_params(
+            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
-        data = [":sram_empty_functest_fpga_cw310_elf_transition"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+        kind = "ram",
+        linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/dif:uart",
             "//sw/device/lib/runtime:log",
-            "//sw/device/lib/testing:otp_ctrl_testutils",
-            "//sw/device/lib/testing/test_framework:check",
-            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/testing:pinmux_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_test_config",
+            "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/silicon_creator/manuf/lib:sram_start",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
