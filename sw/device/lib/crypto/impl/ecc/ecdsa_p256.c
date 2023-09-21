@@ -104,8 +104,17 @@ status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
   uint32_t mode = kOtbnEcdsaModeSign;
   HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
-  // Set the message digest.
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest, kOtbnVarEcdsaMsg));
+  // Set the message digest. We swap all the bytes so that OTBN can interpret
+  // the digest as a little-endian integer, which is a more natural fit for the
+  // architecture than the big-endian form requested by the specification (FIPS
+  // 186-5, section B.2.1).
+  uint32_t digest_little_endian[kP256ScalarWords];
+  for (size_t i = 0; i < kP256ScalarWords; i++) {
+    digest_little_endian[i] =
+        __builtin_bswap32(digest[kP256ScalarWords - 1 - i]);
+  }
+  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest_little_endian,
+                               kOtbnVarEcdsaMsg));
 
   // Set the private key shares.
   HARDENED_TRY(
@@ -141,8 +150,17 @@ status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
   uint32_t mode = kOtbnEcdsaModeVerify;
   HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
-  // Set the message digest.
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest, kOtbnVarEcdsaMsg));
+  // Set the message digest. We swap all the bytes so that OTBN can interpret
+  // the digest as a little-endian integer, which is a more natural fit for the
+  // architecture than the big-endian form requested by the specification (FIPS
+  // 186-5, section B.2.1).
+  uint32_t digest_little_endian[kP256ScalarWords];
+  for (size_t i = 0; i < kP256ScalarWords; i++) {
+    digest_little_endian[i] =
+        __builtin_bswap32(digest[kP256ScalarWords - 1 - i]);
+  }
+  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest_little_endian,
+                               kOtbnVarEcdsaMsg));
 
   // Set the signature R.
   HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, signature->r, kOtbnVarEcdsaR));
