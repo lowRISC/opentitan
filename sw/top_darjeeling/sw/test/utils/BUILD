@@ -27,6 +27,7 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:i2c",
         "//sw/top_darjeeling/sw/dif:keymgr",
         "//sw/top_darjeeling/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/dif:mbx",
         "//sw/top_darjeeling/sw/dif:otbn",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:pattgen",
