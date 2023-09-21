@@ -26,6 +26,7 @@ sudo ip netns exec airgapped sudo -u "$USER" bash -c \
   export BAZEL_PYTHON_WHEELS_REPO=$(pwd)/bazel-airgapped/ot_python_wheels;
   TARGET_PATTERN_FILE=\$(mktemp)
   echo //sw/device/silicon_creator/rom:rom_with_fake_keys > \"\${TARGET_PATTERN_FILE}\"
+  echo //sw/host/opentitantool > \"\${TARGET_PATTERN_FILE}\"
   bazel-airgapped/bazel cquery \
     --distdir=$(pwd)/bazel-airgapped/bazel-distdir \
     --repository_cache=$(pwd)/bazel-airgapped/bazel-cache \
