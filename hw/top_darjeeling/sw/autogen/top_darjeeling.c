@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[131] = {
+    top_darjeeling_plic_interrupt_for_peripheral[130] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -90,7 +90,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdSpiHost0Error] = kTopDarjeelingPlicPeripheralSpiHost0,
   [kTopDarjeelingPlicIrqIdSpiHost0SpiEvent] = kTopDarjeelingPlicPeripheralSpiHost0,
   [kTopDarjeelingPlicIrqIdPwrmgrAonWakeup] = kTopDarjeelingPlicPeripheralPwrmgrAon,
-  [kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected] = kTopDarjeelingPlicPeripheralSysrstCtrlAon,
   [kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone] = kTopDarjeelingPlicPeripheralAdcCtrlAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired] = kTopDarjeelingPlicPeripheralAonTimerAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark] = kTopDarjeelingPlicPeripheralAonTimerAon,
@@ -153,7 +152,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[81] = {
+    top_darjeeling_alert_for_peripheral[80] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -173,7 +172,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdRstmgrAonFatalCnstyFault] = kTopDarjeelingAlertPeripheralRstmgrAon,
   [kTopDarjeelingAlertIdClkmgrAonRecovFault] = kTopDarjeelingAlertPeripheralClkmgrAon,
   [kTopDarjeelingAlertIdClkmgrAonFatalFault] = kTopDarjeelingAlertPeripheralClkmgrAon,
-  [kTopDarjeelingAlertIdSysrstCtrlAonFatalFault] = kTopDarjeelingAlertPeripheralSysrstCtrlAon,
   [kTopDarjeelingAlertIdAdcCtrlAonFatalFault] = kTopDarjeelingAlertPeripheralAdcCtrlAon,
   [kTopDarjeelingAlertIdPinmuxAonFatalFault] = kTopDarjeelingAlertPeripheralPinmuxAon,
   [kTopDarjeelingAlertIdAonTimerAonFatalFault] = kTopDarjeelingAlertPeripheralAonTimerAon,

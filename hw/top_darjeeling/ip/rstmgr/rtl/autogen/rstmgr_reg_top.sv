@@ -139,8 +139,8 @@ module rstmgr_reg_top (
   logic reset_info_low_power_exit_wd;
   logic reset_info_sw_reset_qs;
   logic reset_info_sw_reset_wd;
-  logic [5:0] reset_info_hw_req_qs;
-  logic [5:0] reset_info_hw_req_wd;
+  logic [4:0] reset_info_hw_req_qs;
+  logic [4:0] reset_info_hw_req_wd;
   logic alert_regwen_we;
   logic alert_regwen_qs;
   logic alert_regwen_wd;
@@ -340,11 +340,11 @@ module rstmgr_reg_top (
     .qs     (reset_info_sw_reset_qs)
   );
 
-  //   F[hw_req]: 8:3
+  //   F[hw_req]: 7:3
   prim_subreg #(
-    .DW      (6),
+    .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (6'h0),
+    .RESVAL  (5'h0),
     .Mubi    (1'b0)
   ) u_reset_info_hw_req (
     // sync clock and reset required for this register
@@ -943,7 +943,7 @@ module rstmgr_reg_top (
 
   assign reset_info_sw_reset_wd = reg_wdata[2];
 
-  assign reset_info_hw_req_wd = reg_wdata[8:3];
+  assign reset_info_hw_req_wd = reg_wdata[7:3];
   assign alert_regwen_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_regwen_wd = reg_wdata[0];
@@ -1023,7 +1023,7 @@ module rstmgr_reg_top (
         reg_rdata_next[0] = reset_info_por_qs;
         reg_rdata_next[1] = reset_info_low_power_exit_qs;
         reg_rdata_next[2] = reset_info_sw_reset_qs;
-        reg_rdata_next[8:3] = reset_info_hw_req_qs;
+        reg_rdata_next[7:3] = reset_info_hw_req_qs;
       end
 
       addr_hit[3]: begin

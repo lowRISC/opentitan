@@ -35,7 +35,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h30420000, 32'h3042007f}
     }},
     '{"pinmux_aon", '{
-        '{32'h30460000, 32'h30460fff}
+        '{32'h30460000, 32'h304607ff}
     }},
     '{"otp_ctrl__core", '{
         '{32'h30130000, 32'h30137fff}
@@ -60,9 +60,6 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"aon_timer_aon", '{
         '{32'h30470000, 32'h3047003f}
-    }},
-    '{"sysrst_ctrl_aon", '{
-        '{32'h31060000, 32'h310600ff}
     }},
     '{"adc_ctrl_aon", '{
         '{32'h31070000, 32'h3107007f}
@@ -93,6 +90,5 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
         "aon_timer_aon",
-        "adc_ctrl_aon",
-        "sysrst_ctrl_aon"}}
+        "adc_ctrl_aon"}}
 };

@@ -316,23 +316,6 @@
  */
 #define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x80
 /**
- * Peripheral base address for sysrst_ctrl_aon in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR 0x31060000
-
-/**
- * Peripheral size for sysrst_ctrl_aon in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR and
- * `TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR + TOP_DARJEELING_SYSRST_CTRL_AON_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SYSRST_CTRL_AON_SIZE_BYTES 0x100
-/**
  * Peripheral base address for adc_ctrl_aon in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -365,7 +348,7 @@
  * address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
  * `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x1000
+#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x800
 /**
  * Peripheral base address for aon_timer_aon in top darjeeling.
  *

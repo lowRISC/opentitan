@@ -133,7 +133,7 @@
     },
 
     { struct:  "logic",
-      width:   8,
+      width:   7,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -141,7 +141,7 @@
     },
 
     { struct:  "logic",
-      width:   3,
+      width:   2,
       type:    "uni",
       name:    "rstreqs",
       act:     "rcv",
@@ -210,63 +210,56 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "8",
-      local: "true"
-    },
-
-    { name: "SYSRST_CTRL_AON_WKUP_REQ_IDX",
-      desc: "Vector index for sysrst_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
-      type: "int",
-      default: "0",
+      default: "7",
       local: "true"
     },
 
     { name: "ADC_CTRL_AON_WKUP_REQ_IDX",
       desc: "Vector index for adc_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "1",
+      default: "0",
       local: "true"
     },
 
     { name: "PINMUX_AON_PIN_WKUP_REQ_IDX",
       desc: "Vector index for pinmux_aon pin_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "2",
+      default: "1",
       local: "true"
     },
 
     { name: "PINMUX_AON_USB_WKUP_REQ_IDX",
       desc: "Vector index for pinmux_aon usb_wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "3",
+      default: "2",
       local: "true"
     },
 
     { name: "AON_TIMER_AON_WKUP_REQ_IDX",
       desc: "Vector index for aon_timer_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "4",
+      default: "3",
       local: "true"
     },
 
     { name: "SENSOR_CTRL_WKUP_REQ_IDX",
       desc: "Vector index for sensor_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "5",
+      default: "4",
       local: "true"
     },
 
     { name: "SOC_PROXY_WKUP_INTERNAL_REQ_IDX",
       desc: "Vector index for soc_proxy wkup_internal_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "6",
+      default: "5",
       local: "true"
     },
 
     { name: "SOC_PROXY_WKUP_EXTERNAL_REQ_IDX",
       desc: "Vector index for soc_proxy wkup_external_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "7",
+      default: "6",
       local: "true"
     },
 
@@ -274,7 +267,7 @@
     { name: "NumRstReqs",
       desc: "Number of peripheral reset requets",
       type: "int",
-      default: "3",
+      default: "2",
       local: "true"
     },
 
@@ -295,19 +288,19 @@
     { name: "ResetMainPwrIdx",
       desc: "Reset req idx for MainPwr",
       type: "int",
-      default: "3",
+      default: "2",
       local: "true"
     },
     { name: "ResetEscIdx",
       desc: "Reset req idx for Esc",
       type: "int",
-      default: "4",
+      default: "3",
       local: "true"
     },
     { name: "ResetNdmIdx",
       desc: "Reset req idx for Ndm",
       type: "int",
-      default: "5",
+      default: "4",
       local: "true"
     },
 
@@ -737,11 +730,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "7:0",
+        { bits: "6:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "8",
+        { bits: "7",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -750,7 +743,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "9",
+        { bits: "8",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power

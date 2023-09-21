@@ -40,7 +40,6 @@
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -94,7 +93,6 @@ static dif_spi_host_t spi_host0;
 static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_mbox;
 static dif_sram_ctrl_t sram_ctrl_ret_aon;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
 
 /**
@@ -227,9 +225,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret_aon));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
@@ -898,21 +893,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdSramCtrlRetAonFatalError + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write sysrst_ctrl's alert_test reg and check alert_cause.
-  for (dif_sysrst_ctrl_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_sysrst_ctrl_alert_force(&sysrst_ctrl_aon, kDifSysrstCtrlAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSysrstCtrlAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

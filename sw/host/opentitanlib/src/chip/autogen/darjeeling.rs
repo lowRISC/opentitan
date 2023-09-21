@@ -49,13 +49,7 @@ with_unknown! {
         I2c0Scl = 33,
         Uart0Rx = 34,
         SpiDeviceTpmCsb = 35,
-        SysrstCtrlAonAcPresent = 36,
-        SysrstCtrlAonKey0In = 37,
-        SysrstCtrlAonKey1In = 38,
-        SysrstCtrlAonKey2In = 39,
-        SysrstCtrlAonPwrbIn = 40,
-        SysrstCtrlAonLidOpen = 41,
-        End = 42,
+        End = 36,
     }
 
     pub enum PinmuxInsel: u32 [default = Self::End] {
@@ -211,13 +205,7 @@ with_unknown! {
         SensorCtrlAstDebugOut7 = 45,
         SensorCtrlAstDebugOut8 = 46,
         OtpCtrlTest0 = 47,
-        SysrstCtrlAonBatDisable = 48,
-        SysrstCtrlAonKey0Out = 49,
-        SysrstCtrlAonKey1Out = 50,
-        SysrstCtrlAonKey2Out = 51,
-        SysrstCtrlAonPwrbOut = 52,
-        SysrstCtrlAonZ3Wakeup = 53,
-        End = 54,
+        End = 48,
     }
 
     pub enum DirectPads: u32 [default = Self::End] {
@@ -229,13 +217,11 @@ with_unknown! {
         SpiDeviceSd1 = 5,
         SpiDeviceSd2 = 6,
         SpiDeviceSd3 = 7,
-        SysrstCtrlAonEcRstL = 8,
-        SysrstCtrlAonFlashWpL = 9,
-        SpiDeviceSck = 10,
-        SpiDeviceCsb = 11,
-        SpiHost0Sck = 12,
-        SpiHost0Csb = 13,
-        End = 14,
+        SpiDeviceSck = 8,
+        SpiDeviceCsb = 9,
+        SpiHost0Sck = 10,
+        SpiHost0Csb = 11,
+        End = 12,
     }
 
     pub enum MuxedPads: u32 [default = Self::End] {

@@ -2222,7 +2222,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 8
+          width: 7
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -2236,7 +2236,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 3
+          width: 2
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -2909,87 +2909,6 @@
       }
     }
     {
-      name: sysrst_ctrl_aon
-      type: sysrst_ctrl
-      clock_srcs:
-      {
-        clk_i: io_div4
-        clk_aon_i: aon
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: Aon
-        }
-        rst_aon_ni:
-        {
-          name: lc_aon
-          domain: Aon
-        }
-      }
-      domain:
-      [
-        Aon
-      ]
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
-      }
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: wkup_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: sysrst_ctrl_aon
-          default: ""
-          package: ""
-          top_signame: pwrmgr_aon_wakeups
-          index: 0
-        }
-        {
-          name: rst_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: sysrst_ctrl_aon
-          default: ""
-          package: ""
-          top_signame: pwrmgr_aon_rstreqs
-          index: 0
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: sysrst_ctrl_aon
-          default: ""
-          end_idx: -1
-          top_signame: sysrst_ctrl_aon_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x31060000
-        }
-      }
-    }
-    {
       name: adc_ctrl_aon
       type: adc_ctrl
       clock_srcs:
@@ -3048,7 +2967,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 1
+          index: 0
         }
         {
           name: tl
@@ -3359,7 +3278,7 @@
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 2
+          index: 1
         }
         {
           name: usbdev_dppullup_en
@@ -3414,7 +3333,7 @@
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 3
+          index: 2
         }
         {
           name: usbdev_suspend_req
@@ -3550,7 +3469,7 @@
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 4
+          index: 3
         }
         {
           name: aon_timer_rst_req
@@ -3562,7 +3481,7 @@
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_rstreqs
-          index: 1
+          index: 0
         }
         {
           name: lc_escalate_en
@@ -3820,7 +3739,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 5
+          index: 4
         }
         {
           name: tl
@@ -3913,7 +3832,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 6
+          index: 5
         }
         {
           name: wkup_external_req
@@ -3925,7 +3844,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 7
+          index: 6
         }
         {
           name: rst_req_external
@@ -3937,7 +3856,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_rstreqs
-          index: 2
+          index: 1
         }
         {
           name: ctn_tl_h2d
@@ -9166,7 +9085,6 @@
       ]
       pwrmgr_aon.wakeups:
       [
-        sysrst_ctrl_aon.wkup_req
         adc_ctrl_aon.wkup_req
         pinmux_aon.pin_wkup_req
         pinmux_aon.usb_wkup_req
@@ -9177,7 +9095,6 @@
       ]
       pwrmgr_aon.rstreqs:
       [
-        sysrst_ctrl_aon.rst_req
         aon_timer_aon.aon_timer_rst_req
         soc_proxy.rst_req_external
       ]
@@ -9444,10 +9361,6 @@
       aon_timer_aon.tl:
       [
         peri.tl_aon_timer_aon
-      ]
-      sysrst_ctrl_aon.tl:
-      [
-        peri.tl_sysrst_ctrl_aon
       ]
       adc_ctrl_aon.tl:
       [
@@ -11343,7 +11256,6 @@
           sram_ctrl_ret_aon.regs
           aon_timer_aon
           adc_ctrl_aon
-          sysrst_ctrl_aon
         ]
       }
       nodes:
@@ -11564,7 +11476,7 @@
               {
                 hart: 0x30460000
               }
-              size_byte: 0x1000
+              size_byte: 0x800
             }
           ]
           xbar: false
@@ -11733,27 +11645,6 @@
                 hart: 0x30470000
               }
               size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: sysrst_ctrl_aon
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: sysrst_ctrl
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x31060000
-              }
-              size_byte: 0x100
             }
           ]
           xbar: false
@@ -12037,18 +11928,6 @@
           inst_name: peri
           default: ""
           top_signame: aon_timer_aon_tl
-          index: -1
-        }
-        {
-          name: tl_sysrst_ctrl_aon
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: sysrst_ctrl_aon_tl
           index: -1
         }
         {
@@ -13113,24 +12992,6 @@
         idx: 42
       }
       {
-        name: IOR8
-        type: BidirOd
-        bank: VCC
-        connection: direct
-        desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        port_type: inout
-        idx: 16
-      }
-      {
-        name: IOR9
-        type: BidirOd
-        bank: VCC
-        connection: direct
-        desc: Dedicated sysrst_ctrl output (flash_wp_l))
-        port_type: inout
-        idx: 17
-      }
-      {
         name: IOR10
         type: BidirOd
         bank: VCC
@@ -13311,118 +13172,6 @@
       {
         instance: otp_ctrl
         port: test[0]
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: ac_present
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key0_in
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key1_in
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key2_in
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: pwrb_in
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: bat_disable
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: ec_rst_l
-        connection: direct
-        pad: IOR8
-        desc: ""
-        attr: BidirOd
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: flash_wp_l
-        connection: direct
-        pad: IOR9
-        desc: ""
-        attr: BidirOd
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key0_out
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key1_out
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: key2_out
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: pwrb_out
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: lid_open
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: sysrst_ctrl_aon
-        port: z3_wakeup
         connection: muxed
         pad: ""
         desc: ""
@@ -13896,28 +13645,6 @@
         glob_idx: 33
       }
       {
-        name: sysrst_ctrl_aon_ec_rst_l
-        width: 1
-        type: inout
-        idx: -1
-        pad: IOR8
-        attr: BidirOd
-        connection: direct
-        desc: ""
-        glob_idx: 8
-      }
-      {
-        name: sysrst_ctrl_aon_flash_wp_l
-        width: 1
-        type: inout
-        idx: -1
-        pad: IOR9
-        attr: BidirOd
-        connection: direct
-        desc: ""
-        glob_idx: 9
-      }
-      {
         name: spi_device_sck
         width: 1
         type: input
@@ -13926,7 +13653,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 10
+        glob_idx: 8
       }
       {
         name: spi_device_csb
@@ -13937,7 +13664,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 11
+        glob_idx: 9
       }
       {
         name: uart0_rx
@@ -13962,72 +13689,6 @@
         glob_idx: 35
       }
       {
-        name: sysrst_ctrl_aon_ac_present
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 36
-      }
-      {
-        name: sysrst_ctrl_aon_key0_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 37
-      }
-      {
-        name: sysrst_ctrl_aon_key1_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 38
-      }
-      {
-        name: sysrst_ctrl_aon_key2_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 39
-      }
-      {
-        name: sysrst_ctrl_aon_pwrb_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 40
-      }
-      {
-        name: sysrst_ctrl_aon_lid_open
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 41
-      }
-      {
         name: spi_host0_sck
         width: 1
         type: output
@@ -14036,7 +13697,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 12
+        glob_idx: 10
       }
       {
         name: spi_host0_csb
@@ -14047,7 +13708,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 13
+        glob_idx: 11
       }
       {
         name: uart0_tx
@@ -14170,87 +13831,21 @@
         desc: ""
         glob_idx: 44
       }
-      {
-        name: sysrst_ctrl_aon_bat_disable
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 45
-      }
-      {
-        name: sysrst_ctrl_aon_key0_out
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 46
-      }
-      {
-        name: sysrst_ctrl_aon_key1_out
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 47
-      }
-      {
-        name: sysrst_ctrl_aon_key2_out
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 48
-      }
-      {
-        name: sysrst_ctrl_aon_pwrb_out
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 49
-      }
-      {
-        name: sysrst_ctrl_aon_z3_wakeup
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 50
-      }
     ]
     io_counts:
     {
       dedicated:
       {
-        inouts: 10
+        inouts: 8
         inputs: 2
         outputs: 2
-        pads: 18
+        pads: 16
       }
       muxed:
       {
         inouts: 34
-        inputs: 8
-        outputs: 17
+        inputs: 2
+        outputs: 11
         pads: 47
       }
     }
@@ -14451,11 +14046,6 @@
     {
       name: wkup_req
       width: "1"
-      module: sysrst_ctrl_aon
-    }
-    {
-      name: wkup_req
-      width: "1"
       module: adc_ctrl_aon
     }
     {
@@ -14493,12 +14083,6 @@
   {
     peripheral:
     [
-      {
-        name: rst_req
-        width: "1"
-        module: sysrst_ctrl_aon
-        desc: OpenTitan reset request to `rstmgr` (running on AON clock).
-      }
       {
         name: aon_timer_rst_req
         width: "1"
@@ -14545,7 +14129,6 @@
     alert_handler
     spi_host0
     pwrmgr_aon
-    sysrst_ctrl_aon
     adc_ctrl_aon
     aon_timer_aon
     sensor_ctrl
@@ -14848,12 +14431,6 @@
       module_name: pwrmgr_aon
     }
     {
-      name: sysrst_ctrl_aon_event_detected
-      width: 1
-      type: interrupt
-      module_name: sysrst_ctrl_aon
-    }
-    {
       name: adc_ctrl_aon_match_done
       width: 1
       type: interrupt
@@ -15137,7 +14714,6 @@
     pwrmgr_aon
     rstmgr_aon
     clkmgr_aon
-    sysrst_ctrl_aon
     adc_ctrl_aon
     pinmux_aon
     aon_timer_aon
@@ -15345,22 +14921,13 @@
       lpg_idx: 7
     }
     {
-      name: sysrst_ctrl_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sysrst_ctrl_aon
-      lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 8
-    }
-    {
       name: adc_ctrl_aon_fatal_fault
       width: 1
       type: alert
       async: "1"
       module_name: adc_ctrl_aon
       lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 9
+      lpg_idx: 8
     }
     {
       name: pinmux_aon_fatal_fault
@@ -15378,7 +14945,7 @@
       async: "1"
       module_name: aon_timer_aon
       lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 10
+      lpg_idx: 9
     }
     {
       name: sensor_ctrl_recov_alert
@@ -15387,7 +14954,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 11
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -15396,7 +14963,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 11
     }
     {
       name: soc_proxy_fatal_alert_intg
@@ -16096,28 +15663,6 @@
       }
     }
     {
-      name: secure_lc_io_div4_Aon
-      clock_group:
-      {
-        name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
-      reset_connection:
-      {
-        name: lc_io_div4
-        domain: Aon
-      }
-    }
-    {
       name: peri_lc_io_div4_Aon
       clock_group:
       {
@@ -16184,6 +15729,28 @@
       {
         name: lc_io_div4
         domain: "0"
+      }
+    }
+    {
+      name: secure_lc_io_div4_Aon
+      clock_group:
+      {
+        name: secure
+        src: top
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_io_div4_secure: io_div4
+          clk_main_secure: main
+          clk_aon_secure: aon
+        }
+      }
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      reset_connection:
+      {
+        name: lc_io_div4
+        domain: Aon
       }
     }
     {
@@ -17533,7 +17100,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 8
+        width: 7
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -17547,7 +17114,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 3
+        width: 2
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -18004,43 +17571,6 @@
         index: -1
       }
       {
-        name: wkup_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: sysrst_ctrl_aon
-        default: ""
-        package: ""
-        top_signame: pwrmgr_aon_wakeups
-        index: 0
-      }
-      {
-        name: rst_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: sysrst_ctrl_aon
-        default: ""
-        package: ""
-        top_signame: pwrmgr_aon_rstreqs
-        index: 0
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: sysrst_ctrl_aon
-        default: ""
-        end_idx: -1
-        top_signame: sysrst_ctrl_aon_tl
-        index: -1
-      }
-      {
         name: adc
         struct: adc_ast
         package: ast_pkg
@@ -18064,7 +17594,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 1
+        index: 0
       }
       {
         name: tl
@@ -18277,7 +17807,7 @@
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 2
+        index: 1
       }
       {
         name: usbdev_dppullup_en
@@ -18332,7 +17862,7 @@
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 3
+        index: 2
       }
       {
         name: usbdev_suspend_req
@@ -18424,7 +17954,7 @@
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 4
+        index: 3
       }
       {
         name: aon_timer_rst_req
@@ -18436,7 +17966,7 @@
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_rstreqs
-        index: 1
+        index: 0
       }
       {
         name: lc_escalate_en
@@ -18551,7 +18081,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 5
+        index: 4
       }
       {
         name: tl
@@ -18576,7 +18106,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 6
+        index: 5
       }
       {
         name: wkup_external_req
@@ -18588,7 +18118,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 7
+        index: 6
       }
       {
         name: rst_req_external
@@ -18600,7 +18130,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_rstreqs
-        index: 2
+        index: 1
       }
       {
         name: ctn_tl_h2d
@@ -22012,18 +21542,6 @@
         index: -1
       }
       {
-        name: tl_sysrst_ctrl_aon
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: sysrst_ctrl_aon_tl
-        index: -1
-      }
-      {
         name: tl_adc_ctrl_aon
         struct: tl
         package: tlul_pkg
@@ -24198,7 +23716,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 8
+        width: 7
         type: uni
         end_idx: -1
         act: rcv
@@ -24209,7 +23727,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_rstreqs
-        width: 3
+        width: 2
         type: uni
         end_idx: -1
         act: rcv
@@ -25661,28 +25179,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: aon_timer_aon_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: sysrst_ctrl_aon_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: sysrst_ctrl_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

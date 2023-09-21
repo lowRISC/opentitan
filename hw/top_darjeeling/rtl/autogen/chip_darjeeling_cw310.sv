@@ -33,8 +33,6 @@ module chip_darjeeling_cw310 #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
-  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout POR_BUTTON_N, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
@@ -131,8 +129,6 @@ module chip_darjeeling_cw310 #(
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -232,7 +228,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [64:0] unused_sig;
+  logic [62:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -244,15 +240,13 @@ module chip_darjeeling_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(19),
+    .NDioPads(17),
     .NMioPads(47),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
       InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
-      BidirOd, // IOR9
-      BidirOd, // IOR8
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -327,8 +321,6 @@ module chip_darjeeling_cw310 #(
       IO_CLKOUT,
       POR_BUTTON_N,
       IO_CLK,
-      IOR9,
-      IOR8,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -408,8 +400,6 @@ module chip_darjeeling_cw310 #(
         manual_in_io_clkout,
         manual_in_por_button_n,
         manual_in_io_clk,
-        dio_in[DioSysrstCtrlAonFlashWpL],
-        dio_in[DioSysrstCtrlAonEcRstL],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -429,8 +419,6 @@ module chip_darjeeling_cw310 #(
         manual_out_io_clkout,
         manual_out_por_button_n,
         manual_out_io_clk,
-        dio_out[DioSysrstCtrlAonFlashWpL],
-        dio_out[DioSysrstCtrlAonEcRstL],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -450,8 +438,6 @@ module chip_darjeeling_cw310 #(
         manual_oe_io_clkout,
         manual_oe_por_button_n,
         manual_oe_io_clk,
-        dio_oe[DioSysrstCtrlAonFlashWpL],
-        dio_oe[DioSysrstCtrlAonEcRstL],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -471,8 +457,6 @@ module chip_darjeeling_cw310 #(
         manual_attr_io_clkout,
         manual_attr_por_button_n,
         manual_attr_io_clk,
-        dio_attr[DioSysrstCtrlAonFlashWpL],
-        dio_attr[DioSysrstCtrlAonEcRstL],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],

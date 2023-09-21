@@ -24,7 +24,6 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__REGS = 32'h 30500000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 30600000;
   localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON           = 32'h 30470000;
-  localparam logic [31:0] ADDR_SPACE_SYSRST_CTRL_AON         = 32'h 31060000;
   localparam logic [31:0] ADDR_SPACE_ADC_CTRL_AON            = 32'h 31070000;
   localparam logic [31:0] ADDR_SPACE_AST                     = 32'h 30480000;
 
@@ -37,7 +36,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_PWRMGR_AON              = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_RSTMGR_AON              = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_CLKMGR_AON              = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_PINMUX_AON              = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_PINMUX_AON              = 32'h 000007ff;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL__CORE          = 32'h 00007fff;
   localparam logic [31:0] ADDR_MASK_OTP_CTRL__PRIM          = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_LC_CTRL                 = 32'h 000000ff;
@@ -46,12 +45,11 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON__RAM  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AON_TIMER_AON           = 32'h 0000003f;
-  localparam logic [31:0] ADDR_MASK_SYSRST_CTRL_AON         = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_ADC_CTRL_AON            = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_AST                     = 32'h 000003ff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 21;
+  localparam int N_DEVICE = 20;
 
   typedef enum int {
     TlUart0 = 0,
@@ -72,9 +70,8 @@ package tl_peri_pkg;
     TlSramCtrlRetAonRegs = 15,
     TlSramCtrlRetAonRam = 16,
     TlAonTimerAon = 17,
-    TlSysrstCtrlAon = 18,
-    TlAdcCtrlAon = 19,
-    TlAst = 20
+    TlAdcCtrlAon = 18,
+    TlAst = 19
   } tl_device_e;
 
   typedef enum int {

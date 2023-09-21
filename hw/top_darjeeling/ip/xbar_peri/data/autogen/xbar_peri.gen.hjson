@@ -54,7 +54,6 @@
       sram_ctrl_ret_aon.regs
       aon_timer_aon
       adc_ctrl_aon
-      sysrst_ctrl_aon
     ]
   }
   nodes:
@@ -275,7 +274,7 @@
           {
             hart: 0x30460000
           }
-          size_byte: 0x1000
+          size_byte: 0x800
         }
       ]
       xbar: false
@@ -444,27 +443,6 @@
             hart: 0x30470000
           }
           size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: sysrst_ctrl_aon
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: sysrst_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x31060000
-          }
-          size_byte: 0x100
         }
       ]
       xbar: false

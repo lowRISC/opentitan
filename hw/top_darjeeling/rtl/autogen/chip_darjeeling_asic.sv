@@ -32,8 +32,6 @@ module chip_darjeeling_asic #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
-  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout AST_MISC, // Manual Pad
 
   // Muxed Pads
@@ -127,8 +125,6 @@ module chip_darjeeling_asic #(
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -237,14 +233,12 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(19),
+    .NDioPads(17),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
       scan_role_pkg::DioPadAstMiscScanRole,
-      scan_role_pkg::DioPadIor9ScanRole,
-      scan_role_pkg::DioPadIor8ScanRole,
       scan_role_pkg::DioPadSpiDevCsLScanRole,
       scan_role_pkg::DioPadSpiDevClkScanRole,
       scan_role_pkg::DioPadSpiDevD3ScanRole,
@@ -313,8 +307,6 @@ module chip_darjeeling_asic #(
     }),
     .DioPadBank ({
       IoBankVcc, // AST_MISC
-      IoBankVcc, // IOR9
-      IoBankVcc, // IOR8
       IoBankVioa, // SPI_DEV_CS_L
       IoBankVioa, // SPI_DEV_CLK
       IoBankVioa, // SPI_DEV_D3
@@ -383,8 +375,6 @@ module chip_darjeeling_asic #(
     }),
     .DioPadType ({
       InputStd, // AST_MISC
-      BidirOd, // IOR9
-      BidirOd, // IOR8
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -459,8 +449,6 @@ module chip_darjeeling_asic #(
     // Chip IOs
     .dio_pad_io ({
       AST_MISC,
-      IOR9,
-      IOR8,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -548,8 +536,6 @@ module chip_darjeeling_asic #(
     // Core-facing
     .dio_in_o ({
         manual_in_ast_misc,
-        dio_in[DioSysrstCtrlAonFlashWpL],
-        dio_in[DioSysrstCtrlAonEcRstL],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -569,8 +555,6 @@ module chip_darjeeling_asic #(
       }),
     .dio_out_i ({
         manual_out_ast_misc,
-        dio_out[DioSysrstCtrlAonFlashWpL],
-        dio_out[DioSysrstCtrlAonEcRstL],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -590,8 +574,6 @@ module chip_darjeeling_asic #(
       }),
     .dio_oe_i ({
         manual_oe_ast_misc,
-        dio_oe[DioSysrstCtrlAonFlashWpL],
-        dio_oe[DioSysrstCtrlAonEcRstL],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -611,8 +593,6 @@ module chip_darjeeling_asic #(
       }),
     .dio_attr_i ({
         manual_attr_ast_misc,
-        dio_attr[DioSysrstCtrlAonFlashWpL],
-        dio_attr[DioSysrstCtrlAonEcRstL],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],

@@ -33,7 +33,6 @@
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/csr.h"
@@ -76,7 +75,6 @@ static dif_sensor_ctrl_t sensor_ctrl;
 static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
 static dif_rv_plic_t plic;
 static const top_darjeeling_plic_target_t kHart = kTopDarjeelingPlicTargetIbex0;
@@ -136,8 +134,6 @@ static volatile dif_spi_device_irq_t spi_device_irq_expected;
 static volatile dif_spi_device_irq_t spi_device_irq_serviced;
 static volatile dif_spi_host_irq_t spi_host_irq_expected;
 static volatile dif_spi_host_irq_t spi_host_irq_serviced;
-static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
-static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
 static volatile dif_uart_irq_t uart_irq_expected;
 static volatile dif_uart_irq_t uart_irq_serviced;
 
@@ -825,28 +821,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralSysrstCtrlAon: {
-      dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected);
-      CHECK(irq == sysrst_ctrl_irq_expected,
-            "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            sysrst_ctrl_irq_expected, irq);
-      sysrst_ctrl_irq_serviced = irq;
-
-      dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralUart0: {
       dif_uart_irq_t irq = (dif_uart_irq_t)(
           plic_irq_id -
@@ -974,9 +948,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
 
@@ -1018,7 +989,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge_all(&soc_proxy));
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
-  CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
   CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
 }
 
@@ -1064,8 +1034,6 @@ static void peripheral_irqs_enable(void) {
       (dif_spi_device_irq_state_snapshot_t)UINT_MAX;
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
       (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
-  dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irqs =
-      (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_uart_irq_state_snapshot_t uart_irqs =
       (dif_uart_irq_state_snapshot_t)UINT_MAX;
 
@@ -1127,8 +1095,6 @@ static void peripheral_irqs_enable(void) {
       dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
   CHECK_DIF_OK(
       dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irqs));
-  CHECK_DIF_OK(
-      dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
   if (kDeviceType == kDeviceSimDV) {
@@ -1535,19 +1501,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(spi_host_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from spi_host0 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralSysrstCtrlAon;
-  for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected;
-       irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
-    sysrst_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(sysrst_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
   }
 
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
