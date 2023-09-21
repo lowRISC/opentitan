@@ -5,6 +5,12 @@
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
 #define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
 
+## TODO(opentitan-integrated/issues/332): Remove this workaround
+## once SW has been refactored to work without flash_ctrl.
+% if top["name"] == 'darjeeling':
+#include "top_darjeeling_flash_ctrl_dummy.h"
+
+% endif
 /**
  * @file
  * @brief Assembler-only Top-Specific Definitions.

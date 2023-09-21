@@ -40,6 +40,14 @@ def get_virtual_memory_size(top):
             for _, mem in mod["memory"].items():
                 if mem["label"] == "eflash":
                     return hex(int(mem["size"], 0) // 2)
+    # if no flash_ctrl is present, but a ctn memory region is,
+    # use that size instead
+    for mod in top["module"]:
+        if "memory" in mod:
+            for _, mem in mod["memory"].items():
+                if mem["label"] == "ctn":
+                    return hex(0x00100000 // 2)
+
     return None
 %>\
 

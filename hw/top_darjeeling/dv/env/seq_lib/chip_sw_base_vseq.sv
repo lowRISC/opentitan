@@ -99,11 +99,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       ctn_sram_bkdr_write32(addr, rand_val);
     end
 
-    // Initialize the data partition in all flash banks to all 1s.
-    `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
-    cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
-
     // Randomize retention memory.  This is done intentionally with wrong integrity
     // as early portions of ROM will initialize it to the correct value.
     // The randomization here is just to ensure we do not have x's in the memory.
@@ -125,18 +120,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
       if (cfg.use_spi_load_bootstrap) begin
-        `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
-        spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
-        cfg.use_spi_load_bootstrap = 1'b0;
-      end else begin
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-            {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+        // TODO(opentitan-integrated/issues/332): re-implement bootstrap to use the CTN SRAM.
+        `uvm_fatal(`gfn, "Bootstrap is currently not supported yet by this platform.")
       end
-    end
-    if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-      // TODO: support bootstrapping entire flash address space, not just slot A.
-      cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
-          {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
     if (cfg.sw_images.exists(SwTypeCtn)) begin
       // Backdoor load plain 32bit image and recompute ECC so that we don't get integrity errors.

@@ -49,7 +49,6 @@ interface chip_if;
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
 `define CSRNG_HIER          `TOP_HIER.u_csrng
 `define EDN_HIER(i)         `TOP_HIER.u_edn``i
-`define FLASH_CTRL_HIER     `TOP_HIER.u_flash_ctrl
 `define GPIO_HIER           `TOP_HIER.u_gpio
 `define HMAC_HIER           `TOP_HIER.u_hmac
 `define I2C_HIER(i)         `TOP_HIER.u_i2c``i
@@ -626,8 +625,6 @@ interface chip_if;
   wire sram_main_init_done = 0;
   wire sram_ret_init_done = 0;
   wire sram_mbox_init_done = 0;
-
-  wire flash_core1_host_req = 0;
 `else
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_done_combined == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_good_combined == prim_mubi_pkg::MuBi4True;
@@ -638,8 +635,6 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
   wire sram_mbox_init_done = `SRAM_CTRL_MBOX.u_reg_regs.status_init_done_qs;
-
-  wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
   wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
 
@@ -920,7 +915,6 @@ interface chip_if;
       PeripheralCsrng:          path = {path, ".", `DV_STRINGIFY(`CSRNG_HIER)};
       PeripheralEdn0:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(0))};
       PeripheralEdn1:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(1))};
-      PeripheralFlashCtrl:      path = {path, ".", `DV_STRINGIFY(`FLASH_CTRL_HIER)};
       PeripheralGpio:           path = {path, ".", `DV_STRINGIFY(`GPIO_HIER)};
       PeripheralHmac:           path = {path, ".", `DV_STRINGIFY(`HMAC_HIER)};
       PeripheralI2c0:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(0))};
@@ -1157,7 +1151,6 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `undef CSRNG_HIER
 `undef ENTROPY_SRC_HIER
 `undef EDN_HIER
-`undef FLASH_CTRL_HIER
 `undef GPIO_HIER
 `undef HMAC_HIER
 `undef I2C_HIER

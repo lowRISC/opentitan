@@ -630,6 +630,9 @@ def generate_flash(topcfg, out_path):
     if len(flash_mems) > 1:
         log.error("This design does not currently support multiple flashes")
         return
+    elif len(flash_mems) == 0:
+        log.info("This design does not instantiate a flash controller")
+        return
 
     cfg = flash_mems[0]["memory"]["mem"]["config"]
 

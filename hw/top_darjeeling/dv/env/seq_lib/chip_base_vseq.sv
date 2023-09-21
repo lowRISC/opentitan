@@ -143,8 +143,6 @@ class chip_base_vseq #(
     cfg.chip_vif.enable_spi_host = 1;
 
     // Initialize all memories via backdoor.
-    cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
     cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
     // Plusargs to selectively clear the provisioning state of some of the OTP partitions.

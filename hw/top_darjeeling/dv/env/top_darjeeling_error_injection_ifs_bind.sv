@@ -10,8 +10,5 @@ module top_darjeeling_error_injection_ifs_bind;
     prim_count_if(.*);
   // This is used to inject reset consistency errors in rstmgr.
   bind rstmgr_leaf_rst rstmgr_cnsty_fault_if rstmgr_cnsty_fault_if (.*);
-  // This is used to inject host_gnt error in flash_ctrl.
-  bind tb.dut.top_darjeeling.u_flash_ctrl.u_eflash.gen_flash_cores[1].u_core
-    flash_ctrl_host_gnt_fault_if flash_ctrl_host_gnt_fault_if (.*);
 `endif
 endmodule

@@ -14,6 +14,12 @@ cc_library(
     hdrs = [
         "top_darjeeling.h",
         "top_darjeeling_memory.h",
+        # TODO(opentitan-integrated/issues/332): dummy definitions added as
+        # a workaround so that the flash_ctrl can be removed without having to
+        # refactor all dependent tests and the ROM at once. This needs to be
+        # cleaned up and removed. Note that the SW depending on flash_ctrl
+        # is currently not functional.
+        "top_darjeeling_flash_ctrl_dummy.h",
     ],
 )
 

@@ -28,7 +28,7 @@ _rom_boot_address = ORIGIN(rom0);
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
+ASSERT((_rom_ext_virtual_size <= (LENGTH(ram_ctn) / 2)),
   "Error: rom ext flash is bigger than slot.");
 
 /* DV Log offset (has to be different to other boot stages). */

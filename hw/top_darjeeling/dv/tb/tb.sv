@@ -330,48 +330,6 @@ module tb;
       chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 data", UVM_MEDIUM)
-      m_mem_bkdr_util[FlashBank0Data] = new(
-          .name  ("mem_bkdr_util[FlashBank0Data]"),
-          .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
-          .depth ($size(`FLASH0_DATA_MEM_HIER)),
-          .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
-      m_mem_bkdr_util[FlashBank0Info] = new(
-          .name  ("mem_bkdr_util[FlashBank0Info]"),
-          .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
-          .depth ($size(`FLASH0_INFO_MEM_HIER)),
-          .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
-      m_mem_bkdr_util[FlashBank1Data] = new(
-          .name  ("mem_bkdr_util[FlashBank1Data]"),
-          .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
-          .depth ($size(`FLASH1_DATA_MEM_HIER)),
-          .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR +
-              top_darjeeling_pkg::TOP_DARJEELING_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
-
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 info", UVM_MEDIUM)
-      m_mem_bkdr_util[FlashBank1Info] = new(
-          .name  ("mem_bkdr_util[FlashBank1Info]"),
-          .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
-          .depth ($size(`FLASH1_INFO_MEM_HIER)),
-          .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
-          .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR +
-              top_darjeeling_pkg::TOP_DARJEELING_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
-
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 tag", UVM_MEDIUM)
       m_mem_bkdr_util[ICacheWay0Tag] = new(
           .name  ("mem_bkdr_util[ICacheWay0Tag]"),
@@ -528,7 +486,8 @@ module tb;
 
       mem = mem.first();
       do begin
-        if (mem inside {[RamMain1:RamMain15]} ||
+        if (mem inside {FlashBank0Data, FlashBank1Data, FlashBank0Info, FlashBank1Info} ||
+            mem inside {[RamMain1:RamMain15]} ||
             mem inside {[RamRet1:RamRet15]} ||
             mem inside {[RamMbox1:RamMbox15]} ||
             mem inside {[RamCtn1:RamCtn15]} ||
@@ -569,7 +528,6 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
-          $assertoff(0, dut.top_darjeeling.u_flash_ctrl);
           $assertoff(0, dut.top_darjeeling.u_gpio);
           $assertoff(0, dut.top_darjeeling.u_i2c0);
           $assertoff(0, dut.top_darjeeling.u_i2c1);
@@ -582,7 +540,6 @@ module tb;
           $assertoff(0, dut.top_darjeeling.u_uart0);
           $assertoff(0, dut.top_darjeeling.u_usbdev);
         end else begin
-          $asserton(0, dut.top_darjeeling.u_flash_ctrl);
           $asserton(0, dut.top_darjeeling.u_gpio);
           $asserton(0, dut.top_darjeeling.u_i2c0);
           $asserton(0, dut.top_darjeeling.u_i2c1);
