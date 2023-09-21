@@ -301,6 +301,18 @@ module dma
     .q_o    ( transfer_byte_q       )
   );
 
+  logic [TRANSFER_BYTES_WIDTH-1:0] chunk_byte_q, chunk_byte_d;
+  logic                            capture_chunk_byte;
+  prim_generic_flop_en #(
+    .Width(TRANSFER_BYTES_WIDTH)
+  ) aff_chunk_byte (
+    .clk_i  ( gated_clk          ),
+    .rst_ni ( rst_ni             ),
+    .en_i   ( capture_chunk_byte ),
+    .d_i    ( chunk_byte_d       ),
+    .q_o    ( chunk_byte_q       )
+  );
+
   logic       capture_transfer_width;
   logic [2:0] transfer_width_q, transfer_width_d;
   prim_generic_flop_en #(
@@ -390,16 +402,6 @@ module dma
     .q_o   ( sha2_consumed_q )
   );
 
-  logic sha2_started_d, sha2_started_q;
-  prim_flop #(
-    .Width(1)
-  ) u_sha2_started (
-    .clk_i ( gated_clk      ),
-    .rst_ni( rst_ni         ),
-    .d_i   ( sha2_started_d ),
-    .q_o   ( sha2_started_q )
-  );
-
   logic sha2_hash_done_d, sha2_hash_done_q;
   prim_flop #(
     .Width(1)
@@ -420,21 +422,9 @@ module dma
     .q_o   ( sha2_hash_done_sticky_q )
   );
 
-  logic sha2_capture_msg_len;
-  logic [31:0] sha2_message_len_d, sha2_message_len_q;
-  logic [127:0] sha2_message_len_bits;
-  prim_generic_flop_en #(
-    .Width(32)
-  ) u_sha2_message_len (
-    .clk_i ( gated_clk            ),
-    .rst_ni( rst_ni               ),
-    .en_i  ( sha2_capture_msg_len ),
-    .d_i   ( sha2_message_len_d   ),
-    .q_o   ( sha2_message_len_q   )
-  );
-
   // The SHA engine requires the message length in bits
-  assign sha2_message_len_bits = sha2_message_len_bits << 3;
+  logic [127:0] sha2_message_len_bits;
+  assign sha2_message_len_bits = reg2hw.total_data_size.q << 3;
 
   // Translate the DMA opcode to the SHA2 digest mode
   always_comb begin
@@ -470,6 +460,8 @@ module dma
 
     capture_transfer_byte  = 1'b0;
     transfer_byte_d        = transfer_byte_q;
+    capture_chunk_byte     = 1'b0;
+    chunk_byte_d           = chunk_byte_q;
     capture_transfer_width = 1'b0;
     transfer_width_d       = '0;
 
@@ -529,9 +521,6 @@ module dma
     sha2_valid           = 1'b0;
     sha2_digest_we       = 1'b0;
     sha2_consumed_d      = sha2_consumed_q;
-    sha2_started_d       = sha2_started_q;
-    sha2_capture_msg_len = 1'b0;
-    sha2_message_len_d   = sha2_message_len_q;
 
     // Make SHA2 Done sticky to not miss a single done event during any outstanding writes
     if (ctrl_state_q == DmaIdle) begin
@@ -542,11 +531,15 @@ module dma
 
     unique case (ctrl_state_q)
       DmaIdle: begin
-        transfer_byte_d       = '0;
-        capture_transfer_byte = 1'b1;
-        sha2_started_d        = 1'b1;
+        chunk_byte_d       = '0;
+        capture_chunk_byte = 1'b1;
         // Wait for go bit to be set to proceed with data movement
         if (reg2hw.control.go.q) begin
+          // Clear the transferred bytes only on the very first iteration
+          if (reg2hw.control.initial_transfer.q) begin
+            transfer_byte_d       = '0;
+            capture_transfer_byte = 1'b1;
+          end
           // if not handshake start transfer
           if (!cfg_handshake_en) begin
             ctrl_state_d = DmaAddrSetup;
@@ -696,8 +689,9 @@ module dma
 
         // Error checking. An invalid configuration triggers one or more errors
         // and does not start the DMA transfer
-        if ((reg2hw.total_data_size.q == '0) ||         // No 3-byte transfer width
-            (reg2hw.transfer_width.q == 2'b10))  begin  // No empty transactions
+        if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
+            (reg2hw.total_data_size.q == '0) ||         // No empty transactions
+            (reg2hw.transfer_width.q == 2'b10))  begin  // No 3-byte transfer width
           bad_size = 1'b1;
         end
 
@@ -763,9 +757,9 @@ module dma
              ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
               (reg2hw.destination_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
               ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
-                SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
+                SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                 SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-            bad_dst_addr = 1'b1;
+          bad_dst_addr = 1'b1;
         end
 
         // If data from the OT internal memory is transferred  to the SOC system bus, the control
@@ -779,7 +773,7 @@ module dma
               ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
                (reg2hw.source_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
                ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
-                SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
+                SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                 SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
           bad_src_addr = 1'b1;
         end
@@ -832,18 +826,9 @@ module dma
           // Start the inline hashing if we are in the very first transfer. If we are in the first
           // iteration of a transfer, which is not the very first transfer, only capture the
           // transfer length to compute the final message length
-          if (use_inline_hashing & ~sha2_started_q) begin
-            // Capture the transfer length
-            sha2_started_d       = 1'b1;
-            sha2_capture_msg_len = 1'b1;
-
-            if (reg2hw.control.start_hashing.q) begin
+          if (reg2hw.control.initial_transfer.q) begin
+            if (use_inline_hashing) begin
               sha2_hash_start = 1'b1;
-              // Reset the message length and start with the current transfer size. If we are not
-              // starting a new hashing operation, increment the message length the transfer size
-              sha2_message_len_d = reg2hw.total_data_size.q;
-            end else begin
-              sha2_message_len_d = sha2_message_len_q + reg2hw.total_data_size.q;
             end
           end
 
@@ -1013,14 +998,14 @@ module dma
             ctrl_state_d = DmaShaWait;
         end else if (dma_host_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
+          capture_chunk_byte    = 1'b1;
 
-          if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
-              ctrl_state_d = DmaShaFinalize;
-            end else begin
-              ctrl_state_d = DmaIdle;
-            end
+          if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
+            ctrl_state_d = DmaShaFinalize;
+          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+            ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
@@ -1052,14 +1037,14 @@ module dma
             ctrl_state_d = DmaShaWait;
         end else if (dma_ctn_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
+          capture_chunk_byte    = 1'b1;
 
-          if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
-              ctrl_state_d = DmaShaFinalize;
-            end else begin
-              ctrl_state_d = DmaIdle;
-            end
+          if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
+            ctrl_state_d = DmaShaFinalize;
+          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+            ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
@@ -1090,18 +1075,18 @@ module dma
       DmaWaitSysWriteGrant: begin
         if (sys_resp_q.grant_vec[SysCmdWrite]) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
+          capture_chunk_byte    = 1'b1;
 
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
             ctrl_state_d = DmaShaWait;
+          end else if ((transfer_byte_d >= reg2hw.total_data_size.q) && use_inline_hashing) begin
+            ctrl_state_d = DmaShaFinalize;
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing & reg2hw.control.stop_hashing.q) begin
-              ctrl_state_d = DmaShaFinalize;
-            end else begin
-              ctrl_state_d = DmaIdle;
-            end
+            ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
@@ -1115,12 +1100,8 @@ module dma
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else if (sha2_ready) begin
-          if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (reg2hw.control.stop_hashing.q) begin
-              ctrl_state_d = DmaShaFinalize;
-            end else begin
-              ctrl_state_d = DmaIdle;
-            end
+          if (transfer_byte_q >= reg2hw.total_data_size.q) begin
+            ctrl_state_d = DmaShaFinalize;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
@@ -1280,16 +1261,16 @@ module dma
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
      SYS_ADDR_WIDTH'(transfer_width_q)) :
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
-     SYS_ADDR_WIDTH'(reg2hw.total_data_size.q));
+     SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q));
 
   assign new_source_addr = cfg_data_direction ?
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
-      SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) :
+      SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) :
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
       SYS_ADDR_WIDTH'(transfer_width_q));
 
-    // Calculate remaining amount of data
-  assign remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
+  // Calculate remaining amount of data
+  assign remaining_bytes = reg2hw.chunk_data_size.q - chunk_byte_q;
 
   always_comb begin
     hw2reg = '0;
@@ -1307,10 +1288,12 @@ module dma
       end
     end
 
-    // Clear the inline hashing starting flag when leaving the DmaAddrSetup
-    if ((ctrl_state_q == DmaAddrSetup) & use_inline_hashing & reg2hw.control.start_hashing.q) begin
-      // Clear the init hash flag on the first transfer
-      hw2reg.control.start_hashing.de = 1'b1;
+    // Clear the inline initial transfer flag starting flag when leaving the
+    // DmaAddrSetup the first time
+    if ((ctrl_state_q == DmaAddrSetup) &
+        use_inline_hashing             &
+        reg2hw.control.initial_transfer.q) begin
+      hw2reg.control.initial_transfer.de = 1'b1;
     end
 
     // Write digest to CSRs when needed. The digest is a 64-bit datatype, which leads to assign
