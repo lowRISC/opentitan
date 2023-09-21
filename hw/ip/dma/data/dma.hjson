@@ -314,12 +314,33 @@
           name: "data_size"
           resval: 0x0
           desc: '''
-                Total size (in bytes) of the data blob involved in DMA movement.
+                Total size (in bytes) of the data blob involved in DMA movement for multiple transfers.
 
                 Minimum: 1 byte.
                 Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
                 Works in conjunction with Transfer width register.
-          '''
+                '''
+        }
+      ]
+    }
+    { name: "CHUNK_DATA_SIZE"
+      desc: "Total size of the data blob involved in DMA movement."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "data_size"
+          resval: 0x0
+          desc: '''
+                Size (in bytes) for a single DMA transfer.
+                In hardware handshake mode, the DMA reads in chunks of CHUNK_DATA_SIZE from the peripheral.
+                For a single memory transfer CHUNK_DATA_SIZE and TOTAL_DATA_SIZE are set to the same value.
+
+                Minimum: 1 byte.
+                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Works in conjunction with Transfer width register.
+                '''
         }
       ]
     }
@@ -518,23 +539,13 @@
                 '''
         }
         { bits: "10"
-          name: "start_hashing"
+          name: "initial_transfer"
           resval: 0x0
           hwaccess: "hrw"
           desc: '''
-                Marks the initial transfer to initialize the SHA engine at start.
-                This bit is necessary to support inline hashing for the handshake mode, in which multiple transfers contribute to a final digest.
+                Marks the initial transfer to initialize the DMA and SHA engine for one tranfer that can span over multiple single DMA transfers.
+                Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
                 Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
-                '''
-        }
-        { bits: "11"
-          name: "stop_hashing"
-          resval: 0x0
-          hwaccess: "hro"
-          desc: '''
-                Marks the end of a transfer to enable the digest computation after all data has been transferred.
-                This bit is necessary to support inline hashing for the handshake mode, in which multiple transfers contribute to a final digest.
-                Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the end of a transfer.
                 '''
         }
         { bits: "27"
