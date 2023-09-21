@@ -46,12 +46,13 @@ static void hmac_halt(void) {
  * it is `kHardenedBoolFalse`, starts in SHA256 mode.
  *
  * @param enable_hmac Whether to start HMAC mode.
+ * @param big_endian Whether to return digest in big-endian form.
  */
 static void hmac_init(hardened_bool_t enable_hmac) {
   uint32_t cfg = 0;
-  // Digest is little-endian by default.
-  cfg = bitfield_bit32_write(cfg, HMAC_CFG_DIGEST_SWAP_BIT, false);
-  // Message is little-endian by default.
+  // Digest should be big-endian to match the SHA-256 specification.
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_DIGEST_SWAP_BIT, true);
+  // Message should be little-endian to match Ibex's endianness.
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, true);
   if (launder32(enable_hmac) == kHardenedBoolTrue) {
@@ -135,11 +136,10 @@ void hmac_final(hmac_digest_t *digest) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    reg);
 
-  // Read the digest in reverse to preserve the numerical value.
-  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
+  // Read the digest.
   for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
     digest->digest[i] =
-        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
+        abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
   }
 

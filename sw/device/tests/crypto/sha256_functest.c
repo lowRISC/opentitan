@@ -77,9 +77,9 @@ static status_t simple_test(void) {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
-  const uint32_t exp_digest[kHmacDigestNumWords] = {
-      0x20b50917, 0xdc72a118, 0xd13b02ca, 0x4bc0a4ca,
-      0x807ce588, 0x43e1f083, 0x966ee07c, 0xb2da997a,
+  const uint32_t exp_digest[] = {
+      0x7a99dab2, 0x7ce06e96, 0x83f0e143, 0x88e57c80,
+      0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
   };
   return run_test(msg_buf, exp_digest);
 }
@@ -91,9 +91,9 @@ static status_t simple_test(void) {
  *   = 0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
  */
 static status_t empty_test(void) {
-  const uint32_t exp_digest[kHmacDigestNumWords] = {
-      0x7852b855, 0xa495991b, 0x649b934c, 0x27ae41e4,
-      0x996fb924, 0x9afbf4c8, 0x98fc1c14, 0xe3b0c442,
+  const uint32_t exp_digest[] = {
+      0x42c4b0e3, 0x141cfc98, 0xc8f4fb9a, 0x24b96f99,
+      0xe441ae27, 0x4c939b64, 0x1b9995a4, 0x55b85278,
   };
   crypto_const_byte_buf_t msg_buf = {
       .data = NULL,

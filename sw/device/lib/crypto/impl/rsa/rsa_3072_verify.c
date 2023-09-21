@@ -84,8 +84,12 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
   hmac_digest_t digest;
   hmac_final(&digest);
 
-  // Copy the message digest into the least significant end of the result.
-  memcpy(result->data, digest.digest, sizeof(digest.digest));
+  // Copy the message digest into the least significant end of the result,
+  // reversing the order of bytes to get little-endian form.
+  for (size_t i = 0; i < kSha256DigestNumWords; i++) {
+    result->data[i] =
+        __builtin_bswap32(digest.digest[kSha256DigestNumWords - 1 - i]);
+  }
 
   // Set remainder of 0x00 || T section
   result->data[kSha256DigestNumWords] = 0x05000420;
