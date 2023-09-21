@@ -37,10 +37,13 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
 
     // Randomize the expected data and write it into flash.
     `DV_CHECK_STD_RANDOMIZE_FATAL(iso_part_data);
-    for (int i = 0; i < ISO_PART_SIZE; i++) begin
-      // write some data into isolated partition
-      cfg.mem_bkdr_util_h[FlashBank0Info].write8(ISO_PART_ADDR + i, iso_part_data[i]);
-    end
+    // TODO(opentitan-integrated/issues/332): this sequence needs to be fixed.
+    // The flash controller is no longer present in Darjeeling.
+    // for (int i = 0; i < ISO_PART_SIZE; i++) begin
+    //   // write some data into isolated partition
+    //   cfg.mem_bkdr_util_h[FlashBank0Info].write8(ISO_PART_ADDR + i, iso_part_data[i]);
+    // end
+    `uvm_fatal(`gfn, "This sequence is currently not functional and needs to be fixed.")
 
   endtask // dut_init
 
