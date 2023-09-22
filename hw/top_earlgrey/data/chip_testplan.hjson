@@ -21,6 +21,7 @@
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_edn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_i2c_testplan.hjson"

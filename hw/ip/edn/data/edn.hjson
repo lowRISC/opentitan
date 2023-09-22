@@ -97,6 +97,45 @@
       local:   "true",
     },
   ],
+  features: [
+    {
+      name: "EDN.MODE.BOOT"
+      desc: '''
+            In boot-time request mode, EDN plays a fully hardware-controlled and fixed command sequence consisting of a single `instantiate` and a single `generate` command but no `reseed` commands.
+            EDN delivers a fixed amount of entropy only in this mode (4K 128-bit blocks).
+            '''
+    },
+    {
+      name: "EDN.MODE.AUTO"
+      desc: '''
+            The purpose of the auto request mode is to continuously deliver entropy to consuming endpoints after the system has booted.
+            To this end, EDN keeps replaying a sequence of `generate` and `reseed` commands, which can optionally come with additional data, provided by firmware via the !!RESEED_CMD and !!GENERATE_CMD registers, respectively.
+            The first `instantiate` command must be provided by firmware through the !!SW_CMD_REQ register.
+            '''
+    },
+    {
+      name: "EDN.MODE.SW"
+      desc: '''
+            In software port mode, EDN is fully software controlled.
+            It will play any commands provided by firmware via the !!SW_CMD_REQ register.
+            Firmware should check the !!SW_CMD_STS register to see if the command interface is ready before issuing a new command, and whether the command completed successfully afterwards.
+            '''
+    },
+    {
+      name: "EDN.TRACK_SEED_COMPLIANCE"
+      desc: '''
+            The entropy complex modules, including EDN, track whether seeds or the entropy bits generated using those seeds have been derived from FIPS/CC compliant entropy.
+            EDN forwards this information to entropy consuming endpoints alongside the delivered entropy bits using the `edn_fips` bit.
+            '''
+    },
+    {
+      name: "EDN.BUS_CMP_ALERT"
+      desc: '''
+            Entropy bits subsequently received from CSRNG are compared to each other.
+            In case two values match, a recoverable alert is signaled and the !!RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit is set.
+            '''
+    },
+  ],
   countermeasures: [
     { name: "CONFIG.REGWEN"
       desc: "Registers are protected from writes."
@@ -123,7 +162,6 @@
       desc: "Tilelink end-to-end bus integrity scheme."
     }
   ],
-
   regwidth: "32",
   registers: [
     { name: "REGWEN",
