@@ -5,7 +5,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
@@ -15,7 +14,6 @@
 #include "sw/lib/sw/device/base/mmio.h"
 
 #include "adc_ctrl_regs.h"
-#include "flash_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "keymgr_regs.h"
 #include "otp_ctrl_regs.h"
@@ -43,7 +41,6 @@
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
        KEYMGR.MAX_OWNER_KEY_VER_SHADOWED  0x0      0x1600_ABBA
-       FLASH_CTRL.SCRATCH                 0x0      0x3927
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
    Read programmed csr to check all Group2 keep programmed value while group 3
@@ -84,7 +81,6 @@ typedef struct test_register {
 
 static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_flash_ctrl_t flash_ctrl;
 static dif_adc_ctrl_t adc_ctrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pinmux_t pinmux;
@@ -96,7 +92,6 @@ enum {
   ADC_CTRL,
   SYSRST_CTRL,
   KEYMGR,
-  FLASH_CTRL,
 };
 
 static test_register_t kReg[] = {
@@ -144,14 +139,6 @@ static test_register_t kReg[] = {
             .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
 
         },
-    [FLASH_CTRL] =
-        {
-            .name = "FLASH_CTRL",
-            .base = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR,
-            .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
-            .write_val = 0x3927,
-            .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
-        },
 };
 
 static void write_test_reg(void) {
@@ -177,9 +164,6 @@ static void init_peripherals(void) {
 
   addr = mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(addr, &otp_ctrl));
-
-  addr = mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_flash_ctrl_init(addr, &flash_ctrl));
 
   addr = mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_adc_ctrl_init(addr, &adc_ctrl));

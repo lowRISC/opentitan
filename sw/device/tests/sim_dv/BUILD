@@ -908,7 +908,6 @@ opentitan_functest(
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
