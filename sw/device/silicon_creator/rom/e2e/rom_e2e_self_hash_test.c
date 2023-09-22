@@ -6,10 +6,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
@@ -51,20 +51,14 @@ extern const char _chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
-  uint32_t rom_hash[kSha256HashSizeIn32BitWords];
-  crypto_const_byte_buf_t input = {
-      .data = (uint8_t *)TOP_EARLGREY_ROM_BASE_ADDR,
-      .len = kGoldenRomSizeBytes,
-  };
-  crypto_word32_buf_t output = {
-      .data = rom_hash,
-      .len = ARRAYSIZE(rom_hash),
-  };
-
-  TRY(otcrypto_hash(input, kHashModeSha256, &output));
-  LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash[7],
-           rom_hash[6], rom_hash[5], rom_hash[4], rom_hash[3], rom_hash[2],
-           rom_hash[1], rom_hash[0]);
+  hmac_sha256_init();
+  hmac_sha256_update((void *)TOP_EARLGREY_ROM_BASE_ADDR, kGoldenRomSizeBytes);
+  hmac_digest_t rom_hash;
+  hmac_sha256_final(&rom_hash);
+  LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash.digest[7],
+           rom_hash.digest[6], rom_hash.digest[5], rom_hash.digest[4],
+           rom_hash.digest[3], rom_hash.digest[2], rom_hash.digest[1],
+           rom_hash.digest[0]);
   chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",
@@ -76,12 +70,11 @@ status_t hash_rom(void) {
   // released ROM binary.
 
   if (kDeviceType == kDeviceSimDV) {
-    TRY_CHECK_ARRAYS_EQ((uint8_t *)output.data, (uint8_t *)kSimDvGoldenRomHash,
-                        sizeof(kSimDvGoldenRomHash));
+    TRY_CHECK_ARRAYS_EQ(rom_hash.digest, kSimDvGoldenRomHash,
+                        ARRAYSIZE(kSimDvGoldenRomHash));
   } else if (kDeviceType == kDeviceFpgaCw310) {
-    TRY_CHECK_ARRAYS_EQ((uint8_t *)output.data,
-                        (uint8_t *)kFpgaCw310GoldenRomHash,
-                        sizeof(kFpgaCw310GoldenRomHash));
+    TRY_CHECK_ARRAYS_EQ(rom_hash.digest, kFpgaCw310GoldenRomHash,
+                        ARRAYSIZE(kFpgaCw310GoldenRomHash));
   } else {
     LOG_ERROR("ROM hash not self-checked for this device type: 0x%x",
               kDeviceType);
