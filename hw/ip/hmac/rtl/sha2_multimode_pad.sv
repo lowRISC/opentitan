@@ -46,13 +46,9 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
                         (tx_count[9:0] == 10'h340) : '0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      hash_process_flag <= 1'b0;
-    end else if (!sha_en || hash_start || hash_done) begin
-        hash_process_flag <= 1'b0;
-    end else if (hash_process) begin
-      hash_process_flag <= 1'b1;
-    end
+    if (!rst_ni)                                 hash_process_flag <= 1'b0;
+    else if (!sha_en || hash_start || hash_done) hash_process_flag <= 1'b0;
+    else if (hash_process)                       hash_process_flag <= 1'b1;
   end
 
   // Data path: fout_wdata
@@ -151,76 +147,62 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
   pad_st_e st_q, st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      st_q <= StIdle;
-    end else if (!sha_en) begin
-      st_q <= StIdle;
-    end else if (hash_start) begin // at any point reset to ready to receive words
-      st_q <= StFifoReceive;
-    end else
-       st_q <= st_d;
+    if (!rst_ni) st_q <= StIdle;
+    else if (!sha_en) st_q <= StIdle;
+    else if (hash_start) st_q <= StFifoReceive;
+    else st_q <= st_d;
   end
 
   // Next state
   always_comb begin
     shaf_rvalid = 1'b0;
     inc_txcount = 1'b0;
-    sel_data = FifoIn;
+    sel_data    = FifoIn;
     fifo_rready = 1'b0;
-
-    st_d = StIdle;
+    st_d        = StIdle;
 
     unique case (st_q)
       StIdle: begin
-        sel_data = FifoIn;
+        sel_data    = FifoIn;
         shaf_rvalid = 1'b0;
-
         if (sha_en && hash_start) begin
           inc_txcount = 1'b0;
-
-          st_d = StFifoReceive;
+          st_d        = StFifoReceive;
         end else begin
-          st_d = StIdle;
+          st_d        = StIdle;
         end
       end
 
       StFifoReceive: begin
         sel_data = FifoIn;
-
         if (fifo_partial && fifo_rvalid) begin
           // End of the message (last bit is not word-aligned) , assume hash_process_flag is set
-          shaf_rvalid  = 1'b0; // Update entry at StPad80
+          shaf_rvalid = 1'b0; // Update entry at StPad80
           inc_txcount = 1'b0;
           fifo_rready = 1'b0;
-
           st_d = StPad80;
         end else if (!hash_process_flag) begin
           fifo_rready = shaf_rready;
-          shaf_rvalid  = fifo_rvalid;
+          shaf_rvalid = fifo_rvalid;
           inc_txcount = shaf_rready;
-
           st_d = StFifoReceive;
         end else if (tx_count == message_length) begin
           // already received all msg and was waiting process flag
           shaf_rvalid  = 1'b0;
-          inc_txcount = 1'b0;
-          fifo_rready = 1'b0;
-
+          inc_txcount  = 1'b0;
+          fifo_rready  = 1'b0;
           st_d = StPad80;
         end else begin
-          shaf_rvalid  = fifo_rvalid;
+          shaf_rvalid = fifo_rvalid;
           fifo_rready = shaf_rready; // 0 always
           inc_txcount = shaf_rready; // 0 always
-
           st_d = StFifoReceive;
         end
       end
 
       StPad80: begin
-        sel_data = Pad80;
-
+        sel_data    = Pad80;
         shaf_rvalid = 1'b1;
-
         fifo_rready = (digest_mode_flag == SHA2_256) ? shaf_rready && |message_length[4:3]:
                       ((digest_mode_flag == SHA2_384) || (digest_mode_flag == SHA2_512)) ?
                       shaf_rready && |message_length[5:3] : '0; // Only when partial
@@ -271,43 +253,35 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
 
         if (shaf_rready) begin
           inc_txcount = 1'b1;
-
-          if (txcnt_eq_1a0) begin
-            st_d = StLenHi;
-          end else begin
-            st_d = StPad00;
-          end
+          if (txcnt_eq_1a0) st_d = StLenHi;
+          else st_d = StPad00;
         end else begin
           st_d = StPad00;
         end
       end
 
       StLenHi: begin
-        sel_data = LenHi;
+        sel_data    = LenHi;
         shaf_rvalid = 1'b1;
 
         if (shaf_rready) begin
           st_d = StLenLo;
-
           inc_txcount = 1'b1;
         end else begin
           st_d = StLenHi;
-
           inc_txcount = 1'b0;
         end
       end
 
       StLenLo: begin
-        sel_data = LenLo;
-        shaf_rvalid = 1'b1;
+        sel_data      = LenLo;
+        shaf_rvalid   = 1'b1;
 
         if (shaf_rready) begin
-          st_d = StIdle;
-
+          st_d        = StIdle;
           inc_txcount = 1'b1;
         end else begin
-          st_d = StLenLo;
-
+          st_d        = StLenLo;
           inc_txcount = 1'b0;
         end
       end
@@ -334,14 +308,10 @@ module sha2_multimode_pad import hmac_multimode_pkg::*; (
   end
 
   // Latch SHA-2 configured mode
-   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      digest_mode_flag <= None;
-    end else if (hash_start) begin
-      digest_mode_flag <= digest_mode;
-    end else if (hash_done == 1'b1) begin
-      digest_mode_flag <= None;
-    end
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)                digest_mode_flag <= None;
+    else if (hash_start)        digest_mode_flag <= digest_mode;
+    else if (hash_done == 1'b1) digest_mode_flag <= None;
   end
 
   // State machine is in Idle only when it meets tx_count == message length

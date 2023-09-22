@@ -164,13 +164,9 @@ module sha2_multimode import hmac_multimode_pkg::*; (
 
   // w_index
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      w_index <= '0;
-    end else if (!sha_en || hash_start) begin
-      w_index <= '0;
-    end else if (update_w_from_fifo) begin
-      w_index <= w_index + 1;
-    end
+    if      (!rst_ni)               w_index <= '0;
+    else if (!sha_en || hash_start) w_index <= '0;
+    else if (update_w_from_fifo)    w_index <= w_index + 1;
   end
 
   // ready for a word from the padding buffer in sha2_pad
@@ -190,15 +186,10 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   fifoctl_state_e fifo_st_q, fifo_st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      fifo_st_q <= FifoIdle;
-    end else if (!sha_en) begin
-      fifo_st_q <= FifoIdle;
-    end else if (hash_start) begin
-      fifo_st_q <= FifoLoadFromFifo;
-    end else begin
-      fifo_st_q <= fifo_st_d;
-    end
+    if      (!rst_ni)    fifo_st_q <= FifoIdle;
+    else if (!sha_en)    fifo_st_q <= FifoIdle;
+    else if (hash_start) fifo_st_q <= FifoLoadFromFifo;
+    else                 fifo_st_q <= fifo_st_d;
   end
 
   always_comb begin
@@ -208,27 +199,24 @@ module sha2_multimode import hmac_multimode_pkg::*; (
 
     unique case (fifo_st_q)
       FifoIdle: begin
-        if (hash_start) begin
-          fifo_st_d = FifoLoadFromFifo;
-        end else begin
-          fifo_st_d = FifoIdle;
-        end
+        if (hash_start) fifo_st_d = FifoLoadFromFifo;
+        else fifo_st_d = FifoIdle;
       end
 
       FifoLoadFromFifo: begin
         if (!sha_en) begin
-          fifo_st_d = FifoIdle;
+          fifo_st_d          = FifoIdle;
           update_w_from_fifo = 1'b0;
         end else if (!shaf_rvalid) begin
           // Wait until it is filled
-          fifo_st_d = FifoLoadFromFifo;
+          fifo_st_d          = FifoLoadFromFifo;
           update_w_from_fifo = 1'b0;
         end else if (w_index == 4'd 15) begin
           fifo_st_d = FifoWait;
           // To increment w_index and it rolls over to 0
           update_w_from_fifo = 1'b1;
         end else begin
-          fifo_st_d = FifoLoadFromFifo;
+          fifo_st_d          = FifoLoadFromFifo;
           update_w_from_fifo = 1'b1;
         end
       end
@@ -254,13 +242,9 @@ module sha2_multimode import hmac_multimode_pkg::*; (
 
   // Latch SHA-2 configured mode at hash_start
    always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      digest_mode_flag <= None;
-    end else if (hash_start) begin
-      digest_mode_flag <= digest_mode;
-    end else if (hash_done == 1'b1) begin
-      digest_mode_flag <= None;
-    end
+    if (!rst_ni)         digest_mode_flag <= None;
+    else if (hash_start) digest_mode_flag <= digest_mode;
+    else if (hash_done)  digest_mode_flag <= None;
   end
 
   // SHA control
@@ -273,13 +257,9 @@ module sha2_multimode import hmac_multimode_pkg::*; (
   sha_st_t sha_st_q, sha_st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sha_st_q <= ShaIdle;
-    end else if (!sha_en || hash_start) begin
-      sha_st_q <= ShaIdle;
-    end else begin
-      sha_st_q <= sha_st_d;
-    end
+    if (!rst_ni)                    sha_st_q <= ShaIdle;
+    else if (!sha_en || hash_start) sha_st_q <= ShaIdle;
+    else                            sha_st_q <= sha_st_d;
   end
 
   assign clear_digest = hash_start;
@@ -317,7 +297,7 @@ module sha2_multimode import hmac_multimode_pkg::*; (
         update_digest = 1'b1;
         if (fifo_st_q == FifoWait) begin
           init_hash = 1'b1;
-          sha_st_d = ShaCompress;
+          sha_st_d  = ShaCompress;
         end else begin
           sha_st_d = ShaIdle;
         end

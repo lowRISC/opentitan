@@ -35,7 +35,7 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
   sha_fifo64_t  full_word;
   logic [1:0]   word_part_count;
   logic         word_part_inc, word_part_reset;
-  logic         sha_process, process_flag, reset_process;
+  logic         sha_process, process_flag;
   logic         word_valid, sha_ready;
   digest_mode_e digest_mode_flag;
 
@@ -45,7 +45,6 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
     full_word.mask                = 8'hFF; // to keep the padding buffer ready to receive
     full_word.data                = 64'h0;
     sha_process                   = 1'b0;
-    reset_process                 = 1'b0;
     word_valid                    = 1'b0;
     word_buffer_ready             = 1'b0;
     word_buffer_d                 = word_buffer_q;
@@ -55,20 +54,19 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
         if (digest_mode_flag != SHA2_256) begin
           // accumulate most significant 32 bits of word and mask bits
           word_buffer_d.data[63:32] = fifo_rdata.data;
-          word_buffer_d.mask[7:4] = fifo_rdata.mask;
-          word_part_inc =  1'b1;
-          word_buffer_ready = 1'b1;
+          word_buffer_d.mask[7:4]   = fifo_rdata.mask;
+          word_part_inc             =  1'b1;
+          word_buffer_ready         = 1'b1;
           if (hash_process || process_flag) begin // ready to push out word (partial)
-            word_valid = 1'b1;
-            full_word.data =  {32'b0, fifo_rdata.data};
-            full_word.mask = {4'h0, fifo_rdata.mask};
-            sha_process = 1'b1;
-            word_part_inc =  1'b0;
+            word_valid      = 1'b1;
+            full_word.data  =  {32'b0, fifo_rdata.data};
+            full_word.mask  = {4'h0, fifo_rdata.mask};
+            sha_process     = 1'b1;
+            word_part_inc   =  1'b0;
             if (sha_ready == 1'b1) begin
               // if word has been absorbed into hash engine
               word_buffer_ready = 1'b1; // word has been pushed out to SHA engine, word buffer ready
-              reset_process = 1'b1;
-              word_part_inc   = 1'b0;
+              word_part_inc     = 1'b0;
             end else begin
               word_buffer_ready = 1'b0;
             end
@@ -87,7 +85,6 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
           if (sha_ready == 1'b1) begin
             // if word has been absorbed into hash engine
             word_buffer_ready = 1'b1; // word has been pushed out to SHA engine so word buffer ready
-            reset_process = 1'b1;
           end else begin
             word_buffer_ready = 1'b0;
           end
@@ -96,47 +93,48 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
         word_buffer_ready = 1'b1; // buffer still has room for another word
         // accumulate least significant 32 bits and mask
         word_buffer_d.data [31:0] = fifo_rdata.data;
-        word_buffer_d.mask [3:0] = fifo_rdata.mask;
+        word_buffer_d.mask [3:0]  = fifo_rdata.mask;
         // now ready to pass full word through
         word_valid = 1'b1;
-        full_word.data [63:32] = word_buffer_q.data[63:32];
-        full_word.mask [7:4]  = word_buffer_q.mask[7:4];
-        full_word.data [31:0] = fifo_rdata.data;
-        full_word.mask  [3:0] = fifo_rdata.mask;
+        full_word.data [63:32]  = word_buffer_q.data[63:32];
+        full_word.mask [7:4]    = word_buffer_q.mask[7:4];
+        full_word.data [31:0]   = fifo_rdata.data;
+        full_word.mask  [3:0]   = fifo_rdata.mask;
         if (hash_process || process_flag) begin
             sha_process = 1'b1;
         end
         if (sha_ready == 1'b1) begin
           // word has been absorbed
           word_buffer_ready = 1'b1; // word has been pushed out to SHA engine so word buffer ready
-          word_part_reset = 1'b1;
-          word_part_inc   = 1'b0;
-          reset_process = 1'b1;
+          word_part_reset   = 1'b1;
+          word_part_inc     = 1'b0;
         end else begin
           word_buffer_ready = 1'b1;
-          word_part_inc = 1'b1;
+          word_part_inc     = 1'b1;
         end
       end else if (word_part_count == 2'b10) begin // word buffer is full and has not loaded out yet
         // word_buffer_ready is now deasserted: accumulated word is waiting to be pushed out
         word_buffer_ready = 1'b0;
-        word_valid = 1'b1; // word buffer is ready to shift word out to SHA engine whenever ready
-        full_word = word_buffer_q;
+        word_valid        = 1'b1; // word buffer is ready to shift word out to SHA engine
+        full_word         = word_buffer_q;
         if (hash_process || process_flag) begin
             sha_process = 1'b1;
         end
         if (sha_ready == 1'b1) begin // waiting on sha_ready to turn 1
           // do not assert word_buffer_ready yet
           word_part_reset = 1'b1;
-          reset_process = 1'b1;
         end
       end
-    end else if (sha_en && process_flag) begin // end of message (not byte-aligned)
-      // no new valid input, provide the last latched input
+    end else if (sha_en) begin // hash engine still enabled
+      // no new valid input, provide the last latched input so long as hash is enabled
       full_word = word_buffer_q;
+      if (hash_process || process_flag) begin // wait on hash_process
+        sha_process = 1'b1;
+      end
       if (word_part_count == 2'b01) begin // 384/512: msg ended but missing 32-bit word packing
         full_word.data [31:0] = 32'b0;
-        full_word.mask [3:0] = 4'h0;
-        word_valid = 1'b1;
+        full_word.mask [3:0]  = 4'h0;
+        word_valid            = 1'b1;
       end
     end
   end
@@ -166,45 +164,27 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(!rst_ni) begin
-      word_part_count <= '0;
-    end else if (word_part_reset || hash_start || !sha_en) begin
-      word_part_count <= '0;
-    end else if (word_part_inc) begin
-      word_part_count <= word_part_count + 1'b1;
-    end
+    if (!rst_ni)                                       word_part_count <= '0;
+    else if (word_part_reset || hash_start || !sha_en) word_part_count <= '0;
+    else if (word_part_inc)                            word_part_count <= word_part_count + 1'b1;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(!rst_ni) begin
-      word_buffer_q <= 0;
-    end else if (!sha_en || hash_start) begin
-      word_buffer_q <= 0;
-    end else begin
-      word_buffer_q <= word_buffer_d;
-    end
+    if (!rst_ni)                    word_buffer_q <= 0;
+    else if (!sha_en || hash_start) word_buffer_q <= 0;
+    else                            word_buffer_q <= word_buffer_d;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(!rst_ni) begin
-      process_flag <= '0;
-    end else if (!sha_en || hash_start) begin
-      process_flag <= '0;
-    end else if (hash_process) begin
-      process_flag <= '1;
-    end else if (reset_process) begin
-      process_flag <= '0;
-    end
+    if (!rst_ni)                    process_flag <= '0;
+    else if (!sha_en || hash_start) process_flag <= '0;
+    else if (hash_process)          process_flag <= '1;
   end
 
   // Latch SHA-2 configured mode
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      digest_mode_flag <= None;
-    end else if (hash_start) begin
-      digest_mode_flag <= digest_mode;
-    end else if (hash_done == 1'b1) begin
-      digest_mode_flag <= None;
-    end
+    if (!rst_ni)                digest_mode_flag <= None;
+    else if (hash_start)        digest_mode_flag <= digest_mode;
+    else if (hash_done == 1'b1) digest_mode_flag <= None;
   end
 endmodule : sha2_multimode32
