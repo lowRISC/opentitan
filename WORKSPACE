@@ -148,3 +148,7 @@ hyperdebug_repos()
 # Bazel skylib library
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
+
+# QEMU OT port
+load("//third_party/qemu_ot:repos.bzl", "qemu_ot_repos")
+qemu_ot_repos()

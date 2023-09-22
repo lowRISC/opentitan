@@ -8,11 +8,14 @@ load(
     "opentitan_flash_binary",
     "opentitan_rom_binary",
 )
+load("//rules:qemu.bzl", "qemu_otpconv")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_skylib//lib:sets.bzl", "sets")
 
-VALID_TARGETS = ["dv", "verilator", "cw310_rom_with_fake_keys", "cw310_rom_with_real_keys", "cw310_test_rom"]
+FPGA_TARGETS = ["cw310_rom_with_fake_keys", "cw310_rom_with_real_keys", "cw310_test_rom"]
+QEMU_TARGETS = ["qemu_{}".format(target) for target in FPGA_TARGETS]
+VALID_TARGETS = ["dv", "verilator"] + FPGA_TARGETS + QEMU_TARGETS
 
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
@@ -187,6 +190,91 @@ def verilator_params(
     )
     return kwargs
 
+QEMU_ARG_DISABLE_AES_FAST_MODE = ["-global", "ot-aes.fast-mode=false"]
+
+def qemu_params(
+        # Base Parameters
+        args = _BASE_PARAMS["args"],
+        data = _BASE_PARAMS["data"],
+        exit_success = _BASE_PARAMS["exit_success"],
+        exit_failure = _BASE_PARAMS["exit_failure"],
+        local = _BASE_PARAMS["local"],
+        otp = _BASE_PARAMS["otp"],
+        tags = _BASE_PARAMS["tags"],
+        timeout = _BASE_PARAMS["timeout"],
+        test_runner = _BASE_PARAMS["test_runner"],
+        test_cmds = _BASE_PARAMS["test_cmds"] + [
+            "console",
+            "--exit-success={exit_success}",
+            "--exit-failure={exit_failure}",
+        ],
+        # QEMU-specific Parameters
+        icount = None,
+        machine_props = [],
+        qemu_args = [],
+        # TODO handle SPI flash image
+        **kwargs):
+    """A macro to create QEMU sim parameters for OpenTitan functional tests.
+
+    This macro emits a dictionary of parameters which are pasted into the
+    QEMU simulation specific test rule.
+
+    Parameters:
+        @param args: Extra arguments to pass to the test runner (`opentitantool`).
+        @param data: Data dependencies of the test.
+        @param local: Whether the test should be run locally without sandboxing.
+        @param otp: The OTP image to use.
+        @param tags: The test tags to apply to the test rule.
+        @param timeout: The timeout to apply to the test rule.
+        @param test_cmds: A list of required commands and args that make up the
+                          immutable portion of the harness invocation.
+        @param icount: If set, will be passed to QEMU `-icount` option.
+        @param machine_props: Array of machine properties to pass to QEMU.
+        @param qemu_args: Array of QEMU command line options (will be passed as-in)
+    """
+    default_args = [
+        "--rcfile=",
+        "--logging={logging}",
+    ]
+    required_test_cmds = [
+        "--interface=qemu",
+        "--qemu-bin=$(location @//third_party/qemu_ot:qemu_system_riscv32)",
+        "--qemu-rom=$(location {rom})",
+        "--qemu-flash=$(location {flash})",
+        "--qemu-otp=$(location {otp})",
+        "--qemu-machine=ot-earlgrey",
+    ]
+
+    # add machine properties
+    qemu_arguments = ["--qemu-machine-prop={}".format(prop) for prop in machine_props]
+
+    # surround qemu arguments with --qemu-args .... ;
+    qemu_arguments.append("--qemu-args")
+    if icount != None:
+        qemu_arguments.extend(["-icount", "{}".format(icount)])
+    qemu_arguments.extend(qemu_args)
+
+    # the ; needs to be escaped because the runner uses a shell script
+    qemu_arguments.append("\\;")
+
+    required_data = [
+        "@//third_party/qemu_ot:qemu_system_riscv32",
+    ]
+    required_tags = ["qemu"]
+    kwargs.update(
+        args = default_args + args,
+        data = required_data + data,
+        exit_success = exit_success,
+        exit_failure = exit_failure,
+        local = local,
+        otp = otp,
+        tags = required_tags + tags,
+        test_runner = test_runner,
+        test_cmds = required_test_cmds + qemu_arguments + test_cmds,
+        timeout = timeout,
+    )
+    return kwargs
+
 def cw310_params(
         # Base Parameters
         args = _BASE_PARAMS["args"],
@@ -278,6 +366,7 @@ def opentitan_functest(
         dv = None,
         verilator = None,
         cw310 = None,
+        qemu = None,
         **kwargs):
     """A helper macro for generating OpenTitan functional tests.
 
@@ -307,6 +396,7 @@ def opentitan_functest(
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
       @param cw310: CW310 test parameters.
+      @param qemu: QEMU test parameters.
       @param **kwargs: Arguments to forward to `opentitan_flash_binary`.
 
     This macro emits the following rules:
@@ -316,6 +406,7 @@ def opentitan_functest(
         sh_test                named: {name}_sim_dv
         sh_test                named: {name}_sim_verilator
         sh_test                named: {name}_fpga_cw310
+        sh_test                named: {name}_qemu_cw310
         test_suite             named: {name}
     """
 
@@ -332,7 +423,10 @@ def opentitan_functest(
         elif target == "verilator":
             devices_to_build_for.append("sim_verilator")
             target_params["sim_verilator"] = verilator_params() if not verilator else verilator
-        elif target in ["cw310_rom_with_fake_keys", "cw310_rom_with_real_keys", "cw310_test_rom"]:
+        elif target in QEMU_TARGETS:
+            devices_to_build_for.append("fpga_cw310")
+            target_params[target] = qemu_params() if not qemu else qemu
+        elif target in FPGA_TARGETS:
             devices_to_build_for.append("fpga_cw310")
 
             # Copy `cw310` for each `target`. This is not a deep copy, thus we
@@ -363,15 +457,13 @@ def opentitan_functest(
             # Fill in the remaining bitstream arguments
             if target == "cw310_test_rom":
                 cw310_["tags"].append("cw310_test_rom")
-                target_params["fpga_cw310_test_rom"] = cw310_
             elif target == "cw310_rom_with_fake_keys":
                 cw310_["tags"].append("cw310_rom_with_fake_keys")
-                target_params["fpga_cw310_rom_with_fake_keys"] = cw310_
             elif target == "cw310_rom_with_real_keys":
                 cw310_["tags"].append("cw310_rom_with_real_keys")
-                target_params["fpga_cw310_rom_with_real_keys"] = cw310_
             else:
                 fail("Expected `cw310_test_rom` or `cw310_rom_with_fake_keys` or `cw310_rom_with_real_keys` as the target name")
+            target_params[target] = cw310_
         else:
             fail("Invalid target {}. Target must be in {}".format(target, VALID_TARGETS))
     devices_to_build_for = collections.uniq(devices_to_build_for)
@@ -420,9 +512,26 @@ def opentitan_functest(
             **kwargs
         )
 
+    # Generate QEMU compatible OTP image if needed
+    all_qemu_targets = [t for t in targets if "qemu" in t]
+    if len(all_qemu_targets) > 0:
+        qemu_otp_img = "{}_qemu_otp".format(name)
+        qemu_otpconv(
+            name = qemu_otp_img,
+            img = target_params[all_qemu_targets[0]]["otp"],
+        )
+
     for target, params in target_params.items():
         # Set test name.
         test_name = "{}_{}".format(name, target)
+
+        # QEMU targets are derived from FPGA targets:
+        # fpga_target -> "qemu_" + fpga_target
+        # Compute the fpga_target name if relevant
+        if target in QEMU_TARGETS:
+            if not target.startswith("qemu_"):
+                fail("QEMU target names must start with qemu_")
+            qemu_fgpa_target = target[5:]
 
         all_tests.append(test_name)
 
@@ -451,12 +560,12 @@ def opentitan_functest(
         # Set ROM image.
         # Note: FPGA targets will not specify a ROM image as the ROM imaged is
         # specified via the `bitstream` parameter (since the ROM is baked into
-        # the bitstream).
+        # the bitstream). QEMU targets do not specify a ROM but need to use a
+        # ROM file to pass it to QEMU
         rom = params.pop("rom", None)
         if rom:
             if test_in_rom:
                 rom_filegroup = "{}_rom_prog_{}".format(name, target)
-                rom = "{}_scr_vmem".format(rom_filegroup)
             else:
                 rom_label = Label(rom)
                 rom_filegroup = "@{}//{}:{}_{}".format(
@@ -465,15 +574,28 @@ def opentitan_functest(
                     rom_label.name,
                     target,
                 )
-                rom = "{}_scr_vmem".format(rom_filegroup)
+
+            rom = "{}_scr_vmem".format(rom_filegroup)
             target_data.append(rom)
             target_data.append(rom_filegroup)
+        elif target in QEMU_TARGETS:
+            # QEMU requires the ROM to be in the ELF format.
+            ROM_PATH = {
+                "qemu_cw310_test_rom": "@//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_elf_transition",
+                "qemu_cw310_rom_with_fake_keys": "@//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf_transition",
+                "qemu_cw310_rom_with_real_keys": "@//sw/device/silicon_creator/rom/binaries:rom_with_real_keys_fpga_cw310.elf",
+            }
+
+            rom = ROM_PATH[target]
+            target_data.append(rom)
 
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
-        elif target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
+        elif target in FPGA_TARGETS:
             flash = "{}_fpga_cw310_bin".format(ot_flash_binary)
+        elif target in QEMU_TARGETS:
+            flash = "{}_fpga_cw310_qemu".format(ot_flash_binary)
         else:
             fail("Unexpected target: {}".format(target))
         if signed:
@@ -502,13 +624,18 @@ def opentitan_functest(
             flash = rom
         else:
             target_data.append(flash)
-            if target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
+            if target in FPGA_TARGETS + QEMU_TARGETS:
                 target_data.append("{}_fpga_cw310".format(ot_flash_binary))
             else:
                 target_data.append("{}_{}".format(ot_flash_binary, target))
 
         # Set OTP image.
+        # We need to generate a QEMU-compatible OTP image if necessary.
         otp = params.pop("otp")
+
+        # QEMU uses a spec
+        if target in QEMU_TARGETS:
+            otp = qemu_otp_img
         target_data.append(otp)
 
         ########################################################################
@@ -523,9 +650,9 @@ def opentitan_functest(
             clear_bitstream = "fpga clear-bitstream"
 
         # Set success/failure strings for target platforms that print test
-        # results over the UART (e.g., Verilator and FPGA).
+        # results over the UART (e.g., Verilator, QEMU and FPGA).
         exit_strings_kwargs = {}
-        if target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom", "sim_verilator"]:
+        if target in FPGA_TARGETS + QEMU_TARGETS + ["sim_verilator"]:
             exit_strings_kwargs = {
                 "exit_success": shell.quote(params.pop("exit_success")),
                 "exit_failure": shell.quote(params.pop("exit_failure")),
@@ -560,7 +687,7 @@ def opentitan_functest(
         target_test_cmds = [s.format(**format_dict) for s in target_test_cmds]
         env["TEST_CMDS"] = " ".join(target_test_cmds)
 
-        if target in ["fpga_cw310_rom_with_real_keys", "fpga_cw310_rom_with_fake_keys", "fpga_cw310_test_rom"]:
+        if target in FPGA_TARGETS:
             # We attach the UART configuration to the front of the command line
             # so that they'll be parsed as global options rather than
             # command-specific options.

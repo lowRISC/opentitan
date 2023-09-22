@@ -230,5 +230,8 @@ opentitan_functest(
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_virtual_ottf_bl0_virtual",
     signed = True,
-    targets = ["cw310_rom_with_fake_keys"],
+    targets = [
+        "cw310_rom_with_fake_keys",
+        "qemu_cw310_rom_with_fake_keys",
+    ],
 )
