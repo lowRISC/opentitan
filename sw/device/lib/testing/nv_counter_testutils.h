@@ -14,8 +14,8 @@
  * Returns the value of a non-volatile counter in flash.
  *
  * @param counter Counter ID, [0, 2].
- * @value[out] Value of the non-volatile counter
- * @return the result of the operation.
+ * @param[out] Value of the non-volatile counter
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
@@ -25,6 +25,7 @@ status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
  *
  * @param flash_state A flash_ctrl state handle.
  * @param counter Counter ID, [0, 2].
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_increment(
@@ -41,25 +42,11 @@ status_t flash_ctrl_testutils_counter_increment(
  * @param flash_state A flash_ctrl state handle.
  * @param counter Counter ID, [0, 2].
  * @param val Counter value.
+ * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_set_at_least(
     dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val);
-
-/**
- * Sets a strike counter to an arbitrary value.
- *
- * If the arbitrary value is impossible (attempts to flip a bit
- * from 0 to 1 without an erase), an error is created.
- *
- * @param flash_state A flash_ctrl state handle.
- * @param strike_counter The address of the counter.
- * @param new_val The new counter value.
- * @return The result of the operation.
- */
-void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
-                                      uint32_t *strike_counter,
-                                      uint32_t new_val);
 
 /**
  * At the beginning of the simulation (Verilator, VCS,etc.),
