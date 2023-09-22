@@ -36,9 +36,13 @@ class edn_scoreboard extends cip_base_scoreboard #(
   csrng_pkg::csrng_cmd_t reseed_cmd_comp = edn_reg_pkg::EDN_RESEED_CMD_RESVAL;
   csrng_pkg::csrng_cmd_t generate_cmd_comp = edn_reg_pkg::EDN_GENERATE_CMD_RESVAL;
 
-  // indicator bit, 1'b1 if EDN was instantiated 1'b0 elsewise
+  // indicator bit, 1'b1 if EDN is in boot mode
+  bit boot_mode = 1'b0;
+  // indicator bit, 1'b1 if EDN is in auto mode
+  bit auto_mode = 1'b0;
+  // indicator bit, 1'b1 if EDN was instantiated
   bit instantiated = 1'b0;
-  // indicator bit, 1'b1 if in boot_req_mode and generate cmd has already been sent
+  // indicator bit, 1'b1 if in boot_req_mode and generate cmd has been sent
   bit boot_gen_cmd_sent = 1'b0;
   // counter to keep track of additional data
   int clen_cntr = 0;
@@ -167,45 +171,69 @@ class edn_scoreboard extends cip_base_scoreboard #(
         edn_ctrl.boot_req_mode.q = `gmv(ral.ctrl.boot_req_mode);
         edn_ctrl.cmd_fifo_rst.q = `gmv(ral.ctrl.cmd_fifo_rst);
 
-        // If EDN was disabled and is now enabled, reset the kept state
-        if ( write && (edn_ctrl.edn_enable.q == MuBi4True) &&
-            ( (edn_ctrl_pre.edn_enable.q == MuBi4False) || (cfg.backdoor_disable) ) ) begin
-          cfg.backdoor_disable = 1'b0;
-          instantiated = 1'b0;
-          boot_gen_cmd_sent = 1'b0;
-          clen_cntr = 0;
-          sw_cmd_req_q.delete();
-          // currently FIFOs aren't cleared when EDN is disabled.
-          // TODO(#19653): Uncomment or delete based on decision in that issue
-          // reseed_cmd_q.delete();
-          // generate_cmd_q.delete();
-        end
-
-        // currently BootDone state can only be left if EDN is disabled.
-        // TODO(#19655): Uncomment or delete based on decision in that issue
-        // If boot_gen_mode is left reset boot_gen_cmd_sent
-        // if (write && (edn_ctrl_pre.boot_req_mode.q == MuBi4True)
-        //    && (edn_ctrl.boot_req_mode.q == MuBi4False)) begin
-        //   boot_gen_cmd_sent = 1'b0;
-        // end
-
-        // determine if the main state machine is done
-        auto_req_mode_turned_off = (edn_ctrl_pre.auto_req_mode.q == MuBi4True) &&
-                                   (edn_ctrl.auto_req_mode.q == MuBi4False);
-        boot_req_mode_turned_off = (edn_ctrl_pre.boot_req_mode.q == MuBi4True) &&
-                                   (edn_ctrl.boot_req_mode.q == MuBi4False);
-        main_sm_done = (edn_ctrl.edn_enable.q == MuBi4True) &&
-                       (auto_req_mode_turned_off || boot_req_mode_turned_off);
-
-        // Clear reseed & generate queues if cmd_fifo_rst is true or if main_sm_done_pulse is high
-        if ( write && ( (edn_ctrl.cmd_fifo_rst.q == MuBi4True) || main_sm_done ) ) begin
+        // reset fifos if cmd_fifo_rst is true
+        if (write && (edn_ctrl.cmd_fifo_rst.q == MuBi4True)) begin
           reseed_cmd_q.delete();
           generate_cmd_q.delete();
         end
 
+        if (write && (edn_ctrl.edn_enable.q == MuBi4True)) begin
+          // set boot mode flag if boot_req_mode is true and we are not already in auto mode
+          // boot mode has priority over auto mode if they are turned on at the same time
+          if (edn_ctrl.boot_req_mode.q == MuBi4True && !auto_mode) begin
+            boot_mode = 1'b1;
+          end
+          // set auto mode flag if auto_req_mode is true and we are not already in boot mode
+          if (edn_ctrl.auto_req_mode.q == MuBi4True && !boot_mode)  begin
+            auto_mode = 1'b1;
+          end
+
+          // If EDN was disabled and is now enabled, set the initial state
+          if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || (cfg.backdoor_disable)) begin
+            clen_cntr = 0;
+            reqs_between_reseeds_ctr = 32'b0;
+            cfg.backdoor_disable = 1'b0;
+            instantiated = 1'b0;
+            boot_gen_cmd_sent = 1'b0;
+            sw_cmd_req_q.delete();
+
+            // clear auto mode fifos if Main_SM enters SW_Port_Mode
+            if (edn_ctrl.boot_req_mode.q != MuBi4True &&
+                edn_ctrl.auto_req_mode.q != MuBi4True) begin
+              reseed_cmd_q.delete();
+              generate_cmd_q.delete();
+            end
+
+          // If auto mode is being disabled wait for SM to enter Idle state and clear FIFOs
+          end else if ((edn_ctrl.auto_req_mode.q != MuBi4True) &&
+                       (edn_ctrl_pre.auto_req_mode.q == MuBi4True)) begin
+            fork
+              begin
+                csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+                reseed_cmd_q.delete();
+                generate_cmd_q.delete();
+                auto_mode = 1'b0;
+                if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
+                  boot_mode = 1'b1;
+                end
+              end
+            join_none
+          end
+        end
+
+        // currently FIFOs aren't cleared when EDN is disabled.
+        // Uncomment based on decision in #19653
+        // reseed_cmd_q.delete();
+        // generate_cmd_q.delete();
+
       end
       "sw_cmd_req": begin
-        if (addr_phase_write) begin
+        // Only save sw commands if we are in a state that allows for sw commands
+        bit sw_cmd_allowed = (boot_mode && boot_gen_cmd_sent) ||
+                             (!boot_mode && !auto_mode) ||
+                             (auto_mode && !instantiated);
+
+        if (addr_phase_write && `gmv(ral.sw_cmd_sts.cmd_rdy) && sw_cmd_allowed) begin
           sw_cmd_req_q.push_back(item.a_data);
         end
       end
@@ -237,11 +265,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
       "max_num_reqs_between_reseeds": begin
         if (addr_phase_write) begin
           max_num_reqs_between_reseeds = item.a_data;
+          reqs_between_reseeds_ctr = 32'b0;
         end
       end
       "recov_alert_sts": begin
       end
-      "alert_test", "main_sm_state", "err_code", "err_code_test", "regwen": begin
+      "alert_test", "err_code", "err_code_test", "regwen": begin
         // Do nothing.
       end
       "main_sm_state": begin
@@ -275,174 +304,228 @@ class edn_scoreboard extends cip_base_scoreboard #(
       cs_cmd_fifo.get(cs_cmd_item);
       cs_cmd = cs_cmd_item.h_data[csrng_pkg::CSRNG_CMD_WIDTH-1:0];
 
-      // Check if EDN is enabled
-      if ( (edn_ctrl.edn_enable.q == MuBi4False) ||
-           (cfg.backdoor_disable == 1'b1) ) begin
-        `uvm_error(`gfn, $sformatf("No commands can be issued if EDN is disabled. cmd: 0x%h",
-            cs_cmd))
+      // Check if EDN is disabled
+      `DV_CHECK_FATAL((edn_ctrl.edn_enable.q == MuBi4True) && !cfg.backdoor_disable,
+                      $sformatf("No commands can be issued if EDN is disabled. cmd: 0x%h", cs_cmd))
 
-      // If cs_cmd contains a command
-      end else if(clen_cntr == 0) begin
+      // If cs_cmd contains additional data
+      if (clen_cntr != 0) begin
+        // Decrease additional data counter
+        clen_cntr--;
+        // If this is the last word of an instantiate command, set the appropriate flags
+        if ((acmd_cur == csrng_pkg::INS) && (clen_cntr == 0)) begin
+          instantiated = 1'b1;
+        end
+
+        // Determine which fifo to compare the additional data with
+        // If the EDN is in boot_req_mode and boot sequence is not done
+        // no additional data is allowed
+        `DV_CHECK_FATAL(boot_mode -> boot_gen_cmd_sent,
+                        $sformatf({"Additional data not allowed in boot_req_mode",
+                                   " if boot is not complete. cmd: 0x%h"},
+                                  cs_cmd))
+
+        // If the EDN is in auto_req_mode
+        // determine whether the additional data comes from a reseed or a generate cmd.
+        if (auto_mode) begin
+          case (acmd_cur)
+            csrng_pkg::INS: begin
+              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Additional data 0x%h in auto_req_mode has to match",
+                                         " the value from sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
+            end
+            csrng_pkg::RES: begin
+              reseed_cmd_comp = reseed_cmd_q.pop_front();
+              reseed_cmd_q.push_back(reseed_cmd_comp);
+              `DV_CHECK_FATAL(cs_cmd == reseed_cmd_comp,
+                              $sformatf({"Additional data 0x%h in auto_req_mode has to match",
+                                         " the value from reseed fifo 0x%h."},
+                                        cs_cmd, reseed_cmd_comp))
+            end
+            csrng_pkg::GEN: begin
+              generate_cmd_comp = generate_cmd_q.pop_front();
+              generate_cmd_q.push_back(generate_cmd_comp);
+              `DV_CHECK_FATAL(cs_cmd == generate_cmd_comp,
+                              $sformatf({"Additional data 0x%h in auto_req_mode has to match",
+                                         " the value from generate fifo 0x%h."},
+                                        cs_cmd, generate_cmd_comp))
+            end
+            default: begin
+              `uvm_error(`gfn, $sformatf({"Only additional data for reseed and generate accepted",
+                                          " in auto_req_mode. cmd: 0x%h"}, cs_cmd))
+            end
+          endcase
+        end
+
+        // If the EDN is in sw mode, the additional data must come from sw_cmd_req
+        if (!auto_mode && !boot_mode) begin
+          sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+          `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                          $sformatf({"Additional data 0x%h in sw mode has to match",
+                                     " the value from sw fifo 0x%h."},
+                                    cs_cmd, sw_cmd_req_comp))
+        end
+
+      // Else cs_cmd contains a command header
+      end else begin
         clen_cntr = cs_cmd.clen;
         acmd_cur = cs_cmd.acmd;
 
         case (acmd_cur)
           csrng_pkg::INS: begin
-            if (instantiated == 1'b1) begin
-              `uvm_error(`gfn,
-                  $sformatf({"Instantiate command not allowed for instantiated CSRNG instance.",
-                    " cmd: 0x%h"}, cs_cmd))
-            end else begin
+            // Check if already instantiated
+            `DV_CHECK_FATAL(!instantiated,
+                            $sformatf({"Instantiate command not allowed for instantiated",
+                                       " CSRNG instance. the value from generate fifo 0x%h."},
+                                      cs_cmd))
 
+            // Determine whether the instantiate only consists of the header
+            // and set flags accordingly
+            if (clen_cntr == 0) begin
               instantiated = 1'b1;
-              // If EDN is in boot_req_mode and boot sequence is not done
-              if ( (edn_ctrl.boot_req_mode.q == MuBi4True) && (boot_gen_cmd_sent == 1'b0) ) begin
-                if (cs_cmd != boot_ins_cmd_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Instantiate command 0x%h in boot_req_mode",
-                      " has to match the value in boot_ins_cmd register 0x%h."},
-                      cs_cmd, boot_ins_cmd_comp))
-                end
+            end
 
-              // If EDN is in auto_req_mode
-              end else if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-                sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-                if (cs_cmd != sw_cmd_req_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Instantiate command 0x%h in auto_req_mode",
-                      " has to match the value from sw_cmd_req register 0x%h."},
-                      cs_cmd, sw_cmd_req_comp))
-                end
+            // If EDN is in boot_req_mode and boot sequence is not done
+            if (boot_mode && (boot_gen_cmd_sent == 1'b0)) begin
+              `DV_CHECK_FATAL(cs_cmd == boot_ins_cmd_comp,
+                              $sformatf({"Instantiate command 0x%h in boot_req_mode",
+                                         " has to match the value in boot_ins_cmd register 0x%h."},
+                                        cs_cmd, boot_ins_cmd_comp))
 
-              // If EDN is in sw mode or boot_gen command has been sent
-              end else begin
-                sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-                if (cs_cmd != sw_cmd_req_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Instantiate command 0x%h in sw mode",
-                      " has to match the value from sw_cmd_req register 0x%h."},
-                      cs_cmd, sw_cmd_req_comp))
-                end
+            // If EDN is in auto_req_mode
+            end else if (auto_mode) begin
+              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Instantiate command 0x%h in auto_req_mode",
+                                         " has to match the value in sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
 
-              end
+            // If EDN is in sw mode or boot_gen command has been sent
+            end else begin
+              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Instantiate command 0x%h in sw mode",
+                                         " has to match the value in sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
             end
           end
           csrng_pkg::RES: begin
-            if (instantiated == 1'b0) begin
-              `uvm_error(`gfn, $sformatf({"Reseed command not allowed without instantiated",
-                  " CSRNG instance. cmd: 0x%h"}, cs_cmd))
+            // Check if not instantiated
+            `DV_CHECK_FATAL(instantiated,
+                            $sformatf({"Reseed command not allowed without instantiated",
+                                       " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
+            // If EDN is in boot_req_mode and boot sequence is not done
+            `DV_CHECK_FATAL(boot_mode -> boot_gen_cmd_sent,
+                            $sformatf({"Reseed command not allowed in boot_req_mode.",
+                                       " cmd: 0x%h"}, cs_cmd))
+
+            // If EDN is in auto_req_mode
+            if (auto_mode) begin
+              reseed_cmd_comp = reseed_cmd_q.pop_front();
+              reseed_cmd_q.push_back(reseed_cmd_comp);
+              reqs_between_reseeds_ctr = 32'b0;
+              `DV_CHECK_FATAL(cs_cmd == reseed_cmd_comp,
+                              $sformatf({"Reseed command 0x%h in auto_req_mode",
+                                         " has to match the value in reseed fifo 0x%h."},
+                                        cs_cmd, reseed_cmd_comp))
+
+            // If EDN is in sw mode or boot_gen command has been sent
             end else begin
-              // If EDN is in boot_req_mode and boot sequence is not done
-              if ( (edn_ctrl.boot_req_mode.q == MuBi4True) && (boot_gen_cmd_sent == 1'b0) ) begin
-                `uvm_error(`gfn, $sformatf({"Reseed command not allowed in boot_req_mode.",
-                    " cmd: 0x%h"}, cs_cmd))
-
-              // If EDN is in auto_req_mode
-              end else if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-                reseed_cmd_comp = reseed_cmd_q.pop_front();
-                reseed_cmd_q.push_back(reseed_cmd_comp);
-                reqs_between_reseeds_ctr = 32'b0;
-                if (cs_cmd != reseed_cmd_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Reseed command 0x%h in auto_req_mode",
-                      " has to match the value in reseed fifo 0x%h."}, cs_cmd, reseed_cmd_comp))
-                end
-
-              // If EDN is in sw mode or boot_gen command has been sent
-              end else begin
-                sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-                if (cs_cmd != sw_cmd_req_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Reseed command 0x%h in sw mode has to match",
-                      " the value from sw_cmd_req register 0x%h."}, cs_cmd, sw_cmd_req_comp))
-                end
-
-              end
+              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Reseed command 0x%h in sw mode",
+                                         " has to match the value in sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
             end
           end
           csrng_pkg::GEN: begin
-            if (instantiated == 1'b0) begin
-              `uvm_error(`gfn, $sformatf({"Generate command not allowed without instantiated",
-                  " CSRNG instance. cmd: 0x%h"}, cs_cmd))
+            // Check if not instantiated
+            `DV_CHECK_FATAL(instantiated,
+                            $sformatf({"Generate command not allowed without instantiated",
+                                       " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
+            // If EDN is in boot_req_mode and boot sequence is not done
+            if (boot_mode && (boot_gen_cmd_sent == 1'b0)) begin
+              `DV_CHECK_FATAL(cs_cmd == boot_gen_cmd_comp,
+                              $sformatf({"Generate command 0x%h in boot_req_mode",
+                                         " has to match the value in boot_gen_cmd register 0x%h."},
+                                        cs_cmd, boot_gen_cmd_comp))
+              // Once the MAIN_SM enters the boot done state, the FIFOs have to be cleared
+              boot_gen_cmd_sent = 1'b1;
+              reseed_cmd_q.delete();
+              generate_cmd_q.delete();
+
+            // If EDN is in auto_req_mode
+            end else if (auto_mode) begin
+              generate_cmd_comp = generate_cmd_q.pop_front();
+              generate_cmd_q.push_back(generate_cmd_comp);
+
+              `DV_CHECK_FATAL(cs_cmd == generate_cmd_comp,
+                              $sformatf({"Generate command 0x%h in auto_req_mode",
+                                         " has to match the value in generate fifo 0x%h."},
+                                        cs_cmd, generate_cmd_comp))
+
+              `DV_CHECK_FATAL(reqs_between_reseeds_ctr < max_num_reqs_between_reseeds,
+                              $sformatf({"Maximum number of request between reseeds",
+                                         " in auto_req_mode 0x%h exceeded."},
+                                        max_num_reqs_between_reseeds))
+
+              reqs_between_reseeds_ctr++;
+
+            // If EDN is in sw mode or boot_gen command has been sent
             end else begin
-              // If EDN is in boot_req_mode and boot sequence is not done
-              if ( (edn_ctrl.boot_req_mode.q == MuBi4True) && (boot_gen_cmd_sent == 1'b0) ) begin
-                if (cs_cmd != boot_gen_cmd_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Generate command 0x%h in boot_req_mode",
-                      " has to match the value in boot_gen_cmd register 0x%h."},
-                      cs_cmd, boot_gen_cmd_comp))
-                end
+              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
 
-                boot_gen_cmd_sent = 1'b1;
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Generate command 0x%h in sw mode",
+                                         " has to match the value in sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
 
-              // If EDN is in auto_req_mode
-              end else if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-                generate_cmd_comp = generate_cmd_q.pop_front();
-                generate_cmd_q.push_back(generate_cmd_comp);
-
-                if (cs_cmd != generate_cmd_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Generate command 0x%h in auto_req_mode",
-                      " has to match the value in generate fifo 0x%h."},
-                      cs_cmd, generate_cmd_comp))
-
-                end else if (reqs_between_reseeds_ctr >= max_num_reqs_between_reseeds) begin
-                  `uvm_error(`gfn, $sformatf({"Maximum number of request between reseeds",
-                      " in auto_req_mode 0x%h exceeded."}, max_num_reqs_between_reseeds))
-                end
-
-                reqs_between_reseeds_ctr++;
-
-              // If EDN is in sw mode or boot_gen command has been sent
-              end else begin
-                sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-                if (cs_cmd != sw_cmd_req_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Generate command 0x%h in sw mode has to match",
-                      " the value from sw_cmd_req register 0x%h."}, cs_cmd, sw_cmd_req_comp))
-                end
-
-              end
             end
           end
           csrng_pkg::UPD: begin
-            if (instantiated == 1'b0) begin
-              `uvm_error(`gfn, $sformatf({"Update command not allowed without instantiated CSRNG",
-                  " instance. cmd: 0x%h"}, cs_cmd))
+            // Check if not instantiated
+            `DV_CHECK_FATAL(instantiated,
+                            $sformatf({"Update command not allowed without instantiated",
+                                       " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
-            end else begin
-              // If EDN is in boot_req_mode and boot sequence is not done
-              if ( (edn_ctrl.boot_req_mode.q == MuBi4True) && (boot_gen_cmd_sent == 1'b0) ) begin
-                `uvm_error(`gfn, $sformatf({"Update command not allowed in boot_req_mode.",
-                    " cmd: 0x%h"}, cs_cmd))
+            // If EDN is in boot_req_mode and boot sequence is not done
+            `DV_CHECK_FATAL(boot_mode -> boot_gen_cmd_sent,
+                            $sformatf({"Update command not allowed in boot_req_mode.",
+                                       " cmd: 0x%h"}, cs_cmd))
 
-              // If EDN is in auto_req_mode
-              end else if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-                `uvm_error(`gfn, $sformatf({"Update command not allowed in auto_req_mode.",
-                    " cmd: 0x%h"}, cs_cmd))
+            // If EDN is in auto_req_mode
+            `DV_CHECK_FATAL(!auto_mode,
+                            $sformatf({"Update command not allowed in auto_req_mode.",
+                                       " cmd: 0x%h"}, cs_cmd))
 
-              // If EDN is in sw mode or boot_gen command has been sent
-              end else begin
-                sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-                if (cs_cmd != sw_cmd_req_comp) begin
-                  `uvm_error(`gfn, $sformatf({"Update command 0x%h in sw mode has to match",
-                      " the value from sw_cmd_req register 0x%h."}, cs_cmd, sw_cmd_req_comp))
-                end
+            // If EDN is in sw mode or boot_gen command has been sent
+            sw_cmd_req_comp = sw_cmd_req_q.pop_front();
+            `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                            $sformatf({"Update command 0x%h in sw mode has to match",
+                                        " the value from sw_cmd_req register 0x%h."},
+                                      cs_cmd, sw_cmd_req_comp))
 
-              end
-            end
           end
           csrng_pkg::UNI: begin
-            if (instantiated == 1'b0) begin
-              `uvm_error(`gfn, $sformatf({"Uninstantiate command not allowed without",
-                  " instantiated CSRNG instance. cmd: 0x%h"}, cs_cmd))
+            // Check if not instantiated
+            `DV_CHECK_FATAL(instantiated,
+                            $sformatf({"Uninstantiate command not allowed without instantiated",
+                                       " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
-            end else if (clen_cntr != 0) begin
-              `uvm_error(`gfn, $sformatf("clen must be 0 for uninstantiate command. cmd: 0x%h",
-                  cs_cmd))
+            `DV_CHECK_FATAL(clen_cntr == 0,
+                            $sformatf("clen must be 0 for uninstantiate command. cmd: 0x%h",
+                                      cs_cmd))
 
-            end else if ((edn_ctrl.auto_req_mode.q == MuBi4False) &&
-                         (edn_ctrl.boot_req_mode.q == MuBi4False)) begin
+            if (!auto_mode && !boot_mode) begin
               sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-              if (cs_cmd != sw_cmd_req_comp) begin
-                `uvm_error(`gfn, $sformatf({"Uninstantiate command 0x%h in sw mode has to match",
-                    " the value from sw_cmd_req register 0x%h."}, cs_cmd, sw_cmd_req_comp))
-              end
+              `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
+                              $sformatf({"Uninstantiate command 0x%h in sw mode has to match",
+                                          " the value from sw_cmd_req register 0x%h."},
+                                        cs_cmd, sw_cmd_req_comp))
             end
             instantiated = 1'b0;
           end
@@ -450,60 +533,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
             `uvm_error(`gfn, $sformatf("Invalid application command. cmd: 0x%h", cs_cmd))
           end
         endcase
-
-      // Else cs_cmd contains additional data
-      end else begin
-        // Decrease additional data counter
-        clen_cntr--;
-
-        // Determine which fifo to compare the additional data with
-        // If the EDN is in boot_req_mode and boot sequence is not done
-        // no additional data is allowed
-        if ( (edn_ctrl.boot_req_mode.q == MuBi4True) && (boot_gen_cmd_sent == 1'b0) ) begin
-          `uvm_error(`gfn, $sformatf({"Additional data not allowed in boot_req_mode",
-              " if boot is not complete. cmd: 0x%h"}, cs_cmd))
-
-        // If the EDN is in auto_req_mode
-        // determine whether the additional data comes from a reseed or a generate cmd.
-        end else if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
-          case (acmd_cur)
-            csrng_pkg::INS: begin
-              sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-              if (cs_cmd != sw_cmd_req_comp) begin
-                `uvm_error(`gfn, $sformatf({"Additional data 0x%h in auto_req_mode has to match",
-                    " the value from sw_cmd_req register 0x%h."}, cs_cmd, sw_cmd_req_comp))
-              end
-            end
-            csrng_pkg::RES: begin
-              reseed_cmd_comp = reseed_cmd_q.pop_front();
-              reseed_cmd_q.push_back(reseed_cmd_comp);
-              if (cs_cmd != reseed_cmd_comp) begin
-                `uvm_error(`gfn, $sformatf({"Additional data 0x%h in auto_req_mode has to match",
-                    " the value in reseed fifo 0x%h."}, cs_cmd, reseed_cmd_comp))
-              end
-            end
-            csrng_pkg::GEN: begin
-              generate_cmd_comp = generate_cmd_q.pop_front();
-              generate_cmd_q.push_back(generate_cmd_comp);
-              if (cs_cmd != generate_cmd_comp) begin
-                `uvm_error(`gfn, $sformatf({"Additional data 0x%h in auto_req_mode has to match",
-                    " the value in generate fifo 0x%h."}, cs_cmd, generate_cmd_comp))
-              end
-            end
-            default: begin
-              `uvm_error(`gfn, $sformatf({"Only additional data for reseed and generate accepted",
-                  " in auto_req_mode. cmd: 0x%h"}, cs_cmd))
-            end
-          endcase
-
-        // Else the EDN must be in sw mode and the additional data must come from sw_cmd_req
-        end else begin
-          sw_cmd_req_comp = sw_cmd_req_q.pop_front();
-          if (cs_cmd != sw_cmd_req_comp) begin
-            `uvm_error(`gfn, $sformatf({"Additional data 0x%h in sw mode has to match",
-                " the value in sw fifo 0x%h."}, cs_cmd, sw_cmd_req_comp))
-          end
-        end
       end
     end
 
