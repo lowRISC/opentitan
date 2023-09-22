@@ -1,0 +1,16 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rstmgr_unit_only_bind:0.1"
+description: "RSTMGR cascading resets assertion interface."
+filesets:
+  files_dv:
+    files:
+      - rstmgr_unit_only_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

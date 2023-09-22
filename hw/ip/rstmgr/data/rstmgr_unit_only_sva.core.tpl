@@ -20,7 +20,7 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson
+      spec: ../../../data/autogen/rstmgr.hjson
 
 targets:
   default: &default_target

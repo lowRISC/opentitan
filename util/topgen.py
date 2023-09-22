@@ -582,6 +582,8 @@ def generate_rstmgr(topcfg, out_path):
                                  **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_sva.core.tpl", sva_path,
                                  "", **render_dict)
+    _generate_file_from_template(tpl_path / "rstmgr_unit_only_sva.core.tpl", sva_path,
+                                 "", **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_env_pkg.sv.tpl", env_path,
                                  "", **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_scoreboard.sv.tpl",
