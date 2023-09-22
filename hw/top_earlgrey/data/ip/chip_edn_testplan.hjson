@@ -6,6 +6,20 @@
   testpoints: [
     // EDN (pre-verified IP) integration tests:
     {
+      name: chip_sw_edn_entropy_reqs
+      desc: '''Verify the entropy requests from all peripherals.
+
+            Verify that there are no misconnects between each peripheral requesting entropy.
+            TODO: system level scenario: have all entropy sources request entropy in the same test
+            one after to show boot to post boot load, cycling all entropy blocks off and on again.
+            Ensure there are no deadlocks and everything works as expected.
+            X'ref'ed with each IP test that requests entropy from EDN.
+            '''
+      stage: V2
+      tests: ["chip_sw_edn_entropy_reqs",
+              "chip_sw_csrng_edn_concurrency"]
+    },
+    {
       name: chip_sw_edn_boot_mode
       desc: '''Verify EDN operation in boot-time request mode.
 
