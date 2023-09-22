@@ -15,9 +15,9 @@
 INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /* Slot A starts at begining of the eFlash. */
-_rom_ext_size = LENGTH(eflash) / 2;
-_rom_ext_start_address = ORIGIN(eflash);
+_rom_ext_size = LENGTH(ram_ctn) / 2;
+_rom_ext_start_address = ORIGIN(ram_ctn);
 
-REGION_ALIAS("rom_ext_flash", eflash);
+REGION_ALIAS("rom_ext_flash", ram_ctn);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

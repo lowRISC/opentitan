@@ -18,8 +18,8 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
  * ROM_EXT.
  */
  /* TODO(#9045): Move ROM_EXT size to a common location. */
-_slot_start_address = ORIGIN(eflash) + (LENGTH(eflash) / 2) + 0x10000;
+_slot_start_address = ORIGIN(ram_ctn) + (LENGTH(ram_ctn) / 2) + 0x10000;
 
-REGION_ALIAS("owner_flash", eflash);
+REGION_ALIAS("owner_flash", ram_ctn);
 
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld

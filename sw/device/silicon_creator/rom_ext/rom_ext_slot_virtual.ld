@@ -21,7 +21,7 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
  */
 _rom_ext_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
+ASSERT((_rom_ext_size <= (LENGTH(ram_ctn) / 2)), "Error: rom ext flash is bigger than slot");
 
 REGION_ALIAS("rom_ext_flash", rom_ext_virtual);
 

@@ -17,8 +17,8 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 /* Slot A starts at the start of the eFlash plus the fixed size of the first
  * Silicon Owner stage */
  /* TODO(#9045): Move ROM_EXT size to a common location. */
-_slot_start_address = ORIGIN(eflash) + 0x10000;
+_slot_start_address = ORIGIN(ram_ctn) + 0x10000;
 
-REGION_ALIAS("owner_flash", eflash);
+REGION_ALIAS("owner_flash", ram_ctn);
 
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld
