@@ -4013,11 +4013,10 @@ opentitan_flash_binary(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
 
