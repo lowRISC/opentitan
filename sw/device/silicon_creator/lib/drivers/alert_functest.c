@@ -20,7 +20,6 @@
 #include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "alert_handler_regs.h"
-#include "flash_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
@@ -28,7 +27,6 @@
 enum {
   kAlertBase = TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR,
   kOtpCoreBase = TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR,
-  kFlashBase = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 rom_error_t alert_no_escalate_test(void) {
@@ -47,7 +45,9 @@ rom_error_t alert_no_escalate_test(void) {
   RETURN_IF_ERROR(alert_class_configure(kAlertClassB, &config));
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1);
+  uint32_t reg =
+      bitfield_bit32_write(0, OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_BIT, true);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, reg);
   uint32_t count =
       abs_mmio_read32(kAlertBase + ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET);
   return count == 1 ? kErrorOk : kErrorUnknown;
@@ -62,16 +62,17 @@ rom_error_t alert_escalate_test(void) {
       .timeout_cycles = 0,
       .phase_cycles = {1, 10, 100, 1000},
   };
-
-  LOG_INFO("Configure FlashCtrlFatalErr as class A");
-  RETURN_IF_ERROR(alert_configure(kTopDarjeelingAlertIdFlashCtrlFatalErr,
-                                  kAlertClassA, kAlertEnableEnabled));
+  LOG_INFO("Configure OtpCtrlFatalCheckError as class A");
+  RETURN_IF_ERROR(alert_configure(kTopDarjeelingAlertIdOtpCtrlFatalCheckError,
+                                  kAlertClassA, kAlertEnableLocked));
   LOG_INFO("Configure class A alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET,
-                   1u << FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT);
+  uint32_t reg =
+      bitfield_bit32_write(0, OTP_CTRL_ALERT_TEST_FATAL_CHECK_ERROR_BIT, true);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, reg);
+  busy_spin_micros(1000000);
   return kErrorUnknown;
 }
 

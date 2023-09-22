@@ -77,7 +77,6 @@ opentitan_functest(
         ":rstmgr",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling:alert_handler_regs",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
