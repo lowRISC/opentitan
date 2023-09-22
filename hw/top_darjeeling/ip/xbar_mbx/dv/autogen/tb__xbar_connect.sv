@@ -25,5 +25,4 @@ initial force dut.rst_mbx_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(mbx5__soc, dut, clk_mbx_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx6__soc, dut, clk_mbx_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx7__soc, dut, clk_mbx_i, rst_n)
-`CONNECT_TL_DEVICE_IF(mbx_jtag__soc, dut, clk_mbx_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx_pcie0__soc, dut, clk_mbx_i, rst_n)

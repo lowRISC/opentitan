@@ -62,12 +62,6 @@ module xbar_mbx_bind;
     .h2d    (tl_mbx7__soc_o),
     .d2h    (tl_mbx7__soc_i)
   );
-  bind xbar_mbx tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx_jtag__soc (
-    .clk_i  (clk_mbx_i),
-    .rst_ni (rst_mbx_ni),
-    .h2d    (tl_mbx_jtag__soc_o),
-    .d2h    (tl_mbx_jtag__soc_i)
-  );
   bind xbar_mbx tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx_pcie0__soc (
     .clk_i  (clk_mbx_i),
     .rst_ni (rst_mbx_ni),

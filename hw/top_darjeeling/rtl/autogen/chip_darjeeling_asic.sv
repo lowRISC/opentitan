@@ -1302,6 +1302,8 @@ module chip_darjeeling_asic #(
     .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
     .mbx_tl_req_i                 ( tlul_pkg::TL_H2D_DEFAULT   ),
     .mbx_tl_rsp_o                 (                            ),
+    .mbx_jtag_dmi_req_i           ( tlul_pkg::TL_H2D_DEFAULT   ),
+    .mbx_jtag_dmi_rsp_o           (                            ),
     .soc_fatal_alert_req_i        ( soc_fatal_alert_req        ),
     .soc_fatal_alert_rsp_o        (                            ),
     .soc_recov_alert_req_i        ( soc_recov_alert_req        ),

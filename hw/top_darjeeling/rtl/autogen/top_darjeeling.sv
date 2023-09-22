@@ -206,6 +206,8 @@ module top_darjeeling #(
   output logic       mbx_pcie0_doe_intr_o,
   output logic       mbx_pcie0_doe_intr_en_o,
   output logic       mbx_pcie0_doe_intr_support_o,
+  input  tlul_pkg::tl_h2d_t       mbx_jtag_dmi_req_i,
+  output tlul_pkg::tl_d2h_t       mbx_jtag_dmi_rsp_o,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
   input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
@@ -822,10 +824,10 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx6_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx7_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx7_soc_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
-  tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_pcie0_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_pcie0_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
+  tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -3463,13 +3465,24 @@ module top_darjeeling #(
     .tl_mbx7__soc_o(mbx7_soc_tl_d_req),
     .tl_mbx7__soc_i(mbx7_soc_tl_d_rsp),
 
-    // port: tl_mbx_jtag__soc
-    .tl_mbx_jtag__soc_o(mbx_jtag_soc_tl_d_req),
-    .tl_mbx_jtag__soc_i(mbx_jtag_soc_tl_d_rsp),
-
     // port: tl_mbx_pcie0__soc
     .tl_mbx_pcie0__soc_o(mbx_pcie0_soc_tl_d_req),
     .tl_mbx_pcie0__soc_i(mbx_pcie0_soc_tl_d_rsp),
+
+
+    .scanmode_i
+  );
+  xbar_dbg u_xbar_dbg (
+    .clk_dbg_i (clkmgr_aon_clocks.clk_main_infra),
+    .rst_dbg_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+
+    // port: tl_dbg
+    .tl_dbg_i(mbx_jtag_dmi_req_i),
+    .tl_dbg_o(mbx_jtag_dmi_rsp_o),
+
+    // port: tl_mbx_jtag__soc
+    .tl_mbx_jtag__soc_o(mbx_jtag_soc_tl_d_req),
+    .tl_mbx_jtag__soc_i(mbx_jtag_soc_tl_d_rsp),
 
 
     .scanmode_i

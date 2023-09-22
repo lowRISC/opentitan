@@ -214,11 +214,11 @@ tl_device_t xbar_devices[$] = '{
     '{"mbx7__soc", '{
         '{32'h00005700, 32'h0000571f}
     }},
-    '{"mbx_jtag__soc", '{
-        '{32'h00005800, 32'h0000581f}
-    }},
     '{"mbx_pcie0__soc", '{
         '{32'h00000100, 32'h0000011f}
+    }},
+    '{"mbx_jtag__soc", '{
+        '{32'h00000200, 32'h0000021f}
     }}};
 
   // List of Xbar hosts

@@ -42,7 +42,6 @@
       mbx5.soc
       mbx6.soc
       mbx7.soc
-      mbx_jtag.soc
       mbx_pcie0.soc
     ]
   }
@@ -229,28 +228,6 @@
           base_addrs:
           {
             soc_mbx: 0x5700
-          }
-          size_byte: 0x20
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: mbx_jtag.soc
-      type: device
-      addr_space: soc_mbx
-      clock: clk_mbx_i
-      reset: rst_mbx_ni
-      pipeline: false
-      inst_type: mbx
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            soc_mbx: 0x5800
           }
           size_byte: 0x20
         }

@@ -1,0 +1,84 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson -o hw/top_darjeeling/
+
+{
+  name: dbg
+  clock_srcs:
+  {
+    clk_dbg_i: main
+  }
+  clock_group: infra
+  reset: rst_dbg_ni
+  reset_connections:
+  {
+    rst_dbg_ni:
+    {
+      name: lc
+      domain: "0"
+    }
+  }
+  clock_connections:
+  {
+    clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    dbg:
+    [
+      mbx_jtag.soc
+    ]
+  }
+  nodes:
+  [
+    {
+      name: dbg
+      type: host
+      addr_space: soc_dbg
+      clock: clk_dbg_i
+      reset: rst_dbg_ni
+      xbar: true
+      pipeline: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx_jtag.soc
+      type: device
+      addr_space: soc_dbg
+      clock: clk_dbg_i
+      reset: rst_dbg_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_dbg: 0x200
+          }
+          size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+  ]
+  addr_spaces:
+  [
+    soc_dbg
+  ]
+  clock: clk_dbg_i
+  type: xbar
+}

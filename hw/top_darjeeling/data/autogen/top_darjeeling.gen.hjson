@@ -531,6 +531,10 @@
       name: soc_mbx
       desc: SoC address space for mailbox access
     }
+    {
+      name: soc_dbg
+      desc: SoC address space for debug module interfaces
+    }
   ]
   module:
   [
@@ -8967,7 +8971,7 @@
         }
         soc:
         {
-          soc_mbx: 0x00005800
+          soc_dbg: 0x00000200
         }
       }
       clock_connections:
@@ -10548,13 +10552,13 @@
       [
         mbx.tl_mbx7__soc
       ]
-      mbx_jtag.soc_tl_d:
-      [
-        mbx.tl_mbx_jtag__soc
-      ]
       mbx_pcie0.soc_tl_d:
       [
         mbx.tl_mbx_pcie0__soc
+      ]
+      mbx_jtag.soc_tl_d:
+      [
+        dbg.tl_mbx_jtag__soc
       ]
     }
     top:
@@ -10626,6 +10630,7 @@
       mbx_pcie0.doe_intr: mbx_pcie0_doe_intr
       mbx_pcie0.doe_intr_en: mbx_pcie0_doe_intr_en
       mbx_pcie0.doe_intr_support: mbx_pcie0_doe_intr_support
+      dbg.tl_dbg: mbx_jtag_dmi
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
@@ -13443,7 +13448,6 @@
           mbx5.soc
           mbx6.soc
           mbx7.soc
-          mbx_jtag.soc
           mbx_pcie0.soc
         ]
       }
@@ -13639,28 +13643,6 @@
           req_fifo_pass: true
         }
         {
-          name: mbx_jtag.soc
-          type: device
-          addr_space: soc_mbx
-          clock: clk_mbx_i
-          reset: rst_mbx_ni
-          pipeline: false
-          inst_type: mbx
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                soc_mbx: 0x5800
-              }
-              size_byte: 0x20
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
           name: mbx_pcie0.soc
           type: device
           addr_space: soc_mbx
@@ -13802,18 +13784,6 @@
           index: -1
         }
         {
-          name: tl_mbx_jtag__soc
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: mbx
-          default: ""
-          top_signame: mbx_jtag_soc_tl_d
-          index: -1
-        }
-        {
           name: tl_mbx_pcie0__soc
           struct: tl
           package: tlul_pkg
@@ -13823,6 +13793,111 @@
           inst_name: mbx
           default: ""
           top_signame: mbx_pcie0_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: dbg
+      clock_srcs:
+      {
+        clk_dbg_i: main
+      }
+      clock_group: infra
+      reset: rst_dbg_ni
+      reset_connections:
+      {
+        rst_dbg_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      connections:
+      {
+        dbg:
+        [
+          mbx_jtag.soc
+        ]
+      }
+      nodes:
+      [
+        {
+          name: dbg
+          type: host
+          addr_space: soc_dbg
+          clock: clk_dbg_i
+          reset: rst_dbg_ni
+          xbar: true
+          pipeline: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx_jtag.soc
+          type: device
+          addr_space: soc_dbg
+          clock: clk_dbg_i
+          reset: rst_dbg_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_dbg: 0x200
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+      ]
+      addr_spaces:
+      [
+        soc_dbg
+      ]
+      clock: clk_dbg_i
+      type: xbar
+      inter_signal_list:
+      [
+        {
+          name: tl_dbg
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: dbg
+          default: ""
+          external: true
+          top_signame: mbx_jtag_dmi
+          conn_type: false
+          index: -1
+        }
+        {
+          name: tl_mbx_jtag__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dbg
+          default: ""
+          top_signame: mbx_jtag_soc_tl_d
           index: -1
         }
       ]
@@ -24909,18 +24984,6 @@
         index: -1
       }
       {
-        name: tl_mbx_jtag__soc
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: mbx
-        default: ""
-        top_signame: mbx_jtag_soc_tl_d
-        index: -1
-      }
-      {
         name: tl_mbx_pcie0__soc
         struct: tl
         package: tlul_pkg
@@ -24930,6 +24993,32 @@
         inst_name: mbx
         default: ""
         top_signame: mbx_pcie0_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_dbg
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: dbg
+        default: ""
+        external: true
+        top_signame: mbx_jtag_dmi
+        conn_type: false
+        index: -1
+      }
+      {
+        name: tl_mbx_jtag__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dbg
+        default: ""
+        top_signame: mbx_jtag_soc_tl_d
         index: -1
       }
       {
@@ -25740,6 +25829,30 @@
         conn_type: false
         index: -1
         netname: mbx_pcie0_doe_intr_support
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_jtag_dmi_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: mbx_jtag_dmi_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_jtag_dmi_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_jtag_dmi_d2h
       }
       {
         package: tlul_pkg
@@ -29013,28 +29126,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: mbx_jtag_soc_tl_d_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: mbx_jtag_soc_tl_d_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: mbx_pcie0_soc_tl_d_req
         width: 1
         type: req_rsp
@@ -29047,6 +29138,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: mbx_pcie0_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_jtag_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_jtag_soc_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1
