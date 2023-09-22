@@ -477,7 +477,7 @@ jobs:
   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
@@ -632,7 +632,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh cw310 cw310_test_rom,-manuf,-hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
@@ -659,6 +659,31 @@ jobs:
       ci/scripts/run-fpga-tests.sh cw310 cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
+
+- job: execute_hyperdebug_tests_cw310
+  displayName: Hyperdebug CW310 Tests (Experimental)
+  pool: FPGA
+  timeoutInMinutes: 60
+  dependsOn:
+    - chip_earlgrey_cw310_hyperdebug
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310_hyperdebug
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/scripts/run-fpga-tests.sh hyper310 hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
+  continueOnError: True
 
 - job: execute_rom_fpga_tests_cw340
   displayName: CW340 ROM Tests
