@@ -474,6 +474,38 @@ cc_test(
 )
 
 cc_library(
+    name = "keymgr_dpe",
+    srcs = [
+        "//sw/ip/keymgr_dpe/dif:headers",
+        "//sw/ip/keymgr_dpe/dif:sources",
+    ],
+    hdrs = [
+        "//sw/ip/keymgr_dpe/dif:api",
+    ],
+    deps = [
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_regs",
+        "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/base:mmio",
+        "//sw/lib/sw/device/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "keymgr_dpe_unittest",
+    srcs = [
+        "//sw/ip/keymgr_dpe/dif:test_sources",
+    ],
+    deps = [
+        ":keymgr_dpe",
+        "//sw/ip/base/dif:test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = [
         "//sw/ip/kmac/dif:headers",
