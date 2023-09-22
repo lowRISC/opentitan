@@ -39,9 +39,7 @@ typedef struct kmac_test_vector {
   crypto_const_byte_buf_t digest;
 } kmac_test_vector_t;
 
-static size_t nist_kmac_nr_of_vectors = ${len(tests)};
-
-static kmac_test_vector_t nist_kmac_vectors[${len(tests)}] = {
+static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
 % for idx, t in enumerate(tests):
     {
         .vector_identifier = "${t["vector_identifier"]}",
