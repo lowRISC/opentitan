@@ -523,6 +523,39 @@ cc_test(
 )
 
 cc_library(
+    name = "keymgr_dpe",
+    srcs = [
+        "autogen/dif_keymgr_dpe_autogen.c",
+        "autogen/dif_keymgr_dpe_autogen.h",
+        "dif_keymgr_dpe.c",
+    ],
+    hdrs = [
+        "dif_keymgr_dpe.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "keymgr_dpe_unittest",
+    srcs = [
+        "autogen/dif_keymgr_dpe_autogen_unittest.cc",
+    ],
+    deps = [
+        ":keymgr_dpe",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = [
         "autogen/dif_kmac_autogen.c",

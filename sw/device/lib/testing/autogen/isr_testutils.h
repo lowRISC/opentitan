@@ -25,6 +25,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -318,6 +319,28 @@ typedef struct keymgr_isr_ctx {
    */
   bool is_only_irq;
 } keymgr_isr_ctx_t;
+
+/**
+ * A handle to a keymgr_dpe ISR context struct.
+ */
+typedef struct keymgr_dpe_isr_ctx {
+  /**
+   * A handle to a keymgr_dpe.
+   */
+  dif_keymgr_dpe_t *keymgr_dpe;
+  /**
+   * The PLIC IRQ ID where this keymgr_dpe instance's IRQs start.
+   */
+  dif_rv_plic_irq_id_t plic_keymgr_dpe_start_irq_id;
+  /**
+   * The keymgr_dpe IRQ that is expected to be encountered in the ISR.
+   */
+  dif_keymgr_dpe_irq_t expected_irq;
+  /**
+   * Whether or not a single IRQ is expected to be encountered in the ISR.
+   */
+  bool is_only_irq;
+} keymgr_dpe_isr_ctx_t;
 
 /**
  * A handle to a kmac ISR context struct.
@@ -751,6 +774,20 @@ void isr_testutils_keymgr_isr(
     plic_isr_ctx_t plic_ctx, keymgr_isr_ctx_t keymgr_ctx,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_keymgr_irq_t *irq_serviced);
+
+/**
+ * Services an keymgr_dpe IRQ.
+ *
+ * @param plic_ctx A PLIC ISR context handle.
+ * @param keymgr_dpe_ctx A(n) keymgr_dpe ISR context handle.
+ * @param[out] peripheral_serviced Out param for the peripheral that was
+ * serviced.
+ * @param[out] irq_serviced Out param for the IRQ that was serviced.
+ */
+void isr_testutils_keymgr_dpe_isr(
+    plic_isr_ctx_t plic_ctx, keymgr_dpe_isr_ctx_t keymgr_dpe_ctx,
+    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    dif_keymgr_dpe_irq_t *irq_serviced);
 
 /**
  * Services an kmac IRQ.
