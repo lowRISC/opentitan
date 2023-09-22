@@ -17,8 +17,8 @@ filegroup(
 )
 
 filegroup(
-    name = "kmac_verify_testvectors_hardcoded",
-    srcs = ["kmac_verify_hardcoded.hjson"],
+    name = "kmac_testvectors_hardcoded",
+    srcs = ["kmac_hardcoded.hjson"],
 )
 
 filegroup(

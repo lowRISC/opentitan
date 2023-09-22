@@ -141,20 +141,20 @@ autogen_cryptotest_header(
 )
 
 autogen_cryptotest_header(
-    name = "kmac_verify_testvectors_hardcoded_header",
-    hjson = "//sw/device/tests/crypto/testvectors:kmac_verify_testvectors_hardcoded",
-    template = ":kmac_verify_testvectors.h.tpl",
-    tool = "//sw/device/tests/crypto:kmac_verify_set_testvectors",
+    name = "kmac_testvectors_hardcoded_header",
+    hjson = "//sw/device/tests/crypto/testvectors:kmac_testvectors_hardcoded",
+    template = ":kmac_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:kmac_set_testvectors",
 )
 
 opentitan_functest(
-    name = "kmac_verify_functest_hardcoded",
-    srcs = ["kmac_verify_functest.c"],
+    name = "kmac_functest_hardcoded",
+    srcs = ["kmac_functest.c"],
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
-        ":kmac_verify_testvectors_hardcoded_header",
+        ":kmac_testvectors_hardcoded_header",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
@@ -331,8 +331,8 @@ py_binary(
 )
 
 py_binary(
-    name = "kmac_verify_set_testvectors",
-    srcs = ["kmac_verify_set_testvectors.py"],
+    name = "kmac_set_testvectors",
+    srcs = ["kmac_set_testvectors.py"],
     imports = ["."],
     deps = [
         "//util/design/lib:common",
