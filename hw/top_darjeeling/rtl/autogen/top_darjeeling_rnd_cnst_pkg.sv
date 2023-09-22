@@ -18,17 +18,17 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter otp_ctrl_pkg::lfsr_seed_t RndCnstOtpCtrlLfsrSeed = {
-    40'h91_93A3EE4E
+    40'hE5_492495FB
   };
 
   // Compile-time random permutation for LFSR output
   parameter otp_ctrl_pkg::lfsr_perm_t RndCnstOtpCtrlLfsrPerm = {
-    240'h4561_1E994424_5E238D65_F22518B4_DB08A3C1_0C574C82_755A7074_A1609023
+    240'h6482_62947457_01858A3C_69C17603_5290E995_71F6A131_311B2C27_A3143510
   };
 
   // Compile-time random permutation for scrambling key/nonce register reset value
   parameter otp_ctrl_pkg::scrmbl_key_init_t RndCnstOtpCtrlScrmblKeyInit = {
-    256'h42B5309A_163990B9_66CD4944_44C3BCDF_8087B7FA_CD65E965_4CD85BC6_6D10208C
+    256'h9B54CB12_1F7002A4_05ECDCF1_FEB0FA7A_14877EC8_863787AF_272EFAA5_1F0DE710
   };
 
   ////////////////////////////////////////////
@@ -36,25 +36,25 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivInvalid = {
-    128'h4FB51B97_BBF4D12C_378CCFD6_A5A5BF30
+    128'hC891D47F_F7209F95_D614848E_38361CD9
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivTestDevRma = {
-    128'h32DB51FA_1EB92F6C_E10E90F9_C5C06F73
+    128'hB7EB23D5_32C0AB44_E1E92CCF_EBADAD91
   };
 
   // Compile-time random bits for lc state group diversification value
   parameter lc_ctrl_pkg::lc_keymgr_div_t RndCnstLcCtrlLcKeymgrDivProduction = {
-    128'h3DC911A3_21DD4C0A_C2406D46_7215DAB3
+    128'h93A3EE4E_CD8C0324_62B3E185_49CB1E70
   };
 
   // Compile-time random bits used for invalid tokens in the token mux
   parameter lc_ctrl_pkg::lc_token_mux_t RndCnstLcCtrlInvalidTokens = {
-    256'hF2B54A52_E6728678_AF071806_8E344D2E_AE4D73C8_FA54DE8A_A4A4F258_F3B2A145,
-    256'hFD1950AE_55D693E5_7968117E_66DC6341_55E0F815_0242862E_B20EEA9A_1F754471,
-    256'h6551512A_112DED67_8CE824A0_8E29C772_795A358E_C30F1BED_D1AF0EC9_D9A9CF36,
-    256'hA2B130D3_2AFE121A_F734F628_363AAA0E_93D45C42_3690ED05_BD1E710F_22D10958
+    256'hD5A83DE6_673D2C1C_0A7B5517_6264E55C_329C8AE4_725AEAF6_72815012_7AC755D7,
+    256'h00632776_42B5309A_163990B9_66CD4944_44C3BCDF_8087B7FA_CD65E965_4CD85BC6,
+    256'h6D10208C_4FB51B97_BBF4D12C_378CCFD6_A5A5BF30_32DB51FA_1EB92F6C_E10E90F9,
+    256'hC5C06F73_3DC911A3_21DD4C0A_C2406D46_7215DAB3_F2B54A52_E6728678_AF071806
   };
 
   ////////////////////////////////////////////
@@ -62,12 +62,12 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
-    32'h89FBD8A7
+    32'h8E344D2E
   };
 
   // Compile-time random permutation for LFSR output
   parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
-    160'h45409290_FEB8A1A9_2BB336C3_47362BCE_183E7DF6
+    160'h9F9B7FE8_40E948C8_1C267CB6_3462CBE5_22ACB935
   };
 
   ////////////////////////////////////////////
@@ -75,51 +75,22 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
-    128'hA1DCD048_88055411_66F1EC8C_EB42692B
+    128'h9A1F7544_71655151_2A112DED_678CE824
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
-    128'h089A6F99_B1A7AC08_4224ADE4_612980D4
+    128'hA08E29C7_72795A35_8EC30F1B_EDD1AF0E
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlRetAonLfsrSeed = {
-    32'h8E6C6493
+    32'hC9D9A9CF
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonLfsrPerm = {
-    160'h19940855_6273344F_66DC3A13_2D96717B_7F8BF434
-  };
-
-  ////////////////////////////////////////////
-  // flash_ctrl
-  ////////////////////////////////////////////
-  // Compile-time random bits for default address key
-  parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
-    128'h6175FC10_F939792B_444E521D_4711E640
-  };
-
-  // Compile-time random bits for default data key
-  parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
-    128'h66908ADF_D5918F8C_563C9218_4F1C76A6
-  };
-
-  // Compile-time random bits for default seeds
-  parameter flash_ctrl_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
-    256'h1E112578_BF9F469F_C482FA14_A8F2B75C_265C9CB3_B2F1C44A_7287AB4C_0618822E,
-    256'h92A084A0_48FFE9FB_86140A79_D38055B2_4B5F3B3E_A79BD7F2_03D55EAB_F9F733D9
-  };
-
-  // Compile-time random bits for initial LFSR seed
-  parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'hB0CC2CA2
-  };
-
-  // Compile-time random permutation for LFSR output
-  parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
-    160'h8861BA15_EE26B9DC_8D2BF4C0_C11EFFAE_0C86AA56
+    160'h533AF241_D5CB7D38_813842E4_13DF7C18_8BAFDA86
   };
 
   ////////////////////////////////////////////
@@ -127,33 +98,33 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for register clearing.
   parameter aes_pkg::clearing_lfsr_seed_t RndCnstAesClearingLfsrSeed = {
-    64'hF6037B9D_ACA18EB5
+    64'h7FB1E11D_F367C1C1
   };
 
   // Permutation applied to the LFSR of the PRNG used for clearing.
   parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingLfsrPerm = {
-    128'hD74F8E8F_D1287D2C_3F0C6222_9F15DE87,
-    256'h9CEB6026_7A355C9D_9385B76D_072A98AA_6C681BBB_33697C2C_502D3C95_2F4D11E0
+    128'hBECEBF0D_EF50254A_65C6739D_119595AD,
+    256'h38858487_CCCCA011_4B006481_AD8698BA_18D32D4F_36E1C2B7_EE77A9C6_E35FCE3B
   };
 
   // Permutation applied to the clearing PRNG output for clearing the second share of registers.
   parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingSharePerm = {
-    128'hF663AFA4_DE80AB21_56D09063_E547750B,
-    256'hEA101E7C_F6F38FE1_81F1A46D_98984717_130DA2C4_AF75D23E_5B48B8A7_B032C57B
+    128'hA85CFF02_6C68F563_E5341B21_8890EDBB,
+    256'h5BD96B6E_8C7DCAC8_C144F92B_EDC47586_C2569C97_1F48101B_CE0E8D14_A793B78B
   };
 
   // Default seed of the PRNG used for masking.
   parameter aes_pkg::masking_lfsr_seed_t RndCnstAesMaskingLfsrSeed = {
-    160'h14975D3D_2B32E933_D88E2E1C_F65460F2_3FB78049
+    160'h265C9CB3_B2F1C44A_7287AB4C_0618822E_92A084A0
   };
 
   // Permutation applied to the concatenated LFSRs of the PRNG used for masking.
   parameter aes_pkg::masking_lfsr_perm_t RndCnstAesMaskingLfsrPerm = {
-    256'h5F396421_34995213_1B3F3544_576B291F_3A142268_031C045A_7C4D8224_7678370B,
-    256'h1860203C_985D7316_4F6D6306_5C888641_9A27898A_69580D4B_740C9601_081E0A0F,
-    256'h9D3E6587_6A195377_1A8B949F_8C462345_842B7D3B_97913D61_62592680_8D718131,
-    256'h79385B15_10474A00_2E939C02_664E7092_092D8342_48549049_7E6E7B95_32508F12,
-    256'h05253675_43853056_40677F1D_115E2F8E_7A725517_512A6C07_9B330E2C_284C6F9E
+    256'h7E067351_8C7A7545_59718364_876D217B_99242307_2F7F2A57_4137956F_0D788A9E,
+    256'h1B198188_11321C6C_9F656804_2B923C42_0F252D98_2E49538D_0C546A39_175C7408,
+    256'h00101246_1A318E28_89829A3F_664C099C_7C85761E_91603620_389D4D15_90353461,
+    256'h025D9718_694A268B_0B9B5B1F_13299327_220E405A_4750564E_8401621D_8F707758,
+    256'h437D4F6B_3D723A05_63946716_9630446E_522C335E_033E3B5F_4B558079_0A148648
   };
 
   ////////////////////////////////////////////
@@ -161,57 +132,57 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random data for LFSR default seed
   parameter kmac_pkg::lfsr_seed_t RndCnstKmacLfsrSeed = {
-    32'h61CCBFAB,
-    256'hD3E1FDA6_67E04082_478C14DB_070A6129_BB2945B8_8DC6CFCF_2AE02F47_010CB666,
-    256'hA5E22D33_20F89CAA_47E5CED5_D29CC9CD_B468773E_BACEC14D_A34C505A_EDC70EA1,
-    256'h84C7A341_93D59C73_5B5B4E2C_BEE5AB93_CB024D6F_8C0C7001_10CBF014_25DAF514
+    32'hC8CCC2B1,
+    256'hBE459977_5614975D_3D2B32E9_33D88E2E_1CF65460_F23FB780_499E6FCC_E64CEAFD,
+    256'h282C0E33_FD2C0798_6C2A5117_55F072EE_7A8E2FC4_5E111DF0_7FA067F6_4056D9BF,
+    256'h30D48543_BEC2E9A0_75D7D536_D6F82505_255EA064_5554DD5F_9355F5A8_9085A95A
   };
 
   // Compile-time random permutation for LFSR output
   parameter kmac_pkg::lfsr_perm_t RndCnstKmacLfsrPerm = {
-    64'h23698838_315F5783,
-    256'h9CB68265_38761C7F_0FF3A5D8_8B6C3289_2F7ADC87_1CA08D47_C6B4B38A_2ACC2838,
-    256'hA1D2DC7D_409CACE0_9CC31C9B_C5E9F484_D4B48F15_07981C39_B22654A7_34C28458,
-    256'h72330D8D_859AECC5_11DBF050_C1AE032B_32ADACC8_427AD134_DE092DE7_918253E5,
-    256'hF97520C9_CD002215_E58C5266_8BA0E9B6_5828B43A_EDA6A997_BA8D9D31_42F45531,
-    256'h8ABB697E_2B87D9DE_C0A40FE8_405E32D8_8ADE8274_931BD2A6_27192535_2CBE9435,
-    256'h61B90AD6_88C8D0AA_23980869_A91DFC5E_5E2FDE16_82EB66E8_19F5CB6D_26481D89,
-    256'h86EFE1FD_066C11A6_AAE67712_28DCD2BA_4DC20064_7B1275D1_CAA5CF74_AC6CB644,
-    256'h09B40AB7_1A8414AD_9D451AE4_E1246791_E4989BE5_90B70646_6014342A_B6240054,
-    256'h9FBC6501_5C122C49_28F18B32_8337D9C2_5144BBF1_970814E5_571A255A_C026B11A,
-    256'h16CAD509_058499FC_4EC66CA7_25D55D65_C1403F73_0ED96EBA_0345F860_D78C0440,
-    256'h46A7BC8E_E0609B4D_62719EC8_C60836EE_849FAF69_1D6F3B11_55C4F19F_04301B1B,
-    256'hC44F35DD_9528CB9B_4A6822C3_E286CBA7_07E34466_0B8C9B78_C8631616_42413755,
-    256'h6204CCB9_1D0A54BE_2D518679_E59446A9_0DC6BD62_55ADD926_8DA4A125_1E9969C1,
-    256'hE83DA850_D076215A_B1B62169_AD35717B_5F0DB481_3AADAAE3_91374CE4_C3BE173C,
-    256'h9D603801_180002BD_ED29ED53_8A964083_064D1018_6C9A0D39_7C2DF6BE_914D2EA3,
-    256'h5AE846DA_5A263830_19D8F51D_011D1982_23C1EEC7_9B0B5931_E1771641_30F47111,
-    256'hA8408601_6A074B73_A04880E4_22B0E00B_EAF59C65_589BA0DF_024D9A90_91CFC0DE,
-    256'h22D07054_28E448A6_219A31C4_FB76E000_7222C32D_038EEE93_DA113629_106A5672,
-    256'h08B9E2E4_AAF98BE1_4A30A482_AFDBBDC5_B504F924_D8430D59_1169A3ED_69E88A12,
-    256'hA580A312_04D8203D_C3B762AB_85F19AD5_721CC45D_9D38991F_51DFDBE2_1E2EE561,
-    256'hAD24994A_A23C7502_D3F6C570_7027169E_2C2C0FC4_055D8FA9_E160948C_599188F0,
-    256'h3EABD998_BC0E58E8_D01F7DC2_97EAFBB3_CA5880E6_619796CE_C1C04DE8_4B007907,
-    256'hBA827824_06F974FD_5B508987_09AFD9F4_E1D7A002_125A7BAF_B05B1D6E_97CDF7ED,
-    256'hF5869420_D5488E92_9B5EC682_C034F046_31D44815_BE429942_4C1942D4_C351AE4E,
-    256'hCB2AAC02_2A20F25F_1D2268AA_8D265989_D5FCF814_DB56346E_041F20F5_07B8D0FC,
-    256'h12B28926_3C215A54_43636654_1713E099_83A4E6C7_E1165064_54799169_054BFE4E,
-    256'h0163F936_1FC722BB_8949779E_94C15F6D_E6777474_73A3B7CD_1301F101_6845AA4C,
-    256'hF0895BB3_43B06DB8_68A865CE_5716D842_E2B0A526_2A6C4296_83C20985_BC2F3AF1,
-    256'hC476A4AB_95145646_37BCEB81_02C85AE0_7AAC463D_BD3369D9_B92E7FA5_5A492155,
-    256'h1FFAD13D_706523D1_E31E2332_3A19A8AC_5A7D8A40_EC254E06_B6C17BDD_3208E885,
-    256'h18CE660E_AAAA0D85_5525C917_396481CD_4F3D44CC_4E691581_A9D80C59_4A99A877
+    64'h3D28047E_70A54FF0,
+    256'h743C7C92_17057967_1C96D518_291C2315_82610011_088D81D7_8BC4DF56_DD6492D8,
+    256'h58056B8E_CE536350_C1044408_842512BD_EDC59493_9997795D_2A875537_32AEBF1E,
+    256'h42709136_6C161A8A_7E6670D0_46A40244_BF1D39E1_46166531_D575FA2D_6E2A862E,
+    256'hECC39B72_3A822F82_325EC9C4_6FA32DE0_91058638_DC729011_6EDDA793_0A6CCA78,
+    256'hA408CEB7_3193E9D0_B9AD9661_506A1F99_B435CB44_6F41C942_BCA175B9_3B1D5557,
+    256'h86BF4BA5_11562B05_6AA7DCDA_45F17B0C_866BD760_617D51A1_21D8F20B_DE770E3D,
+    256'h838821E1_FA3DEC03_53023A64_D75655B3_1DB13539_9BAC4C30_8AC592B0_3EBA8D8B,
+    256'h8144483F_0BA664FE_73857C65_B33BD38B_A1AA2F09_B2AAEF07_E7563135_822B4719,
+    256'h91242468_6C0EC6C2_205EE538_1A668929_1907989D_AE1B4160_0AC26C13_239AB594,
+    256'h89A9F045_068A392A_F54EAE91_010C745E_919A508B_AE74B6E6_9781B7FE_5964A2C7,
+    256'h12D568F1_F2EEED4F_DAB094D5_A8DFD527_1C35E539_59626FC2_80F541A5_2D23427D,
+    256'h62870261_0E124998_E16C88E8_DB6D7A93_30754ADA_2A16A9A2_6C869B9C_500642A7,
+    256'h92C7091D_E782C24B_7EEBDA06_D3AFA2F9_C59334D8_84DC92AC_1D25625D_2D54E771,
+    256'h4529DFC7_62D933D4_B322CB02_0C483E37_30151819_905F231A_E6888004_B8AA490A,
+    256'h8443E20D_59C74466_7E1F2544_4D3C3B93_47BCB60E_9475D2CD_284E5204_2B8A0530,
+    256'h14EC7A0D_D10D409D_E76A98D2_60313A4E_1C1767F0_9CE2B145_C498E453_1ED0CD1E,
+    256'hAAC3E6ED_1578D4A2_BCC18623_25CAD497_E83B8187_6D04EA85_A987CFBA_442C8902,
+    256'h14088003_42E1A6CF_AC8BF91C_7A255BD4_3CD17D1A_7B788B3F_419A11F8_752968EA,
+    256'h0248C038_547B099C_8BE0DB82_AE18644C_30D1B80E_FD5BC5FB_FCB3BAAD_11795CA3,
+    256'h907415D7_7C114C56_9763EE22_75226F1B_6BBACA3C_E1096964_90E63250_3B7B8717,
+    256'hCDC55521_14809628_1AC52035_01CEB7D4_00225752_A500C071_819EA065_D9558C84,
+    256'hC20591F4_CE1AE8C7_68609620_B1693D74_E22BEEAD_20D9F214_F187A21A_B06C6524,
+    256'h2A959E79_A1357413_BF8BDBC2_5B50E9D9_8414AED1_D3E57319_452AC6B8_4B0381B9,
+    256'hA4C4012A_247F9144_1C36F393_A640E461_6586856A_629CA9FB_D90B5857_1C7AD07C,
+    256'h437386B3_30A9273E_6ABE700C_3E69A69E_B1BEC883_0E3B7C0C_28A3E2D2_D7079D05,
+    256'hA18111F0_6A17053D_9E508062_9207327D_25565508_9A7B905B_18591A23_E25C0DBA,
+    256'hB598349E_A42DCEAC_290802E3_F7FA7A80_6873C205_04239A61_B24CF120_DA6D696E,
+    256'hB02AE4B1_9039826F_A9CDE53D_AD71E20B_1C500103_16F80993_CB25B5CD_41A865AD,
+    256'h314D8FA6_8673AA4C_C6683247_0A529829_8C209A66_AF775983_257F2B23_C3581C77,
+    256'hC6327811_682A23D5_8D8131A4_59D96755_69730B2A_D285ECD8_6A2BCC10_AD231F6A,
+    256'h3DEC9ACC_DA2CED3A_15FA7234_8A55E778_3F7A82D5_A589700A_E21E3B5C_14413C4A
   };
 
   // Compile-time random permutation for forwarding LFSR state
   parameter kmac_pkg::lfsr_fwd_perm_t RndCnstKmacLfsrFwdPerm = {
-    160'h872627EE_5DD0CC57_2711066D_4613E16D_FC7AA968
+    160'h61E179D4_B88DB29F_68C4405D_4E8F6D92_DFC103EA
   };
 
   // Compile-time random permutation for LFSR Message output
   parameter kmac_pkg::msg_perm_t RndCnstKmacMsgPerm = {
-    128'h3FB98DA0_7716FCAD_65F3E31F_080803CD,
-    256'h2623A598_86C456AE_E64DBDDD_5E30D2D4_5743A121_253BC13A_C9F2ACB6_DD51E22A
+    128'h1A6C2B38_CE96A742_D4D5C3C2_6435EEDC,
+    256'hDE606154_85F5D6EA_A3127312_DDBF7FBB_3E0641D3_46786323_888ABC0F_326A541E
   };
 
   ////////////////////////////////////////////
@@ -219,17 +190,17 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for URND.
   parameter otbn_pkg::urnd_prng_seed_t RndCnstOtbnUrndPrngSeed = {
-    256'h13200FA8_28BFEE3E_CCF02417_FA68D004_534267F6_0B34A8F0_72E77EE4_859B243F
+    256'hE24BE7E1_C96737B7_26A4C6F0_4993B3E6_AAE70F22_AAF748B5_7C320264_E157E2C7
   };
 
   // Compile-time random reset value for IMem/DMem scrambling key.
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnOtbnKey = {
-    128'h92CEB098_BE6E65C3_59480858_C39611E6
+    128'h4A280332_61EE6CEC_10075C55_A820F842
   };
 
   // Compile-time random reset value for IMem/DMem scrambling nonce.
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnOtbnNonce = {
-    64'h58C97FB8_D3E9CC0E
+    64'hD43EE1AB_1B3D78F9
   };
 
   ////////////////////////////////////////////
@@ -237,73 +208,73 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter keymgr_pkg::lfsr_seed_t RndCnstKeymgrLfsrSeed = {
-    64'h7F8FA872_5200C726
+    64'h92D22346_9898EB2A
   };
 
   // Compile-time random permutation for LFSR output
   parameter keymgr_pkg::lfsr_perm_t RndCnstKeymgrLfsrPerm = {
-    128'hB3908794_02DD2531_3739841C_BE832BBB,
-    256'h5676FFA8_A19BD7A9_367EE4CF_151668A8_3044F045_8D7234A9_B5467FC4_ADE03FB2
+    128'hBA87C33D_D8319DE0_A103ECEC_EAD96923,
+    256'h98EFC95D_9B938350_5FC4B550_B9B459CA_A265A3B0_311F5824_12AB4C5E_C71371BF
   };
 
   // Compile-time random permutation for entropy used in share overriding
   parameter keymgr_pkg::rand_perm_t RndCnstKeymgrRandPerm = {
-    160'h13660C12_E3AEA365_38CFCFD9_E59D2187_0A8A7772
+    160'hBCE26820_3CC807B4_B242F394_F262A5B5_35F3F5AB
   };
 
   // Compile-time random bits for revision seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrRevisionSeed = {
-    256'h75BBFD36_BA48E780_D27CD582_540C7A68_FF254EDF_D852829F_ECCCABD4_AF9C9032
+    256'h5E456F3B_26D15F55_84BB9879_BD249785_2C23D0FA_289C3348_CE364ED5_34970E1F
   };
 
   // Compile-time random bits for creator identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrCreatorIdentitySeed = {
-    256'hDA20BDAF_59FE2AE2_09B8325D_2C8C35FC_960679B1_06A87E59_E6AEB1B5_302D3340
+    256'hD45EC606_BE134FC0_8318BD29_B22B08DF_647BDC30_068E7513_200FA828_BFEE3ECC
   };
 
   // Compile-time random bits for owner intermediate identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIntIdentitySeed = {
-    256'h10702516_96FBB4BA_169A6CD8_2FAD46A0_A5C04009_BB934C7E_F7B83B6E_40610B43
+    256'hF02417FA_68D00453_4267F60B_34A8F072_E77EE485_9B243F92_CEB098BE_6E65C359
   };
 
   // Compile-time random bits for owner identity seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrOwnerIdentitySeed = {
-    256'h09FCB9DC_54D42761_37F9901D_09A76AEA_A19DE5C5_79FD38BD_F38F0C21_D6A52226
+    256'h480858C3_9611E658_C97FB8D3_E9CC0E7F_8FA87252_00C726C8_F90EF5E2_B74BEEE2
   };
 
   // Compile-time random bits for software generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrSoftOutputSeed = {
-    256'hB6A4A7BD_B05FE921_615BF2FF_984540F7_D43ECE76_B4EB1336_3774ED2E_D45545E9
+    256'h7CFA19EA_576CA8A8_225C8E17_053E44B6_8DD7822A_6859F2CF_52A55FD1_81B082D0
   };
 
   // Compile-time random bits for hardware generation seed
   parameter keymgr_pkg::seed_t RndCnstKeymgrHardOutputSeed = {
-    256'h27F6D9E4_ABAC398D_42C745EE_F646C146_4DCA86DA_FD7C7C71_E6058DDF_D871C51C
+    256'h3C583756_F11AA5B3_7F9544C4_AA90EB97_E1C0F808_6F627A28_1C5681D6_566641EE
   };
 
   // Compile-time random bits for generation seed when aes destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrAesSeed = {
-    256'hACBAF441_0F06DCC0_36FCD16F_CDE97D17_1891105D_D895E3A1_D0A19A16_D6DBD8B2
+    256'hCCCC8887_6AD113C5_0AD1BE4D_94DCE8FC_A54128A3_860AE1D3_493FBEF6_B9BA5DFE
   };
 
   // Compile-time random bits for generation seed when kmac destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrKmacSeed = {
-    256'h0FC9E662_E1E1B498_2B3E8EFF_63890DBE_AE926FD4_68A77EFD_E3DE5B4C_AF4776A2
+    256'h4463A461_5EF46762_A794A8C2_597E69FB_259B9619_14CD75BB_FD36BA48_E780D27C
   };
 
   // Compile-time random bits for generation seed when otbn destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrOtbnSeed = {
-    256'h47BABA4C_9908ED16_BC5415EC_16D28C53_551312FC_EDCF2832_A66CEACF_8ED4D5B6
+    256'hD582540C_7A68FF25_4EDFD852_829FECCC_ABD4AF9C_9032DA20_BDAF59FE_2AE209B8
   };
 
   // Compile-time random bits for generation seed when no CDI is selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrCdi = {
-    256'h16177DD4_3B56FA75_4E1F53AD_658193B5_63D9BDC6_D2AEE848_52F0CC73_71ED3A6F
+    256'h325D2C8C_35FC9606_79B106A8_7E59E6AE_B1B5302D_33401070_251696FB_B4BA169A
   };
 
   // Compile-time random bits for generation seed when no destination selected
   parameter keymgr_pkg::seed_t RndCnstKeymgrNoneSeed = {
-    256'hAA516C14_4B34C96D_FABB6F6E_79208A74_F35C79F3_97C4E4C7_E22B7581_848A90A1
+    256'h6CD82FAD_46A0A5C0_4009BB93_4C7EF7B8_3B6E4061_0B4309FC_B9DC54D4_276137F9
   };
 
   ////////////////////////////////////////////
@@ -311,14 +282,14 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivNonProduction = {
-    128'h254B2276_BEC9FC1A_7A5722A9_AACA4DB8,
-    256'h4A32E5C6_985A1A64_35118B5F_5F3FD3B9_313116B6_7192D856_DD742D40_E072E417
+    128'h901D09A7_6AEAA19D_E5C579FD_38BDF38F,
+    256'h0C21D6A5_2226B6A4_A7BDB05F_E921615B_F2FF9845_40F7D43E_CE76B4EB_13363774
   };
 
   // Compile-time random bits for csrng state group diversification value
   parameter csrng_pkg::cs_keymgr_div_t RndCnstCsrngCsKeymgrDivProduction = {
-    128'hAD9A5F26_1204CBCC_69A21478_19B290A4,
-    256'hBB026434_7C0F91B0_CEC93C01_29D85B95_801DBE03_F17E69DC_260A7999_8EFF5C71
+    128'hED2ED455_45E927F6_D9E4ABAC_398D42C7,
+    256'h45EEF646_C1464DCA_86DAFD7C_7C71E605_8DDFD871_C51CACBA_F4410F06_DCC036FC
   };
 
   ////////////////////////////////////////////
@@ -326,22 +297,22 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMainSramKey = {
-    128'h0B67838A_DFB99A5E_CA671672_CF19BCA6
+    128'hD16FCDE9_7D171891_105DD895_E3A1D0A1
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMainSramNonce = {
-    128'hADC1EBFA_B611F19E_7262E0A4_91970E51
+    128'h9A16D6DB_D8B20FC9_E662E1E1_B4982B3E
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMainLfsrSeed = {
-    32'hB28E7026
+    32'h8EFF6389
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMainLfsrPerm = {
-    160'h929EDB06_2B29D3F0_2266EDF1_070C99A8_A8CF6F9A
+    160'h20CF1518_026733E2_DA13FF70_E4256FA6_F4D956E1
   };
 
   ////////////////////////////////////////////
@@ -349,22 +320,22 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
   parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlMboxSramKey = {
-    128'h4A36A647_E90FFAFF_9760F5E8_38BD8E24
+    128'hEACF8ED4_D5B61617_7DD43B56_FA754E1F
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
   parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlMboxSramNonce = {
-    128'h13AB956B_106CA713_9A07EFFE_E457DEE8
+    128'h53AD6581_93B563D9_BDC6D2AE_E84852F0
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlMboxLfsrSeed = {
-    32'h2B6E0666
+    32'hCC7371ED
   };
 
   // Compile-time random permutation for LFSR output
   parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlMboxLfsrPerm = {
-    160'hF56EAECF_0E8F01AB_0D3BA124_D3660B43_1E1F88A7
+    160'h1C018097_939229AE_B33F5BA2_47DAFB32_45E555A7
   };
 
   ////////////////////////////////////////////
@@ -372,12 +343,12 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrl0ScrNonce = {
-    64'h43EBF0C5_DE019FC0
+    64'hBEC9FC1A_7A5722A9
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrl0ScrKey = {
-    128'h73C4C599_518BF192_44417288_93C652D7
+    128'hAACA4DB8_4A32E5C6_985A1A64_35118B5F
   };
 
   ////////////////////////////////////////////
@@ -385,12 +356,12 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
   parameter bit [63:0] RndCnstRomCtrl1ScrNonce = {
-    64'h372432FC_C4D3092B
+    64'h5F3FD3B9_313116B6
   };
 
   // Randomised constant used as a scrambling key for ROM data
   parameter bit [127:0] RndCnstRomCtrl1ScrKey = {
-    128'hD6383FDB_A35279FC_BCD2BD2C_1319E71A
+    128'h7192D856_DD742D40_E072E417_AD9A5F26
   };
 
   ////////////////////////////////////////////
@@ -398,22 +369,22 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_seed_t RndCnstRvCoreIbexLfsrSeed = {
-    32'h293AC324
+    32'h1204CBCC
   };
 
   // Permutation applied to the LFSR of the PRNG used for random instructions.
   parameter ibex_pkg::lfsr_perm_t RndCnstRvCoreIbexLfsrPerm = {
-    160'hF671232D_51E5EDBA_0D0F276B_F0E8A96B_00E81C53
+    160'h22E6EAAB_1B8C3284_97FDD1C3_C33017F4_AC378A8D
   };
 
   // Default icache scrambling key
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstRvCoreIbexIbexKeyDefault = {
-    128'h356888AE_5343DD78_4CBA5BEB_BE2A6EAD
+    128'hFF5C710B_67838ADF_B99A5ECA_671672CF
   };
 
   // Default icache scrambling nonce
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstRvCoreIbexIbexNonceDefault = {
-    64'h062D9516_FDD8B110
+    64'h19BCA6AD_C1EBFAB6
   };
 
 endpackage : top_darjeeling_rnd_cnst_pkg

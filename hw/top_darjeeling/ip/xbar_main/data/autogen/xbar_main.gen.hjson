@@ -59,7 +59,6 @@
       rom_ctrl1.rom
       rv_dm.mem
       sram_ctrl_main.ram
-      flash_ctrl.mem
       soc_proxy.ctn
     ]
     rv_core_ibex.cored:
@@ -74,9 +73,6 @@
       peri
       spi_host1
       usbdev
-      flash_ctrl.core
-      flash_ctrl.prim
-      flash_ctrl.mem
       aes
       csrng
       edn0
@@ -116,9 +112,6 @@
       peri
       spi_host1
       usbdev
-      flash_ctrl.core
-      flash_ctrl.prim
-      flash_ctrl.mem
       aes
       csrng
       edn0
@@ -469,72 +462,6 @@
             hart: 0x32010000
           }
           size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.core
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x33000000
-          }
-          size_byte: 0x200
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.prim
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x33008000
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: flash_ctrl.mem
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x34000000
-          }
-          size_byte: 0x100000
         }
       ]
       xbar: false

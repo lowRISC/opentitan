@@ -30,12 +30,6 @@ pub const TOP_DARJEELING_RAM_RET_AON_BASE_ADDR: usize = 0x30600000;
 /// Memory size for ram_ret_aon in top darjeeling.
 pub const TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES: usize = 0x1000;
 
-/// Memory base address for eflash in top darjeeling.
-pub const TOP_DARJEELING_EFLASH_BASE_ADDR: usize = 0x34000000;
-
-/// Memory size for eflash in top darjeeling.
-pub const TOP_DARJEELING_EFLASH_SIZE_BYTES: usize = 0x100000;
-
 /// Memory base address for ram_main in top darjeeling.
 pub const TOP_DARJEELING_RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
@@ -411,45 +405,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x30600000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
-/// Peripheral base address for core device on flash_ctrl in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR: usize = 0x33000000;
-
-/// Peripheral size for core device on flash_ctrl in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR and
-/// `TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES`.
-pub const TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES: usize = 0x200;
-/// Peripheral base address for prim device on flash_ctrl in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x33008000;
-
-/// Peripheral size for prim device on flash_ctrl in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR and
-/// `TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES`.
-pub const TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for mem device on flash_ctrl in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR: usize = 0x34000000;
-
-/// Peripheral size for mem device on flash_ctrl in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR and
-/// `TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES`.
-pub const TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
 /// Peripheral base address for regs device on rv_dm in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -860,4 +815,4 @@ pub const TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x800;
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
 pub const TOP_DARJEELING_MMIO_BASE_ADDR: usize = 0x21100000;
-pub const TOP_DARJEELING_MMIO_SIZE_BYTES: usize = 0x11F08080;
+pub const TOP_DARJEELING_MMIO_SIZE_BYTES: usize = 0x10F11000;

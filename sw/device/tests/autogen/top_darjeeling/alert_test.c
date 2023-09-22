@@ -19,7 +19,6 @@
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
@@ -63,7 +62,6 @@ static dif_csrng_t csrng;
 static dif_dma_t dma;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
@@ -135,9 +133,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR);
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
@@ -425,21 +420,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdEdn1RecovAlert + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write flash_ctrl's alert_test reg and check alert_cause.
-  for (dif_flash_ctrl_alert_t i = 0; i < 5; ++i) {
-    CHECK_DIF_OK(dif_flash_ctrl_alert_force(&flash_ctrl, kDifFlashCtrlAlertRecovErr + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdFlashCtrlRecovErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

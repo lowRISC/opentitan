@@ -424,9 +424,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 |                   |               | 0x40000000 (ctn)  |
 | sram_ctrl_ret_aon | sram_ctrl     | 0x30500000 (regs) |
 |                   |               | 0x30600000 (ram)  |
-| flash_ctrl        | flash_ctrl    | 0x33000000 (core) |
-|                   |               | 0x33008000 (prim) |
-|                   |               | 0x34000000 (mem)  |
 | rv_dm             | rv_dm         | 0x00040000 (mem)  |
 |                   |               | 0x21200000 (regs) |
 | rv_plic           | rv_plic       | 0x28000000 (regs) |

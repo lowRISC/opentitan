@@ -54,10 +54,6 @@ module top_darjeeling #(
   // parameters for soc_proxy
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
-  // parameters for flash_ctrl
-  parameter bit SecFlashCtrlScrambleEn = 1,
-  parameter int FlashCtrlProgFifoDepth = 4,
-  parameter int FlashCtrlRdFifoDepth = 16,
   // parameters for rv_dm
   // parameters for rv_plic
   // parameters for aes
@@ -276,9 +272,9 @@ module top_darjeeling #(
   import top_darjeeling_rnd_cnst_pkg::*;
 
   // Signals
-  logic [53:0] mio_p2d;
-  logic [61:0] mio_d2p;
-  logic [61:0] mio_en_d2p;
+  logic [50:0] mio_p2d;
+  logic [60:0] mio_d2p;
+  logic [60:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -384,12 +380,6 @@ module top_darjeeling #(
   logic [8:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
   // soc_proxy
   // sram_ctrl_ret_aon
-  // flash_ctrl
-  logic        cio_flash_ctrl_tck_p2d;
-  logic        cio_flash_ctrl_tms_p2d;
-  logic        cio_flash_ctrl_tdi_p2d;
-  logic        cio_flash_ctrl_tdo_d2p;
-  logic        cio_flash_ctrl_tdo_en_d2p;
   // rv_dm
   // rv_plic
   // aes
@@ -418,7 +408,7 @@ module top_darjeeling #(
   // rv_core_ibex
 
 
-  logic [185:0]  intr_vector;
+  logic [179:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -522,12 +512,6 @@ module top_darjeeling #(
   logic intr_sensor_ctrl_io_status_change;
   logic intr_sensor_ctrl_init_status_change;
   logic [7:0] intr_soc_proxy_external;
-  logic intr_flash_ctrl_prog_empty;
-  logic intr_flash_ctrl_prog_lvl;
-  logic intr_flash_ctrl_rd_full;
-  logic intr_flash_ctrl_rd_lvl;
-  logic intr_flash_ctrl_op_done;
-  logic intr_flash_ctrl_corr_err;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -585,11 +569,8 @@ module top_darjeeling #(
   logic       aon_timer_aon_nmi_wdog_timer_bark;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
-  otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
-  otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
-  pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
   pwrmgr_pkg::pwr_rst_req_t       pwrmgr_aon_pwr_rst_req;
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_aon_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_aon_pwr_clk_req;
@@ -686,12 +667,6 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       spi_host1_tl_rsp;
   tlul_pkg::tl_h2d_t       usbdev_tl_req;
   tlul_pkg::tl_d2h_t       usbdev_tl_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_mem_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_mem_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
   tlul_pkg::tl_d2h_t       hmac_tl_rsp;
   tlul_pkg::tl_h2d_t       kmac_tl_req;
@@ -1394,8 +1369,8 @@ module top_darjeeling #(
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-      .flash_otp_key_i(flash_ctrl_otp_req),
-      .flash_otp_key_o(flash_ctrl_otp_rsp),
+      .flash_otp_key_i('0),
+      .flash_otp_key_o(),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
@@ -1666,7 +1641,7 @@ module top_darjeeling #(
       .pwr_otp_i(pwrmgr_aon_pwr_otp_rsp),
       .pwr_lc_o(pwrmgr_aon_pwr_lc_req),
       .pwr_lc_i(pwrmgr_aon_pwr_lc_rsp),
-      .pwr_flash_i(pwrmgr_aon_pwr_flash),
+      .pwr_flash_i(pwrmgr_pkg::PWR_FLASH_DEFAULT),
       .esc_rst_tx_i(alert_handler_esc_tx[3]),
       .esc_rst_rx_o(alert_handler_esc_rx[3]),
       .pwr_cpu_i(rv_core_ibex_pwrmgr),
@@ -2058,87 +2033,12 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
-  flash_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43:39]),
-    .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
-    .RndCnstDataKey(RndCnstFlashCtrlDataKey),
-    .RndCnstAllSeeds(RndCnstFlashCtrlAllSeeds),
-    .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
-    .SecScrambleEn(SecFlashCtrlScrambleEn),
-    .ProgFifoDepth(FlashCtrlProgFifoDepth),
-    .RdFifoDepth(FlashCtrlRdFifoDepth)
-  ) u_flash_ctrl (
-
-      // Input
-      .cio_tck_i    (cio_flash_ctrl_tck_p2d),
-      .cio_tms_i    (cio_flash_ctrl_tms_p2d),
-      .cio_tdi_i    (cio_flash_ctrl_tdi_p2d),
-
-      // Output
-      .cio_tdo_o    (cio_flash_ctrl_tdo_d2p),
-      .cio_tdo_en_o (cio_flash_ctrl_tdo_en_d2p),
-
-      // Interrupt
-      .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
-      .intr_prog_lvl_o   (intr_flash_ctrl_prog_lvl),
-      .intr_rd_full_o    (intr_flash_ctrl_rd_full),
-      .intr_rd_lvl_o     (intr_flash_ctrl_rd_lvl),
-      .intr_op_done_o    (intr_flash_ctrl_op_done),
-      .intr_corr_err_o   (intr_flash_ctrl_corr_err),
-      // [39]: recov_err
-      // [40]: fatal_std_err
-      // [41]: fatal_err
-      // [42]: fatal_prim_flash_alert
-      // [43]: recov_prim_flash_alert
-      .alert_tx_o  ( alert_tx[43:39] ),
-      .alert_rx_i  ( alert_rx[43:39] ),
-
-      // Inter-module signals
-      .otp_o(flash_ctrl_otp_req),
-      .otp_i(flash_ctrl_otp_rsp),
-      .lc_nvm_debug_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .flash_bist_enable_i(prim_mubi_pkg::MUBI4_DEFAULT),
-      .flash_power_down_h_i(1'b0),
-      .flash_power_ready_h_i(1'b1),
-      .flash_test_mode_a_io(),
-      .flash_test_voltage_h_io(),
-      .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_owner_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_iso_part_sw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_iso_part_sw_wr_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_seed_hw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .lc_escalate_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .rma_req_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .rma_ack_o(),
-      .rma_seed_i(lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT),
-      .pwrmgr_o(pwrmgr_aon_pwr_flash),
-      .keymgr_o(),
-      .obs_ctrl_i(ast_pkg::AST_OBS_CTRL_DEFAULT),
-      .fla_obs_o(),
-      .core_tl_i(flash_ctrl_core_tl_req),
-      .core_tl_o(flash_ctrl_core_tl_rsp),
-      .prim_tl_i(flash_ctrl_prim_tl_req),
-      .prim_tl_o(flash_ctrl_prim_tl_rsp),
-      .mem_tl_i(flash_ctrl_mem_tl_req),
-      .mem_tl_o(flash_ctrl_mem_tl_rsp),
-      .scanmode_i,
-      .scan_rst_ni,
-      .scan_en_i,
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_infra),
-      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
-      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-      .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
-  );
   rv_dm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44:44])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:39])
   ) u_rv_dm (
-      // [44]: fatal_fault
-      .alert_tx_o  ( alert_tx[44:44] ),
-      .alert_rx_i  ( alert_rx[44:44] ),
+      // [39]: fatal_fault
+      .alert_tx_o  ( alert_tx[39:39] ),
+      .alert_rx_i  ( alert_rx[39:39] ),
 
       // Inter-module signals
       .dmi_tl_h2d_i(rv_dm_dmi_h2d_i),
@@ -2162,11 +2062,11 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
   rv_plic #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[45:45])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40])
   ) u_rv_plic (
-      // [45]: fatal_fault
-      .alert_tx_o  ( alert_tx[45:45] ),
-      .alert_rx_i  ( alert_rx[45:45] ),
+      // [40]: fatal_fault
+      .alert_tx_o  ( alert_tx[40:40] ),
+      .alert_rx_i  ( alert_rx[40:40] ),
 
       // Inter-module signals
       .irq_o(rv_plic_irq),
@@ -2181,7 +2081,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   aes #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[47:46]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42:41]),
     .AES192Enable(1'b1),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
@@ -2194,10 +2094,10 @@ module top_darjeeling #(
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
     .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
   ) u_aes (
-      // [46]: recov_ctrl_update_err
-      // [47]: fatal_fault
-      .alert_tx_o  ( alert_tx[47:46] ),
-      .alert_rx_i  ( alert_rx[47:46] ),
+      // [41]: recov_ctrl_update_err
+      // [42]: fatal_fault
+      .alert_tx_o  ( alert_tx[42:41] ),
+      .alert_rx_i  ( alert_rx[42:41] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[0]),
@@ -2216,16 +2116,16 @@ module top_darjeeling #(
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   hmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:48])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43:43])
   ) u_hmac (
 
       // Interrupt
       .intr_hmac_done_o  (intr_hmac_hmac_done),
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
-      // [48]: fatal_fault
-      .alert_tx_o  ( alert_tx[48:48] ),
-      .alert_rx_i  ( alert_rx[48:48] ),
+      // [43]: fatal_fault
+      .alert_tx_o  ( alert_tx[43:43] ),
+      .alert_rx_i  ( alert_rx[43:43] ),
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[1]),
@@ -2237,7 +2137,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   kmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[45:44]),
     .EnMasking(KmacEnMasking),
     .SwKeyMasked(KmacSwKeyMasked),
     .SecCmdDelay(SecKmacCmdDelay),
@@ -2252,10 +2152,10 @@ module top_darjeeling #(
       .intr_kmac_done_o  (intr_kmac_kmac_done),
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
-      // [49]: recov_operation_err
-      // [50]: fatal_fault_err
-      .alert_tx_o  ( alert_tx[50:49] ),
-      .alert_rx_i  ( alert_rx[50:49] ),
+      // [44]: recov_operation_err
+      // [45]: fatal_fault_err
+      .alert_tx_o  ( alert_tx[45:44] ),
+      .alert_rx_i  ( alert_rx[45:44] ),
 
       // Inter-module signals
       .keymgr_key_i(keymgr_kmac_key),
@@ -2277,7 +2177,7 @@ module top_darjeeling #(
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   otbn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:51]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[47:46]),
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
     .RndCnstUrndPrngSeed(RndCnstOtbnUrndPrngSeed),
@@ -2289,10 +2189,10 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-      // [51]: fatal
-      // [52]: recov
-      .alert_tx_o  ( alert_tx[52:51] ),
-      .alert_rx_i  ( alert_rx[52:51] ),
+      // [46]: fatal
+      // [47]: recov
+      .alert_tx_o  ( alert_tx[47:46] ),
+      .alert_rx_i  ( alert_rx[47:46] ),
 
       // Inter-module signals
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_req),
@@ -2319,7 +2219,7 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   keymgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[54:53]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[49:48]),
     .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
     .KmacEnMasking(KeymgrKmacEnMasking),
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
@@ -2340,10 +2240,10 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_op_done),
-      // [53]: recov_operation_err
-      // [54]: fatal_fault_err
-      .alert_tx_o  ( alert_tx[54:53] ),
-      .alert_rx_i  ( alert_rx[54:53] ),
+      // [48]: recov_operation_err
+      // [49]: fatal_fault_err
+      .alert_tx_o  ( alert_tx[49:48] ),
+      .alert_rx_i  ( alert_rx[49:48] ),
 
       // Inter-module signals
       .edn_o(edn0_edn_req[0]),
@@ -2371,7 +2271,7 @@ module top_darjeeling #(
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   csrng #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[56:55]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[51:50]),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsrngCsKeymgrDivNonProduction),
     .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction),
     .SBoxImpl(CsrngSBoxImpl)
@@ -2382,10 +2282,10 @@ module top_darjeeling #(
       .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
       .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
-      // [55]: recov_alert
-      // [56]: fatal_alert
-      .alert_tx_o  ( alert_tx[56:55] ),
-      .alert_rx_i  ( alert_rx[56:55] ),
+      // [50]: recov_alert
+      // [51]: fatal_alert
+      .alert_tx_o  ( alert_tx[51:50] ),
+      .alert_rx_i  ( alert_rx[51:50] ),
 
       // Inter-module signals
       .csrng_cmd_i(csrng_csrng_cmd_req),
@@ -2404,16 +2304,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:57])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:52])
   ) u_edn0 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
-      // [57]: recov_alert
-      // [58]: fatal_alert
-      .alert_tx_o  ( alert_tx[58:57] ),
-      .alert_rx_i  ( alert_rx[58:57] ),
+      // [52]: recov_alert
+      // [53]: fatal_alert
+      .alert_tx_o  ( alert_tx[53:52] ),
+      .alert_rx_i  ( alert_rx[53:52] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[0]),
@@ -2428,16 +2328,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:59])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[55:54])
   ) u_edn1 (
 
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
-      // [59]: recov_alert
-      // [60]: fatal_alert
-      .alert_tx_o  ( alert_tx[60:59] ),
-      .alert_rx_i  ( alert_rx[60:59] ),
+      // [54]: recov_alert
+      // [55]: fatal_alert
+      .alert_tx_o  ( alert_tx[55:54] ),
+      .alert_rx_i  ( alert_rx[55:54] ),
 
       // Inter-module signals
       .csrng_cmd_o(csrng_csrng_cmd_req[1]),
@@ -2452,7 +2352,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:61]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[56:56]),
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
@@ -2460,9 +2360,9 @@ module top_darjeeling #(
     .MemSizeRam(65536),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
-      // [61]: fatal_error
-      .alert_tx_o  ( alert_tx[61:61] ),
-      .alert_rx_i  ( alert_rx[61:61] ),
+      // [56]: fatal_error
+      .alert_tx_o  ( alert_tx[56:56] ),
+      .alert_rx_i  ( alert_rx[56:56] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2483,7 +2383,7 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:62]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[57:57]),
     .RndCnstSramKey(RndCnstSramCtrlMboxSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMboxSramNonce),
     .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
@@ -2491,9 +2391,9 @@ module top_darjeeling #(
     .MemSizeRam(4096),
     .InstrExec(SramCtrlMboxInstrExec)
   ) u_sram_ctrl_mbox (
-      // [62]: fatal_error
-      .alert_tx_o  ( alert_tx[62:62] ),
-      .alert_rx_i  ( alert_rx[62:62] ),
+      // [57]: fatal_error
+      .alert_tx_o  ( alert_tx[57:57] ),
+      .alert_rx_i  ( alert_rx[57:57] ),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
@@ -2514,16 +2414,16 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   rom_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63:63]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:58]),
     .BootRomInitFile(RomCtrl0BootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
     .SecDisableScrambling(SecRomCtrl0DisableScrambling),
     .MemSizeRom(32768)
   ) u_rom_ctrl0 (
-      // [63]: fatal
-      .alert_tx_o  ( alert_tx[63:63] ),
-      .alert_rx_i  ( alert_rx[63:63] ),
+      // [58]: fatal
+      .alert_tx_o  ( alert_tx[58:58] ),
+      .alert_rx_i  ( alert_rx[58:58] ),
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
@@ -2541,16 +2441,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rom_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:64]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59:59]),
     .BootRomInitFile(RomCtrl1BootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
     .RndCnstScrKey(RndCnstRomCtrl1ScrKey),
     .SecDisableScrambling(SecRomCtrl1DisableScrambling),
     .MemSizeRom(65536)
   ) u_rom_ctrl1 (
-      // [64]: fatal
-      .alert_tx_o  ( alert_tx[64:64] ),
-      .alert_rx_i  ( alert_rx[64:64] ),
+      // [59]: fatal
+      .alert_tx_o  ( alert_tx[59:59] ),
+      .alert_rx_i  ( alert_rx[59:59] ),
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
@@ -2568,7 +2468,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   dma #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[65:65]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:60]),
     .EnableDataIntgGen(DmaEnableDataIntgGen),
     .TlUserRsvd(DmaTlUserRsvd),
     .SysRacl(DmaSysRacl),
@@ -2579,9 +2479,9 @@ module top_darjeeling #(
       .intr_dma_done_o                (intr_dma_dma_done),
       .intr_dma_error_o               (intr_dma_dma_error),
       .intr_dma_memory_buffer_limit_o (intr_dma_dma_memory_buffer_limit),
-      // [65]: fatal_fault
-      .alert_tx_o  ( alert_tx[65:65] ),
-      .alert_rx_i  ( alert_rx[65:65] ),
+      // [60]: fatal_fault
+      .alert_tx_o  ( alert_tx[60:60] ),
+      .alert_rx_i  ( alert_rx[60:60] ),
 
       // Inter-module signals
       .lsio_trigger_i(dma_lsio_trigger),
@@ -2600,16 +2500,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[67:66])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:61])
   ) u_mbx0 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx0_mbx_abort),
-      // [66]: fatal_fault
-      // [67]: recov_fault
-      .alert_tx_o  ( alert_tx[67:66] ),
-      .alert_rx_i  ( alert_rx[67:66] ),
+      // [61]: fatal_fault
+      // [62]: recov_fault
+      .alert_tx_o  ( alert_tx[62:61] ),
+      .alert_rx_i  ( alert_rx[62:61] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx0_doe_intr_support_o),
@@ -2627,16 +2527,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[69:68])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:63])
   ) u_mbx1 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx1_mbx_abort),
-      // [68]: fatal_fault
-      // [69]: recov_fault
-      .alert_tx_o  ( alert_tx[69:68] ),
-      .alert_rx_i  ( alert_rx[69:68] ),
+      // [63]: fatal_fault
+      // [64]: recov_fault
+      .alert_tx_o  ( alert_tx[64:63] ),
+      .alert_rx_i  ( alert_rx[64:63] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx1_doe_intr_support_o),
@@ -2654,16 +2554,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[71:70])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[66:65])
   ) u_mbx2 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx2_mbx_ready),
       .intr_mbx_abort_o (intr_mbx2_mbx_abort),
-      // [70]: fatal_fault
-      // [71]: recov_fault
-      .alert_tx_o  ( alert_tx[71:70] ),
-      .alert_rx_i  ( alert_rx[71:70] ),
+      // [65]: fatal_fault
+      // [66]: recov_fault
+      .alert_tx_o  ( alert_tx[66:65] ),
+      .alert_rx_i  ( alert_rx[66:65] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx2_doe_intr_support_o),
@@ -2681,16 +2581,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:72])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:67])
   ) u_mbx3 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx3_mbx_ready),
       .intr_mbx_abort_o (intr_mbx3_mbx_abort),
-      // [72]: fatal_fault
-      // [73]: recov_fault
-      .alert_tx_o  ( alert_tx[73:72] ),
-      .alert_rx_i  ( alert_rx[73:72] ),
+      // [67]: fatal_fault
+      // [68]: recov_fault
+      .alert_tx_o  ( alert_tx[68:67] ),
+      .alert_rx_i  ( alert_rx[68:67] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx3_doe_intr_support_o),
@@ -2708,16 +2608,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[75:74])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[70:69])
   ) u_mbx4 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx4_mbx_ready),
       .intr_mbx_abort_o (intr_mbx4_mbx_abort),
-      // [74]: fatal_fault
-      // [75]: recov_fault
-      .alert_tx_o  ( alert_tx[75:74] ),
-      .alert_rx_i  ( alert_rx[75:74] ),
+      // [69]: fatal_fault
+      // [70]: recov_fault
+      .alert_tx_o  ( alert_tx[70:69] ),
+      .alert_rx_i  ( alert_rx[70:69] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx4_doe_intr_support_o),
@@ -2735,16 +2635,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[77:76])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[72:71])
   ) u_mbx5 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx5_mbx_ready),
       .intr_mbx_abort_o (intr_mbx5_mbx_abort),
-      // [76]: fatal_fault
-      // [77]: recov_fault
-      .alert_tx_o  ( alert_tx[77:76] ),
-      .alert_rx_i  ( alert_rx[77:76] ),
+      // [71]: fatal_fault
+      // [72]: recov_fault
+      .alert_tx_o  ( alert_tx[72:71] ),
+      .alert_rx_i  ( alert_rx[72:71] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx5_doe_intr_support_o),
@@ -2762,16 +2662,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[79:78])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[74:73])
   ) u_mbx6 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx6_mbx_ready),
       .intr_mbx_abort_o (intr_mbx6_mbx_abort),
-      // [78]: fatal_fault
-      // [79]: recov_fault
-      .alert_tx_o  ( alert_tx[79:78] ),
-      .alert_rx_i  ( alert_rx[79:78] ),
+      // [73]: fatal_fault
+      // [74]: recov_fault
+      .alert_tx_o  ( alert_tx[74:73] ),
+      .alert_rx_i  ( alert_rx[74:73] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx6_doe_intr_support_o),
@@ -2789,16 +2689,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[81:80])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[76:75])
   ) u_mbx7 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx7_mbx_ready),
       .intr_mbx_abort_o (intr_mbx7_mbx_abort),
-      // [80]: fatal_fault
-      // [81]: recov_fault
-      .alert_tx_o  ( alert_tx[81:80] ),
-      .alert_rx_i  ( alert_rx[81:80] ),
+      // [75]: fatal_fault
+      // [76]: recov_fault
+      .alert_tx_o  ( alert_tx[76:75] ),
+      .alert_rx_i  ( alert_rx[76:75] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx7_doe_intr_support_o),
@@ -2816,16 +2716,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[83:82])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[78:77])
   ) u_mbx_jtag (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_jtag_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_jtag_mbx_abort),
-      // [82]: fatal_fault
-      // [83]: recov_fault
-      .alert_tx_o  ( alert_tx[83:82] ),
-      .alert_rx_i  ( alert_rx[83:82] ),
+      // [77]: fatal_fault
+      // [78]: recov_fault
+      .alert_tx_o  ( alert_tx[78:77] ),
+      .alert_rx_i  ( alert_rx[78:77] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_jtag_doe_intr_support_o),
@@ -2843,16 +2743,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[85:84])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[80:79])
   ) u_mbx_pcie0 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_pcie0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie0_mbx_abort),
-      // [84]: fatal_fault
-      // [85]: recov_fault
-      .alert_tx_o  ( alert_tx[85:84] ),
-      .alert_rx_i  ( alert_rx[85:84] ),
+      // [79]: fatal_fault
+      // [80]: recov_fault
+      .alert_tx_o  ( alert_tx[80:79] ),
+      .alert_rx_i  ( alert_rx[80:79] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_pcie0_doe_intr_support_o),
@@ -2870,7 +2770,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[89:86]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[84:81]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
@@ -2897,12 +2797,12 @@ module top_darjeeling #(
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [86]: fatal_sw_err
-      // [87]: recov_sw_err
-      // [88]: fatal_hw_err
-      // [89]: recov_hw_err
-      .alert_tx_o  ( alert_tx[89:86] ),
-      .alert_rx_i  ( alert_rx[89:86] ),
+      // [81]: fatal_sw_err
+      // [82]: recov_sw_err
+      // [83]: fatal_hw_err
+      // [84]: recov_hw_err
+      .alert_tx_o  ( alert_tx[84:81] ),
+      .alert_rx_i  ( alert_rx[84:81] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -2946,51 +2846,45 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_mbx_pcie0_mbx_abort, // IDs [185 +: 1]
-      intr_mbx_pcie0_mbx_ready, // IDs [184 +: 1]
-      intr_mbx_jtag_mbx_abort, // IDs [183 +: 1]
-      intr_mbx_jtag_mbx_ready, // IDs [182 +: 1]
-      intr_mbx7_mbx_abort, // IDs [181 +: 1]
-      intr_mbx7_mbx_ready, // IDs [180 +: 1]
-      intr_mbx6_mbx_abort, // IDs [179 +: 1]
-      intr_mbx6_mbx_ready, // IDs [178 +: 1]
-      intr_mbx5_mbx_abort, // IDs [177 +: 1]
-      intr_mbx5_mbx_ready, // IDs [176 +: 1]
-      intr_mbx4_mbx_abort, // IDs [175 +: 1]
-      intr_mbx4_mbx_ready, // IDs [174 +: 1]
-      intr_mbx3_mbx_abort, // IDs [173 +: 1]
-      intr_mbx3_mbx_ready, // IDs [172 +: 1]
-      intr_mbx2_mbx_abort, // IDs [171 +: 1]
-      intr_mbx2_mbx_ready, // IDs [170 +: 1]
-      intr_mbx1_mbx_abort, // IDs [169 +: 1]
-      intr_mbx1_mbx_ready, // IDs [168 +: 1]
-      intr_mbx0_mbx_abort, // IDs [167 +: 1]
-      intr_mbx0_mbx_ready, // IDs [166 +: 1]
-      intr_dma_dma_memory_buffer_limit, // IDs [165 +: 1]
-      intr_dma_dma_error, // IDs [164 +: 1]
-      intr_dma_dma_done, // IDs [163 +: 1]
-      intr_edn1_edn_fatal_err, // IDs [162 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [161 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [160 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [159 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [158 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [157 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [156 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [155 +: 1]
-      intr_keymgr_op_done, // IDs [154 +: 1]
-      intr_otbn_done, // IDs [153 +: 1]
-      intr_kmac_kmac_err, // IDs [152 +: 1]
-      intr_kmac_fifo_empty, // IDs [151 +: 1]
-      intr_kmac_kmac_done, // IDs [150 +: 1]
-      intr_hmac_hmac_err, // IDs [149 +: 1]
-      intr_hmac_fifo_empty, // IDs [148 +: 1]
-      intr_hmac_hmac_done, // IDs [147 +: 1]
-      intr_flash_ctrl_corr_err, // IDs [146 +: 1]
-      intr_flash_ctrl_op_done, // IDs [145 +: 1]
-      intr_flash_ctrl_rd_lvl, // IDs [144 +: 1]
-      intr_flash_ctrl_rd_full, // IDs [143 +: 1]
-      intr_flash_ctrl_prog_lvl, // IDs [142 +: 1]
-      intr_flash_ctrl_prog_empty, // IDs [141 +: 1]
+      intr_mbx_pcie0_mbx_abort, // IDs [179 +: 1]
+      intr_mbx_pcie0_mbx_ready, // IDs [178 +: 1]
+      intr_mbx_jtag_mbx_abort, // IDs [177 +: 1]
+      intr_mbx_jtag_mbx_ready, // IDs [176 +: 1]
+      intr_mbx7_mbx_abort, // IDs [175 +: 1]
+      intr_mbx7_mbx_ready, // IDs [174 +: 1]
+      intr_mbx6_mbx_abort, // IDs [173 +: 1]
+      intr_mbx6_mbx_ready, // IDs [172 +: 1]
+      intr_mbx5_mbx_abort, // IDs [171 +: 1]
+      intr_mbx5_mbx_ready, // IDs [170 +: 1]
+      intr_mbx4_mbx_abort, // IDs [169 +: 1]
+      intr_mbx4_mbx_ready, // IDs [168 +: 1]
+      intr_mbx3_mbx_abort, // IDs [167 +: 1]
+      intr_mbx3_mbx_ready, // IDs [166 +: 1]
+      intr_mbx2_mbx_abort, // IDs [165 +: 1]
+      intr_mbx2_mbx_ready, // IDs [164 +: 1]
+      intr_mbx1_mbx_abort, // IDs [163 +: 1]
+      intr_mbx1_mbx_ready, // IDs [162 +: 1]
+      intr_mbx0_mbx_abort, // IDs [161 +: 1]
+      intr_mbx0_mbx_ready, // IDs [160 +: 1]
+      intr_dma_dma_memory_buffer_limit, // IDs [159 +: 1]
+      intr_dma_dma_error, // IDs [158 +: 1]
+      intr_dma_dma_done, // IDs [157 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [156 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [155 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [154 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [153 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [152 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [151 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [150 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [149 +: 1]
+      intr_keymgr_op_done, // IDs [148 +: 1]
+      intr_otbn_done, // IDs [147 +: 1]
+      intr_kmac_kmac_err, // IDs [146 +: 1]
+      intr_kmac_fifo_empty, // IDs [145 +: 1]
+      intr_kmac_kmac_done, // IDs [144 +: 1]
+      intr_hmac_hmac_err, // IDs [143 +: 1]
+      intr_hmac_fifo_empty, // IDs [142 +: 1]
+      intr_hmac_hmac_done, // IDs [141 +: 1]
       intr_soc_proxy_external, // IDs [133 +: 8]
       intr_sensor_ctrl_init_status_change, // IDs [132 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [131 +: 1]
@@ -3206,18 +3100,6 @@ module top_darjeeling #(
     // port: tl_usbdev
     .tl_usbdev_o(usbdev_tl_req),
     .tl_usbdev_i(usbdev_tl_rsp),
-
-    // port: tl_flash_ctrl__core
-    .tl_flash_ctrl__core_o(flash_ctrl_core_tl_req),
-    .tl_flash_ctrl__core_i(flash_ctrl_core_tl_rsp),
-
-    // port: tl_flash_ctrl__prim
-    .tl_flash_ctrl__prim_o(flash_ctrl_prim_tl_req),
-    .tl_flash_ctrl__prim_i(flash_ctrl_prim_tl_rsp),
-
-    // port: tl_flash_ctrl__mem
-    .tl_flash_ctrl__mem_o(flash_ctrl_mem_tl_req),
-    .tl_flash_ctrl__mem_i(flash_ctrl_mem_tl_rsp),
 
     // port: tl_hmac
     .tl_hmac_o(hmac_tl_req),
@@ -3534,9 +3416,6 @@ module top_darjeeling #(
   assign cio_spi_host1_sd_p2d[3] = mio_p2d[MioInSpiHost1Sd3];
   assign cio_uart0_rx_p2d = mio_p2d[MioInUart0Rx];
   assign cio_spi_device_tpm_csb_p2d = mio_p2d[MioInSpiDeviceTpmCsb];
-  assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
-  assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
-  assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
   assign cio_sysrst_ctrl_aon_ac_present_p2d = mio_p2d[MioInSysrstCtrlAonAcPresent];
   assign cio_sysrst_ctrl_aon_key0_in_p2d = mio_p2d[MioInSysrstCtrlAonKey0In];
   assign cio_sysrst_ctrl_aon_key1_in_p2d = mio_p2d[MioInSysrstCtrlAonKey1In];
@@ -3591,7 +3470,6 @@ module top_darjeeling #(
   assign mio_d2p[MioOutUart0Tx] = cio_uart0_tx_d2p;
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p;
   assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p;
-  assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
   assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p[0];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p[1];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_d2p[2];
@@ -3655,7 +3533,6 @@ module top_darjeeling #(
   assign mio_en_d2p[MioOutUart0Tx] = cio_uart0_tx_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p;
-  assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p[0];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p[1];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_en_d2p[2];

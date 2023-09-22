@@ -19,9 +19,6 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SOC_PROXY__CTN       = 32'h 40000000;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST1            = 32'h 32000000;
   localparam logic [31:0] ADDR_SPACE_USBDEV               = 32'h 32010000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__CORE     = 32'h 33000000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__PRIM     = 32'h 33008000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__MEM      = 32'h 34000000;
   localparam logic [31:0] ADDR_SPACE_HMAC                 = 32'h 21110000;
   localparam logic [31:0] ADDR_SPACE_KMAC                 = 32'h 21120000;
   localparam logic [31:0] ADDR_SPACE_AES                  = 32'h 21100000;
@@ -61,9 +58,6 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SOC_PROXY__CTN       = 32'h 3fffffff;
   localparam logic [31:0] ADDR_MASK_SPI_HOST1            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__CORE     = 32'h 000001ff;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__PRIM     = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 000fffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 000000ff;
@@ -91,7 +85,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_MBX_PCIE0__CORE      = 32'h 0000007f;
 
   localparam int N_HOST   = 14;
-  localparam int N_DEVICE = 39;
+  localparam int N_DEVICE = 36;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -105,34 +99,31 @@ package tl_main_pkg;
     TlSocProxyCtn = 8,
     TlSpiHost1 = 9,
     TlUsbdev = 10,
-    TlFlashCtrlCore = 11,
-    TlFlashCtrlPrim = 12,
-    TlFlashCtrlMem = 13,
-    TlHmac = 14,
-    TlKmac = 15,
-    TlAes = 16,
-    TlCsrng = 17,
-    TlEdn0 = 18,
-    TlEdn1 = 19,
-    TlRvPlic = 20,
-    TlOtbn = 21,
-    TlKeymgr = 22,
-    TlRvCoreIbexCfg = 23,
-    TlSramCtrlMainRegs = 24,
-    TlSramCtrlMainRam = 25,
-    TlSramCtrlMboxRegs = 26,
-    TlSramCtrlMboxRam = 27,
-    TlDma = 28,
-    TlMbx0Core = 29,
-    TlMbx1Core = 30,
-    TlMbx2Core = 31,
-    TlMbx3Core = 32,
-    TlMbx4Core = 33,
-    TlMbx5Core = 34,
-    TlMbx6Core = 35,
-    TlMbx7Core = 36,
-    TlMbxJtagCore = 37,
-    TlMbxPcie0Core = 38
+    TlHmac = 11,
+    TlKmac = 12,
+    TlAes = 13,
+    TlCsrng = 14,
+    TlEdn0 = 15,
+    TlEdn1 = 16,
+    TlRvPlic = 17,
+    TlOtbn = 18,
+    TlKeymgr = 19,
+    TlRvCoreIbexCfg = 20,
+    TlSramCtrlMainRegs = 21,
+    TlSramCtrlMainRam = 22,
+    TlSramCtrlMboxRegs = 23,
+    TlSramCtrlMboxRam = 24,
+    TlDma = 25,
+    TlMbx0Core = 26,
+    TlMbx1Core = 27,
+    TlMbx2Core = 28,
+    TlMbx3Core = 29,
+    TlMbx4Core = 30,
+    TlMbx5Core = 31,
+    TlMbx6Core = 32,
+    TlMbx7Core = 33,
+    TlMbxJtagCore = 34,
+    TlMbxPcie0Core = 35
   } tl_device_e;
 
   typedef enum int {

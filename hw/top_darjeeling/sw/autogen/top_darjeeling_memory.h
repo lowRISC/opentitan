@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
 #define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
 
+#include "top_darjeeling_flash_ctrl_dummy.h"
+
 /**
  * @file
  * @brief Assembler-only Top-Specific Definitions.
@@ -49,16 +51,6 @@
  * Memory size for ram_ret_aon in top darjeeling.
  */
 #define TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES 0x1000
-
-/**
- * Memory base address for eflash in top darjeeling.
- */
-#define TOP_DARJEELING_EFLASH_BASE_ADDR 0x34000000
-
-/**
- * Memory size for eflash in top darjeeling.
- */
-#define TOP_DARJEELING_EFLASH_SIZE_BYTES 0x100000
 
 /**
  * Memory base address for ram_main in top darjeeling.
@@ -560,57 +552,6 @@
  * `TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000
-/**
- * Peripheral base address for core device on flash_ctrl in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR 0x33000000
-
-/**
- * Peripheral size for core device on flash_ctrl in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR and
- * `TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES 0x200
-/**
- * Peripheral base address for prim device on flash_ctrl in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR 0x33008000
-
-/**
- * Peripheral size for prim device on flash_ctrl in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR and
- * `TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
-/**
- * Peripheral base address for mem device on flash_ctrl in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR 0x34000000
-
-/**
- * Peripheral size for mem device on flash_ctrl in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR and
- * `TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES 0x100000
 /**
  * Peripheral base address for regs device on rv_dm in top darjeeling.
  *
@@ -1147,7 +1088,7 @@
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
 #define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000
-#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x11F08080
+#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x10F11000
 
 #endif  // __ASSEMBLER__
 
