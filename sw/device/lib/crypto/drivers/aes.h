@@ -130,7 +130,7 @@ status_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
  * // ...
  * aes_update(output(N-1), inputN);
  * aes_update(outputN, NULL);
- * aes_end();
+ * aes_end(...);
  * ```
  *
  * @param dest The output block.
@@ -143,10 +143,14 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src);
 /**
  * Completes an AES session by clearing control settings and key material.
  *
+ * If `iv` is non-null, reads back the final IV block and returns it to the
+ * caller.
+ *
+ * @param[out] iv Buffer for the final IV (may be null).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_end(void);
+status_t aes_end(aes_block_t *iv);
 
 #ifdef __cplusplus
 }

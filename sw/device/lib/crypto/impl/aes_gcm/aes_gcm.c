@@ -67,7 +67,7 @@ static status_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
   HARDENED_TRY(aes_encrypt_begin(key, iv));
   HARDENED_TRY(aes_update(/*dest=*/NULL, input));
   HARDENED_TRY(aes_update(output, /*src=*/NULL));
-  return aes_end();
+  return aes_end(NULL);
 }
 
 status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb, size_t len,

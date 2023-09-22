@@ -348,8 +348,13 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
   memcpy(&cipher_output.data[(input_nblocks - 1) * kAesBlockNumBytes],
          block_out.data, kAesBlockNumBytes);
 
-  // Deinitialize the AES block.
-  HARDENED_TRY(aes_end());
+  // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
+  if (aes_mode == launder32(kAesCipherModeEcb)) {
+    HARDENED_TRY(aes_end(NULL));
+  } else {
+    HARDENED_TRY(aes_end(&aes_iv));
+    hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords);
+  }
 
   return OTCRYPTO_OK;
 }
