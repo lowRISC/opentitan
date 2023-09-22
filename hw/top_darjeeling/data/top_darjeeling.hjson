@@ -173,6 +173,7 @@
   addr_spaces: [
     { name: "hart", desc: "The main address space, shared between the CPU and DM"},
     { name: "soc_mbx", desc: "SoC address space for mailbox access"},
+    { name: "soc_dbg", desc: "SoC address space for debug module interfaces"},
   ]
 
   // `module` defines the peripherals.
@@ -965,7 +966,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000800"},
-        soc:  {soc_mbx: "0x00005800"},
+        soc:  {soc_dbg: "0x00000200"},
       },
     },
     { name: "mbx_pcie0",
@@ -1367,6 +1368,7 @@
         'mbx_pcie0.doe_intr'              : 'mbx_pcie0_doe_intr',
         'mbx_pcie0.doe_intr_en'           : 'mbx_pcie0_doe_intr_en',
         'mbx_pcie0.doe_intr_support'      : 'mbx_pcie0_doe_intr_support',
+        'dbg.tl_dbg'                      : 'mbx_jtag_dmi',
         'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',
@@ -1435,6 +1437,12 @@
       clock_group: "infra",
       reset: "lc",
       reset_connections: {rst_mbx_ni: "lc"},
+    },
+    { name: "dbg",
+      clock_srcs: {clk_dbg_i: "main"},
+      clock_group: "infra",
+      reset: "lc",
+      reset_connections: {rst_dbg_ni: "lc"},
     },
   ],
 

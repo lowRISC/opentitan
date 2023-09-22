@@ -38,6 +38,7 @@ filesets:
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:mbx
       - lowrisc:ip:usbdev
+      - lowrisc:top_darjeeling:xbar_dbg
       - lowrisc:top_darjeeling:xbar_main
       - lowrisc:top_darjeeling:xbar_mbx
       - lowrisc:top_darjeeling:xbar_peri

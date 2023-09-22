@@ -16,6 +16,7 @@ filegroup(
         "//hw/top_darjeeling/ip/sensor_ctrl:all_files",
         "//hw/top_darjeeling/ip/soc_proxy:all_files",
         "//hw/top_darjeeling/ip/xbar:all_files",
+        "//hw/top_darjeeling/ip/xbar_dbg:all_files",
         "//hw/top_darjeeling/ip/xbar_main:all_files",
         "//hw/top_darjeeling/ip/xbar_mbx:all_files",
         "//hw/top_darjeeling/ip/xbar_peri:all_files",

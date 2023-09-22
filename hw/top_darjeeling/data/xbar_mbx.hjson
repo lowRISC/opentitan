@@ -73,13 +73,6 @@
       reset:      "rst_mbx_ni",
       pipeline:   false,
     },
-    { name:       "mbx_jtag.soc",
-      type:       "device",
-      addr_space: "soc_mbx",
-      clock:      "clk_mbx_i",
-      reset:      "rst_mbx_ni",
-      pipeline:   false,
-    },
     { name:       "mbx_pcie0.soc",
       type:       "device",
       addr_space: "soc_mbx",
@@ -92,7 +85,7 @@
   connections: {
     mbx: [
       "mbx0.soc", "mbx1.soc", "mbx2.soc", "mbx3.soc", "mbx4.soc", "mbx5.soc",
-      "mbx6.soc", "mbx7.soc", "mbx_jtag.soc", "mbx_pcie0.soc",
+      "mbx6.soc", "mbx7.soc", "mbx_pcie0.soc",
     ],
   },
 }
