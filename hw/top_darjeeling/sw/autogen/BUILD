@@ -20,6 +20,12 @@ cc_library(
         # cleaned up and removed. Note that the SW depending on flash_ctrl
         # is currently not functional.
         "top_darjeeling_flash_ctrl_dummy.h",
+        # TODO(opentitan-integrated/issues/145): dummy definitions added as
+        # a workaround so that the the old keymgr can be removed without having to
+        # refactor all dependent tests and the ROM at once. These tests and the DIF
+        # need to be refactored so that they work with keymgr_dpe instead.
+        #  Note that the SW depending on the old keymgr is currently not functional.
+        "top_darjeeling_keymgr_dummy.h",
     ],
 )
 

@@ -7,8 +7,11 @@
 
 ## TODO(opentitan-integrated/issues/332): Remove this workaround
 ## once SW has been refactored to work without flash_ctrl.
+## TODO(opentitan-integrated/issues/145): Remove this workaround
+## once SW has been refactored to work without keymgr_dpe.
 % if top["name"] == 'darjeeling':
 #include "top_darjeeling_flash_ctrl_dummy.h"
+#include "top_darjeeling_keymgr_dummy.h"
 
 % endif
 /**
