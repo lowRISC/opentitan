@@ -1150,6 +1150,39 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "alert_handler_lpg_sleep_mode_alerts_test",
+    srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
+    targets = [
+        # The test requires to drive fatal alerts
+        # which is possible only in DV sim.
+        "dv",
+    ],
+    deps = [
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:nv_counter_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
     targets = ["dv"],

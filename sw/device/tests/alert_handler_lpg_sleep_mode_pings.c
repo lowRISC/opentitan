@@ -18,11 +18,10 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -105,8 +104,8 @@ void wait_enough_for_alert_ping(void) {
 enum {
   // The counter ID for the non-volatile counter keeping the test steps.
   kCounterTestSteps = 0,
-  // The counter ID for the non-volatile counter keeping te num_iters for each
-  // tets phase.
+  // The counter ID for the non-volatile counter keeping num_iters for each
+  // test phase.
   kCounterTestPhase = 1,
 };
 
@@ -294,6 +293,7 @@ static size_t test_step_cnt;
 /**
  * Helper function to keep the test body clean
  * Initializes the flash_ctrl and test counters.
+ * This is called once per reset.
  */
 void init_test_components(void) {
   // Enable global and external IRQ at Ibex.
@@ -309,48 +309,6 @@ void init_test_components(void) {
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
-
-  // Need a NVM counter to keep the test-step info
-  // after waking up from the deep sleep mode.
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-  // Total number of iterations for each test phase
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterTestPhase, &rnd_num_iterations));
-
-  // We don't expect test_step_cnt to 256 (flash mem is filled with all zeros)
-  // for this test. If it is 256, we just initialize the counters/NVM-fields
-  // again.
-  if (test_step_cnt == 256) {
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestPhase));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterTestPhase,
-                                                     &rnd_num_iterations));
-  }
-
-  // If this is the first iteration,
-  // set num_iterations to a random value between 8 and 32
-  if (rnd_num_iterations == 0) {
-    // 4 <= num_iters <= 8
-    rand_testutils_reseed();
-    rnd_num_iterations = rand_testutils_gen32_range(4, 8);
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl, kCounterTestPhase, rnd_num_iterations));
-  }
 }
 
 /**
@@ -377,6 +335,17 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
   // Power-on reset
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
+    // Initialize the counters.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestSteps));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestPhase));
+    // set num_iterations to a random value between 4 and 8
+    rand_testutils_reseed();
+    rnd_num_iterations = rand_testutils_gen32_range(4, 8);
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_set(kCounterTestPhase, rnd_num_iterations));
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+
     // Set the AON timer to send a wakeup signal in ~10-20us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
         &aon_timer, rand_testutils_gen32_range(2, 4)));
@@ -457,10 +426,9 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     }
 
     // Increment the test_step counter for the next test step
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterTestSteps));
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~100-150us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
@@ -504,15 +472,35 @@ bool test_main(void) {
 
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
+  if (rst_info & kDifRstmgrResetInfoPor) {
+    // Power-on reset
+    //  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
+    LOG_INFO("POR reset");
+    // Initialize the counters.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestSteps));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestPhase));
+    // set num_iterations to a random value between 4 and 8
+    rand_testutils_reseed();
+    rnd_num_iterations = rand_testutils_gen32_range(4, 8);
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_set(kCounterTestPhase, rnd_num_iterations));
+    LOG_INFO("Will run %d iterations per phase", rnd_num_iterations);
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
-  // We need to initialize the info FLASH partitions storing the Creator and
-  // Owner secrets to avoid getting the flash controller into a fatal error
-  // state.
-  if (kDeviceType == kDeviceFpgaCw310 && rst_info & kDifRstmgrResetInfoPor) {
-    CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                &kOwnerSecret));
-    chip_sw_reset();
+    // We need to initialize the info FLASH partitions storing the Creator and
+    // Owner secrets to avoid getting the flash controller into a fatal error
+    // state.
+    if (kDeviceType == kDeviceFpgaCw310) {
+      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
+                                                  &kOwnerSecret));
+      chip_sw_reset();
+    }
   }
+  CHECK_STATUS_OK(
+      ret_sram_testutils_counter_get(kCounterTestPhase, &rnd_num_iterations));
+  CHECK_STATUS_OK(
+      ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
   // TEST PHASE #1 (ping-timeout = 256)
   // To ensure that the ping mechanism won't send spurious failure.

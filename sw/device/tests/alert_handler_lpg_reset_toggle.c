@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -21,8 +20,8 @@
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -49,7 +48,6 @@ static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
 static dif_rv_core_ibex_t ibex;
-static dif_flash_ctrl_state_t flash_ctrl;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 /**
@@ -90,10 +88,6 @@ static void init_peripherals(void) {
   mmio_region_t ibex_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Enable all the alert_handler interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
@@ -387,32 +381,24 @@ bool test_main(void) {
   size_t test_step_cnt;
   size_t peri_idx;
 
-  // Need a NVM counter to keep the test-step info
+  // Need a retention sram counter to keep the test-step info
   // between resets on the FPGA.
-  if (kDeviceType == kDeviceFpgaCw310) {
-    // Enable flash access
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                   /*rd_en*/ true,
-                                                   /*prog_en*/ true,
-                                                   /*erase_en*/ true,
-                                                   /*scramble_en*/ false,
-                                                   /*ecc_en*/ false,
-                                                   /*he_en*/ false));
-
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-    if (test_step_cnt == 256) {
-      CHECK_STATUS_OK(flash_ctrl_testutils_counter_init_zero(
-          &flash_ctrl, kCounterTestSteps));
-      CHECK_STATUS_OK(
-          flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+  dif_rstmgr_reset_info_bitfield_t rst_info;
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
+  if (rst_info & kDifRstmgrResetInfoPor) {
+    // Initialize retention sram counter if running on Cw310.
+    if (kDeviceType == kDeviceFpgaCw310) {
+      CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestSteps));
     }
+  }
+  if (kDeviceType == kDeviceFpgaCw310) {
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
   } else {
     // Initialize the test_step counter to zero for the simulation
     test_step_cnt = 0;
   }
-
   /* TEST PHASE #0: NEGATIVE TESTING (FPGA-ONLY)
 
     The timeout value is set to 2
@@ -433,7 +419,7 @@ bool test_main(void) {
       // Read the test_step_cnt and compute the test phase
       // amd the peripheral ID to test
       CHECK_STATUS_OK(
-          flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+          ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
       test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
       peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
@@ -468,8 +454,7 @@ bool test_main(void) {
                                              kDifRstmgrSoftwareResetRelease));
 
       // Increment the test_step counter
-      CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(
-          &flash_ctrl, kCounterTestSteps));
+      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterTestSteps));
       // Request system reset to unlock the alert handler config and test the
       // next peripheral
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
