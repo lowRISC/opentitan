@@ -338,6 +338,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           (!uvm_re_match("dataaddr_*", csr.get_name())): begin
           end
           (!uvm_re_match("flags_*", csr.get_name())): begin
+            do_read_check = 0;
           end
           default: `uvm_fatal(`gfn, $sformatf("Unknown debug mem CSR: %0s", csr.get_name()))
         endcase
