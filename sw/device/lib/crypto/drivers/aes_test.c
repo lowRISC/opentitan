@@ -30,6 +30,18 @@ static const aes_block_t kIv = {
         },
 };
 
+// Expected counter after 4 blocks.
+static const aes_block_t kFinalIv = {
+    .data =
+        {
+            // kIv + 4 = f0f1f2f3f4f5f6f7f8f9fafbfcfdff03
+            0xf3f2f1f0,
+            0xf7f6f5f4,
+            0xfbfaf9f8,
+            0x03fffdfc,
+        },
+};
+
 static const aes_block_t kPlaintext[] = {
     // Block#1: 6bc1bee22e409f96e93d7e117393172a
     {.data = 0xe2bec16b, 0x969f402e, 0x117e3de9, 0x2a179373},
@@ -90,7 +102,10 @@ static status_t run_aes_test(void) {
                   sizeof(ciphertext) / (sizeof(uint32_t)));
 
   LOG_INFO("Cleaning up.");
-  TRY(aes_end());
+  aes_block_t final_iv;
+  TRY(aes_end(&final_iv));
+
+  CHECK_ARRAYS_EQ(final_iv.data, kFinalIv.data, kAesBlockNumWords);
 
   return OTCRYPTO_OK;
 }

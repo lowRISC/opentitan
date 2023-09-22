@@ -261,11 +261,19 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
   return OTCRYPTO_OK;
 }
 
-status_t aes_end(void) {
+status_t aes_end(aes_block_t *iv) {
   uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
   ctrl_reg = bitfield_bit32_write(ctrl_reg,
                                   AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
   abs_mmio_write32_shadowed(kBase + AES_CTRL_SHADOWED_REG_OFFSET, ctrl_reg);
+
+  if (iv != NULL) {
+    // Read back the current IV from the hardware.
+    uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
+    for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
+      iv->data[i] = abs_mmio_read32(iv_offset + i * sizeof(uint32_t));
+    }
+  }
 
   uint32_t trigger_reg = 0;
   trigger_reg = bitfield_bit32_write(
