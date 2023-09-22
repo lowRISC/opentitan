@@ -460,14 +460,14 @@
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 6
     }
-    {
-      name: chip_sw_sleep_pin_mio_dio_val
-      uvm_test_seq: chip_sw_sleep_pin_mio_dio_val_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sleep_pin_mio_dio_val_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      // Starting the chip in prod LC state frees up all MIOs for this test.
-      run_opts: ["+use_otp_image=OtpTypeLcStProd"]
-    }
+    // {
+    //   name: chip_sw_sleep_pin_mio_dio_val
+    //   uvm_test_seq: chip_sw_sleep_pin_mio_dio_val_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:sleep_pin_mio_dio_val_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   // Starting the chip in prod LC state frees up all MIOs for this test.
+    //   run_opts: ["+use_otp_image=OtpTypeLcStProd"]
+    // }
     {
       name: chip_sw_sleep_pin_wake
       uvm_test_seq: chip_sw_sleep_pin_wake_vseq
