@@ -2462,7 +2462,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:csrng",
         "//sw/top_darjeeling/sw/dif:csrng_shared",
         "//sw/top_darjeeling/sw/dif:edn",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:hmac",
         "//sw/top_darjeeling/sw/dif:i2c",

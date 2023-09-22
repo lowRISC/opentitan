@@ -15,7 +15,6 @@
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/ip/hmac/test/utils/hmac_testutils.h"
@@ -71,7 +70,6 @@ static dif_i2c_t i2c_2;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
 static dif_spi_host_t spi_host_1;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t rv_plic;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
@@ -248,9 +246,6 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(dif_otbn_init(
       mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
 }
@@ -963,15 +958,6 @@ static void max_power_task(void *task_parameters) {
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
-static void check_otp_csr_configs(void) {
-  dif_flash_ctrl_region_properties_t default_properties;
-  CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
-      &flash_ctrl, &default_properties));
-  CHECK(default_properties.scramble_en == kMultiBitBool4True);
-  CHECK(default_properties.ecc_en == kMultiBitBool4True);
-  CHECK(default_properties.high_endurance_en == kMultiBitBool4False);
-}
-
 bool test_main(void) {
   peripheral_clock_period_ns =
       (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
@@ -1013,11 +999,6 @@ bool test_main(void) {
       &spi_device, /*filters=*/0,
       /*upload_write_commands=*/false));
   LOG_INFO("All IPs configured.");
-
-  // ***************************************************************************
-  // Check OTP configurations propagated to CSRs.
-  // ***************************************************************************
-  check_otp_csr_configs();
 
   // ***************************************************************************
   // Kick off test tasks.
