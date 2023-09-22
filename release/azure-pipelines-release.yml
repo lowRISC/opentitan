@@ -73,10 +73,10 @@ jobs:
       # --jobs=1 is necessary due to resource constraints on the build machine.
       # Running multiple Vivado and Verilator build jobs simultaneously can
       # cause Synthesis failures
-      ci/bazelisk.sh build release --jobs=1
+      ci/bazelisk.sh build release --jobs=1 --define bitstream=vivado
 
       # Set the package-path variable for the artifact-publishing step
-      PKG_PATH=$(./bazelisk.sh outquery //release:opentitan)
+      PKG_PATH=$(./bazelisk.sh outquery //release:opentitan --define bitstream=vivado)
       echo $PKG_PATH
       echo "##vso[task.setvariable variable=pkg_path]$PKG_PATH"
     displayName: "Build Bazel release package"
