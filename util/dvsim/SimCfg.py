@@ -455,13 +455,15 @@ class SimCfg(FlowCfg):
         if len(self.builds) == 1:
             self.primary_build_mode = self.builds[0].name
 
-        # Check self.primary_build_mode is set correctly.
-        build_mode_names = set(b.name for b in self.builds)
-        if self.primary_build_mode not in build_mode_names:
-            log.error(f"\"primary_build_mode: {self.primary_build_mode}\" "
-                      f"in {self.name} cfg is invalid. Please pick from "
-                      f"{build_mode_names}.")
-            sys.exit(1)
+        # If there will be any builds, make sure that self.primary_build_mode
+        # is reasonable.
+        if self.builds:
+            build_mode_names = set(b.name for b in self.builds)
+            if self.primary_build_mode not in build_mode_names:
+                log.error(f"\"primary_build_mode: {self.primary_build_mode}\" "
+                          f"in {self.name} cfg is invalid. Please pick from "
+                          f"{build_mode_names}.")
+                sys.exit(1)
 
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
