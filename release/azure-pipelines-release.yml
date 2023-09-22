@@ -39,6 +39,9 @@ jobs:
   steps:
   - checkout: self
     path: opentitan-repo
+    # Disable Azure's default shallow checkout since the bitstream cache uses
+    # the git history
+    fetchDepth: 0
   - bash: |
       tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo.tar.gz .
     displayName: "Pack up repository"
