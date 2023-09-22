@@ -5,17 +5,15 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -34,11 +32,10 @@ OTTF_DEFINE_TEST_CONFIG();
  * Since fatal events do not stop firing once asserted,
  * this test performs a self reset after every fatal
  * event.  In order to keep track of how far the test
- * has advanced, a non-volatile counter in flash is
- * used to track current progress.
+ * has advanced, a non-volatile counter in retention
+ * sram is used to track current progress.
  */
 static dif_rstmgr_t rstmgr;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_sensor_ctrl_t sensor_ctrl;
 static dif_alert_handler_t alert_handler;
 
@@ -143,9 +140,8 @@ static uint32_t get_next_event_to_test(void) {
   rand_testutils_reseed();
   do {
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterEventIdx, &event_idx));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterEventIdx));
+        ret_sram_testutils_counter_get(kCounterEventIdx, &event_idx));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterEventIdx));
     // Drop each event randomly to reduce run time.
   } while (rand_testutils_gen32() <= UINT32_MAX >> 1 &&
            event_idx < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS);
@@ -153,11 +149,6 @@ static uint32_t get_next_event_to_test(void) {
 }
 
 bool test_main(void) {
-  // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
   // Initialize sensor_ctrl
   CHECK_DIF_OK(dif_sensor_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
@@ -179,21 +170,11 @@ bool test_main(void) {
       &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonFatalAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
   // Make sure we do not try to test more than half of all available events
   // in a single test.  Testing too many would just make the run time too
   // long.
   uint32_t value = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNumTests, &value));
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterNumTests, &value));
   uint32_t event_idx = get_next_event_to_test();
   if (event_idx == SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS ||
       value >= kNumTestsMax) {
@@ -209,9 +190,8 @@ bool test_main(void) {
   // test fatal event
   test_event(event_idx, /*fatal*/ kDifToggleEnabled);
 
-  // increment flash counter to know where we are
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterNumTests));
+  // increment non-volatile counter to know where we are
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterNumTests));
 
   // Now request system to reset and test again
   LOG_INFO("Rebooting system");

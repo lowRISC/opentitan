@@ -16,7 +16,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -200,8 +200,17 @@ bool test_main(void) {
 
     // Starting clock.
     dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
+    uint32_t prev_value = 0;
     uint32_t value = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &value));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
+    for (int i = 0; i < 20; ++i) {
+      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+      CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &value));
+      CHECK(value == prev_value + 1);
+      prev_value = value;
+    }
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &value));
     LOG_INFO("Next clock to test %d", value);
 
     test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
@@ -212,7 +221,7 @@ bool test_main(void) {
   } else if (UNWRAP(rstmgr_testutils_is_reset_info(
                  &rstmgr, kDifRstmgrResetInfoWatchdog))) {
     dif_clkmgr_gateable_clock_t clock = {0};
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
 
     size_t actual_size;
@@ -239,10 +248,10 @@ bool test_main(void) {
              (uint32_t)expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
 
     if (clock < kTopEarlgreyGateableClocksLast) {
-      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
+      CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));

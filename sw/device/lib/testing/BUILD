@@ -374,6 +374,19 @@ cc_library(
 )
 
 cc_library(
+    name = "ret_sram_testutils",
+    srcs = ["ret_sram_testutils.c"],
+    hdrs = ["ret_sram_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+cc_library(
     name = "spi_device_testutils",
     srcs = ["spi_device_testutils.c"],
     hdrs = ["spi_device_testutils.h"],
