@@ -994,10 +994,6 @@ module chip_darjeeling_cw310 #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
-  // otp DFT
-  prim_otp_cfg_pkg::otp_cfg_t     otp_cfg = '0;
-  prim_otp_cfg_pkg::otp_cfg_rsp_t otp_cfg_rsp;
-
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
   entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
