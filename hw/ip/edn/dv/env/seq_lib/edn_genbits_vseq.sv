@@ -11,6 +11,8 @@ class edn_genbits_vseq extends edn_base_vseq;
 
   uint   num_requesters, extra_requester, num_boot_reqs, num_auto_reqs,
          num_ep_reqs, num_cs_reqs, num_reqs_between_reseeds, endpoint_q[$];
+  state_e exp_state;
+  csrng_pkg::acmd_e acmd;
 
   task body();
     super.body();
@@ -100,9 +102,39 @@ class edn_genbits_vseq extends edn_base_vseq;
       end
     end
 
-    // Disable auto_req_mode after 2 reseeds
     if (cfg.auto_req_mode == MuBi4True) begin
-      wait (cfg.m_csrng_agent_cfg.reseed_cnt == 2)
+      // Get random auto mode state
+      if (num_reqs_between_reseeds) begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
+                                           exp_state inside {AutoDispatch, AutoCaptGenCnt,
+                                                             AutoSendGenCmd, AutoCaptReseedCnt,
+                                                             AutoSendReseedCmd, AutoAckWait};)
+      // If num_reqs_between_reseeds is 0 we will never enter the auto generate states
+      end else begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
+                                           exp_state inside {AutoDispatch, AutoCaptReseedCnt,
+                                                             AutoSendReseedCmd, AutoAckWait};)
+      end
+
+      // write a random sw command to the sw_cmd_req register
+      // this command should not be allowed to appear at the CSRNG cmd interface
+      `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s",
+                                exp_state.name()), UVM_HIGH)
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(exp_state), .backdoor(1'b1));
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(acmd,
+                                         acmd inside {csrng_pkg::INS, csrng_pkg::GEN,
+                                                      csrng_pkg::RES, csrng_pkg::UPD,
+                                                      csrng_pkg::UNI};)
+      csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
+      for (int i = 0; i < clen; i++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+        csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
+      end
+      // Disable auto_req_mode after at least 2 reseeds
+      wait (cfg.m_csrng_agent_cfg.reseed_cnt >= 2)
       ral.ctrl.auto_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
       // Give the hardware time to quiesce
