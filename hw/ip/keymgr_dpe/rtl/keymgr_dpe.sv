@@ -751,7 +751,7 @@ module keymgr_dpe
   logic unused_slot_policy_regwen;
   assign unused_slot_policy = reg2hw.slot_policy;
   assign unused_slot_policy_regwen = reg2hw.slot_policy_regwen.q;
-  assign hw2reg.slot_policy_regwen = 1'b0;
+  assign hw2reg.slot_policy_regwen = 1'b1;
   keymgr_dpe_policy_t unused_active_policy;
   assign unused_active_policy = active_key_slot.key_policy;
 
