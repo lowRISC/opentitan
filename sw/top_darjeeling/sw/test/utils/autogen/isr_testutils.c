@@ -15,18 +15,14 @@
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
-#include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr_dpe/dif/dif_keymgr_dpe.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/mbx/dif/dif_mbx.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
-#include "sw/ip/pattgen/dif/dif_pattgen.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
@@ -36,7 +32,6 @@
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
@@ -289,92 +284,6 @@ void isr_testutils_edn_isr(
                                         plic_irq_id));
 }
 
-void isr_testutils_entropy_src_isr(
-    plic_isr_ctx_t plic_ctx, entropy_src_isr_ctx_t entropy_src_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_entropy_src_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_entropy_src_irq_t irq =
-      (dif_entropy_src_irq_t)(plic_irq_id -
-                              entropy_src_ctx.plic_entropy_src_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (entropy_src_ctx.is_only_irq) {
-    dif_entropy_src_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(
-        dif_entropy_src_irq_get_state(entropy_src_ctx.entropy_src, &snapshot));
-    CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
-          "Only entropy_src IRQ %d expected to fire. Actual IRQ state = %x",
-          irq, snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(
-      dif_entropy_src_irq_get_type(entropy_src_ctx.entropy_src, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(
-        dif_entropy_src_irq_acknowledge(entropy_src_ctx.entropy_src, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
-void isr_testutils_flash_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_flash_ctrl_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_flash_ctrl_irq_t irq =
-      (dif_flash_ctrl_irq_t)(plic_irq_id -
-                             flash_ctrl_ctx.plic_flash_ctrl_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (flash_ctrl_ctx.is_only_irq) {
-    dif_flash_ctrl_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(
-        dif_flash_ctrl_irq_get_state(flash_ctrl_ctx.flash_ctrl, &snapshot));
-    CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
-          "Only flash_ctrl IRQ %d expected to fire. Actual IRQ state = %x", irq,
-          snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(
-      dif_flash_ctrl_irq_get_type(flash_ctrl_ctx.flash_ctrl, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(
-        dif_flash_ctrl_irq_acknowledge(flash_ctrl_ctx.flash_ctrl, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
 void isr_testutils_gpio_isr(
     plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
@@ -485,45 +394,6 @@ void isr_testutils_i2c_isr(
   CHECK_DIF_OK(dif_i2c_irq_get_type(i2c_ctx.i2c, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_i2c_irq_acknowledge(i2c_ctx.i2c, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
-void isr_testutils_keymgr_isr(
-    plic_isr_ctx_t plic_ctx, keymgr_isr_ctx_t keymgr_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_keymgr_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_keymgr_irq_t irq =
-      (dif_keymgr_irq_t)(plic_irq_id - keymgr_ctx.plic_keymgr_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (keymgr_ctx.is_only_irq) {
-    dif_keymgr_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(dif_keymgr_irq_get_state(keymgr_ctx.keymgr, &snapshot));
-    CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
-          "Only keymgr IRQ %d expected to fire. Actual IRQ state = %x", irq,
-          snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(dif_keymgr_irq_get_type(keymgr_ctx.keymgr, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(dif_keymgr_irq_acknowledge(keymgr_ctx.keymgr, irq));
   }
 
   // Complete the IRQ at the PLIC.
@@ -724,45 +594,6 @@ void isr_testutils_otp_ctrl_isr(
   CHECK_DIF_OK(dif_otp_ctrl_irq_get_type(otp_ctrl_ctx.otp_ctrl, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(otp_ctrl_ctx.otp_ctrl, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
-void isr_testutils_pattgen_isr(
-    plic_isr_ctx_t plic_ctx, pattgen_isr_ctx_t pattgen_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_pattgen_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_pattgen_irq_t irq =
-      (dif_pattgen_irq_t)(plic_irq_id - pattgen_ctx.plic_pattgen_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (pattgen_ctx.is_only_irq) {
-    dif_pattgen_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(dif_pattgen_irq_get_state(pattgen_ctx.pattgen, &snapshot));
-    CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
-          "Only pattgen IRQ %d expected to fire. Actual IRQ state = %x", irq,
-          snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(dif_pattgen_irq_get_type(pattgen_ctx.pattgen, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(dif_pattgen_irq_acknowledge(pattgen_ctx.pattgen, irq));
   }
 
   // Complete the IRQ at the PLIC.
@@ -1092,45 +923,6 @@ void isr_testutils_uart_isr(
   CHECK_DIF_OK(dif_uart_irq_get_type(uart_ctx.uart, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_uart_irq_acknowledge(uart_ctx.uart, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
-void isr_testutils_usbdev_isr(
-    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_usbdev_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_usbdev_irq_t irq =
-      (dif_usbdev_irq_t)(plic_irq_id - usbdev_ctx.plic_usbdev_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (usbdev_ctx.is_only_irq) {
-    dif_usbdev_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(dif_usbdev_irq_get_state(usbdev_ctx.usbdev, &snapshot));
-    CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
-          "Only usbdev IRQ %d expected to fire. Actual IRQ state = %x", irq,
-          snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(dif_usbdev_irq_get_type(usbdev_ctx.usbdev, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(dif_usbdev_irq_acknowledge(usbdev_ctx.usbdev, irq));
   }
 
   // Complete the IRQ at the PLIC.

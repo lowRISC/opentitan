@@ -37,7 +37,6 @@ def main():
         "--topcfg_path",
         "-t",
         type=Path,
-        default=(REPO_TOP / "hw/top_earlgrey/data/top_earlgrey.hjson"),
         help="path of the top hjson file.",
     )
     args = parser.parse_args()
@@ -52,6 +51,7 @@ def main():
     templated_modules = topgen_lib.get_templated_modules(topcfg)
     ipgen_modules = topgen_lib.get_ipgen_modules(topcfg)
     reggen_top_modules = topgen_lib.get_top_reggen_modules(topcfg)
+    top_modules = {module["type"] for module in topcfg["module"]}
 
     # Define autogen DIF directory.
     autogen_dif_directory = REPO_TOP / "sw/ip"
@@ -68,6 +68,9 @@ def main():
         # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
         # case snake mode (i.e., uart).
         ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
+        # Only generate testutils for modules that are part of the toplevel
+        if ip_name_snake not in top_modules:
+            continue
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
         ips_with_difs.append(

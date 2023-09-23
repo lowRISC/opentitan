@@ -255,6 +255,15 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         -- "rdeps(//..., kind(bitstream_splice, //...))" \
         >> "${TARGET_PATTERN_FILE}"
+      # Exclude all tests that are dependent on 'flash_ctrl' and 'keymgr' blocks (via their DIfs), as these
+      # blocks have been removed from the darjeeling top_level.
+      # TODO: make this more generic / follow a plan for multitop software builds
+      ./bazelisk.sh cquery \
+        --noinclude_aspects \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        -- "rdeps(//..., set(//sw/top_darjeeling/sw/dif:flash_ctrl //sw/top_darjeeling/sw/dif:keymgr))" \
+        >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh build \
         --build_tests_only=false \
         --define DISABLE_VERILATOR_BUILD=true \

@@ -19,18 +19,14 @@
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
-#include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr_dpe/dif/dif_keymgr_dpe.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/mbx/dif/dif_mbx.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
-#include "sw/ip/pattgen/dif/dif_pattgen.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
@@ -40,7 +36,6 @@
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
@@ -192,50 +187,6 @@ typedef struct edn_isr_ctx {
 } edn_isr_ctx_t;
 
 /**
- * A handle to a entropy_src ISR context struct.
- */
-typedef struct entropy_src_isr_ctx {
-  /**
-   * A handle to a entropy_src.
-   */
-  dif_entropy_src_t *entropy_src;
-  /**
-   * The PLIC IRQ ID where this entropy_src instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_entropy_src_start_irq_id;
-  /**
-   * The entropy_src IRQ that is expected to be encountered in the ISR.
-   */
-  dif_entropy_src_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} entropy_src_isr_ctx_t;
-
-/**
- * A handle to a flash_ctrl ISR context struct.
- */
-typedef struct flash_ctrl_isr_ctx {
-  /**
-   * A handle to a flash_ctrl.
-   */
-  dif_flash_ctrl_t *flash_ctrl;
-  /**
-   * The PLIC IRQ ID where this flash_ctrl instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_flash_ctrl_start_irq_id;
-  /**
-   * The flash_ctrl IRQ that is expected to be encountered in the ISR.
-   */
-  dif_flash_ctrl_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} flash_ctrl_isr_ctx_t;
-
-/**
  * A handle to a gpio ISR context struct.
  */
 typedef struct gpio_isr_ctx {
@@ -300,28 +251,6 @@ typedef struct i2c_isr_ctx {
    */
   bool is_only_irq;
 } i2c_isr_ctx_t;
-
-/**
- * A handle to a keymgr ISR context struct.
- */
-typedef struct keymgr_isr_ctx {
-  /**
-   * A handle to a keymgr.
-   */
-  dif_keymgr_t *keymgr;
-  /**
-   * The PLIC IRQ ID where this keymgr instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_keymgr_start_irq_id;
-  /**
-   * The keymgr IRQ that is expected to be encountered in the ISR.
-   */
-  dif_keymgr_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} keymgr_isr_ctx_t;
 
 /**
  * A handle to a keymgr_dpe ISR context struct.
@@ -432,28 +361,6 @@ typedef struct otp_ctrl_isr_ctx {
    */
   bool is_only_irq;
 } otp_ctrl_isr_ctx_t;
-
-/**
- * A handle to a pattgen ISR context struct.
- */
-typedef struct pattgen_isr_ctx {
-  /**
-   * A handle to a pattgen.
-   */
-  dif_pattgen_t *pattgen;
-  /**
-   * The PLIC IRQ ID where this pattgen instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_pattgen_start_irq_id;
-  /**
-   * The pattgen IRQ that is expected to be encountered in the ISR.
-   */
-  dif_pattgen_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} pattgen_isr_ctx_t;
 
 /**
  * A handle to a pwrmgr ISR context struct.
@@ -632,28 +539,6 @@ typedef struct uart_isr_ctx {
 } uart_isr_ctx_t;
 
 /**
- * A handle to a usbdev ISR context struct.
- */
-typedef struct usbdev_isr_ctx {
-  /**
-   * A handle to a usbdev.
-   */
-  dif_usbdev_t *usbdev;
-  /**
-   * The PLIC IRQ ID where this usbdev instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_usbdev_start_irq_id;
-  /**
-   * The usbdev IRQ that is expected to be encountered in the ISR.
-   */
-  dif_usbdev_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} usbdev_isr_ctx_t;
-
-/**
  * Services an adc_ctrl IRQ.
  *
  * @param plic_ctx A PLIC ISR context handle.
@@ -738,34 +623,6 @@ void isr_testutils_edn_isr(
     dif_edn_irq_t *irq_serviced);
 
 /**
- * Services an entropy_src IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param entropy_src_ctx A(n) entropy_src ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_entropy_src_isr(
-    plic_isr_ctx_t plic_ctx, entropy_src_isr_ctx_t entropy_src_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_entropy_src_irq_t *irq_serviced);
-
-/**
- * Services an flash_ctrl IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param flash_ctrl_ctx A(n) flash_ctrl ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_flash_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_flash_ctrl_irq_t *irq_serviced);
-
-/**
  * Services an gpio IRQ.
  *
  * @param plic_ctx A PLIC ISR context handle.
@@ -806,20 +663,6 @@ void isr_testutils_i2c_isr(
     plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_i2c_irq_t *irq_serviced);
-
-/**
- * Services an keymgr IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param keymgr_ctx A(n) keymgr ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_keymgr_isr(
-    plic_isr_ctx_t plic_ctx, keymgr_isr_ctx_t keymgr_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_keymgr_irq_t *irq_serviced);
 
 /**
  * Services an keymgr_dpe IRQ.
@@ -890,20 +733,6 @@ void isr_testutils_otp_ctrl_isr(
     plic_isr_ctx_t plic_ctx, otp_ctrl_isr_ctx_t otp_ctrl_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_otp_ctrl_irq_t *irq_serviced);
-
-/**
- * Services an pattgen IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param pattgen_ctx A(n) pattgen ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_pattgen_isr(
-    plic_isr_ctx_t plic_ctx, pattgen_isr_ctx_t pattgen_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_pattgen_irq_t *irq_serviced);
 
 /**
  * Services an pwrmgr IRQ.
@@ -1016,19 +845,5 @@ void isr_testutils_uart_isr(
     plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_uart_irq_t *irq_serviced);
-
-/**
- * Services an usbdev IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param usbdev_ctx A(n) usbdev ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_usbdev_isr(
-    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_usbdev_irq_t *irq_serviced);
 
 #endif  // OPENTITAN_SW_TOP_DARJEELING_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_

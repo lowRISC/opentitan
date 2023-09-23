@@ -96,6 +96,7 @@ def main():
     templated_modules = lib.get_templated_modules(topcfg)
     ipgen_modules = lib.get_ipgen_modules(topcfg)
     reggen_top_modules = lib.get_top_reggen_modules(topcfg)
+    top_modules = {module["type"] for module in topcfg["module"]}
 
     # Check for regeneration mode (used in CI check:
     # ci/scripts/check-generated.sh)
@@ -203,7 +204,10 @@ def main():
 
     # Render testutils templates.
     if args.mode == "regen" or "autogen" in args.only:
-        gen_testutils(topcfg['name'], ips)
+        # Only generate testutils for modules that are part of the toplevel
+        top_ips = [ip for ip in ips
+                   if ip.name_snake in top_modules]
+        gen_testutils(topcfg['name'], top_ips)
 
 
 if __name__ == "__main__":
