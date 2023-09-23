@@ -1382,6 +1382,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/autogen/{top_chip}:plic_all_irqs_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_timeout_mins: 120
     }
     {
       name: chip_sw_plic_sw_irq
