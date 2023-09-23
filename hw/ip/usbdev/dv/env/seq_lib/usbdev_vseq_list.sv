@@ -6,3 +6,4 @@
 `include "usbdev_common_vseq.sv"
 `include "usbdev_csr_test_vseq.sv"
 `include "usbdev_smoke_vseq.sv"
+`include "usbdev_osc_test_vseq.sv"
