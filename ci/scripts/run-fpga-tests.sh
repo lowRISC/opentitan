@@ -37,13 +37,15 @@ export BITSTREAM="--offline --list ${SHA}"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
-trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x' EXIT
+# Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
+trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
 
 # In case tests update OTP or otherwise leave state on the FPGA we should start
 # by clearing the bitstream.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
 # anyway).
+# Note that the hyperdebug backend does not have the set-pll command so this will fail but not trigger an error.
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
