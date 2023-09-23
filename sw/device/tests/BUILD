@@ -1071,7 +1071,6 @@ opentitan_functest(
     srcs = ["gpio_pinmux_test.c"],
     cw310 = cw310_params(
         interface = "hyper310",
-        tags = ["manual"],
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
@@ -2795,7 +2794,6 @@ opentitan_functest(
     srcs = ["spi_device_ottf_console_test.c"],
     cw310 = cw310_params(
         interface = "hyper310",
-        tags = ["manual"],
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
@@ -2822,7 +2820,6 @@ opentitan_functest(
         # This test needs hyperdebug to serve as I2C host to OpenTitan's
         # I2C target device.
         interface = "hyper310",
-        tags = ["manual"],
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
             "--bootstrap=\"$(location {flash})\"",
