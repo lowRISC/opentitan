@@ -1198,7 +1198,7 @@ module chip_darjeeling_cw310 #(
     .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(320),
     .SecKmacIdleAcceptSwMsg(1'b1),
-    .KeymgrKmacEnMasking(0),
+    .KeymgrDpeKmacEnMasking(0),
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),

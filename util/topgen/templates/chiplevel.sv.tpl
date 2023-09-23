@@ -1391,7 +1391,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(320),
     .SecKmacIdleAcceptSwMsg(1'b1),
+% if top["name"] == "earlgrey":
     .KeymgrKmacEnMasking(0),
+% else:
+    .KeymgrDpeKmacEnMasking(0),
+% endif
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
@@ -1422,7 +1426,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
     .KmacEnMasking(1'b0),
+% if top["name"] == "earlgrey":
     .KeymgrKmacEnMasking(0),
+% else:
+    .KeymgrDpeKmacEnMasking(0),
+% endif
     .SecAesStartTriggerDelay(0),
     .SecAesAllowForcingMasks(1'b0),
     .SecAesSkipPRNGReseeding(1'b0),
