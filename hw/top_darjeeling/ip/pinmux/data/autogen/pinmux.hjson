@@ -356,7 +356,7 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "51",
+      default: "50",
       local: "true"
     },
     { name: "NMioPeriphOut",
@@ -374,7 +374,7 @@
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "16",
+      default: "14",
       local: "true"
     },
     { name: "NWkupDetect",

@@ -53,7 +53,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:spi_host",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
@@ -99,7 +98,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
     ],
 )

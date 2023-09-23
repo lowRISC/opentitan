@@ -316,23 +316,6 @@
  */
 #define TOP_DARJEELING_SPI_HOST1_SIZE_BYTES 0x40
 /**
- * Peripheral base address for usbdev in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_USBDEV_BASE_ADDR 0x32010000
-
-/**
- * Peripheral size for usbdev in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_USBDEV_BASE_ADDR and
- * `TOP_DARJEELING_USBDEV_BASE_ADDR + TOP_DARJEELING_USBDEV_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_USBDEV_SIZE_BYTES 0x1000
-/**
  * Peripheral base address for pwrmgr_aon in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1089,7 +1072,7 @@
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
 #define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000
-#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x10F11000
+#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x10F00040
 
 #endif  // __ASSEMBLER__
 

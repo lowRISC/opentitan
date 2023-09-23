@@ -37,9 +37,6 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_host1", '{
         '{32'h32000000, 32'h3200003f}
     }},
-    '{"usbdev", '{
-        '{32'h32010000, 32'h32010fff}
-    }},
     '{"hmac", '{
         '{32'h21110000, 32'h21110fff}
     }},
@@ -135,7 +132,6 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "spi_host1",
-        "usbdev",
         "aes",
         "csrng",
         "edn0",
@@ -173,7 +169,6 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "spi_host1",
-        "usbdev",
         "aes",
         "csrng",
         "edn0",

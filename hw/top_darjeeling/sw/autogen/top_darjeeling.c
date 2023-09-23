@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[180] = {
+    top_darjeeling_plic_interrupt_for_peripheral[163] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -121,23 +121,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdSpiHost0SpiEvent] = kTopDarjeelingPlicPeripheralSpiHost0,
   [kTopDarjeelingPlicIrqIdSpiHost1Error] = kTopDarjeelingPlicPeripheralSpiHost1,
   [kTopDarjeelingPlicIrqIdSpiHost1SpiEvent] = kTopDarjeelingPlicPeripheralSpiHost1,
-  [kTopDarjeelingPlicIrqIdUsbdevPktReceived] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevPktSent] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevDisconnected] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevHostLost] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevLinkReset] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevLinkSuspend] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevLinkResume] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevAvEmpty] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevRxFull] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevAvOverflow] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevLinkInErr] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevRxCrcErr] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevRxPidErr] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevRxBitstuffErr] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevFrame] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevPowered] = kTopDarjeelingPlicPeripheralUsbdev,
-  [kTopDarjeelingPlicIrqIdUsbdevLinkOutErr] = kTopDarjeelingPlicPeripheralUsbdev,
   [kTopDarjeelingPlicIrqIdPwrmgrAonWakeup] = kTopDarjeelingPlicPeripheralPwrmgrAon,
   [kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected] = kTopDarjeelingPlicPeripheralSysrstCtrlAon,
   [kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone] = kTopDarjeelingPlicPeripheralAdcCtrlAon,
@@ -202,7 +185,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[85] = {
+    top_darjeeling_alert_for_peripheral[84] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -220,7 +203,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdLcCtrlFatalBusIntegError] = kTopDarjeelingAlertPeripheralLcCtrl,
   [kTopDarjeelingAlertIdSpiHost0FatalFault] = kTopDarjeelingAlertPeripheralSpiHost0,
   [kTopDarjeelingAlertIdSpiHost1FatalFault] = kTopDarjeelingAlertPeripheralSpiHost1,
-  [kTopDarjeelingAlertIdUsbdevFatalFault] = kTopDarjeelingAlertPeripheralUsbdev,
   [kTopDarjeelingAlertIdPwrmgrAonFatalFault] = kTopDarjeelingAlertPeripheralPwrmgrAon,
   [kTopDarjeelingAlertIdRstmgrAonFatalFault] = kTopDarjeelingAlertPeripheralRstmgrAon,
   [kTopDarjeelingAlertIdRstmgrAonFatalCnstyFault] = kTopDarjeelingAlertPeripheralRstmgrAon,

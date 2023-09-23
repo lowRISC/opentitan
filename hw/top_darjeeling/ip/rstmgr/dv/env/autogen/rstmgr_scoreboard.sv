@@ -108,8 +108,6 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       "sw_rst_ctrl_n_3": blocked = `gmv(ral.sw_rst_regwen[3]) == 0;
       "sw_rst_ctrl_n_4": blocked = `gmv(ral.sw_rst_regwen[4]) == 0;
       "sw_rst_ctrl_n_5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
-      "sw_rst_ctrl_n_6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
-      "sw_rst_ctrl_n_7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
       default:
         // No others are blocked.
         return 0;
@@ -251,30 +249,12 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
           cov.sw_rst_cg_wrap[5].sample(enable, item.a_data);
         end
       end
-      "sw_rst_ctrl_n_6": begin
-        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
-                  UVM_MEDIUM)
-        if (cfg.en_cov && addr_phase_write) begin
-          logic enable = ral.sw_rst_regwen[6].get();
-          cov.sw_rst_cg_wrap[6].sample(enable, item.a_data);
-        end
-      end
-      "sw_rst_ctrl_n_7": begin
-        `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
-                  UVM_MEDIUM)
-        if (cfg.en_cov && addr_phase_write) begin
-          logic enable = ral.sw_rst_regwen[7].get();
-          cov.sw_rst_cg_wrap[7].sample(enable, item.a_data);
-        end
-      end
       "sw_rst_regwen_0",
       "sw_rst_regwen_1",
       "sw_rst_regwen_2",
       "sw_rst_regwen_3",
       "sw_rst_regwen_4",
-      "sw_rst_regwen_5",
-      "sw_rst_regwen_6",
-      "sw_rst_regwen_7": begin
+      "sw_rst_regwen_5": begin
         // RW0C, so check.
       end
       default: begin

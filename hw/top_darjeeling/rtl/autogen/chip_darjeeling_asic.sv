@@ -17,8 +17,6 @@ module chip_darjeeling_asic #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
-  inout USB_P, // Manual Pad
-  inout USB_N, // Manual Pad
   `INOUT_AI CC1, // Manual Pad
   `INOUT_AI CC2, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
@@ -117,9 +115,12 @@ module chip_darjeeling_asic #(
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
+    // The use of these indexes is gated behind a parameter, but to synthesize they
+    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
+    // Hence, set to zero.
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO spi_host0_csb
@@ -135,9 +136,7 @@ module chip_darjeeling_asic #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
+      BidirStd  // DIO spi_host0_sd
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -201,7 +200,7 @@ module chip_darjeeling_asic #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [19-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -213,16 +212,12 @@ module chip_darjeeling_asic #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
-  logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
-  logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
   logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
   logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
-  pad_attr_t manual_attr_usb_p;
-  pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
   pad_attr_t manual_attr_cc2;
   pad_attr_t manual_attr_otp_ext_volt;
@@ -242,7 +237,7 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(21),
+    .NDioPads(19),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -265,8 +260,6 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadOtpExtVoltScanRole,
       scan_role_pkg::DioPadCc2ScanRole,
       scan_role_pkg::DioPadCc1ScanRole,
-      scan_role_pkg::DioPadUsbNScanRole,
-      scan_role_pkg::DioPadUsbPScanRole,
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
@@ -337,8 +330,6 @@ module chip_darjeeling_asic #(
       IoBankVcc, // OTP_EXT_VOLT
       IoBankAvcc, // CC2
       IoBankAvcc, // CC1
-      IoBankVcc, // USB_N
-      IoBankVcc, // USB_P
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -409,8 +400,6 @@ module chip_darjeeling_asic #(
       AnalogIn1, // OTP_EXT_VOLT
       InputStd, // CC2
       InputStd, // CC1
-      DualBidirTol, // USB_N
-      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -495,8 +484,6 @@ module chip_darjeeling_asic #(
 `else
       CC1,
 `endif
-      USB_N,
-      USB_P,
       POR_N
     }),
 
@@ -578,8 +565,6 @@ module chip_darjeeling_asic #(
         manual_in_otp_ext_volt,
         manual_in_cc2,
         manual_in_cc1,
-        manual_in_usb_n,
-        manual_in_usb_p,
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -601,8 +586,6 @@ module chip_darjeeling_asic #(
         manual_out_otp_ext_volt,
         manual_out_cc2,
         manual_out_cc1,
-        manual_out_usb_n,
-        manual_out_usb_p,
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -624,8 +607,6 @@ module chip_darjeeling_asic #(
         manual_oe_otp_ext_volt,
         manual_oe_cc2,
         manual_oe_cc1,
-        manual_oe_usb_n,
-        manual_oe_usb_p,
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -647,8 +628,6 @@ module chip_darjeeling_asic #(
         manual_attr_otp_ext_volt,
         manual_attr_cc2,
         manual_attr_cc1,
-        manual_attr_usb_n,
-        manual_attr_usb_p,
         manual_attr_por_n
       }),
 
@@ -874,7 +853,7 @@ module chip_darjeeling_asic #(
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_es_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni (rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -1204,45 +1183,6 @@ module chip_darjeeling_asic #(
     manual_in_otp_ext_volt
   };
 
-  ///////////////////////////////
-  // Differential USB Receiver //
-  ///////////////////////////////
-
-  // TODO: generalize this USB mux code and align with other tops.
-
-  // Connect the D+ pad
-  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the D- pads
-  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
-
-  logic usb_rx_d;
-
-  // Pullups and differential receiver enable
-  logic usb_dp_pullup_en, usb_dn_pullup_en;
-  logic usb_rx_enable;
-
-  prim_usb_diff_rx #(
-    .CalibW(ast_pkg::UsbCalibWidth)
-  ) u_prim_usb_diff_rx (
-    .input_pi          ( USB_P                 ),
-    .input_ni          ( USB_N                 ),
-    .input_en_i        ( usb_rx_enable         ),
-    .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i     ( usb_dp_pullup_en      ),
-    .pullup_n_en_i     ( usb_dn_pullup_en      ),
-    .calibration_i     ( usb_io_pu_cal         ),
-    .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
-    .input_o           ( usb_rx_d              )
-  );
 
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
@@ -1275,15 +1215,6 @@ module chip_darjeeling_asic #(
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .usb_dp_pullup_en_o           ( usb_dp_pullup_en           ),
-    .usb_dn_pullup_en_o           ( usb_dn_pullup_en           ),
-    .usbdev_usb_rx_d_i            ( usb_rx_d                   ),
-    .usbdev_usb_tx_d_o            (                            ),
-    .usbdev_usb_tx_se0_o          (                            ),
-    .usbdev_usb_tx_use_d_se0_o    (                            ),
-    .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val                ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),
@@ -1357,7 +1288,6 @@ module chip_darjeeling_asic #(
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
     .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
-    .usb_ram_2p_cfg_i             ( usb_ram_2p_cfg             ),
 
     .rom_cfg_i                    ( rom_cfg                    ),
 

@@ -63,8 +63,7 @@ with_unknown! {
         SysrstCtrlAonKey2In = 47,
         SysrstCtrlAonPwrbIn = 48,
         SysrstCtrlAonLidOpen = 49,
-        UsbdevSense = 50,
-        End = 51,
+        End = 50,
     }
 
     pub enum PinmuxInsel: u32 [default = Self::End] {
@@ -240,23 +239,21 @@ with_unknown! {
     }
 
     pub enum DirectPads: u32 [default = Self::End] {
-        UsbdevUsbDp = 0,
-        UsbdevUsbDn = 1,
-        SpiHost0Sd0 = 2,
-        SpiHost0Sd1 = 3,
-        SpiHost0Sd2 = 4,
-        SpiHost0Sd3 = 5,
-        SpiDeviceSd0 = 6,
-        SpiDeviceSd1 = 7,
-        SpiDeviceSd2 = 8,
-        SpiDeviceSd3 = 9,
-        SysrstCtrlAonEcRstL = 10,
-        SysrstCtrlAonFlashWpL = 11,
-        SpiDeviceSck = 12,
-        SpiDeviceCsb = 13,
-        SpiHost0Sck = 14,
-        SpiHost0Csb = 15,
-        End = 16,
+        SpiHost0Sd0 = 0,
+        SpiHost0Sd1 = 1,
+        SpiHost0Sd2 = 2,
+        SpiHost0Sd3 = 3,
+        SpiDeviceSd0 = 4,
+        SpiDeviceSd1 = 5,
+        SpiDeviceSd2 = 6,
+        SpiDeviceSd3 = 7,
+        SysrstCtrlAonEcRstL = 8,
+        SysrstCtrlAonFlashWpL = 9,
+        SpiDeviceSck = 10,
+        SpiDeviceCsb = 11,
+        SpiHost0Sck = 12,
+        SpiHost0Csb = 13,
+        End = 14,
     }
 
     pub enum MuxedPads: u32 [default = Self::End] {

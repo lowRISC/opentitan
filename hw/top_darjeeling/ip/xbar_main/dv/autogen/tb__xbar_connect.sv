@@ -49,7 +49,6 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(soc_proxy__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(soc_proxy__ctn, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_host1, dut, clk_spi_host1_i, rst_n)
-`CONNECT_TL_DEVICE_IF(usbdev, dut, clk_usb_i, rst_n)
 `CONNECT_TL_DEVICE_IF(hmac, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(kmac, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(aes, dut, clk_main_i, rst_n)

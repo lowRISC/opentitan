@@ -35,7 +35,6 @@
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -82,7 +81,6 @@ static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
-static dif_usbdev_t usbdev;
 static dif_rv_plic_t plic;
 static const top_darjeeling_plic_target_t kHart = kTopDarjeelingPlicTargetIbex0;
 
@@ -145,8 +143,6 @@ static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
 static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
 static volatile dif_uart_irq_t uart_irq_expected;
 static volatile dif_uart_irq_t uart_irq_serviced;
-static volatile dif_usbdev_irq_t usbdev_irq_expected;
-static volatile dif_usbdev_irq_t usbdev_irq_serviced;
 
 /**
  * Provides external IRQ handling for this test.
@@ -942,28 +938,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralUsbdev: {
-      dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUsbdevPktReceived);
-      CHECK(irq == usbdev_irq_expected,
-            "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
-            usbdev_irq_expected, irq);
-      usbdev_irq_serviced = irq;
-
-      dif_usbdev_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
-      CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
-            "Only usbdev IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
-      CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
-      break;
-    }
-
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -1084,9 +1058,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR);
-  CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
@@ -1130,7 +1101,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
   CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
   CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
-  CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(&usbdev));
 }
 
 /**
@@ -1179,8 +1149,6 @@ static void peripheral_irqs_enable(void) {
       (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_uart_irq_state_snapshot_t uart_irqs =
       (dif_uart_irq_state_snapshot_t)UINT_MAX;
-  dif_usbdev_irq_state_snapshot_t usbdev_irqs =
-      (dif_usbdev_irq_state_snapshot_t)UINT_MAX;
 
   CHECK_DIF_OK(
       dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
@@ -1254,8 +1222,6 @@ static void peripheral_irqs_enable(void) {
     CHECK_DIF_OK(
         dif_uart_irq_restore_all(&uart0, &uart_irqs));
   }
-  CHECK_DIF_OK(
-      dif_usbdev_irq_restore_all(&usbdev, &usbdev_irqs));
 }
 
 /**
@@ -1725,19 +1691,6 @@ static void peripheral_irqs_trigger(void) {
       IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
       LOG_INFO("IRQ %d from uart0 is serviced.", irq);
     }
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralUsbdev;
-  for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
-       irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
-    usbdev_irq_expected = irq;
-    LOG_INFO("Triggering usbdev IRQ %d.", irq);
-    CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(usbdev_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from usbdev is serviced.", irq);
   }
 }
 

@@ -157,8 +157,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       {
@@ -281,6 +281,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         shadowed: false
         sw: false
@@ -447,34 +448,6 @@
         path: rstmgr_aon_resets.rst_spi_host1_n
         parent: lc_src
         clock: io_div2
-      }
-      {
-        name: usb
-        gen: true
-        type: top
-        domains:
-        [
-          "0"
-        ]
-        shadowed: false
-        sw: true
-        path: rstmgr_aon_resets.rst_usb_n
-        parent: lc_src
-        clock: usb
-      }
-      {
-        name: usb_aon
-        gen: true
-        type: top
-        domains:
-        [
-          "0"
-        ]
-        shadowed: false
-        sw: true
-        path: rstmgr_aon_resets.rst_usb_aon_n
-        parent: lc_src
-        clock: aon
       }
       {
         name: i2c0
@@ -2304,298 +2277,6 @@
       }
     }
     {
-      name: usbdev
-      type: usbdev
-      clock_srcs:
-      {
-        clk_i: usb
-        clk_aon_i: aon
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: usb
-          domain: "0"
-        }
-        rst_aon_ni:
-        {
-          name: usb_aon
-          domain: "0"
-        }
-      }
-      param_decl:
-      {
-        RcvrWakeTimeUs: "100"
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_usb_peri
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      memory: {}
-      param_list:
-      [
-        {
-          name: Stub
-          desc: Stub out the core of entropy_src logic
-          type: bit
-          default: "0"
-          expose: "true"
-          name_top: UsbdevStub
-        }
-        {
-          name: RcvrWakeTimeUs
-          desc: Maximum number of microseconds for the differential receiver to become operational
-          type: int
-          default: "100"
-          expose: "true"
-          name_top: UsbdevRcvrWakeTimeUs
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: usb_rx_d
-          desc: USB RX data from an external differential receiver, if available
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_rx_d
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_tx_d
-          desc: USB transmit data value (not used if usb_tx_se0 is set)
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_tx_d
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_tx_se0
-          desc: Force transmission of a USB single-ended zero (i.e. both D+ and D- are low) regardless of usb_tx_d
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_tx_se0
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_tx_use_d_se0
-          desc: Use the usb_tx_d and usb_tx_se0 TX interface, instead of usb_dp_o and usb_dn_o
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_tx_use_d_se0
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_dp_pullup
-          desc: USB D+ pullup control
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_dp_pullup
-          index: -1
-        }
-        {
-          name: usb_dn_pullup
-          desc: USB D- pullup control
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_dn_pullup
-          index: -1
-        }
-        {
-          name: usb_rx_enable
-          desc: USB differential receiver enable
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_rx_enable
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_ref_val
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_ref_val
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_ref_pulse
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          external: true
-          top_signame: usbdev_usb_ref_pulse
-          conn_type: false
-          index: -1
-        }
-        {
-          name: usb_aon_suspend_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_aon_suspend_req
-          index: -1
-        }
-        {
-          name: usb_aon_wake_ack
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_aon_wake_ack
-          index: -1
-        }
-        {
-          name: usb_aon_bus_reset
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_aon_bus_reset
-          index: -1
-        }
-        {
-          name: usb_aon_sense_lost
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: usbdev_usb_aon_sense_lost
-          index: -1
-        }
-        {
-          name: usb_aon_wake_detect_active
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          default: ""
-          package: ""
-          top_signame: pinmux_aon_usbdev_wake_detect_active
-          index: -1
-        }
-        {
-          name: ram_cfg
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          default: ""
-          top_signame: ast_usb_ram_2p_cfg
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: usbdev
-          default: ""
-          end_idx: -1
-          top_signame: usbdev_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x32010000
-        }
-      }
-    }
-    {
       name: pwrmgr_aon
       type: pwrmgr
       clock_group: powerup
@@ -3656,7 +3337,7 @@
       attr: templated
       param_decl:
       {
-        UsbWkupModuleEn: "1"
+        UsbWkupModuleEn: "0"
         HwStrapSamplingEn: "0"
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
       }
@@ -3672,7 +3353,7 @@
           name: UsbWkupModuleEn
           desc: Set to 1 to instantiate the USB wake submodule.
           type: bit
-          default: "1"
+          default: "0"
           expose: "true"
           name_top: PinmuxAonUsbWkupModuleEn
         }
@@ -3919,9 +3600,6 @@
           act: rcv
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          package: ""
-          top_signame: usbdev_usb_dp_pullup
           index: -1
         }
         {
@@ -3932,9 +3610,6 @@
           act: rcv
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          package: ""
-          top_signame: usbdev_usb_dn_pullup
           index: -1
         }
         {
@@ -3946,10 +3621,6 @@
           width: 1
           default: 1'b0
           inst_name: pinmux_aon
-          package: ""
-          external: true
-          top_signame: usb_dp_pullup_en
-          conn_type: false
           index: -1
         }
         {
@@ -3961,10 +3632,6 @@
           width: 1
           default: 1'b0
           inst_name: pinmux_aon
-          package: ""
-          external: true
-          top_signame: usb_dn_pullup_en
-          conn_type: false
           index: -1
         }
         {
@@ -3988,9 +3655,6 @@
           act: rcv
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          package: ""
-          top_signame: usbdev_usb_aon_suspend_req
           index: -1
         }
         {
@@ -4001,9 +3665,6 @@
           act: rcv
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          package: ""
-          top_signame: usbdev_usb_aon_wake_ack
           index: -1
         }
         {
@@ -4015,8 +3676,6 @@
           width: 1
           default: 1'b0
           inst_name: pinmux_aon
-          package: ""
-          top_signame: usbdev_usb_aon_bus_reset
           index: -1
         }
         {
@@ -4028,8 +3687,6 @@
           width: 1
           default: 1'b0
           inst_name: pinmux_aon
-          package: ""
-          top_signame: usbdev_usb_aon_sense_lost
           index: -1
         }
         {
@@ -4041,10 +3698,6 @@
           width: 1
           default: 1'b0
           inst_name: pinmux_aon
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: pinmux_aon_usbdev_wake_detect_active
           index: -1
         }
         {
@@ -4254,7 +3907,7 @@
         }
         rst_ast_usb_ni:
         {
-          name: usb
+          name: por_usb
           domain: "0"
         }
       }
@@ -9422,22 +9075,6 @@
           conn_type: true
         }
         {
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
-          type: uni
-          name: usb_ram_2p_cfg
-          act: rcv
-          inst_name: ast
-          width: 1
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ast_usb_ram_2p_cfg
-          index: -1
-          external: true
-          conn_type: true
-        }
-        {
           struct: rom_cfg
           package: prim_rom_pkg
           type: uni
@@ -9491,10 +9128,6 @@
       ast.spi_ram_2p_cfg:
       [
         spi_device.ram_cfg
-      ]
-      ast.usb_ram_2p_cfg:
-      [
-        usbdev.ram_cfg
       ]
       ast.rom_cfg:
       [
@@ -9598,34 +9231,6 @@
       otbn.lc_rma_ack:
       [
         lc_ctrl.lc_flash_rma_ack
-      ]
-      usbdev.usb_dp_pullup:
-      [
-        pinmux_aon.usbdev_dppullup_en
-      ]
-      usbdev.usb_dn_pullup:
-      [
-        pinmux_aon.usbdev_dnpullup_en
-      ]
-      usbdev.usb_aon_suspend_req:
-      [
-        pinmux_aon.usbdev_suspend_req
-      ]
-      usbdev.usb_aon_wake_ack:
-      [
-        pinmux_aon.usbdev_wake_ack
-      ]
-      usbdev.usb_aon_bus_reset:
-      [
-        pinmux_aon.usbdev_bus_reset
-      ]
-      usbdev.usb_aon_sense_lost:
-      [
-        pinmux_aon.usbdev_sense_lost
-      ]
-      pinmux_aon.usbdev_wake_detect_active:
-      [
-        usbdev.usb_aon_wake_detect_active
       ]
       edn0.edn:
       [
@@ -9858,10 +9463,6 @@
       spi_host1.tl:
       [
         main.tl_spi_host1
-      ]
-      usbdev.tl:
-      [
-        main.tl_usbdev
       ]
       hmac.tl:
       [
@@ -10160,7 +9761,6 @@
       ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
       ast.spi_ram_2p_cfg: spi_ram_2p_cfg
-      ast.usb_ram_2p_cfg: usb_ram_2p_cfg
       ast.rom_cfg: rom_cfg
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.io_clk_byp_req: io_clk_byp_req
@@ -10215,8 +9815,6 @@
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
       pinmux_aon.dft_hold_tap_sel: dft_hold_tap_sel
-      pinmux_aon.usb_dppullup_en: usb_dp_pullup_en
-      pinmux_aon.usb_dnpullup_en: usb_dn_pullup_en
       pwrmgr_aon.pwr_ast: pwrmgr_ast
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
@@ -10237,13 +9835,6 @@
       soc_proxy.soc_intr_async: soc_intr_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
       spi_device.sck_monitor: sck_monitor
-      usbdev.usb_rx_d: ""
-      usbdev.usb_tx_d: ""
-      usbdev.usb_tx_se0: ""
-      usbdev.usb_tx_use_d_se0: ""
-      usbdev.usb_rx_enable: ""
-      usbdev.usb_ref_val: ""
-      usbdev.usb_ref_pulse: ""
     }
   }
   xbar:
@@ -10314,7 +9905,6 @@
           sram_ctrl_main.ram
           peri
           spi_host1
-          usbdev
           aes
           csrng
           edn0
@@ -10353,7 +9943,6 @@
           sram_ctrl_main.ram
           peri
           spi_host1
-          usbdev
           aes
           csrng
           edn0
@@ -10682,28 +10271,6 @@
                 hart: 0x32000000
               }
               size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
-        }
-        {
-          name: usbdev
-          type: device
-          clock: clk_usb_i
-          reset: rst_usb_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: usbdev
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x32010000
-              }
-              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -11710,18 +11277,6 @@
           inst_name: main
           default: ""
           top_signame: spi_host1_tl
-          index: -1
-        }
-        {
-          name: tl_usbdev
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: usbdev_tl
           index: -1
         }
         {
@@ -13390,31 +12945,13 @@
         idx: 0
       }
       {
-        name: USB_P
-        type: DualBidirTol
-        bank: VCC
-        connection: manual
-        desc: USB P signal
-        port_type: inout
-        idx: 1
-      }
-      {
-        name: USB_N
-        type: DualBidirTol
-        bank: VCC
-        connection: manual
-        desc: USB N signal
-        port_type: inout
-        idx: 2
-      }
-      {
         name: CC1
         type: InputStd
         bank: AVCC
         connection: manual
         desc: ADC input 1
         port_type: `INOUT_AI
-        idx: 3
+        idx: 1
       }
       {
         name: CC2
@@ -13423,7 +12960,7 @@
         connection: manual
         desc: ADC input 2
         port_type: `INOUT_AI
-        idx: 4
+        idx: 2
       }
       {
         name: OTP_EXT_VOLT
@@ -13432,7 +12969,7 @@
         connection: manual
         desc: OTP external voltage input
         port_type: inout
-        idx: 5
+        idx: 3
       }
       {
         name: SPI_HOST_D0
@@ -13441,7 +12978,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 6
+        idx: 4
       }
       {
         name: SPI_HOST_D1
@@ -13450,7 +12987,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 7
+        idx: 5
       }
       {
         name: SPI_HOST_D2
@@ -13459,7 +12996,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 8
+        idx: 6
       }
       {
         name: SPI_HOST_D3
@@ -13468,7 +13005,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 9
+        idx: 7
       }
       {
         name: SPI_HOST_CLK
@@ -13477,7 +13014,7 @@
         connection: direct
         desc: SPI host clock
         port_type: inout
-        idx: 10
+        idx: 8
       }
       {
         name: SPI_HOST_CS_L
@@ -13486,7 +13023,7 @@
         connection: direct
         desc: SPI host chip select
         port_type: inout
-        idx: 11
+        idx: 9
       }
       {
         name: SPI_DEV_D0
@@ -13495,7 +13032,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 12
+        idx: 10
       }
       {
         name: SPI_DEV_D1
@@ -13504,7 +13041,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 13
+        idx: 11
       }
       {
         name: SPI_DEV_D2
@@ -13513,7 +13050,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 14
+        idx: 12
       }
       {
         name: SPI_DEV_D3
@@ -13522,7 +13059,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 15
+        idx: 13
       }
       {
         name: SPI_DEV_CLK
@@ -13531,7 +13068,7 @@
         connection: direct
         desc: SPI device clock
         port_type: inout
-        idx: 16
+        idx: 14
       }
       {
         name: SPI_DEV_CS_L
@@ -13540,7 +13077,7 @@
         connection: direct
         desc: SPI device chip select
         port_type: inout
-        idx: 17
+        idx: 15
       }
       {
         name: IOA0
@@ -13936,7 +13473,7 @@
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
         port_type: inout
-        idx: 18
+        idx: 16
       }
       {
         name: IOR9
@@ -13945,7 +13482,7 @@
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
         port_type: inout
-        idx: 19
+        idx: 17
       }
       {
         name: IOR10
@@ -13989,22 +13526,6 @@
   {
     signals:
     [
-      {
-        instance: usbdev
-        port: usb_dp
-        connection: manual
-        pad: ""
-        desc: ""
-        attr: BidirStd
-      }
-      {
-        instance: usbdev
-        port: usb_dn
-        connection: manual
-        pad: ""
-        desc: ""
-        attr: BidirStd
-      }
       {
         instance: spi_host0
         port: sck
@@ -14285,41 +13806,11 @@
         desc: ""
         attr: ""
       }
-      {
-        instance: usbdev
-        port: sense
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
     ]
     num_wkup_detect: 8
     wkup_cnt_width: 8
     ios:
     [
-      {
-        name: usbdev_usb_dp
-        width: 1
-        type: inout
-        idx: -1
-        pad: ""
-        attr: BidirStd
-        connection: manual
-        desc: ""
-        glob_idx: 0
-      }
-      {
-        name: usbdev_usb_dn
-        width: 1
-        type: inout
-        idx: -1
-        pad: ""
-        attr: BidirStd
-        connection: manual
-        desc: ""
-        glob_idx: 1
-      }
       {
         name: spi_host0_sd
         width: 4
@@ -14329,7 +13820,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 2
+        glob_idx: 0
       }
       {
         name: spi_host0_sd
@@ -14340,7 +13831,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 3
+        glob_idx: 1
       }
       {
         name: spi_host0_sd
@@ -14351,7 +13842,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 4
+        glob_idx: 2
       }
       {
         name: spi_host0_sd
@@ -14362,7 +13853,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 5
+        glob_idx: 3
       }
       {
         name: spi_device_sd
@@ -14373,7 +13864,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 6
+        glob_idx: 4
       }
       {
         name: spi_device_sd
@@ -14384,7 +13875,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 7
+        glob_idx: 5
       }
       {
         name: spi_device_sd
@@ -14395,7 +13886,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 8
+        glob_idx: 6
       }
       {
         name: spi_device_sd
@@ -14406,7 +13897,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 9
+        glob_idx: 7
       }
       {
         name: gpio_gpio
@@ -14879,7 +14370,7 @@
         attr: BidirOd
         connection: direct
         desc: ""
-        glob_idx: 10
+        glob_idx: 8
       }
       {
         name: sysrst_ctrl_aon_flash_wp_l
@@ -14890,7 +14381,7 @@
         attr: BidirOd
         connection: direct
         desc: ""
-        glob_idx: 11
+        glob_idx: 9
       }
       {
         name: spi_device_sck
@@ -14901,7 +14392,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 12
+        glob_idx: 10
       }
       {
         name: spi_device_csb
@@ -14912,7 +14403,7 @@
         attr: InputStd
         connection: direct
         desc: ""
-        glob_idx: 13
+        glob_idx: 11
       }
       {
         name: uart0_rx
@@ -15003,17 +14494,6 @@
         glob_idx: 49
       }
       {
-        name: usbdev_sense
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 50
-      }
-      {
         name: spi_host0_sck
         width: 1
         type: output
@@ -15022,7 +14502,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 14
+        glob_idx: 12
       }
       {
         name: spi_host0_csb
@@ -15033,7 +14513,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 15
+        glob_idx: 13
       }
       {
         name: uart0_tx
@@ -15249,15 +14729,15 @@
     {
       dedicated:
       {
-        inouts: 12
+        inouts: 10
         inputs: 2
         outputs: 2
-        pads: 20
+        pads: 18
       }
       muxed:
       {
         inouts: 42
-        inputs: 9
+        inputs: 8
         outputs: 19
         pads: 47
       }
@@ -15354,8 +14834,6 @@
           CC1
           CC2
           OTP_EXT_VOLT
-          USB_P
-          USB_N
         ]
         add_pads:
         [
@@ -15373,78 +14851,6 @@
             bank: VCC
             connection: manual
             desc: Power-on reset button input
-            port_type: inout
-          }
-          {
-            name: IO_USB_CONNECT
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_DP_TX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_DN_TX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_D_RX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_DP_RX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_DN_RX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_OE_N
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_SPEED
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-            port_type: inout
-          }
-          {
-            name: IO_USB_SUSPEND
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
             port_type: inout
           }
           {
@@ -15629,7 +15035,6 @@
     alert_handler
     spi_host0
     spi_host1
-    usbdev
     pwrmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
@@ -16120,108 +15525,6 @@
       module_name: spi_host1
     }
     {
-      name: usbdev_pkt_received
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_pkt_sent
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_disconnected
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_host_lost
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_reset
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_suspend
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_resume
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_av_empty
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_full
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_av_overflow
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_in_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_crc_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_pid_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_rx_bitstuff_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_frame
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_powered
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
-      name: usbdev_link_out_err
-      width: 1
-      type: interrupt
-      module_name: usbdev
-    }
-    {
       name: pwrmgr_aon_wakeup
       width: 1
       type: interrupt
@@ -16517,7 +15820,6 @@
     lc_ctrl
     spi_host0
     spi_host1
-    usbdev
     pwrmgr_aon
     rstmgr_aon
     clkmgr_aon
@@ -16711,22 +16013,13 @@
       lpg_idx: 8
     }
     {
-      name: usbdev_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: usbdev
-      lpg_name: peri_usb_0
-      lpg_idx: 9
-    }
-    {
       name: pwrmgr_aon_fatal_fault
       width: 1
       type: alert
       async: "1"
       module_name: pwrmgr_aon
       lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 10
+      lpg_idx: 9
     }
     {
       name: rstmgr_aon_fatal_fault
@@ -16735,7 +16028,7 @@
       async: "1"
       module_name: rstmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rstmgr_aon_fatal_cnsty_fault
@@ -16744,7 +16037,7 @@
       async: "1"
       module_name: rstmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: clkmgr_aon_recov_fault
@@ -16753,7 +16046,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: clkmgr_aon_fatal_fault
@@ -16762,7 +16055,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: sysrst_ctrl_aon_fatal_fault
@@ -16771,7 +16064,7 @@
       async: "1"
       module_name: sysrst_ctrl_aon
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 11
     }
     {
       name: adc_ctrl_aon_fatal_fault
@@ -16780,7 +16073,7 @@
       async: "1"
       module_name: adc_ctrl_aon
       lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: pinmux_aon_fatal_fault
@@ -16789,7 +16082,7 @@
       async: "1"
       module_name: pinmux_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: aon_timer_aon_fatal_fault
@@ -16798,7 +16091,7 @@
       async: "1"
       module_name: aon_timer_aon
       lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: sensor_ctrl_recov_alert
@@ -16807,7 +16100,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 11
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -16816,7 +16109,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 11
     }
     {
       name: soc_proxy_fatal_alert_intg
@@ -16825,7 +16118,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_fatal_alert_external_0
@@ -16834,7 +16127,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_fatal_alert_external_1
@@ -16843,7 +16136,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_fatal_alert_external_2
@@ -16852,7 +16145,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_fatal_alert_external_3
@@ -16861,7 +16154,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_recov_alert_external_0
@@ -16870,7 +16163,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_recov_alert_external_1
@@ -16879,7 +16172,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_recov_alert_external_2
@@ -16888,7 +16181,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: soc_proxy_recov_alert_external_3
@@ -16897,7 +16190,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -16906,7 +16199,7 @@
       async: "1"
       module_name: sram_ctrl_ret_aon
       lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 17
+      lpg_idx: 16
     }
     {
       name: rv_dm_fatal_fault
@@ -16915,7 +16208,7 @@
       async: "1"
       module_name: rv_dm
       lpg_name: infra_sys_0
-      lpg_idx: 18
+      lpg_idx: 17
     }
     {
       name: rv_plic_fatal_fault
@@ -16924,7 +16217,7 @@
       async: "1"
       module_name: rv_plic
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: aes_recov_ctrl_update_err
@@ -16933,7 +16226,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 20
+      lpg_idx: 19
     }
     {
       name: aes_fatal_fault
@@ -16942,7 +16235,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 20
+      lpg_idx: 19
     }
     {
       name: hmac_fatal_fault
@@ -16951,7 +16244,7 @@
       async: "1"
       module_name: hmac
       lpg_name: hmac_trans_lc_0
-      lpg_idx: 21
+      lpg_idx: 20
     }
     {
       name: kmac_recov_operation_err
@@ -16960,7 +16253,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 22
+      lpg_idx: 21
     }
     {
       name: kmac_fatal_fault_err
@@ -16969,7 +16262,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 22
+      lpg_idx: 21
     }
     {
       name: otbn_fatal
@@ -16978,7 +16271,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 23
+      lpg_idx: 22
     }
     {
       name: otbn_recov
@@ -16987,7 +16280,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 23
+      lpg_idx: 22
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -16996,7 +16289,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -17005,7 +16298,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: csrng_recov_alert
@@ -17014,7 +16307,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: csrng_fatal_alert
@@ -17023,7 +16316,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: edn0_recov_alert
@@ -17032,7 +16325,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: edn0_fatal_alert
@@ -17041,7 +16334,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: edn1_recov_alert
@@ -17050,7 +16343,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: edn1_fatal_alert
@@ -17059,7 +16352,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -17068,7 +16361,7 @@
       async: "1"
       module_name: sram_ctrl_main
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: sram_ctrl_mbox_fatal_error
@@ -17077,7 +16370,7 @@
       async: "1"
       module_name: sram_ctrl_mbox
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rom_ctrl0_fatal
@@ -17086,7 +16379,7 @@
       async: "1"
       module_name: rom_ctrl0
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rom_ctrl1_fatal
@@ -17095,7 +16388,7 @@
       async: "1"
       module_name: rom_ctrl1
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: dma_fatal_fault
@@ -17104,7 +16397,7 @@
       async: "1"
       module_name: dma
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx0_fatal_fault
@@ -17113,7 +16406,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx0_recov_fault
@@ -17122,7 +16415,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx1_fatal_fault
@@ -17131,7 +16424,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx1_recov_fault
@@ -17140,7 +16433,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx2_fatal_fault
@@ -17149,7 +16442,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx2_recov_fault
@@ -17158,7 +16451,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx3_fatal_fault
@@ -17167,7 +16460,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx3_recov_fault
@@ -17176,7 +16469,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx4_fatal_fault
@@ -17185,7 +16478,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx4_recov_fault
@@ -17194,7 +16487,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx5_fatal_fault
@@ -17203,7 +16496,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx5_recov_fault
@@ -17212,7 +16505,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx6_fatal_fault
@@ -17221,7 +16514,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx6_recov_fault
@@ -17230,7 +16523,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx7_fatal_fault
@@ -17239,7 +16532,7 @@
       async: "1"
       module_name: mbx7
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx7_recov_fault
@@ -17248,7 +16541,7 @@
       async: "1"
       module_name: mbx7
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx_jtag_fatal_fault
@@ -17257,7 +16550,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx_jtag_recov_fault
@@ -17266,7 +16559,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx_pcie0_fatal_fault
@@ -17275,7 +16568,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: mbx_pcie0_recov_fault
@@ -17284,7 +16577,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -17293,7 +16586,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -17302,7 +16595,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -17311,7 +16604,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -17320,7 +16613,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
   ]
   exported_rsts: {}
@@ -17339,8 +16632,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17363,8 +16656,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17387,8 +16680,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17411,8 +16704,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17435,8 +16728,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17502,8 +16795,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -17526,38 +16819,14 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
       reset_connection:
       {
         name: spi_host1
-        domain: "0"
-      }
-    }
-    {
-      name: peri_usb_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_usb_peri
-      reset_connection:
-      {
-        name: usb
         domain: "0"
       }
     }
@@ -17646,8 +16915,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -19013,232 +18282,6 @@
         index: -1
       }
       {
-        name: usb_rx_d
-        desc: USB RX data from an external differential receiver, if available
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_rx_d
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_tx_d
-        desc: USB transmit data value (not used if usb_tx_se0 is set)
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_tx_d
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_tx_se0
-        desc: Force transmission of a USB single-ended zero (i.e. both D+ and D- are low) regardless of usb_tx_d
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_tx_se0
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_tx_use_d_se0
-        desc: Use the usb_tx_d and usb_tx_se0 TX interface, instead of usb_dp_o and usb_dn_o
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_tx_use_d_se0
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_dp_pullup
-        desc: USB D+ pullup control
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_dp_pullup
-        index: -1
-      }
-      {
-        name: usb_dn_pullup
-        desc: USB D- pullup control
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_dn_pullup
-        index: -1
-      }
-      {
-        name: usb_rx_enable
-        desc: USB differential receiver enable
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_rx_enable
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_ref_val
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_ref_val
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_ref_pulse
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        external: true
-        top_signame: usbdev_usb_ref_pulse
-        conn_type: false
-        index: -1
-      }
-      {
-        name: usb_aon_suspend_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_aon_suspend_req
-        index: -1
-      }
-      {
-        name: usb_aon_wake_ack
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_aon_wake_ack
-        index: -1
-      }
-      {
-        name: usb_aon_bus_reset
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_aon_bus_reset
-        index: -1
-      }
-      {
-        name: usb_aon_sense_lost
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: usbdev_usb_aon_sense_lost
-        index: -1
-      }
-      {
-        name: usb_aon_wake_detect_active
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        default: ""
-        package: ""
-        top_signame: pinmux_aon_usbdev_wake_detect_active
-        index: -1
-      }
-      {
-        name: ram_cfg
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        default: ""
-        top_signame: ast_usb_ram_2p_cfg
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: usbdev
-        default: ""
-        end_idx: -1
-        top_signame: usbdev_tl
-        index: -1
-      }
-      {
         name: pwr_ast
         struct: pwr_ast
         package: pwrmgr_pkg
@@ -20109,9 +19152,6 @@
         act: rcv
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        package: ""
-        top_signame: usbdev_usb_dp_pullup
         index: -1
       }
       {
@@ -20122,9 +19162,6 @@
         act: rcv
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        package: ""
-        top_signame: usbdev_usb_dn_pullup
         index: -1
       }
       {
@@ -20136,10 +19173,6 @@
         width: 1
         default: 1'b0
         inst_name: pinmux_aon
-        package: ""
-        external: true
-        top_signame: usb_dp_pullup_en
-        conn_type: false
         index: -1
       }
       {
@@ -20151,10 +19184,6 @@
         width: 1
         default: 1'b0
         inst_name: pinmux_aon
-        package: ""
-        external: true
-        top_signame: usb_dn_pullup_en
-        conn_type: false
         index: -1
       }
       {
@@ -20178,9 +19207,6 @@
         act: rcv
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        package: ""
-        top_signame: usbdev_usb_aon_suspend_req
         index: -1
       }
       {
@@ -20191,9 +19217,6 @@
         act: rcv
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        package: ""
-        top_signame: usbdev_usb_aon_wake_ack
         index: -1
       }
       {
@@ -20205,8 +19228,6 @@
         width: 1
         default: 1'b0
         inst_name: pinmux_aon
-        package: ""
-        top_signame: usbdev_usb_aon_bus_reset
         index: -1
       }
       {
@@ -20218,8 +19239,6 @@
         width: 1
         default: 1'b0
         inst_name: pinmux_aon
-        package: ""
-        top_signame: usbdev_usb_aon_sense_lost
         index: -1
       }
       {
@@ -20231,10 +19250,6 @@
         width: 1
         default: 1'b0
         inst_name: pinmux_aon
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: pinmux_aon_usbdev_wake_detect_active
         index: -1
       }
       {
@@ -23346,18 +22361,6 @@
         index: -1
       }
       {
-        name: tl_usbdev
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: usbdev_tl
-        index: -1
-      }
-      {
         name: tl_hmac
         struct: tl
         package: tlul_pkg
@@ -24170,22 +23173,6 @@
         conn_type: true
       }
       {
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
-        type: uni
-        name: usb_ram_2p_cfg
-        act: rcv
-        inst_name: ast
-        width: 1
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ast_usb_ram_2p_cfg
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
         struct: rom_cfg
         package: prim_rom_pkg
         type: uni
@@ -24327,18 +23314,6 @@
         conn_type: true
         index: -1
         netname: ast_spi_ram_2p_cfg
-      }
-      {
-        package: prim_ram_2p_pkg
-        struct: ram_2p_cfg
-        signame: usb_ram_2p_cfg_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: true
-        index: -1
-        netname: ast_usb_ram_2p_cfg
       }
       {
         package: prim_rom_pkg
@@ -25049,30 +24024,6 @@
         netname: dft_hold_tap_sel
       }
       {
-        package: ""
-        struct: logic
-        signame: usb_dp_pullup_en_o
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usb_dp_pullup_en
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usb_dn_pullup_en_o
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usb_dn_pullup_en
-      }
-      {
         package: pwrmgr_pkg
         struct: pwr_ast_req
         signame: pwrmgr_ast_req_o
@@ -25360,90 +24311,6 @@
         index: -1
         netname: sck_monitor
       }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_rx_d_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_rx_d
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_tx_d_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_tx_d
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_tx_se0_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_tx_se0
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_tx_use_d_se0_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_tx_use_d_se0
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_rx_enable_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_rx_enable
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_ref_val_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_val
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_ref_pulse_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_pulse
-      }
     ]
     definitions:
     [
@@ -25473,17 +24340,6 @@
         package: prim_ram_2p_pkg
         struct: ram_2p_cfg
         signame: ast_spi_ram_2p_cfg
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
-      }
-      {
-        package: prim_ram_2p_pkg
-        struct: ram_2p_cfg
-        signame: ast_usb_ram_2p_cfg
         width: 1
         type: uni
         end_idx: -1
@@ -25798,83 +24654,6 @@
         act: req
         suffix: ""
         default: lc_ctrl_pkg::Off
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_dp_pullup
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_dn_pullup
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_aon_suspend_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_aon_wake_ack
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_aon_bus_reset
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: usbdev_usb_aon_sense_lost
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        signame: pinmux_aon_usbdev_wake_detect_active
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
       }
       {
         package: edn_pkg
@@ -26617,28 +25396,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: spi_host1_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: usbdev_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: usbdev_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

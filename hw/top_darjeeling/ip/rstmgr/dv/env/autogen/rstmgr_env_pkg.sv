@@ -41,6 +41,7 @@ package rstmgr_env_pkg;
     "u_daon_por_io_div2",
     "u_daon_por_io_div4",
     "u_daon_por_usb",
+    "u_d0_por_usb",
     "u_d0_lc",
     "u_d0_lc_shadowed",
     "u_daon_lc",
@@ -58,8 +59,6 @@ package rstmgr_env_pkg;
     "u_d0_spi_device",
     "u_d0_spi_host0",
     "u_d0_spi_host1",
-    "u_d0_usb",
-    "u_d0_usb_aon",
     "u_d0_i2c0",
     "u_d0_i2c1",
     "u_d0_i2c2"

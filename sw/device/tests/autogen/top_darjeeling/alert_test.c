@@ -42,7 +42,6 @@
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
@@ -100,7 +99,6 @@ static dif_sram_ctrl_t sram_ctrl_mbox;
 static dif_sram_ctrl_t sram_ctrl_ret_aon;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
-static dif_usbdev_t usbdev;
 
 /**
  * Initialize the peripherals used in this test.
@@ -247,9 +245,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR);
-  CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
 
 }
 
@@ -990,21 +985,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdUart0FatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write usbdev's alert_test reg and check alert_cause.
-  for (dif_usbdev_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_usbdev_alert_force(&usbdev, kDifUsbdevAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdUsbdevFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

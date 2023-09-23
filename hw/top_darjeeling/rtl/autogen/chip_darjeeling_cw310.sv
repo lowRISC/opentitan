@@ -37,15 +37,6 @@ module chip_darjeeling_cw310 #(
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout POR_BUTTON_N, // Manual Pad
-  inout IO_USB_CONNECT, // Manual Pad
-  inout IO_USB_DP_TX, // Manual Pad
-  inout IO_USB_DN_TX, // Manual Pad
-  inout IO_USB_D_RX, // Manual Pad
-  inout IO_USB_DP_RX, // Manual Pad
-  inout IO_USB_DN_RX, // Manual Pad
-  inout IO_USB_OE_N, // Manual Pad
-  inout IO_USB_SPEED, // Manual Pad
-  inout IO_USB_SUSPEND, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
   inout IO_TRIGGER, // Manual Pad
 
@@ -128,9 +119,12 @@ module chip_darjeeling_cw310 #(
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
+    // The use of these indexes is gated behind a parameter, but to synthesize they
+    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
+    // Hence, set to zero.
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO spi_host0_csb
@@ -146,9 +140,7 @@ module chip_darjeeling_cw310 #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
+      BidirStd  // DIO spi_host0_sd
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -212,7 +204,7 @@ module chip_darjeeling_cw310 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [19-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -226,30 +218,12 @@ module chip_darjeeling_cw310 #(
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
   logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
-  logic manual_in_io_usb_connect, manual_out_io_usb_connect, manual_oe_io_usb_connect;
-  logic manual_in_io_usb_dp_tx, manual_out_io_usb_dp_tx, manual_oe_io_usb_dp_tx;
-  logic manual_in_io_usb_dn_tx, manual_out_io_usb_dn_tx, manual_oe_io_usb_dn_tx;
-  logic manual_in_io_usb_d_rx, manual_out_io_usb_d_rx, manual_oe_io_usb_d_rx;
-  logic manual_in_io_usb_dp_rx, manual_out_io_usb_dp_rx, manual_oe_io_usb_dp_rx;
-  logic manual_in_io_usb_dn_rx, manual_out_io_usb_dn_rx, manual_oe_io_usb_dn_rx;
-  logic manual_in_io_usb_oe_n, manual_out_io_usb_oe_n, manual_oe_io_usb_oe_n;
-  logic manual_in_io_usb_speed, manual_out_io_usb_speed, manual_oe_io_usb_speed;
-  logic manual_in_io_usb_suspend, manual_out_io_usb_suspend, manual_oe_io_usb_suspend;
   logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
   logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_io_clk;
   pad_attr_t manual_attr_por_button_n;
-  pad_attr_t manual_attr_io_usb_connect;
-  pad_attr_t manual_attr_io_usb_dp_tx;
-  pad_attr_t manual_attr_io_usb_dn_tx;
-  pad_attr_t manual_attr_io_usb_d_rx;
-  pad_attr_t manual_attr_io_usb_dp_rx;
-  pad_attr_t manual_attr_io_usb_dn_rx;
-  pad_attr_t manual_attr_io_usb_oe_n;
-  pad_attr_t manual_attr_io_usb_speed;
-  pad_attr_t manual_attr_io_usb_suspend;
   pad_attr_t manual_attr_io_clkout;
   pad_attr_t manual_attr_io_trigger;
 
@@ -258,7 +232,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [66:0] unused_sig;
+  logic [64:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -270,20 +244,11 @@ module chip_darjeeling_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(28),
+    .NDioPads(19),
     .NMioPads(47),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
-      BidirStd, // IO_USB_SUSPEND
-      BidirStd, // IO_USB_SPEED
-      BidirStd, // IO_USB_OE_N
-      BidirStd, // IO_USB_DN_RX
-      BidirStd, // IO_USB_DP_RX
-      BidirStd, // IO_USB_D_RX
-      BidirStd, // IO_USB_DN_TX
-      BidirStd, // IO_USB_DP_TX
-      BidirStd, // IO_USB_CONNECT
       InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
       BidirOd, // IOR9
@@ -360,15 +325,6 @@ module chip_darjeeling_cw310 #(
     .dio_pad_io ({
       IO_TRIGGER,
       IO_CLKOUT,
-      IO_USB_SUSPEND,
-      IO_USB_SPEED,
-      IO_USB_OE_N,
-      IO_USB_DN_RX,
-      IO_USB_DP_RX,
-      IO_USB_D_RX,
-      IO_USB_DN_TX,
-      IO_USB_DP_TX,
-      IO_USB_CONNECT,
       POR_BUTTON_N,
       IO_CLK,
       IOR9,
@@ -450,15 +406,6 @@ module chip_darjeeling_cw310 #(
     .dio_in_o ({
         manual_in_io_trigger,
         manual_in_io_clkout,
-        manual_in_io_usb_suspend,
-        manual_in_io_usb_speed,
-        manual_in_io_usb_oe_n,
-        manual_in_io_usb_dn_rx,
-        manual_in_io_usb_dp_rx,
-        manual_in_io_usb_d_rx,
-        manual_in_io_usb_dn_tx,
-        manual_in_io_usb_dp_tx,
-        manual_in_io_usb_connect,
         manual_in_por_button_n,
         manual_in_io_clk,
         dio_in[DioSysrstCtrlAonFlashWpL],
@@ -480,15 +427,6 @@ module chip_darjeeling_cw310 #(
     .dio_out_i ({
         manual_out_io_trigger,
         manual_out_io_clkout,
-        manual_out_io_usb_suspend,
-        manual_out_io_usb_speed,
-        manual_out_io_usb_oe_n,
-        manual_out_io_usb_dn_rx,
-        manual_out_io_usb_dp_rx,
-        manual_out_io_usb_d_rx,
-        manual_out_io_usb_dn_tx,
-        manual_out_io_usb_dp_tx,
-        manual_out_io_usb_connect,
         manual_out_por_button_n,
         manual_out_io_clk,
         dio_out[DioSysrstCtrlAonFlashWpL],
@@ -510,15 +448,6 @@ module chip_darjeeling_cw310 #(
     .dio_oe_i ({
         manual_oe_io_trigger,
         manual_oe_io_clkout,
-        manual_oe_io_usb_suspend,
-        manual_oe_io_usb_speed,
-        manual_oe_io_usb_oe_n,
-        manual_oe_io_usb_dn_rx,
-        manual_oe_io_usb_dp_rx,
-        manual_oe_io_usb_d_rx,
-        manual_oe_io_usb_dn_tx,
-        manual_oe_io_usb_dp_tx,
-        manual_oe_io_usb_connect,
         manual_oe_por_button_n,
         manual_oe_io_clk,
         dio_oe[DioSysrstCtrlAonFlashWpL],
@@ -540,15 +469,6 @@ module chip_darjeeling_cw310 #(
     .dio_attr_i ({
         manual_attr_io_trigger,
         manual_attr_io_clkout,
-        manual_attr_io_usb_suspend,
-        manual_attr_io_usb_speed,
-        manual_attr_io_usb_oe_n,
-        manual_attr_io_usb_dn_rx,
-        manual_attr_io_usb_dp_rx,
-        manual_attr_io_usb_d_rx,
-        manual_attr_io_usb_dn_tx,
-        manual_attr_io_usb_dp_tx,
-        manual_attr_io_usb_connect,
         manual_attr_por_button_n,
         manual_attr_io_clk,
         dio_attr[DioSysrstCtrlAonFlashWpL],
@@ -575,66 +495,6 @@ module chip_darjeeling_cw310 #(
     .mio_in_raw_o (mio_in_raw[46:0])
   );
 
-
-  // TODO: generalize this USB mux code and align with other tops.
-
-  // Only use the UPHY on CW310, which does not support pin flipping.
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_rx_enable;
-
-  // DioUsbdevUsbDn
-  assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_io_usb_dn_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevUsbDp
-  assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_dp_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
-
-  assign manual_attr_io_usb_oe_n = '0;
-  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_oe_n = 1'b1;
-
-  // DioUsbdevD
-  assign manual_attr_io_usb_d_rx = '0;
-  assign usb_rx_d = manual_in_io_usb_d_rx;
-
-  // Pull-up / soft connect pin
-  assign manual_attr_io_usb_connect = '0;
-  assign manual_out_io_usb_connect = usb_dp_pullup_en;
-  assign manual_oe_io_usb_connect = 1'b1;
-
-  // Set SPD to full-speed
-  assign manual_attr_io_usb_speed = '0;
-  assign manual_out_io_usb_speed = 1'b1;
-  assign manual_oe_io_usb_speed = 1'b1;
-
-  // TUSB1106 low-power mode
-  assign manual_attr_io_usb_suspend = '0;
-  assign manual_out_io_usb_suspend = !usb_rx_enable;
-  assign manual_oe_io_usb_suspend = 1'b1;
-
-  logic unused_usb_sigs;
-  assign unused_usb_sigs = ^{
-    usb_dn_pullup_en,
-    usb_tx_d,
-    usb_tx_se0,
-    manual_in_io_usb_connect,
-    manual_in_io_usb_oe_n,
-    manual_in_io_usb_speed,
-    manual_in_io_usb_suspend,
-    // DP and DN are broken out into multiple unidirectional pins
-    dio_oe[DioUsbdevUsbDp],
-    dio_oe[DioUsbdevUsbDn],
-    dio_attr[DioUsbdevUsbDp],
-    dio_attr[DioUsbdevUsbDn]
-  };
 
 
 
@@ -867,7 +727,7 @@ module chip_darjeeling_cw310 #(
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_es_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni (rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::Domain0Sel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -1206,7 +1066,6 @@ module chip_darjeeling_cw310 #(
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
-    .UsbdevRcvrWakeTimeUs(10000),
     // TODO(opentitan-integrated/issues/251):
     // Enable hashing below once the build infrastructure can
     // load scrambled images on FPGA platforms. The DV can
@@ -1232,15 +1091,6 @@ module chip_darjeeling_cw310 #(
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
-    .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
-    .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
-    .usbdev_usb_rx_d_i            ( usb_rx_d              ),
-    .usbdev_usb_tx_d_o            ( usb_tx_d              ),
-    .usbdev_usb_tx_se0_o          ( usb_tx_se0            ),
-    .usbdev_usb_tx_use_d_se0_o    ( usb_tx_use_d_se0      ),
-    .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val           ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
     .obs_ctrl_i                   ( obs_ctrl              ),
@@ -1305,7 +1155,6 @@ module chip_darjeeling_cw310 #(
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
     .spi_ram_2p_cfg_i( '0 ),
-    .usb_ram_2p_cfg_i( '0 ),
     .rom_cfg_i       ( '0 ),
 
      // DFT signals
