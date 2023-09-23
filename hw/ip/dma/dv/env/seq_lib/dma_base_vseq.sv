@@ -406,6 +406,10 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_ctn.bytes_sent = 0;
     seq_host.bytes_sent = 0;
     seq_sys.bytes_sent = 0;
+    // Disable FIFO
+    cfg.fifo_host.disable_fifo();
+    cfg.fifo_ctn.disable_fifo();
+    cfg.fifo_sys.disable_fifo();
   endtask
 
   // Method to clear memory contents
