@@ -215,7 +215,7 @@ static const char *hmac_inst_name = "hmac";
 static const char *i2c0_inst_name = "i2c0";
 static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
-static const char *keymgr_inst_name = "keymgr";
+static const char *keymgr_dpe_inst_name = "keymgr_dpe";
 static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
@@ -271,7 +271,7 @@ static void clkmgr_fault_checker(bool enable, const char *ip_inst,
 static void hmac_fault_checker(bool enable) {
   // Check the hmac integrity fatal error code.
   dif_kmac_status_t status;
-  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
+  CHECK_DIF_OK(dif_kmac_get_status(&keymgr_dpe, &codes));
   if (enable) {
     CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
   } else {
@@ -281,11 +281,11 @@ static void hmac_fault_checker(bool enable) {
 */
 
 /*
-// TODO(#14518) keymgr cannot read fault_status register.
-static void keymgr_fault_checker(bool enable) {
-  // Check the keymgr integrity fatal error code.
+// TODO(#14518) keymgr_dpe cannot read fault_status register.
+static void keymgr_dpe_fault_checker(bool enable) {
+  // Check the keymgr_dpe integrity fatal error code.
   dif_kmac_status_t status;
-  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
+  CHECK_DIF_OK(dif_kmac_get_status(&keymgr_dpe, &codes));
   if (enable) {
     CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
   } else {
@@ -836,13 +836,14 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker_t fc = {trivial_fault_checker, i2c2_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopDarjeelingAlertIdKeymgrFatalFaultErr: {
-      fault_checker_t fc = {trivial_fault_checker, keymgr_inst_name, we_check};
+    case kTopDarjeelingAlertIdKeymgrDpeFatalFaultErr: {
+      fault_checker_t fc = {trivial_fault_checker, keymgr_dpe_inst_name,
+                            we_check};
       // TODO(#14518)
-      LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
+      LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
                kExpectedAlertNumber);
       /*
-        fault_checker = keymgr_fault_checker;
+        fault_checker = keymgr_dpe_fault_checker;
       */
       fault_checker = fc;
     } break;
