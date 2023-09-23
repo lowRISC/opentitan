@@ -905,7 +905,7 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
-        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
@@ -918,7 +918,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:adc_ctrl",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:keymgr",
+        "//sw/top_darjeeling/sw/dif:keymgr_dpe",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rstmgr",

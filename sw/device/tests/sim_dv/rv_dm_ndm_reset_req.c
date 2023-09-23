@@ -5,7 +5,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
-#include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/keymgr_dpe/dif/dif_keymgr_dpe.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
@@ -15,7 +15,7 @@
 
 #include "adc_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "keymgr_regs.h"
+#include "keymgr_dpe_regs.h"
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 #include "sysrst_ctrl_regs.h"
@@ -40,7 +40,7 @@
                                           RESET    PRGM (ARBITRARY VALUE)
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
-       KEYMGR.MAX_OWNER_KEY_VER_SHADOWED  0x0      0x1600_ABBA
+       KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
    Read programmed csr to check all Group2 keep programmed value while group 3
@@ -84,14 +84,14 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_adc_ctrl_t adc_ctrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pinmux_t pinmux;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 
 enum {
   OTP_CTRL,
   PINMUX,
   ADC_CTRL,
   SYSRST_CTRL,
-  KEYMGR,
+  KEYMGR_DPE,
 };
 
 static test_register_t kReg[] = {
@@ -130,13 +130,13 @@ static test_register_t kReg[] = {
             .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
 
         },
-    [KEYMGR] =
+    [KEYMGR_DPE] =
         {
-            .name = "KEYMGR",
-            .base = TOP_DARJEELING_KEYMGR_BASE_ADDR,
-            .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
+            .name = "KEYMGR_DPE",
+            .base = TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR,
+            .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
             .write_val = 0x1600ABBA,
-            .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
+            .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
 
         },
 };
@@ -174,8 +174,8 @@ static void init_peripherals(void) {
   addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));
 
-  addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(addr, &keymgr));
+  addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_dpe_init(addr, &keymgr_dpe));
 }
 
 bool test_main(void) {
