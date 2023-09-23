@@ -9,8 +9,6 @@
 #include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
-#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
-#include "sw/ip/flash_ctrl/test/utils/nv_counter_testutils.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
@@ -22,6 +20,7 @@
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/ip/sram_ctrl/test/utils/ret_sram_testutils.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -668,6 +667,7 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopDarjeelingAlertIdSpiHost0FatalFault] = 1;
 }
 bool test_main(void) {
+  uint32_t event_idx = 0;
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -697,25 +697,6 @@ bool test_main(void) {
       &plic, kPlicTarget, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark);
 
-  // First check the flash stored value.
-  uint32_t event_idx = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
-
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  // Increment flash counter to know where we are.
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
-
-  LOG_INFO("Test round %d", event_idx);
-
   // enable alert info
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
@@ -729,6 +710,11 @@ bool test_main(void) {
 
   // TODO(#13098): Change to equality after #13277 is merged.
   if (rst_info & kDifRstmgrResetInfoPor) {
+    // Initialize the counter. Upon POR they have random values.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &event_idx));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    LOG_INFO("Test round %d", event_idx);
     // We need to initialize the info FLASH partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
@@ -749,61 +735,69 @@ bool test_main(void) {
     // Give an enough delay until sw rest happens.
     busy_spin_micros(kRoundOneDelay);
     CHECK(false, "Should have reset before this line");
-  } else if (rst_info == kDifRstmgrResetInfoSw && event_idx == 1) {
-    collect_alert_dump_and_compare(kRound1);
-    global_test_round = kRound2;
-    prgm_alert_handler_round2();
-
-    // Setup the aon_timer the wdog bark and bite timeouts.
-    uint32_t bark_cycles =
-        (uint32_t)udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
-    uint32_t bite_cycles =
-        (uint32_t)udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
-    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, bark_cycles,
-                                                        bite_cycles, false));
-
-    CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
-    CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl,
-                                          kDifOtpCtrlAlertFatalBusIntegError));
-    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-        &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
-    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-        &alert_handler, kDifAlertHandlerIrqClassc, kDifToggleEnabled));
-
-    busy_spin_micros(kRoundTwoDelay);
-    CHECK(false, "Should have reset before this line");
-  } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
-    collect_alert_dump_and_compare(kRound2);
-
-    global_test_round = kRound3;
-    prgm_alert_handler_round3();
-    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-        &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
-
-    busy_spin_micros(kRoundThreeDelay);
-    CHECK(false, "Should have reset before this line");
-  } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 3) {
-    collect_alert_dump_and_compare(kRound3);
-    global_test_round = kRound4;
-    prgm_alert_handler_round4();
-    // Previously, this test assumed that escalation would always happen
-    // within a fixed amount of time.  However, that is not necessarily
-    // the case for ping timeouts.  The ping mechanism randomly selects a
-    // peripheral to check.  However, since the selection vector is larger
-    // than the number of peripherals we have, it does not always select a valid
-    // peripheral. When the alert handler does not select a valid peripheral,
-    // it simply moves on to the test the next ping. However the max wait time
-    // until the next ping is checked is in the mS range.
-    // Therefore, the test should not make that assumption and just wait in
-    // place.
-    wait_for_interrupt();
-  } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 4) {
-    collect_alert_dump_and_compare(kRound4);
-
-    return true;
   } else {
-    LOG_FATAL("unexpected reset info %d", rst_info);
-  }
+    // The retention sram counters have been initialized, so only now they
+    // can be reliably used.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &event_idx));
+    // Increment retention sram counter to know where we are.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    LOG_INFO("Test round %d", event_idx);
 
+    if (rst_info == kDifRstmgrResetInfoSw && event_idx == 1) {
+      collect_alert_dump_and_compare(kRound1);
+      global_test_round = kRound2;
+      prgm_alert_handler_round2();
+
+      // Setup the aon_timer the wdog bark and bite timeouts.
+      uint32_t bark_cycles = (uint32_t)udiv64_slow(
+          kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
+      uint32_t bite_cycles = (uint32_t)udiv64_slow(
+          kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
+      CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
+          &aon_timer, bark_cycles, bite_cycles, false));
+
+      CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
+      CHECK_DIF_OK(dif_otp_ctrl_alert_force(
+          &otp_ctrl, kDifOtpCtrlAlertFatalBusIntegError));
+      CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+          &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
+      CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+          &alert_handler, kDifAlertHandlerIrqClassc, kDifToggleEnabled));
+
+      busy_spin_micros(kRoundTwoDelay);
+      CHECK(false, "Should have reset before this line");
+    } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
+      collect_alert_dump_and_compare(kRound2);
+
+      global_test_round = kRound3;
+      prgm_alert_handler_round3();
+      CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+          &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
+
+      busy_spin_micros(kRoundThreeDelay);
+      CHECK(false, "Should have reset before this line");
+    } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 3) {
+      collect_alert_dump_and_compare(kRound3);
+      global_test_round = kRound4;
+      prgm_alert_handler_round4();
+      // Previously, this test assumed that escalation would always happen
+      // within a fixed amount of time.  However, that is not necessarily
+      // the case for ping timeouts.  The ping mechanism randomly selects a
+      // peripheral to check.  However, since the selection vector is larger
+      // than the number of peripherals we have, it does not always select a
+      // valid peripheral. When the alert handler does not select a valid
+      // peripheral, it simply moves on to the test the next ping. However the
+      // max wait time until the next ping is checked is in the mS range.
+      // Therefore, the test should not make that assumption and just wait in
+      // place.
+      wait_for_interrupt();
+    } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 4) {
+      collect_alert_dump_and_compare(kRound4);
+
+      return true;
+    } else {
+      LOG_FATAL("unexpected reset info %d", rst_info);
+    }
+  }
   return false;
 }
