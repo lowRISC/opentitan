@@ -38,6 +38,18 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                               dma_config.sprint()), UVM_HIGH)
   endfunction
 
+  // Monitors busy bit in STATUS register
+  task wait_for_idle();
+    forever begin
+      uvm_reg_data_t data;
+      csr_rd(ral.status, data);
+      if (!get_field_val(ral.status.busy, data)) begin
+        `uvm_info(`gfn, "DMA in Idle state", UVM_MEDIUM)
+        break;
+      end
+    end
+  endtask
+
   virtual task body();
     `uvm_info(`gfn, "DMA: Starting handshake smoke Sequence", UVM_LOW)
     super.body();
@@ -61,10 +73,10 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                            dma_config.direction, // Direction
                            1'b1); // Go
       set_hardware_handshake_intr(handshake_value);
+      delay(5); // wait for DMA state change
       fork
         begin
-          // Wait till all transfers are done
-          wait_num_bytes_transfer(dma_config.total_transfer_size);
+          wait_for_idle();
         end
         begin
           // Wait for transmission of a number of bytes before releasing
