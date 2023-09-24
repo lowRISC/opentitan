@@ -10,6 +10,11 @@ create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_
 create_generated_clock -name clk_main [get_pin clkgen/pll/CLKOUT0]
 create_generated_clock -name clk_usb_48 [get_pin clkgen/pll/CLKOUT1]
 create_generated_clock -name clk_aon [get_pin clkgen/pll/CLKOUT4]
+set clk_io_pin [get_pin u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_generic.u_impl_generic/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name clk_io -divide_by 1 -add \
+    -master_clock [get_clocks clk_main] \
+    -source [get_pins clkgen/pll/CLKOUT0] \
+    ${clk_io_pin}
 
 ## Clock Domain Crossings
 set clks_10_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT0]]
@@ -22,7 +27,7 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 
 set u_pll clkgen/pll
 set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic
-create_generated_clock -name clk_io_div2 -source [get_pins ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
+create_generated_clock -name clk_io_div2 -divide_by 2 -source ${clk_io_pin} [get_pin ${u_div2}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
 
 # TODO: Use pin names explicitly exist from the source instead of the ones
 # after synthesis.
@@ -266,9 +271,10 @@ set_input_delay  -clock clk_spi_host0 -clock_fall -max ${spi_host_in_delay_max} 
 
 ## Set asynchronous clock groups
 set_clock_groups -asynchronous \
-    -group {clk_main clk_spi_host0} \
+    -group clk_main \
     -group clk_usb_48 \
     -group clk_aon \
+    -group {clk_io clk_spi_host0} \
     -group clk_io_div2 \
     -group clk_io_div4 \
     -group [get_clocks -include_generated_clocks jtag_tck] \
@@ -319,3 +325,20 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
 set_false_path -from ${clks_48_unbuf} -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]
+
+## USB input delay to accommodate T_FST (full-speed transition time) and the
+## PHY's sampling logic. The PHY expects to only see up to one transient / fake
+## SE0. The phase relationship with the PHY's sampling clock is arbitrary, but
+## for simplicity, constrain the maximum path delay to something smaller than
+## `T_sample - T_FST(max)` to help keep the P/N skew from slipping beyond one
+## sample period.
+set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
+set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
+set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
+
+## USB output max skew constraint
+## Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
+set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_USB_OE_N]]
+set_false_path -from [get_clocks -include_generated_clocks clk_io_div4] -to ${usb_embed_out_clk}
+set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
+set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
