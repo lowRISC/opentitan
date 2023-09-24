@@ -35,7 +35,7 @@
     {
       "name": "TAP_STRAP1",
       "mode": "PushPull",
-      "level": true,
+      "level": false,
       "pull_mode": "None",
       "alias_of": "IOC5"
     }

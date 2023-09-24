@@ -1,11 +1,19 @@
 {
-  "includes": ["/__builtin__/cw340.json"],
+  "includes": ["/__builtin__/opentitan.json"],
   "interface": "cw340",
   "pins": [
     {
       "name": "RESET",
       "mode": "PushPull",
+      "invert": true,
       "alias_of": "PC30",
+      "pull_mode": "None"
+    },
+    {
+      "name": "TRST",
+      "mode": "PushPull",
+      "level": true,
+      "alias_of": "USB_A13",
       "pull_mode": "None"
     },
     {
@@ -21,15 +29,11 @@
       "alias_of": "PC21"
     },
     {
-      "name": "TAP_STRAP0",
-      "mode": "PushPull",
-      "pull_mode": "None",
+      "name": "IOC8",
       "alias_of": "PB13"
     },
     {
-      "name": "TAP_STRAP1",
-      "mode": "PushPull",
-      "pull_mode": "None",
+      "name": "IOC5",
       "alias_of": "PB12"
     }
   ],

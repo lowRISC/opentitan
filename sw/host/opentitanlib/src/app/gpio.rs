@@ -49,7 +49,8 @@ impl GpioPin for GpioPinWrapper {
         pull: Option<PullMode>,
         analog_value: Option<f32>,
     ) -> Result<()> {
-        self.underlying.set(mode, value, pull, analog_value)
+        self.underlying
+            .set(mode, value.map(|v| v != self.invert), pull, analog_value)
     }
 
     fn get_internal_pin_name(&self) -> Option<&str> {
