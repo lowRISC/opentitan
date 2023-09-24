@@ -29,9 +29,6 @@ impl<B: Board> Spi<B> {
                 B::PIN_CS,
             )?;
             usb.spi1_enable(true)?;
-
-            // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(B::PIN_TAP_STRAP1, false)?;
         }
 
         Ok(Spi { device })

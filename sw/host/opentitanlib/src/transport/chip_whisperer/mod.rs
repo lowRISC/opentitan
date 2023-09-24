@@ -57,35 +57,7 @@ impl<B: Board> ChipWhisperer<B> {
             uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
             inner: RefCell::default(),
         };
-        board.init_pin_directions()?;
-        board.init_pin_values()?;
         Ok(board)
-    }
-
-    // Initialize the IO direction of some basic pins on the board.
-    fn init_pin_directions(&self) -> anyhow::Result<()> {
-        let device = self.device.borrow();
-        device.pin_set_output(B::PIN_TRST, true)?;
-        device.pin_set_output(B::PIN_POR_N, true)?;
-        device.pin_set_output(B::PIN_TAP_STRAP0, true)?;
-        device.pin_set_output(B::PIN_TAP_STRAP1, true)?;
-        device.pin_set_output(B::PIN_SW_STRAP0, true)?;
-        device.pin_set_output(B::PIN_SW_STRAP1, true)?;
-        device.pin_set_output(B::PIN_SW_STRAP2, true)?;
-        Ok(())
-    }
-
-    // Initialize the values of the output pins on the board.
-    fn init_pin_values(&self) -> anyhow::Result<()> {
-        let device = self.device.borrow();
-        device.pin_set_state(B::PIN_TRST, true)?;
-        device.pin_set_state(B::PIN_POR_N, true)?;
-        device.pin_set_state(B::PIN_TAP_STRAP0, false)?;
-        device.pin_set_state(B::PIN_TAP_STRAP1, true)?;
-        device.pin_set_state(B::PIN_SW_STRAP0, false)?;
-        device.pin_set_state(B::PIN_SW_STRAP1, false)?;
-        device.pin_set_state(B::PIN_SW_STRAP2, false)?;
-        Ok(())
     }
 
     fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {

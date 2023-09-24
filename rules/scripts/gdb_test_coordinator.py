@@ -223,6 +223,8 @@ def main(openocd_path: str = typer.Option(...),
             gdb_expect_output_sequence.pop(0)
 
     # Wait until we've finished loading the bitstream.
+    subprocess.run(opentitantool_prefix + ["transport", "init"], check=True)
+    subprocess.run(opentitantool_prefix + ["gpio", "apply", "PINMUX_TAP_RISCV"], check=True)
     subprocess.run(load_bitstream_command, check=True)
 
     # Start printing the console output. Make sure to start before interacting
