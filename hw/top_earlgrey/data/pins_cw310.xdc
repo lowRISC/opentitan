@@ -134,24 +134,6 @@ set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_USB
 set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SPEED }]; #USRUSB_SPD
 set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SUSPEND }]; #USRUSB_SUS
 
-## USB input delay to accommodate T_FST (full-speed transition time) and the
-## PHY's sampling logic. The PHY expects to only see up to one transient / fake
-## SE0. The phase relationship with the PHY's sampling clock is arbitrary, but
-## for simplicity, constrain the maximum path delay to something smaller than
-## `T_sample - T_FST(max)` to help keep the P/N skew from slipping beyond one
-## sample period.
-set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
-set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
-set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
-
-## USB output max skew constraint
-## Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
-set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_USB_OE_N]]
-set_false_path -from [get_clocks -include_generated_clocks clk_io_div4] -to ${usb_embed_out_clk}
-set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
-set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
-
-
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
