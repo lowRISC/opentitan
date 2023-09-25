@@ -15,17 +15,17 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static uint32_t kTestSeed[12] = {
+static const uint32_t kTestSeed[12] = {
     0x73bec010, 0x9262474c, 0x16a30f76, 0x531b51de, 0x2ee494e5, 0xdfec9db3,
     0xcb7a879d, 0x5600419c, 0xca79b0b0, 0xdda33b5c, 0xa468649e, 0xdf5d73fa};
 // Note that the word order in the expected output is reversed compared to the
 // NIST reference.
-static uint32_t kExpOutput[16] = {
+static const uint32_t kExpOutput[16] = {
     0xd1c07cd9, 0x5af8a7f1, 0x1012c84c, 0xe48bb8cb, 0x87189e99, 0xd40fccb1,
     0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
     0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
 };
-static const crypto_byte_buf_t kEmptyBuffer = {
+static const crypto_const_byte_buf_t kEmptyBuffer = {
     .data = NULL,
     .len = 0,
 };
@@ -40,8 +40,8 @@ static status_t entropy_complex_init_test(void) {
 }
 
 static status_t kat_test(void) {
-  crypto_byte_buf_t entropy = {
-      .data = (unsigned char *)kTestSeed,
+  crypto_const_byte_buf_t entropy = {
+      .data = (const unsigned char *)kTestSeed,
       .len = sizeof(kTestSeed),
   };
 
@@ -49,18 +49,18 @@ static status_t kat_test(void) {
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
 
   uint32_t actual_output_words[ARRAYSIZE(kExpOutput)];
-  crypto_byte_buf_t actual_output = {
-      .data = (unsigned char *)actual_output_words,
-      .len = sizeof(actual_output_words),
+  crypto_word32_buf_t actual_output = {
+      .data = actual_output_words,
+      .len = ARRAYSIZE(actual_output_words),
   };
 
   // Generate output twice.
   LOG_INFO("Generating...");
-  TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer,
-                             sizeof(kExpOutput), &actual_output));
+  TRY(otcrypto_drbg_manual_generate(/*additional_input=*/kEmptyBuffer,
+                                    &actual_output));
   LOG_INFO("Generating again...");
-  TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer,
-                             sizeof(kExpOutput), &actual_output));
+  TRY(otcrypto_drbg_manual_generate(/*additional_input=*/kEmptyBuffer,
+                                    &actual_output));
 
   // Compare second result to expected output.
   TRY_CHECK_ARRAYS_EQ(kExpOutput, actual_output_words, ARRAYSIZE(kExpOutput));
