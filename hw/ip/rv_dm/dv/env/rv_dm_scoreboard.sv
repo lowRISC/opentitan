@@ -330,6 +330,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           (!uvm_re_match("exception", csr.get_name())): begin
           end
           (!uvm_re_match("whereto", csr.get_name())): begin
+            do_read_check = 0;
           end
           (!uvm_re_match("abstractcmd_*", csr.get_name())): begin
           end

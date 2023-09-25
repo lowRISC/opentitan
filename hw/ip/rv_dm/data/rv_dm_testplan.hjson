@@ -439,14 +439,19 @@
             - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1
             - After a few usec, acknowledge halt by setting tl_mem_ral.halted to 0. (ack for hart index 0).
             - Send a single valid command with following process:
-              - Set jtag_dtm_ral.dmi.op to dm::DTM_WRITE
-              - Set jtag_dtm_ral.dmi.address to dm::Command
-              - Set jtag_dtm_ral.dmi.data[31:24] to 0. (Command type AccessRegister).
+              - Write dm::DTM_WRITE to jtag_dtm_ral.dmi.op.
+              - Write dm::Command to jtag_dtm_ral.dmi.address.
+              - Write 0 to jtag_dtm_ral.dmi.data[31:24]. (Command type AccessRegister).
             - Check jtag_dmi_ral.abstractcs.busy is 1.
             - Check flags[0] to make sure internal state machine is at Go state by checking
               tl_mem_ral.flags[0] is '1'.
-            - Set tl_mem_ral.going to 1. This will make internal state machine move to CmdExecuting state.
+            - Set tl_mem_ral.going to 0(0 or 1 doesn't matter but to be more coherent to original reference). This will make internal state machine move to CmdExecuting state.
+            - After a few clock cycles, Check jtag_dmi_ral.abstractcs.busy is 1.
+            - Check tl_mem_ral.whereto is 21'h380006f.
+              (WhereTo value for absctract cmd can be calculated by
+               https://cs.opensource.google/opentitan/opentitan/+/master:hw/vendor/pulp_riscv_dbg/src/dm_mem.sv;drc=7dea7336833079820a297fd516083d6e744024d7;l=315).
             - Send an acknowledge by setting tl_mem_ral.halted to 0.
+            - Check jtag_dmi_ral.abstractcs.busy is 0.
             - Resuming with following process:
               - Set jtag_dmi_ral.dmcontrol.haltreq to 0
               - Set jtag_dmi_ral.dmcontrol.resumereq to 1
