@@ -183,6 +183,7 @@
     {
       name: flash_ctrl_invalid_op
       uvm_test_seq: flash_ctrl_invalid_op_vseq
+      run_opts: ["+fast_rcvr_recov_err"]
       reseed: 20
     }
     {

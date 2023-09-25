@@ -172,6 +172,8 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_ctrl_start_op(flash_op);
     flash_ctrl_write(flash_op_data, poll_fifo_status);
     wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+    // Add guard time between previous alert detection complete and set the next expected alert
+    cfg.clk_rst_vif.wait_clks(100);
 
     expect_alert          = 1;
     cfg.scb_h.expected_alert["recov_err"].expected = 1;
