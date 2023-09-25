@@ -185,7 +185,7 @@
             - rstmgr_reset_vseq
             - rstmgr_smoke_vseq
             - rstmgr_sw_rst_vseq
-	    '''
+            '''
       stage: V2
       tests: ["rstmgr_stress_all"]
     }
