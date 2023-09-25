@@ -591,6 +591,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                  .tl_src_err (1'b0),
                                  .tl_dst_err (1'b0));
           end
+          // Clear status variables
+          num_bytes_transfered = 0;
           fifo_intr_cleared = 0;
         end
       end
@@ -662,7 +664,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .clear (clear_via_reg_write));
         end
         // Check data and addresses in source and destination mem models
-        if (done) begin
+        if (done && dma_config.is_valid_config) begin
           check_data(dma_config);
         end
       end
