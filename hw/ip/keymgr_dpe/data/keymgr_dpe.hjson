@@ -408,6 +408,9 @@ countermeasures: [
           '''
         },
       ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "START",
@@ -600,6 +603,9 @@ countermeasures: [
           '''
         },
       ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "RESEED_INTERVAL_SHADOWED",
@@ -638,6 +644,9 @@ countermeasures: [
           '''
         },
       ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SLOT_POLICY",
@@ -681,6 +690,9 @@ countermeasures: [
           '''
         },
       ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { multireg: {
@@ -766,6 +778,9 @@ countermeasures: [
           '''
         },
       ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "MAX_KEY_VER_SHADOWED",
