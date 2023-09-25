@@ -69,7 +69,6 @@
                rel_path: "{proj_root}/hw/ip/clkmgr/dv/"
              },
              "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              {
                name: pwrmgr
                top_chip: top_darjeeling
