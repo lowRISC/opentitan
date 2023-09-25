@@ -83,6 +83,19 @@ status_t keyblob_to_keymgr_diversification(
     const crypto_blinded_key_t *key, keymgr_diversification_t *diversification);
 
 /**
+ * Checks that the configuration represents a key masked with XOR.
+ *
+ * Returns false if the key is for an algorithm that uses a different masking
+ * method (e.g. arithmetic masking for asymmetric crypto) or if the key is
+ * hardware-backed.
+ *
+ * @param config Key configuration.
+ * @return OK if `config` represents an XOR-masked key, BAD_ARGS otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_ensure_xor_masked(const crypto_key_config_t config);
+
+/**
  * Construct a blinded keyblob from the given key and mask.
  *
  * The size of the key and mask should be `key_len` rounded up to the next
