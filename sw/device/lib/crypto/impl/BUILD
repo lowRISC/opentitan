@@ -34,6 +34,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
         ":status",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/include:datatypes",
     ],
