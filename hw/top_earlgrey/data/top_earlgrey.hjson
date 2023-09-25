@@ -526,9 +526,9 @@
           group: "secure"
         },
         clk_ast_usb_i: {
-      	  clock: "usb",
-      	  group: "peri"
-      	}
+          clock: "usb",
+          group: "peri"
+        }
       },
       clock_group: "secure",
       reset_connections: {
@@ -670,10 +670,10 @@
       type: "otbn",
       clock_srcs: {
         clk_i: {
-	  clock: "main",
-	  group: "trans"
-	},
-	clk_edn_i: {
+          clock: "main",
+          group: "trans"
+        },
+        clk_edn_i: {
           clock: "main",
           group: "secure"
         },

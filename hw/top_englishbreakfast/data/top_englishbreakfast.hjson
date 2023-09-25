@@ -330,9 +330,9 @@
         clk_ast_es_i: "main",
         clk_ast_rng_i: "main",
         clk_ast_usb_i: {
-	  clock: "usb",
-	  group: "peri"
-	}
+          clock: "usb",
+          group: "peri"
+        }
       },
       clock_group: "secure",
       reset_connections: {
