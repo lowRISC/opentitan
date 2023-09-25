@@ -59,6 +59,11 @@
       uvm_test_seq: dma_generic_dma_memory_region_lock_vseq
       reseed: 5
     }
+    {
+      name: dma_generic_stress
+      uvm_test_seq: dma_generic_stress_vseq
+      reseed: 50
+    }
   ]
 
   // List of regressions.
