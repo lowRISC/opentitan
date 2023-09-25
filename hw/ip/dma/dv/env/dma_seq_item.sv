@@ -312,8 +312,10 @@ class dma_seq_item extends uvm_sequence_item;
                   UVM_MEDIUM)
         valid_config = 0;
       end
-    end else begin
-      // OT internal address space is neither source nor destination for the operation
+    end
+    // If either source or destination is SOC address space the other can't be OT private memory
+    if((src_asid == SocSystemAddr && dst_asid != OtInternalAddr) ||
+                (dst_asid == SocSystemAddr && dst_asid != OtInternalAddr)) begin
       `uvm_info(`gfn, $sformatf("Invalid source : %s and destination : %s combination",
                                 src_asid.name(), dst_asid.name()), UVM_MEDIUM)
       valid_config = 0;
