@@ -7,7 +7,7 @@
 As shown in the block diagram above, the SRAM controller contains a TL-UL adapter, an initialization LFSR, the CSR node, key request logic and an instance of `prim_ram_1p_scr` that implements the actual scrambling mechanism.
 
 The SRAM controller supports the system-wide end-to-end bus integrity scheme and thus stores the data integrity bits alongside each data word in the memory.
-I.e., this means that both the 32 data bits and 7 integrity bits are passed through the scrambling device.
+This means that both the 32 data bits and the 7 integrity bits are passed through the scrambling device.
 
 Sub-word write operations therefore perform a read-modify-write operation in order to ensure consistency of the integrity bits.
 Hence, the throughput of sub-word write operations is three times lower than for full-word write operations.
@@ -34,20 +34,22 @@ The same S&P network construction that is used for intra-word diffusion is lever
 
 ### Integrity Error Handling
 
-When an integrity error is encountered, the `sram_ctrl` will latch the integrity error send out a `fatal_bus_integ_error` until the next reset (the generation of the integrity error is determined by system integration).
+When an integrity error is encountered, the `sram_ctrl` will latch the integrity error and send out a `fatal_bus_integ_error` until the next reset (the generation of the integrity error is determined by system integration).
 In addition, the latched error condition is fed into the `prim_ram_1p_scr` primitive via a dedicated input, causing the scrambling primitive to do the following:
 *  Reverse the nonce used during the address and CTR scrambling.
 *  Disallow any transaction (read or write) on the actual memory macro.
 
-This behavior, combined with other top level defenses, form a multi-layered defense when integrity errors are seen in the system.
+This behavior, combined with other top level defenses, forms a multi-layered defense when integrity errors are seen in the system.
 
 ### LFSR Initialization Feature
 
-Since the scrambling device uses a block cipher in CTR mode, it is undesirable to initialize the memory with all-zeros from a security perspective, as that would reveal the XOR keystream.
-To this end, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the entire memory with pseudorandom data.
+Since the scrambling device uses a block cipher in CTR mode, it is undesirable from a security perspective to initialize the memory with all zeros.
+Doing so would reveal the XOR keystream.
+To avoid this, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the entire memory with pseudorandom data.
 
-Initialization can be triggered via the [`CTRL.INIT`](registers.md#ctrl) CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
-Then, the memory is initialized with pseudorandom data pulled from the LFSR.
+Initialization can be triggered via the [`CTRL.INIT`](registers.md#ctrl) CSR.
+When initialization is triggered, the LFSR is first re-seeded with the nonce that has been fetched, together with the scrambling key.
+Then the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
 
 If SW triggers the scrambling key update and LFSR initialization at the same time (i.e., with the same CSR write operation), the LFSR initialization will be stalled until an updated scrambling key has been obtained.
