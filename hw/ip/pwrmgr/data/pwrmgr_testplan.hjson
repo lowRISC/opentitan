@@ -255,7 +255,7 @@
             - pwrmgr_smoke_vseq
             - pwrmgr_wakeup_reset_vseq
             - pwrmgr_wakeup_vseq
-	    '''
+            '''
       stage: V2
       tests: ["pwrmgr_stress_all"]
     }
