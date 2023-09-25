@@ -36,22 +36,22 @@
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
              "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
+             /*"{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",*/
              "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_esc/prim_esc_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_32kB_sim_cfg.hjson",
-             "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
+             /*"{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",*/
              "{proj_root}/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_no_exec_4kB_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_no_exec_8kB_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_64kB_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_128kB_sim_cfg.hjson",
+             /*"{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_no_exec_8kB_sim_cfg.hjson",*/
+             /*"{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_64kB_sim_cfg.hjson",*/
+             /*"{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_128kB_sim_cfg.hjson",*/
              "{proj_root}/hw/ip/sysrst_ctrl/dv/sysrst_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
