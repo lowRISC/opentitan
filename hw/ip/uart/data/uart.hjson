@@ -68,6 +68,76 @@
     { name: "rx_parity_err"
       desc: "raised if the receiver has detected a parity error."}
   ],
+  features: [
+    {
+      name: "UART.PARITY_EN"
+      desc: ''' UART supports a programmable parity enable bit in CONTROL register
+            '''
+    },
+    {
+      name: "UART.PARITY_ODD"
+      desc: ''' UART supports a programmable type of parity bit in CONTROL register.
+                The rx_parity_err interrupt is triggered if parity is enabled and the RX parity bit does not
+                match the expected polarity as programmed in CTRL.PARITY_ODD
+            '''
+    },
+    {
+      name: "UART.LOOPBACK"
+      desc: ''' UART supports forwarding incoming bits to TX for testing purposes.
+            '''
+    },
+    {
+      name: "UART.SLOOPBACK"
+      desc: ''' UART supports observability of TX bits on RX if this feature is enabled.
+            '''
+    },
+    {
+      name: "UART.BAUD_RATE_CONTROL"
+      desc: ''' UART supports a programmable baud rate using CONTROL.NCO register.
+            '''
+    },
+    {
+      name: "UART.LINE_BREAK"
+      desc: ''' A break condition is defined as the RX pin being continuously low for more than a programmable number of character-times.
+                A character time is 10 bit-times if parity is disabled (START + 8 data + STOP) or 11 bit-times if parity is enabled (START + 8 data + parity + STOP).
+                UART supports a programmable threshold register for detecting a line break.
+            '''
+    },
+    {
+      name: "UART.RX_WATERMARK_INTERRUPT"
+      desc: ''' UART supports watermark interrupts for RX FIFO
+            '''
+    },
+    {
+      name: "UART.TX_WATERMARK_INTERRUPT"
+      desc: ''' UART supports watermark interrupts for TX FIFO
+            '''
+    },
+    {
+      name: "UART.RX_OVERFLOW_INTERRUPT"
+      desc: ''' If RX FIFO receives an additional write request when its FIFO is full, the interrupt rx_overflow is asserted and the character is dropped
+            '''
+    }
+    {
+      name: "UART.RX_TIMEOUT"
+      desc: ''' UART The rx_timeout interrupt is triggered when the RX FIFO has data sitting in it without software reading it
+                for a programmable number of bit times (using the baud rate clock as reference, programmable via TIMEOUT_CTRL).
+            '''
+    },
+    {
+      name: "UART.NOISE_FILTER"
+      desc: ''' UART has a noise filter that works using 3-tap repetition code and can be used to suppress single clock cycle noise spikes in input signal.
+            '''
+    }
+    {
+      name: "UART.RX_EN"
+      desc: "Bit to indicate if UART receive is enabled"
+    }
+    {
+      name: "UART.TX_EN"
+      desc: "Bit to indicate if UART transmit is enabled"
+    }
+  ],
   alert_list: [
     { name: "fatal_fault",
       desc: '''

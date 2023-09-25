@@ -1,0 +1,231 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_uart
+  testpoints: [
+    // Basic smoke tests:
+    {
+      name: chip_sw_uart_tx_rx_smoke
+      desc: '''Verify the transfer of data from UART
+
+               - Enable UART IO.
+               - Calculate CONTROL.NCO using progrmmer's model and update the register
+               Receive sequence:
+                 - Set FIFO_CTRL.RXILVL to 1 so that one character can be received
+                 - Enable RX
+                 - Transfer a single packet from testbench to UART IO
+                 - Check if there is any interrupt and if the source is from UART
+                 - Check if FIFO_STATUS.RXLVL is 1
+                 - Clear the rx_watermark interrupt
+                 - Repeat the sequence with 10 packets in a single transaction
+
+               Transmit sequence:
+                 - Set FIFO_CTRL.TXILVL to 1 so that one character can be transmitted
+                 - Write a random data to WDATA register
+                 - Enable TX
+                 - Monitor UART IO for transmission of data packet
+                 - Check if the packet framing is correct
+                 - Check if there is any interrupt and if the source is from UART
+                 - Check if there is tx_empty interrupt after transmission of one packet
+                 - Clear the rx_empty interrupt
+                 - Repeat the sequence with 10 packets in a single transaction
+            '''
+      stage: V1
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.RX_WATERMARK_INTERRUPT", "UART.TX_WATERMARK_INTERRUPT",
+                 "UART.BAUD_RATE_CONTROL"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_tx_rx_parity_smoke
+      desc: '''Verify the transfer of data from UART with parity enabled
+
+               This test is similar to chip_sw_uart_tx_rx_smoke except that parity is enabled in this case
+            '''
+      stage: V1
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.RX_WATERMARK_INTERRUPT",
+                 "UART.PARITY_ODD", "UART.PARITY_EN", "UART.BAUD_RATE_CONTROL"]
+      tests: ["chip_sw_uart_tx_rx"]
+    },
+    // Feature tests
+    {
+      name: chip_sw_uart_loopback
+      desc: ''' Verify the loopback feature of UART
+
+                - Enable UART IO
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+                - Enable transmission and reception by setting CONTROL.RX and CONTROL.TX
+                - Transmit random bit pattern from testbench to UART
+                - After transmitting each bit wait for one clock period and check the received bit on UART IO
+                - Check if the bit is same as transmitted in earler cycle
+            '''
+      stages: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.LOOPBACK", "UART.TX_WATERMARK_INTERRUPT", "UART.BAUD_RATE_CONTROL"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_sloopback
+      desc: ''' Verify the system loopback feature of UART
+
+                - Enable UART IO
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+                - Write 10 random bytes in to WDATA FIFO
+                - Set FIFO_CTRL.TXLVL to 1 so that ibex gets notified for each byte transmitted
+                - Enable TX and RX
+                - In ibex, Wait for interrupt from UART
+                - If tx_watermark interrupt is asserted
+                  - Read data from RDATA FIFO and check if is the same written to WDATA FIFO
+                  - Clear tx_watermark interrupt
+                - If tx_empty interrupt is asserted
+                  - Reset RDATA FIFO
+            '''
+      stages: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.SLOOPBACK", "UART.TX_WATERMARK_INTERRUPT", "UART.BAUD_RATE_CONTROL"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_rand_baudrate
+      desc: ''' Verify the baud rate control supported by UART
+
+                - Enable UART IO
+                - Randomly pick one of the UART instances and configure it to run with any of these baud
+                  rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mbps, 1.5Mbps.
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+                - Program UART for transmission
+                - Send 20 bytes from UART by writing to WDATA FIFO
+                - Check if the data is the same as was written
+                - Program UART for reception
+                - Send 20 bytes from testbench to UART IO
+                - Check the data received bytes are same as expected
+            '''
+      stages: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.BAUD_RATE_CONTROL"]
+      tests: ["chip_sw_uart_rand_baudrate"]
+    },
+    {
+      name: chip_sw_uart_line_break_test
+      desc: ''' Verify the line break interrupt on RX
+
+                - Enable UART IO
+                - Select a random baudrate in the supported range
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+                - Program CTRL.RXBLVL with 0 indicating line break for 2 cycles
+                - Enable CONTROL.RX
+                - Send a byte from testbench to OT on UART IO
+                - In OT, wait for interrupt from UART and check the transmitted data
+                - Now, send a half-byte and hold the line low for 16 clock cycles
+                - In OT, wait for interrupt from UART and once interrupt is observed check if it is rx_break_err
+                - Clear interrupt
+                - Repeat the sequence for other supported values of CTRL.RXBLVL with combination of CTRL.PARITY_EN and CTRL.PARITY_ODD
+                Note that the line break level depends on character length which depends on partity enable.
+                without parity, character length is 10 bits with parity is 11 bits
+            '''
+      stages: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.BAUD_RATE_CONTROL", "UART.LINE_BREAK",
+                 "UART.PARITY_EN", "UART.PARITY_ODD"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_noise_filter
+      desc: ''' Verify the noise filter feature of UART
+
+                - Enable UART IO
+                - Select a random baudrate in the supported range
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+                - Enable CONTROL.NF
+                - Enable CONTROL.RX
+                - Send a byte from testbench to OT on UART IO with spike in a bit transfer for one clock cycle
+                - In OT, wait for interrupt from UART and check the transmitted data
+                - Check if the received data in UART matches the data transmitted from testbench
+                - Clear interrupt
+                - Repeat the sequence for multiple bytes with random noise for single clock cycle
+            '''
+      stages: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.BAUD_RATE_CONTROL", "UART.NOISE_FILTER",
+                 "UART.PARITY_EN", "UART.PARITY_ODD"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_rx_tx_watermark
+      desc: ''' Verify the watermark interrupts of UART
+
+                - Enable UART IO
+                - Select a random baudrate in the supported range
+                - Calculate CONTROL.NCO using progrmmer's model and update the register
+
+                Read sequence:
+                  - Program FIFO_CTRL.RXILVL with 0x1
+                  - Enable CONTROL.RX
+                  - Transfer one byte to OT from testbench
+                  - In OT, wait for interrupt and if the interrupt is rx_watermark, check if the data matches the data sent from testbench
+                  - Check FIFO_STATUS.RXLVL is zero after read
+                  - clear RX FIFO by writing to FIFO_CONTROL.RXRST
+                  - Repeat the sequence for 10 random values in supported range of FIFO_CONTROL.RXILVL
+
+                Write sequence:
+                  - Program FIFO_CTRL.TXILVL with 0x1
+                  - Write one byte to WDATA FIFO
+                  - Enable CONTROL.TX
+                  - In testbench, wait for transmission of one byte from OT
+                  - In OT, wait for interrupt from uart and once received check if its tx_watermark
+                  - Clear TX FIFO by writing to FIFO_CONTROL.TXRST
+                  - Repeat the sequence for 10 random values in supported range of FIFO_CONTROL.TXILVL
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
+            '''
+      stages: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.BAUD_RATE_CONTROL", "UART.RX_WATERMARK_INTERRUPT", "UART.RX_WATERMARK_INTERRUPT"]
+      tests: ["chip_sw_uart_rx_tx_watermark", "chip_sw_uart_tx_rx"]
+    },
+    // Integration tests:
+    {
+      name: chip_sw_uart_rx_overflow
+      desc: '''Verify the RX overflow interrupt.
+
+            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
+            ignores the received the data to allow the RX overflow interrupt to assert.
+
+            Verify each UART instance at the chip level independently. Verify there is no aliasing
+            on all UART ports across the instances.
+            '''
+      stage: V1
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.BAUD_RATE_CONTROL", "UART.RX_OVERFLOW_INTERRUPT"]
+      tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
+              "chip_sw_uart_tx_rx_idx3"]
+    }
+    {
+      name: chip_sw_uart_tx_rx_alt_clk_freq
+      desc: '''Verify the transmission of UART via using external clock as uart core clock.
+
+            Extend from chip_sw_uart_rand_baudrate with following added settings.
+            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
+            - Configure clkmgr to select external clock.
+            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
+              ext_clk_freq / 4 or ext_clk_freq / 2.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      features: ["UART.RX_EN", "UART.TX_EN", "UART.BAUD_RATE_CONTROL"]
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
+    }
+  ]
+}
