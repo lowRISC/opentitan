@@ -94,25 +94,6 @@ typedef struct gcm_ghash_context {
 } gcm_ghash_context_t;
 
 /**
- * Generates a new AES key.
- *
- * The caller should allocate and partially populate the blinded
- * key struct, including populating the key configuration and
- * allocating space for the keyblob. The caller should indicate
- * the length of the allocated keyblob; this function will
- * return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0
- * and the keyblob pointer may be `NULL`. For non-hardware-backed keys,
- * the keyblob should be twice the length of the key. The value in
- * the `checksum` field of the blinded key struct will be populated
- * by the key generation function.
- *
- * @param[out] key Destination blinded key struct.
- * @return The result of the cipher operation.
- */
-crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key);
-
-/**
  * Get the number of blocks needed for the plaintext length and padding mode.
  *
  * This returns the size of the padded plaintext, which is the same as the

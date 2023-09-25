@@ -20,6 +20,41 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Generates a new, random symmetric key.
+ *
+ * Use this only for symmetric algorithms (e.g. AES, HMAC, KMAC). Asymmetric
+ * algorithms (e.g. ECDSA, RSA) have their own specialized key-generation
+ * routines.
+ *
+ * The caller should allocate space for the keyblob and populate the blinded
+ * key struct with the length of the keyblob, the pointer to the keyblob
+ * buffer, and the key configuration. The value in the `checksum` field of
+ * the blinded key struct will be populated by the key generation function.
+ * The keyblob should be twice the length of the unblinded key.  This function
+ * will return an error if the keyblob length does not match expectations based
+ * on the key mode and configuration.
+ *
+ * For hardware-backed keys, the keyblob length should always be 256 bits and
+ * the caller should populate the key blob with their desired key version and
+ * salt value. The first 32 bits of the key blob are interpreted in
+ * little-endian form as the version, and the remaining 224 bits are
+ * concatenated with the one-word key mode to become the salt.
+ *
+ * For non-hardware-backed keys, the keyblob should be twice the length of the
+ * key, and the caller only needs to allocate the keyblob, not populate it.
+ *
+ * The personalization string may empty, and may be up to 48 bytes long; any
+ * longer will result in an error. It is passed as an extra seed input to the
+ * DRBG, in addition to the hardware TRNG.
+ *
+ * @param perso_string Optional personalization string to be passed to DRBG.
+ * @param[out] key Destination blinded key struct.
+ * @return The result of the cipher operation.
+ */
+crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
+                                          crypto_blinded_key_t *key);
+
+/**
  * Builds an unblinded key struct from a user (plain) key.
  *
  * @param plain_key Pointer to the user defined plain key.

@@ -312,6 +312,21 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "symmetric_keygen_functest",
+    srcs = ["symmetric_keygen_functest.c"],
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:randomness_quality",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 py_binary(
     name = "ecdsa_p256_verify_set_testvectors",
     srcs = ["ecdsa_p256_verify_set_testvectors.py"],

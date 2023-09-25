@@ -121,6 +121,9 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
     deps = [
         ":status",
+        "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

@@ -43,23 +43,6 @@ typedef struct hmac_context {
 } hmac_context_t;
 
 /**
- * Generates a new HMAC or KMAC key.
- *
- * The caller should allocate and partially populate the blinded key struct,
- * including populating the key configuration and allocating space for the
- * keyblob. The caller should indicate the length of the allocated keyblob;
- * this function will return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0 and the
- * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
- * should be twice the length of the key. The value in the `checksum` field of
- * the blinded key struct will be populated by the key generation function.
- *
- * @param[out] key Destination blinded key struct.
- * @return The result of the key generation operation.
- */
-crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key);
-
-/**
  * Performs the HMAC function on the input data.
  *
  * This function computes the HMAC function on the `input_message` using the
