@@ -100,7 +100,7 @@
             rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
             reset_reason.
             SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
-	    '''
+            '''
       stage: V2
       si_stage: None
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
@@ -161,7 +161,8 @@
             This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing
             is working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
       si_stage: SV2
@@ -337,7 +338,8 @@
 
             This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
             and fails if the pwrmgr ISR is called.
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
       si_stage: SV3
@@ -356,7 +358,8 @@
             Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
             to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
             configure the watchdog to bite, and the test passes if there is a watchdog reset.
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V3
       si_stage: SV3
