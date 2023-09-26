@@ -920,7 +920,7 @@ otbn_sim_test(
     srcs = [
         "rsa_2048_dec_test.s",
     ],
-    timeout = 'long',
+    timeout = 'eternal',
     exp = "rsa_2048_dec_test.exp",
     deps = [
         "//sw/otbn/crypto:modexp",
@@ -934,6 +934,18 @@ otbn_sim_test(
         "rsa_2048_enc_test.s",
     ],
     exp = "rsa_2048_enc_test.exp",
+    deps = [
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_3072_enc_test",
+    srcs = [
+        "rsa_3072_enc_test.s",
+    ],
+    exp = "rsa_3072_enc_test.exp",
     deps = [
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
