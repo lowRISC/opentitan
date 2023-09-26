@@ -178,7 +178,7 @@
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_wdog_reset"]
-      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_aon_power_glitch_reset
@@ -349,7 +349,7 @@
       ]
       features: ["PWRMGR.LOW_POWER.ENTRY"]
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
-      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_usb_clk_disabled_when_active
@@ -369,7 +369,7 @@
       ]
       features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
-      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_cw310_test_rom"]
     }
     {
       name: chip_sw_all_resets
