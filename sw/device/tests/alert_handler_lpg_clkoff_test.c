@@ -285,9 +285,8 @@ static void alert_handler_config_peripherals(uint32_t num_peripherals,
   // Enable all alerts coming from the chosen peripherals
   // Configure them as Class A.
   size_t array_idx = 0;
-  test_t *peri_ptr;
   for (int ii = 0; ii < num_peripherals; ii++) {
-    peri_ptr = (test_t *)first_peripheral + ii;
+    const test_t *peri_ptr = &first_peripheral[ii];
     for (int jj = 0; jj < peri_ptr->num_alert_peri; jj++) {
       alerts[array_idx] = peri_ptr->alert_ids[jj];
       alert_classes[array_idx] = kDifAlertHandlerClassA;
@@ -409,7 +408,7 @@ void ottf_external_isr(void) {
   isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
                                   &peripheral_serviced, &irq_serviced);
   CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAlertHandler,
-        "Interurpt from unexpected peripheral: %d", peripheral_serviced);
+        "Interrupt from unexpected peripheral: %d", peripheral_serviced);
 }
 
 enum {
@@ -494,8 +493,8 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_alert_handler_local_alert_is_cause(
           &alert_handler, kDifAlertHandlerLocalAlertAlertPingFail, &is_cause));
       CHECK(!is_cause,
-            "Expected response is ping_timeout_fail= 0! But we got "
-            "ping_timrout_fail = 1 for peripheral[%d]",
+            "Expected response is ping_timeout_fail == 0! But we got "
+            "ping_timeout_fail = 1 for peripheral[%d]",
             peri_idx);
 
       // Enable the clock again
