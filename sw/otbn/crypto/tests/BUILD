@@ -917,10 +917,10 @@ otbn_sim_test(
 
 otbn_sim_test(
     name = "rsa_2048_dec_test",
+    timeout = "eternal",
     srcs = [
         "rsa_2048_dec_test.s",
     ],
-    timeout = "eternal",
     exp = "rsa_2048_dec_test.exp",
     deps = [
         "//sw/otbn/crypto:modexp",
