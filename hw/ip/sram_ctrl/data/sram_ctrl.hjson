@@ -88,6 +88,49 @@
     },
   ]
 
+  features: [
+    { name: "SRAM_CTRL.INTEGRITY",
+      desc: '''
+        Words are stored with integrity bits (7 integrity bits for each 32 data bits).
+      '''
+    },
+    { name: "SRAM_CTRL.SCRAMBLED",
+      desc: '''
+        Backing memory is scrambled.
+        The scrambling depends on keys configurable by a CSR.
+      '''
+    },
+    { name: "SRAM_CTRL.LOCK_ON_ERROR",
+      desc: '''
+        The block disallows transactions and sends out an alert if it detects an error.
+        This can come from a bus integrity failure or from a message from the lifecycle controller.
+      '''
+    },
+    { name: "SRAM_CTRL.MEMSET",
+      desc: '''
+        The block can initialise the contents of memory with a pseudo-random stream.
+        This avoids leaking the cipher key (which would be possible with a CTR-based cipher).
+      '''
+    },
+    { name: "SRAM_CTRL.FETCH_ALLOW",
+      desc: '''
+        Access for instruction fetches can be allowed or disallowed.
+        Instruction fetches can be completely disallowed for an instance by a parameter.
+        If possible in this instance, the choice depends on either life-cycle state or a CSR.
+      '''
+    },
+    { name: "SRAM_CTRL.SUBWORD_ACCESS",
+      desc: '''
+        Sub-word reads and writes are supported.
+      '''
+    },
+    { name: "SRAM_CTRL.REGWEN",
+      desc: '''
+        Configuration can be locked, using a REGWEN CSR.
+      '''
+    },
+  ]
+
   /////////////////////////////
   // Intermodule Connections //
   /////////////////////////////
