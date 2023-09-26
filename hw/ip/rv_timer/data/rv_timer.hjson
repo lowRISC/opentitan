@@ -66,6 +66,43 @@
       default: "1"
     }
   ],
+  features: [
+    { name: "RV_TIMER.RISCV_CSRS_INTEGRATION",
+      desc: '''
+            The RV_TIMER block is integrated with the RISC-V CSRs `mtime` and `mtimecmp`.
+            '''
+    },
+    { name: "RV_TIMER.ENABLE",
+      desc: '''
+            Enable timer with CTRL CSR.
+            '''
+    },
+    { name: "RV_TIMER.DISABLE",
+      desc: '''
+            Disable timer with CTRL CSR.
+            '''
+    },
+    { name: "RV_TIMER.INTERRUPT",
+      desc: '''
+            The timer triggers interrupts when the counter register matches the compare register.
+            '''
+    },
+    { name: "RV_TIMER.CONFIG",
+      desc: '''
+            Configures the tick period.
+            '''
+    },
+    { name: "RV_TIMER.COUNTER",
+      desc: '''
+            The timer has a 64-bit counter that wraps.
+            '''
+    },
+    { name: "RV_TIMER.COMPARE",
+      desc: '''
+            The timer has a 64-bit compare register that triggers an interrupt when it matches the counter.
+            '''
+    },
+  ],
   no_auto_intr_regs: "true",
   countermeasures: [
     { name: "BUS.INTEGRITY"
