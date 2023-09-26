@@ -254,7 +254,33 @@ def generate_regfile_from_path(hjson_path: Path,
         sys.exit(1)
 
 
-def generate_pinmux(top, out_path):
+def _render_template(tpl_path: Path, **kwargs: Dict[str, object]) -> str:
+    out = StringIO()
+    with tpl_path.open(mode="r", encoding="UTF-8") as fin:
+        hjson_tpl = Template(fin.read())
+        try:
+            out = hjson_tpl.render(**kwargs)
+
+        except:  # noqa: E722
+            log.error(exceptions.text_error_template().render())
+
+    if out == "":
+        log.error("Cannot render file %s", tpl_path)
+    else:
+        log.info("pwrmgr hjson: %s" % out)
+    return out
+
+
+def _generate_file_from_template(tpl_path: Path, target_dir_path: Path,
+                                 header: str,
+                                 **render_dict: Dict[str, object]) -> None:
+    out = _render_template(tpl_path, **render_dict)
+    target_path = target_dir_path / tpl_path.stem
+    with target_path.open(mode="w", encoding="UTF-8") as fout:
+        fout.write(header + out)
+
+
+def generate_pinmux(top, repo_top_path, out_path):
 
     topname = top["name"]
     pinmux = top["pinmux"]
@@ -321,75 +347,55 @@ def generate_pinmux(top, out_path):
     # Target path
     #   rtl: pinmux_reg_pkg.sv & pinmux_reg_top.sv
     #   data: pinmux.hjson
-    rtl_path = out_path / "ip/pinmux/rtl/autogen"
+    spec_ip_path = out_path / "ip" / "pinmux"
+    rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / "ip/pinmux/data/autogen"
+    data_path = spec_ip_path / "data" / "autogen"
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template path
-    tpl_path = Path(
-        __file__).resolve().parent / "../hw/ip/pinmux/data/pinmux.hjson.tpl"
-    original_rtl_path = Path(__file__).resolve().parent / "../hw/ip/pinmux/rtl"
+    orig_ip_path = repo_top_path / "hw" / "ip" / "pinmux"
+    tpl_path = orig_ip_path / "data"
+    original_rtl_path = orig_ip_path / "rtl"
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
               "-o hw/top_{topname}/\n\n".format(topname=topname))
 
-    hjson_gen_path = data_path / "pinmux.hjson"
-
-    out = StringIO()
-    with tpl_path.open(mode="r", encoding="UTF-8") as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(
-                n_mio_periph_in=n_mio_periph_in,
-                n_mio_periph_out=n_mio_periph_out,
-                n_mio_pads=n_mio_pads,
-                # each DIO has in, out and oe wires
-                # some of these have to be tied off in the
-                # top, depending on the type.
-                n_dio_periph_in=n_dio_pads,
-                n_dio_periph_out=n_dio_pads,
-                n_dio_pads=n_dio_pads,
-                attr_dw=attr_dw,
-                n_wkup_detect=num_wkup_detect,
-                wkup_cnt_width=wkup_cnt_width)
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("PINMUX HJSON: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pinmux HJSON")
-        return
-
-    with hjson_gen_path.open(mode="w", encoding="UTF-8") as fout:
-        fout.write(genhdr + gencmd + out)
+    render_dict = {
+        "n_mio_periph_in": n_mio_periph_in,
+        "n_mio_periph_out": n_mio_periph_out,
+        "n_mio_pads": n_mio_pads,
+        # each DIO has in, out and oe wires
+        # some of these have to be tied off in the top, depending on the type.
+        "n_dio_periph_in": n_dio_pads,
+        "n_dio_periph_out": n_dio_pads,
+        "n_dio_pads": n_dio_pads,
+        "attr_dw": attr_dw,
+        "n_wkup_detect": num_wkup_detect,
+        "wkup_cnt_width": wkup_cnt_width
+    }
+    _generate_file_from_template(tpl_path / "pinmux.hjson.tpl", data_path,
+                                 genhdr + gencmd, **render_dict)
 
     # Generate reg file
-    generate_regfile_from_path(hjson_gen_path, rtl_path, original_rtl_path)
+    generate_regfile_from_path(data_path / "pinmux.hjson", rtl_path,
+                               original_rtl_path)
 
 
-def generate_clkmgr(top, cfg_path, out_path):
+def generate_clkmgr(top, repo_top_path, out_path):
 
     # Target paths
-    rtl_path = out_path / "ip/clkmgr/rtl/autogen"
+    spec_ip_path = out_path / "ip" / "clkmgr"
+    rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = out_path / "ip/clkmgr/data/autogen"
+    data_path = spec_ip_path / "data" / "autogen"
     data_path.mkdir(parents=True, exist_ok=True)
 
     # Template paths
-    hjson_tpl = cfg_path / "../ip/clkmgr/data/clkmgr.hjson.tpl"
-    rtl_tpl = cfg_path / "../ip/clkmgr/data/clkmgr.sv.tpl"
-    pkg_tpl = cfg_path / "../ip/clkmgr/data/clkmgr_pkg.sv.tpl"
-    original_rtl_path = cfg_path / "../ip/clkmgr/rtl"
-
-    hjson_out = data_path / "clkmgr.hjson"
-    rtl_out = rtl_path / "clkmgr.sv"
-    pkg_out = rtl_path / "clkmgr_pkg.sv"
-
-    tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
-    outputs = [hjson_out, rtl_out, pkg_out]
-    names = ["clkmgr.hjson", "clkmgr.sv", "clkmgr_pkg.sv"]
+    orig_ip_path = repo_top_path / "hw" / "ip" / "clkmgr"
+    tpl_path = orig_ip_path / "data"
+    original_rtl_path = orig_ip_path / "rtl"
 
     clocks = top["clocks"]
     assert isinstance(clocks, Clocks)
@@ -397,57 +403,27 @@ def generate_clkmgr(top, cfg_path, out_path):
     typed_clocks = clocks.typed_clocks()
     hint_names = typed_clocks.hint_names()
 
-    for idx, tpl in enumerate(tpls):
-        out = ""
-        with tpl.open(mode="r", encoding="UTF-8") as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=top,
-                                 clocks=clocks,
-                                 typed_clocks=typed_clocks,
-                                 hint_names=hint_names)
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode="w", encoding="UTF-8") as fout:
-            fout.write(genhdr + out)
+    render_dict = {
+        "cfg": top,
+        "clocks": clocks,
+        "typed_clocks": typed_clocks,
+        "hint_names": hint_names,
+        "gen_core_comment": GEN_CORE_COMMENT
+    }
+    _generate_file_from_template(tpl_path / "clkmgr.hjson.tpl", data_path,
+                                 genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "clkmgr.sv.tpl", rtl_path, genhdr,
+                                 **render_dict)
+    _generate_file_from_template(tpl_path / "clkmgr_pkg.sv.tpl", rtl_path,
+                                 genhdr, **render_dict)
 
     # Generate reg files
-    generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
-
-
-def _render_template(tpl_path: Path, **kwargs: Dict[str, object]) -> str:
-    out = StringIO()
-    with tpl_path.open(mode="r", encoding="UTF-8") as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(**kwargs)
-
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-
-    if out == "":
-        log.error("Cannot render file %s", tpl_path)
-    else:
-        log.info("pwrmgr hjson: %s" % out)
-    return out
-
-
-def _generate_file_from_template(tpl_path: Path, target_dir_path: Path,
-                                 header: str,
-                                 **render_dict: Dict[str, object]) -> None:
-    out = _render_template(tpl_path, **render_dict)
-    target_path = target_dir_path / tpl_path.stem
-    with target_path.open(mode="w", encoding="UTF-8") as fout:
-        fout.write(header + out)
+    generate_regfile_from_path(data_path / "clkmgr.hjson", rtl_path,
+                               original_rtl_path)
 
 
 # generate pwrmgr
-def generate_pwrmgr(top, out_path):
+def generate_pwrmgr(top, repo_top_path, out_path):
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
@@ -483,8 +459,7 @@ def generate_pwrmgr(top, out_path):
     dv_env_path.mkdir(parents=True, exist_ok=True)
 
     # Get paths to templates and original ip components.
-    # This assumes topgen.py is at REPO_TOP/util
-    orig_ip_path = Path(__file__).resolve().parents[1] / "hw" / "ip" / "pwrmgr"
+    orig_ip_path = repo_top_path / "hw" / "ip" / "pwrmgr"
     tpl_path = orig_ip_path / "data"
     original_rtl_path = orig_ip_path / "rtl"
 
@@ -512,7 +487,7 @@ def get_rst_ni(top):
 
 
 # generate rstmgr
-def generate_rstmgr(topcfg, out_path):
+def generate_rstmgr(topcfg, repo_top_path, out_path):
     log.info("Generating rstmgr")
 
     # Define target paths using the top specific ip path
@@ -527,8 +502,7 @@ def generate_rstmgr(topcfg, out_path):
     env_path.mkdir(parents=True, exist_ok=True)
 
     # Get paths to templates and original ip components.
-    # This assumes topgen.py is at REPO_TOP/util
-    orig_ip_path = Path(__file__).resolve().parents[1] / "hw" / "ip" / "rstmgr"
+    orig_ip_path = repo_top_path / "hw" / "ip" / "rstmgr"
     tpl_path = orig_ip_path / "data"
     original_rtl_path = orig_ip_path / "rtl"
 
@@ -597,32 +571,18 @@ def generate_rstmgr(topcfg, out_path):
 
 
 # generate flash
-def generate_flash(topcfg, out_path):
+def generate_flash(topcfg, repo_top_path, out_path):
     log.info("Generating flash")
 
     # Define target path
-    rtl_path = out_path / "ip/flash_ctrl/rtl/autogen"
+    spec_ip_path = out_path / "ip" / "flash_ctrl"
+    rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / "ip/flash_ctrl/data/autogen"
-    doc_path.mkdir(parents=True, exist_ok=True)
-    tpl_path = Path(__file__).resolve().parent / "../hw/ip/flash_ctrl/data"
-    original_rtl_path = Path(
-        __file__).resolve().parent / "../hw/ip/flash_ctrl/rtl"
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = [
-        "flash_ctrl.hjson", "flash_ctrl.sv", "flash_ctrl_pkg.sv",
-        "flash_ctrl_region_cfg.sv"
-    ]
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(doc_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
+    data_path = spec_ip_path / "data" / "autogen"
+    data_path.mkdir(parents=True, exist_ok=True)
+    orig_ip_path = repo_top_path / "hw" / "ip" / "flash_ctrl"
+    tpl_path = orig_ip_path / "data"
+    original_rtl_path = orig_ip_path / "rtl"
 
     # Parameters needed for generation
     flash_mems = [
@@ -637,27 +597,18 @@ def generate_flash(topcfg, out_path):
 
     cfg = flash_mems[0]["memory"]["mem"]["config"]
 
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode="r", encoding="UTF-8") as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=cfg)
+    render_dict = {"cfg": cfg}
+    _generate_file_from_template(tpl_path / "flash_ctrl.hjson.tpl", data_path,
+                                 genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "flash_ctrl.sv.tpl", rtl_path,
+                                 genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "flash_ctrl_pkg.sv.tpl", rtl_path,
+                                 genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "flash_ctrl_region_cfg.sv.tpl",
+                                 rtl_path, genhdr, **render_dict)
 
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode="w", encoding="UTF-8") as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
+    generate_regfile_from_path(data_path / "flash_ctrl.hjson", rtl_path,
+                               original_rtl_path)
 
 
 def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
@@ -826,7 +777,7 @@ def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                     helper=rs_helper)
 
 
-def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
+def _process_top(topcfg, args, repo_top_path, out_path, pass_idx):
     # Create generated list
     # These modules are generated through topgen
     templated_list = lib.get_templated_modules(topcfg)
@@ -862,7 +813,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     # the top hjson file
     topcfg["clocks"] = Clocks(topcfg["clocks"])
     extract_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
+    generate_clkmgr(topcfg, repo_top_path, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absent of rv_plic.
@@ -993,7 +944,7 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     completecfg = merge_top(topcfg, name_to_block, xbar_objs)
 
     # Generate flash controller and flash memory
-    generate_flash(topcfg, out_path)
+    generate_flash(topcfg, repo_top_path, out_path)
 
     # Generate PLIC
     if not args.no_plic and \
@@ -1014,13 +965,13 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
             sys.exit()
 
     # Generate Pinmux
-    generate_pinmux(completecfg, out_path)
+    generate_pinmux(completecfg, repo_top_path, out_path)
 
     # Generate Pwrmgr
-    generate_pwrmgr(completecfg, out_path)
+    generate_pwrmgr(completecfg, repo_top_path, out_path)
 
     # Generate rstmgr
-    generate_rstmgr(completecfg, out_path)
+    generate_rstmgr(completecfg, repo_top_path, out_path)
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
@@ -1148,19 +1099,25 @@ def main():
     log.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
     if not args.outdir:
-        outdir = Path(args.topcfg).parent / ".."
-        log.info("TOP directory not given. Use %s", (outdir))
+        out_path = Path(args.topcfg).parents[1]
+        log.info("TOP directory not given. Using %s", out_path)
     elif not Path(args.outdir).is_dir():
         log.error("'--outdir' should point to writable directory")
         raise SystemExit(sys.exc_info()[1])
     else:
-        outdir = Path(args.outdir)
+        out_path = Path(args.outdir)
 
     if args.hjson_path is not None:
         log.info(f"Alternate hjson path is {args.hjson_path}")
 
-    out_path = Path(outdir)
-    cfg_path = Path(args.topcfg).parents[1]
+    # This assumes the config file is under hw/<top>/data/<top>.hjson.
+    repo_top_path = Path(args.topcfg).resolve().parents[3]
+    if not (repo_top_path / "hw" / "ip").exists():
+        log.error(f"""
+        The top config file is at an unexpected location.
+        Expected at hw/<top>/data/<top>.hjson, got {Path(args.topcfg).resolve()}
+        """)
+        raise SystemExit(sys.exc_info()[1])
 
     try:
         with open(args.topcfg, "r") as ftop:
@@ -1236,9 +1193,10 @@ def main():
         log.debug("Generation pass {}".format(pass_idx))
         if pass_idx < process_dependencies:
             cfg_copy = deepcopy(topcfg)
-            _process_top(cfg_copy, args, cfg_path, out_path_gen, pass_idx)
+            _process_top(cfg_copy, args, repo_top_path, out_path_gen, pass_idx)
         else:
-            completecfg, name_to_block = _process_top(topcfg, args, cfg_path,
+            completecfg, name_to_block = _process_top(topcfg, args,
+                                                      repo_top_path,
                                                       out_path_gen, pass_idx)
 
     topname = topcfg["name"]
