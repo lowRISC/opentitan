@@ -220,6 +220,11 @@
       uvm_test_seq: rv_dm_dataaddr_rw_access_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_halt_resume_whereto
+      uvm_test_seq: rv_dm_halt_resume_whereto_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.

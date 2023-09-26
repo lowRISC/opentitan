@@ -461,7 +461,7 @@
             - Send an acknowledge by setting tl_mem_ral.resuming to 0.
       '''
       stage: V1
-      tests: []
+      tests: ["rv_dm_halt_resume_whereto"]
     }
     {
       name: stress_all
