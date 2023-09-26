@@ -13,7 +13,7 @@
  * .data segment in this file.
  *
  * Copies the encrypted message to wide registers for comparison (starting at
- * w0). See comment at the end of the file for expected values.
+ * w0).
  */
 run_rsa_1024_enc:
   /* Init all-zero register. */
