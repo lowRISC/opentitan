@@ -234,29 +234,6 @@ interface chip_if;
     end while(1);
   end
 
-  // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
-  spi_if spi_device1_if(
-    .rst_n(`SPI_HOST_HIER(1).rst_ni),
-    .sio  ({mios[top_darjeeling_pkg::MioPadIob6],  // sio[3]
-            mios[top_darjeeling_pkg::MioPadIob5],  // sio[2]
-            mios[top_darjeeling_pkg::MioPadIob4],  // sio[1]
-            mios[top_darjeeling_pkg::MioPadIob3]}) // sio[0]
-  );
-
-  assign spi_device1_if.sck = __enable_spi_device[1] ?
-      mios[top_darjeeling_pkg::MioPadIob0] : 1'bz;
-
-  assign spi_device1_if.csb = __enable_spi_device[1] ?
-      {'1, mios[top_darjeeling_pkg::MioPadIob1]} : '1;
-
-  initial begin
-    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1*", "vif", spi_device1_if);
-    do begin
-      spi_device1_if.disconnect(!__enable_spi_device[1]);
-      @(__enable_spi_device[1]);
-    end while(1);
-  end
-
   // Enables tb spi_device, which connects to dut spi_host
   function automatic void enable_spi_device(int inst_num, bit enable);
     `DV_CHECK_FATAL(inst_num inside {[0:NUM_SPI_HOSTS-1]}, , MsgId)
@@ -920,7 +897,6 @@ interface chip_if;
       PeripheralSensorCtrl:     path = {path, ".", `DV_STRINGIFY(`SENSOR_CTRL_HIER)};
       PeripheralSpiDevice:      path = {path, ".", `DV_STRINGIFY(`SPI_DEVICE_HIER)};
       PeripheralSpiHost0:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(0))};
-      PeripheralSpiHost1:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(1))};
       PeripheralSramCtrlMain:   path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_MAIN_HIER)};
       PeripheralSramCtrlRetAon: path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_RET_HIER)};
       PeripheralSysrstCtrlAon:  path = {path, ".", `DV_STRINGIFY(`SYSRST_CTRL_HIER)};
@@ -1023,19 +999,6 @@ interface chip_if;
   assign spi_device_cio_csb_i = `SPI_DEVICE_HIER.cio_csb_i;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_device_cio_csb_i,
       spi_device_cio_csb_i, 1)
-
-  // Signal probe function for `fsm.state_q` of SPI_HOST_1
-  wire [2:0] spi_host_1_state;
-`ifdef GATE_LEVEL
-assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
-                          ,tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
-                          ,tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
-                          };
-`else
-  assign spi_host_1_state = `SPI_HOST_HIER(1).u_spi_core.u_fsm.state_q;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_1_fsm_state,
-      spi_host_1_state, 3)
 
   // Signal probe function for `state_q` of CSRNG main FSM
   wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;

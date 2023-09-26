@@ -9,8 +9,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
   // The sequence of opcodes used for the test.
   spi_flash_cmd_e test_opcodes[$];
-  // Whether to check for transactions appearing on the unused spi_host.
-  bit en_unused_spi_host_monitoring = 1'b1;
   // Frequencies to use for testing the sequences.
   time sck_periods_ps[] = '{
     41_000, // 24 MHz
@@ -39,15 +37,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     };
     test_opcodes.shuffle();
   endfunction
-
-  // Assert that spi_host does not send any transactions.
-  virtual task monitor_unused_spi_host();
-    spi_agent_cfg agent_cfg = cfg.m_spi_device_agent_cfgs[1];
-    // CSB should never assert
-    wait (agent_cfg.vif.rst_n && !agent_cfg.vif.csb[0]);
-    `uvm_fatal(`gfn, $sformatf(
-      "Observed SPI transaction on spi_host1, which should be inactive"));
-  endtask
 
   task get_filtered_commands(output bit [255:0] filter_map);
     filter_map = '0;
@@ -154,7 +143,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     // Enable the spi agents.
     cfg.chip_vif.enable_spi_host = 1;
     cfg.chip_vif.enable_spi_device(.inst_num(0), .enable(1));
-    cfg.chip_vif.enable_spi_device(.inst_num(1), .enable(1));
 
     // Wait until we reach the SW test state.
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest,
@@ -163,11 +151,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Test setup complete.",
              "Timeout waiting for software to complete setup.")
 
-    if (en_unused_spi_host_monitoring) begin
-      fork
-        monitor_unused_spi_host();
-      join_none
-    end
     foreach (sck_periods_ps[i]) begin
       cfg.m_spi_host_agent_cfg.sck_period_ps = sck_periods_ps[i];
       generate_spi_flash_sequence();
