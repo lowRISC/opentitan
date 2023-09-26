@@ -22,7 +22,7 @@ The SRAM controller contains the SRAM data and address scrambling device and pro
 
 ## Features
 
-- [Lightweight scrambling mechanism](../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network) based on the PRINCE prince cipher.
+- [Lightweight scrambling mechanism](../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network) based on the PRINCE cipher.
 - Key request logic for the lightweight memory and address scrambling device.
 - Alert sender and checking logic for detecting bus integrity failures.
 - LFSR-based memory initialization feature.
