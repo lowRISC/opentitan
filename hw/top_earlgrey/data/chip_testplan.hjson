@@ -555,8 +555,28 @@
             - Verify that in the sleep state, the PWM signals are active and pulsing correctly, by
               hooking up the PWM monitor.
             - Repeat the steps for all 6 PWM signals.
+
+            Notes for silicon targets:
+            - Instead of using the PWM monitor, the PWM signals should be tested by measuring the actual output pins.
+            - The sampling frequency should be high enough to measure the duty cycle accurately.
+            - Repeat this test with:
+              - At least two different values of the duty cycle.
+              - All channels set to blinking.
+              - All channels set to heartbeat.
+              - All channels set to reverse polarity.
+              - At least two different values of the clock divider.
+              - Each odd PWM channel set to be 180 degrees out of phase of the even ones.
             '''
+      features: [
+        "PWM.DUTYCYCLE",
+        "PWM.BLINK",
+        "PWM.HEARTBEAT",
+        "PWM.POLARITY",
+        "PWM.CLOCKDIVIDER",
+        "PWM.PHASEDELAY"
+      ]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_sleep_pwm_pulses"]
     }
 
