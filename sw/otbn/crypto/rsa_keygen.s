@@ -835,13 +835,14 @@ _generate_q_counter_nonzero:
  * Returns all 1s if the check passess, and 0 if it fails.
  *
  * For the candidate value p, this check passes only if:
- *   * p >= sqrt(2)*(2^(nlen/2 - 1)), where nlen = RSA public key length, and
  *   * GCD(p-1, 65537) = 1, and
  *   * p passes 5 rounds of the Miller-Rabin primality test.
  *
  * Assumes that the input is an odd number (this is a precondition for the
- * primality test). Before using this to check untrusted or imported keys, the
- * caller must check to ensure p is odd.
+ * primality test) and that p >= sqrt(2)*(2^(nlen/2 - 1)), where nlen = RSA
+ * public key length. Internally, `generate_prime_candidate` guarantees these
+ * conditions. The caller must ensure them before using this routine to check
+ * untrusted or imported keys.
  *
  * See FIPS 186-5 section A.1.3 for the official spec. See this comment in
  * BoringSSL's implementation for a detailed description of how to choose the
@@ -869,46 +870,6 @@ check_p:
   /* Set the output to the "check passed" value (all 1s) by default.
        w24 <= 2^256 - 1 */
   bn.not   w24, w31
-
-  /* Get a pointer to the precomputed constant sqrt(2)*2^2047. */
-  la       x2, sqrt2_rsa4k
-
-  /* For RSA-2048 and RSA-3072, we will need to shift the lower bound right to
-     get sqrt(2)*2^1535 and sqrt(2)*2^1023, respectively. We can do this by
-     simply adjusting the pointer to skip the lower limbs.
-       x2 <= x2 + ((8 - x30) << 5) = sqrt2_rsa4k + ((8 - n) * 32) */
-  li       x3, 8
-  sub      x3, x3, x30
-  slli     x3, x3, 5
-  add      x2, x2, x3
-
-  /* Clear flags. */
-  bn.sub   w31, w31, w31
-
-  /* Now, the value at dmem[x2] is n limbs long and represents the lower bound
-     for p. Compare the two values. */
-  addi  x3, x16, 0
-  loop  x30, 3
-    /* w20 <= dmem[x2] = lower_bound[i] */
-    bn.lid    x20, 0(x2++)
-    /* w21 <= dmem[x3] = p[i] */
-    bn.lid    x21, 0(x3++)
-    /* FG0.C <= p[i] <? lower_bound[i] + FG0.C */
-    bn.cmpb   w21, w20
-
-  /* If FG0.C is set, p is smaller than the lower bound; set the result to
-     "checks failed" (0).
-       w24 <= FG0.C ? 0 : w24 */
-  bn.sel    w24, w31, w24, FG0.C
-
-  /* Get the FG0.C flag into a register.
-       x2 <= CSRs[FG0][0] = FG0.C */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 1
-
-  /* If the flag is set, then the check failed and we can skip the remaining
-     checks. */
-  bne      x2, x0, _check_prime_fail
 
   /* Subtract 1 from the lowest limb in-place.
        dmem[x16] <= dmem[x16] - 1 = p - 1 */
@@ -1082,8 +1043,13 @@ check_q:
 /**
  * Generate a candidate prime (can be used for either p or q).
  *
- * Fixes the lowest and highest bits to 1, so the number is always odd and >=
- * 2^(256*n). All other bits are fully random.
+ * Fixes the lowest 3 bits to 1 and the highest 2 bits to 1, so the number is
+ * always equivalent to 7 mod 8 and is always >= 2^(256*n - 1) * 1.5.  This
+ * implies that the prime candidate is always in range, i.e. it is greater than
+ * sqrt(2) * (2^(256*n - 1)), because sqrt(2) < 1.5. All other bits are fully
+ * random. This follows FIPS 186-5 section A.1.3, which allows generating prime
+ * candidates with a specific value mod 8 and allows the highest 2 bits to be
+ * set arbitrarily.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1111,14 +1077,11 @@ generate_prime_candidate:
     /* dmem[x2] <= w20 */
     bn.sid   x20, 0(x2++)
 
-  /* Create an all-ones mask.
-       w21 <= 2^256 - 1 */
-  bn.not   w21, w31
-
-  /* Fix the lowest bit to 1 so the number is always odd.
-       dmem[x16] <= (dmem[x16] << 1) mod 2^256 | 1 */
+  /* Fix the lowest 3 bits to 1 so the number is always 7 mod 8.
+       dmem[x16] <= dmem[x16] | 7 */
   bn.lid   x20, 0(x16)
-  bn.rshi  w20, w20, w21 >> 255
+  bn.addi  w21, w31, 7
+  bn.or    w20, w20, w21
   bn.sid   x20, 0(x16)
 
   /* Get a pointer to the last limb.
@@ -1126,12 +1089,11 @@ generate_prime_candidate:
   slli     x3, x31, 5
   add      x2, x16, x3
 
-  /* Fix the highest bit to 1 so the number is always at least 2^(256*n-1).
-     This is implied by the lower bound and setting the bit is explicitly
-     permitted by FIPS 186-5.
-       dmem[x2] <= 1 << 255 | (dmem[x2] >> 1) */
+  /* Fix the highest 2 bits to 1.
+       dmem[x2] <= dmem[x2] | (3 << 6) << 248 = dmem[x2] | 3 << 254 */
   bn.lid   x20, 0(x2)
-  bn.rshi  w20, w21, w20 >> 1
+  bn.addi  w21, w31, 192
+  bn.or    w20, w20, w21 << 248
   bn.sid   x20, 0(x2)
 
   ret
@@ -1329,77 +1291,3 @@ mont_m0inv:
 .balign 32
 mont_rr:
 .zero 256
-
-/* Precomputed value for sqrt(2)*(2^2047), such that
-     (sqrt2_rsa4k^2 < 2**4095 < (sqrt2_rsa4k+1)^2
-
-   This number was taken from BoringSSL's implementation and has enough
-   precision to be exact for RSA-4096 and smaller:
-     https://boringssl.googlesource.com/boringssl/+/dcabfe2d8940529a69e007660fa7bf6c15954ecc/crypto/fipsmodule/rsa/rsa_impl.c#1006
-*/
-.balign 32
-sqrt2_rsa4k:
-  .word 0xe633e3e1
-  .word 0x4d7c60a5
-  .word 0xca3ea33b
-  .word 0x5fcf8f7b
-  .word 0x92957023
-  .word 0xc246785e
-  .word 0x797f2805
-  .word 0xf9acce41
-  .word 0xd3b1f780
-  .word 0xfdfe170f
-  .word 0x3facb882
-  .word 0xd24f4a76
-  .word 0xaff5f3b2
-  .word 0x18838a2e
-  .word 0xa2f7dc33
-  .word 0xc1fcbdde
-  .word 0xf7aa81c2
-  .word 0xdea06241
-  .word 0xca221307
-  .word 0xf6a1be3f
-  .word 0x7bda1ebf
-  .word 0x332a5e9f
-  .word 0xfe32352f
-  .word 0x0104dc01
-  .word 0x6f8236c7
-  .word 0xb8cf341b
-  .word 0xd528b651
-  .word 0x4264dabc
-  .word 0xebc93e0c
-  .word 0xf4d3a02c
-  .word 0xd8fd0efd
-  .word 0x81394ab6
-  .word 0x9040ca4a
-  .word 0xeaa4a089
-  .word 0x836e582e
-  .word 0xf52f120f
-  .word 0x31f3c84d
-  .word 0xcb2a6343
-  .word 0x8bb7e9dc
-  .word 0xc6d5a8a3
-  .word 0x2f7c4e33
-  .word 0x460abc72
-  .word 0x1688458a
-  .word 0xcab1bc91
-  .word 0x11bc337b
-  .word 0x53059c60
-  .word 0x42af1f4e
-  .word 0xd2202e87
-  .word 0x3dfa2768
-  .word 0x78048736
-  .word 0x439c7b4a
-  .word 0x0f74a85e
-  .word 0xdc83db39
-  .word 0xa8b1fe6f
-  .word 0x3ab8a2c3
-  .word 0x4afc8304
-  .word 0x83339915
-  .word 0xed17ac85
-  .word 0x893ba84c
-  .word 0x1d6f60ba
-  .word 0x754abe9f
-  .word 0x597d89b3
-  .word 0xf9de6484
-  .word 0xb504f333
