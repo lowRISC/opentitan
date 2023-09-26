@@ -115,7 +115,7 @@ modulus:
 /* Base for exponentiation (corresponds to plaintext for encryption or
    signature for verification).
 
-   Raw hex value (randomly generated) = 
+   Raw hex value (randomly generated) =
 0x6add9548af50f1bea3cb921205a5bb92ee325e01d160e3738a09aa0df7050e6051d693440f0d00cdd56cee5a748ff3b48b1df7be05808ad20068ad387b8b5e4c25c79bba9f87ef971da926f644c26d4273829fd69db71f9eded2cd1a33c367578550346ada160daa272940dd6fc10dae4a0facef437ece40130301c1b847203cc0defd3620ce89d96fa21d30ee63e458b0198adc842f68af8b462df6014955ab68f663a9b5e77caf15a517ab0931308bf9591cecc7691780a2f3bd99d3ce25433d31537e7cab1b4c07d99199e9517132188150d38d633c2b3ef6ba6fb40504e800fca580beb7a19f2315adb451be690fc4f87ea5914d28d5562dc1dce115a852
  */
 .balign 32
