@@ -30,8 +30,6 @@ wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
 wire clk_usb;
 clk_rst_if clk_rst_if_usb(.clk(clk_usb), .rst_n(rst_n));
-wire clk_io_div2;
-clk_rst_if clk_rst_if_io_div2(.clk(clk_io_div2), .rst_n(rst_n));
 wire clk_io_div4;
 clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
@@ -58,7 +56,6 @@ tl_if rom_ctrl1__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl1__regs_tl_if(clk_main, rst_n);
 tl_if soc_proxy__core_tl_if(clk_main, rst_n);
 tl_if soc_proxy__ctn_tl_if(clk_main, rst_n);
-tl_if spi_host1_tl_if(clk_io_div2, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
 tl_if aes_tl_if(clk_main, rst_n);
@@ -133,7 +130,6 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_main.clk_main_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_main.clk_fixed_i = clk_io_div4;
     force tb.dut.top_darjeeling.u_xbar_main.clk_usb_i = clk_usb;
-    force tb.dut.top_darjeeling.u_xbar_main.clk_spi_host1_i = clk_io_div2;
     force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
     force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_dbg.clk_dbg_i = clk_main;
@@ -142,7 +138,6 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_main.rst_fixed_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_main.rst_usb_ni = rst_n;
-    force tb.dut.top_darjeeling.u_xbar_main.rst_spi_host1_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_mbx.rst_mbx_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_dbg.rst_dbg_ni = rst_n;
@@ -159,7 +154,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl1__regs, rom_ctrl1, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__core, soc_proxy, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__ctn, soc_proxy, ctn_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
@@ -239,8 +233,6 @@ initial begin
     clk_rst_if_main.set_freq_khz(100000000 / 1000);
     clk_rst_if_usb.set_active(.drive_rst_n_val(0));
     clk_rst_if_usb.set_freq_khz(48000000 / 1000);
-    clk_rst_if_io_div2.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div2.set_freq_khz(48000000 / 1000);
     clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
     clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
 

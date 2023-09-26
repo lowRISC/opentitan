@@ -37,7 +37,7 @@
     { name: "NumSrc",
       desc: "Number of interrupt sources",
       type: "int",
-      default: "133",
+      default: "131",
       local: "true"
     },
     { name: "NumTarget",
@@ -1140,22 +1140,6 @@
     }
     { name: "PRIO130",
       desc: "Interrupt Source 130 Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "1:0" }
-      ],
-    }
-    { name: "PRIO131",
-      desc: "Interrupt Source 131 Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "1:0" }
-      ],
-    }
-    { name: "PRIO132",
-      desc: "Interrupt Source 132 Priority",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [

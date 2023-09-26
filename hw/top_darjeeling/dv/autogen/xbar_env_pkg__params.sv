@@ -31,9 +31,6 @@ tl_device_t xbar_devices[$] = '{
     '{"soc_proxy__ctn", '{
         '{32'h40000000, 32'h7fffffff}
     }},
-    '{"spi_host1", '{
-        '{32'h32000000, 32'h3200003f}
-    }},
     '{"hmac", '{
         '{32'h21110000, 32'h21110fff}
     }},
@@ -241,7 +238,6 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
-        "spi_host1",
         "aes",
         "csrng",
         "edn0",
@@ -298,7 +294,6 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
-        "spi_host1",
         "aes",
         "csrng",
         "edn0",

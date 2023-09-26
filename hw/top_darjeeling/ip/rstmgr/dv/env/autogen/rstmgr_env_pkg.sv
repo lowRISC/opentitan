@@ -51,14 +51,12 @@ package rstmgr_env_pkg;
     "u_daon_lc_io",
     "u_d0_lc_io",
     "u_daon_lc_io_div2",
-    "u_d0_lc_io_div2",
     "u_daon_lc_usb",
     "u_d0_lc_usb",
     "u_d0_sys",
     "u_daon_sys_io_div4",
     "u_d0_spi_device",
     "u_d0_spi_host0",
-    "u_d0_spi_host1",
     "u_d0_i2c0"
   };
 

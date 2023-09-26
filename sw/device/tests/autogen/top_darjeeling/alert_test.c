@@ -91,7 +91,6 @@ static dif_sensor_ctrl_t sensor_ctrl;
 static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_mbox;
 static dif_sram_ctrl_t sram_ctrl_ret_aon;
@@ -219,9 +218,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR);
-  CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host1));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_main));
@@ -857,21 +853,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdSpiHost0FatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write spi_host's alert_test reg and check alert_cause.
-  for (dif_spi_host_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host1, kDifSpiHostAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSpiHost1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

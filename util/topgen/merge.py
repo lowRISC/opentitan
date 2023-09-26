@@ -614,7 +614,14 @@ def extract_clocks(top: OrderedDict):
             'clock_group': "peri",
             'reset_connections': {'rst_ni': 'usb', 'rst_aon_ni': 'usb_aon'},
             'ep_next': "pwrmgr_aon",
-        }
+        },
+        {
+            'name': "io_dummy_spi_host1",
+            'type': "dummy",
+            'clock_srcs': {'clk_i': "io_div2"},
+            'clock_group': "peri",
+            'reset_connections': {'rst_ni': "spi_host1"},
+        },
     ]
 
     # TODO(#19448): clkmgr block-level DV is currently tailored to the clkmgr

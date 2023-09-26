@@ -76,7 +76,6 @@ static dif_sensor_ctrl_t sensor_ctrl;
 static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
 static dif_rv_plic_t plic;
@@ -826,28 +825,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralSpiHost1: {
-      dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdSpiHost1Error);
-      CHECK(irq == spi_host_irq_expected,
-            "Incorrect spi_host1 IRQ triggered: exp = %d, obs = %d",
-            spi_host_irq_expected, irq);
-      spi_host_irq_serviced = irq;
-
-      dif_spi_host_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
-      CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
-            "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
-      CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralSysrstCtrlAon: {
       dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
           plic_irq_id -
@@ -997,9 +974,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host0));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR);
-  CHECK_DIF_OK(dif_spi_host_init(base_addr, &spi_host1));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
@@ -1044,7 +1018,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge_all(&soc_proxy));
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
-  CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
   CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
   CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
 }
@@ -1154,8 +1127,6 @@ static void peripheral_irqs_enable(void) {
       dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
   CHECK_DIF_OK(
       dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irqs));
-  CHECK_DIF_OK(
-      dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irqs));
   CHECK_DIF_OK(
       dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
@@ -1564,19 +1535,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(spi_host_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from spi_host0 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralSpiHost1;
-  for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
-       irq <= kDifSpiHostIrqSpiEvent; ++irq) {
-    spi_host_irq_expected = irq;
-    LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(spi_host_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from spi_host1 is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralSysrstCtrlAon;

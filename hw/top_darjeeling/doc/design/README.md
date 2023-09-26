@@ -397,7 +397,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | lc_ctrl           | lc_ctrl       | 0x30140000 (regs) |
 | alert_handler     | alert_handler | 0x30150000 (regs) |
 | spi_host0         | spi_host      | 0x30300000 (regs) |
-| spi_host1         | spi_host      | 0x32000000 (regs) |
 | pwrmgr_aon        | pwrmgr        | 0x30400000 (regs) |
 | rstmgr_aon        | rstmgr        | 0x30410000 (regs) |
 | clkmgr_aon        | clkmgr        | 0x30420000 (regs) |

@@ -192,12 +192,12 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   // consistency check errors
-  logic [16:0][PowerDomains-1:0] cnsty_chk_errs;
-  logic [16:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+  logic [15:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [15:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
   // consistency sparse fsm errors
-  logic [16:0][PowerDomains-1:0] fsm_errs;
-  logic [16:0][PowerDomains-1:0] shadow_fsm_errs;
+  logic [15:0][PowerDomains-1:0] fsm_errs;
+  logic [15:0][PowerDomains-1:0] shadow_fsm_errs;
 
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
@@ -693,7 +693,7 @@ module rstmgr
   assign shadow_fsm_errs[7] = '0;
 
   // Generating resets for lc_io_div2
-  // Power Domains: ['Aon', '0']
+  // Power Domains: ['Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -719,30 +719,10 @@ module rstmgr
     u_daon_lc_io_div2.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay),
-    .SwRstReq(1'b0)
-  ) u_d0_lc_io_div2 (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_div2_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
-    .sw_rst_req_ni(1'b1),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_en_o(rst_en_o.lc_io_div2[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_lc_io_div2_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[8][Domain0Sel]),
-    .fsm_err_o(fsm_errs[8][Domain0Sel])
-  );
-
-  if (SecCheck) begin : gen_d0_lc_io_div2_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0LcIoDiv2FsmCheck_A,
-    u_d0_lc_io_div2.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
+  assign resets_o.rst_lc_io_div2_n[Domain0Sel] = '0;
+  assign cnsty_chk_errs[8][Domain0Sel] = '0;
+  assign fsm_errs[8][Domain0Sel] = '0;
+  assign rst_en_o.lc_io_div2[Domain0Sel] = MuBi4True;
   assign shadow_cnsty_chk_errs[8] = '0;
   assign shadow_fsm_errs[8] = '0;
 
@@ -1012,46 +992,12 @@ module rstmgr
   assign shadow_cnsty_chk_errs[14] = '0;
   assign shadow_fsm_errs[14] = '0;
 
-  // Generating resets for spi_host1
-  // Power Domains: ['0']
-  // Shadowed: False
-  assign resets_o.rst_spi_host1_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[15][DomainAonSel] = '0;
-  assign fsm_errs[15][DomainAonSel] = '0;
-  assign rst_en_o.spi_host1[DomainAonSel] = MuBi4True;
-  rstmgr_leaf_rst #(
-    .SecCheck(SecCheck),
-    .SecMaxSyncDelay(SecMaxSyncDelay),
-    .SwRstReq(1'b1)
-  ) u_d0_spi_host1 (
-    .clk_i,
-    .rst_ni,
-    .leaf_clk_i(clk_io_div2_i),
-    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
-    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[SPI_HOST1].q),
-    .scan_rst_ni,
-    .scanmode_i,
-    .rst_en_o(rst_en_o.spi_host1[Domain0Sel]),
-    .leaf_rst_o(resets_o.rst_spi_host1_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[15][Domain0Sel]),
-    .fsm_err_o(fsm_errs[15][Domain0Sel])
-  );
-
-  if (SecCheck) begin : gen_d0_spi_host1_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
-    D0SpiHost1FsmCheck_A,
-    u_d0_spi_host1.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
-  end
-  assign shadow_cnsty_chk_errs[15] = '0;
-  assign shadow_fsm_errs[15] = '0;
-
   // Generating resets for i2c0
   // Power Domains: ['0']
   // Shadowed: False
   assign resets_o.rst_i2c0_n[DomainAonSel] = '0;
-  assign cnsty_chk_errs[16][DomainAonSel] = '0;
-  assign fsm_errs[16][DomainAonSel] = '0;
+  assign cnsty_chk_errs[15][DomainAonSel] = '0;
+  assign fsm_errs[15][DomainAonSel] = '0;
   assign rst_en_o.i2c0[DomainAonSel] = MuBi4True;
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -1067,8 +1013,8 @@ module rstmgr
     .scanmode_i,
     .rst_en_o(rst_en_o.i2c0[Domain0Sel]),
     .leaf_rst_o(resets_o.rst_i2c0_n[Domain0Sel]),
-    .err_o(cnsty_chk_errs[16][Domain0Sel]),
-    .fsm_err_o(fsm_errs[16][Domain0Sel])
+    .err_o(cnsty_chk_errs[15][Domain0Sel]),
+    .fsm_err_o(fsm_errs[15][Domain0Sel])
   );
 
   if (SecCheck) begin : gen_d0_i2c0_assert
@@ -1077,8 +1023,8 @@ module rstmgr
     u_d0_i2c0.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign shadow_cnsty_chk_errs[16] = '0;
-  assign shadow_fsm_errs[16] = '0;
+  assign shadow_cnsty_chk_errs[15] = '0;
+  assign shadow_fsm_errs[15] = '0;
 
 
   ////////////////////////////////////////////////////

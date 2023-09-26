@@ -13,7 +13,6 @@
     clk_main_i: main
     clk_fixed_i: io_div4
     clk_usb_i: usb
-    clk_spi_host1_i: io_div2
   }
   clock_group: infra
   reset: rst_main_ni
@@ -34,18 +33,12 @@
       name: lc_usb
       domain: "0"
     }
-    rst_spi_host1_ni:
-    {
-      name: lc_io_div2
-      domain: "0"
-    }
   }
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
     clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
-    clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   domain:
   [
@@ -71,7 +64,6 @@
       rv_dm.regs
       sram_ctrl_main.ram
       peri
-      spi_host1
       aes
       csrng
       edn0
@@ -109,7 +101,6 @@
       rv_dm.regs
       sram_ctrl_main.ram
       peri
-      spi_host1
       aes
       csrng
       edn0
@@ -421,28 +412,6 @@
       stub: false
       pipeline: true
       req_fifo_pass: true
-    }
-    {
-      name: spi_host1
-      type: device
-      clock: clk_spi_host1_i
-      reset: rst_spi_host1_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: spi_host
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x32000000
-          }
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
     }
     {
       name: hmac

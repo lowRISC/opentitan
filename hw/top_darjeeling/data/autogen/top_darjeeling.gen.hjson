@@ -131,7 +131,6 @@
           clk_main_infra: main
           clk_aon_infra: aon
           clk_usb_infra: usb
-          clk_io_div2_infra: io_div2
           clk_io_infra: io
         }
       }
@@ -341,7 +340,6 @@
         domains:
         [
           Aon
-          "0"
         ]
         shadowed: false
         sw: false
@@ -434,20 +432,6 @@
         path: rstmgr_aon_resets.rst_spi_host0_n
         parent: lc_src
         clock: io_div4
-      }
-      {
-        name: spi_host1
-        gen: true
-        type: top
-        domains:
-        [
-          "0"
-        ]
-        shadowed: false
-        sw: true
-        path: rstmgr_aon_resets.rst_spi_host1_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: i2c0
@@ -2058,75 +2042,6 @@
         null:
         {
           hart: 0x30300000
-        }
-      }
-    }
-    {
-      name: spi_host1
-      type: spi_host
-      clock_srcs:
-      {
-        clk_i: io_div2
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: spi_host1
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div2_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: passthrough
-          struct: passthrough
-          package: spi_device_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host1
-          index: -1
-        }
-        {
-          name: lsio_trigger
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: spi_host1
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: spi_host1
-          default: ""
-          end_idx: -1
-          top_signame: spi_host1_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x32000000
         }
       }
     }
@@ -9314,10 +9229,6 @@
       [
         main.tl_soc_proxy__ctn
       ]
-      spi_host1.tl:
-      [
-        main.tl_spi_host1
-      ]
       hmac.tl:
       [
         main.tl_hmac
@@ -9692,7 +9603,6 @@
         clk_main_i: main
         clk_fixed_i: io_div4
         clk_usb_i: usb
-        clk_spi_host1_i: io_div2
       }
       clock_group: infra
       reset: rst_main_ni
@@ -9713,18 +9623,12 @@
           name: lc_usb
           domain: "0"
         }
-        rst_spi_host1_ni:
-        {
-          name: lc_io_div2
-          domain: "0"
-        }
       }
       clock_connections:
       {
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
-        clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
       domain:
       [
@@ -9750,7 +9654,6 @@
           rv_dm.regs
           sram_ctrl_main.ram
           peri
-          spi_host1
           aes
           csrng
           edn0
@@ -9788,7 +9691,6 @@
           rv_dm.regs
           sram_ctrl_main.ram
           peri
-          spi_host1
           aes
           csrng
           edn0
@@ -10100,28 +10002,6 @@
           stub: false
           pipeline: true
           req_fifo_pass: true
-        }
-        {
-          name: spi_host1
-          type: device
-          clock: clk_spi_host1_i
-          reset: rst_spi_host1_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: spi_host
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x32000000
-              }
-              size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
         }
         {
           name: hmac
@@ -11111,18 +10991,6 @@
           inst_name: main
           default: ""
           top_signame: soc_proxy_ctn_tl
-          index: -1
-        }
-        {
-          name: tl_spi_host1
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: spi_host1_tl
           index: -1
         }
         {
@@ -13433,14 +13301,6 @@
         attr: ""
       }
       {
-        instance: spi_host1
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
         instance: sensor_ctrl
         port: ""
         connection: muxed
@@ -14036,50 +13896,6 @@
         glob_idx: 33
       }
       {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 0
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 34
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 35
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 2
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 36
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 3
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 37
-      }
-      {
         name: sysrst_ctrl_aon_ec_rst_l
         width: 1
         type: inout
@@ -14132,7 +13948,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 38
+        glob_idx: 34
       }
       {
         name: spi_device_tpm_csb
@@ -14143,7 +13959,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 39
+        glob_idx: 35
       }
       {
         name: sysrst_ctrl_aon_ac_present
@@ -14154,7 +13970,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 40
+        glob_idx: 36
       }
       {
         name: sysrst_ctrl_aon_key0_in
@@ -14165,7 +13981,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 41
+        glob_idx: 37
       }
       {
         name: sysrst_ctrl_aon_key1_in
@@ -14176,7 +13992,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 42
+        glob_idx: 38
       }
       {
         name: sysrst_ctrl_aon_key2_in
@@ -14187,7 +14003,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 43
+        glob_idx: 39
       }
       {
         name: sysrst_ctrl_aon_pwrb_in
@@ -14198,7 +14014,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 44
+        glob_idx: 40
       }
       {
         name: sysrst_ctrl_aon_lid_open
@@ -14209,7 +14025,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 45
+        glob_idx: 41
       }
       {
         name: spi_host0_sck
@@ -14242,29 +14058,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 38
-      }
-      {
-        name: spi_host1_sck
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 39
-      }
-      {
-        name: spi_host1_csb
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 40
+        glob_idx: 34
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14275,7 +14069,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 41
+        glob_idx: 35
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14286,7 +14080,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 42
+        glob_idx: 36
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14297,7 +14091,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 43
+        glob_idx: 37
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14308,7 +14102,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 44
+        glob_idx: 38
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14319,7 +14113,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 45
+        glob_idx: 39
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14330,7 +14124,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 46
+        glob_idx: 40
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14341,7 +14135,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 47
+        glob_idx: 41
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14352,7 +14146,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 48
+        glob_idx: 42
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -14363,7 +14157,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 49
+        glob_idx: 43
       }
       {
         name: otp_ctrl_test
@@ -14374,7 +14168,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 50
+        glob_idx: 44
       }
       {
         name: sysrst_ctrl_aon_bat_disable
@@ -14385,7 +14179,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 51
+        glob_idx: 45
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -14396,7 +14190,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 52
+        glob_idx: 46
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -14407,7 +14201,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 53
+        glob_idx: 47
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -14418,7 +14212,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 54
+        glob_idx: 48
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -14429,7 +14223,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 55
+        glob_idx: 49
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -14440,7 +14234,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 56
+        glob_idx: 50
       }
     ]
     io_counts:
@@ -14454,9 +14248,9 @@
       }
       muxed:
       {
-        inouts: 38
+        inouts: 34
         inputs: 8
-        outputs: 19
+        outputs: 17
         pads: 47
       }
     }
@@ -14750,7 +14544,6 @@
     otp_ctrl
     alert_handler
     spi_host0
-    spi_host1
     pwrmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
@@ -15049,18 +14842,6 @@
       module_name: spi_host0
     }
     {
-      name: spi_host1_error
-      width: 1
-      type: interrupt
-      module_name: spi_host1
-    }
-    {
-      name: spi_host1_spi_event
-      width: 1
-      type: interrupt
-      module_name: spi_host1
-    }
-    {
       name: pwrmgr_aon_wakeup
       width: 1
       type: interrupt
@@ -15353,7 +15134,6 @@
     otp_ctrl
     lc_ctrl
     spi_host0
-    spi_host1
     pwrmgr_aon
     rstmgr_aon
     clkmgr_aon
@@ -15520,22 +15300,13 @@
       lpg_idx: 5
     }
     {
-      name: spi_host1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: spi_host1
-      lpg_name: peri_spi_host1_0
-      lpg_idx: 6
-    }
-    {
       name: pwrmgr_aon_fatal_fault
       width: 1
       type: alert
       async: "1"
       module_name: pwrmgr_aon
       lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 7
+      lpg_idx: 6
     }
     {
       name: rstmgr_aon_fatal_fault
@@ -15544,7 +15315,7 @@
       async: "1"
       module_name: rstmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 7
     }
     {
       name: rstmgr_aon_fatal_cnsty_fault
@@ -15553,7 +15324,7 @@
       async: "1"
       module_name: rstmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 7
     }
     {
       name: clkmgr_aon_recov_fault
@@ -15562,7 +15333,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 7
     }
     {
       name: clkmgr_aon_fatal_fault
@@ -15571,7 +15342,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 7
     }
     {
       name: sysrst_ctrl_aon_fatal_fault
@@ -15580,7 +15351,7 @@
       async: "1"
       module_name: sysrst_ctrl_aon
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 9
+      lpg_idx: 8
     }
     {
       name: adc_ctrl_aon_fatal_fault
@@ -15589,7 +15360,7 @@
       async: "1"
       module_name: adc_ctrl_aon
       lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 10
+      lpg_idx: 9
     }
     {
       name: pinmux_aon_fatal_fault
@@ -15598,7 +15369,7 @@
       async: "1"
       module_name: pinmux_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 8
+      lpg_idx: 7
     }
     {
       name: aon_timer_aon_fatal_fault
@@ -15607,7 +15378,7 @@
       async: "1"
       module_name: aon_timer_aon
       lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: sensor_ctrl_recov_alert
@@ -15616,7 +15387,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 9
+      lpg_idx: 8
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -15625,7 +15396,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 9
+      lpg_idx: 8
     }
     {
       name: soc_proxy_fatal_alert_intg
@@ -15634,7 +15405,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_fatal_alert_external_0
@@ -15643,7 +15414,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_fatal_alert_external_1
@@ -15652,7 +15423,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_fatal_alert_external_2
@@ -15661,7 +15432,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_fatal_alert_external_3
@@ -15670,7 +15441,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_recov_alert_external_0
@@ -15679,7 +15450,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_recov_alert_external_1
@@ -15688,7 +15459,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_recov_alert_external_2
@@ -15697,7 +15468,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: soc_proxy_recov_alert_external_3
@@ -15706,7 +15477,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -15715,7 +15486,7 @@
       async: "1"
       module_name: sram_ctrl_ret_aon
       lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: rv_dm_fatal_fault
@@ -15724,7 +15495,7 @@
       async: "1"
       module_name: rv_dm
       lpg_name: infra_sys_0
-      lpg_idx: 15
+      lpg_idx: 14
     }
     {
       name: rv_plic_fatal_fault
@@ -15733,7 +15504,7 @@
       async: "1"
       module_name: rv_plic
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: aes_recov_ctrl_update_err
@@ -15742,7 +15513,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 17
+      lpg_idx: 16
     }
     {
       name: aes_fatal_fault
@@ -15751,7 +15522,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 17
+      lpg_idx: 16
     }
     {
       name: hmac_fatal_fault
@@ -15760,7 +15531,7 @@
       async: "1"
       module_name: hmac
       lpg_name: hmac_trans_lc_0
-      lpg_idx: 18
+      lpg_idx: 17
     }
     {
       name: kmac_recov_operation_err
@@ -15769,7 +15540,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: kmac_fatal_fault_err
@@ -15778,7 +15549,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 19
+      lpg_idx: 18
     }
     {
       name: otbn_fatal
@@ -15787,7 +15558,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 20
+      lpg_idx: 19
     }
     {
       name: otbn_recov
@@ -15796,7 +15567,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 20
+      lpg_idx: 19
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -15805,7 +15576,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -15814,7 +15585,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: csrng_recov_alert
@@ -15823,7 +15594,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: csrng_fatal_alert
@@ -15832,7 +15603,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: edn0_recov_alert
@@ -15841,7 +15612,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: edn0_fatal_alert
@@ -15850,7 +15621,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: edn1_recov_alert
@@ -15859,7 +15630,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: edn1_fatal_alert
@@ -15868,7 +15639,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -15877,7 +15648,7 @@
       async: "1"
       module_name: sram_ctrl_main
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: sram_ctrl_mbox_fatal_error
@@ -15886,7 +15657,7 @@
       async: "1"
       module_name: sram_ctrl_mbox
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rom_ctrl0_fatal
@@ -15895,7 +15666,7 @@
       async: "1"
       module_name: rom_ctrl0
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rom_ctrl1_fatal
@@ -15904,7 +15675,7 @@
       async: "1"
       module_name: rom_ctrl1
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: dma_fatal_fault
@@ -15913,7 +15684,7 @@
       async: "1"
       module_name: dma
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx0_fatal_fault
@@ -15922,7 +15693,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx0_recov_fault
@@ -15931,7 +15702,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx1_fatal_fault
@@ -15940,7 +15711,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx1_recov_fault
@@ -15949,7 +15720,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx2_fatal_fault
@@ -15958,7 +15729,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx2_recov_fault
@@ -15967,7 +15738,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx3_fatal_fault
@@ -15976,7 +15747,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx3_recov_fault
@@ -15985,7 +15756,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx4_fatal_fault
@@ -15994,7 +15765,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx4_recov_fault
@@ -16003,7 +15774,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx5_fatal_fault
@@ -16012,7 +15783,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx5_recov_fault
@@ -16021,7 +15792,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx6_fatal_fault
@@ -16030,7 +15801,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx6_recov_fault
@@ -16039,7 +15810,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx7_fatal_fault
@@ -16048,7 +15819,7 @@
       async: "1"
       module_name: mbx7
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx7_recov_fault
@@ -16057,7 +15828,7 @@
       async: "1"
       module_name: mbx7
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx_jtag_fatal_fault
@@ -16066,7 +15837,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx_jtag_recov_fault
@@ -16075,7 +15846,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx_pcie0_fatal_fault
@@ -16084,7 +15855,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: mbx_pcie0_recov_fault
@@ -16093,7 +15864,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -16102,7 +15873,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -16111,7 +15882,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -16120,7 +15891,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -16129,7 +15900,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
   ]
   exported_rsts: {}
@@ -16275,30 +16046,6 @@
       }
     }
     {
-      name: peri_spi_host1_0
-      clock_group:
-      {
-        name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_aon_peri: aon
-          clk_usb_peri: usb
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
-      reset_connection:
-      {
-        name: spi_host1
-        domain: "0"
-      }
-    }
-    {
       name: powerup_por_io_div4_Aon
       clock_group:
       {
@@ -16429,7 +16176,6 @@
           clk_main_infra: main
           clk_aon_infra: aon
           clk_usb_infra: usb
-          clk_io_div2_infra: io_div2
           clk_io_infra: io
         }
       }
@@ -16454,7 +16200,6 @@
           clk_main_infra: main
           clk_aon_infra: aon
           clk_usb_infra: usb
-          clk_io_div2_infra: io_div2
           clk_io_infra: io
         }
       }
@@ -16479,7 +16224,6 @@
           clk_main_infra: main
           clk_aon_infra: aon
           clk_usb_infra: usb
-          clk_io_div2_infra: io_div2
           clk_io_infra: io
         }
       }
@@ -16504,7 +16248,6 @@
           clk_main_infra: main
           clk_aon_infra: aon
           clk_usb_infra: usb
-          clk_io_div2_infra: io_div2
           clk_io_infra: io
         }
       }
@@ -17671,38 +17414,6 @@
         default: ""
         end_idx: -1
         top_signame: spi_host0_tl
-        index: -1
-      }
-      {
-        name: passthrough
-        struct: passthrough
-        package: spi_device_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host1
-        index: -1
-      }
-      {
-        name: lsio_trigger
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: spi_host1
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: spi_host1
-        default: ""
-        end_idx: -1
-        top_signame: spi_host1_tl
         index: -1
       }
       {
@@ -21773,18 +21484,6 @@
         index: -1
       }
       {
-        name: tl_spi_host1
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: spi_host1_tl
-        index: -1
-      }
-      {
         name: tl_hmac
         struct: tl
         package: tlul_pkg
@@ -24774,28 +24473,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: soc_proxy_ctn_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: spi_host1_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: spi_host1_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
