@@ -85,32 +85,6 @@ filegroup(
     tags = ["manual"],
 )
 
-[
-    bitstream_splice(
-        name = "fpga_cw310_rom_with_{}_keys".format(authenticity),
-        testonly = True,
-        src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
-        data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
-        meminfo = ":rom_mmi",
-        tags = ["manual"],
-    )
-    for authenticity in KEY_AUTHENTICITY
-]
-
-# Splice OTP images into the ROM bitstream.
-[
-    bitstream_splice(
-        name = "fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
-        testonly = True,
-        src = ":fpga_cw310_rom_with_{}_keys".format(authenticity),
-        data = img_target,
-        meminfo = ":otp_mmi",
-        tags = ["manual"],
-    )
-    for (otp_name, img_target) in get_otp_images()
-    for authenticity in KEY_AUTHENTICITY
-]
-
 # Standalone CW310 image for use with hyperdebug.
 fusesoc_build(
     name = "fpga_cw310_hyperdebug",
