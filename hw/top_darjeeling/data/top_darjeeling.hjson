@@ -265,7 +265,7 @@
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
         // The following three values get exposed in the life cycle CSRs
         // that are also readable via the TAP.
-        SiliconCreatorId: "16'h 0001", // OpenTitan project
+        SiliconCreatorId: "16'h 4002", // Darjeeling integration with Rivos
         ProductId: "16'h 4000", // Darjeeling
         RevisionId: "8'h 01",   // First tapeout
       },

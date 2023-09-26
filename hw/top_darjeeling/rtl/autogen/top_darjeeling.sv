@@ -27,7 +27,7 @@ module top_darjeeling #(
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
-  parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 0001,
+  parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 4002,
   parameter logic [15:0] LcCtrlProductId = 16'h 4000,
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
   // parameters for alert_handler
