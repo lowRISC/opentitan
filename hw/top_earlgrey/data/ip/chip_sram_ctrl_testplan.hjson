@@ -1,0 +1,96 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_sram_ctrl
+  testpoints: [
+    // SRAM (pre-verified IP) integration tests:
+    {
+      name: chip_sw_sram_scrambled_access
+      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
+            - Drive the CPU to perform random accesses to both RAMs and verify these operations
+              complete successfully by using the backdoor interface
+            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be
+              read anymore.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
+            '''
+      stage: V2
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+    }
+    {
+      name: chip_sw_sleep_sram_ret_contents
+      desc: '''Verify that the data within the retention SRAM survives low power entry-exit and reset.
+
+            Ensure that the data within the retention SRAM survives as described in this table.
+              |             Mode             | Scrambled | Data Preserved |
+              |:----------------------------:|:---------:|:--------------:|
+              |          Normal sleep        |    No     |       Yes      |
+              |           Deep sleep         |    No     |       Yes      |
+              | Reset due to a reset request |    No     |       Yes      |
+              |          Normal sleep        |    Yes    |       Yes      |
+              |           Deep sleep         |    Yes    |       Yes      |
+              | Reset due to a reset request |    Yes    |       No       |
+            '''
+      stage: V2
+      tests: ["chip_sw_sleep_sram_ret_contents"]
+    }
+    {
+      name: chip_sw_sram_execution
+      desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
+
+            - Create the following combinations of 8 scenarios:
+              - The fetch enable bit in the HW_CFG partition of OTP controller set and not set.
+              - A life cycle state that enables (TEST_UNLOCKED, DEV or RMA) and disables (PROD)
+                hardware debug.
+              - The execution CSR programmed to be enabled and disabled.
+
+            - For both, main and the retention SRAM in each of these 8 scenarios:
+              - Load instruction data into the SRAMs.
+              - If the instruction execution is enabled, verify that the CPU can fetch and execute
+                the instruction from the SRAM correctly.
+              - If the instruction execution is not enabled, verify that the SRAM throws an error
+                response via an exception handler.
+
+            The following table indicates in which of these scenarios should the instruction
+            execution be enabled, for both, main and the retention SRAM instances.
+
+              | OTP HW_CFG[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | RET SRAM |
+              |:------------------:|:------------------------:|:--------:|:---------:|:--------:|
+              |          0         |             0            |     0    |  disabled | disabled |
+              |          0         |             0            |     1    |  disabled | disabled |
+              |          0         |             1            |     0    |  enabled  | disabled |
+              |          0         |             1            |     1    |  enabled  | disabled |
+              |          1         |             0            |     0    |  disabled | disabled |
+              |          1         |             0            |     1    |  enabled  | disabled |
+              |          1         |             1            |     0    |  disabled | disabled |
+              |          1         |             1            |     1    |  enabled  | disabled |
+
+            For the retention SRAM, instruction fetch is completely disabled via design parameter.
+            '''
+      stage: V2
+      tests: ["chip_sw_sram_ctrl_execution_main"]
+    }
+    {
+      name: chip_sw_sram_lc_escalation
+      desc: '''Verify the LC escalation path to the SRAMs.
+
+            - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
+            - Verify that the SRAMs stop accepting and responding to new memory requests.
+            - Reset the system to exit the terminal escalation state.
+            - Re-initialize the SRAMs and verify that they can now respond correctly to
+              any further memory requests.
+
+            X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets",
+              "chip_sw_data_integrity_escalation"]
+    }
+  ]
+}
