@@ -37,7 +37,6 @@ static dif_pinmux_t pinmux;
 static dif_rv_plic_t rv_plic;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
@@ -80,66 +79,8 @@ static const pinmux_pad_attributes_t pinmux_pad_config[] = {
 };
 
 /**
- * A convenience struct to associate a mux selection that connects a pad and
- * peripheral. This can be used for an input mux or an output mux.
- */
-typedef struct pinmux_select {
-  dif_pinmux_index_t pad;
-  dif_pinmux_index_t peripheral;
-} pinmux_select_t;
-
-static const pinmux_select_t pinmux_out_config[] = {
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob0,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Csb,
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob2,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sck,
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob1,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd0,
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob3,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd1,
-    },
-    // These peripheral I/Os are not assigned for tests.
-    //     {
-    //         .pad = ???,
-    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd2,
-    //     },
-    //     {
-    //         .pad = ???,
-    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd3,
-    //     },
-};
-
-static const pinmux_select_t pinmux_in_config[] = {
-    {
-        .pad = kTopDarjeelingPinmuxInselIob1,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd0,
-    },
-    {
-        .pad = kTopDarjeelingPinmuxInselIob3,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd1,
-    },
-    // These peripheral I/Os are not assigned for tests.
-    //     {
-    //         .pad = ???,
-    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd2,
-    //     },
-    //     {
-    //         .pad = ???,
-    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd3,
-    //     },
-};
-
-/**
  * Initialize the provided SPI host. For the most part, the values provided are
- * filler, as spi_host0 will be in passthrough mode and spi_host1 will remain
- * unused throughout the test.
+ * filler, as spi_host0 will be in passthrough mode.
  */
 void init_spi_host(dif_spi_host_t *spi_host,
                    uint32_t peripheral_clock_freq_hz) {
@@ -372,17 +313,6 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
   pinmux_testutils_configure_pads(&pinmux, pinmux_pad_config,
                                   ARRAYSIZE(pinmux_pad_config));
-  for (int i = 0; i < ARRAYSIZE(pinmux_in_config); ++i) {
-    pinmux_select_t setting = pinmux_in_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, setting.peripheral, setting.pad));
-  }
-  for (int i = 0; i < ARRAYSIZE(pinmux_out_config); ++i) {
-    pinmux_select_t setting = pinmux_out_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
-  }
-
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
@@ -390,10 +320,7 @@ bool test_main(void) {
   // Initialize the spi_host devices.
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host1));
   init_spi_host(&spi_host0, (uint32_t)kClockFreqHiSpeedPeripheralHz);
-  init_spi_host(&spi_host1, (uint32_t)kClockFreqPeripheralHz);
 
   // Initialize spi_device.
   mmio_region_t spi_device_base_addr =

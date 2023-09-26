@@ -41,7 +41,6 @@ static dif_alert_handler_t alert_handler;
 static dif_rstmgr_t rstmgr;
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_i2c_t i2c0;
 static dif_rv_core_ibex_t ibex;
 static dif_flash_ctrl_state_t flash_ctrl;
@@ -68,9 +67,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
 
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host1));
-
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c0));
 
@@ -93,17 +89,14 @@ static const uint32_t spidev_alerts[] = {
     kTopDarjeelingAlertIdSpiDeviceFatalFault};
 static const uint32_t spihost0_alerts[] = {
     kTopDarjeelingAlertIdSpiHost0FatalFault};
-static const uint32_t spihost1_alerts[] = {
-    kTopDarjeelingAlertIdSpiHost1FatalFault};
 static const uint32_t i2c0_alerts[] = {kTopDarjeelingAlertIdI2c0FatalFault};
 
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
-static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
 static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
 
-static const size_t num_alerts = num_spihost0_alerts + num_spihost1_alerts +
-                                 num_i2c0_alerts + num_spidev_alerts;
+static const size_t num_alerts =
+    num_spihost0_alerts + num_i2c0_alerts + num_spidev_alerts;
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -144,14 +137,6 @@ static const test_t kPeripherals[] = {
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
         .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost0,
-    },
-    {
-        .name = "SPI_HOST1",
-        .base = TOP_DARJEELING_SPI_HOST1_BASE_ADDR,
-        .dif = &spi_host1,
-        .alert_ids = spihost1_alerts,
-        .num_alert_peri = num_spihost1_alerts,
-        .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost1,
     },
     {
         .name = "SPI_DEVICE",

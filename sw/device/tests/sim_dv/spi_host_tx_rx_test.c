@@ -41,89 +41,6 @@ static const top_darjeeling_direct_pads_t spi_host0_direct_pads[6] = {
     kTopDarjeelingDirectPadsSpiHost0Sd1,   // sio[1]
     kTopDarjeelingDirectPadsSpiHost0Sd0};  // sio[0]
 
-// pinmap defined in chip_if.sv (spi_device1_if)
-static const top_darjeeling_muxed_pads_t spi_host1_muxed_pads[6] = {
-    kTopDarjeelingMuxedPadsIob0,  // sck
-    kTopDarjeelingMuxedPadsIob1,  // csb
-    kTopDarjeelingMuxedPadsIob6,  // sio[3]
-    kTopDarjeelingMuxedPadsIob5,  // sio[2]
-    kTopDarjeelingMuxedPadsIob4,  // sio[1]
-    kTopDarjeelingMuxedPadsIob3,  // sio[0]
-};
-
-// For spi_host1
-// sck       output
-// csb       output
-// sio[0:3]  bidir (input+output)
-
-/** To setup the pinmux using the enum's in top_darjeeling.h ...
- *
- *                                             - Choose corresponding pad/periph
- * from...
- *
- * dif_result_t dif_pinmux_output_select(...,
- *   dif_pinmux_index_t mio_pad_output,        | top_darjeeling_pinmux_mio_out_t
- *   dif_pinmux_index_t outsel)                | top_darjeeling_pinmux_outsel_t
- * dif_result_t dif_pinmux_input_select(...,
- *   dif_pinmux_index_t peripheral_input,      |
- * top_darjeeling_pinmux_peripheral_in_t dif_pinmux_index_t insel) |
- * top_darjeeling_pinmux_insel_t
- *
- */
-
-typedef struct pinmux_select {
-  dif_pinmux_index_t pad;
-  dif_pinmux_index_t peripheral;
-} pinmux_select_t;
-
-static const pinmux_select_t pinmux_out_config[] = {
-    // spi_host1
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob0,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sck,  // SCK
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob1,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Csb,  // CSB
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob3,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd0,  // sio[0]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob4,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd1,  // sio[1]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob5,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd2,  // sio[2]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxMioOutIob6,
-        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd3,  // sio[3]
-    },
-};
-
-static const pinmux_select_t pinmux_in_config[] = {
-    // spi_host1
-    {
-        .pad = kTopDarjeelingPinmuxInselIob3,
-        .peripheral = kTopDarjeelingPinmuxPeripheralInSpiHost1Sd0,  // sio[0]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxInselIob4,
-        .peripheral = kTopDarjeelingPinmuxPeripheralInSpiHost1Sd1,  // sio[1]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxInselIob5,
-        .peripheral = kTopDarjeelingPinmuxPeripheralInSpiHost1Sd2,  // sio[2]
-    },
-    {
-        .pad = kTopDarjeelingPinmuxInselIob6,
-        .peripheral = kTopDarjeelingPinmuxPeripheralInSpiHost1Sd3,  // sio[3]
-    },
-};
-
 /**
  * Initialize the provided SPI host.
  */
@@ -161,40 +78,6 @@ void setup_pads_spi_host0(void) {
   }
 }
 
-/**
- * Setup pads and pinmux for spi_host0
- *
- * This peripheral is 'muxed', so configure the pinmux as well as pads.
- */
-void setup_pinmux_pads_spi_host1(void) {
-  // Set weak pull-ups for the pads
-  dif_pinmux_pad_attr_t out_attr;
-  dif_pinmux_pad_attr_t in_attr = {
-      .slew_rate = 0,
-      .drive_strength = 0,
-      // set weak pull-ups for all the pads
-      .flags = kDifPinmuxPadAttrPullResistorEnable |
-               kDifPinmuxPadAttrPullResistorUp};
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host1_muxed_pads); ++i) {
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, spi_host1_muxed_pads[i],
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
-  }
-
-  // Setup Inputs
-  for (int i = 0; i < ARRAYSIZE(pinmux_in_config); ++i) {
-    pinmux_select_t setting = pinmux_in_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, setting.peripheral, setting.pad));
-  }
-  // Setup Outputs
-  for (int i = 0; i < ARRAYSIZE(pinmux_out_config); ++i) {
-    pinmux_select_t setting = pinmux_out_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
-  }
-}
-
 bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
@@ -202,8 +85,7 @@ bool test_main(void) {
   pinmux_testutils_init(&pinmux);
 
   // Setup pinmux if required, enable weak pull-up on relevant pads
-  setup_pads_spi_host0();         // direct
-  setup_pinmux_pads_spi_host1();  // muxed
+  setup_pads_spi_host0();  // direct
 
   // Setup spi host configuration
   LOG_INFO("Testing spi_host%0d", kSPIHostIdx);
@@ -213,11 +95,6 @@ bool test_main(void) {
     case 0: {
       base_addr = TOP_DARJEELING_SPI_HOST0_BASE_ADDR;
       clkHz = kClockFreqHiSpeedPeripheralHz;
-      break;
-    }
-    case 1: {
-      base_addr = TOP_DARJEELING_SPI_HOST1_BASE_ADDR;
-      clkHz = kClockFreqPeripheralHz;
       break;
     }
     default:

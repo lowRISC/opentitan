@@ -46,7 +46,6 @@ static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
@@ -92,9 +91,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
 
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host1));
-
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
 
@@ -128,20 +124,16 @@ static const uint32_t otbn_alerts[] = {kTopDarjeelingAlertIdOtbnFatal,
                                        kTopDarjeelingAlertIdOtbnRecov};
 static const uint32_t spihost0_alerts[] = {
     kTopDarjeelingAlertIdSpiHost0FatalFault};
-static const uint32_t spihost1_alerts[] = {
-    kTopDarjeelingAlertIdSpiHost1FatalFault};
 
 static const uint32_t num_aes_alerts = ARRAYSIZE(aes_alerts);
 static const uint32_t num_hmac_alerts = ARRAYSIZE(hmac_alerts);
 static const uint32_t num_kmac_alerts = ARRAYSIZE(kmac_alerts);
 static const uint32_t num_otbn_alerts = ARRAYSIZE(otbn_alerts);
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
-static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 
 static const size_t num_alerts =
     ARRAYSIZE(aes_alerts) + ARRAYSIZE(hmac_alerts) + ARRAYSIZE(kmac_alerts) +
-    ARRAYSIZE(otbn_alerts) + ARRAYSIZE(spihost0_alerts) +
-    ARRAYSIZE(spihost1_alerts);
+    ARRAYSIZE(otbn_alerts) + ARRAYSIZE(spihost0_alerts);
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -242,17 +234,6 @@ static const test_t kPeripherals[] = {
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
         .clk_index = kTopDarjeelingGateableClocksIoPeri,
-        .is_hintable = false,
-    },
-    {
-        .name = "SPI_HOST1",
-        .base = TOP_DARJEELING_SPI_HOST1_BASE_ADDR,
-        .offset = SPI_HOST_ALERT_TEST_REG_OFFSET,
-        .dif = &spi_host1,
-        .fatal_alert_bit = 0,
-        .alert_ids = spihost1_alerts,
-        .num_alert_peri = num_spihost1_alerts,
-        .clk_index = kTopDarjeelingGateableClocksIoDiv2Peri,
         .is_hintable = false,
     },
 };

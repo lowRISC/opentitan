@@ -21,7 +21,7 @@ using testing::Test;
 
 // If either of these static assertions fail, then the unit-tests for related
 // API should be revisited.
-static_assert(RV_PLIC_PARAM_NUM_SRC == 133 ||    // Darjeeling
+static_assert(RV_PLIC_PARAM_NUM_SRC == 131 ||    // Darjeeling
                   RV_PLIC_PARAM_NUM_SRC == 185,  // Earlgrey
               "PLIC instantiation parameters have changed.");
 static_assert(RV_PLIC_PARAM_NUM_TARGET == 1,

@@ -54,10 +54,6 @@ extern "C" {
     value(_, GpioGpio31, kTopDarjeelingPinmuxPeripheralInGpioGpio31) \
     value(_, I2c0Sda, kTopDarjeelingPinmuxPeripheralInI2c0Sda) \
     value(_, I2c0Scl, kTopDarjeelingPinmuxPeripheralInI2c0Scl) \
-    value(_, SpiHost1Sd0, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd0) \
-    value(_, SpiHost1Sd1, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd1) \
-    value(_, SpiHost1Sd2, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd2) \
-    value(_, SpiHost1Sd3, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd3) \
     value(_, Uart0Rx, kTopDarjeelingPinmuxPeripheralInUart0Rx) \
     value(_, SpiDeviceTpmCsb, kTopDarjeelingPinmuxPeripheralInSpiDeviceTpmCsb) \
     value(_, SysrstCtrlAonAcPresent, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonAcPresent) \
@@ -211,13 +207,7 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MI
     value(_, GpioGpio31, kTopDarjeelingPinmuxOutselGpioGpio31) \
     value(_, I2c0Sda, kTopDarjeelingPinmuxOutselI2c0Sda) \
     value(_, I2c0Scl, kTopDarjeelingPinmuxOutselI2c0Scl) \
-    value(_, SpiHost1Sd0, kTopDarjeelingPinmuxOutselSpiHost1Sd0) \
-    value(_, SpiHost1Sd1, kTopDarjeelingPinmuxOutselSpiHost1Sd1) \
-    value(_, SpiHost1Sd2, kTopDarjeelingPinmuxOutselSpiHost1Sd2) \
-    value(_, SpiHost1Sd3, kTopDarjeelingPinmuxOutselSpiHost1Sd3) \
     value(_, Uart0Tx, kTopDarjeelingPinmuxOutselUart0Tx) \
-    value(_, SpiHost1Sck, kTopDarjeelingPinmuxOutselSpiHost1Sck) \
-    value(_, SpiHost1Csb, kTopDarjeelingPinmuxOutselSpiHost1Csb) \
     value(_, SensorCtrlAstDebugOut0, kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut0) \
     value(_, SensorCtrlAstDebugOut1, kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut1) \
     value(_, SensorCtrlAstDebugOut2, kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut2) \

@@ -177,9 +177,9 @@ static void pinmux_init_test(void) {
         false, "GPIO 24 pull select");
   }
 
-  // UART RX (input 42) -> IOC3 (MIO pad 25)
+  // UART RX (input 34) -> IOC3 (MIO pad 25)
   uint32_t insel_uartrx =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_42_REG_OFFSET);
+      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_34_REG_OFFSET);
   CHECK_EQ(insel_uartrx, kTopDarjeelingPinmuxInselIoc3,
            "UART Rx input selector");
 

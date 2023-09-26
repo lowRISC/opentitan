@@ -221,7 +221,6 @@ static const char *rv_plic_inst_name = "rv_plic";
 static const char *rv_timer_inst_name = "rv_timer";
 static const char *sensor_ctrl_inst_name = "sensor_ctrl";
 static const char *spi_host0_inst_name = "spi_host0";
-static const char *spi_host1_inst_name = "spi_host1";
 static const char *spi_device_inst_name = "spi_device";
 static const char *sram_ctrl_main_inst_name = "sram_ctrl_main";
 static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
@@ -935,11 +934,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopDarjeelingAlertIdSpiHost0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, spi_host0_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdSpiHost1FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, spi_host1_inst_name,
                             we_check};
       fault_checker = fc;
     } break;

@@ -91,23 +91,6 @@ static void spi_host0_config(void *dif) {
   CHECK_DIF_OK(dif_spi_host_configure(dif, cfg));
 }
 
-static void spi_host1_config(void *dif) {
-  dif_spi_host_config_t cfg = {
-      .spi_clock = 2500000,
-      .peripheral_clock_freq_hz = 5000000,
-      .chip_select =
-          {
-              .idle = 4,
-              .trail = 5,
-              .lead = 6,
-          },
-      .full_cycle = false,
-      .cpha = false,
-      .cpol = false,
-  };
-  CHECK_DIF_OK(dif_spi_host_configure(dif, cfg));
-}
-
 static void i2c0_config(void *dif) {
   dif_i2c_config_t cfg = {
       .scl_time_high_cycles = 3326,
@@ -118,7 +101,6 @@ static void i2c0_config(void *dif) {
 
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
 static dif_i2c_t i2c0;
 
 typedef struct test {
@@ -181,16 +163,6 @@ static const test_t kPeripherals[] = {
         .config = spi_host0_config,
         .program_val = 0x3210000,
         .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost0,
-    },
-    {
-        .name = "SPI_HOST1",
-        .base = TOP_DARJEELING_SPI_HOST1_BASE_ADDR,
-        .offset = SPI_HOST_CONFIGOPTS_REG_OFFSET,
-        .dif = &spi_host1,
-        .init = spi_host_init,
-        .config = spi_host1_config,
-        .program_val = 0x6540000,
-        .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost1,
     },
     {
         .name = "I2C0",
