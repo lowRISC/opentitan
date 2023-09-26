@@ -819,24 +819,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "rsa_keygen_checkp_too_small_test",
-    srcs = [
-        "rsa_keygen_checkp_too_small_test.s",
-    ],
-    exp = "rsa_keygen_checkp_too_small_test.exp",
-    deps = [
-        ":fake_primality",
-        ":rsa_keygen_checkpq_test_data",
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:montmul",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_keygen",
-    ],
-)
-
-otbn_sim_test(
     name = "rsa_keygen_checkq_good_test",
     timeout = "long",  # runs a primality test
     srcs = [
@@ -899,24 +881,6 @@ otbn_sim_test(
         "rsa_keygen_checkq_too_close_test.s",
     ],
     exp = "rsa_keygen_checkq_too_close_test.exp",
-    deps = [
-        ":fake_primality",
-        ":rsa_keygen_checkpq_test_data",
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:montmul",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_keygen",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_keygen_checkq_too_small_test",
-    srcs = [
-        "rsa_keygen_checkq_too_small_test.s",
-    ],
-    exp = "rsa_keygen_checkq_too_small_test.exp",
     deps = [
         ":fake_primality",
         ":rsa_keygen_checkpq_test_data",
