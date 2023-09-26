@@ -219,7 +219,7 @@
       desc: "Enable capture of cpu crash dump information."
     }
     { name: "RSTMGR.ALERT_HANDLER.RESET_STATUS",
-      desc: "Inform alert handler about reset status for each reset."
+      desc: "Inform alert handler about reset enable status for each reset."
     }
   ]
   // Define rstmgr struct package
