@@ -44,7 +44,7 @@
         "chip_sw_pwrmgr_random_sleep_all_reset_reqs",
         "chip_sw_pwrmgr_wdog_reset",
       ]
-      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sys_reset_info
@@ -90,6 +90,7 @@
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             This can be an important diagnostic tool, so setting it to SV2.
+            This test already runs in CW310.
             '''
       stage: V2
       si_stage: SV2
@@ -105,7 +106,7 @@
         "RSTMGR.CPU_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_cpu_info"]
-      bazel: ["//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_cpu_info_test_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sw_req_reset
@@ -118,6 +119,7 @@
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             For early SiV we could rely on the external reset, so this seems SV3.
+            This test already runs in CW310.
             '''
       stage: V2
       si_stage: SV3
@@ -130,7 +132,7 @@
       ]
       features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
-      bazel: ["//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_sw_req_test_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_alert_info
@@ -145,6 +147,7 @@
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             This can be an important diagnostic tool, so setting it to SV2.
+            This test already runs in CW310.
             '''
       stage: V2
       si_stage: SV2
@@ -160,7 +163,7 @@
         "RSTMGR.ALERT_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_alert_info"]
-      bazel: ["//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_sw_rst
@@ -174,7 +177,9 @@
               `spi_device`, `spi_host0`, `spi_host1`, `usb`, `i2c0`, `i2c1`, `i2c2`.
 
             Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
+
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This test already runs in CW310.
             '''
       stage: V2
       si_stage: SV3
@@ -202,7 +207,7 @@
         "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
       ]
       tests: ["chip_sw_rstmgr_sw_rst"]
-      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_escalation_reset
@@ -241,12 +246,22 @@
             from them and avoid triggering spurious escalation. This scenario is caused by
             software induced peripheral resets among others. The check is that spurious
             escalation is not triggered.
+
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This test already runs in CW310.
             '''
       stage: V2
       si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED0",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
       features: ["RSTMGR.ALERT_HANDLER.RESET_STATUS"]
       tests: ["chip_sw_rstmgr_sw_rst"]
-      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_cw310_test_rom"]
     }
   ]
 }

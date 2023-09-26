@@ -36,10 +36,10 @@
               "chip_sw_kmac_idle",
               "chip_sw_otbn_randomness"]
       bazel: [
-        "//sw/device/tests:aes_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:hmac_enc_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:kmac_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:otbn_randomness_test_fpga_cw310_test_rom",
+        "//sw/device/tests:aes_idle_test_cw310_test_rom",
+        "//sw/device/tests:hmac_enc_idle_test_cw310_test_rom",
+        "//sw/device/tests:kmac_idle_test_cw310_test_rom",
+        "//sw/device/tests:otbn_randomness_test_cw310_test_rom",
       ]
     }
     {
@@ -77,10 +77,10 @@
               "chip_sw_clkmgr_off_kmac_trans",
               "chip_sw_clkmgr_off_otbn_trans"]
       bazel: [
-        "//sw/device/tests:clkmgr_off_aes_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_hmac_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_kmac_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_otbn_trans_test_fpga_cw310_test_rom"
+        "//sw/device/tests:clkmgr_off_aes_trans_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_off_hmac_trans_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_off_kmac_trans_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_off_otbn_trans_test_cw310_test_rom"
       ]
     }
     {
@@ -110,7 +110,7 @@
         "CLKMGR.ENABLE.USB",
       ]
       tests: ["chip_sw_clkmgr_off_peri"]
-      bazel: ["//sw/device/tests:clkmgr_off_peri_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:clkmgr_off_peri_test_cw310_test_rom"]
     }
     {
       name: chip_sw_clkmgr_div
@@ -148,9 +148,9 @@
               "manuf_cp_unlock_raw",
               "manuf_cp_yield_test"]
       bazel: [
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_test_rom",
+        "//sw/device/tests:ast_clk_outs_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_cw310_test_rom",
       ]
     }
     {
@@ -315,7 +315,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_ast_clk_outputs"]
-      bazel: ["//sw/device/tests:ast_clk_outs_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:ast_clk_outs_test_cw310_test_rom"]
     }
     {
       name: chip_sw_clkmgr_sleep_frequency
@@ -324,7 +324,8 @@
             Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
             keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
             recoverable fault status should show no errors for the disabled clocks.
-            SiVal: Can be run anytime or life cycle after clocks are calibrated.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
             '''
       stage: V2
       si_stage: SV3
@@ -338,7 +339,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_clkmgr_sleep_frequency"]
-      bazel: ["//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:clkmgr_sleep_frequency_test_cw310_test_rom"]
     }
     {
       name: chip_sw_clkmgr_reset_frequency
@@ -347,7 +348,8 @@
             Enable clock cycle counts, configured to cause errors. Trigger a chip reset via SW.
             After reset the clock measurements should be off and the recoverable fault status
             should be cleared.
-            SiVal: Can be run anytime or life cycle after clocks are calibrated.
+            SiVal: CPU must be enabled and clocks must be calibrated, but no other OTP or
+            lifecycle dependencies. This tests already run in CW310.
             '''
       stage: V2
       si_stage: SV3
@@ -361,7 +363,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_clkmgr_reset_frequency"]
-      bazel: ["//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:clkmgr_reset_frequency_test_cw310_test_rom"]
     }
     {
       name: chip_sw_clkmgr_escalation_reset
