@@ -260,8 +260,8 @@
         "RMA",
       ]
       features: ["RSTMGR.ALERT_HANDLER.RESET_STATUS"]
-      tests: ["chip_sw_rstmgr_sw_rst"]
-      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_cw310_test_rom"]
+      tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test_cw310_test_rom"]
     }
   ]
 }

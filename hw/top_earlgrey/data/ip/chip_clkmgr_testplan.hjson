@@ -380,5 +380,28 @@
       tests: ["chip_sw_all_escalation_resets"]
       bazel: []
     }
+    {
+      name: chip_sw_clkmgr_alert_handler_clock_enables
+      desc: '''Verify the clock manager sends the correct information to the alert handler
+            regarding individual clocks being active so it can ignore missing ping responses
+            from them and avoid triggering spurious escalation. This scenario is caused by
+            peripheral and transactional clocks being disabled among others. The check is
+            that spurious escalation is not triggered.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED0",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: ["CLKMGR.ALERT_HANDLER.CLOCK_STATUS"]
+      tests: ["chip_sw_alert_handler_lpg_clkoff"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test_cw310_test_rom"]
+    }
   ]
 }
