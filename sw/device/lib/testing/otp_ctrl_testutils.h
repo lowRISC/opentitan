@@ -56,6 +56,23 @@ status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
                                        uint32_t address, uint32_t *result);
 
 /**
+ * Reads a 32bit array from OTP using the DAI interface.
+ *
+ * @param otp otp_ctrl instance.
+ * @param partition OTP partition.
+ * @param start_address Address of array relative to the start of the
+ *                      `partition`. Must be a 32bit aligned address.
+ * @param[out] buffer The 32bit array buffer.
+ * @param len The number of 32bit words to read into the buffer.
+ * @return OK_STATUS on successful read.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             uint32_t start_address,
+                                             uint32_t *buffer, size_t len);
+
+/**
  * Reads a 64bit value from OTP using the DAI interface.
  *
  * @param otp otp_ctrl instance.
@@ -69,6 +86,23 @@ OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
                                        dif_otp_ctrl_partition_t partition,
                                        uint32_t address, uint64_t *result);
+
+/**
+ * Reads a 64bit array from OTP using the DAI interface.
+ *
+ * @param otp otp_ctrl instance.
+ * @param partition OTP partition.
+ * @param start_address Address of array relative to the start of the
+ *                      `partition`. Must be a 64bit aligned address.
+ * @param[out] buffer The 64bit array buffer.
+ * @param len The number of 64bit words to read into the buffer.
+ * @return OK_STATUS on successful read.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             uint32_t start_address,
+                                             uint64_t *buffer, size_t len);
 
 /**
  * Writes `len` number of 32bit words from buffer into otp `partition` starting
