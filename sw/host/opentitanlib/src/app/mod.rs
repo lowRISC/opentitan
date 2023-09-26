@@ -836,33 +836,11 @@ impl TransportWrapper {
         Ok(())
     }
 
-    fn apply_spi_configurations(&self, conf_map: &HashMap<String, SpiConfiguration>) -> Result<()> {
-        for (name, conf) in conf_map {
-            let spi = self.spi(name)?;
-            if let Some(bits_per_sec) = conf.bits_per_sec {
-                spi.set_max_speed(bits_per_sec)?;
-            }
-        }
-        Ok(())
-    }
-
-    fn apply_i2c_configurations(&self, conf_map: &HashMap<String, I2cConfiguration>) -> Result<()> {
-        for (name, conf) in conf_map {
-            let i2c = self.i2c(name)?;
-            if let Some(bits_per_sec) = conf.bits_per_sec {
-                i2c.set_max_speed(bits_per_sec)?;
-            }
-        }
-        Ok(())
-    }
-
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self) -> Result<()> {
         self.transport.apply_default_configuration()?;
         self.apply_pin_configurations(&self.pin_conf_map)?;
-        self.apply_spi_configurations(&self.spi_conf_map)?;
-        self.apply_i2c_configurations(&self.i2c_conf_map)?;
         Ok(())
     }
 
