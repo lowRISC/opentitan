@@ -65,6 +65,10 @@ module dma
   logic                       dma_host_tlul_rsp_err,      dma_ctn_tlul_rsp_err;
   logic                       dma_host_tlul_rsp_intg_err, dma_ctn_tlul_rsp_intg_err;
 
+  logic                       dma_host_write, dma_host_clear_int;
+  logic                       dma_ctn_write,  dma_ctn_clear_int;
+  logic                       dma_sys_write;
+
   logic                       capture_return_data, capture_host_return_data,
                               capture_ctn_return_data, capture_sys_return_data;
   logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d;
@@ -76,6 +80,7 @@ module dma
 
   logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                               clear_index_en, int_clear_tlul_rsp_valid;
+  logic                               int_clear_tlul_gnt;
 
   logic [DmaErrLast-1:0] next_error;
   logic bad_src_addr;
@@ -86,6 +91,10 @@ module dma
   logic bad_go_config;
   logic bad_asid;
   logic config_error;
+
+  logic write_gnt;
+  logic write_rsp_valid;
+  logic write_rsp_error;
 
   logic cfg_handshake_en;
   logic cfg_fifo_auto_increment_en;
@@ -441,6 +450,76 @@ module dma
     .idle             (                       )
   );
 
+  // Note: bus signals shall be asserted only when configured and active, to ensure
+  // that address and - especially - data are not leaked to other buses.
+
+  // Host interface to OT Internal address space
+  always_comb begin
+    dma_host_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == OtInternalAddr);
+
+    dma_host_tlul_req_valid = dma_host_write | dma_host_clear_int;
+    // TLUL 4B aligned
+    dma_host_tlul_req_addr  = dma_host_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
+                         (dma_host_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0);
+    dma_host_tlul_req_we    = dma_host_write | dma_host_clear_int;
+    dma_host_tlul_req_wdata = dma_host_write ? read_return_data_q :
+                         (dma_host_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
+    dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q
+                                             : {top_pkg::TL_DBW{dma_host_clear_int}};
+  end
+
+  // Host interface to SoC CTN address space
+  always_comb begin
+    dma_ctn_write = (ctrl_state_q == DmaSendWrite) &
+                    (dst_asid_q == SocControlAddr || dst_asid_q == OtExtFlashAddr);
+
+    dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_clear_int;
+    // TLUL 4B aligned
+    dma_ctn_tlul_req_addr  = dma_ctn_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
+                        (dma_ctn_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0);
+    dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_int;
+    dma_ctn_tlul_req_wdata = dma_ctn_write ? read_return_data_q :
+                        (dma_ctn_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
+    dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q : {top_pkg::TL_DBW{dma_ctn_clear_int}};
+  end
+
+  // Host interface to SoC SYS address space
+  always_comb begin
+    dma_sys_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == SocSystemAddr);
+
+    sys_req_d.vld_vec     [SysCmdWrite] = dma_sys_write;
+    sys_req_d.metadata_vec[SysCmdWrite] = src_metadata;
+    sys_req_d.iova_vec    [SysCmdWrite] = dma_sys_write ?
+                                         {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
+    sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
+
+    sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
+    sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
+  end
+
+  // Write response muxing
+  always_comb begin
+    unique case (dst_asid_q)
+      OTInternalAddr: begin
+        write_gnt       = dma_host_tlul_gnt;
+        write_rsp_valid = dma_host_tlul_rsp_valid;
+        write_rsp_error = dma_host_tlul_rsp_err;
+      end
+      SocSystemAddr: begin
+        write_gnt       = 1'b1;  // No requirement to wait
+        write_rsp_valid = sys_resp_q.grant_vec[SysCmdWrite];
+        write_rsp_error = 1'b0;  // Write errors do not occur on SoC System bus
+      end
+      // SocControlAddr, OtExtFlashAddr handled here
+      //   (other ASID values prevented in configuration validation).
+      default: begin
+        write_gnt       = dma_ctn_tlul_gnt;
+        write_rsp_valid = dma_ctn_tlul_rsp_valid;
+        write_rsp_error = dma_ctn_tlul_rsp_err;
+      end
+    endcase
+  end
+
   always_comb begin
     ctrl_state_d = ctrl_state_q;
 
@@ -472,37 +551,27 @@ module dma
     req_src_be_d = '0;
     req_dst_be_d = '0;
 
-    dma_host_tlul_req_valid  = 1'b0;
-    dma_host_tlul_req_addr   =   '0;
-    dma_host_tlul_req_we     = 1'b0;
-    dma_host_tlul_req_wdata  =   '0;
-    dma_host_tlul_req_be     =   '0;
-
-    dma_ctn_tlul_req_valid   = 1'b0;
-    dma_ctn_tlul_req_addr    =   '0;
-    dma_ctn_tlul_req_we      = 1'b0;
-    dma_ctn_tlul_req_wdata   =   '0;
-    dma_ctn_tlul_req_be      =   '0;
-
-    sys_req_d.vld_vec            = '0;
-    sys_req_d.metadata_vec       = '0;
-    sys_req_d.opcode_vec         = { SysOpcWrite, SysOpcRead };
-    sys_req_d.iova_vec           = '0;
-    sys_req_d.racl_vec           = '0;
-    sys_req_d.write_data         = '0;
-    sys_req_d.write_be           = '0;
-    sys_req_d.read_be            = '0;
+    sys_req_d.vld_vec     [SysCmdRead] = '0;
+    sys_req_d.metadata_vec[SysCmdRead] = '0;
+    sys_req_d.opcode_vec               = { SysOpcWrite, SysOpcRead };
+    sys_req_d.iova_vec    [SysCmdRead] = '0;
+    sys_req_d.racl_vec    [SysCmdRead] = '0;
+    sys_req_d.read_be                  = '0;
 
     capture_host_return_data = 1'b0;
     capture_ctn_return_data  = 1'b0;
     capture_sys_return_data  = 1'b0;
 
+    dma_host_clear_int = 1'b0;
+    dma_ctn_clear_int = 1'b0;
     clear_index_d  = '0;
     clear_index_en = '0;
 
     clear_go       = 1'b0;
 
-    // Mux the TLUL response signal depending on the selected bus interface
+    // Mux the TLUL grant and response signals depending on the selected bus interface
+    int_clear_tlul_gnt       = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_gnt :
+                                                                      dma_ctn_tlul_gnt;
     int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
                                                                       dma_ctn_tlul_rsp_valid;
     dma_state_error = 1'b0;
@@ -552,26 +621,12 @@ module dma
       DmaClearIntrSrc: begin
         // Clear the interrupt by writing
         if(reg2hw.clear_int_src.q[clear_index_q]) begin
-          if (reg2hw.clear_int_bus.q[clear_index_q]) begin
-            dma_host_tlul_req_valid = 1'b1;
-            dma_host_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
-            dma_host_tlul_req_we    = 1'b1;
-            dma_host_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
-            dma_host_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
+          // Send 'clear interrupt' write to the appropriate bus
+          dma_host_clear_int = reg2hw.clear_int_bus.q[clear_index_q];
+          dma_ctn_clear_int = !reg2hw.clear_int_bus.q[clear_index_q];
 
-            if (dma_host_tlul_gnt) begin
-              ctrl_state_d = DmaWaitIntrSrcResponse;
-            end
-          end else begin
-            dma_ctn_tlul_req_valid = 1'b1;
-            dma_ctn_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
-            dma_ctn_tlul_req_we    = 1'b1;
-            dma_ctn_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
-            dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
-
-            if (dma_ctn_tlul_gnt) begin
-              ctrl_state_d = DmaWaitIntrSrcResponse;
-            end
+          if (int_clear_tlul_gnt) begin
+            ctrl_state_d = DmaWaitIntrSrcResponse;
           end
 
           // Writes also get a resp valid, but no data.
@@ -647,11 +702,12 @@ module dma
           dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
         end
 
+        // Capture ASID values for use throughout the transfer.
         if (transfer_byte_q == '0) begin
           capture_asid = 1'b1;
           src_asid_d = reg2hw.address_space_id.source_asid.q;
           dst_asid_d = reg2hw.address_space_id.destination_asid.q;
-        end       
+        end
 
         unique case (transfer_width_d)
           3'b001: begin
@@ -865,17 +921,7 @@ module dma
               sha2_valid      = 1'b1;
               sha2_consumed_d = sha2_ready;
             end
-
-            unique case (dst_asid_q)
-              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
-              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
-              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
-              default: begin
-                next_error[DmaAsidErr] = 1'b1;
-                ctrl_state_d           = DmaError;
-              end
-            endcase
+            ctrl_state_d = DmaSendWrite;
           end
         end else if (dma_host_tlul_gnt) begin
           // Only Request handled
@@ -905,17 +951,7 @@ module dma
               sha2_valid      = 1'b1;
               sha2_consumed_d = sha2_ready;
             end
-
-            unique case (dst_asid_q)
-              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
-              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
-              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
-              default: begin
-                next_error[DmaAsidErr] = 1'b1;
-                ctrl_state_d = DmaError;
-              end
-            endcase
+            ctrl_state_d = DmaSendWrite;
           end
         end else if (dma_ctn_tlul_gnt) begin
           // Only Request handled
@@ -957,32 +993,14 @@ module dma
               sha2_valid      = 1'b1;
               sha2_consumed_d = sha2_ready;
             end
-
-            unique case (dst_asid_q)
-              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
-              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
-              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
-              default: begin
-                next_error[DmaAsidErr] = 1'b1;
-                ctrl_state_d = DmaError;
-              end
-            endcase
+            ctrl_state_d = DmaSendWrite;
           end
         end
       end
 
-      DmaSendHostWrite,
-      DmaWaitHostWriteResponse: begin
-        if (ctrl_state_q == DmaSendHostWrite) begin
-          dma_host_tlul_req_valid = 1'b1;
-          dma_host_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
-          dma_host_tlul_req_we    = 1'b1;
-          dma_host_tlul_req_wdata = read_return_data_q;
-          dma_host_tlul_req_be    = req_dst_be_q;
-        end
-
-        // If using inline hashing and data is not yet consumed, apply it
+      DmaSendWrite,
+      DmaWaitWriteResponse: begin
+        // If using inline hashing and data is not yet comsumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
           sha2_valid = 1'b1;
           sha2_consumed_d = sha2_ready;
@@ -990,135 +1008,39 @@ module dma
 
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
-        end else if (dma_host_tlul_rsp_valid) begin
-          transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          capture_transfer_byte = 1'b1;
-          capture_chunk_byte    = 1'b1;
+        end else if (write_rsp_valid) begin
 
-          if (dma_host_tlul_rsp_err) begin
+          if (write_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
             ctrl_state_d                 = DmaError;
-          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
-            if (use_inline_hashing) begin
-              if (!(sha2_ready || sha2_consumed_q)) begin
-                ctrl_state_d = DmaShaWait;
-              end else begin
-                ctrl_state_d = DmaShaFinalize;
-              end
-            end else begin
-              clear_go     = 1'b1;
-              ctrl_state_d = DmaIdle;
-            end
-          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
-            ctrl_state_d = DmaIdle;
           end else begin
-            ctrl_state_d = DmaAddrSetup;
+            // Advance by the number of bytes just transferred
+            transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+            chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+            capture_transfer_byte = 1'b1;
+            capture_chunk_byte    = 1'b1;
+
+            // Will there still be more to do _after_ this advance?
+            if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+              if (use_inline_hashing) begin
+                if (!(sha2_ready || sha2_consumed_q)) begin
+                  ctrl_state_d = DmaShaWait;
+                end else begin
+                  ctrl_state_d = DmaShaFinalize;
+                end
+              end else begin
+                clear_go     = 1'b1;
+                ctrl_state_d = DmaIdle;
+              end
+            end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
+              ctrl_state_d = DmaIdle;
+            end else begin
+              ctrl_state_d = DmaAddrSetup;
+            end
           end
-        end else if (dma_host_tlul_gnt) begin
+        end else if (write_gnt) begin
           // Only Request handled
-          ctrl_state_d = DmaWaitHostWriteResponse;
-        end
-      end
-
-      DmaSendCtnWrite,
-      DmaWaitCtnWriteResponse: begin
-        if (ctrl_state_q == DmaSendCtnWrite) begin
-          dma_ctn_tlul_req_valid = 1'b1;
-          dma_ctn_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
-          dma_ctn_tlul_req_we    = 1'b1;
-          dma_ctn_tlul_req_wdata = read_return_data_q;
-          dma_ctn_tlul_req_be    = req_dst_be_q;
-        end
-
-        // If using inline hashing and data is not yet consumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
-
-        if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else if (dma_ctn_tlul_rsp_valid) begin
-          transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          capture_transfer_byte = 1'b1;
-          capture_chunk_byte    = 1'b1;
-
-          if (dma_ctn_tlul_rsp_err) begin
-            next_error[DmaCompletionErr] = 1'b1;
-            ctrl_state_d                 = DmaError;
-          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
-            if (use_inline_hashing) begin
-              if (!(sha2_ready || sha2_consumed_q)) begin
-                ctrl_state_d = DmaShaWait;
-              end else begin
-                ctrl_state_d = DmaShaFinalize;
-              end
-            end else begin
-              clear_go     = 1'b1;
-              ctrl_state_d = DmaIdle;
-            end
-          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
-            ctrl_state_d = DmaIdle;
-          end else begin
-            ctrl_state_d = DmaAddrSetup;
-          end
-        end else if (dma_ctn_tlul_gnt) begin
-          // Only Request handled
-          ctrl_state_d = DmaWaitCtnWriteResponse;
-        end
-      end
-
-      DmaSendSysWrite: begin
-        sys_req_d.vld_vec     [SysCmdWrite] = 1'b1;
-        sys_req_d.metadata_vec[SysCmdWrite] = src_metadata;
-        sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
-        sys_req_d.iova_vec    [SysCmdWrite] = {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
-        sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
-
-        sys_req_d.write_data = read_return_data_q;
-        sys_req_d.write_be   = req_dst_be_q;
-        ctrl_state_d         = DmaWaitSysWriteGrant;
-
-        // If using inline hashing and data is not yet consumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
-      end
-
-      DmaWaitSysWriteGrant: begin
-        // If using inline hashing and data is not yet consumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
-
-        if (sys_resp_q.grant_vec[SysCmdWrite]) begin
-          transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          capture_transfer_byte = 1'b1;
-          capture_chunk_byte    = 1'b1;
-
-          if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
-          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
-            if (use_inline_hashing) begin
-              if (!(sha2_ready || sha2_consumed_q)) begin
-                ctrl_state_d = DmaShaWait;
-              end else begin
-                ctrl_state_d = DmaShaFinalize;
-              end
-            end else begin
-              clear_go     = 1'b1;
-              ctrl_state_d = DmaIdle;
-            end
-          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
-            ctrl_state_d = DmaIdle;
-          end else begin
-            ctrl_state_d = DmaAddrSetup;
-          end
+          ctrl_state_d = DmaWaitWriteResponse;
         end
       end
 
@@ -1129,6 +1051,7 @@ module dma
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else if (sha2_ready) begin
+          // Byte count has already been updated for this transfer
           if (transfer_byte_q >= reg2hw.total_data_size.q) begin
             ctrl_state_d = DmaShaFinalize;
           end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
@@ -1277,17 +1200,10 @@ module dma
   assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
   // Data was moved if we get a write valid response
-  assign data_move_state_valid =
-    (dma_host_tlul_rsp_valid && (ctrl_state_q == DmaSendHostWrite)) ||
-    (dma_ctn_tlul_rsp_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||
-    (sys_resp_q.grant_vec[SysCmdWrite] && (ctrl_state_q == DmaWaitSysWriteGrant));
+  assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite));
 
-  assign data_move_state = (ctrl_state_q == DmaSendHostWrite)         ||
-                           (ctrl_state_q == DmaWaitHostWriteResponse) ||
-                           (ctrl_state_q == DmaSendCtnWrite)          ||
-                           (ctrl_state_q == DmaWaitCtnWriteResponse)  ||
-                           (ctrl_state_q == DmaSendSysWrite)          ||
-                           (ctrl_state_q == DmaWaitSysWriteGrant)     ||
+  assign data_move_state = (ctrl_state_q == DmaSendWrite)         ||
+                           (ctrl_state_q == DmaWaitWriteResponse) ||
                            (ctrl_state_d == DmaShaFinalize);
 
   assign new_destination_addr = cfg_data_direction ?

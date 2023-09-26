@@ -50,12 +50,9 @@ package dma_pkg;
     DmaSendSysRead           = 5'b01000,
     DmaWaitSysReadGrant      = 5'b01001,
     DmaWaitSysReadResponse   = 5'b01010,
-    DmaSendHostWrite         = 5'b01011,
-    DmaWaitHostWriteResponse = 5'b01100,
-    DmaSendCtnWrite          = 5'b01101,
-    DmaWaitCtnWriteResponse  = 5'b01110,
-    DmaSendSysWrite          = 5'b01111,
-    DmaWaitSysWriteGrant     = 5'b10000,
+    DmaSendWrite             = 5'b01011,
+    DmaWaitWriteResponse     = 5'b01100,
+    // TODO: state renumbering
     DmaError                 = 5'b10001,
     DmaShaFinalize           = 5'b10010,
     DmaShaWait               = 5'b10011
