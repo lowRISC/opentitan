@@ -132,6 +132,9 @@
     { name: "CLKMGR.JITTER.ENABLE",
       desc: "Enable clock jitter."
     }
+    { name: "CLKMGR.ALERT_HANDLER.CLOCK_STATUS",
+      desc: "Inform alert handler about clock enable status for each clock."
+    }
 ]
 
   inter_signal_list: [
