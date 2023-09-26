@@ -311,6 +311,29 @@ module dma
     .q_o   ( dst_addr_q   )
   );
 
+  logic                  capture_asid;
+  logic [ASID_WIDTH-1:0] src_asid_q, src_asid_d;
+  logic [ASID_WIDTH-1:0] dst_asid_q, dst_asid_d;
+  prim_generic_flop_en #(
+    .Width(ASID_WIDTH)
+  ) aff_src_asid (
+    .clk_i ( gated_clk    ),
+    .rst_ni( rst_ni       ),
+    .en_i  ( capture_asid ),
+    .d_i   ( src_asid_d   ),
+    .q_o   ( src_asid_q   )
+  );
+
+  prim_generic_flop_en #(
+    .Width(ASID_WIDTH)
+  ) aff_dst_asid (
+    .clk_i ( gated_clk    ),
+    .rst_ni( rst_ni       ),
+    .en_i  ( capture_asid ),
+    .d_i   ( dst_asid_d   ),
+    .q_o   ( dst_asid_q   )
+  );
+
   logic                       capture_be;
   logic [top_pkg::TL_DBW-1:0] req_src_be_q, req_src_be_d;
   logic [top_pkg::TL_DBW-1:0] req_dst_be_q, req_dst_be_d;
@@ -441,6 +464,9 @@ module dma
     capture_addr = 1'b0;
     src_addr_d   = '0;
     dst_addr_d   = '0;
+    capture_asid = 1'b0;
+    src_asid_d   = '0;
+    dst_asid_d   = '0;
 
     capture_be   = '0;
     req_src_be_d = '0;
@@ -620,6 +646,12 @@ module dma
         end else begin
           dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
         end
+
+        if (transfer_byte_q == '0) begin
+          capture_asid = 1'b1;
+          src_asid_d = reg2hw.address_space_id.source_asid.q;
+          dst_asid_d = reg2hw.address_space_id.destination_asid.q;
+        end       
 
         unique case (transfer_width_d)
           3'b001: begin
@@ -834,7 +866,7 @@ module dma
               sha2_consumed_d = sha2_ready;
             end
 
-            unique case (reg2hw.address_space_id.destination_asid.q)
+            unique case (dst_asid_q)
               SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
               OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
@@ -874,7 +906,7 @@ module dma
               sha2_consumed_d = sha2_ready;
             end
 
-            unique case (reg2hw.address_space_id.destination_asid.q)
+            unique case (dst_asid_q)
               SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
               OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
@@ -926,7 +958,7 @@ module dma
               sha2_consumed_d = sha2_ready;
             end
 
-            unique case (reg2hw.address_space_id.destination_asid.q)
+            unique case (dst_asid_q)
               SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
               OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
@@ -1244,7 +1276,7 @@ module dma
   // Ensures that all data until the IRQ is transferred.
   assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
-  // Data was moved if the get a TLUL valid response
+  // Data was moved if we get a write valid response
   assign data_move_state_valid =
     (dma_host_tlul_rsp_valid && (ctrl_state_q == DmaSendHostWrite)) ||
     (dma_ctn_tlul_rsp_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||

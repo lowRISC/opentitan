@@ -20,9 +20,10 @@ package dma_pkg;
     DmaErrLast
   } dma_error_e;
 
-
   // ASID uses a 4-bit FI protected encoding with a minimum Hamming distance of 2-bit
-  typedef enum logic [3:0] {
+  parameter int unsigned ASID_WIDTH = 4;
+
+  typedef enum logic [ASID_WIDTH-1:0] {
     OtInternalAddr = 4'h7,
     SocControlAddr = 4'ha,
     SocSystemAddr  = 4'h9,
