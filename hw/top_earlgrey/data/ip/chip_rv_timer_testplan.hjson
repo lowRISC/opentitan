@@ -14,7 +14,50 @@
             - Verify that the interrupt triggered only after the timeout elapsed.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
+                 "RV_TIMER.COUNTER"]
       tests: ["chip_sw_rv_timer_irq"]
+      bazel: ["//sw/device/tests:rv_timer_smoketest_cw310_test_rom"]
+    }
+    {
+      name: tick_configuration
+      desc: '''Verify that the timer can be configured to generate a system tick.
+
+            - Configure the timer to generate a tick of `T` microseconds long.
+            - Enable the timer.
+            - Start a busy loop of 1 second based on the `mcycleh` CSR.
+            - Read the number of ticks `n`.
+            - Verify that `n * T ~= 1 second` within 5% of tolerance.
+            - Repeat for T in:
+                [1, 5, 10, 25, 50, 100, 125, 250, 500, 1000]
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE"]
+      tests: []
+    }
+    {
+      name: riscv_isa_csrs
+      desc: '''Verify that the timer counter and compare registers can be read and written via
+            the registers `mtime` and `mtimecmp` and that `mtime` will wrap to zero when the limit
+            is reached.
+
+            - Enable interrupts.
+            - Set the compare register to zero by writing to `mtimecmp` CSR.
+            - Set the counter to `UINT64_MAX - 500 milliseconds` by writing to `mtime` CSR.
+            - Enable the timer.
+            - Verify that the counter has wrapped around by reading `mtime`.
+            - Verify that the interrupt has fired.
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
+                 "RV_TIMER.COUNTER", "RV_TIMER.RISCV_CSRS_INTEGRATION"]
+      tests: []
     }
   ]
 }
