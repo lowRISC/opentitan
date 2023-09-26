@@ -35,17 +35,37 @@ BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 # Manifest schema directory
 MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.argv[0])
+# Required designs
+KNOWN_DESIGNS = {
+    "chip_earlgrey_cw310": {
+        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom",
+        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi",
+        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi",
+    },
+    "chip_earlgrey_cw310_hyperdebug": {
+        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
+        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi_hyp",
+        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi_hyp",
+    },
+    "chip_earlgrey_cw340": {
+        "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
+        "rom_mmi": "@//hw/bitstream/vivado:fpga_cw340_rom_mmi",
+        "otp_mmi": "@//hw/bitstream/vivado:fpga_cw340_otp_mmi",
+    },
+}
 
 parser = argparse.ArgumentParser(
     description='Bitstream Downloader & Cache manager')
 parser.add_argument('--cache', default=CACHE_DIR, help='Cache directory name')
+parser.add_argument('--create-symlink', default=True,
+                    help='Create symlink to cache directory')
 parser.add_argument('--latest-update',
                     default='latest.txt',
                     help='Last time the cache was updated')
 parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
 parser.add_argument('--build-file',
                     default='BUILD.bazel',
-                    help='Name of the genrated BUILD file')
+                    help='Name of the generated BUILD file')
 parser.add_argument('--list',
                     default=False,
                     action=argparse.BooleanOptionalAction,
@@ -95,10 +115,11 @@ class BitstreamCache(object):
                                args.offline)
         return cache
 
-    def InitRepository(self):
+    def InitRepository(self, create_symlink: bool):
         """Create the cache directory and symlink it into the bazel repository dir."""
         os.makedirs(self.cachedir, exist_ok=True)
-        os.symlink(self.cachedir, 'cache')
+        if create_symlink:
+            os.symlink(self.cachedir, 'cache')
 
     def Touch(self, key):
         """Set the latest known bitstream.
@@ -410,6 +431,15 @@ class BitstreamCache(object):
                 '',
             ]
 
+        def alias_lines(name, target):
+            return [
+                'alias(',
+                '    name = "{}",'.format(name),
+                '    actual = "{}",'.format(target),
+                ')',
+                '',
+            ]
+
         used_target_names: Set[str] = set()
 
         cache_base_dir = os.path.join("cache", key)
@@ -445,9 +475,16 @@ class BitstreamCache(object):
             self._WriteSubstituteManifest(manifest, manifest_path)
 
         bazel_lines += filegroup_lines("manifest", manifest_path)
+
+        for design_name in sorted(KNOWN_DESIGNS.keys()):
+            if design_name not in designs:
+                for target_ext, alias in KNOWN_DESIGNS[design_name].items():
+                    target = "{}_{}".format(design_name, target_ext)
+                    bazel_lines += alias_lines(target, alias)
+
         return '\n'.join(bazel_lines)
 
-    def WriteBuildFile(self, build_file: Path, key: str) -> str:
+    def WriteBazelFiles(self, build_file: Path, key: str) -> str:
         """Write a BUILD file for the requested bitstream files.
 
         Args:
@@ -487,7 +524,7 @@ def main(argv):
 
     cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update,
                            args.offline)
-    cache.InitRepository()
+    cache.InitRepository(args.create_symlink)
 
     # Do we need a refresh?
     need_refresh = (args.refresh or desired_bitstream != 'latest' or
@@ -518,8 +555,8 @@ def main(argv):
     # Write a build file which allows tests to reference the bitstreams with
     # the labels:
     #   @bitstreams//:{design}_bitstream
-    configured_bitream = cache.WriteBuildFile(args.build_file,
-                                              desired_bitstream)
+    configured_bitream = cache.WriteBazelFiles(args.build_file,
+                                               desired_bitstream)
     if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:
         logging.error(
             'Configured bitstream {} does not match desired bitstream {}.'.
