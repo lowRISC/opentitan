@@ -119,6 +119,110 @@
       desc:    "This is the debug request interrupt going to the main processor."
     },
   ]
+  features: [
+    {
+      name: "RV_DM.JTAG.FSM",
+      desc: '''
+               Full JTAG state machine is implemented including mandatory BYPASS
+               register and optional IDCODE register.
+            '''
+    },
+    {
+      name: "RV_DM.JTAG.DTM",
+      descr: '''
+                A RISC-V DTM (debug transport module) is implemented accessible
+                via JTAG. In particular implements the dtmcs and dmi registers
+                specified in the RISC-V debug spec (along with standard JTAG TAP
+                registers).
+             '''
+    },
+    {
+      name: "RV_DM.DBG.DATA_REGS",
+      descr: '''
+                 The DMI regs data0 and data1 are implemented.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.DMCONTROL_REG",
+      descr: '''
+                 The DMI register dmcontrol is implemented. The following
+                 optional fields have limited function or are not implemented:
+                  - hartreset - Not implemented, writes ignored read zero
+                  - hasel - HART masks not supported, writes ignored, read zero
+                  - setresethaltreq - Not implemented, writes ignored read zero
+                  - clrresethaltreq - Not implemented, writes ignored read zero
+             '''
+    },
+    {
+      name: "RV_DM.DBG.DMSTATUS_REG",
+      descr: '''
+                 The DMI register dmstatus is implemented. As HART masks are not
+                 supported the various allX/anyX register pairs are identical.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.HARTINFO_REG",
+      descr: '''
+                The DMI register hartinfo is implemented.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.HALTSUM0_REG",
+      descr: '''
+                The DMI register haltsum0 is implemented.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.ABSTRACT_COMMAND",
+      descr: '''
+                The DMI registers abstractcs/command/abstractauto are
+                implemented.
+
+                Only the Access Register Command is implemented.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.PROGBUF",
+      descr: '''
+                The DMI implements the program buffer, with all registers
+                progbuf0 - progbuf15 usable
+             '''
+    },
+    {
+      name: "RV_DM.DBG.SBA",
+      descr: '''
+                The DMI implements system bus access. sbdata0/sbdata1 and
+                sbaddress0/sbaddress1 are implemented. However as the data and
+                address bus with is 32-bits the second register of each has no
+                functionality but can still be read and written.
+             '''
+    },
+    {
+      name: "RV_DM.DBG.NDM_RESET",
+      descr: '''
+                The debug module implements a non-debug reset, that resets the
+                whole system other than the debug module. It is controlled via
+                the DMI DMCONTROL register
+             '''
+    }
+    {
+      name: "RV_DM.DBG.GDB",
+      descr: '''
+                The debug module will work with GDB connected via OpenOCD over
+                JTAG. In particular the following features will be functional
+                from GDB:
+                  - Halting execution and resetting
+                  - Setting, hitting and deleting breakpoints using all
+                    available hardware breakpoints
+                  - Single stepping
+                  - Reading and writing all registers
+                  - Reading and writing CSRs
+                  - Reading and writing memory
+                  - Setting the PC to jump to some location
+                  - Executing code from GDB (using the call command)
+             '''
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
@@ -149,7 +253,7 @@
             and that feeds into the TL-UL adapter is multibit encoded.
             '''
     }
-  ]
+  ],
   regwidth: "32",
   registers: {
     regs:[
