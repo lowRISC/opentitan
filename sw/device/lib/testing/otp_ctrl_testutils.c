@@ -75,6 +75,21 @@ status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
   return OK_STATUS();
 }
 
+status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             uint32_t start_address,
+                                             uint32_t *buffer, size_t len) {
+  uint32_t stop_address = start_address + (len * sizeof(uint32_t));
+  for (uint32_t addr = start_address, i = 0; addr < stop_address;
+       addr += sizeof(uint32_t), ++i) {
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(dif_otp_ctrl_dai_read_start(otp, partition, addr));
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(dif_otp_ctrl_dai_read32_end(otp, &buffer[i]));
+  }
+  return OK_STATUS();
+}
+
 status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
                                        dif_otp_ctrl_partition_t partition,
                                        uint32_t address, uint64_t *result) {
@@ -82,6 +97,21 @@ status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
   TRY(dif_otp_ctrl_dai_read_start(otp, partition, address));
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   TRY(dif_otp_ctrl_dai_read64_end(otp, result));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
+                                             dif_otp_ctrl_partition_t partition,
+                                             uint32_t start_address,
+                                             uint64_t *buffer, size_t len) {
+  uint32_t stop_address = start_address + (len * sizeof(uint64_t));
+  for (uint32_t addr = start_address, i = 0; addr < stop_address;
+       addr += sizeof(uint64_t), ++i) {
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(dif_otp_ctrl_dai_read_start(otp, partition, addr));
+    TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(dif_otp_ctrl_dai_read64_end(otp, &buffer[i]));
+  }
   return OK_STATUS();
 }
 
