@@ -36,8 +36,6 @@
     [
       uart0
       i2c0
-      i2c1
-      i2c2
       gpio
       spi_host0
       spi_device
@@ -108,48 +106,6 @@
           base_addrs:
           {
             hart: 0x30080000
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: i2c1
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: i2c
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x31030000
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: i2c2
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: i2c
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x31040000
           }
           size_byte: 0x80
         }

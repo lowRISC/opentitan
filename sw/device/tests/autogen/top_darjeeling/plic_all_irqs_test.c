@@ -56,8 +56,6 @@ static dif_edn_t edn1;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
-static dif_i2c_t i2c1;
-static dif_i2c_t i2c2;
 static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_mbx_t mbx0;
@@ -385,50 +383,6 @@ void ottf_external_isr(void) {
       // TODO: Check Interrupt type then clear INTR_TEST if needed.
       CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
       CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
-      break;
-    }
-
-    case kTopDarjeelingPlicPeripheralI2c1: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdI2c1FmtThreshold);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
-
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
-      break;
-    }
-
-    case kTopDarjeelingPlicPeripheralI2c2: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdI2c2FmtThreshold);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
-
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
       break;
     }
 
@@ -983,12 +937,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR);
-  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c1));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR);
-  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
 
@@ -1076,8 +1024,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio));
   CHECK_DIF_OK(dif_hmac_irq_acknowledge_all(&hmac));
   CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c0));
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c1));
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c2));
   CHECK_DIF_OK(dif_keymgr_dpe_irq_acknowledge_all(&keymgr_dpe));
   CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx0));
@@ -1168,10 +1114,6 @@ static void peripheral_irqs_enable(void) {
       dif_hmac_irq_restore_all(&hmac, &hmac_irqs));
   CHECK_DIF_OK(
       dif_i2c_irq_restore_all(&i2c0, &i2c_irqs));
-  CHECK_DIF_OK(
-      dif_i2c_irq_restore_all(&i2c1, &i2c_irqs));
-  CHECK_DIF_OK(
-      dif_i2c_irq_restore_all(&i2c2, &i2c_irqs));
   CHECK_DIF_OK(
       dif_keymgr_dpe_irq_restore_all(&keymgr_dpe, &keymgr_dpe_irqs));
   CHECK_DIF_OK(
@@ -1362,32 +1304,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from i2c0 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralI2c1;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
-       irq <= kDifI2cIrqHostTimeout; ++irq) {
-    i2c_irq_expected = irq;
-    LOG_INFO("Triggering i2c1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from i2c1 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralI2c2;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
-       irq <= kDifI2cIrqHostTimeout; ++irq) {
-    i2c_irq_expected = irq;
-    LOG_INFO("Triggering i2c2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralKeymgrDpe;

@@ -10,7 +10,7 @@ package rstmgr_reg_pkg;
   parameter int RdWidth = 32;
   parameter int IdxWidth = 4;
   parameter int NumHwResets = 6;
-  parameter int NumSwResets = 6;
+  parameter int NumSwResets = 4;
   parameter int NumTotalResets = 9;
   parameter int NumAlerts = 2;
 
@@ -146,12 +146,12 @@ package rstmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [33:30]
-    rstmgr_reg2hw_reset_req_reg_t reset_req; // [29:26]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [25:19]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [18:14]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [13:9]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [5:0] sw_rst_ctrl_n; // [8:3]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [31:28]
+    rstmgr_reg2hw_reset_req_reg_t reset_req; // [27:24]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [23:17]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [16:12]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [11:7]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [3:0] sw_rst_ctrl_n; // [6:3]
     rstmgr_reg2hw_err_code_reg_t err_code; // [2:0]
   } rstmgr_reg2hw_t;
 
@@ -184,15 +184,11 @@ package rstmgr_reg_pkg;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_1_OFFSET = 7'h 30;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_2_OFFSET = 7'h 34;
   parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_3_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_4_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_5_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_0_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_1_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_2_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_3_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_4_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_5_OFFSET = 7'h 58;
-  parameter logic [BlockAw-1:0] RSTMGR_ERR_CODE_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_0_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_1_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_2_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_3_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] RSTMGR_ERR_CODE_OFFSET = 7'h 4c;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] RSTMGR_ALERT_TEST_RESVAL = 2'h 0;
@@ -224,19 +220,15 @@ package rstmgr_reg_pkg;
     RSTMGR_SW_RST_REGWEN_1,
     RSTMGR_SW_RST_REGWEN_2,
     RSTMGR_SW_RST_REGWEN_3,
-    RSTMGR_SW_RST_REGWEN_4,
-    RSTMGR_SW_RST_REGWEN_5,
     RSTMGR_SW_RST_CTRL_N_0,
     RSTMGR_SW_RST_CTRL_N_1,
     RSTMGR_SW_RST_CTRL_N_2,
     RSTMGR_SW_RST_CTRL_N_3,
-    RSTMGR_SW_RST_CTRL_N_4,
-    RSTMGR_SW_RST_CTRL_N_5,
     RSTMGR_ERR_CODE
   } rstmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RSTMGR_PERMIT [24] = '{
+  parameter logic [3:0] RSTMGR_PERMIT [20] = '{
     4'b 0001, // index[ 0] RSTMGR_ALERT_TEST
     4'b 0001, // index[ 1] RSTMGR_RESET_REQ
     4'b 0011, // index[ 2] RSTMGR_RESET_INFO
@@ -252,15 +244,11 @@ package rstmgr_reg_pkg;
     4'b 0001, // index[12] RSTMGR_SW_RST_REGWEN_1
     4'b 0001, // index[13] RSTMGR_SW_RST_REGWEN_2
     4'b 0001, // index[14] RSTMGR_SW_RST_REGWEN_3
-    4'b 0001, // index[15] RSTMGR_SW_RST_REGWEN_4
-    4'b 0001, // index[16] RSTMGR_SW_RST_REGWEN_5
-    4'b 0001, // index[17] RSTMGR_SW_RST_CTRL_N_0
-    4'b 0001, // index[18] RSTMGR_SW_RST_CTRL_N_1
-    4'b 0001, // index[19] RSTMGR_SW_RST_CTRL_N_2
-    4'b 0001, // index[20] RSTMGR_SW_RST_CTRL_N_3
-    4'b 0001, // index[21] RSTMGR_SW_RST_CTRL_N_4
-    4'b 0001, // index[22] RSTMGR_SW_RST_CTRL_N_5
-    4'b 0001  // index[23] RSTMGR_ERR_CODE
+    4'b 0001, // index[15] RSTMGR_SW_RST_CTRL_N_0
+    4'b 0001, // index[16] RSTMGR_SW_RST_CTRL_N_1
+    4'b 0001, // index[17] RSTMGR_SW_RST_CTRL_N_2
+    4'b 0001, // index[18] RSTMGR_SW_RST_CTRL_N_3
+    4'b 0001  // index[19] RSTMGR_ERR_CODE
   };
 
 endpackage

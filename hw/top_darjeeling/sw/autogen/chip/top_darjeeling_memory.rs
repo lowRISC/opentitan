@@ -106,32 +106,6 @@ pub const TOP_DARJEELING_I2C0_BASE_ADDR: usize = 0x30080000;
 /// address between #TOP_DARJEELING_I2C0_BASE_ADDR and
 /// `TOP_DARJEELING_I2C0_BASE_ADDR + TOP_DARJEELING_I2C0_SIZE_BYTES`.
 pub const TOP_DARJEELING_I2C0_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for i2c1 in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_I2C1_BASE_ADDR: usize = 0x31030000;
-
-/// Peripheral size for i2c1 in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_I2C1_BASE_ADDR and
-/// `TOP_DARJEELING_I2C1_BASE_ADDR + TOP_DARJEELING_I2C1_SIZE_BYTES`.
-pub const TOP_DARJEELING_I2C1_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for i2c2 in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_I2C2_BASE_ADDR: usize = 0x31040000;
-
-/// Peripheral size for i2c2 in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_I2C2_BASE_ADDR and
-/// `TOP_DARJEELING_I2C2_BASE_ADDR + TOP_DARJEELING_I2C2_SIZE_BYTES`.
-pub const TOP_DARJEELING_I2C2_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for rv_timer in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

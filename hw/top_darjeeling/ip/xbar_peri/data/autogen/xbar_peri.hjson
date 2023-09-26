@@ -33,18 +33,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_i2c1"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_i2c2"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_gpio"
       act:    "req"
       package: "tlul_pkg"

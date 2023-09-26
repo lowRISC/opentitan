@@ -67,21 +67,5 @@ module rstmgr_bind;
     .rst_en(rst_en_o.i2c0[1] == prim_mubi_pkg::MuBi4True),
     .rst_n(resets_o.rst_i2c0_n[1])
   );
-  bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_4_sva_if (
-    .clk_i(clk_io_div4_i),
-    .rst_ni,
-    .parent_rst_n(rst_lc_src_n[1]),
-    .ctrl_n(reg2hw.sw_rst_ctrl_n[4]),
-    .rst_en(rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True),
-    .rst_n(resets_o.rst_i2c1_n[1])
-  );
-  bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_5_sva_if (
-    .clk_i(clk_io_div4_i),
-    .rst_ni,
-    .parent_rst_n(rst_lc_src_n[1]),
-    .ctrl_n(reg2hw.sw_rst_ctrl_n[5]),
-    .rst_en(rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True),
-    .rst_n(resets_o.rst_i2c2_n[1])
-  );
 `endif
 endmodule

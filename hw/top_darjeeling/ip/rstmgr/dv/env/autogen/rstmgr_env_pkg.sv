@@ -59,9 +59,7 @@ package rstmgr_env_pkg;
     "u_d0_spi_device",
     "u_d0_spi_host0",
     "u_d0_spi_host1",
-    "u_d0_i2c0",
-    "u_d0_i2c1",
-    "u_d0_i2c2"
+    "u_d0_i2c0"
   };
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.

@@ -391,8 +391,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | gpio              | gpio          | 0x30000000 (regs) |
 | spi_device        | spi_device    | 0x30310000 (regs) |
 | i2c0              | i2c           | 0x30080000 (regs) |
-| i2c1              | i2c           | 0x31030000 (regs) |
-| i2c2              | i2c           | 0x31040000 (regs) |
 | rv_timer          | rv_timer      | 0x30100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x30130000 (core) |
 |                   |               | 0x30138000 (prim) |
