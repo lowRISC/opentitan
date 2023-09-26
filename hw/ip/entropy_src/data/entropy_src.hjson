@@ -133,6 +133,104 @@
             ''',
     }
   ],
+  features: [
+    {
+      name: "ENTROPY_SRC.MODE.BYPASS"
+      desc: '''
+            The boot-time / bypass mode is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant mode during chip boot up.
+            This mode bypasses the hardware conditioning of ENTROPY_SRC and instead outputs raw entropy.
+            However, health tests are still performed.
+
+            Note that currently, only a window size of 384 bits for the health tests is supported and tested for boot-time / bypass mode.
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.MODE.FIPS"
+      desc: '''
+            The FIPS/CC compliant mode is the primary mode of operation in which ENTROPY_SRC can generate entropy compliant with NIST SP 800-90B and AIS31 recommendations.
+            In this mode, once the raw entropy has been health tested, it is passed into the hardware conditioner block which compresses the bits to ideally improve the min-entropy value compared to the digital noise source / physical true random number generator (PTRNG).
+            The window size for the health tests and the conditioning is configurable by firmware with a default of 2048 bits.
+
+            Note that ENTROPY_SRC uses the `es_fips` bit of the hardware interface to indicate whether the generated entropy is indeed FIPS/CC compliant.
+            For this to be true the following prerequisites must be met in addition to running in FIPS/CC compliant mode:
+            - !!CONF.RNG_BIT_ENABLE must be set to `kMultiBitBool4False` (see ENTROPY_SRC.RNG_BIT_ENABLE).
+            - At most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields needs to be set to `kMultiBitBool4True` but not both (see ENTROPY_SRC.ROUTE_TO_FIRMWARE).
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.HEALTH_TESTS"
+      desc: '''
+            To screen the raw noise bits provided by the digital noise source / physical true random number generator (PTRNG) for statistical defects, ENTROPY_SRC implements multiple health tests which include:
+            - Repetition Count and Adaptive Proportion tests as recommended by NIST SP 800-90B.
+            - Bucket and Markov tests to look for correlations between the individual noise channels.
+
+            Firmware can configure the threshold values separately for each health test.
+            In case of health test failures, an interrupt is signaled.
+            In addition, per-health-test failure counters are incremented.
+
+            Firmware can configure threshold values for these per-health-test counters as well as for the total failure counter.
+            In case any of these thresholds are hit, ENTROPY_SRC halts, signals a recoverable alert and sets the !!RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit.
+            Firmware then has to disable and re-enable ENTROPY_SRC to continue entropy generation and health testing.
+
+            Firmware can configure the window size for the health tests.
+            Note that currently, only a window size of 384 is supported and tested for boot-time / bypass mode.
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.HEALTH_TESTS_EXT"
+      desc: '''
+            In addition to the internal health tests, ENTROPY_SRC features an interface for vendor-defined health tests implemented externally to ENTROPY_SRC.
+
+            Note: Earl Grey does not implement external vendor-defined health tests.
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.RNG_BIT_ENABLE"
+      desc: '''
+            By default, ENTROPY_SRC uses all four channels of the digital noise source / physical true random number generator (PTRNG).
+            Optionally, it is possible to use only one of the four channels which is useful for validation testing / using individual channels, e.g., in case of defects.
+
+            Note that if only a single channel is used, ENTROPY_SRC will not generate FIPS qualified entropy (See also ENTROPY_SRC.MODE.FIPS).
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.ROUTE_TO_FIRMWARE"
+      desc: '''
+            By default, ENTROPY_SRC routes the generated entropy out of ENTROPY_SRC via the hardware interface for consumption by CSRNG.
+            For validation testing, it is possible to instead route the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
+
+            Note that for this to work the `otp_en_entropy_src_fw_read` input from OTP needs to be `kMultiBitBool8True`.
+
+            Further note that when routing entropy to firmware, 1) no entropy is being passed to the hardware interface, and 2) it is possible to optionally bypass the hardware conditioner using !!ENTROPY_CONTROL.ES_TYPE.
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.FW_OV.OBSERVE"
+      desc: '''
+            If this feature is enabled, firmware can monitor the post-health test entropy via !!FW_OV_RD_DATA register (observe FIFO).
+            This can be useful, e.g., for validation testing.
+
+            Note that the post-health test entropy bits collected in the observe FIFO continue to flow through the hardware pipeline and may eventually reach the hardware interface.
+
+            Note that for this to work the `otp_en_entropy_src_fw_over` input from OTP needs to be set to `kMultiBitBool8True`.
+            '''
+    },
+    {
+      name: "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"
+      desc: '''
+            If this feature is enabled, firmware can extract entropy bits by reading from the !!FW_OV_RD_DATA register (observe FIFO) and insert entropy bits into the entropy flow by writing the !!FW_OV_WR_DATA register.
+            This is can be useful for performing additional health tests and/or firmware-based conditioning.
+
+            Note that it is possible to perform hardware conditioning of the inserted entropy bits.
+            However, firmware has to manually trigger the conditioner via the !!FW_OV_SHA3_START register.
+
+            Note that the post-health test entropy bits collected in the observe FIFO do not continue to flow through the hardware pipeline.
+            Only entropy bits inserted by firmware through !!FW_OV_WR_DATA may eventually reach the block hardware interface.
+
+            Note that for this feature to work the `otp_en_entropy_src_fw_over` input from OTP needs to be set to `kMultiBitBool8True`.
+            '''
+    },
+  ],
   countermeasures: [
     { name: "CONFIG.REGWEN"
       desc: "Registers are protected from writes."
