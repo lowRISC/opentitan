@@ -65,12 +65,11 @@ module dma
   logic                       dma_host_tlul_rsp_err,      dma_ctn_tlul_rsp_err;
   logic                       dma_host_tlul_rsp_intg_err, dma_ctn_tlul_rsp_intg_err;
 
-  logic                       dma_host_write, dma_host_clear_int;
-  logic                       dma_ctn_write,  dma_ctn_clear_int;
-  logic                       dma_sys_write;
+  logic                       dma_host_write, dma_host_read, dma_host_clear_int;
+  logic                       dma_ctn_write,  dma_ctn_read,  dma_ctn_clear_int;
+  logic                       dma_sys_write,  dma_sys_read;
 
-  logic                       capture_return_data, capture_host_return_data,
-                              capture_ctn_return_data, capture_sys_return_data;
+  logic                       capture_return_data;
   logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d;
   logic [SYS_ADDR_WIDTH-1:0]  new_source_addr, new_destination_addr;
 
@@ -92,8 +91,20 @@ module dma
   logic bad_asid;
   logic config_error;
 
+  // Read request grant
+  logic read_gnt;
+  // Read response
+  logic read_rsp_valid;
+  // Read error occurred
+  //   (Note: in use `read_rsp_error` must be qualified with `read_rsp_valid`)
+  logic read_rsp_error;
+
+  // Write request grant
   logic write_gnt;
+  // Write response
   logic write_rsp_valid;
+  // Write error occurred
+  //   (Note: in use `write_rsp_error` must be qualified with `write_rsp_valid`)
   logic write_rsp_error;
 
   logic cfg_handshake_en;
@@ -456,53 +467,73 @@ module dma
   // Host interface to OT Internal address space
   always_comb begin
     dma_host_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == OtInternalAddr);
+    dma_host_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == OtInternalAddr);
 
-    dma_host_tlul_req_valid = dma_host_write | dma_host_clear_int;
+    dma_host_tlul_req_valid = dma_host_write | dma_host_read | dma_host_clear_int;
     // TLUL 4B aligned
     dma_host_tlul_req_addr  = dma_host_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                         (dma_host_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0);
+                             (dma_host_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
+                         (dma_host_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0));
     dma_host_tlul_req_we    = dma_host_write | dma_host_clear_int;
     dma_host_tlul_req_wdata = dma_host_write ? read_return_data_q :
                          (dma_host_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
-    dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q
-                                             : {top_pkg::TL_DBW{dma_host_clear_int}};
+    dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q :
+                             (dma_host_read  ? req_src_be_q
+                                             : {top_pkg::TL_DBW{dma_host_clear_int}});
   end
 
   // Host interface to SoC CTN address space
   always_comb begin
     dma_ctn_write = (ctrl_state_q == DmaSendWrite) &
                     (dst_asid_q == SocControlAddr || dst_asid_q == OtExtFlashAddr);
+    dma_ctn_read  = (ctrl_state_q == DmaSendRead) &
+                    (src_asid_q == SocControlAddr || src_asid_q == OtExtFlashAddr);
 
-    dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_clear_int;
+    dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_int;
     // TLUL 4B aligned
     dma_ctn_tlul_req_addr  = dma_ctn_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                        (dma_ctn_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0);
+                            (dma_ctn_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
+                        (dma_ctn_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0));
     dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_int;
     dma_ctn_tlul_req_wdata = dma_ctn_write ? read_return_data_q :
                         (dma_ctn_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
-    dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q : {top_pkg::TL_DBW{dma_ctn_clear_int}};
+    dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q :
+                            (dma_ctn_read  ? req_src_be_q : {top_pkg::TL_DBW{dma_ctn_clear_int}});
   end
 
   // Host interface to SoC SYS address space
   always_comb begin
     dma_sys_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == SocSystemAddr);
+    dma_sys_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == SocSystemAddr);
 
     sys_req_d.vld_vec     [SysCmdWrite] = dma_sys_write;
     sys_req_d.metadata_vec[SysCmdWrite] = src_metadata;
+    sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
     sys_req_d.iova_vec    [SysCmdWrite] = dma_sys_write ?
                                          {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
     sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
 
     sys_req_d.write_data = {SYS_DATA_WIDTH{dma_sys_write}} & read_return_data_q;
     sys_req_d.write_be   = {SYS_DATA_BYTEWIDTH{dma_sys_write}} & req_dst_be_q;
+
+    sys_req_d.vld_vec     [SysCmdRead] = dma_sys_read;
+    sys_req_d.metadata_vec[SysCmdRead] = src_metadata;
+    sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
+    sys_req_d.iova_vec    [SysCmdRead] = dma_sys_read ?
+                                         {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0} : 'b0;
+    sys_req_d.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
+    sys_req_d.read_be                  = req_src_be_q;
   end
 
   // Write response muxing
   always_comb begin
     unique case (dst_asid_q)
-      OTInternalAddr: begin
+      OtInternalAddr: begin
+        // Write request grant
         write_gnt       = dma_host_tlul_gnt;
+        // Write response
         write_rsp_valid = dma_host_tlul_rsp_valid;
+        // Write error occurred
         write_rsp_error = dma_host_tlul_rsp_err;
       end
       SocSystemAddr: begin
@@ -516,6 +547,32 @@ module dma
         write_gnt       = dma_ctn_tlul_gnt;
         write_rsp_valid = dma_ctn_tlul_rsp_valid;
         write_rsp_error = dma_ctn_tlul_rsp_err;
+      end
+    endcase
+  end
+
+  // Read response muxing
+  always_comb begin
+    unique case (src_asid_q)
+      OtInternalAddr: begin
+        // Read request grant
+        read_gnt       = dma_host_tlul_gnt;
+        // Read response
+        read_rsp_valid = dma_host_tlul_rsp_valid;
+        // Read error occurred
+        read_rsp_error = dma_host_tlul_rsp_err;
+      end
+      SocSystemAddr: begin
+        read_gnt       = 1'b1;  // No requirement to wait
+        read_rsp_valid = sys_resp_q.read_data_vld;
+        read_rsp_error = sys_resp_q.error_vld;
+      end
+      // SocControlAddr, OtExtFlashAddr handled here
+      //   (other ASID values prevented in configuration validation).
+      default: begin
+        read_gnt       = dma_ctn_tlul_gnt;
+        read_rsp_valid = dma_ctn_tlul_rsp_valid;
+        read_rsp_error = dma_ctn_tlul_rsp_err;
       end
     endcase
   end
@@ -550,17 +607,6 @@ module dma
     capture_be   = '0;
     req_src_be_d = '0;
     req_dst_be_d = '0;
-
-    sys_req_d.vld_vec     [SysCmdRead] = '0;
-    sys_req_d.metadata_vec[SysCmdRead] = '0;
-    sys_req_d.opcode_vec               = { SysOpcWrite, SysOpcRead };
-    sys_req_d.iova_vec    [SysCmdRead] = '0;
-    sys_req_d.racl_vec    [SysCmdRead] = '0;
-    sys_req_d.read_be                  = '0;
-
-    capture_host_return_data = 1'b0;
-    capture_ctn_return_data  = 1'b0;
-    capture_sys_return_data  = 1'b0;
 
     dma_host_clear_int = 1'b0;
     dma_ctn_clear_int = 1'b0;
@@ -887,32 +933,16 @@ module dma
               sha2_hash_start = 1'b1;
             end
           end
-
-          if ((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) begin
-            ctrl_state_d = DmaSendCtnRead;
-          end else if (reg2hw.address_space_id.source_asid.q == SocSystemAddr) begin
-            ctrl_state_d = DmaSendSysRead;
-          end else begin
-            ctrl_state_d = DmaSendHostRead;
-          end
+          ctrl_state_d = DmaSendRead;
         end
       end
 
-      DmaSendHostRead,
-      DmaWaitHostReadResponse: begin
-        if (ctrl_state_q == DmaSendHostRead) begin
-          dma_host_tlul_req_valid = 1'b1;
-          dma_host_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
-          dma_host_tlul_req_be    = req_src_be_q;
-        end
-
-        capture_host_return_data = dma_host_tlul_rsp_valid && (!dma_host_tlul_rsp_err);
-
+      DmaSendRead,
+      DmaWaitReadResponse: begin
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
-        end else if (dma_host_tlul_rsp_valid) begin
-          if (dma_host_tlul_rsp_err) begin
+        end else if (read_rsp_valid) begin
+          if (read_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
             ctrl_state_d                 = DmaError;
           end else begin
@@ -923,78 +953,9 @@ module dma
             end
             ctrl_state_d = DmaSendWrite;
           end
-        end else if (dma_host_tlul_gnt) begin
+        end else if (read_gnt) begin
           // Only Request handled
-          ctrl_state_d = DmaWaitHostReadResponse;
-        end
-      end
-
-      DmaSendCtnRead,
-      DmaWaitCtnReadResponse: begin
-        if (ctrl_state_q == DmaSendCtnRead) begin
-          dma_ctn_tlul_req_valid = 1'b1;
-          dma_ctn_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
-          dma_ctn_tlul_req_be    = req_src_be_q;
-        end
-
-        capture_ctn_return_data = dma_ctn_tlul_rsp_valid && (!dma_ctn_tlul_rsp_err);
-
-        if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else if (dma_ctn_tlul_rsp_valid) begin
-          if (dma_ctn_tlul_rsp_err) begin
-            next_error[DmaCompletionErr] = 1'b1;
-            ctrl_state_d = DmaError;
-          end else begin
-            // We received data, feed it into the SHA2 engine
-            if (use_inline_hashing) begin
-              sha2_valid      = 1'b1;
-              sha2_consumed_d = sha2_ready;
-            end
-            ctrl_state_d = DmaSendWrite;
-          end
-        end else if (dma_ctn_tlul_gnt) begin
-          // Only Request handled
-          ctrl_state_d = DmaWaitCtnReadResponse;
-        end
-      end
-
-      DmaSendSysRead: begin
-        sys_req_d.vld_vec     [SysCmdRead] = 1'b1;
-        sys_req_d.metadata_vec[SysCmdRead] = src_metadata;
-        sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
-        sys_req_d.iova_vec    [SysCmdRead] = {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
-        sys_req_d.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
-        sys_req_d.read_be                  = req_src_be_q;
-
-        ctrl_state_d                       = DmaWaitSysReadGrant;
-      end
-
-      DmaWaitSysReadGrant: begin
-        if (sys_resp_q.grant_vec[SysCmdRead]) begin
-          ctrl_state_d = DmaWaitSysReadResponse;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end
-      end
-
-      DmaWaitSysReadResponse: begin
-        capture_sys_return_data = sys_resp_q.read_data_vld && (!sys_resp_q.error_vld);
-
-        if (sys_resp_q.read_data_vld) begin
-          if (sys_resp_q.error_vld) begin
-            next_error[DmaCompletionErr] = 1'b1;
-            ctrl_state_d = DmaError;
-          end else if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
-          end else begin
-            // We received data, feed it into the SHA2 engine
-            if (use_inline_hashing) begin
-              sha2_valid      = 1'b1;
-              sha2_consumed_d = sha2_ready;
-            end
-            ctrl_state_d = DmaSendWrite;
-          end
+          ctrl_state_d = DmaWaitReadResponse;
         end
       end
 
@@ -1090,14 +1051,18 @@ module dma
 
   always_comb begin
     read_return_data_d = '0;
-    if (capture_host_return_data) read_return_data_d = dma_host_tlul_rsp_data;
-    if (capture_ctn_return_data)  read_return_data_d = dma_ctn_tlul_rsp_data;
-    if (capture_sys_return_data)  read_return_data_d = sys_resp_q.read_data;
+    if (capture_return_data) begin
+      unique case (src_asid_q)
+        OtInternalAddr: read_return_data_d = dma_host_tlul_rsp_data;
+        SocControlAddr,
+        OtExtFlashAddr: read_return_data_d = dma_ctn_tlul_rsp_data;
+        default:        read_return_data_d = sys_resp_q.read_data;
+      endcase
+    end
   end
 
-  assign capture_return_data = capture_host_return_data ||
-                               capture_ctn_return_data  ||
-                               capture_sys_return_data;
+  assign capture_return_data = read_rsp_valid & !read_rsp_error;
+
   prim_generic_flop_en #(
     .Width(top_pkg::TL_DW)
   ) aff_read_return_data (
