@@ -12,9 +12,9 @@ import tempfile
 from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
+from itertools import chain
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from itertools import chain
 
 import hjson
 import tlgen
@@ -23,21 +23,21 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
 from mako import exceptions
 from mako.template import Template
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
+from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
-from reggen.countermeasure import CounterMeasure
 from reggen.lib import check_list
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
-from topgen import secure_prng, merge_top, search_ips, validate_top
+from topgen import merge_top, search_ips, secure_prng, validate_top
 from topgen.c_test import TopGenCTest
-from topgen.rust import TopGenRust
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.merge import connect_clocks, create_alert_lpgs, extract_clocks
 from topgen.resets import Resets
+from topgen.rust import TopGenRust
 from topgen.top import Top
 
 # Common header for generated files
@@ -329,8 +329,7 @@ def generate_pinmux(top, out_path):
     # Template path
     tpl_path = Path(
         __file__).resolve().parent / "../hw/ip/pinmux/data/pinmux.hjson.tpl"
-    original_rtl_path = Path(
-        __file__).resolve().parent / "../hw/ip/pinmux/rtl"
+    original_rtl_path = Path(__file__).resolve().parent / "../hw/ip/pinmux/rtl"
 
     # Generate register package and RTLs
     gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
@@ -582,8 +581,8 @@ def generate_rstmgr(topcfg, out_path):
                                  **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_sva.core.tpl", sva_path,
                                  "", **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_unit_only_sva.core.tpl", sva_path,
-                                 "", **render_dict)
+    _generate_file_from_template(tpl_path / "rstmgr_unit_only_sva.core.tpl",
+                                 sva_path, "", **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_env_pkg.sv.tpl", env_path,
                                  "", **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_scoreboard.sv.tpl",
@@ -684,8 +683,8 @@ def generate_top_only(top_only_dict, out_path, topname, alt_hjson_path):
 
 
 def generate_top_ral(topname: str, top: Dict[str, object],
-                     name_to_block: Dict[str, IpBlock], dv_base_names: List[str],
-                     out_path: str):
+                     name_to_block: Dict[str, IpBlock],
+                     dv_base_names: List[str], out_path: str):
     # construct top ral block
     regwidth = int(top["datawidth"])
     assert regwidth % 8 == 0
@@ -702,15 +701,20 @@ def generate_top_ral(topname: str, top: Dict[str, object],
         block_name = module["type"]
         block = name_to_block[block_name]
         if "attr" in module:
-            if module["attr"] not in ["templated", "ipgen", "reggen_top",
-                                      "reggen_only"]:
-                raise ValueError("Unsupported value for attr field of {}: {!r}"
-                                 .format(inst_name, module["attr"]))
+            if module["attr"] not in [
+                    "templated", "ipgen", "reggen_top", "reggen_only"
+            ]:
+                raise ValueError(
+                    "Unsupported value for attr field of {}: {!r}".format(
+                        inst_name, module["attr"]))
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():
-            if_addr = {asid: int(addr, 0) for (asid, addr) in module["base_addrs"][if_name].items()}
+            if_addr = {
+                asid: int(addr, 0)
+                for (asid, addr) in module["base_addrs"][if_name].items()
+            }
             if_addrs[(inst_name, if_name)] = if_addr
 
     # Collect up the memories to add
@@ -756,7 +760,8 @@ def generate_top_ral(topname: str, top: Dict[str, object],
             del name_to_block[t]
 
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
-    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block, if_addrs, mems, attrs)
+    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
+               if_addrs, mems, attrs)
 
     # generate the top ral model with template
     gen_dv(chip, dv_base_names, str(out_path))
@@ -786,9 +791,8 @@ def create_mem(item, addrsep, regwidth):
 
 def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                   src_tree_top, topgen_template_path):
-    # Template render hellper
-    def render_template(template_path: str, rendered_path: Path,
-                        **other_info):
+    # Template render helper
+    def render_template(template_path: str, rendered_path: Path, **other_info):
         template_contents = generate_top(completecfg, name_to_block,
                                          str(template_path), **other_info)
 
@@ -969,9 +973,9 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
                                      'in alias file {}.'.format(alias))
                 alias_target = raw['alias_target'].lower()
                 if alias_target not in name_to_block:
-                    raise ValueError('Alias target {} is not defined.'
-                                     .format(alias_target))
-                where = 'alias file at {}'.format(alias)
+                    raise ValueError(
+                        f'Alias target {alias_target} is not defined.')
+                where = f'alias file at {alias}'
                 name_to_block[alias_target].alias_from_raw(False, raw, where)
 
     connect_clocks(topcfg, name_to_block)
@@ -1037,9 +1041,8 @@ def main():
         help="""Target TOP directory.
              Module is created under rtl/. (default: dir(topcfg)/..)
              """)  # yapf: disable
-    parser.add_argument(
-        "--hjson-path",
-        help="""
+    parser.add_argument("--hjson-path",
+                        help="""
           If defined, topgen uses supplied path to search for ip hjson.
           This applies only to ip's with the `reggen_only` attribute.
           If an hjson is located both in the conventional path and the alternate
@@ -1067,10 +1070,9 @@ def main():
         action="store_true",
         help="If defined, topgen doesn't generate the interrup controller RTLs."
     )
-    parser.add_argument(
-        "--no-rust",
-        action="store_true",
-        help="If defined, topgen doesn't generate Rust code.")
+    parser.add_argument("--no-rust",
+                        action="store_true",
+                        help="If defined, topgen doesn't generate Rust code.")
 
     # Generator options: 'only' series. cannot combined with 'no' series
     parser.add_argument(
@@ -1100,12 +1102,11 @@ def main():
         default=False,
         action="store_true",
         help="If set, the tool generates top level RAL model for DV")
-    parser.add_argument(
-        "--alias-files",
-        nargs="+",
-        type=Path,
-        default=None,
-        help="""
+    parser.add_argument("--alias-files",
+                        nargs="+",
+                        type=Path,
+                        default=None,
+                        help="""
           If defined, topgen uses supplied alias hjson file(s) to override the
           generic register definitions when building the RAL model. This
           argument is only relevant in conjunction with the `--top_ral` switch.
@@ -1400,8 +1401,10 @@ def main():
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
-            template_contents = generate_top(completecfg, name_to_block,
-                                             str(xbar_chip_data_path), gencmd=gencmd)
+            template_contents = generate_top(completecfg,
+                                             name_to_block,
+                                             str(xbar_chip_data_path),
+                                             gencmd=gencmd)
 
             rendered_dir = out_path / "dv/autogen"
             rendered_dir.mkdir(parents=True, exist_ok=True)
