@@ -115,15 +115,16 @@ static rom_error_t rom_irq_error(void) {
 /**
  * Prints a status message indicating that the ROM is entering bootstrap mode.
  */
+/*
 static void rom_bootstrap_message(void) {
   rom_printf("Bootin some fresh cochina!\r\n");
   printf("Bootin some fresh cochina!\r\n");
 }
-
+*/
 void init_spi_host(dif_spi_host_t *spi_host,
                    uint32_t peripheral_clock_freq_hz) {
   dif_spi_host_config_t config = {
-      .spi_clock = peripheral_clock_freq_hz / 2,// 100, for tape out 1MHz, in sim 50MHz
+      .spi_clock = peripheral_clock_freq_hz / 4,// 100, for tape out 1MHz, in sim 50MHz
       .peripheral_clock_freq_hz = peripheral_clock_freq_hz,
       .chip_select = {.idle = 2, .trail = 2, .lead = 2},
       .full_cycle = true,
@@ -147,7 +148,7 @@ void spi_flash_load_data(void){
   uint32_t addr_swap = 0;
   int index = 0;
   uintptr_t base_addr = TOP_EARLGREY_SPI_HOST0_BASE_ADDR;
-  uint64_t clkHz = 100000000;
+  uint64_t clkHz = 200000000;
   
   payload_1  = (int *) 0xff000000;
   payload_2  = (int *) 0xff000004;
@@ -553,7 +554,7 @@ void rom_main(void) {
     spi_flash_load_data();
   }
   
-  rom_bootstrap_message();
+  //rom_bootstrap_message();
   
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
@@ -561,7 +562,7 @@ void rom_main(void) {
   hardened_bool_t bootstrap_req = bootstrap_requested();
   if (launder32(bootstrap_req) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
-    rom_bootstrap_message();
+    //rom_bootstrap_message();
     watchdog_disable();
     shutdown_finalize(bootstrap());
   }
