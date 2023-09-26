@@ -99,7 +99,7 @@ opentitan_test(
         timeout = "long",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     deps = [
         ":mod_exp_ibex",
@@ -164,7 +164,11 @@ opentitan_test(
 opentitan_test(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = ["mod_exp_otbn_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        # Test set is too large as ROM_EXT
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -344,8 +348,8 @@ opentitan_test(
         timeout = "long",
     ),
     exec_env = {
-        # Test set is too large to run in simulation
-        "//hw/top_earlgrey:fpga_cw310": None,
+        # Test set is too large as ROM_EXT
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     deps = [
         ":sigverify",

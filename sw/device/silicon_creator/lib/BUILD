@@ -426,7 +426,7 @@ opentitan_test(
         ],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     deps = [
         ":crc32",

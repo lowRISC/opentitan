@@ -170,7 +170,7 @@ def verilator_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["verilator"] + tags,
+        tags = ["verilator", "cpu:5"] + tags,
         timeout = timeout,
         local = local,
         test_harness = test_harness,

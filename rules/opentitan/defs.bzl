@@ -49,10 +49,24 @@ dv_params = _dv_params
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310": None,
+    "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
 }
+
+# Messages we expect for possible test outcomes.
+OTTF_SUCCESS_MSG = r"PASS.*\n"
+OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
+ROM_BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
+
+# These are defined for positive test cases and should be flipped for negative
+# test cases, i.e., when a test failure is the expected outcome.
+DEFAULT_TEST_SUCCESS_MSG = OTTF_SUCCESS_MSG
+DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
+    OTTF_FAILURE_MSG,
+    ROM_BOOT_FAILURE_MSG,
+)
 
 def _parameter_name(env, pname):
     if not pname:
@@ -66,6 +80,17 @@ def _parameter_name(env, pname):
         else:
             fail("Unable to identify parameter block name:", env)
     return pname
+
+def _hacky_tags(env):
+    (_, suffix) = env.split(":")
+    tags = []
+    if suffix.startswith("fpga_cw310_") or suffix.startswith("fpga_cw340_"):
+        # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
+        # applied to our tests.  Since there is no way to adjust tags in a
+        # rule's implementation, we have to infer these tag names from the
+        # label name.
+        tags.append(suffix[5:])
+    return tags
 
 def opentitan_test(
         name,
@@ -112,6 +137,7 @@ def opentitan_test(
     all_tests = []
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
+        extra_tags = _hacky_tags(env)
         tparam = test_parameters[pname]
         (_, suffix) = env.split(":")
         test_name = "{}_{}".format(name, suffix)
@@ -128,7 +154,7 @@ def opentitan_test(
             exec_env = env,
             naming_convention = "{name}",
             # Tagging and timeout info always comes from a param block.
-            tags = tparam.tags,
+            tags = tparam.tags + extra_tags,
             timeout = tparam.timeout,
             local = tparam.local,
             # Override parameters in the test rule.
