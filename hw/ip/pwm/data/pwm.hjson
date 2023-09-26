@@ -56,6 +56,32 @@
       '''
     }
   ],
+  features: [
+    { name: "PWM.DUTYCYCLE",
+      desc: ''' The duty cycle of the generated pulse can be changed.
+                '''
+    },
+    { name: "PWM.BLINK",
+      desc: ''' Duty cycle switches between one programmable value and another.
+                '''
+    },
+    { name: "PWM.HEARTBEAT",
+      desc: ''' Duty cycle linearly increases from one programmable value to another.
+                '''
+    },
+    { name: "PWM.POLARITY",
+      desc: ''' PWM is active high by default, but his can be changed.
+                '''
+    },
+    { name: "PWM.CLOCKDIVIDER",
+      desc: ''' The duty cycle are set with counters, and a clock divider can be set to adjust the clock for all of these counters.
+                '''
+    },
+    { name: "PWM.PHASEDELAY",
+      desc: ''' Different PWM signals can be offset in phase.
+                '''
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
