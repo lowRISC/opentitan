@@ -428,7 +428,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ## USB for CW310                                                 ##
 ###################################################################
 % if target["name"] == "cw310":
-% if top["name"] != "darjeeling":
+  % if "usbdev" in {module["type"] for module in top["module"]}:
   // TODO: generalize this USB mux code and align with other tops.
 
   // Only use the UPHY on CW310, which does not support pin flipping.
@@ -489,7 +489,7 @@ module chip_${top["name"]}_${target["name"]} #(
     dio_attr[DioUsbdevUsbDn]
   };
 
-% endif
+  % endif
 % endif
 
 
@@ -1143,7 +1143,7 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_otp_ext_volt
   };
 
-% if top["name"] != "darjeeling":
+% if "usbdev" in {module["type"] for module in top["module"]}:
   ///////////////////////////////
   // Differential USB Receiver //
   ///////////////////////////////

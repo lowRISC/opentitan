@@ -683,6 +683,7 @@ opentitan_functest(
     ],
 )
 
+# TODO(#500) Enable test once darjeeling build system does not try to build it.
 # opentitan_functest(
 #     name = "pwrmgr_usbdev_smoketest",
 #     srcs = ["pwrmgr_usbdev_smoketest.c"],
@@ -1225,6 +1226,7 @@ opentitan_functest(
     ],
 )
 
+# TODO(#500) Enable test once darjeeling build system does not try to build it.
 # opentitan_functest(
 #     name = "ast_usb_clk_calib",
 #     srcs = ["ast_usb_clk_calib.c"],

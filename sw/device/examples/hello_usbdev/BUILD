@@ -4,6 +4,7 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 
+# TODO(#500) Enable test once darjeeling build system does not try to build it.
 # opentitan_flash_binary(
 #     name = "hello_usbdev",
 #     srcs = [

@@ -2140,6 +2140,7 @@ opentitan_functest(
     ],
 )
 
+# TODO(#500) Enable tests once build system for darjeeling does not attempt to build them
 # opentitan_functest(
 #     name = "usbdev_test",
 #     srcs = ["usbdev_test.c"],

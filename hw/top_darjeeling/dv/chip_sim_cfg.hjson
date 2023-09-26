@@ -460,6 +460,7 @@
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 6
     }
+    // TODO(#501): Re-evaluate or fix for new pinmux(less) configurations
     // {
     //   name: chip_sw_sleep_pin_mio_dio_val
     //   uvm_test_seq: chip_sw_sleep_pin_mio_dio_val_vseq
