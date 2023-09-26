@@ -119,6 +119,36 @@ filegroup(
     name = "manifest",
     srcs = ["cache/abcd/substitute_manifest.json"],
 )
+
+alias(
+    name = "chip_earlgrey_cw310_hyperdebug_bitstream",
+    actual = "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
+)
+
+alias(
+    name = "chip_earlgrey_cw310_hyperdebug_rom_mmi",
+    actual = "@//hw/bitstream/vivado:rom_mmi_hyp",
+)
+
+alias(
+    name = "chip_earlgrey_cw310_hyperdebug_otp_mmi",
+    actual = "@//hw/bitstream/vivado:otp_mmi_hyp",
+)
+
+alias(
+    name = "chip_earlgrey_cw340_bitstream",
+    actual = "@//hw/bitstream/vivado:fpga_cw340_test_rom",
+)
+
+alias(
+    name = "chip_earlgrey_cw340_rom_mmi",
+    actual = "@//hw/bitstream/vivado:fpga_cw340_rom_mmi",
+)
+
+alias(
+    name = "chip_earlgrey_cw340_otp_mmi",
+    actual = "@//hw/bitstream/vivado:fpga_cw340_otp_mmi",
+)
 ''')
 
         # This is more of an implementation detail, but it verifies that we hit
