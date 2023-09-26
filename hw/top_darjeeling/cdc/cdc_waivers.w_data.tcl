@@ -63,25 +63,10 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   (ReceivingFlop =~ "*top_darjeeling.u_spi_device.u_memory_2p.b_rvalid_sram_q*")} -comment {SPI read cmds combined}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"SPI_HOST_D*") && \
-  (ReceivingFlop =~ "*top_darjeeling.u_spi_host0.u_spi_core.u_shift_reg.*q*")} -comment {SPI read cmds combined}
-
-set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   {(Signal=~"SPI_*") && \
   (ReceivingFlop =~ "*top_darjeeling.u_pinmux_aon.dio_out_retreg_q*")} -comment {SPI PAD to pinmux}
 
-set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"top_darjeeling.u_spi_host*.q*") && (ReceivingFlop=~"top_darjeeling.u_pinmux_aon.dio_out_retreg_q*")} -comment {multiple source to pinmux}
-set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"top_darjeeling.u_spi_host*.*reg*") && (ReceivingFlop=~"top_darjeeling.u_pinmux_aon.dio_out_retreg_q*")} -comment {multiple source to pinmux}
 set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"top_darjeeling.u_xbar_main.u_asf_*.reqfifo.*q*") && (ReceivingFlop=~"top_darjeeling.u_pinmux_aon.dio_out_retreg_q*")} -comment {multiple source to pinmux}
-set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"top_darjeeling.u_spi_host0.u_spi_core.u_fsm*") && (ReceivingFlop=~"top_darjeeling.u_pinmux_aon.dio_out_retreg_q*")} -comment {multiple source to pinmux}
-
-set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_darjeeling.u_spi_host1.*.q*") && \
-  (ReceivingFlop =~ "*top_darjeeling.u_pinmux_aon.mio_oe_retreg_q*")} -comment {SPI host to pinmux}
-
-set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_darjeeling.u_spi_host1.*.*_q*") && \
-  (ReceivingFlop =~ "*top_darjeeling.u_pinmux_aon.mio_oe_retreg_q*")} -comment {SPI host to pinmux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   {(Signal=~"IO*") && \
@@ -154,13 +139,10 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"top_darje
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression {(ReceivingFlop=~"top_darjeeling.u_spi_device.u_flash_readbuf_watermark_pulse_sync.src_level*")} -comment {multiple source to readbuf watermark spi_device}
 
-set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"IO*") && (ReceivingFlop =~ "top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.rx_buf_q[3:0]*")} -comment {W_DATA issues caused by duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_clkmgr_aon*_scan*") && (Signal =~ "top_darjeeling.u_clkmgr_aon.u_no_scan_io_div4_div.*_o") && (Association =~ "None")} -status {Waived} -comment {clock mux}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.gen_generic.u_impl_generic.q_o[1]") && (Signal =~ "top_darjeeling.u_clkmgr_aon.u_no_scan_io_div4_div.step_down_ack_o") && (Association =~ "None")} -status {Waived} -comment {clock mux}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.gen_generic.u_impl_generic.q_o[0]") && (Signal =~ "top_darjeeling.u_clkmgr_aon.u_no_scan_io_div2_div.gen_div2.step_down_nq") && (Association =~ "None")} -status {Waived} -comment {clock mux}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o[23:0]") && (Signal =~ "top_darjeeling.u_spi_device.u_spid_status.sck_status_staged[23:0]") && (Association =~ "None")} -status {Waived}  -comment {tool doesn't recognize multiple spi clocks on the same domain}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.sd_i_q[3:0]") && (Signal =~ "IOR3") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.sr_q[3:0]") && (Signal =~ "IOR3") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_spi_device.u_spid_status.outclk_p2s_byte_o*") && (Signal =~ "top_darjeeling.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o*") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_spi_device.u_spid_status.sys_status_o[23:0]") && (Signal =~ "top_darjeeling.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o[23:0]") && (Association =~ "None")} -status {Waived} -comment {signal is qualified by synchronized pulse}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_darjeeling.u_rv_dm.dap.*_q*") && (Signal =~ "top_darjeeling.u_rv_dm.u_pm_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o[3:0]") && (Association =~ "None")} -status {Waived} -comment {signal is synchronized and qualified}

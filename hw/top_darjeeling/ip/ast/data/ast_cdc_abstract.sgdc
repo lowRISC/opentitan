@@ -361,8 +361,6 @@ abstract_port -ports "sns_rsts_i[rst_usbif_n][0]" -ignore -comment "hanging path
 abstract_port -ports "sns_rsts_i[rst_usbif_n][1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_usb_n][0]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_usb_n][1]" -ignore -comment "hanging path"
-abstract_port -ports "sns_rsts_i[rst_spi_host1_n][0]" -ignore -comment "hanging path"
-abstract_port -ports "sns_rsts_i[rst_spi_host1_n][1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_spi_host0_n][0]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_spi_host0_n][1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_spi_device_n][0]" -ignore -comment "hanging path"

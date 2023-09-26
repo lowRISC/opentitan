@@ -243,10 +243,6 @@ set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -comment {w_masync issues from PAD}
 
 set_rule_status -rule {W_MASYNC} -status {Waived}                           \
-  -expression {(Driver =~ "IO*") && (ReceivingFlop=~"top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.*_q*")} \
-  -comment {w_masync issues from PAD}
-
-set_rule_status -rule {W_MASYNC} -status {Waived}                           \
   -expression {(Driver =~ "IO*") && (ReceivingFlop=~"top_darjeeling.u_pinmux_aon.mio_out_retreg_q*")} \
   -comment {w_masync issues from PAD}
 

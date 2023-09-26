@@ -400,16 +400,6 @@
       tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk"]
       tags: ["conn"]
     }
-    {
-      name: clkmgr_clk_io_div2_infra
-      desc: '''Verify clkmgr's `clk_io_div2_infra` is connected to the following block's clock
-            input:
-            - xbar_main clk_spi_host1_i
-            '''
-      stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host1_clk"]
-      tags: ["conn"]
-    }
 
     /////////////////////////
     // clkmgr_peri.csv     //
@@ -437,11 +427,9 @@
       desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following blocks' clock
             input:
             - spi_device's scan_clk_i
-            - spi_host1 clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_device_scan_clk",
-              "clkmgr_peri_clk_spi_host1_clk"]
+      tests: ["clkmgr_peri_clk_spi_device_scan_clk"]
       tags: ["conn"]
     }
     {
@@ -989,13 +977,6 @@
       tags: ["conn"]
     }
     {
-      name: rst_spi_host1_d0
-      desc: '''Verify rstmgr's rst_spi_host1_n[1] is connected to spi_host1's rst_ni.'''
-      stage: V2
-      tests: ["rstmgr_spi_host1_d0_spi_host1_rst_ni"]
-      tags: ["conn"]
-    }
-    {
       name: rst_sys_aon_aon
       desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
             - adc_ctrl's rst_aon_ni
@@ -1013,13 +994,6 @@
       desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to xbar_main's rst_spi_host0_ni.'''
       stage: V2
       tests: ["rstmgr_sys_io_d0_xbar_main_rst_spi_host0_ni"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_sys_io_div2_d0
-      desc: '''Verify rstmgr's rst_sys_io_div2_n[1] is connected to xbar_main's rst_spi_host1_ni.'''
-      stage: V2
-      tests: ["rstmgr_sys_io_div2_d0_xbar_main_rst_spi_host1_ni"]
       tags: ["conn"]
     }
     {
@@ -1167,13 +1141,6 @@
       desc: '''Verify rstmgr's rst_en_o.spi_host0[1] connects to alert_handler's lpg_rst_en[7].'''
       stage: V2
       tests: ["rstmgr_spi_host0_d0_alert_7_rst_en"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_en_spi_host1_d0
-      desc: '''Verify rstmgr's rst_en_o.spi_host1[1] connects to alert_handler's lpg_rst_en[8].'''
-      stage: V2
-      tests: ["rstmgr_spi_host1_d0_alert_8_rst_en"]
       tags: ["conn"]
     }
     {

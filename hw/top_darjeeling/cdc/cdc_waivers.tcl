@@ -156,14 +156,6 @@ set_rule_status -rule {W_ASYNC_RST_FLOPS} -status {Waived} \
   -comment {asynchronous reset generation in rstmgr}
 
 set_rule_status -rule {W_INTERFACE} -status {Waived} -expression             \
-  {(Signal=~"IO*") && \
-  (ReceivingFlop=~ "top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.*_q*")} -comment {W_INTERFACE issues from PAD to spi_host}
-
-set_rule_status -rule {W_INTERFACE} -status {Waived} -expression             \
-  {(Signal=~"SPI_HOST*") && \
-  (ReceivingFlop=~ "top_darjeeling.u_spi_host1.u_spi_core.u_shift_reg.*_q*")} -comment {W_INTERFACE issues from PAD to spi_host}
-
-set_rule_status -rule {W_INTERFACE} -status {Waived} -expression             \
   {(Signal=~"top_darjeeling.*.u_reg.*.q*") && \
   (ReceivingFlop=~ "top_darjeeling.u_pinmux_aon.mio_out_retreg_q*")} -comment {W_INTERFACE issues from u_reg to pinmux}
 
