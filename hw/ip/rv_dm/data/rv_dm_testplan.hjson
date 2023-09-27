@@ -306,19 +306,19 @@
               mem RAL). Write known values to them.
             - Write the dmcontrol register to assert ndmreset - verify that the ndmreset output
               stays asserted.
-            - Mimic the CPU going into reset by asserting unavailable input, asserting rst_ni
-              and setting lc_hw_debug_en to false. Keep pinmux_hw_debug_en set to true to keep
+            - Mimic the CPU going into reset by asserting unavailable input,
+              setting lc_hw_debug_en to false. Keep pinmux_hw_debug_en set to true to keep
               the JTAG side open while the ndmreset is in progress.
             - Read the dmstatus register to verify allunavail is asserted.
             - De-assert the ndmreset by writing 0 to the dmcontrol register field, verify the
               ndmreset output deasserted as well.
-            - Mimic the CPU going out of reset by de-asserting unavailable input and rst_ni
+            - Mimic the CPU going out of reset by de-asserting unavailable input
               after some delay. Set lc_hw_debug_en to true again as well.
             - Read the previously written registers back and verify that they reflect the previously
               written value, proving that ndmreset assertion had no effect on them.
             '''
       stage: V2
-      tests: [] // TODO(#15666)
+      tests: ["rv_dm_ndmreset_req"]
     }
     {
       name: hart_unavail
