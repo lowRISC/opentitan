@@ -234,11 +234,17 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
   endtask: set_address_space_id
 
-  // Task: Set number of chunks to transfer
+  // Task: Set number of bytes to transfer
   task set_total_size(bit [31:0] total_data_size);
     csr_wr(ral.total_data_size, total_data_size);
     `uvm_info(`gfn, $sformatf("DMA: Total Data Size = %d", total_data_size), UVM_HIGH)
   endtask: set_total_size
+
+  // Task: Set number of bytes per chunk to transfer
+  task set_chunk_data_size(bit [31:0] chunk_data_size);
+    csr_wr(ral.chunk_data_size, chunk_data_size);
+    `uvm_info(`gfn, $sformatf("DMA: Chunk Data Size = %d", chunk_data_size), UVM_HIGH)
+  endtask: set_chunk_data_size
 
   // Task: Set Byte size of each transfer (0:1B, 1:2B, 2:3B, 3:4B)
   task set_transfer_width(dma_transfer_width_e transfer_width);
@@ -269,6 +275,7 @@ class dma_base_vseq extends cip_base_vseq #(
                                   dma_config.mem_buffer_limit);
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_transfer_size);
+    set_chunk_data_size(dma_config.total_transfer_size);  // TODO: same config for now
     set_transfer_width(dma_config.per_transfer_width);
     configure_mem_model(dma_config);
     set_handshake_int_regs(dma_config);
@@ -423,6 +430,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Configures (optionally executes) DMA control registers
   task set_control_register(opcode_e op = OpcCopy, // OPCODE
+                            bit first, // Initial transfer
                             bit hs, // Handshake Enable
                             bit buff, // Auto-increment Buffer Address
                             bit fifo, // Auto-increment FIFO Address
@@ -431,10 +439,11 @@ class dma_base_vseq extends cip_base_vseq #(
     string tmpstr;
     tmpstr = go ? "Executing": "Setting";
     `uvm_info(`gfn, $sformatf(
-                      "DMA: %s DMA Control Register   OPCODE=%d HS=%d BUF=%d FIFO=%d DIR=%d",
-                      tmpstr, op, hs, buff, fifo, dir), UVM_HIGH)
+                      "DMA: %s DMA Control Register OPCODE=%d FIRST=%d HS=%d BUF=%d FIFO=%d DIR=%d",
+                      tmpstr, op, first, hs, buff, fifo, dir), UVM_HIGH)
     // Configure all fields except GO bit
     ral.control.opcode.set(int'(op));
+    ral.control.initial_transfer.set(first);
     ral.control.hardware_handshake_enable.set(hs);
     ral.control.memory_buffer_auto_increment_enable.set(buff);
     ral.control.fifo_auto_increment_enable.set(fifo);
