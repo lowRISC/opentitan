@@ -249,46 +249,79 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
-                             xof_mode_t xof_mode,
-                             crypto_const_byte_buf_t function_name_string,
-                             crypto_const_byte_buf_t customization_string,
-                             size_t required_output_len,
-                             crypto_word32_buf_t *digest) {
-  // TODO: (#16410) Add error checks
+/**
+ * Round a byte-count up to the lowest word-count that will hold all the bytes.
+ *
+ * Equivalent to `ceil(num_bytes / sizeof(uint32_t))`.
+ *
+ * @param num_bytes Number of bytes.
+ * @return Smallest number of 32-bit words that can hold the bytes.
+ */
+static size_t num_words_for_bytes(size_t num_bytes) {
+  size_t num_words = num_bytes / sizeof(uint32_t);
+  if (num_bytes % sizeof(uint32_t) != 0) {
+    num_words++;
+  }
+  return num_words;
+}
 
+crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+                                   xof_shake_mode_t shake_mode,
+                                   size_t required_output_len,
+                                   crypto_word32_buf_t *digest) {
   // Check that the output lengths match.
-  if (required_output_len > digest->len * sizeof(uint32_t) ||
-      digest->len > SIZE_MAX / sizeof(uint32_t)) {
+  if (digest->len != num_words_for_bytes(required_output_len)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
-  // both `customization_string` and `function_name_string` are empty string
-  if (customization_string.len == 0 && function_name_string.len == 0) {
-    if (xof_mode == kXofModeSha3Cshake128) {
-      xof_mode = kXofModeSha3Shake128;
-    } else if (xof_mode == kXofModeSha3Cshake256) {
-      xof_mode = kXofModeSha3Shake256;
-    }
-  }
-
-  switch (xof_mode) {
-    case kXofModeSha3Shake128:
+  switch (shake_mode) {
+    case kXofShakeModeShake128:
       HARDENED_TRY(kmac_shake_128(input_message.data, input_message.len,
                                   digest->data, digest->len));
       break;
-    case kXofModeSha3Shake256:
+    case kXofShakeModeShake256:
       HARDENED_TRY(kmac_shake_256(input_message.data, input_message.len,
                                   digest->data, digest->len));
       break;
-    case kXofModeSha3Cshake128:
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+crypto_status_t otcrypto_xof_cshake(
+    crypto_const_byte_buf_t input_message, xof_cshake_mode_t cshake_mode,
+    crypto_const_byte_buf_t function_name_string,
+    crypto_const_byte_buf_t customization_string, size_t required_output_len,
+    crypto_word32_buf_t *digest) {
+  // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
+  // both `customization_string` and `function_name_string` are empty string
+  if (customization_string.len == 0 && function_name_string.len == 0) {
+    switch (cshake_mode) {
+      case kXofCshakeModeCshake128:
+        return otcrypto_xof_shake(input_message, kXofShakeModeShake128,
+                                  required_output_len, digest);
+      case kXofCshakeModeCshake256:
+        return otcrypto_xof_shake(input_message, kXofShakeModeShake256,
+                                  required_output_len, digest);
+      default:
+        return OTCRYPTO_BAD_ARGS;
+    }
+  }
+
+  if (digest->len != num_words_for_bytes(required_output_len)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  switch (cshake_mode) {
+    case kXofCshakeModeCshake128:
       HARDENED_TRY(kmac_cshake_128(
           input_message.data, input_message.len, function_name_string.data,
           function_name_string.len, customization_string.data,
           customization_string.len, digest->data, digest->len));
       break;
-    case kXofModeSha3Cshake256:
+    case kXofCshakeModeCshake256:
       HARDENED_TRY(kmac_cshake_256(
           input_message.data, input_message.len, function_name_string.data,
           function_name_string.len, customization_string.data,

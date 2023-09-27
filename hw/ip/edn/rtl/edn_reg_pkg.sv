@@ -7,6 +7,10 @@
 package edn_reg_pkg;
 
   // Param list
+  parameter logic [31:0] EdnBootInsCmdResval = 32'h901;
+  parameter logic [31:0] EdnBootGenCmdResval = 32'hfff003;
+  parameter logic [31:0] CtrlResval = 32'h9999;
+  parameter logic [31:0] MaxNumReqsBetweenReseedsResval = 32'h0;
   parameter int NumAlerts = 2;
 
   // Address widths within the block

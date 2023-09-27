@@ -105,6 +105,68 @@
       default: "64",
     }
   ],
+  features: [
+    { name: "I2C.MODE.HOST",
+      desc: '''
+            The I2C block can be configued in host mode.
+            '''
+    },
+    { name: "I2C.MODE.TARGET",
+      desc: '''
+            The I2C block can be configured in target mode.
+            '''
+    },
+    { name: "I2C.SPEED.STANDARD",
+      desc: '''
+            Standard-mode of 100 kbaud is supported.
+            '''
+    },
+    { name: "I2C.SPEED.FAST",
+      desc: '''
+            Fast-mode of 400 kbaud is supported.
+            '''
+    },
+    { name: "I2C.SPEED.FASTPLUS",
+      desc: '''
+            Fast-mode Plus of 1 Mbaud is supported.
+            '''
+    },
+    { name: "I2C.OVERRIDE",
+      desc: '''
+            Software can override the values of SCL and SDA.
+            '''
+    },
+    { name: "I2C.OPERATION.READ",
+      desc: '''
+            Hosts can read from targets.
+            '''
+    },
+    { name: "I2C.OPERATION.WRITE",
+      desc: '''
+            Hosts can write to targets.
+            '''
+    },
+    { name: "I2C.PROTOCOL.CLOCKSTRETCHING",
+      desc: '''
+            Clock stretching is a way for a target to buy time.
+            There are three scenarios when clock stretching occurs:
+            - After an address read.
+            - During a write.
+            - During a read.
+            '''
+    },
+    { name: "I2C.PROTOCOL.NACK",
+      desc: '''
+            Whenever a byte is sent, it must be accompanied by an acknowledgement (ack), unless NAKOK is high.
+            When no ack is received, this is a nack.
+            '''
+    },
+    { name: "I2C.PROTOCOL.REPEATEDSTART",
+      desc: '''
+            Instead of doing a stop and then a start to start the next transaction, a host can choose to perform a repeated start to begin a new transaction without stopping the previous one.
+            '''
+    },
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

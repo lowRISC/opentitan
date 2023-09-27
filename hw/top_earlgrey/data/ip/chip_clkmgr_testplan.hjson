@@ -13,17 +13,17 @@
             completes in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
             Verify that turning off this clock does not affect the other derived clocks.
 
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-	    This tests already run in CW310.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
             '''
       stage: V2
       si_stage: SV3
       lc_states: [
         "TEST_UNLOCKED0",
-	"DEV",
-	"PROD",
-	"PROD_END",
-	"RMA",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
       ]
       features: [
         "CLKMGR.HINT.AES",
@@ -53,17 +53,17 @@
             A stretch goal is to check the PC corresponds to the code performing the CSR access
             (stretch since it could be difficult to maintain this check).
 
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-	    This tests already run in CW310.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
             '''
       stage: V2
       si_stage: SV3
       lc_states: [
         "TEST_UNLOCKED0",
-	"DEV",
-	"PROD",
-	"PROD_END",
-	"RMA",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
       ]
 
       features: [
@@ -91,17 +91,17 @@
             timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
             watchdog event results, and verify the rstmgr crash dump info records the CSR address.
 
-	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-	    This tests already run in CW310.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            This tests already run in CW310.
             '''
       stage: V2
       si_stage: SV3
       lc_states: [
         "TEST_UNLOCKED0",
-	"DEV",
-	"PROD",
-	"PROD_END",
-	"RMA",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
       ]
       features: [
         "CLKMGR.ENABLE.IO",
@@ -120,9 +120,9 @@
             Connectivity tests check peripherals are connected to the clock they expect.
             Use the clkmgr count measurement feature to verify clock division.
 
-	    SiVal: These tests should be run after clock calibration is completed.
-	    Any LC cycle stage after calibration is done.
-	    Testing the software enabled external clock cycle measurements seems mute after clocks are calibrated.
+            SiVal: These tests should be run after clock calibration is completed.
+            Any LC cycle stage after calibration is done.
+            Testing the software enabled external clock cycle measurements seems mute after clocks are calibrated.
             '''
       stage: V2
       si_stage: SV1
@@ -136,7 +136,7 @@
       ]
       lc_states: [
         "TEST_UNLOCKED0",
-	"DEV",
+        "DEV",
       ]
       tests: ["chip_sw_ast_clk_outputs",
               "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
@@ -146,11 +146,11 @@
               "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
               "manuf_cp_unlock_raw",
-	      "manuf_cp_yield_test"]
+              "manuf_cp_yield_test"]
       bazel: [
         "//sw/device/tests:ast_clk_outs_test_fpga_cw310_test_rom",
-	"//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_test_rom",
-	"//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_test_rom",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_test_rom",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_test_rom",
       ]
     }
     {
@@ -160,19 +160,19 @@
             On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
             it when lc_program completes. This also triggers divided clocks to step down. It may be
             best to verify this via SVA, unless we implement clock cycle counters.
-	    SiVal: There is no way to test clock frequencies before clocks are calibrated.
-	    So the only way to actually test this is by the success of OTP updates for calibration.
-	    This can be tested after the fact by clock measurements of the internal, calibrated clocks.
+            SiVal: There is no way to test clock frequencies before clocks are calibrated.
+            So the only way to actually test this is by the success of OTP updates for calibration.
+            This can be tested after the fact by clock measurements of the internal, calibrated clocks.
             '''
       stage: V2
       si_stage: SV1
       lc_states: [
         "RAW",
-	"TEST_LOCKED0",
+        "TEST_LOCKED0",
       ]
       tests: [
         "chip_sw_clkmgr_external_clk_src_for_lc",
-	"manuf_cp_unlock_raw",
+        "manuf_cp_unlock_raw",
       ]
       bazel: []
     }
@@ -188,8 +188,8 @@
             Disable external clock source and verify the AST reliably falls back to the internal
             clock. Ensure the chip operates normally.
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
-	    SiVal: The only necessary test is that the internal clocks are running
-	    with the right frequency after calibration.
+            SiVal: The only necessary test is that the internal clocks are running
+            with the right frequency after calibration.
             '''
       stage: V2
       si_stage: None
@@ -215,7 +215,7 @@
             clk_src_sys_jen_i input using formal.
 
             X-ref with various specific jitter enable tests.
-	    SiVal: This is a connecivity test ony, not suitable for sival.
+            SiVal: This is a connecivity test ony, not suitable for sival.
             '''
       stage: V2
       si_stage: None
@@ -234,17 +234,17 @@
     {
       name: chip_sw_clkmgr_jitter_cycle_measurements
       desc: '''Verify jitter via clock cycle measurements after calibration.
-	    The clock count thresholds should need to be set wider than when jitter is disabled.
+            The clock count thresholds should need to be set wider than when jitter is disabled.
             SiVal: This is only useful on real silicon.
-	    Can be done after clock calibration.
-	    This test can use chip_sw_ast_clk_outputs with an option to turn jitter on.
-	    '''
+            Can be done after clock calibration.
+            This test can use chip_sw_ast_clk_outputs with an option to turn jitter on.
+            '''
       stage: V3
       si_stage: SV3
       lc_stages: ["TEST_UNLOCKED0"]
       features: [
         "CLKMGR.JITTER.REGWEN",
-	"CLKMGR.JITTER.ENABLE",
+        "CLKMGR.JITTER.ENABLE",
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
         "CLKMGR.MEAS_CTRL.IO_DIV2",
@@ -276,9 +276,9 @@
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
             - Csrng edn concurrency
-	    SiVal: This can be executed if we detect problems running at nominal frequencies.
-	    It may be implemented as the system running specific tests with an external cLock.
-	    No specific work may be needed other than configuring external clocks.
+            SiVal: This can be executed if we detect problems running at nominal frequencies.
+            It may be implemented as the system running specific tests with an external cLock.
+            No specific work may be needed other than configuring external clocks.
             '''
       stage: V2
       si_stage: None
@@ -324,7 +324,7 @@
             Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
             keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
             recoverable fault status should show no errors for the disabled clocks.
-	    SiVal: Can be run anytime or life cycle after clocks are calibrated.
+            SiVal: Can be run anytime or life cycle after clocks are calibrated.
             '''
       stage: V2
       si_stage: SV3
@@ -347,7 +347,7 @@
             Enable clock cycle counts, configured to cause errors. Trigger a chip reset via SW.
             After reset the clock measurements should be off and the recoverable fault status
             should be cleared.
-	    SiVal: Can be run anytime or life cycle after clocks are calibrated.
+            SiVal: Can be run anytime or life cycle after clocks are calibrated.
             '''
       stage: V2
       si_stage: SV3
@@ -370,8 +370,8 @@
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and clkmgr
             should not attempt to send out more alerts.
-	    SiVal: This is tested by other unit's escalation tests. They will need to
-	    add extra checks for specific units having been reset.
+            SiVal: This is tested by other unit's escalation tests. They will need to
+            add extra checks for specific units having been reset.
             '''
       stage: V2
       si_stage: None

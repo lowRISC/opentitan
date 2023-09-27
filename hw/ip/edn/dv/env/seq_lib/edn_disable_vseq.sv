@@ -56,6 +56,7 @@ class edn_disable_vseq extends edn_base_vseq;
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
         ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
         csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
+        cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
         cfg.edn_vif.drive_edn_disable(1);
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
         // Enable edn

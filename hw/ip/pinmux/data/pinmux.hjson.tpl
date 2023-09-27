@@ -624,7 +624,7 @@
                   regwen:       "DIO_PAD_ATTR_REGWEN",
                   regwen_multi: "true",
                   cname:        "DIO_PAD",
-		  resval:       0,
+                  resval:       0,
                   fields: [
                     { bits: "0",
                       name: "invert",

@@ -42,8 +42,8 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
       .len = token_num_words,
   };
 
-  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
-                   customization_string, token_size_bytes, &output));
+  TRY(otcrypto_xof_cshake(input, kXofCshakeModeCshake128, function_name_string,
+                          customization_string, token_size_bytes, &output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 
   return OK_STATUS();

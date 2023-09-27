@@ -42,7 +42,13 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
 
     // Write EDN's control CSR.
     ctrl_val = {MuBi4False, MuBi4True, MuBi4False, MuBi4False};
-    if (!backdoor) wait_no_outstanding_access();
+
+    if (!backdoor) begin
+      wait_no_outstanding_access();
+    end else begin
+      cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
+    end
+
     csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(backdoor), .predict(backdoor));
 
     // Let CSRNG agent know that EDN is disabled.

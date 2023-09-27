@@ -35,6 +35,18 @@ static const uint8_t kTwoBlockExpDigest[] = {
     0x55, 0x7e, 0x2d, 0xb9, 0x66, 0xc3, 0xe9, 0xfa, 0x91, 0x74, 0x60, 0x39};
 
 /**
+ * Expected digest for an empty message:
+ * =
+ * 38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b
+ */
+static const uint8_t kEmptyExpDigest[] = {
+    0x38, 0xb0, 0x60, 0xa7, 0x51, 0xac, 0x96, 0x38, 0x4c, 0xd9, 0x32, 0x7e,
+    0xb1, 0xb1, 0xe3, 0x6a, 0x21, 0xfd, 0xb7, 0x11, 0x14, 0xbe, 0x07, 0x43,
+    0x4c, 0x0c, 0xc7, 0xbf, 0x63, 0xf6, 0xe1, 0xda, 0x27, 0x4e, 0xde, 0xbf,
+    0xe7, 0x6f, 0x65, 0xfb, 0xd5, 0x1a, 0xd2, 0xf1, 0x48, 0x98, 0xb9, 0x5b,
+};
+
+/**
  * Run a single one-shot SHA-384 test.
  */
 status_t sha384_test(const unsigned char *msg, const size_t msg_len,
@@ -96,6 +108,10 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
   return OTCRYPTO_OK;
 }
 
+static status_t empty_test(void) {
+  return sha384_test(NULL, 0, kEmptyExpDigest);
+}
+
 static status_t one_block_test(void) {
   return sha384_test(kOneBlockMessage, kOneBlockMessageLen, kOneBlockExpDigest);
 }
@@ -116,6 +132,7 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+  EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, one_block_test);
   EXECUTE_TEST(test_result, two_block_test);
   EXECUTE_TEST(test_result, streaming_test);
