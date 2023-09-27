@@ -38,19 +38,18 @@ package dma_pkg;
     OpcSha512 = 4'h3
   } opcode_e;
 
-  // TODO: can decrease the state bits
-  typedef enum logic [4:0] {
-    DmaIdle                  = 5'b00000,
-    DmaClearIntrSrc          = 5'b00001,
-    DmaWaitIntrSrcResponse   = 5'b00010,
-    DmaAddrSetup             = 5'b00011,
-    DmaSendRead              = 5'b00100,
-    DmaWaitReadResponse      = 5'b00101,
-    DmaSendWrite             = 5'b00110,
-    DmaWaitWriteResponse     = 5'b00111,
-    DmaError                 = 5'b01000,
-    DmaShaFinalize           = 5'b01001,
-    DmaShaWait               = 5'b01010
+  typedef enum logic [3:0] {
+    DmaIdle                  = 4'b0000,
+    DmaClearIntrSrc          = 4'b0001,
+    DmaWaitIntrSrcResponse   = 4'b0010,
+    DmaAddrSetup             = 4'b0011,
+    DmaSendRead              = 4'b0100,
+    DmaWaitReadResponse      = 4'b0101,
+    DmaSendWrite             = 4'b0110,
+    DmaWaitWriteResponse     = 4'b0111,
+    DmaError                 = 4'b1000,
+    DmaShaFinalize           = 4'b1001,
+    DmaShaWait               = 4'b1010
   } dma_ctrl_state_e;
 
   ////////////////////////////
