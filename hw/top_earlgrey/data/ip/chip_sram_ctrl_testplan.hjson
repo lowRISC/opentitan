@@ -18,8 +18,14 @@
               read anymore.
             - Verify the validity of EDN's output to OTP_CTRL via assertions
               (unique, non-zero data).
+
+            Note: In simulation, this uses a backdoor interface. However, most of the test should be
+                  possible on a silicon target (with no EDN assertions, and no backdoor accesses to
+                  check operations).
             '''
+      features: ["SRAM_CTRL.SCRAMBLED"]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
@@ -36,8 +42,14 @@
               |          Normal sleep        |    Yes    |       Yes      |
               |           Deep sleep         |    Yes    |       Yes      |
               | Reset due to a reset request |    Yes    |       No       |
+
+            Notes for silicon targets:
+            - This test has an empty list of associated "features" because those list block-level
+              features and this is really testing a chip-level property.
             '''
+      features: []
       stage: V2
+      si_stage: SV3
       tests: ["chip_sw_sleep_sram_ret_contents"]
     }
     {
@@ -72,8 +84,17 @@
               |          1         |             1            |     1    |  enabled  | disabled |
 
             For the retention SRAM, instruction fetch is completely disabled via design parameter.
+
+            Notes for silicon targets:
+
+            - This test will be reasonably trivial for silicon validation, because the behaviour
+              depends on lifecycle state and we're expecting to do these tests on PROD silicon,
+              where execution from SRAM is disallowed.
+
             '''
+      features: ["SRAM_CTRL.FETCH_ALLOW"]
       stage: V2
+      si_stage: SV3
       tests: ["chip_sw_sram_ctrl_execution_main"]
     }
     {
@@ -88,7 +109,9 @@
 
             X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
             '''
+      features: ["SRAM_CTRL.LOCK_ON_ERROR"]
       stage: V2
+      si_stage: SV3
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
     }
