@@ -237,6 +237,7 @@ def fpga_params(
         test_runner = _BASE_PARAMS["test_runner"],
         test_cmds = [
             "--exec=\"fpga load-bitstream $(location {bitstream})\"",
+            "--exec=\"transport init\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
             "{clear_bitstream}",

@@ -305,6 +305,7 @@ opentitan_functest(
     cw310 = cw310_params(
         test_cmds = [
             "--exec=\"fpga load-bitstream $(location {bitstream})\"",
+            "--exec=\"transport init\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
