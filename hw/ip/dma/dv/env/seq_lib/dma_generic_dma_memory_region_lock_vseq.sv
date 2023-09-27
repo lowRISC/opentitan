@@ -73,6 +73,7 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
         update_and_check_register(dma_config);
       end
       set_control_register(dma_config.opcode, // OPCODE
+                           1'b1,              // Initial transfer
                            dma_config.handshake, // Handshake Enable
                            dma_config.auto_inc_buffer, // Auto-increment Buffer Address
                            dma_config.auto_inc_fifo, // Auto-increment FIFO Address
