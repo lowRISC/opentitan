@@ -7,7 +7,7 @@ description: "FLASH_CTRL DV UVM environment"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
+      - lowrisc:dv:flash_ctrl_ral
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
@@ -97,16 +97,7 @@ filesets:
       - seq_lib/flash_ctrl_rd_ooo_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: flash_ctrl
-      ip_hjson: ../../data/flash_ctrl.hjson
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - ral

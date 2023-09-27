@@ -40,7 +40,7 @@ _targets_compatible_with = {
 # and CW310).
 PER_DEVICE_DEPS = {
     "sim_verilator": ["@//sw/top_darjeeling/sw/device/arch:sim_verilator"],
-    "sim_dv": ["@//sw/top_darjeeling/sw/device/arch:sim_dv"],
+    "sim_dv": ["@//sw/top_earlgrey/sw/device/arch:sim_dv"],
     "fpga_cw305": ["@//sw/top_darjeeling/sw/device/arch:fpga_cw305"],
     "fpga_cw310": ["@//sw/top_darjeeling/sw/device/arch:fpga_cw310"],
 }
@@ -540,7 +540,7 @@ elf_to_scrambled_rom_vmem = rv_rule(
             cfg = "exec",
         ),
         "_config": attr.label(
-            default = "@//hw/top_darjeeling/data:autogen/top_darjeeling.gen.hjson",
+            default = "@//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
             allow_single_file = True,
         ),
     },

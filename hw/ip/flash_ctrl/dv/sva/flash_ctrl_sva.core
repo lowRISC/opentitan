@@ -10,7 +10,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:flash_ctrl_pkg
       - lowrisc:tlul:headers
-      - lowrisc:fpv:csr_assert_gen
+      - lowrisc:fpv:flash_ctrl_csr_assert_gen
     files:
       - flash_ctrl_bind.sv
     file_type: systemVerilogSource
@@ -19,18 +19,10 @@ filesets:
     depend:
       - lowrisc:ip:flash_ctrl
 
-generate:
-  csr_assert_gen:
-    generator: csr_assert_gen
-    parameters:
-      spec: ../../data/flash_ctrl.hjson
-
 targets:
   default: &default_target
     filesets:
       - files_dv
-    generate:
-      - csr_assert_gen
 
   formal:
     <<: *default_target

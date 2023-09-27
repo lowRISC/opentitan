@@ -7,7 +7,7 @@ description: "CLKMGR DV UVM environment"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
+      - lowrisc:dv:clkmgr_ral
       - lowrisc:dv:cip_lib
     files:
       - clkmgr_csrs_if.sv
@@ -31,18 +31,7 @@ filesets:
       - clkmgr_if.sv
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: clkmgr
-      # This is somewhat undesirable, but necessary since we use the top_earlgrey
-      # ip for unit tests.
-      ip_hjson: ../../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - ral

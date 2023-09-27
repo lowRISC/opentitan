@@ -391,6 +391,10 @@ def generate_clkmgr(top, repo_top_path, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     data_path = spec_ip_path / "data" / "autogen"
     data_path.mkdir(parents=True, exist_ok=True)
+    dv_env_path = spec_ip_path / "dv" / "env" / "autogen"
+    dv_env_path.mkdir(parents=True, exist_ok=True)
+    dv_sva_path = spec_ip_path / "dv" / "sva" / "autogen"
+    dv_sva_path.mkdir(parents=True, exist_ok=True)
 
     # Template paths
     orig_ip_path = repo_top_path / "hw" / "ip" / "clkmgr"
@@ -416,6 +420,10 @@ def generate_clkmgr(top, repo_top_path, out_path):
                                  **render_dict)
     _generate_file_from_template(tpl_path / "clkmgr_pkg.sv.tpl", rtl_path,
                                  genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "clkmgr_ral.core.tpl", dv_env_path,
+                                 "", **render_dict)
+    _generate_file_from_template(tpl_path / "clkmgr_csr_assert_gen.core.tpl",
+                                 dv_sva_path, "", **render_dict)
 
     # Generate reg files
     generate_regfile_from_path(data_path / "clkmgr.hjson", rtl_path,
@@ -457,6 +465,8 @@ def generate_pwrmgr(top, repo_top_path, out_path):
     data_path.mkdir(parents=True, exist_ok=True)
     dv_env_path = spec_ip_path / "dv" / "env" / "autogen"
     dv_env_path.mkdir(parents=True, exist_ok=True)
+    dv_sva_path = spec_ip_path / "dv" / "sva" / "autogen"
+    dv_sva_path.mkdir(parents=True, exist_ok=True)
 
     # Get paths to templates and original ip components.
     orig_ip_path = repo_top_path / "hw" / "ip" / "pwrmgr"
@@ -469,13 +479,17 @@ def generate_pwrmgr(top, repo_top_path, out_path):
         "Wkups": top["wakeups"],
         "NumRomInputs": n_rom_ctrls,
         "rst_reqs": top["reset_requests"],
-        "NumRstReqs": n_rstreqs
+        "NumRstReqs": n_rstreqs,
+        "gen_core_comment": GEN_CORE_COMMENT
     }
 
     _generate_file_from_template(tpl_path / "pwrmgr.hjson.tpl", data_path,
                                  genhdr, **render_dict)
     _generate_file_from_template(tpl_path / "pwrmgr_env.core.tpl", dv_env_path,
                                  "", **render_dict)
+    _generate_file_from_template(tpl_path / "pwrmgr_csr_assert_gen.core.tpl",
+                                 dv_sva_path, "", **render_dict)
+
     # Generate reg files
     generate_regfile_from_path(data_path / "pwrmgr.hjson", rtl_path,
                                original_rtl_path)
@@ -494,12 +508,12 @@ def generate_rstmgr(topcfg, repo_top_path, out_path):
     spec_ip_path = out_path / "ip" / "rstmgr"
     rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
-    sva_path = spec_ip_path / "dv" / "sva" / "autogen"
-    sva_path.mkdir(parents=True, exist_ok=True)
+    dv_sva_path = spec_ip_path / "dv" / "sva" / "autogen"
+    dv_sva_path.mkdir(parents=True, exist_ok=True)
     data_path = spec_ip_path / "data" / "autogen"
     data_path.mkdir(parents=True, exist_ok=True)
-    env_path = spec_ip_path / "dv" / "env" / "autogen"
-    env_path.mkdir(parents=True, exist_ok=True)
+    dv_env_path = spec_ip_path / "dv" / "env" / "autogen"
+    dv_env_path.mkdir(parents=True, exist_ok=True)
 
     # Get paths to templates and original ip components.
     orig_ip_path = repo_top_path / "hw" / "ip" / "rstmgr"
@@ -551,20 +565,21 @@ def generate_rstmgr(topcfg, repo_top_path, out_path):
                                  **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_pkg.sv.tpl", rtl_path,
                                  genhdr, **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_bind.sv.tpl", sva_path, "",
-                                 **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_sva.core.tpl", sva_path,
+    _generate_file_from_template(tpl_path / "rstmgr_bind.sv.tpl", dv_sva_path,
                                  "", **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_unit_only_sva.core.tpl",
-                                 sva_path, "", **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_env_pkg.sv.tpl", env_path,
+    _generate_file_from_template(tpl_path / "rstmgr_sva.core.tpl", dv_sva_path,
                                  "", **render_dict)
+    _generate_file_from_template(tpl_path / "rstmgr_env_pkg.sv.tpl",
+                                 dv_env_path, "", **render_dict)
     _generate_file_from_template(tpl_path / "rstmgr_scoreboard.sv.tpl",
-                                 env_path, "", **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_ral.core.tpl", env_path,
+                                 dv_env_path, "", **render_dict)
+    _generate_file_from_template(tpl_path / "rstmgr_ral.core.tpl", dv_env_path,
                                  "", **render_dict)
-    _generate_file_from_template(tpl_path / "rstmgr_env.core.tpl", env_path,
+    _generate_file_from_template(tpl_path / "rstmgr_env.core.tpl", dv_env_path,
                                  "", **render_dict)
+    _generate_file_from_template(tpl_path / "rstmgr_csr_assert_gen.core.tpl",
+                                 dv_sva_path, "", **render_dict)
+
     # Generate reg files
     generate_regfile_from_path(data_path / "rstmgr.hjson", rtl_path,
                                original_rtl_path)
@@ -580,6 +595,11 @@ def generate_flash(topcfg, repo_top_path, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     data_path = spec_ip_path / "data" / "autogen"
     data_path.mkdir(parents=True, exist_ok=True)
+    dv_env_path = spec_ip_path / "dv" / "env" / "autogen"
+    dv_env_path.mkdir(parents=True, exist_ok=True)
+    dv_sva_path = spec_ip_path / "dv" / "sva" / "autogen"
+    dv_sva_path.mkdir(parents=True, exist_ok=True)
+
     orig_ip_path = repo_top_path / "hw" / "ip" / "flash_ctrl"
     tpl_path = orig_ip_path / "data"
     original_rtl_path = orig_ip_path / "rtl"
@@ -597,7 +617,7 @@ def generate_flash(topcfg, repo_top_path, out_path):
 
     cfg = flash_mems[0]["memory"]["mem"]["config"]
 
-    render_dict = {"cfg": cfg}
+    render_dict = {"cfg": cfg, "gen_core_comment": GEN_CORE_COMMENT}
     _generate_file_from_template(tpl_path / "flash_ctrl.hjson.tpl", data_path,
                                  genhdr, **render_dict)
     _generate_file_from_template(tpl_path / "flash_ctrl.sv.tpl", rtl_path,
@@ -606,6 +626,11 @@ def generate_flash(topcfg, repo_top_path, out_path):
                                  genhdr, **render_dict)
     _generate_file_from_template(tpl_path / "flash_ctrl_region_cfg.sv.tpl",
                                  rtl_path, genhdr, **render_dict)
+    _generate_file_from_template(tpl_path / "flash_ctrl_ral.core.tpl",
+                                 dv_env_path, "", **render_dict)
+    _generate_file_from_template(
+        tpl_path / "flash_ctrl_csr_assert_gen.core.tpl", dv_env_path, "",
+        **render_dict)
 
     generate_regfile_from_path(data_path / "flash_ctrl.hjson", rtl_path,
                                original_rtl_path)
