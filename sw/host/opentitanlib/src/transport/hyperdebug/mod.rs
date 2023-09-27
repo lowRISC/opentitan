@@ -24,7 +24,7 @@ use crate::io::i2c::Bus;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::chip_whisperer::board::Cw310;
+use crate::transport::chip_whisperer::board::Board;
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
@@ -706,9 +706,11 @@ impl Flavor for StandardFlavor {
 /// both the Hyperdebug and Chip Whisperer board USB interfaces are attached to the host.
 /// Hyperdebug is used for all IO with the Chip Whisperer board except for bitstream
 /// programming.
-pub struct ChipWhispererFlavor;
+pub struct ChipWhispererFlavor<B: Board> {
+    _phantom: PhantomData<B>,
+}
 
-impl Flavor for ChipWhispererFlavor {
+impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
     }
@@ -732,7 +734,7 @@ impl Flavor for ChipWhispererFlavor {
 
         // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
 
         // The transport does not provide name resolution for the IO interface
         // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
@@ -752,7 +754,7 @@ impl Flavor for ChipWhispererFlavor {
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
         let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.clear_bitstream()?;
