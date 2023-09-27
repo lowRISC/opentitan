@@ -32,6 +32,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",

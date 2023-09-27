@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -21,7 +22,6 @@
 static const uint32_t kKeyVersion = 0x9;
 
 // Two distinct key salts for testing.
-static const size_t kSaltNumWords = 7;
 static const uint32_t kKeySalt1[7] = {
     0x00112233, 0x44556677, 0x8899aabb, 0xccddeeff,
     0x00010203, 0x04050607, 0x08090a0b,
@@ -63,19 +63,16 @@ static const uint32_t kAesPlaintextBlock[4] = {0};
  * @param[out] output Resulting output block(s).
  * @return OK or error.
  */
-static status_t run_aes(aes_operation_t operation, const uint32_t *salt,
+static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
                         const uint32_t *input, uint32_t *output) {
   // Construct the key.
-  uint32_t keyblob[kSaltNumWords + 1];
-  keyblob[0] = kKeyVersion;
-  memcpy(&keyblob[1], salt, kSaltNumWords * sizeof(uint32_t));
+  uint32_t keyblob[8];
   crypto_blinded_key_t key = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
-      .checksum = 0,
   };
-  key.checksum = integrity_blinded_checksum(&key);
+  TRY(otcrypto_hw_backed_key(kKeyVersion, salt, &key));
 
   // Construct the IV.
   uint32_t iv_data[ARRAYSIZE(kAesIv)];
