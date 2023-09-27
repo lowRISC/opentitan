@@ -702,13 +702,13 @@ impl Flavor for StandardFlavor {
     }
 }
 
-/// A `CW310Flavor` is a Hyperdebug attached to a Chip Whisperer board.  Furthermore,
+/// A `ChipWhispererFlavor` is a Hyperdebug attached to a Chip Whisperer board.  Furthermore,
 /// both the Hyperdebug and Chip Whisperer board USB interfaces are attached to the host.
 /// Hyperdebug is used for all IO with the Chip Whisperer board except for bitstream
 /// programming.
-pub struct CW310Flavor;
+pub struct ChipWhispererFlavor;
 
-impl Flavor for CW310Flavor {
+impl Flavor for ChipWhispererFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
     }

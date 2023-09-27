@@ -12,7 +12,7 @@ use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::chip_whisperer::board::{Cw310, Cw340};
 use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{
-    C2d2Flavor, CW310Flavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
+    C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
 };
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
@@ -87,7 +87,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
         "hyper310" => (
-            hyperdebug::create::<CW310Flavor>(args)?,
+            hyperdebug::create::<ChipWhispererFlavor>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
         "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
