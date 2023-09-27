@@ -15,7 +15,7 @@
   param_list: [
     { name:     "NumExternalIrqs"
       type:     "int unsigned"
-      default:  "8"
+      default:  "32"
       desc:     "Number of external interrupt requests"
       local:    "true"
     }
@@ -107,7 +107,7 @@
   interrupt_list: [
     { name: "external"
       desc: "External interrupt request"
-      width: 8 // keep equal to `NumExternalIrqs`
+      width: 32 // keep equal to `NumExternalIrqs`
     }
   ]
 
@@ -211,7 +211,7 @@
       type:    "uni"
       name:    "soc_intr_async"
       act:     "rcv"
-      width:   8 // keep equal to `NumExternalIrqs`
+      width:   32 // keep equal to `NumExternalIrqs`
       desc:    "Interrupt request from SoC, asynchronous, level-encoded"
     }
   ]
