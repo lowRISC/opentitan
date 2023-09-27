@@ -135,10 +135,18 @@ module soc_proxy_core_reg_top (
   logic alert_test_fatal_alert_external_1_wd;
   logic alert_test_fatal_alert_external_2_wd;
   logic alert_test_fatal_alert_external_3_wd;
+  logic alert_test_fatal_alert_external_4_wd;
+  logic alert_test_fatal_alert_external_5_wd;
+  logic alert_test_fatal_alert_external_6_wd;
+  logic alert_test_fatal_alert_external_7_wd;
   logic alert_test_recov_alert_external_0_wd;
   logic alert_test_recov_alert_external_1_wd;
   logic alert_test_recov_alert_external_2_wd;
   logic alert_test_recov_alert_external_3_wd;
+  logic alert_test_recov_alert_external_4_wd;
+  logic alert_test_recov_alert_external_5_wd;
+  logic alert_test_recov_alert_external_6_wd;
+  logic alert_test_recov_alert_external_7_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -219,7 +227,7 @@ module soc_proxy_core_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [8:0] alert_test_flds_we;
+  logic [16:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_alert_intg]: 0:0
   prim_subreg_ext #(
@@ -301,7 +309,71 @@ module soc_proxy_core_reg_top (
   );
   assign reg2hw.alert_test.fatal_alert_external_3.qe = alert_test_qe;
 
-  //   F[recov_alert_external_0]: 5:5
+  //   F[fatal_alert_external_4]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert_external_4 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_alert_external_4_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[5]),
+    .q      (reg2hw.alert_test.fatal_alert_external_4.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_alert_external_4.qe = alert_test_qe;
+
+  //   F[fatal_alert_external_5]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert_external_5 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_alert_external_5_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[6]),
+    .q      (reg2hw.alert_test.fatal_alert_external_5.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_alert_external_5.qe = alert_test_qe;
+
+  //   F[fatal_alert_external_6]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert_external_6 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_alert_external_6_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[7]),
+    .q      (reg2hw.alert_test.fatal_alert_external_6.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_alert_external_6.qe = alert_test_qe;
+
+  //   F[fatal_alert_external_7]: 8:8
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_alert_external_7 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_alert_external_7_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[8]),
+    .q      (reg2hw.alert_test.fatal_alert_external_7.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_alert_external_7.qe = alert_test_qe;
+
+  //   F[recov_alert_external_0]: 9:9
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert_external_0 (
@@ -310,14 +382,14 @@ module soc_proxy_core_reg_top (
     .wd     (alert_test_recov_alert_external_0_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[5]),
+    .qe     (alert_test_flds_we[9]),
     .q      (reg2hw.alert_test.recov_alert_external_0.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert_external_0.qe = alert_test_qe;
 
-  //   F[recov_alert_external_1]: 6:6
+  //   F[recov_alert_external_1]: 10:10
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert_external_1 (
@@ -326,14 +398,14 @@ module soc_proxy_core_reg_top (
     .wd     (alert_test_recov_alert_external_1_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[6]),
+    .qe     (alert_test_flds_we[10]),
     .q      (reg2hw.alert_test.recov_alert_external_1.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert_external_1.qe = alert_test_qe;
 
-  //   F[recov_alert_external_2]: 7:7
+  //   F[recov_alert_external_2]: 11:11
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert_external_2 (
@@ -342,14 +414,14 @@ module soc_proxy_core_reg_top (
     .wd     (alert_test_recov_alert_external_2_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[7]),
+    .qe     (alert_test_flds_we[11]),
     .q      (reg2hw.alert_test.recov_alert_external_2.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert_external_2.qe = alert_test_qe;
 
-  //   F[recov_alert_external_3]: 8:8
+  //   F[recov_alert_external_3]: 12:12
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert_external_3 (
@@ -358,12 +430,76 @@ module soc_proxy_core_reg_top (
     .wd     (alert_test_recov_alert_external_3_wd),
     .d      ('0),
     .qre    (),
-    .qe     (alert_test_flds_we[8]),
+    .qe     (alert_test_flds_we[12]),
     .q      (reg2hw.alert_test.recov_alert_external_3.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.alert_test.recov_alert_external_3.qe = alert_test_qe;
+
+  //   F[recov_alert_external_4]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_4 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_4_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[13]),
+    .q      (reg2hw.alert_test.recov_alert_external_4.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_4.qe = alert_test_qe;
+
+  //   F[recov_alert_external_5]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_5 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_5_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[14]),
+    .q      (reg2hw.alert_test.recov_alert_external_5.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_5.qe = alert_test_qe;
+
+  //   F[recov_alert_external_6]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_6 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_6_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[15]),
+    .q      (reg2hw.alert_test.recov_alert_external_6.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_6.qe = alert_test_qe;
+
+  //   F[recov_alert_external_7]: 16:16
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_7 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_7_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[16]),
+    .q      (reg2hw.alert_test.recov_alert_external_7.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_7.qe = alert_test_qe;
 
 
 
@@ -409,13 +545,29 @@ module soc_proxy_core_reg_top (
 
   assign alert_test_fatal_alert_external_3_wd = reg_wdata[4];
 
-  assign alert_test_recov_alert_external_0_wd = reg_wdata[5];
+  assign alert_test_fatal_alert_external_4_wd = reg_wdata[5];
 
-  assign alert_test_recov_alert_external_1_wd = reg_wdata[6];
+  assign alert_test_fatal_alert_external_5_wd = reg_wdata[6];
 
-  assign alert_test_recov_alert_external_2_wd = reg_wdata[7];
+  assign alert_test_fatal_alert_external_6_wd = reg_wdata[7];
 
-  assign alert_test_recov_alert_external_3_wd = reg_wdata[8];
+  assign alert_test_fatal_alert_external_7_wd = reg_wdata[8];
+
+  assign alert_test_recov_alert_external_0_wd = reg_wdata[9];
+
+  assign alert_test_recov_alert_external_1_wd = reg_wdata[10];
+
+  assign alert_test_recov_alert_external_2_wd = reg_wdata[11];
+
+  assign alert_test_recov_alert_external_3_wd = reg_wdata[12];
+
+  assign alert_test_recov_alert_external_4_wd = reg_wdata[13];
+
+  assign alert_test_recov_alert_external_5_wd = reg_wdata[14];
+
+  assign alert_test_recov_alert_external_6_wd = reg_wdata[15];
+
+  assign alert_test_recov_alert_external_7_wd = reg_wdata[16];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -452,6 +604,14 @@ module soc_proxy_core_reg_top (
         reg_rdata_next[6] = '0;
         reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = '0;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[12] = '0;
+        reg_rdata_next[13] = '0;
+        reg_rdata_next[14] = '0;
+        reg_rdata_next[15] = '0;
+        reg_rdata_next[16] = '0;
       end
 
       default: begin
