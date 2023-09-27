@@ -87,8 +87,6 @@ module dma
   logic bad_asid;
   logic config_error;
 
-  logic read_rsp_error;
-
   logic cfg_handshake_en;
   logic cfg_fifo_auto_increment_en;
   logic cfg_memory_buffer_auto_increment_en;
@@ -517,7 +515,6 @@ module dma
     // Mux the TLUL response signal depending on the selected bus interface
     int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
                                                                       dma_ctn_tlul_rsp_valid;
-    read_rsp_error  = 1'b0;
     dma_state_error = 1'b0;
 
     sha2_hash_start      = 1'b0;
@@ -854,13 +851,12 @@ module dma
           dma_host_tlul_req_be    = req_src_be_q;
         end
 
-        read_rsp_error           = dma_host_tlul_rsp_err || dma_host_tlul_rsp_intg_err;
-        capture_host_return_data = dma_host_tlul_rsp_valid && (!read_rsp_error);
+        capture_host_return_data = dma_host_tlul_rsp_valid && (!dma_host_tlul_rsp_err);
 
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else if (dma_host_tlul_rsp_valid) begin
-          if (read_rsp_error) begin
+          if (dma_host_tlul_rsp_err) begin
             next_error[DmaCompletionErr] = 1'b1;
             ctrl_state_d                 = DmaError;
           end else begin
@@ -895,13 +891,12 @@ module dma
           dma_ctn_tlul_req_be    = req_src_be_q;
         end
 
-        read_rsp_error          = dma_ctn_tlul_rsp_err || dma_ctn_tlul_rsp_intg_err;
-        capture_ctn_return_data = dma_ctn_tlul_rsp_valid && (!read_rsp_error);
+        capture_ctn_return_data = dma_ctn_tlul_rsp_valid && (!dma_ctn_tlul_rsp_err);
 
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end else if (dma_ctn_tlul_rsp_valid) begin
-          if (read_rsp_error) begin
+          if (dma_ctn_tlul_rsp_err) begin
             next_error[DmaCompletionErr] = 1'b1;
             ctrl_state_d = DmaError;
           end else begin
@@ -948,13 +943,11 @@ module dma
       end
 
       DmaWaitSysReadResponse: begin
-        read_rsp_error          = sys_resp_q.read_data_vld && sys_resp_q.error_vld;
         capture_sys_return_data = sys_resp_q.read_data_vld && (!sys_resp_q.error_vld);
 
         if (sys_resp_q.read_data_vld) begin
-          if (read_rsp_error) begin
+          if (sys_resp_q.error_vld) begin
             next_error[DmaCompletionErr] = 1'b1;
-
             ctrl_state_d = DmaError;
           end else if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
@@ -1003,9 +996,16 @@ module dma
           capture_transfer_byte = 1'b1;
           capture_chunk_byte    = 1'b1;
 
-          if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+          if (dma_host_tlul_rsp_err) begin
+            next_error[DmaCompletionErr] = 1'b1;
+            ctrl_state_d                 = DmaError;
+          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
             if (use_inline_hashing) begin
-              ctrl_state_d = DmaShaFinalize;
+              if (!(sha2_ready || sha2_consumed_q)) begin
+                ctrl_state_d = DmaShaWait;
+              end else begin
+                ctrl_state_d = DmaShaFinalize;
+              end
             end else begin
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
@@ -1018,8 +1018,6 @@ module dma
         end else if (dma_host_tlul_gnt) begin
           // Only Request handled
           ctrl_state_d = DmaWaitHostWriteResponse;
-        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1047,9 +1045,16 @@ module dma
           capture_transfer_byte = 1'b1;
           capture_chunk_byte    = 1'b1;
 
-          if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+          if (dma_ctn_tlul_rsp_err) begin
+            next_error[DmaCompletionErr] = 1'b1;
+            ctrl_state_d                 = DmaError;
+          end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
             if (use_inline_hashing) begin
-              ctrl_state_d = DmaShaFinalize;
+              if (!(sha2_ready || sha2_consumed_q)) begin
+                ctrl_state_d = DmaShaWait;
+              end else begin
+                ctrl_state_d = DmaShaFinalize;
+              end
             end else begin
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
@@ -1062,8 +1067,6 @@ module dma
         end else if (dma_ctn_tlul_gnt) begin
           // Only Request handled
           ctrl_state_d = DmaWaitCtnWriteResponse;
-        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1102,7 +1105,11 @@ module dma
             ctrl_state_d = DmaIdle;
           end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
             if (use_inline_hashing) begin
-              ctrl_state_d = DmaShaFinalize;
+              if (!(sha2_ready || sha2_consumed_q)) begin
+                ctrl_state_d = DmaShaWait;
+              end else begin
+                ctrl_state_d = DmaShaFinalize;
+              end
             end else begin
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
@@ -1112,8 +1119,6 @@ module dma
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
-        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1145,8 +1150,8 @@ module dma
         end
       end
 
-      DmaError: begin
         // wait here until error is cleared
+      DmaError: begin
         if (!reg2hw.status.error.q) begin
           ctrl_state_d = DmaIdle;
           clear_go     = 1'b1;
@@ -1364,11 +1369,11 @@ module dma
                              clear_go;
     hw2reg.status.done.d  = 1'b1;
 
-    hw2reg.status.error.de = (ctrl_state_d == DmaError);
     hw2reg.status.error.d  = 1'b1;
+    hw2reg.status.error.de = (ctrl_state_d == DmaError);
 
-    hw2reg.status.error_code.de = (ctrl_state_d == DmaError);
     hw2reg.status.error_code.d  = next_error;
+    hw2reg.status.error_code.de = (ctrl_state_d == DmaError);
 
     hw2reg.status.aborted.de = cfg_abort_en && (ctrl_state_d == DmaIdle);
     hw2reg.status.aborted.d  = 1'b1;
