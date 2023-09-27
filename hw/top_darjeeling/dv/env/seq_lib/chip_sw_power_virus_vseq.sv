@@ -104,9 +104,9 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   endtask
 
   // A local define to probe the state of an IP and to check if it is IDLE.
-  `define _DV_PROBE_AND_CHECK_IDLE(SIGNAL_NAME, IDLE_VAL)          \
-      SIGNAL_NAME = cfg.chip_vif.signal_probe_``SIGNAL_NAME``(SignalProbeSample); \
-      `uvm_info(`gfn, $sformatf("adc_ctrl_state = 0x%0x", SIGNAL_NAME), UVM_LOW); \
+  `define _DV_PROBE_AND_CHECK_IDLE(SIGNAL_NAME, IDLE_VAL)                                         \
+      SIGNAL_NAME = cfg.chip_vif.signal_probe_``SIGNAL_NAME``(SignalProbeSample);                 \
+      `uvm_info(`gfn, $sformatf("%s = 0x%0x", `DV_STRINGIFY(SIGNAL_NAME), SIGNAL_NAME), UVM_LOW); \
       `DV_CHECK_NE(SIGNAL_NAME, IDLE_VAL);
 
   // A utility function to check the FSM states of the IPs.
