@@ -56,5 +56,5 @@ COPYING*            @mundaym
 /util/licence-checker.hjson  @mundaym
 
 # CI and testing
-/ci/                @milesdai @rswarbrick
-azure-pipelines.yml @milesdai @rswarbrick
+/ci/                @rswarbrick
+azure-pipelines.yml @rswarbrick
