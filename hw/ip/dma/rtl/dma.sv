@@ -72,6 +72,7 @@ module dma
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
+  logic clear_go;
 
   logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                               clear_index_en, int_clear_tlul_rsp_valid;
@@ -510,6 +511,8 @@ module dma
 
     clear_index_d  = '0;
     clear_index_en = '0;
+
+    clear_go       = 1'b0;
 
     // Mux the TLUL response signal depending on the selected bus interface
     int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
@@ -1006,7 +1009,7 @@ module dma
             if (use_inline_hashing) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
-              // Also clear go from hardware?
+              clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
@@ -1050,7 +1053,7 @@ module dma
             if (use_inline_hashing) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
-              // Also clear go from hardware?
+              clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
@@ -1103,7 +1106,7 @@ module dma
             if (use_inline_hashing) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
-              // Also clear go from hardware?
+              clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
           end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
@@ -1136,6 +1139,7 @@ module dma
           // Digest is ready, capture it to the CSRs
           sha2_digest_we = 1'b1;
           ctrl_state_d   = DmaIdle;
+          clear_go       = 1'b1;
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end
@@ -1145,6 +1149,7 @@ module dma
         // wait here until error is cleared
         if (!reg2hw.status.error.q) begin
           ctrl_state_d = DmaIdle;
+          clear_go     = 1'b1;
         end
       end
 
@@ -1340,13 +1345,9 @@ module dma
     hw2reg.source_address_lo.de = update_source_addr_reg;
     hw2reg.source_address_lo.d  = new_source_addr[31:0];
 
-    // if all data has been transferred successfully and not in hardware
-    // handshake mode, then clear the go bit
-    hw2reg.control.go.de = ((!cfg_handshake_en) &&
-                            data_move_state     &&
-                            (ctrl_state_d == DmaIdle)) ||
-                            (cfg_abort_en && (ctrl_state_d == DmaIdle));
-
+    // Clear the go bit if we are in a single transfer and finished the DMA operation,
+    // hardware handshake mode when we finished all transfers, or when aborting the transfer.
+    hw2reg.control.go.de = clear_go || (cfg_abort_en && (ctrl_state_d == DmaIdle));
     hw2reg.control.go.d  = 1'b0;
 
     // Assert wr wen on transitions from and to IDLE
@@ -1356,13 +1357,11 @@ module dma
     hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) &&
                             (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
 
-    // SW must clear done bit in handshake mode
-    // a transaction should not indicated done when aborted
-    hw2reg.status.done.de = (!cfg_handshake_en) &&
-                            (!cfg_abort_en)     &&
+    // Set done bit and raise interrupt when we either finished a single transfer or all transfers
+    // in hardware handshake mode.
+    hw2reg.status.done.de = (!cfg_abort_en)     &&
                              data_move_state    &&
-                            (ctrl_state_d == DmaIdle);
-
+                             clear_go;
     hw2reg.status.done.d  = 1'b1;
 
     hw2reg.status.error.de = (ctrl_state_d == DmaError);
