@@ -15,6 +15,7 @@ pub mod image;
 pub mod load_bitstream;
 pub mod otp;
 pub mod reset_sam3x;
+pub mod rom_patch;
 pub mod rsa;
 pub mod set_pll;
 pub mod spi;

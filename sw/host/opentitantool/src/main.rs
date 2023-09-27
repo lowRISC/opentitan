@@ -46,6 +46,8 @@ enum RootCommandHierarchy {
     #[command(subcommand)]
     Otp(command::otp::Otp),
     #[command(subcommand)]
+    RomPatch(command::rom_patch::RomPatch),
+    #[command(subcommand)]
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
     #[command(subcommand)]
