@@ -128,6 +128,15 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "key_transport_unittest",
+    srcs = ["key_transport_unittest.cc"],
+    deps = [
+        ":key_transport",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "rsa",
     srcs = ["rsa.c"],

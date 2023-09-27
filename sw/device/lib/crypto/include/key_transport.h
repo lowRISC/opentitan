@@ -49,10 +49,35 @@ extern "C" {
  *
  * @param perso_string Optional personalization string to be passed to DRBG.
  * @param[out] key Destination blinded key struct.
- * @return The result of the cipher operation.
+ * @return The result of the operation.
  */
 crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
                                           crypto_blinded_key_t *key);
+
+/**
+ * Creates a handle for a hardware-backed key.
+ *
+ * This routine may be used for both symmetric and asymmetric algorithms, since
+ * conceptually it only creates some data that the key manager can use to
+ * generate key material at the time of use. However, not all algorithms are
+ * suitable for hardware-backed keys (for example, RSA is not suitable), so
+ * some choices of algorithm may result in errors.
+ *
+ * The caller should partially populate the blinded key struct; they should set
+ * the full key configuration and the keyblob length (always 32 bytes), and
+ * then allocate 32 bytes of space for the keyblob and set the keyblob pointer.
+ *
+ * This function will populate the `checksum` field and copy the salt/version
+ * data into the keyblob buffer in the specific order that the rest of
+ * cryptolib expects.
+ *
+ * @param version Key version.
+ * @param salt Key salt (diversification data for KDF).
+ * @param[out] key Destination blinded key struct.
+ * @return The result of the operation.
+ */
+crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
+                                       crypto_blinded_key_t *key);
 
 /**
  * Builds an unblinded key struct from a user (plain) key.

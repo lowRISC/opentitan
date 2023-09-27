@@ -53,6 +53,33 @@ crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
   return OTCRYPTO_OK;
 }
 
+crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
+                                       crypto_blinded_key_t *key) {
+  if (key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (key->keyblob_length != 8 * sizeof(uint32_t) ||
+      key->config.hw_backed != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Get the key type from the top 16 bits of the full mode and ensure that it
+  // is not RSA. All other key types are acceptable for hardware-backed keys.
+  key_type_t key_type = (key_type_t)(key->config.key_mode >> 16);
+  if (key_type == kKeyTypeRsa) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Copy the version and salt into the keyblob.
+  key->keyblob[0] = version;
+  memcpy(&key->keyblob[1], salt, 7 * sizeof(uint32_t));
+
+  // Set the checksum.
+  key->checksum = integrity_blinded_checksum(key);
+
+  return OTCRYPTO_OK;
+}
+
 crypto_status_t otcrypto_build_unblinded_key(
     crypto_const_byte_buf_t plain_key, key_mode_t key_mode,
     crypto_unblinded_key_t unblinded_key) {
