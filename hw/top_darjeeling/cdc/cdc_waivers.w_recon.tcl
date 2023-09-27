@@ -31,7 +31,5 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSig
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_pwrmgr_aon.u_reg.u_reg_if.rdata*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_pwrmgr_aon.i_wake_info.info*")} -comment {multiple sources with mux}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_rstmgr_aon.u_reg.u_reg_if.rdata*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_adc_ctrl_aon.u_reg.u_intr_state.q*")} -comment {multiple sources with mux}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_adc_ctrl_aon.u_reg.*.src_busy_q*")} -comment {multiple sources with mux}
 
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"*u_sync_1.gen_generic.u_impl_generic.q_o**") && (ReconSignal=~"*u_ast_clks_byp.*io_clk*src*")} -comment {Intended reconvergence in clkmgr}

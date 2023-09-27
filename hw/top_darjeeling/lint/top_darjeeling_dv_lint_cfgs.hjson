@@ -38,11 +38,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/csrng/dv/lint/{tool}"
              },
-             {    name: adc_ctrl
-                  fusesoc_core: lowrisc:dv:adc_ctrl_sim
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/adc_ctrl/dv/lint/{tool}"
-             },
              {    name: edn
                   fusesoc_core: lowrisc:dv:edn_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
