@@ -4,6 +4,7 @@
 
 use anyhow::{bail, Context, Result};
 use nix::fcntl::{flock, FlockArg};
+use nix::poll;
 use nix::sys::signal;
 use nix::unistd::Pid;
 use serialport::ClearBuffer;
@@ -19,6 +20,7 @@ use std::time::Duration;
 //use crate::io::uart::{Uart, UartError};
 use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::TransportError;
+use crate::util;
 
 /// Implementation of the `Uart` trait on top of a serial device, such as `/dev/ttyUSB0`.
 pub struct SerialPortUart {
@@ -145,11 +147,27 @@ impl Uart for SerialPortUart {
         );
 
         if self.flow_control.get() == FlowControl::None {
-            return self
-                .port
-                .borrow_mut()
-                .write_all(buf)
-                .context("UART write error");
+            // Perform blocking write of all bytes in `buf` even if the mio library has put the
+            // file descriptor into non-blocking mode.
+            let mut port = self.port.borrow_mut();
+            let mut idx = 0;
+            while idx < buf.len() {
+                match port.write(&buf[idx..]) {
+                    Ok(n) => idx += n,
+                    Err(ioerr) if ioerr.kind() == ErrorKind::TimedOut => {
+                        // Buffers are full, file descriptor is non-blocking.  Explicitly wait for
+                        // this one file descriptor to again become ready for writing.  Since this
+                        // is a UART, we know that it will become ready in bounded time.
+                        util::file::wait_timeout(
+                            port.as_raw_fd(),
+                            poll::PollFlags::POLLOUT,
+                            Duration::from_secs(5),
+                        )?;
+                    }
+                    Err(ioerr) => return Err(ioerr).context("UART communication error"),
+                }
+            }
+            return Ok(());
         }
 
         for b in buf.iter() {
