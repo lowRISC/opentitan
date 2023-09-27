@@ -38,6 +38,7 @@ enum RootCommandHierarchy {
     Image(command::image::Image),
     NoOp(command::NoOp),
     Otp(command::otp::Otp),
+    RomPatch(command::rom_patch::RomPatch),
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
     Spx(command::spx::Spx),
