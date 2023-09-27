@@ -114,12 +114,6 @@ static status_t delay(bool prompt, uint32_t timeout_micros) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK(kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator ||
-            kDeviceType == kDeviceFpgaCw310,
-        "This test is not expected to run on platforms other than the "
-        "Verilator/DV simulation or CW310 FPGA. It needs either the DPI model "
-        "or a VBUS/SENSE connection to a physical host");
-
   // In simulation the DPI model connects VBUS shortly after reset and
   // prolonged delays when asserting or deasserting pull ups are wasteful.
   uint32_t timeout_micros = 1000u;
@@ -133,12 +127,11 @@ bool test_main(void) {
     // A short delay here permits the activity of the host controller to be
     // observed (eg. dmesg -w on a Linux host).
     delay_micros = 2 * 1000 * 1000u;
-    // The CW310 board and FPGA build cannot raise the DN pull up because the
-    // required resistor is not mounted by default.
+    // The CW310/340 board and their FPGA builds cannot raise the DN pull up
+    // because the required resistor is not mounted by default.
     can_flip = false;
     // Report instructions/progress to user, when driven manually.
     prompt = true;
-    LOG_INFO("Running USBDEV_VBUS test");
   }
 
   // Ensure that the VBUS/SENSE signal is routed through to the usbdev.

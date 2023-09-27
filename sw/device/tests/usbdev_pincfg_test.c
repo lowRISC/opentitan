@@ -23,10 +23,10 @@
 // With DV sim at chip level, where we have just the physical two wire USB
 // between the chip and DPI model, 4 configurations may be exercised.
 //
-// On the CW310 target, only two configurations may be tested programmatically
-// without the manual intervention required to flip pins. No host-side
-// application support is required in this case - just a physical wire to the
-// host controller, and the OS/device layer will configure the device.
+// On the CW310/340 target, only two configurations may be tested
+// programmatically without the manual intervention required to flip pins. No
+// host-side application support is required in this case - just a physical wire
+// to the host controller, and the OS/device layer will configure the device.
 
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -86,12 +86,6 @@ static bool verbose = false;
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK(kDeviceType == kDeviceSimVerilator || kDeviceType == kDeviceFpgaCw310 ||
-            kDeviceType == kDeviceSimDV,
-        "This test is not expected to run on platforms other than the "
-        "Veriltor/DV simulation or CW310 FPGA. It needs the USB DPI model "
-        "or host. No host-side application software required.");
-
   LOG_INFO("Running USBDEV PINCFG test");
 
   CHECK_DIF_OK(dif_pinmux_init(
@@ -124,13 +118,15 @@ bool test_main(void) {
       }
       break;
 
+    case kDeviceFpgaCw340:
     case kDeviceFpgaCw310:
-      LOG_INFO(" - CW310 does not support pinflipping; ignoring");
-      LOG_INFO(" - CW310 employs only differential transmission");
+      LOG_INFO(" - CW310/340 does not support pinflipping; ignoring");
+      LOG_INFO(" - CW310/340 employs only differential transmission");
       ntests = 2U;
       for (unsigned test = 0U; test < ntests; ++test) {
-        // For the CW310 pin-flipping is only useful if the SBU signals of the
-        // USB-C connector are being driven; this is not the case we're testing.
+        // For the CW310/340 pin-flipping is only useful if the SBU signals of
+        // the USB-C connector are being driven; this is not the case we're
+        // testing.
         test_cfg[test].pinflip = false;
         test_cfg[test].en_diff_rcvr = ((test & 1U) != 0U);
         // D+/D- signals are always used directly as differential signals.
