@@ -1,0 +1,241 @@
+{
+  "includes": ["/__builtin__/opentitan.json"],
+  "pins": [
+    {
+      "name": "RESET",
+      "mode": "OpenDrain",
+      "pull_mode": "PullUp",
+      "alias_of": "CN10_29"
+    },
+    {
+      "name": "IOA0",
+      "alias_of": "CN8_6"
+    },
+    {
+      "name": "IOA1",
+      "alias_of": "CN8_8"
+    },
+    {
+      "name": "IOA2",
+      "alias_of": "CN9_29"
+    },
+    {
+      "name": "IOA3",
+      "alias_of": "CN7_18"
+    },
+    {
+      "name": "IOA4",
+      "alias_of": "CN8_10"
+    },
+    {
+      "name": "IOA5",
+      "alias_of": "CN8_12"
+    },
+    {
+      "name": "IOA6",
+      "alias_of": "CN7_20"
+    },
+    {
+      "name": "IOA7",
+      "alias_of": "CN7_4"
+    },
+    {
+      "name": "IOA8",
+      "alias_of": "CN7_2"
+    },
+    {
+      "name": "IOB0",
+      "alias_of": "CN9_25"
+    },
+    {
+      "name": "IOB1",
+      "alias_of": "CN9_8"
+    },
+    {
+      "name": "IOB2",
+      "alias_of": "CN9_10"
+    },
+    {
+      "name": "IOB3",
+      "alias_of": "CN9_27"
+    },
+    {
+      "name": "IOB4",
+      "alias_of": "CN10_14"
+    },
+    {
+      "name": "IOB5",
+      "alias_of": "CN10_16"
+    },
+    {
+      "name": "IOB6",
+      "alias_of": "CN9_5"
+    },
+    {
+      "name": "IOB7",
+      "alias_of": "CN8_4"
+    },
+    {
+      "name": "IOB8",
+      "alias_of": "CN9_2"
+    },
+    {
+      "name": "IOB9",
+      "alias_of": "CN9_11"
+    },
+    {
+      "name": "IOB10",
+      "alias_of": "CN9_9"
+    },
+    {
+      "name": "IOB11",
+      "alias_of": "CN9_19"
+    },
+    {
+      "name": "IOB12",
+      "alias_of": "CN9_21"
+    },
+    {
+      "name": "IOC0",
+      "alias_of": "CN9_13"
+    },
+    {
+      "name": "IOC1",
+      "alias_of": "CN9_15"
+    },
+    {
+      "name": "IOC2",
+      "alias_of": "CN9_17"
+    },
+    {
+      "name": "IOC3",
+      "alias_of": "CN9_6"
+    },
+    {
+      "name": "IOC4",
+      "alias_of": "CN9_4"
+    },
+    {
+      "name": "IOC5",
+      "alias_of": "CN8_14"
+    },
+    {
+      "name": "IOC6",
+      "alias_of": "CN10_7"
+    },
+    {
+      "name": "IOC7",
+      "alias_of": "CN10_18"
+    },
+    {
+      "name": "IOC8",
+      "alias_of": "CN8_16"
+    },
+    {
+      "name": "IOC9",
+      "alias_of": "CN10_31"
+    },
+    {
+      "name": "IOC10",
+      "alias_of": "CN10_33"
+    },
+    {
+      "name": "IOC11",
+      "alias_of": "CN10_2"
+    },
+    {
+      "name": "IOC12",
+      "alias_of": "CN10_4"
+    },
+    {
+      "name": "IOR0",
+      "alias_of": "CN7_7"
+    },
+    {
+      "name": "IOR1",
+      "alias_of": "CN7_5"
+    },
+    {
+      "name": "IOR2",
+      "alias_of": "CN7_3"
+    },
+    {
+      "name": "IOR3",
+      "alias_of": "CN7_1"
+    },
+    {
+      "name": "IOR4",
+      "alias_of": "CN7_16"
+    },
+    {
+      "name": "IOR5",
+      "alias_of": "CN9_14"
+    },
+    {
+      "name": "IOR6",
+      "alias_of": "CN9_16"
+    },
+    {
+      "name": "IOR7",
+      "alias_of": "CN9_18"
+    },
+    {
+      "name": "IOR8",
+      "alias_of": "CN9_20"
+    },
+    {
+      "name": "IOR9",
+      "alias_of": "CN9_22"
+    },
+    {
+      "name": "IOR10",
+      "alias_of": "CN9_24"
+    },
+    {
+      "name": "IOR11",
+      "alias_of": "CN9_26"
+    },
+    {
+      "name": "IOR12",
+      "alias_of": "CN9_28"
+    },
+    {
+      "name": "IOR13",
+      "alias_of": "CN9_30"
+    },
+    {
+      "name": "CC1",
+      "alias_of": "CN7_9"
+    },
+    {
+      "name": "CC2",
+      "alias_of": "CN7_10"
+    }
+  ],
+  "spi": [
+    {
+      "name": "TPM",
+      "bits_per_sec": 250000,
+      "chip_select": "IOA7",
+      "alias_of": "QSPI"
+    }
+  ],
+  "i2c": [
+    {
+      "name": "DEFAULT",
+      "alias_of": "I2C1"
+    },
+    {
+      "name": "TPM",
+      "bits_per_sec": 100000,
+      "address": 0x50,
+      "alias_of": "I2C1"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "UART2"
+    }
+  ]
+}
