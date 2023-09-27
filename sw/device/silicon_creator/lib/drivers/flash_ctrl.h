@@ -96,6 +96,13 @@ typedef enum flash_ctrl_partition {
 // clang-format on
 
 /**
+ * Table of flash data memory protection regions.
+ */
+enum {
+  kFlashCtrlDataRegionActiveRomExt = 0,
+};
+
+/**
  * A struct for storing base, config write-enable register, and config register
  * addresses of an info page.
  */
@@ -481,6 +488,17 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     uint32_t page_offset, uint32_t num_pages,
                                     flash_ctrl_perms_t perms,
                                     flash_ctrl_cfg_t cfg);
+
+/**
+ * Lock the configuration for a region of pages.
+ *
+ * Based on the `region` parameter, this function sets the
+ * `REGION_CFG_REGWEN_${region}.REGION` field, locking the region and preventing
+ * it from being reconfigured until the next reset.
+ *
+ * @param region The index of the region to lock.
+ */
+void flash_ctrl_data_region_lock(flash_ctrl_region_index_t region);
 
 /**
  * Sets configuration settings for an info page.

@@ -629,6 +629,32 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                  /*en=*/kMultiBitBool4True);
 }
 
+void flash_ctrl_data_region_lock(flash_ctrl_region_index_t region) {
+#define FLASH_CTRL_MP_REGION_CFG_REGWEN_WRITE_(region_macro_arg)                                   \
+  case ((region_macro_arg)): {                                                                     \
+    uint32_t region_cfg = bitfield_field32_write(                                                  \
+        0,                                                                                         \
+        (bitfield_field32_t){                                                                      \
+            .mask = UINT32_MAX,                                                                    \
+            .index =                                                                               \
+                FLASH_CTRL_REGION_CFG_REGWEN_##region_macro_arg##_REGION_##region_macro_arg##_BIT, \
+        },                                                                                         \
+        true);                                                                                     \
+    sec_mmio_write32(                                                                              \
+        kBase + FLASH_CTRL_REGION_CFG_REGWEN_##region_macro_arg##_REG_OFFSET,                      \
+        region_cfg);                                                                               \
+    return;                                                                                        \
+  }
+
+  switch (launder32(region)) {
+    FLASH_CTRL_MP_REGIONS(FLASH_CTRL_MP_REGION_CFG_REGWEN_WRITE_)
+    default:
+      OT_UNREACHABLE();
+  }
+
+#undef FLASH_CTRL_MP_REGION_CFG_REGWEN_WRITE_
+}
+
 void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
                              flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet, 1);

@@ -204,6 +204,7 @@ cc_library(
         ":rom_ext_boot_policy_ptrs",
         ":rom_ext_epmp",
         ":sigverify_keys",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
