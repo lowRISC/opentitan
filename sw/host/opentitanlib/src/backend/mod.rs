@@ -90,6 +90,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             hyperdebug::create::<ChipWhispererFlavor<Cw310>>(args)?,
             Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
+        "hyper340" => (
+            hyperdebug::create::<ChipWhispererFlavor<Cw340>>(args)?,
+            Some(Path::new("/__builtin__/hyperdebug_cw340.json")),
+        ),
         "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
         "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
         "c2d2" => (

@@ -1,10 +1,10 @@
 {
   "includes": ["/__builtin__/hyperdebug_chipwhisperer.json"],
-  "interface": "hyper310",
+  "interface": "hyper340",
   "spi": [
     {
       "name": "BOOTSTRAP",
-      "bits_per_sec": 8000000,
+      "bits_per_sec": 5000000,
       "chip_select": "CN10_6",
       "alias_of": "QSPI"
     }
