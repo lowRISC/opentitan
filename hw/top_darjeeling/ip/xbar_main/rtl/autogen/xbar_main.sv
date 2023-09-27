@@ -84,11 +84,11 @@
 //     -> sm1_81
 //       -> mbx6.core
 //     -> sm1_82
-//       -> mbx7.core
-//     -> sm1_83
 //       -> mbx_jtag.core
-//     -> sm1_84
+//     -> sm1_83
 //       -> mbx_pcie0.core
+//     -> sm1_84
+//       -> mbx_pcie1.core
 // rv_dm.sba
 //   -> s1n_85
 //     -> sm1_49
@@ -155,11 +155,11 @@
 //     -> sm1_81
 //       -> mbx6.core
 //     -> sm1_82
-//       -> mbx7.core
-//     -> sm1_83
 //       -> mbx_jtag.core
-//     -> sm1_84
+//     -> sm1_83
 //       -> mbx_pcie0.core
+//     -> sm1_84
+//       -> mbx_pcie1.core
 // dma.host
 //   -> s1n_86
 //     -> sm1_52
@@ -195,15 +195,15 @@
 //   -> s1n_93
 //     -> sm1_71
 //       -> sram_ctrl_mbox.ram
-// mbx7.sram
+// mbx_jtag.sram
 //   -> s1n_94
 //     -> sm1_71
 //       -> sram_ctrl_mbox.ram
-// mbx_jtag.sram
+// mbx_pcie0.sram
 //   -> s1n_95
 //     -> sm1_71
 //       -> sram_ctrl_mbox.ram
-// mbx_pcie0.sram
+// mbx_pcie1.sram
 //   -> s1n_96
 //     -> sm1_71
 //       -> sram_ctrl_mbox.ram
@@ -239,12 +239,12 @@ module xbar_main (
   output tlul_pkg::tl_d2h_t tl_mbx5__sram_o,
   input  tlul_pkg::tl_h2d_t tl_mbx6__sram_i,
   output tlul_pkg::tl_d2h_t tl_mbx6__sram_o,
-  input  tlul_pkg::tl_h2d_t tl_mbx7__sram_i,
-  output tlul_pkg::tl_d2h_t tl_mbx7__sram_o,
   input  tlul_pkg::tl_h2d_t tl_mbx_jtag__sram_i,
   output tlul_pkg::tl_d2h_t tl_mbx_jtag__sram_o,
   input  tlul_pkg::tl_h2d_t tl_mbx_pcie0__sram_i,
   output tlul_pkg::tl_d2h_t tl_mbx_pcie0__sram_o,
+  input  tlul_pkg::tl_h2d_t tl_mbx_pcie1__sram_i,
+  output tlul_pkg::tl_d2h_t tl_mbx_pcie1__sram_o,
 
   // Device interfaces
   output tlul_pkg::tl_h2d_t tl_rv_dm__regs_o,
@@ -309,12 +309,12 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_mbx5__core_i,
   output tlul_pkg::tl_h2d_t tl_mbx6__core_o,
   input  tlul_pkg::tl_d2h_t tl_mbx6__core_i,
-  output tlul_pkg::tl_h2d_t tl_mbx7__core_o,
-  input  tlul_pkg::tl_d2h_t tl_mbx7__core_i,
   output tlul_pkg::tl_h2d_t tl_mbx_jtag__core_o,
   input  tlul_pkg::tl_d2h_t tl_mbx_jtag__core_i,
   output tlul_pkg::tl_h2d_t tl_mbx_pcie0__core_o,
   input  tlul_pkg::tl_d2h_t tl_mbx_pcie0__core_i,
+  output tlul_pkg::tl_h2d_t tl_mbx_pcie1__core_o,
+  input  tlul_pkg::tl_d2h_t tl_mbx_pcie1__core_i,
 
   input prim_mubi_pkg::mubi4_t scanmode_i
 );
@@ -1069,14 +1069,14 @@ module xbar_main (
   assign tl_mbx6__core_o = tl_sm1_81_ds_h2d;
   assign tl_sm1_81_ds_d2h = tl_mbx6__core_i;
 
-  assign tl_mbx7__core_o = tl_sm1_82_ds_h2d;
-  assign tl_sm1_82_ds_d2h = tl_mbx7__core_i;
+  assign tl_mbx_jtag__core_o = tl_sm1_82_ds_h2d;
+  assign tl_sm1_82_ds_d2h = tl_mbx_jtag__core_i;
 
-  assign tl_mbx_jtag__core_o = tl_sm1_83_ds_h2d;
-  assign tl_sm1_83_ds_d2h = tl_mbx_jtag__core_i;
+  assign tl_mbx_pcie0__core_o = tl_sm1_83_ds_h2d;
+  assign tl_sm1_83_ds_d2h = tl_mbx_pcie0__core_i;
 
-  assign tl_mbx_pcie0__core_o = tl_sm1_84_ds_h2d;
-  assign tl_sm1_84_ds_d2h = tl_mbx_pcie0__core_i;
+  assign tl_mbx_pcie1__core_o = tl_sm1_84_ds_h2d;
+  assign tl_sm1_84_ds_d2h = tl_mbx_pcie1__core_i;
 
   assign tl_s1n_85_us_h2d = tl_rv_dm__sba_i;
   assign tl_rv_dm__sba_o = tl_s1n_85_us_d2h;
@@ -1105,14 +1105,14 @@ module xbar_main (
   assign tl_s1n_93_us_h2d = tl_mbx6__sram_i;
   assign tl_mbx6__sram_o = tl_s1n_93_us_d2h;
 
-  assign tl_s1n_94_us_h2d = tl_mbx7__sram_i;
-  assign tl_mbx7__sram_o = tl_s1n_94_us_d2h;
+  assign tl_s1n_94_us_h2d = tl_mbx_jtag__sram_i;
+  assign tl_mbx_jtag__sram_o = tl_s1n_94_us_d2h;
 
-  assign tl_s1n_95_us_h2d = tl_mbx_jtag__sram_i;
-  assign tl_mbx_jtag__sram_o = tl_s1n_95_us_d2h;
+  assign tl_s1n_95_us_h2d = tl_mbx_pcie0__sram_i;
+  assign tl_mbx_pcie0__sram_o = tl_s1n_95_us_d2h;
 
-  assign tl_s1n_96_us_h2d = tl_mbx_pcie0__sram_i;
-  assign tl_mbx_pcie0__sram_o = tl_s1n_96_us_d2h;
+  assign tl_s1n_96_us_h2d = tl_mbx_pcie1__sram_i;
+  assign tl_mbx_pcie1__sram_o = tl_s1n_96_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
@@ -1267,15 +1267,15 @@ end
       dev_sel_s1n_54 = 6'd30;
 
     end else if ((tl_s1n_54_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX7__CORE)) == ADDR_SPACE_MBX7__CORE) begin
+                  ~(ADDR_MASK_MBX_JTAG__CORE)) == ADDR_SPACE_MBX_JTAG__CORE) begin
       dev_sel_s1n_54 = 6'd31;
 
     end else if ((tl_s1n_54_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX_JTAG__CORE)) == ADDR_SPACE_MBX_JTAG__CORE) begin
+                  ~(ADDR_MASK_MBX_PCIE0__CORE)) == ADDR_SPACE_MBX_PCIE0__CORE) begin
       dev_sel_s1n_54 = 6'd32;
 
     end else if ((tl_s1n_54_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX_PCIE0__CORE)) == ADDR_SPACE_MBX_PCIE0__CORE) begin
+                  ~(ADDR_MASK_MBX_PCIE1__CORE)) == ADDR_SPACE_MBX_PCIE1__CORE) begin
       dev_sel_s1n_54 = 6'd33;
 end
   end
@@ -1408,15 +1408,15 @@ end
       dev_sel_s1n_85 = 6'd30;
 
     end else if ((tl_s1n_85_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX7__CORE)) == ADDR_SPACE_MBX7__CORE) begin
+                  ~(ADDR_MASK_MBX_JTAG__CORE)) == ADDR_SPACE_MBX_JTAG__CORE) begin
       dev_sel_s1n_85 = 6'd31;
 
     end else if ((tl_s1n_85_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX_JTAG__CORE)) == ADDR_SPACE_MBX_JTAG__CORE) begin
+                  ~(ADDR_MASK_MBX_PCIE0__CORE)) == ADDR_SPACE_MBX_PCIE0__CORE) begin
       dev_sel_s1n_85 = 6'd32;
 
     end else if ((tl_s1n_85_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX_PCIE0__CORE)) == ADDR_SPACE_MBX_PCIE0__CORE) begin
+                  ~(ADDR_MASK_MBX_PCIE1__CORE)) == ADDR_SPACE_MBX_PCIE1__CORE) begin
       dev_sel_s1n_85 = 6'd33;
 end
   end

@@ -96,9 +96,9 @@ module top_darjeeling #(
   // parameters for mbx4
   // parameters for mbx5
   // parameters for mbx6
-  // parameters for mbx7
   // parameters for mbx_jtag
   // parameters for mbx_pcie0
+  // parameters for mbx_pcie1
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -186,15 +186,15 @@ module top_darjeeling #(
   output logic       mbx6_doe_intr_o,
   output logic       mbx6_doe_intr_en_o,
   output logic       mbx6_doe_intr_support_o,
-  output logic       mbx7_doe_intr_o,
-  output logic       mbx7_doe_intr_en_o,
-  output logic       mbx7_doe_intr_support_o,
   output logic       mbx_jtag_doe_intr_o,
   output logic       mbx_jtag_doe_intr_en_o,
   output logic       mbx_jtag_doe_intr_support_o,
   output logic       mbx_pcie0_doe_intr_o,
   output logic       mbx_pcie0_doe_intr_en_o,
   output logic       mbx_pcie0_doe_intr_support_o,
+  output logic       mbx_pcie1_doe_intr_o,
+  output logic       mbx_pcie1_doe_intr_en_o,
+  output logic       mbx_pcie1_doe_intr_support_o,
   input  tlul_pkg::tl_h2d_t       mbx_jtag_dmi_req_i,
   output tlul_pkg::tl_d2h_t       mbx_jtag_dmi_rsp_o,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
@@ -331,9 +331,9 @@ module top_darjeeling #(
   // mbx4
   // mbx5
   // mbx6
-  // mbx7
   // mbx_jtag
   // mbx_pcie0
+  // mbx_pcie1
   // rv_core_ibex
 
 
@@ -424,12 +424,12 @@ module top_darjeeling #(
   logic intr_mbx5_mbx_abort;
   logic intr_mbx6_mbx_ready;
   logic intr_mbx6_mbx_abort;
-  logic intr_mbx7_mbx_ready;
-  logic intr_mbx7_mbx_abort;
   logic intr_mbx_jtag_mbx_ready;
   logic intr_mbx_jtag_mbx_abort;
   logic intr_mbx_pcie0_mbx_ready;
   logic intr_mbx_pcie0_mbx_abort;
+  logic intr_mbx_pcie1_mbx_ready;
+  logic intr_mbx_pcie1_mbx_abort;
 
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
@@ -594,10 +594,6 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx6_core_tl_d_rsp;
   tlul_pkg::tl_h2d_t       main_tl_mbx6__sram_req;
   tlul_pkg::tl_d2h_t       main_tl_mbx6__sram_rsp;
-  tlul_pkg::tl_h2d_t       mbx7_core_tl_d_req;
-  tlul_pkg::tl_d2h_t       mbx7_core_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_mbx7__sram_req;
-  tlul_pkg::tl_d2h_t       main_tl_mbx7__sram_rsp;
   tlul_pkg::tl_h2d_t       mbx_jtag_core_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_jtag_core_tl_d_rsp;
   tlul_pkg::tl_h2d_t       main_tl_mbx_jtag__sram_req;
@@ -606,6 +602,10 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx_pcie0_core_tl_d_rsp;
   tlul_pkg::tl_h2d_t       main_tl_mbx_pcie0__sram_req;
   tlul_pkg::tl_d2h_t       main_tl_mbx_pcie0__sram_rsp;
+  tlul_pkg::tl_h2d_t       mbx_pcie1_core_tl_d_req;
+  tlul_pkg::tl_d2h_t       mbx_pcie1_core_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_mbx_pcie1__sram_req;
+  tlul_pkg::tl_d2h_t       main_tl_mbx_pcie1__sram_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       i2c0_tl_req;
@@ -658,10 +658,10 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx5_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx6_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx6_soc_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       mbx7_soc_tl_d_req;
-  tlul_pkg::tl_d2h_t       mbx7_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_pcie0_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_pcie0_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       mbx_pcie1_soc_tl_d_req;
+  tlul_pkg::tl_d2h_t       mbx_pcie1_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
@@ -2294,42 +2294,15 @@ module top_darjeeling #(
   );
   mbx #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[71:70])
-  ) u_mbx7 (
-
-      // Interrupt
-      .intr_mbx_ready_o (intr_mbx7_mbx_ready),
-      .intr_mbx_abort_o (intr_mbx7_mbx_abort),
-      // [70]: fatal_fault
-      // [71]: recov_fault
-      .alert_tx_o  ( alert_tx[71:70] ),
-      .alert_rx_i  ( alert_rx[71:70] ),
-
-      // Inter-module signals
-      .doe_intr_support_o(mbx7_doe_intr_support_o),
-      .doe_intr_en_o(mbx7_doe_intr_en_o),
-      .doe_intr_o(mbx7_doe_intr_o),
-      .sram_tl_h_o(main_tl_mbx7__sram_req),
-      .sram_tl_h_i(main_tl_mbx7__sram_rsp),
-      .core_tl_d_i(mbx7_core_tl_d_req),
-      .core_tl_d_o(mbx7_core_tl_d_rsp),
-      .soc_tl_d_i(mbx7_soc_tl_d_req),
-      .soc_tl_d_o(mbx7_soc_tl_d_rsp),
-
-      // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_main_infra),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
-  );
-  mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:72])
   ) u_mbx_jtag (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_jtag_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_jtag_mbx_abort),
-      // [72]: fatal_fault
-      // [73]: recov_fault
-      .alert_tx_o  ( alert_tx[73:72] ),
-      .alert_rx_i  ( alert_rx[73:72] ),
+      // [70]: fatal_fault
+      // [71]: recov_fault
+      .alert_tx_o  ( alert_tx[71:70] ),
+      .alert_rx_i  ( alert_rx[71:70] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_jtag_doe_intr_support_o),
@@ -2347,16 +2320,16 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[75:74])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:72])
   ) u_mbx_pcie0 (
 
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_pcie0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie0_mbx_abort),
-      // [74]: fatal_fault
-      // [75]: recov_fault
-      .alert_tx_o  ( alert_tx[75:74] ),
-      .alert_rx_i  ( alert_rx[75:74] ),
+      // [72]: fatal_fault
+      // [73]: recov_fault
+      .alert_tx_o  ( alert_tx[73:72] ),
+      .alert_rx_i  ( alert_rx[73:72] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_pcie0_doe_intr_support_o),
@@ -2368,6 +2341,33 @@ module top_darjeeling #(
       .core_tl_d_o(mbx_pcie0_core_tl_d_rsp),
       .soc_tl_d_i(mbx_pcie0_soc_tl_d_req),
       .soc_tl_d_o(mbx_pcie0_soc_tl_d_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
+  mbx #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[75:74])
+  ) u_mbx_pcie1 (
+
+      // Interrupt
+      .intr_mbx_ready_o (intr_mbx_pcie1_mbx_ready),
+      .intr_mbx_abort_o (intr_mbx_pcie1_mbx_abort),
+      // [74]: fatal_fault
+      // [75]: recov_fault
+      .alert_tx_o  ( alert_tx[75:74] ),
+      .alert_rx_i  ( alert_rx[75:74] ),
+
+      // Inter-module signals
+      .doe_intr_support_o(mbx_pcie1_doe_intr_support_o),
+      .doe_intr_en_o(mbx_pcie1_doe_intr_en_o),
+      .doe_intr_o(mbx_pcie1_doe_intr_o),
+      .sram_tl_h_o(main_tl_mbx_pcie1__sram_req),
+      .sram_tl_h_i(main_tl_mbx_pcie1__sram_rsp),
+      .core_tl_d_i(mbx_pcie1_core_tl_d_req),
+      .core_tl_d_o(mbx_pcie1_core_tl_d_rsp),
+      .soc_tl_d_i(mbx_pcie1_soc_tl_d_req),
+      .soc_tl_d_o(mbx_pcie1_soc_tl_d_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -2450,12 +2450,12 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_mbx_pcie0_mbx_abort, // IDs [129 +: 1]
-      intr_mbx_pcie0_mbx_ready, // IDs [128 +: 1]
-      intr_mbx_jtag_mbx_abort, // IDs [127 +: 1]
-      intr_mbx_jtag_mbx_ready, // IDs [126 +: 1]
-      intr_mbx7_mbx_abort, // IDs [125 +: 1]
-      intr_mbx7_mbx_ready, // IDs [124 +: 1]
+      intr_mbx_pcie1_mbx_abort, // IDs [129 +: 1]
+      intr_mbx_pcie1_mbx_ready, // IDs [128 +: 1]
+      intr_mbx_pcie0_mbx_abort, // IDs [127 +: 1]
+      intr_mbx_pcie0_mbx_ready, // IDs [126 +: 1]
+      intr_mbx_jtag_mbx_abort, // IDs [125 +: 1]
+      intr_mbx_jtag_mbx_ready, // IDs [124 +: 1]
       intr_mbx6_mbx_abort, // IDs [123 +: 1]
       intr_mbx6_mbx_ready, // IDs [122 +: 1]
       intr_mbx5_mbx_abort, // IDs [121 +: 1]
@@ -2597,10 +2597,6 @@ module top_darjeeling #(
     .tl_mbx6__sram_i(main_tl_mbx6__sram_req),
     .tl_mbx6__sram_o(main_tl_mbx6__sram_rsp),
 
-    // port: tl_mbx7__sram
-    .tl_mbx7__sram_i(main_tl_mbx7__sram_req),
-    .tl_mbx7__sram_o(main_tl_mbx7__sram_rsp),
-
     // port: tl_mbx_jtag__sram
     .tl_mbx_jtag__sram_i(main_tl_mbx_jtag__sram_req),
     .tl_mbx_jtag__sram_o(main_tl_mbx_jtag__sram_rsp),
@@ -2608,6 +2604,10 @@ module top_darjeeling #(
     // port: tl_mbx_pcie0__sram
     .tl_mbx_pcie0__sram_i(main_tl_mbx_pcie0__sram_req),
     .tl_mbx_pcie0__sram_o(main_tl_mbx_pcie0__sram_rsp),
+
+    // port: tl_mbx_pcie1__sram
+    .tl_mbx_pcie1__sram_i(main_tl_mbx_pcie1__sram_req),
+    .tl_mbx_pcie1__sram_o(main_tl_mbx_pcie1__sram_rsp),
 
     // port: tl_rv_dm__regs
     .tl_rv_dm__regs_o(rv_dm_regs_tl_d_req),
@@ -2733,10 +2733,6 @@ module top_darjeeling #(
     .tl_mbx6__core_o(mbx6_core_tl_d_req),
     .tl_mbx6__core_i(mbx6_core_tl_d_rsp),
 
-    // port: tl_mbx7__core
-    .tl_mbx7__core_o(mbx7_core_tl_d_req),
-    .tl_mbx7__core_i(mbx7_core_tl_d_rsp),
-
     // port: tl_mbx_jtag__core
     .tl_mbx_jtag__core_o(mbx_jtag_core_tl_d_req),
     .tl_mbx_jtag__core_i(mbx_jtag_core_tl_d_rsp),
@@ -2744,6 +2740,10 @@ module top_darjeeling #(
     // port: tl_mbx_pcie0__core
     .tl_mbx_pcie0__core_o(mbx_pcie0_core_tl_d_req),
     .tl_mbx_pcie0__core_i(mbx_pcie0_core_tl_d_rsp),
+
+    // port: tl_mbx_pcie1__core
+    .tl_mbx_pcie1__core_o(mbx_pcie1_core_tl_d_req),
+    .tl_mbx_pcie1__core_i(mbx_pcie1_core_tl_d_rsp),
 
 
     .scanmode_i
@@ -2875,13 +2875,13 @@ module top_darjeeling #(
     .tl_mbx6__soc_o(mbx6_soc_tl_d_req),
     .tl_mbx6__soc_i(mbx6_soc_tl_d_rsp),
 
-    // port: tl_mbx7__soc
-    .tl_mbx7__soc_o(mbx7_soc_tl_d_req),
-    .tl_mbx7__soc_i(mbx7_soc_tl_d_rsp),
-
     // port: tl_mbx_pcie0__soc
     .tl_mbx_pcie0__soc_o(mbx_pcie0_soc_tl_d_req),
     .tl_mbx_pcie0__soc_i(mbx_pcie0_soc_tl_d_rsp),
+
+    // port: tl_mbx_pcie1__soc
+    .tl_mbx_pcie1__soc_o(mbx_pcie1_soc_tl_d_req),
+    .tl_mbx_pcie1__soc_i(mbx_pcie1_soc_tl_d_rsp),
 
 
     .scanmode_i

@@ -436,9 +436,9 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | mbx4              | mbx           | 0x22000400 (core) |
 | mbx5              | mbx           | 0x22000500 (core) |
 | mbx6              | mbx           | 0x22000600 (core) |
-| mbx7              | mbx           | 0x22000700 (core) |
 | mbx_jtag          | mbx           | 0x22000800 (core) |
 | mbx_pcie0         | mbx           | 0x22040000 (core) |
+| mbx_pcie1         | mbx           | 0x22040100 (core) |
 | rv_core_ibex      | rv_core_ibex  | 0x211f0000 (cfg)  |
 
 <!-- END CMDGEN -->

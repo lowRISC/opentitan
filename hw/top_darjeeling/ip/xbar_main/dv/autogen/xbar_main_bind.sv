@@ -72,12 +72,6 @@ module xbar_main_bind;
     .h2d    (tl_mbx6__sram_i),
     .d2h    (tl_mbx6__sram_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_mbx7__sram (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_mbx7__sram_i),
-    .d2h    (tl_mbx7__sram_o)
-  );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_mbx_jtag__sram (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
@@ -89,6 +83,12 @@ module xbar_main_bind;
     .rst_ni (rst_main_ni),
     .h2d    (tl_mbx_pcie0__sram_i),
     .d2h    (tl_mbx_pcie0__sram_o)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_mbx_pcie1__sram (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_mbx_pcie1__sram_i),
+    .d2h    (tl_mbx_pcie1__sram_o)
   );
 
   // Device interfaces
@@ -278,12 +278,6 @@ module xbar_main_bind;
     .h2d    (tl_mbx6__core_o),
     .d2h    (tl_mbx6__core_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx7__core (
-    .clk_i  (clk_main_i),
-    .rst_ni (rst_main_ni),
-    .h2d    (tl_mbx7__core_o),
-    .d2h    (tl_mbx7__core_i)
-  );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx_jtag__core (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
@@ -295,6 +289,12 @@ module xbar_main_bind;
     .rst_ni (rst_main_ni),
     .h2d    (tl_mbx_pcie0__core_o),
     .d2h    (tl_mbx_pcie0__core_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx_pcie1__core (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_mbx_pcie1__core_o),
+    .d2h    (tl_mbx_pcie1__core_i)
   );
 `endif
 endmodule

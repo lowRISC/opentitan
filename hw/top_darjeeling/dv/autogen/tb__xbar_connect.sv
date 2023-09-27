@@ -44,9 +44,9 @@ tl_if mbx3__sram_tl_if(clk_main, rst_n);
 tl_if mbx4__sram_tl_if(clk_main, rst_n);
 tl_if mbx5__sram_tl_if(clk_main, rst_n);
 tl_if mbx6__sram_tl_if(clk_main, rst_n);
-tl_if mbx7__sram_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__sram_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__sram_tl_if(clk_main, rst_n);
+tl_if mbx_pcie1__sram_tl_if(clk_main, rst_n);
 
 tl_if rv_dm__regs_tl_if(clk_main, rst_n);
 tl_if rv_dm__mem_tl_if(clk_main, rst_n);
@@ -78,9 +78,9 @@ tl_if mbx3__core_tl_if(clk_main, rst_n);
 tl_if mbx4__core_tl_if(clk_main, rst_n);
 tl_if mbx5__core_tl_if(clk_main, rst_n);
 tl_if mbx6__core_tl_if(clk_main, rst_n);
-tl_if mbx7__core_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__core_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__core_tl_if(clk_main, rst_n);
+tl_if mbx_pcie1__core_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if i2c0_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
@@ -108,8 +108,8 @@ tl_if mbx3__soc_tl_if(clk_main, rst_n);
 tl_if mbx4__soc_tl_if(clk_main, rst_n);
 tl_if mbx5__soc_tl_if(clk_main, rst_n);
 tl_if mbx6__soc_tl_if(clk_main, rst_n);
-tl_if mbx7__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__soc_tl_if(clk_main, rst_n);
+tl_if mbx_pcie1__soc_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
 
 initial begin
@@ -183,12 +183,12 @@ initial begin
     `DRIVE_CHIP_TL_HOST_IF(mbx5__sram, mbx5, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx6__core, mbx6, core_tl_d)
     `DRIVE_CHIP_TL_HOST_IF(mbx6__sram, mbx6, sram_tl_h)
-    `DRIVE_CHIP_TL_DEVICE_IF(mbx7__core, mbx7, core_tl_d)
-    `DRIVE_CHIP_TL_HOST_IF(mbx7__sram, mbx7, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__core, mbx_jtag, core_tl_d)
     `DRIVE_CHIP_TL_HOST_IF(mbx_jtag__sram, mbx_jtag, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__core, mbx_pcie0, core_tl_d)
     `DRIVE_CHIP_TL_HOST_IF(mbx_pcie0__sram, mbx_pcie0, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie1__core, mbx_pcie1, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx_pcie1__sram, mbx_pcie1, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
@@ -216,8 +216,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(mbx4__soc, mbx4, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx5__soc, mbx5, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx6__soc, mbx6, soc_tl_d)
-    `DRIVE_CHIP_TL_DEVICE_IF(mbx7__soc, mbx7, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__soc, mbx_pcie0, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie1__soc, mbx_pcie1, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
 `endif
 

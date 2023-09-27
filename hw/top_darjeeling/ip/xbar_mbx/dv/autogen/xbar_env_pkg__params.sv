@@ -28,11 +28,11 @@ tl_device_t xbar_devices[$] = '{
     '{"mbx6__soc", '{
         '{32'h00005600, 32'h0000561f}
     }},
-    '{"mbx7__soc", '{
-        '{32'h00005700, 32'h0000571f}
-    }},
     '{"mbx_pcie0__soc", '{
         '{32'h00000100, 32'h0000011f}
+    }},
+    '{"mbx_pcie1__soc", '{
+        '{32'h00000200, 32'h0000021f}
 }}};
 
   // List of Xbar hosts
@@ -45,6 +45,6 @@ tl_host_t xbar_hosts[$] = '{
         "mbx4__soc",
         "mbx5__soc",
         "mbx6__soc",
-        "mbx7__soc",
-        "mbx_pcie0__soc"}}
+        "mbx_pcie0__soc",
+        "mbx_pcie1__soc"}}
 };

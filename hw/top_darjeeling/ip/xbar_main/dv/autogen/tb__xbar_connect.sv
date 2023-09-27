@@ -31,9 +31,9 @@ initial force dut.rst_usb_ni = rst_n;
 `CONNECT_TL_HOST_IF(mbx4__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx5__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx6__sram, dut, clk_main_i, rst_n)
-`CONNECT_TL_HOST_IF(mbx7__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx_jtag__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx_pcie0__sram, dut, clk_main_i, rst_n)
+`CONNECT_TL_HOST_IF(mbx_pcie1__sram, dut, clk_main_i, rst_n)
 
 // Device TileLink interface connections
 `CONNECT_TL_DEVICE_IF(rv_dm__regs, dut, clk_main_i, rst_n)
@@ -67,6 +67,6 @@ initial force dut.rst_usb_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(mbx4__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx5__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx6__core, dut, clk_main_i, rst_n)
-`CONNECT_TL_DEVICE_IF(mbx7__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx_jtag__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx_pcie0__core, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(mbx_pcie1__core, dut, clk_main_i, rst_n)

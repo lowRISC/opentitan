@@ -87,9 +87,9 @@
       mbx4.core
       mbx5.core
       mbx6.core
-      mbx7.core
       mbx_jtag.core
       mbx_pcie0.core
+      mbx_pcie1.core
     ]
     rv_dm.sba:
     [
@@ -124,9 +124,9 @@
       mbx4.core
       mbx5.core
       mbx6.core
-      mbx7.core
       mbx_jtag.core
       mbx_pcie0.core
+      mbx_pcie1.core
     ]
     dma.host:
     [
@@ -161,15 +161,15 @@
     [
       sram_ctrl_mbox.ram
     ]
-    mbx7.sram:
-    [
-      sram_ctrl_mbox.ram
-    ]
     mbx_jtag.sram:
     [
       sram_ctrl_mbox.ram
     ]
     mbx_pcie0.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx_pcie1.sram:
     [
       sram_ctrl_mbox.ram
     ]
@@ -999,41 +999,6 @@
       rsp_fifo_pass: true
     }
     {
-      name: mbx7.core
-      type: device
-      addr_space: hart
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: false
-      inst_type: mbx
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x22000700
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: mbx7.sram
-      type: host
-      addr_space: hart
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: false
-      xbar: false
-      stub: false
-      inst_type: ""
-      req_fifo_pass: true
-      rsp_fifo_pass: true
-    }
-    {
       name: mbx_jtag.core
       type: device
       addr_space: hart
@@ -1092,6 +1057,41 @@
     }
     {
       name: mbx_pcie0.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx_pcie1.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22040100
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx_pcie1.sram
       type: host
       addr_space: hart
       clock: clk_main_i

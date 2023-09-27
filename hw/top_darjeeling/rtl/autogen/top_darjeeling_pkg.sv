@@ -502,16 +502,6 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_MBX6_CORE_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for core device on mbx7 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_MBX7_CORE_BASE_ADDR = 32'h22000700;
-
-  /**
-   * Peripheral size in bytes for core device on mbx7 in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_MBX7_CORE_SIZE_BYTES = 32'h80;
-
-  /**
    * Peripheral base address for core device on mbx_jtag in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR = 32'h22000800;
@@ -530,6 +520,16 @@ package top_darjeeling_pkg;
    * Peripheral size in bytes for core device on mbx_pcie0 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx_pcie1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_PCIE1_CORE_BASE_ADDR = 32'h22040100;
+
+  /**
+   * Peripheral size in bytes for core device on mbx_pcie1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_PCIE1_CORE_SIZE_BYTES = 32'h80;
 
   /**
    * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
@@ -653,9 +653,9 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralMbx4 = 36,
     TopDarjeelingAlertPeripheralMbx5 = 37,
     TopDarjeelingAlertPeripheralMbx6 = 38,
-    TopDarjeelingAlertPeripheralMbx7 = 39,
-    TopDarjeelingAlertPeripheralMbxJtag = 40,
-    TopDarjeelingAlertPeripheralMbxPcie0 = 41,
+    TopDarjeelingAlertPeripheralMbxJtag = 39,
+    TopDarjeelingAlertPeripheralMbxPcie0 = 40,
+    TopDarjeelingAlertPeripheralMbxPcie1 = 41,
     TopDarjeelingAlertPeripheralRvCoreIbex = 42,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
@@ -732,12 +732,12 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdMbx5RecovFault = 67,
     TopDarjeelingAlertIdMbx6FatalFault = 68,
     TopDarjeelingAlertIdMbx6RecovFault = 69,
-    TopDarjeelingAlertIdMbx7FatalFault = 70,
-    TopDarjeelingAlertIdMbx7RecovFault = 71,
-    TopDarjeelingAlertIdMbxJtagFatalFault = 72,
-    TopDarjeelingAlertIdMbxJtagRecovFault = 73,
-    TopDarjeelingAlertIdMbxPcie0FatalFault = 74,
-    TopDarjeelingAlertIdMbxPcie0RecovFault = 75,
+    TopDarjeelingAlertIdMbxJtagFatalFault = 70,
+    TopDarjeelingAlertIdMbxJtagRecovFault = 71,
+    TopDarjeelingAlertIdMbxPcie0FatalFault = 72,
+    TopDarjeelingAlertIdMbxPcie0RecovFault = 73,
+    TopDarjeelingAlertIdMbxPcie1FatalFault = 74,
+    TopDarjeelingAlertIdMbxPcie1RecovFault = 75,
     TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 76,
     TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 77,
     TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 78,
@@ -967,9 +967,9 @@ package top_darjeeling_pkg;
     PeripheralMbx4,
     PeripheralMbx5,
     PeripheralMbx6,
-    PeripheralMbx7,
     PeripheralMbxJtag,
     PeripheralMbxPcie0,
+    PeripheralMbxPcie1,
     PeripheralOtbn,
     PeripheralOtpCtrl,
     PeripheralPinmuxAon,

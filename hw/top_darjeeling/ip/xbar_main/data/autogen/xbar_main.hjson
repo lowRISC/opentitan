@@ -80,12 +80,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_mbx7__sram"
-      act:    "rsp"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_mbx_jtag__sram"
       act:    "rsp"
       package: "tlul_pkg"
@@ -93,6 +87,12 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_mbx_pcie0__sram"
+      act:    "rsp"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_mbx_pcie1__sram"
       act:    "rsp"
       package: "tlul_pkg"
     }
@@ -285,12 +285,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_mbx7__core"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_mbx_jtag__core"
       act:    "req"
       package: "tlul_pkg"
@@ -298,6 +292,12 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_mbx_pcie0__core"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_mbx_pcie1__core"
       act:    "req"
       package: "tlul_pkg"
     }

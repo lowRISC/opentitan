@@ -15,8 +15,8 @@
 //     -> mbx4.soc
 //     -> mbx5.soc
 //     -> mbx6.soc
-//     -> mbx7.soc
 //     -> mbx_pcie0.soc
+//     -> mbx_pcie1.soc
 
 module xbar_mbx (
   input clk_mbx_i,
@@ -41,10 +41,10 @@ module xbar_mbx (
   input  tlul_pkg::tl_d2h_t tl_mbx5__soc_i,
   output tlul_pkg::tl_h2d_t tl_mbx6__soc_o,
   input  tlul_pkg::tl_d2h_t tl_mbx6__soc_i,
-  output tlul_pkg::tl_h2d_t tl_mbx7__soc_o,
-  input  tlul_pkg::tl_d2h_t tl_mbx7__soc_i,
   output tlul_pkg::tl_h2d_t tl_mbx_pcie0__soc_o,
   input  tlul_pkg::tl_d2h_t tl_mbx_pcie0__soc_i,
+  output tlul_pkg::tl_h2d_t tl_mbx_pcie1__soc_o,
+  input  tlul_pkg::tl_d2h_t tl_mbx_pcie1__soc_i,
 
   input prim_mubi_pkg::mubi4_t scanmode_i
 );
@@ -90,11 +90,11 @@ module xbar_mbx (
   assign tl_mbx6__soc_o = tl_s1n_10_ds_h2d[6];
   assign tl_s1n_10_ds_d2h[6] = tl_mbx6__soc_i;
 
-  assign tl_mbx7__soc_o = tl_s1n_10_ds_h2d[7];
-  assign tl_s1n_10_ds_d2h[7] = tl_mbx7__soc_i;
+  assign tl_mbx_pcie0__soc_o = tl_s1n_10_ds_h2d[7];
+  assign tl_s1n_10_ds_d2h[7] = tl_mbx_pcie0__soc_i;
 
-  assign tl_mbx_pcie0__soc_o = tl_s1n_10_ds_h2d[8];
-  assign tl_s1n_10_ds_d2h[8] = tl_mbx_pcie0__soc_i;
+  assign tl_mbx_pcie1__soc_o = tl_s1n_10_ds_h2d[8];
+  assign tl_s1n_10_ds_d2h[8] = tl_mbx_pcie1__soc_i;
 
   assign tl_s1n_10_us_h2d = tl_mbx_i;
   assign tl_mbx_o = tl_s1n_10_us_d2h;
@@ -131,11 +131,11 @@ module xbar_mbx (
       dev_sel_s1n_10 = 4'd6;
 
     end else if ((tl_s1n_10_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX7__SOC)) == ADDR_SPACE_MBX7__SOC) begin
+                  ~(ADDR_MASK_MBX_PCIE0__SOC)) == ADDR_SPACE_MBX_PCIE0__SOC) begin
       dev_sel_s1n_10 = 4'd7;
 
     end else if ((tl_s1n_10_us_h2d.a_address &
-                  ~(ADDR_MASK_MBX_PCIE0__SOC)) == ADDR_SPACE_MBX_PCIE0__SOC) begin
+                  ~(ADDR_MASK_MBX_PCIE1__SOC)) == ADDR_SPACE_MBX_PCIE1__SOC) begin
       dev_sel_s1n_10 = 4'd8;
 end
   end

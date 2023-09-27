@@ -97,14 +97,14 @@ tl_device_t xbar_devices[$] = '{
     '{"mbx6__core", '{
         '{32'h22000600, 32'h2200067f}
     }},
-    '{"mbx7__core", '{
-        '{32'h22000700, 32'h2200077f}
-    }},
     '{"mbx_jtag__core", '{
         '{32'h22000800, 32'h2200087f}
     }},
     '{"mbx_pcie0__core", '{
         '{32'h22040000, 32'h2204007f}
+    }},
+    '{"mbx_pcie1__core", '{
+        '{32'h22040100, 32'h2204017f}
     }},
     '{"uart0", '{
         '{32'h30010000, 32'h3001003f}
@@ -187,11 +187,11 @@ tl_device_t xbar_devices[$] = '{
     '{"mbx6__soc", '{
         '{32'h00005600, 32'h0000561f}
     }},
-    '{"mbx7__soc", '{
-        '{32'h00005700, 32'h0000571f}
-    }},
     '{"mbx_pcie0__soc", '{
         '{32'h00000100, 32'h0000011f}
+    }},
+    '{"mbx_pcie1__soc", '{
+        '{32'h00000200, 32'h0000021f}
     }},
     '{"mbx_jtag__soc", '{
         '{32'h00000200, 32'h0000021f}
@@ -257,9 +257,9 @@ tl_host_t xbar_hosts[$] = '{
         "mbx4__core",
         "mbx5__core",
         "mbx6__core",
-        "mbx7__core",
         "mbx_jtag__core",
-        "mbx_pcie0__core"}}
+        "mbx_pcie0__core",
+        "mbx_pcie1__core"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rom_ctrl0__rom",
@@ -312,9 +312,9 @@ tl_host_t xbar_hosts[$] = '{
         "mbx4__core",
         "mbx5__core",
         "mbx6__core",
-        "mbx7__core",
         "mbx_jtag__core",
-        "mbx_pcie0__core"}}
+        "mbx_pcie0__core",
+        "mbx_pcie1__core"}}
     ,
     '{"dma__host", 3, '{
         "sram_ctrl_main__ram",
@@ -360,12 +360,12 @@ tl_host_t xbar_hosts[$] = '{
     '{"mbx6__sram", 10, '{
         "sram_ctrl_mbox__ram"}}
     ,
-    '{"mbx7__sram", 11, '{
+    '{"mbx_jtag__sram", 11, '{
         "sram_ctrl_mbox__ram"}}
     ,
-    '{"mbx_jtag__sram", 12, '{
+    '{"mbx_pcie0__sram", 12, '{
         "sram_ctrl_mbox__ram"}}
     ,
-    '{"mbx_pcie0__sram", 13, '{
+    '{"mbx_pcie1__sram", 13, '{
         "sram_ctrl_mbox__ram"}}
 };

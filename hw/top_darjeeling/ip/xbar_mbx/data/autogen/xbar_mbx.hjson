@@ -63,13 +63,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_mbx7__soc"
+      name:   "tl_mbx_pcie0__soc"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_mbx_pcie0__soc"
+      name:   "tl_mbx_pcie1__soc"
       act:    "req"
       package: "tlul_pkg"
     }

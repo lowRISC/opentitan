@@ -7762,127 +7762,6 @@
       ]
     }
     {
-      name: mbx7
-      type: mbx
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: infra
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc
-          domain: "0"
-        }
-      }
-      base_addrs:
-      {
-        core:
-        {
-          hart: 0x22000700
-        }
-        soc:
-        {
-          soc_mbx: 0x00005700
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_infra
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: doe_intr_support
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          default: 1'b0
-          inst_name: mbx7
-          package: ""
-          external: true
-          top_signame: mbx7_doe_intr_support
-          conn_type: false
-          index: -1
-        }
-        {
-          name: doe_intr_en
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          default: 1'b0
-          inst_name: mbx7
-          package: ""
-          external: true
-          top_signame: mbx7_doe_intr_en
-          conn_type: false
-          index: -1
-        }
-        {
-          name: doe_intr
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          default: 1'b0
-          inst_name: mbx7
-          package: ""
-          external: true
-          top_signame: mbx7_doe_intr
-          conn_type: false
-          index: -1
-        }
-        {
-          name: sram_tl_h
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: mbx7
-          default: ""
-          top_signame: main_tl_mbx7__sram
-          index: -1
-        }
-        {
-          name: core_tl_d
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: mbx7
-          default: ""
-          end_idx: -1
-          top_signame: mbx7_core_tl_d
-          index: -1
-        }
-        {
-          name: soc_tl_d
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: mbx7
-          default: ""
-          end_idx: -1
-          top_signame: mbx7_soc_tl_d
-          index: -1
-        }
-      ]
-    }
-    {
       name: mbx_jtag
       type: mbx
       clock_srcs:
@@ -8120,6 +7999,127 @@
           default: ""
           end_idx: -1
           top_signame: mbx_pcie0_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx_pcie1
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22040100
+        }
+        soc:
+        {
+          soc_mbx: 0x00000200
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie1
+          package: ""
+          external: true
+          top_signame: mbx_pcie1_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie1
+          package: ""
+          external: true
+          top_signame: mbx_pcie1_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie1
+          package: ""
+          external: true
+          top_signame: mbx_pcie1_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx_pcie1
+          default: ""
+          top_signame: main_tl_mbx_pcie1__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_pcie1
+          default: ""
+          end_idx: -1
+          top_signame: mbx_pcie1_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_pcie1
+          default: ""
+          end_idx: -1
+          top_signame: mbx_pcie1_soc_tl_d
           index: -1
         }
       ]
@@ -9266,14 +9266,6 @@
       [
         mbx6.sram_tl_h
       ]
-      mbx7.core_tl_d:
-      [
-        main.tl_mbx7__core
-      ]
-      main.tl_mbx7__sram:
-      [
-        mbx7.sram_tl_h
-      ]
       mbx_jtag.core_tl_d:
       [
         main.tl_mbx_jtag__core
@@ -9289,6 +9281,14 @@
       main.tl_mbx_pcie0__sram:
       [
         mbx_pcie0.sram_tl_h
+      ]
+      mbx_pcie1.core_tl_d:
+      [
+        main.tl_mbx_pcie1__core
+      ]
+      main.tl_mbx_pcie1__sram:
+      [
+        mbx_pcie1.sram_tl_h
       ]
       uart0.tl:
       [
@@ -9394,13 +9394,13 @@
       [
         mbx.tl_mbx6__soc
       ]
-      mbx7.soc_tl_d:
-      [
-        mbx.tl_mbx7__soc
-      ]
       mbx_pcie0.soc_tl_d:
       [
         mbx.tl_mbx_pcie0__soc
+      ]
+      mbx_pcie1.soc_tl_d:
+      [
+        mbx.tl_mbx_pcie1__soc
       ]
       mbx_jtag.soc_tl_d:
       [
@@ -9466,15 +9466,15 @@
       mbx6.doe_intr: mbx6_doe_intr
       mbx6.doe_intr_en: mbx6_doe_intr_en
       mbx6.doe_intr_support: mbx6_doe_intr_support
-      mbx7.doe_intr: mbx7_doe_intr
-      mbx7.doe_intr_en: mbx7_doe_intr_en
-      mbx7.doe_intr_support: mbx7_doe_intr_support
       mbx_jtag.doe_intr: mbx_jtag_doe_intr
       mbx_jtag.doe_intr_en: mbx_jtag_doe_intr_en
       mbx_jtag.doe_intr_support: mbx_jtag_doe_intr_support
       mbx_pcie0.doe_intr: mbx_pcie0_doe_intr
       mbx_pcie0.doe_intr_en: mbx_pcie0_doe_intr_en
       mbx_pcie0.doe_intr_support: mbx_pcie0_doe_intr_support
+      mbx_pcie1.doe_intr: mbx_pcie1_doe_intr
+      mbx_pcie1.doe_intr_en: mbx_pcie1_doe_intr_en
+      mbx_pcie1.doe_intr_support: mbx_pcie1_doe_intr_support
       dbg.tl_dbg: mbx_jtag_dmi
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
@@ -9590,9 +9590,9 @@
           mbx4.core
           mbx5.core
           mbx6.core
-          mbx7.core
           mbx_jtag.core
           mbx_pcie0.core
+          mbx_pcie1.core
         ]
         rv_dm.sba:
         [
@@ -9627,9 +9627,9 @@
           mbx4.core
           mbx5.core
           mbx6.core
-          mbx7.core
           mbx_jtag.core
           mbx_pcie0.core
+          mbx_pcie1.core
         ]
         dma.host:
         [
@@ -9664,15 +9664,15 @@
         [
           sram_ctrl_mbox.ram
         ]
-        mbx7.sram:
-        [
-          sram_ctrl_mbox.ram
-        ]
         mbx_jtag.sram:
         [
           sram_ctrl_mbox.ram
         ]
         mbx_pcie0.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx_pcie1.sram:
         [
           sram_ctrl_mbox.ram
         ]
@@ -10502,41 +10502,6 @@
           rsp_fifo_pass: true
         }
         {
-          name: mbx7.core
-          type: device
-          addr_space: hart
-          clock: clk_main_i
-          reset: rst_main_ni
-          pipeline: false
-          inst_type: mbx
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x22000700
-              }
-              size_byte: 0x80
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: mbx7.sram
-          type: host
-          addr_space: hart
-          clock: clk_main_i
-          reset: rst_main_ni
-          pipeline: false
-          xbar: false
-          stub: false
-          inst_type: ""
-          req_fifo_pass: true
-          rsp_fifo_pass: true
-        }
-        {
           name: mbx_jtag.core
           type: device
           addr_space: hart
@@ -10595,6 +10560,41 @@
         }
         {
           name: mbx_pcie0.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx_pcie1.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22040100
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_pcie1.sram
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -10759,19 +10759,6 @@
           index: -1
         }
         {
-          name: tl_mbx7__sram
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: main
-          default: ""
-          end_idx: -1
-          top_signame: main_tl_mbx7__sram
-          index: -1
-        }
-        {
           name: tl_mbx_jtag__sram
           struct: tl
           package: tlul_pkg
@@ -10795,6 +10782,19 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx_pcie0__sram
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie1__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx_pcie1__sram
           index: -1
         }
         {
@@ -11171,18 +11171,6 @@
           index: -1
         }
         {
-          name: tl_mbx7__core
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: mbx7_core_tl_d
-          index: -1
-        }
-        {
           name: tl_mbx_jtag__core
           struct: tl
           package: tlul_pkg
@@ -11204,6 +11192,18 @@
           inst_name: main
           default: ""
           top_signame: mbx_pcie0_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie1__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx_pcie1_core_tl_d
           index: -1
         }
       ]
@@ -11993,8 +11993,8 @@
           mbx4.soc
           mbx5.soc
           mbx6.soc
-          mbx7.soc
           mbx_pcie0.soc
+          mbx_pcie1.soc
         ]
       }
       nodes:
@@ -12167,28 +12167,6 @@
           req_fifo_pass: true
         }
         {
-          name: mbx7.soc
-          type: device
-          addr_space: soc_mbx
-          clock: clk_mbx_i
-          reset: rst_mbx_ni
-          pipeline: false
-          inst_type: mbx
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                soc_mbx: 0x5700
-              }
-              size_byte: 0x20
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
           name: mbx_pcie0.soc
           type: device
           addr_space: soc_mbx
@@ -12202,6 +12180,28 @@
               base_addrs:
               {
                 soc_mbx: 0x100
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_pcie1.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x200
               }
               size_byte: 0x20
             }
@@ -12318,18 +12318,6 @@
           index: -1
         }
         {
-          name: tl_mbx7__soc
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: mbx
-          default: ""
-          top_signame: mbx7_soc_tl_d
-          index: -1
-        }
-        {
           name: tl_mbx_pcie0__soc
           struct: tl
           package: tlul_pkg
@@ -12339,6 +12327,18 @@
           inst_name: mbx
           default: ""
           top_signame: mbx_pcie0_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie1__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx_pcie1_soc_tl_d
           index: -1
         }
       ]
@@ -14148,9 +14148,9 @@
     mbx4
     mbx5
     mbx6
-    mbx7
     mbx_jtag
     mbx_pcie0
+    mbx_pcie1
   ]
   interrupt:
   [
@@ -14665,18 +14665,6 @@
       module_name: mbx6
     }
     {
-      name: mbx7_mbx_ready
-      width: 1
-      type: interrupt
-      module_name: mbx7
-    }
-    {
-      name: mbx7_mbx_abort
-      width: 1
-      type: interrupt
-      module_name: mbx7
-    }
-    {
       name: mbx_jtag_mbx_ready
       width: 1
       type: interrupt
@@ -14699,6 +14687,18 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie0
+    }
+    {
+      name: mbx_pcie1_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie1
+    }
+    {
+      name: mbx_pcie1_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie1
     }
   ]
   alert_module:
@@ -14742,9 +14742,9 @@
     mbx4
     mbx5
     mbx6
-    mbx7
     mbx_jtag
     mbx_pcie0
+    mbx_pcie1
     rv_core_ibex
   ]
   alert:
@@ -15380,24 +15380,6 @@
       lpg_idx: 12
     }
     {
-      name: mbx7_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx7
-      lpg_name: infra_lc_0
-      lpg_idx: 12
-    }
-    {
-      name: mbx7_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx7
-      lpg_name: infra_lc_0
-      lpg_idx: 12
-    }
-    {
       name: mbx_jtag_fatal_fault
       width: 1
       type: alert
@@ -15430,6 +15412,24 @@
       type: alert
       async: "1"
       module_name: mbx_pcie0
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: mbx_pcie1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie1
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: mbx_pcie1_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie1
       lpg_name: infra_lc_0
       lpg_idx: 12
     }
@@ -20233,86 +20233,6 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: mbx7
-        package: ""
-        external: true
-        top_signame: mbx7_doe_intr_support
-        conn_type: false
-        index: -1
-      }
-      {
-        name: doe_intr_en
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        default: 1'b0
-        inst_name: mbx7
-        package: ""
-        external: true
-        top_signame: mbx7_doe_intr_en
-        conn_type: false
-        index: -1
-      }
-      {
-        name: doe_intr
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        default: 1'b0
-        inst_name: mbx7
-        package: ""
-        external: true
-        top_signame: mbx7_doe_intr
-        conn_type: false
-        index: -1
-      }
-      {
-        name: sram_tl_h
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: mbx7
-        default: ""
-        top_signame: main_tl_mbx7__sram
-        index: -1
-      }
-      {
-        name: core_tl_d
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: mbx7
-        default: ""
-        end_idx: -1
-        top_signame: mbx7_core_tl_d
-        index: -1
-      }
-      {
-        name: soc_tl_d
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: mbx7
-        default: ""
-        end_idx: -1
-        top_signame: mbx7_soc_tl_d
-        index: -1
-      }
-      {
-        name: doe_intr_support
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        default: 1'b0
         inst_name: mbx_jtag
         package: ""
         external: true
@@ -20464,6 +20384,86 @@
         default: ""
         end_idx: -1
         top_signame: mbx_pcie0_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie1
+        package: ""
+        external: true
+        top_signame: mbx_pcie1_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie1
+        package: ""
+        external: true
+        top_signame: mbx_pcie1_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie1
+        package: ""
+        external: true
+        top_signame: mbx_pcie1_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx_pcie1
+        default: ""
+        top_signame: main_tl_mbx_pcie1__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_pcie1
+        default: ""
+        end_idx: -1
+        top_signame: mbx_pcie1_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_pcie1
+        default: ""
+        end_idx: -1
+        top_signame: mbx_pcie1_soc_tl_d
         index: -1
       }
       {
@@ -20866,19 +20866,6 @@
         index: -1
       }
       {
-        name: tl_mbx7__sram
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: main
-        default: ""
-        end_idx: -1
-        top_signame: main_tl_mbx7__sram
-        index: -1
-      }
-      {
         name: tl_mbx_jtag__sram
         struct: tl
         package: tlul_pkg
@@ -20902,6 +20889,19 @@
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx_pcie0__sram
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie1__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx_pcie1__sram
         index: -1
       }
       {
@@ -21278,18 +21278,6 @@
         index: -1
       }
       {
-        name: tl_mbx7__core
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: mbx7_core_tl_d
-        index: -1
-      }
-      {
         name: tl_mbx_jtag__core
         struct: tl
         package: tlul_pkg
@@ -21311,6 +21299,18 @@
         inst_name: main
         default: ""
         top_signame: mbx_pcie0_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie1__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx_pcie1_core_tl_d
         index: -1
       }
       {
@@ -21666,18 +21666,6 @@
         index: -1
       }
       {
-        name: tl_mbx7__soc
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: mbx
-        default: ""
-        top_signame: mbx7_soc_tl_d
-        index: -1
-      }
-      {
         name: tl_mbx_pcie0__soc
         struct: tl
         package: tlul_pkg
@@ -21687,6 +21675,18 @@
         inst_name: mbx
         default: ""
         top_signame: mbx_pcie0_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie1__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx_pcie1_soc_tl_d
         index: -1
       }
       {
@@ -22391,42 +22391,6 @@
       {
         package: ""
         struct: logic
-        signame: mbx7_doe_intr_o
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: out
-        conn_type: false
-        index: -1
-        netname: mbx7_doe_intr
-      }
-      {
-        package: ""
-        struct: logic
-        signame: mbx7_doe_intr_en_o
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: out
-        conn_type: false
-        index: -1
-        netname: mbx7_doe_intr_en
-      }
-      {
-        package: ""
-        struct: logic
-        signame: mbx7_doe_intr_support_o
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: out
-        conn_type: false
-        index: -1
-        netname: mbx7_doe_intr_support
-      }
-      {
-        package: ""
-        struct: logic
         signame: mbx_jtag_doe_intr_o
         width: 1
         type: uni
@@ -22495,6 +22459,42 @@
         conn_type: false
         index: -1
         netname: mbx_pcie0_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie1_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie1_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie1_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie1_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie1_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie1_doe_intr_support
       }
       {
         package: tlul_pkg
@@ -24661,50 +24661,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: mbx7_core_tl_d_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: mbx7_core_tl_d_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: main_tl_mbx7__sram_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: main_tl_mbx7__sram_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: mbx_jtag_core_tl_d_req
         width: 1
         type: req_rsp
@@ -24783,6 +24739,50 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: main_tl_mbx_pcie0__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_pcie1_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_pcie1_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx_pcie1__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx_pcie1__sram_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -25365,28 +25365,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: mbx7_soc_tl_d_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: mbx7_soc_tl_d_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: mbx_pcie0_soc_tl_d_req
         width: 1
         type: req_rsp
@@ -25399,6 +25377,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: mbx_pcie0_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_pcie1_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_pcie1_soc_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1

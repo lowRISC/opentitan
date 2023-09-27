@@ -64,9 +64,9 @@ static dif_mbx_t mbx3;
 static dif_mbx_t mbx4;
 static dif_mbx_t mbx5;
 static dif_mbx_t mbx6;
-static dif_mbx_t mbx7;
 static dif_mbx_t mbx_jtag;
 static dif_mbx_t mbx_pcie0;
+static dif_mbx_t mbx_pcie1;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pwrmgr_t pwrmgr_aon;
@@ -579,28 +579,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralMbx7: {
-      dif_mbx_irq_t irq = (dif_mbx_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdMbx7MbxReady);
-      CHECK(irq == mbx_irq_expected,
-            "Incorrect mbx7 IRQ triggered: exp = %d, obs = %d",
-            mbx_irq_expected, irq);
-      mbx_irq_serviced = irq;
-
-      dif_mbx_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_mbx_irq_get_state(&mbx7, &snapshot));
-      CHECK(snapshot == (dif_mbx_irq_state_snapshot_t)(1 << irq),
-            "Only mbx7 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_mbx_irq_force(&mbx7, irq, false));
-      CHECK_DIF_OK(dif_mbx_irq_acknowledge(&mbx7, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralMbxJtag: {
       dif_mbx_irq_t irq = (dif_mbx_irq_t)(
           plic_irq_id -
@@ -642,6 +620,28 @@ void ottf_external_isr(void) {
       // TODO: Check Interrupt type then clear INTR_TEST if needed.
       CHECK_DIF_OK(dif_mbx_irq_force(&mbx_pcie0, irq, false));
       CHECK_DIF_OK(dif_mbx_irq_acknowledge(&mbx_pcie0, irq));
+      break;
+    }
+
+    case kTopDarjeelingPlicPeripheralMbxPcie1: {
+      dif_mbx_irq_t irq = (dif_mbx_irq_t)(
+          plic_irq_id -
+          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdMbxPcie1MbxReady);
+      CHECK(irq == mbx_irq_expected,
+            "Incorrect mbx_pcie1 IRQ triggered: exp = %d, obs = %d",
+            mbx_irq_expected, irq);
+      mbx_irq_serviced = irq;
+
+      dif_mbx_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_mbx_irq_get_state(&mbx_pcie1, &snapshot));
+      CHECK(snapshot == (dif_mbx_irq_state_snapshot_t)(1 << irq),
+            "Only mbx_pcie1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_mbx_irq_force(&mbx_pcie1, irq, false));
+      CHECK_DIF_OK(dif_mbx_irq_acknowledge(&mbx_pcie1, irq));
       break;
     }
 
@@ -915,14 +915,14 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX6_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx6));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX7_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx7));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_jtag));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_pcie0));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE1_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_pcie1));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
   CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
@@ -978,9 +978,9 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx4));
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx5));
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx6));
-  CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx7));
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx_jtag));
   CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx_pcie0));
+  CHECK_DIF_OK(dif_mbx_irq_acknowledge_all(&mbx_pcie1));
   CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
   CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
@@ -1074,11 +1074,11 @@ static void peripheral_irqs_enable(void) {
   CHECK_DIF_OK(
       dif_mbx_irq_restore_all(&mbx6, &mbx_irqs));
   CHECK_DIF_OK(
-      dif_mbx_irq_restore_all(&mbx7, &mbx_irqs));
-  CHECK_DIF_OK(
       dif_mbx_irq_restore_all(&mbx_jtag, &mbx_irqs));
   CHECK_DIF_OK(
       dif_mbx_irq_restore_all(&mbx_pcie0, &mbx_irqs));
+  CHECK_DIF_OK(
+      dif_mbx_irq_restore_all(&mbx_pcie1, &mbx_irqs));
   CHECK_DIF_OK(
       dif_otbn_irq_restore_all(&otbn, &otbn_irqs));
   CHECK_DIF_OK(
@@ -1360,19 +1360,6 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from mbx6 is serviced.", irq);
   }
 
-  peripheral_expected = kTopDarjeelingPlicPeripheralMbx7;
-  for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
-    mbx_irq_expected = irq;
-    LOG_INFO("Triggering mbx7 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_mbx_irq_force(&mbx7, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(mbx_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from mbx7 is serviced.", irq);
-  }
-
   peripheral_expected = kTopDarjeelingPlicPeripheralMbxJtag;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
        irq <= kDifMbxIrqMbxAbort; ++irq) {
@@ -1397,6 +1384,19 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(mbx_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from mbx_pcie0 is serviced.", irq);
+  }
+
+  peripheral_expected = kTopDarjeelingPlicPeripheralMbxPcie1;
+  for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
+       irq <= kDifMbxIrqMbxAbort; ++irq) {
+    mbx_irq_expected = irq;
+    LOG_INFO("Triggering mbx_pcie1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_mbx_irq_force(&mbx_pcie1, irq, true));
+
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(mbx_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from mbx_pcie1 is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralOtbn;
