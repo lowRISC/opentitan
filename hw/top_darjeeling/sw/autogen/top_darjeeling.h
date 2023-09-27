@@ -1773,7 +1773,7 @@ typedef enum top_darjeeling_hintable_clocks {
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
 #define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000u
-#define TOP_DARJEELING_MMIO_SIZE_BYTES 0xF400020u
+#define TOP_DARJEELING_MMIO_SIZE_BYTES 0xF501000u
 
 // Header Extern Guard
 #ifdef __cplusplus

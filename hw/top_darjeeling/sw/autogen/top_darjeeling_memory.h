@@ -987,7 +987,7 @@
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
 #define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000
-#define TOP_DARJEELING_MMIO_SIZE_BYTES 0xF400020
+#define TOP_DARJEELING_MMIO_SIZE_BYTES 0xF501000
 
 #endif  // __ASSEMBLER__
 
