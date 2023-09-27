@@ -50,7 +50,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL1__ROM       = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_ROM_CTRL1__REGS      = 32'h 0000007f;
   localparam logic [0:0][31:0] ADDR_MASK_PERI                 = {
-    32'h 01ffffff
+    32'h 007fffff
   };
   localparam logic [31:0] ADDR_MASK_SOC_PROXY__CORE      = 32'h 0000000f;
   localparam logic [31:0] ADDR_MASK_SOC_PROXY__CTN       = 32'h 3fffffff;

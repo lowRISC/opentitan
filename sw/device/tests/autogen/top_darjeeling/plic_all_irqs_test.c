@@ -12,7 +12,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
@@ -45,7 +44,6 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
-static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer_aon;
 static dif_csrng_t csrng;
@@ -94,8 +92,6 @@ static volatile top_darjeeling_plic_peripheral_t peripheral_expected;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_expected;
-static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_serviced;
 static volatile dif_alert_handler_irq_t alert_handler_irq_expected;
 static volatile dif_alert_handler_irq_t alert_handler_irq_serviced;
 static volatile dif_aon_timer_irq_t aon_timer_irq_expected;
@@ -161,28 +157,6 @@ void ottf_external_isr(void) {
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-    case kTopDarjeelingPlicPeripheralAdcCtrlAon: {
-      dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone);
-      CHECK(irq == adc_ctrl_irq_expected,
-            "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            adc_ctrl_irq_expected, irq);
-      adc_ctrl_irq_serviced = irq;
-
-      dif_adc_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralAlertHandler: {
       dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
           plic_irq_id -
@@ -858,9 +832,6 @@ void ottf_external_isr(void) {
 static void peripherals_init(void) {
   mmio_region_t base_addr;
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
@@ -959,7 +930,6 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
   CHECK_DIF_OK(dif_alert_handler_irq_acknowledge_all(&alert_handler));
   CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
   CHECK_DIF_OK(dif_csrng_irq_acknowledge_all(&csrng));
@@ -996,8 +966,6 @@ static void peripheral_irqs_clear(void) {
  * Enables all IRQs in all peripherals.
  */
 static void peripheral_irqs_enable(void) {
-  dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irqs =
-      (dif_adc_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_alert_handler_irq_state_snapshot_t alert_handler_irqs =
       (dif_alert_handler_irq_state_snapshot_t)UINT_MAX;
   dif_csrng_irq_state_snapshot_t csrng_irqs =
@@ -1037,8 +1005,6 @@ static void peripheral_irqs_enable(void) {
   dif_uart_irq_state_snapshot_t uart_irqs =
       (dif_uart_irq_state_snapshot_t)UINT_MAX;
 
-  CHECK_DIF_OK(
-      dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
   CHECK_DIF_OK(
       dif_alert_handler_irq_restore_all(&alert_handler, &alert_handler_irqs));
   CHECK_DIF_OK(
@@ -1113,19 +1079,6 @@ static void peripheral_irqs_enable(void) {
  * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
-  peripheral_expected = kTopDarjeelingPlicPeripheralAdcCtrlAon;
-  for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchDone;
-       irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
-    adc_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(adc_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
-  }
-
   peripheral_expected = kTopDarjeelingPlicPeripheralAlertHandler;
   for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa;
        irq <= kDifAlertHandlerIrqClassd; ++irq) {

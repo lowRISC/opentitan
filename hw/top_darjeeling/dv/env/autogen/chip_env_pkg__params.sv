@@ -24,7 +24,6 @@ parameter string LIST_OF_ALERTS[] = {
   "rstmgr_aon_fatal_cnsty_fault",
   "clkmgr_aon_recov_fault",
   "clkmgr_aon_fatal_fault",
-  "adc_ctrl_aon_fatal_fault",
   "pinmux_aon_fatal_fault",
   "aon_timer_aon_fatal_fault",
   "sensor_ctrl_recov_alert",
@@ -95,4 +94,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 88;
+parameter uint NUM_ALERTS = 87;

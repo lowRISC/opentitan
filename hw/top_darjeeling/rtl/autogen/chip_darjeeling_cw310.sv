@@ -228,7 +228,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [62:0] unused_sig;
+  logic [60:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -751,14 +751,14 @@ module chip_darjeeling_cw310 #(
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
-    // adc
-    .adc_pd_i              ( adc_req.pd ),
-    .adc_chnsel_i          ( adc_req.channel_sel ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
     // entropy_src
     .es_req_i              ( entropy_src_hw_if_req ),
     .es_rsp_o              ( entropy_src_hw_if_rsp ),
+    // adc
+    .adc_pd_i              ( '0 ),
+    .adc_chnsel_i          ( '0 ),
+    .adc_d_o               ( adc_rsp.data ),
+    .adc_d_val_o           ( adc_rsp.data_valid ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -1087,8 +1087,6 @@ module chip_darjeeling_cw310 #(
     .fpga_info_i                  ( fpga_info             ),
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
-    .adc_req_o                    ( adc_req                    ),
-    .adc_rsp_i                    ( adc_rsp                    ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),

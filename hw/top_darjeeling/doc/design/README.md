@@ -400,7 +400,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | pwrmgr_aon        | pwrmgr        | 0x30400000 (regs) |
 | rstmgr_aon        | rstmgr        | 0x30410000 (regs) |
 | clkmgr_aon        | clkmgr        | 0x30420000 (regs) |
-| adc_ctrl_aon      | adc_ctrl      | 0x31070000 (regs) |
 | pinmux_aon        | pinmux        | 0x30460000 (regs) |
 | aon_timer_aon     | aon_timer     | 0x30470000 (regs) |
 | ast               | ast           | 0x30480000 (regs) |
@@ -461,21 +460,19 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | ID   | Name          | Bank   | Type      | Connection Type   | Description                |
 |:-----|:--------------|:-------|:----------|:------------------|:---------------------------|
 | 0    | POR_N         | VCC    | InputStd  | manual            | System reset               |
-| 1    | CC1           | AVCC   | InputStd  | manual            | ADC input 1                |
-| 2    | CC2           | AVCC   | InputStd  | manual            | ADC input 2                |
-| 3    | OTP_EXT_VOLT  | VCC    | AnalogIn1 | manual            | OTP external voltage input |
-| 4    | SPI_HOST_D0   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 5    | SPI_HOST_D1   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 6    | SPI_HOST_D2   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 7    | SPI_HOST_D3   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 8    | SPI_HOST_CLK  | VIOA   | BidirStd  | direct            | SPI host clock             |
-| 9    | SPI_HOST_CS_L | VIOA   | BidirStd  | direct            | SPI host chip select       |
-| 10   | SPI_DEV_D0    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 11   | SPI_DEV_D1    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 12   | SPI_DEV_D2    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 13   | SPI_DEV_D3    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 14   | SPI_DEV_CLK   | VIOA   | InputStd  | direct            | SPI device clock           |
-| 15   | SPI_DEV_CS_L  | VIOA   | InputStd  | direct            | SPI device chip select     |
+| 1    | OTP_EXT_VOLT  | VCC    | AnalogIn1 | manual            | OTP external voltage input |
+| 2    | SPI_HOST_D0   | VIOA   | BidirStd  | direct            | SPI host data              |
+| 3    | SPI_HOST_D1   | VIOA   | BidirStd  | direct            | SPI host data              |
+| 4    | SPI_HOST_D2   | VIOA   | BidirStd  | direct            | SPI host data              |
+| 5    | SPI_HOST_D3   | VIOA   | BidirStd  | direct            | SPI host data              |
+| 6    | SPI_HOST_CLK  | VIOA   | BidirStd  | direct            | SPI host clock             |
+| 7    | SPI_HOST_CS_L | VIOA   | BidirStd  | direct            | SPI host chip select       |
+| 8    | SPI_DEV_D0    | VIOA   | BidirStd  | direct            | SPI device data            |
+| 9    | SPI_DEV_D1    | VIOA   | BidirStd  | direct            | SPI device data            |
+| 10   | SPI_DEV_D2    | VIOA   | BidirStd  | direct            | SPI device data            |
+| 11   | SPI_DEV_D3    | VIOA   | BidirStd  | direct            | SPI device data            |
+| 12   | SPI_DEV_CLK   | VIOA   | InputStd  | direct            | SPI device clock           |
+| 13   | SPI_DEV_CS_L  | VIOA   | InputStd  | direct            | SPI device chip select     |
 | 0    | IOA0          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
 | 1    | IOA1          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
 | 2    | IOA2          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |

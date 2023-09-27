@@ -223,19 +223,6 @@ pub const TOP_DARJEELING_CLKMGR_AON_BASE_ADDR: usize = 0x30420000;
 /// address between #TOP_DARJEELING_CLKMGR_AON_BASE_ADDR and
 /// `TOP_DARJEELING_CLKMGR_AON_BASE_ADDR + TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for adc_ctrl_aon in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR: usize = 0x31070000;
-
-/// Peripheral size for adc_ctrl_aon in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR and
-/// `TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR + TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES`.
-pub const TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for pinmux_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -750,4 +737,4 @@ pub const TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x800;
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
 pub const TOP_DARJEELING_MMIO_BASE_ADDR: usize = 0x21100000;
-pub const TOP_DARJEELING_MMIO_SIZE_BYTES: usize = 0xFF70080;
+pub const TOP_DARJEELING_MMIO_SIZE_BYTES: usize = 0xF400020;

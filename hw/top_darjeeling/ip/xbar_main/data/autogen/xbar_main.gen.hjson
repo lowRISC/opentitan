@@ -365,7 +365,7 @@
           {
             hart: 0x30000000
           }
-          size_byte: 0x2000000
+          size_byte: 0x800000
         }
       ]
     }

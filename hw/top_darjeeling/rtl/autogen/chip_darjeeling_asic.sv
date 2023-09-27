@@ -17,8 +17,6 @@ module chip_darjeeling_asic #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
-  `INOUT_AI CC1, // Manual Pad
-  `INOUT_AI CC2, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
@@ -208,14 +206,10 @@ module chip_darjeeling_asic #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
-  logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
-  logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
   logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
-  pad_attr_t manual_attr_cc1;
-  pad_attr_t manual_attr_cc2;
   pad_attr_t manual_attr_otp_ext_volt;
   pad_attr_t manual_attr_ast_misc;
 
@@ -233,7 +227,7 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(17),
+    .NDioPads(15),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -252,8 +246,6 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadSpiHostD1ScanRole,
       scan_role_pkg::DioPadSpiHostD0ScanRole,
       scan_role_pkg::DioPadOtpExtVoltScanRole,
-      scan_role_pkg::DioPadCc2ScanRole,
-      scan_role_pkg::DioPadCc1ScanRole,
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
@@ -320,8 +312,6 @@ module chip_darjeeling_asic #(
       IoBankVioa, // SPI_HOST_D1
       IoBankVioa, // SPI_HOST_D0
       IoBankVcc, // OTP_EXT_VOLT
-      IoBankAvcc, // CC2
-      IoBankAvcc, // CC1
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -388,8 +378,6 @@ module chip_darjeeling_asic #(
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
       AnalogIn1, // OTP_EXT_VOLT
-      InputStd, // CC2
-      InputStd, // CC1
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -462,16 +450,6 @@ module chip_darjeeling_asic #(
       SPI_HOST_D1,
       SPI_HOST_D0,
       OTP_EXT_VOLT,
-`ifdef ANALOGSIM
-      '0,
-`else
-      CC2,
-`endif
-`ifdef ANALOGSIM
-      '0,
-`else
-      CC1,
-`endif
       POR_N
     }),
 
@@ -549,8 +527,6 @@ module chip_darjeeling_asic #(
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
         manual_in_otp_ext_volt,
-        manual_in_cc2,
-        manual_in_cc1,
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -568,8 +544,6 @@ module chip_darjeeling_asic #(
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
         manual_out_otp_ext_volt,
-        manual_out_cc2,
-        manual_out_cc1,
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -587,8 +561,6 @@ module chip_darjeeling_asic #(
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
         manual_oe_otp_ext_volt,
-        manual_oe_cc2,
-        manual_oe_cc1,
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -606,8 +578,6 @@ module chip_darjeeling_asic #(
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
         manual_attr_otp_ext_volt,
-        manual_attr_cc2,
-        manual_attr_cc1,
         manual_attr_por_n
       }),
 
@@ -806,8 +776,8 @@ module chip_darjeeling_asic #(
     .usb_io_pu_cal_o       ( usb_io_pu_cal ),
 
     // adc
-    .adc_a0_ai             ( CC1 ),
-    .adc_a1_ai             ( CC2 ),
+    .adc_a0_ai             ( '0 ),
+    .adc_a1_ai             ( '0 ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( IOA2 ),
@@ -873,14 +843,14 @@ module chip_darjeeling_asic #(
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
-    // adc
-    .adc_pd_i              ( adc_req.pd ),
-    .adc_chnsel_i          ( adc_req.channel_sel ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
     // entropy_src
     .es_req_i              ( entropy_src_hw_if_req ),
     .es_rsp_o              ( entropy_src_hw_if_rsp ),
+    // adc
+    .adc_pd_i              ( '0 ),
+    .adc_chnsel_i          ( '0 ),
+    .adc_d_o               ( adc_rsp.data ),
+    .adc_d_val_o           ( adc_rsp.data_valid ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -1158,8 +1128,6 @@ module chip_darjeeling_asic #(
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
-    manual_in_cc2,
-    manual_in_cc1,
     manual_in_otp_ext_volt
   };
 
@@ -1195,12 +1163,10 @@ module chip_darjeeling_asic #(
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .ast_tl_req_o                 ( base_ast_bus               ),
-    .ast_tl_rsp_i                 ( ast_base_bus               ),
-    .adc_req_o                    ( adc_req                    ),
-    .adc_rsp_i                    ( adc_rsp                    ),
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
+    .ast_tl_req_o                 ( base_ast_bus               ),
+    .ast_tl_rsp_i                 ( ast_base_bus               ),
     .obs_ctrl_i                   ( obs_ctrl                   ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
