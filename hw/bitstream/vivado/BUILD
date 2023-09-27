@@ -8,7 +8,6 @@ load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
-load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
 package(default_visibility = ["//visibility:public"])
@@ -258,15 +257,9 @@ pkg_files(
     name = "standard",
     testonly = True,
     srcs = [
-        ":fpga_cw310_rom_with_fake_keys",
-        ":fpga_cw310_rom_with_real_keys",
         ":fpga_cw310_test_rom",
         ":otp_mmi",
         ":rom_mmi",
-    ] + [
-        ":fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)
-        for (otp_name, _) in get_otp_images()
-        for authenticity in KEY_AUTHENTICITY
     ],
     prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],
