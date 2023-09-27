@@ -400,17 +400,6 @@
       attr: "templated",
     },
     // TODO: remove, disentangle wiring in topgen
-    { name: "sysrst_ctrl_aon",
-      type: "sysrst_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
-      domain: ["Aon"],
-      base_addr: {
-        hart: "0x31060000",
-      }
-    },
-    // TODO: remove, disentangle wiring in topgen
     { name: "adc_ctrl_aon",
       type: "adc_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
@@ -1428,8 +1417,6 @@
       { name: 'IOR5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (ec_rst_l)'},
-      { name: 'IOR9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (flash_wp_l))'},
       { name: 'IOR10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1496,21 +1483,6 @@
       { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
-      // Sysrst ctrl has both muxed and dedicated IOs
-      { instance: "sysrst_ctrl_aon", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key0_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key1_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key2_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'pwrb_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'bat_disable',    connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'ec_rst_l',       connection: 'direct', pad: 'IOR8'         , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'flash_wp_l',     connection: 'direct', pad: 'IOR9'         , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key0_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key1_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'key2_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'pwrb_out',       connection: 'muxed',  pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'lid_open',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl_aon", port: 'z3_wakeup',      connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     num_wkup_detect: 8
