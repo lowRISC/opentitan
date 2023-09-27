@@ -322,8 +322,8 @@ def cw340_params(
                           board.  Choices are "cw340".
     All others parameters are forwarded to fpga_params()
     """
-    if interface not in ("cw340"):
-        fail("The interface must be 'cw340'.")
+    if interface not in ("cw340", "hyper340"):
+        fail("The interface must be either 'cw340' or 'hyper340'.")
     kwargs.update(interface = interface)
     return fpga_params(**kwargs)
 
@@ -420,6 +420,7 @@ def opentitan_functest(
                 },
                 "cw340": {
                     "cw340": "@//hw/bitstream/cw340",
+                    "hyper340": "@//hw/bitstream/cw340",
                 },
             }
             if params.get("bitstream") == None:
