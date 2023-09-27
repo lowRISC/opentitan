@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/randomness_quality.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -29,15 +30,6 @@ static const crypto_const_byte_buf_t kEmptyBuffer = {
     .data = NULL,
     .len = 0,
 };
-
-static status_t entropy_complex_init_test(void) {
-  // This initialization should happen in ROM_EXT, so there is no public API
-  // for it in cryptolib.
-  TRY(entropy_complex_init());
-
-  // Check the configuration.
-  return entropy_complex_check();
-}
 
 static status_t kat_test(void) {
   crypto_const_byte_buf_t entropy = {
@@ -69,10 +61,32 @@ static status_t kat_test(void) {
   return OK_STATUS();
 }
 
+static status_t random_test(void) {
+  // Instantiate DRBG.
+  TRY(otcrypto_drbg_instantiate(/*perso_string=*/kEmptyBuffer));
+
+  // Generate a relatively large amount of output data.
+  uint32_t output_data[4096];
+  crypto_word32_buf_t output = {
+      .data = output_data,
+      .len = ARRAYSIZE(output_data),
+  };
+  TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, &output));
+
+  // Run a basic randomness-quality check on the output.
+  return randomness_quality_monobit_test((unsigned char *)output_data,
+                                         sizeof(output_data),
+                                         kRandomnessQualityThresholdOnePercent);
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  EXECUTE_TEST(result, entropy_complex_init_test);
+  // Initialize the entropy complex.
+  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_check());
+
   EXECUTE_TEST(result, kat_test);
+  EXECUTE_TEST(result, random_test);
   return status_ok(result);
 }
