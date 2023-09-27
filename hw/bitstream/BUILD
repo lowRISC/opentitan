@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
@@ -175,5 +176,21 @@ pkg_tar(
     mode = "0444",
     package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
     strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_hyperdebug_cached_fragment",
+    tags = ["manual"],
+)
+
+# Packaging rule for spliced bitstreams
+pkg_files(
+    name = "package",
+    testonly = True,
+    srcs = [
+        ":rom_with_{}_keys".format(authenticity)
+        for authenticity in KEY_AUTHENTICITY
+    ] + [
+        ":rom_with_{}_keys_otp_{}".format(authenticity, otp_name)
+        for (otp_name, _) in get_otp_images()
+        for authenticity in KEY_AUTHENTICITY
+    ],
+    prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],
 )
