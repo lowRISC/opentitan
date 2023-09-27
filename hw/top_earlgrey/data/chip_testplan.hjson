@@ -538,8 +538,26 @@
             - Verify that the correct pattern is seen on the IOs by hooking up the pattgen monitor.
             - Validate the reception of the done interrupt.
             - Verify both pattgen channels independently.
+
+            Notes for silicon targets:
+            - Repeat the above test for different patterns and lengths.
+            - Repeat the above test for different clock divider.
+            - Repeat the above test for different repeat values.
+            - Repeat the above test with the clock inverted.
+            - Repeat the above test while using both channels at the same time.
+            - Monitor the clock and data pins on the silicon test setup.
             '''
+      features: [
+        "PATTGEN.CHANNEL.ONE",
+        "PATTGEN.CHANNEL.TWO",
+        "PATTGEN.CONFIG.PATTERN",
+        "PATTGEN.CONFIG.DIVIDER",
+        "PATTGEN.CONFIG.REPEAT",
+        "PATTGEN.CONFIG.POLARITY",
+        "PATTGEN.COMPLETE"
+      ]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_pattgen_ios"]
     }
 
