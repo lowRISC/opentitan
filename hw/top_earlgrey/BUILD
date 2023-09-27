@@ -54,6 +54,7 @@ fpga_cw310(
     },
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
+        --exec="transport init",
         --exec="bootstrap --clear-uart=true {firmware}"
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
