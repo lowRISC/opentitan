@@ -57,6 +57,18 @@
     { name: "fatal_alert_external_3"
       desc: "Fatal external alert channel 3"
     }
+    { name: "fatal_alert_external_4"
+      desc: "Fatal external alert channel 4"
+    }
+    { name: "fatal_alert_external_5"
+      desc: "Fatal external alert channel 5"
+    }
+    { name: "fatal_alert_external_6"
+      desc: "Fatal external alert channel 6"
+    }
+    { name: "fatal_alert_external_7"
+      desc: "Fatal external alert channel 7"
+    }
     { name: "recov_alert_external_0"
       desc: "Recoverable external alert channel 0"
     }
@@ -68,6 +80,18 @@
     }
     { name: "recov_alert_external_3"
       desc: "Recoverable external alert channel 3"
+    }
+    { name: "recov_alert_external_4"
+      desc: "Recoverable external alert channel 4"
+    }
+    { name: "recov_alert_external_5"
+      desc: "Recoverable external alert channel 5"
+    }
+    { name: "recov_alert_external_6"
+      desc: "Recoverable external alert channel 6"
+    }
+    { name: "recov_alert_external_7"
+      desc: "Recoverable external alert channel 7"
     }
   ]
 
@@ -161,7 +185,7 @@
       name:    "soc_fatal_alert"
       act:     "rsp"
       desc:    "Differential fatal alert from SoC, synchronous"
-      width:   4
+      width:   8
     }
     { struct:  "soc_alert"
       package: "soc_proxy_pkg"
@@ -169,7 +193,7 @@
       name:    "soc_recov_alert"
       act:     "rsp"
       desc:    "Differential recoverable alert from SoC, synchronous"
-      width:   4
+      width:   8
     }
     { struct:  "logic"
       type:    "uni"
