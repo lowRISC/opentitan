@@ -115,5 +115,39 @@
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
     }
+
+    {
+      name: chip_sw_sram_memset
+      desc: '''Use the LFSR-based initialisation mechanism to wipe the contents of SRAM.
+
+             - Write some known data to the main SRAM and read it back to make sure the write worked
+               as expected.
+             - Use the INIT CSR for the relevant sram_ctrl to request that the memory is filled with
+               pseudo-random data.
+             - Read the location from the SRAM and check that the data has been wiped.
+             - Repeat the steps above for the retention SRAM.
+
+             '''
+      features: ["SRAM_CTRL.MEMSET"]
+      stage: V3
+      si_stage: SV3
+      tests: []
+    }
+    {
+      name: chip_sw_sram_subword_access
+      desc: '''Check that subword access works for each SRAM.
+
+             - Initialise a region of the SRAM with known patterns.
+             - Read subwords (each length from one byte upwards; each address modulo 8) and check
+               they have the expected values.
+             - Write subwords (same list as above) and read back the whole word that we touch in
+               each case. Check that only the expected bytes have been changed.
+
+             '''
+      features: ["SRAM_CTRL.SUBWORD_ACCESS"]
+      stage: V3
+      si_stage: SV3
+      tests: []
+    }
   ]
 }
