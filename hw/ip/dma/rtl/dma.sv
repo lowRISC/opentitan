@@ -408,6 +408,7 @@ module dma
     .q_o   ( sha2_consumed_q )
   );
 
+  logic sha2_hash_done;
   logic sha2_hash_done_d, sha2_hash_done_q;
   prim_flop #(
     .Width(1)
@@ -416,16 +417,6 @@ module dma
     .rst_ni( rst_ni           ),
     .d_i   ( sha2_hash_done_d ),
     .q_o   ( sha2_hash_done_q )
-  );
-
-  logic sha2_hash_done_sticky_d, sha2_hash_done_sticky_q;
-  prim_flop #(
-    .Width(1)
-  ) u_sha2_hash_done_sticky(
-    .clk_i ( gated_clk               ),
-    .rst_ni( rst_ni                  ),
-    .d_i   ( sha2_hash_done_sticky_d ),
-    .q_o   ( sha2_hash_done_sticky_q )
   );
 
   // The SHA engine requires the message length in bits
@@ -455,7 +446,7 @@ module dma
     .hash_start       ( sha2_hash_start       ),
     .digest_mode      ( sha2_mode             ),
     .hash_process     ( sha2_hash_process     ),
-    .hash_done        ( sha2_hash_done_d      ),
+    .hash_done        ( sha2_hash_done        ),
     .message_length   ( sha2_message_len_bits ),
     .digest           ( sha2_digest           ),
     .idle             (                       )
@@ -628,11 +619,11 @@ module dma
     sha2_digest_clear    = 1'b0;
     sha2_consumed_d      = sha2_consumed_q;
 
-    // Make SHA2 Done sticky to not miss a single done event during any outstanding writes
+    // Make SHA2 Done sticky to not miss a single-cycle done event during any outstanding writes
     if (ctrl_state_q == DmaIdle) begin
-      sha2_hash_done_sticky_d = 1'b0;
+      sha2_hash_done_d = 1'b0;
     end else begin
-      sha2_hash_done_sticky_d = sha2_hash_done_sticky_q | sha2_hash_done_q;
+      sha2_hash_done_d = sha2_hash_done_q | sha2_hash_done;
     end
 
     unique case (ctrl_state_q)
@@ -1024,7 +1015,7 @@ module dma
       end
 
       DmaShaFinalize: begin
-        if (sha2_hash_done_q || sha2_hash_done_sticky_q) begin
+        if (sha2_hash_done_q) begin
           // Digest is ready, capture it to the CSRs
           sha2_digest_set = 1'b1;
           ctrl_state_d   = DmaIdle;
