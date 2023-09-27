@@ -33,6 +33,7 @@
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_spi_device_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_sram_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
   ]
@@ -97,138 +98,6 @@
             '''
       stage: V1
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
-    }
-
-    // SPI_DEVICE (pre-verified IP) integration tests:
-    {
-      name: chip_sw_spi_device_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI device port in firmware mode with
-               single mode.
-
-            - The testbench sends a known payload over the chip's SPI device input port.
-            - The SW test, at the same time sends a known payload out over the chip's SPI device
-              output port.
-            - On reception, both payloads are checked for integrity.
-            - SW validates the reception of RX fifo full, RX fifo over level, TX fifo under level,
-              RX overflow and TX underflow interrupts.
-            - Run with min (6MHz), typical (30-48Mhz) and max(48MHz) SPI clk frequencies.
-              should use
-            - Also, ensure that the spi_device does not receive transactions when the csb is high.
-            - TODO, consider to test this mode with a real use case. The actual use case of this
-              mdoe is not clear right now.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_tx_rx"]
-    }
-    {
-      name: chip_sw_spi_device_flash_mode
-      desc: '''Verify the SPI device in flash mode.
-
-            - SW puts the SPI device in flash mode
-            - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
-            - SW verifies the integrity of the image upon reception by reading the spi_device
-              memory.
-            - Ensure the image is executed correctly
-            '''
-      stage: V2
-      tests: ["chip_sw_uart_tx_rx_bootstrap"]
-    }
-    {
-      name: chip_sw_spi_device_pass_through
-      desc: '''Verify the pass through mode from an end-to-end perspective.
-
-            - Configure the SPI device and host in pass through mode.
-            - Program the cmd_filter_* CSRs to filter out random commands.
-            - Configure and enable both spi_host0 and spi_host1
-            - Send a random flash commands over the SPI device interface (chip IOs) from the
-              testbench.
-            - Verify the flash commands which pass through spi_host0, are received on chip IOs.
-            - Verify that only the payloads that are not filtered show up on the SPI host interface
-              at chip IOs.
-            - Verify spi_host1 doesn't send out any data from spi_device
-            - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
-            - Run with single, dual and quad SPI modes.
-            - Testbench should test the following commands:
-            - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_pass_through"]
-    }
-
-    {
-      name: chip_sw_spi_device_pass_through_flash_model
-      desc: '''Verify the command filtering mechanism in passthrough mode.
-
-            - Extend the chip_spi_device_pass_through test.
-            - Connect with a real flash model on spi_host
-            - Verify that the flash commands are received and interpreted correctly in the flash
-              model
-            '''
-      stage: V3
-      tests: []
-    }
-
-    {
-      name: chip_sw_spi_device_pass_through_collision
-      desc: '''Verify the collisions on driving spi_host is handled properly.
-
-            - Enable upload related interrupts and configure the spi_device in passthrough mode.
-            - Configure a command slot to enable upload for a flash program/erase command.
-            - Excecute two parallel threads:
-              1. SPI host agent.
-                - Send this command via an upstream SPI host agent, then the agent keeps sending
-                read_status to poll the busy bit.
-                - When the busy bit is low, issue a read command to read data from the downstream
-                  SPI port, and check data correctness.
-              2. A SW process.
-                - SW receives an upload interrupt and reads the command in the upload fifo to check.
-                - SW configures the SPI host that shows the same downstream port, to send the
-                  uploaded command to the downstream SPI port.
-                - SW clears busy bit to allow the upstream SPI host to proceed to the next command.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_pass_through_collision"]
-    }
-    {
-      name: chip_sw_spi_device_tpm
-      desc: '''Verify the basic operation of the spi tpm mode.
-
-            - The testbench sends a known payload over the chip's SPI device tpm input port.
-            - The testbench sends a read command.
-            - The software test should playback the data received in the write command as the read
-              response.
-            - The testbench should check if the written and read data match.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_tpm"]
-    }
-
-    {
-      name: chip_sw_spi_device_output_when_disabled_or_sleeping
-      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
-
-               SW needs to be able to set the SPI output value when spi_device is disabled or the
-               chip is sleeping, to either all-zeros or all-ones, depending on integration
-               requirements.  The following scenarios have to be verified:
-
-               After power-on reset:
-               - SW to configure pinmux retention logic so that the chip pins connected to
-                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
-                 choose between a and b).
-               - DV environment to check that SPI outputs match configuration by SW.
-
-               Going to sleep:
-               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
-                 as it would after POR, and put chip to sleep.
-               - DV environment to check that SPI outputs match configuration by SW.
-
-               Wake up from sleep:
-               - DV environment to wake chip from sleep.
-               - SW to enable spi_device and disable retention logic.
-               - DV environment to check that SPI transactions work as usual.
-             '''
-      stage: V3
-      tests: []
     }
 
     // SPI_HOST (pre-verified IP) integration tests:
