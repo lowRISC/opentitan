@@ -64,6 +64,29 @@
       local:   "true"
     }
   ],
+  features: [
+    { name: "PATTGEN.CHANNEL.ONE",
+      desc: "Pattern generator can generate patterns on two separate channels, this is the first one."
+    },
+    { name: "PATTGEN.CHANNEL.TWO",
+      desc: "Pattern generator can generate patterns on two separate channels, this is the second one."
+    },
+    { name: "PATTGEN.CONFIG.PATTERN",
+      desc: "Each channel can be programmed with a pattern with a length of between 1 and 64 bits, inclusive."
+    },
+    { name: "PATTGEN.CONFIG.DIVIDER",
+      desc: "Each channel has an independent clock divider."
+    },
+    { name: "PATTGEN.CONFIG.REPEAT",
+      desc: "Each channel can be configured to repeat the pattern up to 1024 times."
+    },
+    { name: "PATTGEN.CONFIG.POLARITY",
+      desc: "Each channel's clock can be inverted."
+    },
+    { name: "PATTGEN.COMPLETE",
+      desc: "Once a pattern is finished, an interrupt is raised."
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
