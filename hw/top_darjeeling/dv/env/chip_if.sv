@@ -37,7 +37,6 @@ interface chip_if;
   `define STRAP_HIER        u_pinmux_strap_sampling_dummy
   `define TOP_HIER          top_darjeeling
 `endif
-`define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
 `define AES_HIER            `TOP_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
@@ -177,11 +176,6 @@ interface chip_if;
 
   // Functional (dedicated) interface (input): power on reset input.
   pins_if #(.Width(1), .PullStrength("Weak")) por_n_if(.pins(dios[top_darjeeling_pkg::DioPadPorN]));
-
-  // Functional (dedicated) interface (input): CC1, CC2.
-  pins_if #(.Width(2), .PullStrength("Weak")) cc_if(
-    .pins(dios[top_darjeeling_pkg::DioPadCc2:top_darjeeling_pkg::DioPadCc1])
-  );
 
   // Functional (dedicated) interface (analog input): OTP ext volt.
   pins_if #(.Width(1), .PullStrength("Weak")) otp_ext_volt_if(
@@ -774,7 +768,6 @@ interface chip_if;
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
-    cc_if.disconnect();
     otp_ext_volt_if.disconnect();
     ast_misc_if.disconnect();
     dft_straps_if.disconnect();
@@ -836,7 +829,6 @@ interface chip_if;
   function automatic string get_hier_path(top_darjeeling_pkg::peripheral_e peripheral);
     string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
     case (peripheral)
-      PeripheralAdcCtrlAon:     path = {path, ".", `DV_STRINGIFY(`ADC_CTRL_HIER)};
       PeripheralAes:            path = {path, ".", `DV_STRINGIFY(`AES_HIER)};
       PeripheralAlertHandler:   path = {path, ".", `DV_STRINGIFY(`ALERT_HANDLER_HIER)};
       PeripheralAonTimerAon:    path = {path, ".", `DV_STRINGIFY(`AON_TIMER_HIER)};
@@ -937,24 +929,6 @@ interface chip_if;
    * during the max power epoch of the power_virus test.
    */
 
-  // Signal probe fuction for `fsm_state_q` of ADC_CTRL
-  wire [4:0] adc_ctrl_state;
-`ifdef GATE_LEVEL
-`define _ADC_FSM_STATE_Q(i) \
-   `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
-
-  assign adc_ctrl_state = {1'b0,
-                           1'b0,
-                           1'b0,
-                           1'b0, // JDON need to check later
-                           1'b0};
-`undef _ADC_FSM_STATE_Q
-`else
-  assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_adc_ctrl_fsm_state,
-      adc_ctrl_state, 5)
-
   // Signal probe function for `cio_csb_o` of SPI_HOST_0
   wire spi_host_0_cio_csb_o;
   assign spi_host_0_cio_csb_o = `SPI_HOST_HIER(0).cio_csb_o;
@@ -1033,7 +1007,6 @@ interface chip_if;
       edn_1_fsm_state, 9)
 
 `undef TOP_HIER
-`undef ADC_CTRL_HIER
 `undef AES_HIER
 `undef AES_CONTROL_HIER
 `undef ALERT_HANDLER_HIER

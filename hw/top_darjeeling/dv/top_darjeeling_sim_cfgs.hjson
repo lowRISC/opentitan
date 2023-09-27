@@ -20,7 +20,6 @@
   use_cfgs: [// Unit tests for UVCs.
              "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
              // IPs.
-             "{proj_root}/hw/ip/adc_ctrl/dv/adc_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",

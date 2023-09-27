@@ -1214,13 +1214,5 @@
               "flash_test_mode1"]
       tags: ["conn"]
     }
-    {
-      name: ast_adc
-      desc: "Verify the connectivity between the CC pads and the ast ADC input."
-      stage: V2
-      tests: ["ast_cc1",
-              "ast_cc2"]
-      tags: ["conn"]
-    }
   ]
 }

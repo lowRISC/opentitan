@@ -20,12 +20,6 @@ module tb;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"  // TODO: Deprecate this.
 
-  // interfaces
-`ifdef ANALOGSIM
-  ast_pkg::awire_t cc1;
-  ast_pkg::awire_t cc2;
-`endif
-
   // In most simulations the DV infrastructure provides a virtual interface connected to a
   // concrete clk_rst_if which is completely passive, since the AST provides both.
   // In order to enable cycle waits we connect clk and rst_n to chip internal signals.
@@ -113,13 +107,6 @@ module tb;
 `endif
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadPorN]),
-`ifdef ANALOGSIM
-    .CC1(cc1),
-    .CC2(cc2),
-`else
-    .CC1(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc1]),
-    .CC2(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc2]),
-`endif
     .OTP_EXT_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadOtpExtVolt]),
     .SPI_HOST_D0(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD0]),
     .SPI_HOST_D1(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD1]),

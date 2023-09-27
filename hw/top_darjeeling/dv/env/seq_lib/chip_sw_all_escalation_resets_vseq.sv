@@ -14,7 +14,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
   } ip_fatal_alert_t;
 
   ip_fatal_alert_t ip_alerts[] = '{
-    '{"*adc_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdAdcCtrlAonFatalFault},
     '{"*aes*prim_reg_we_check*", TopDarjeelingAlertIdAesFatalFault},
     '{"*aon_timer*prim_reg_we_check*", TopDarjeelingAlertIdAonTimerAonFatalFault},
     '{"*clkmgr*prim_reg_we_check*", TopDarjeelingAlertIdClkmgrAonFatalFault},

@@ -206,7 +206,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         // Make sure nothing drives these pins before testing the pull values.
         cfg.chip_vif.ast_misc_if.disconnect();
         cfg.chip_vif.otp_ext_volt_if.disconnect();
-        cfg.chip_vif.cc_if.disconnect();
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
         check_manual_dios_pull();
       end : manual_dio_test
@@ -599,10 +598,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 `endif
     obs_strength = $sformatf("%v", cfg.chip_vif.otp_ext_volt_if.pins[0]);
     `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
-    obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC1")
-    obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
-    `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
   endtask
 
 endclass
