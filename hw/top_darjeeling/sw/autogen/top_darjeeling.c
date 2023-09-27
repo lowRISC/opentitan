@@ -152,7 +152,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[80] = {
+    top_darjeeling_alert_for_peripheral[88] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -182,10 +182,18 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdSocProxyFatalAlertExternal1] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyFatalAlertExternal2] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyFatalAlertExternal3] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal4] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal5] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal6] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyFatalAlertExternal7] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyRecovAlertExternal0] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyRecovAlertExternal1] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyRecovAlertExternal2] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyRecovAlertExternal3] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal4] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal5] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal6] = kTopDarjeelingAlertPeripheralSocProxy,
+  [kTopDarjeelingAlertIdSocProxyRecovAlertExternal7] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSramCtrlRetAonFatalError] = kTopDarjeelingAlertPeripheralSramCtrlRetAon,
   [kTopDarjeelingAlertIdRvDmFatalFault] = kTopDarjeelingAlertPeripheralRvDm,
   [kTopDarjeelingAlertIdRvPlicFatalFault] = kTopDarjeelingAlertPeripheralRvPlic,

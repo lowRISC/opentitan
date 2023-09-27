@@ -3962,7 +3962,7 @@
           package: soc_proxy_pkg
           type: req_rsp
           act: rsp
-          width: 4
+          width: 8
           inst_name: soc_proxy
           default: ""
           external: true
@@ -3977,7 +3977,7 @@
           package: soc_proxy_pkg
           type: req_rsp
           act: rsp
-          width: 4
+          width: 8
           inst_name: soc_proxy
           default: ""
           external: true
@@ -15011,6 +15011,42 @@
       lpg_idx: 12
     }
     {
+      name: soc_proxy_fatal_alert_external_4
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_fatal_alert_external_5
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_fatal_alert_external_6
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_fatal_alert_external_7
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
       name: soc_proxy_recov_alert_external_0
       width: 1
       type: alert
@@ -15039,6 +15075,42 @@
     }
     {
       name: soc_proxy_recov_alert_external_3
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_recov_alert_external_4
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_recov_alert_external_5
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_recov_alert_external_6
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 12
+    }
+    {
+      name: soc_proxy_recov_alert_external_7
       width: 1
       type: alert
       async: "1"
@@ -18236,7 +18308,7 @@
         package: soc_proxy_pkg
         type: req_rsp
         act: rsp
-        width: 4
+        width: 8
         inst_name: soc_proxy
         default: ""
         external: true
@@ -18251,7 +18323,7 @@
         package: soc_proxy_pkg
         type: req_rsp
         act: rsp
-        width: 4
+        width: 8
         inst_name: soc_proxy
         default: ""
         external: true
@@ -22824,7 +22896,7 @@
         package: soc_proxy_pkg
         struct: soc_alert_req
         signame: soc_fatal_alert_req_i
-        width: 4
+        width: 8
         type: req_rsp
         default: ""
         direction: in
@@ -22836,7 +22908,7 @@
         package: soc_proxy_pkg
         struct: soc_alert_rsp
         signame: soc_fatal_alert_rsp_o
-        width: 4
+        width: 8
         type: req_rsp
         default: ""
         direction: out
@@ -22848,7 +22920,7 @@
         package: soc_proxy_pkg
         struct: soc_alert_req
         signame: soc_recov_alert_req_i
-        width: 4
+        width: 8
         type: req_rsp
         default: ""
         direction: in
@@ -22860,7 +22932,7 @@
         package: soc_proxy_pkg
         struct: soc_alert_rsp
         signame: soc_recov_alert_rsp_o
-        width: 4
+        width: 8
         type: req_rsp
         default: ""
         direction: out

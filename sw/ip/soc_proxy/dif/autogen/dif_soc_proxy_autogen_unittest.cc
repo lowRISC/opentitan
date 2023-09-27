@@ -57,9 +57,9 @@ TEST_F(AlertForceTest, Success) {
 
   // Force last alert.
   EXPECT_WRITE32(SOC_PROXY_ALERT_TEST_REG_OFFSET,
-                 {{SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_3_BIT, true}});
+                 {{SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_7_BIT, true}});
   EXPECT_DIF_OK(dif_soc_proxy_alert_force(
-      &soc_proxy_, kDifSocProxyAlertRecovAlertExternal3));
+      &soc_proxy_, kDifSocProxyAlertRecovAlertExternal7));
 }
 
 class IrqGetTypeTest : public SocProxyTest {};

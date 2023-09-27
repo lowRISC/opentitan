@@ -48,6 +48,18 @@ dif_result_t dif_soc_proxy_alert_force(const dif_soc_proxy_t *soc_proxy,
     case kDifSocProxyAlertFatalAlertExternal3:
       alert_idx = SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_3_BIT;
       break;
+    case kDifSocProxyAlertFatalAlertExternal4:
+      alert_idx = SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_4_BIT;
+      break;
+    case kDifSocProxyAlertFatalAlertExternal5:
+      alert_idx = SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_5_BIT;
+      break;
+    case kDifSocProxyAlertFatalAlertExternal6:
+      alert_idx = SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_6_BIT;
+      break;
+    case kDifSocProxyAlertFatalAlertExternal7:
+      alert_idx = SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_7_BIT;
+      break;
     case kDifSocProxyAlertRecovAlertExternal0:
       alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_0_BIT;
       break;
@@ -59,6 +71,18 @@ dif_result_t dif_soc_proxy_alert_force(const dif_soc_proxy_t *soc_proxy,
       break;
     case kDifSocProxyAlertRecovAlertExternal3:
       alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_3_BIT;
+      break;
+    case kDifSocProxyAlertRecovAlertExternal4:
+      alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_4_BIT;
+      break;
+    case kDifSocProxyAlertRecovAlertExternal5:
+      alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_5_BIT;
+      break;
+    case kDifSocProxyAlertRecovAlertExternal6:
+      alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_6_BIT;
+      break;
+    case kDifSocProxyAlertRecovAlertExternal7:
+      alert_idx = SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_7_BIT;
       break;
     default:
       return kDifBadArg;

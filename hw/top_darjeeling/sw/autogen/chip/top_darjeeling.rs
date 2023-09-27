@@ -1440,108 +1440,124 @@ pub enum TopDarjeelingAlertId {
     SocProxyFatalAlertExternal2 = 27,
     /// soc_proxy_fatal_alert_external_3
     SocProxyFatalAlertExternal3 = 28,
+    /// soc_proxy_fatal_alert_external_4
+    SocProxyFatalAlertExternal4 = 29,
+    /// soc_proxy_fatal_alert_external_5
+    SocProxyFatalAlertExternal5 = 30,
+    /// soc_proxy_fatal_alert_external_6
+    SocProxyFatalAlertExternal6 = 31,
+    /// soc_proxy_fatal_alert_external_7
+    SocProxyFatalAlertExternal7 = 32,
     /// soc_proxy_recov_alert_external_0
-    SocProxyRecovAlertExternal0 = 29,
+    SocProxyRecovAlertExternal0 = 33,
     /// soc_proxy_recov_alert_external_1
-    SocProxyRecovAlertExternal1 = 30,
+    SocProxyRecovAlertExternal1 = 34,
     /// soc_proxy_recov_alert_external_2
-    SocProxyRecovAlertExternal2 = 31,
+    SocProxyRecovAlertExternal2 = 35,
     /// soc_proxy_recov_alert_external_3
-    SocProxyRecovAlertExternal3 = 32,
+    SocProxyRecovAlertExternal3 = 36,
+    /// soc_proxy_recov_alert_external_4
+    SocProxyRecovAlertExternal4 = 37,
+    /// soc_proxy_recov_alert_external_5
+    SocProxyRecovAlertExternal5 = 38,
+    /// soc_proxy_recov_alert_external_6
+    SocProxyRecovAlertExternal6 = 39,
+    /// soc_proxy_recov_alert_external_7
+    SocProxyRecovAlertExternal7 = 40,
     /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 33,
+    SramCtrlRetAonFatalError = 41,
     /// rv_dm_fatal_fault
-    RvDmFatalFault = 34,
+    RvDmFatalFault = 42,
     /// rv_plic_fatal_fault
-    RvPlicFatalFault = 35,
+    RvPlicFatalFault = 43,
     /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 36,
+    AesRecovCtrlUpdateErr = 44,
     /// aes_fatal_fault
-    AesFatalFault = 37,
+    AesFatalFault = 45,
     /// hmac_fatal_fault
-    HmacFatalFault = 38,
+    HmacFatalFault = 46,
     /// kmac_recov_operation_err
-    KmacRecovOperationErr = 39,
+    KmacRecovOperationErr = 47,
     /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 40,
+    KmacFatalFaultErr = 48,
     /// otbn_fatal
-    OtbnFatal = 41,
+    OtbnFatal = 49,
     /// otbn_recov
-    OtbnRecov = 42,
+    OtbnRecov = 50,
     /// keymgr_dpe_recov_operation_err
-    KeymgrDpeRecovOperationErr = 43,
+    KeymgrDpeRecovOperationErr = 51,
     /// keymgr_dpe_fatal_fault_err
-    KeymgrDpeFatalFaultErr = 44,
+    KeymgrDpeFatalFaultErr = 52,
     /// csrng_recov_alert
-    CsrngRecovAlert = 45,
+    CsrngRecovAlert = 53,
     /// csrng_fatal_alert
-    CsrngFatalAlert = 46,
+    CsrngFatalAlert = 54,
     /// edn0_recov_alert
-    Edn0RecovAlert = 47,
+    Edn0RecovAlert = 55,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 48,
+    Edn0FatalAlert = 56,
     /// edn1_recov_alert
-    Edn1RecovAlert = 49,
+    Edn1RecovAlert = 57,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 50,
+    Edn1FatalAlert = 58,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 51,
+    SramCtrlMainFatalError = 59,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 52,
+    SramCtrlMboxFatalError = 60,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 53,
+    RomCtrl0Fatal = 61,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 54,
+    RomCtrl1Fatal = 62,
     /// dma_fatal_fault
-    DmaFatalFault = 55,
+    DmaFatalFault = 63,
     /// mbx0_fatal_fault
-    Mbx0FatalFault = 56,
+    Mbx0FatalFault = 64,
     /// mbx0_recov_fault
-    Mbx0RecovFault = 57,
+    Mbx0RecovFault = 65,
     /// mbx1_fatal_fault
-    Mbx1FatalFault = 58,
+    Mbx1FatalFault = 66,
     /// mbx1_recov_fault
-    Mbx1RecovFault = 59,
+    Mbx1RecovFault = 67,
     /// mbx2_fatal_fault
-    Mbx2FatalFault = 60,
+    Mbx2FatalFault = 68,
     /// mbx2_recov_fault
-    Mbx2RecovFault = 61,
+    Mbx2RecovFault = 69,
     /// mbx3_fatal_fault
-    Mbx3FatalFault = 62,
+    Mbx3FatalFault = 70,
     /// mbx3_recov_fault
-    Mbx3RecovFault = 63,
+    Mbx3RecovFault = 71,
     /// mbx4_fatal_fault
-    Mbx4FatalFault = 64,
+    Mbx4FatalFault = 72,
     /// mbx4_recov_fault
-    Mbx4RecovFault = 65,
+    Mbx4RecovFault = 73,
     /// mbx5_fatal_fault
-    Mbx5FatalFault = 66,
+    Mbx5FatalFault = 74,
     /// mbx5_recov_fault
-    Mbx5RecovFault = 67,
+    Mbx5RecovFault = 75,
     /// mbx6_fatal_fault
-    Mbx6FatalFault = 68,
+    Mbx6FatalFault = 76,
     /// mbx6_recov_fault
-    Mbx6RecovFault = 69,
+    Mbx6RecovFault = 77,
     /// mbx_jtag_fatal_fault
-    MbxJtagFatalFault = 70,
+    MbxJtagFatalFault = 78,
     /// mbx_jtag_recov_fault
-    MbxJtagRecovFault = 71,
+    MbxJtagRecovFault = 79,
     /// mbx_pcie0_fatal_fault
-    MbxPcie0FatalFault = 72,
+    MbxPcie0FatalFault = 80,
     /// mbx_pcie0_recov_fault
-    MbxPcie0RecovFault = 73,
+    MbxPcie0RecovFault = 81,
     /// mbx_pcie1_fatal_fault
-    MbxPcie1FatalFault = 74,
+    MbxPcie1FatalFault = 82,
     /// mbx_pcie1_recov_fault
-    MbxPcie1RecovFault = 75,
+    MbxPcie1RecovFault = 83,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 76,
+    RvCoreIbexFatalSwErr = 84,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 77,
+    RvCoreIbexRecovSwErr = 85,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 78,
+    RvCoreIbexFatalHwErr = 86,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 79,
+    RvCoreIbexRecovHwErr = 87,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1577,57 +1593,65 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             26 => Ok(Self::SocProxyFatalAlertExternal1),
             27 => Ok(Self::SocProxyFatalAlertExternal2),
             28 => Ok(Self::SocProxyFatalAlertExternal3),
-            29 => Ok(Self::SocProxyRecovAlertExternal0),
-            30 => Ok(Self::SocProxyRecovAlertExternal1),
-            31 => Ok(Self::SocProxyRecovAlertExternal2),
-            32 => Ok(Self::SocProxyRecovAlertExternal3),
-            33 => Ok(Self::SramCtrlRetAonFatalError),
-            34 => Ok(Self::RvDmFatalFault),
-            35 => Ok(Self::RvPlicFatalFault),
-            36 => Ok(Self::AesRecovCtrlUpdateErr),
-            37 => Ok(Self::AesFatalFault),
-            38 => Ok(Self::HmacFatalFault),
-            39 => Ok(Self::KmacRecovOperationErr),
-            40 => Ok(Self::KmacFatalFaultErr),
-            41 => Ok(Self::OtbnFatal),
-            42 => Ok(Self::OtbnRecov),
-            43 => Ok(Self::KeymgrDpeRecovOperationErr),
-            44 => Ok(Self::KeymgrDpeFatalFaultErr),
-            45 => Ok(Self::CsrngRecovAlert),
-            46 => Ok(Self::CsrngFatalAlert),
-            47 => Ok(Self::Edn0RecovAlert),
-            48 => Ok(Self::Edn0FatalAlert),
-            49 => Ok(Self::Edn1RecovAlert),
-            50 => Ok(Self::Edn1FatalAlert),
-            51 => Ok(Self::SramCtrlMainFatalError),
-            52 => Ok(Self::SramCtrlMboxFatalError),
-            53 => Ok(Self::RomCtrl0Fatal),
-            54 => Ok(Self::RomCtrl1Fatal),
-            55 => Ok(Self::DmaFatalFault),
-            56 => Ok(Self::Mbx0FatalFault),
-            57 => Ok(Self::Mbx0RecovFault),
-            58 => Ok(Self::Mbx1FatalFault),
-            59 => Ok(Self::Mbx1RecovFault),
-            60 => Ok(Self::Mbx2FatalFault),
-            61 => Ok(Self::Mbx2RecovFault),
-            62 => Ok(Self::Mbx3FatalFault),
-            63 => Ok(Self::Mbx3RecovFault),
-            64 => Ok(Self::Mbx4FatalFault),
-            65 => Ok(Self::Mbx4RecovFault),
-            66 => Ok(Self::Mbx5FatalFault),
-            67 => Ok(Self::Mbx5RecovFault),
-            68 => Ok(Self::Mbx6FatalFault),
-            69 => Ok(Self::Mbx6RecovFault),
-            70 => Ok(Self::MbxJtagFatalFault),
-            71 => Ok(Self::MbxJtagRecovFault),
-            72 => Ok(Self::MbxPcie0FatalFault),
-            73 => Ok(Self::MbxPcie0RecovFault),
-            74 => Ok(Self::MbxPcie1FatalFault),
-            75 => Ok(Self::MbxPcie1RecovFault),
-            76 => Ok(Self::RvCoreIbexFatalSwErr),
-            77 => Ok(Self::RvCoreIbexRecovSwErr),
-            78 => Ok(Self::RvCoreIbexFatalHwErr),
-            79 => Ok(Self::RvCoreIbexRecovHwErr),
+            29 => Ok(Self::SocProxyFatalAlertExternal4),
+            30 => Ok(Self::SocProxyFatalAlertExternal5),
+            31 => Ok(Self::SocProxyFatalAlertExternal6),
+            32 => Ok(Self::SocProxyFatalAlertExternal7),
+            33 => Ok(Self::SocProxyRecovAlertExternal0),
+            34 => Ok(Self::SocProxyRecovAlertExternal1),
+            35 => Ok(Self::SocProxyRecovAlertExternal2),
+            36 => Ok(Self::SocProxyRecovAlertExternal3),
+            37 => Ok(Self::SocProxyRecovAlertExternal4),
+            38 => Ok(Self::SocProxyRecovAlertExternal5),
+            39 => Ok(Self::SocProxyRecovAlertExternal6),
+            40 => Ok(Self::SocProxyRecovAlertExternal7),
+            41 => Ok(Self::SramCtrlRetAonFatalError),
+            42 => Ok(Self::RvDmFatalFault),
+            43 => Ok(Self::RvPlicFatalFault),
+            44 => Ok(Self::AesRecovCtrlUpdateErr),
+            45 => Ok(Self::AesFatalFault),
+            46 => Ok(Self::HmacFatalFault),
+            47 => Ok(Self::KmacRecovOperationErr),
+            48 => Ok(Self::KmacFatalFaultErr),
+            49 => Ok(Self::OtbnFatal),
+            50 => Ok(Self::OtbnRecov),
+            51 => Ok(Self::KeymgrDpeRecovOperationErr),
+            52 => Ok(Self::KeymgrDpeFatalFaultErr),
+            53 => Ok(Self::CsrngRecovAlert),
+            54 => Ok(Self::CsrngFatalAlert),
+            55 => Ok(Self::Edn0RecovAlert),
+            56 => Ok(Self::Edn0FatalAlert),
+            57 => Ok(Self::Edn1RecovAlert),
+            58 => Ok(Self::Edn1FatalAlert),
+            59 => Ok(Self::SramCtrlMainFatalError),
+            60 => Ok(Self::SramCtrlMboxFatalError),
+            61 => Ok(Self::RomCtrl0Fatal),
+            62 => Ok(Self::RomCtrl1Fatal),
+            63 => Ok(Self::DmaFatalFault),
+            64 => Ok(Self::Mbx0FatalFault),
+            65 => Ok(Self::Mbx0RecovFault),
+            66 => Ok(Self::Mbx1FatalFault),
+            67 => Ok(Self::Mbx1RecovFault),
+            68 => Ok(Self::Mbx2FatalFault),
+            69 => Ok(Self::Mbx2RecovFault),
+            70 => Ok(Self::Mbx3FatalFault),
+            71 => Ok(Self::Mbx3RecovFault),
+            72 => Ok(Self::Mbx4FatalFault),
+            73 => Ok(Self::Mbx4RecovFault),
+            74 => Ok(Self::Mbx5FatalFault),
+            75 => Ok(Self::Mbx5RecovFault),
+            76 => Ok(Self::Mbx6FatalFault),
+            77 => Ok(Self::Mbx6RecovFault),
+            78 => Ok(Self::MbxJtagFatalFault),
+            79 => Ok(Self::MbxJtagRecovFault),
+            80 => Ok(Self::MbxPcie0FatalFault),
+            81 => Ok(Self::MbxPcie0RecovFault),
+            82 => Ok(Self::MbxPcie1FatalFault),
+            83 => Ok(Self::MbxPcie1RecovFault),
+            84 => Ok(Self::RvCoreIbexFatalSwErr),
+            85 => Ok(Self::RvCoreIbexRecovSwErr),
+            86 => Ok(Self::RvCoreIbexFatalHwErr),
+            87 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -1904,7 +1928,7 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 80] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 88] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // GpioFatalFault -> TopDarjeelingAlertPeripheral::Gpio
@@ -1963,6 +1987,14 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 80
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyFatalAlertExternal3 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal4 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal5 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal6 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal7 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal0 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal1 -> TopDarjeelingAlertPeripheral::SocProxy
@@ -1970,6 +2002,14 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 80
     // SocProxyRecovAlertExternal2 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal3 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyRecovAlertExternal4 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyRecovAlertExternal5 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyRecovAlertExternal6 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyRecovAlertExternal7 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SramCtrlRetAonFatalError -> TopDarjeelingAlertPeripheral::SramCtrlRetAon
     TopDarjeelingAlertPeripheral::SramCtrlRetAon,

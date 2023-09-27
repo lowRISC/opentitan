@@ -75,21 +75,53 @@ typedef enum dif_soc_proxy_alert {
    */
   kDifSocProxyAlertFatalAlertExternal3 = 4,
   /**
+   * Fatal external alert channel 4
+   */
+  kDifSocProxyAlertFatalAlertExternal4 = 5,
+  /**
+   * Fatal external alert channel 5
+   */
+  kDifSocProxyAlertFatalAlertExternal5 = 6,
+  /**
+   * Fatal external alert channel 6
+   */
+  kDifSocProxyAlertFatalAlertExternal6 = 7,
+  /**
+   * Fatal external alert channel 7
+   */
+  kDifSocProxyAlertFatalAlertExternal7 = 8,
+  /**
    * Recoverable external alert channel 0
    */
-  kDifSocProxyAlertRecovAlertExternal0 = 5,
+  kDifSocProxyAlertRecovAlertExternal0 = 9,
   /**
    * Recoverable external alert channel 1
    */
-  kDifSocProxyAlertRecovAlertExternal1 = 6,
+  kDifSocProxyAlertRecovAlertExternal1 = 10,
   /**
    * Recoverable external alert channel 2
    */
-  kDifSocProxyAlertRecovAlertExternal2 = 7,
+  kDifSocProxyAlertRecovAlertExternal2 = 11,
   /**
    * Recoverable external alert channel 3
    */
-  kDifSocProxyAlertRecovAlertExternal3 = 8,
+  kDifSocProxyAlertRecovAlertExternal3 = 12,
+  /**
+   * Recoverable external alert channel 4
+   */
+  kDifSocProxyAlertRecovAlertExternal4 = 13,
+  /**
+   * Recoverable external alert channel 5
+   */
+  kDifSocProxyAlertRecovAlertExternal5 = 14,
+  /**
+   * Recoverable external alert channel 6
+   */
+  kDifSocProxyAlertRecovAlertExternal6 = 15,
+  /**
+   * Recoverable external alert channel 7
+   */
+  kDifSocProxyAlertRecovAlertExternal7 = 16,
 } dif_soc_proxy_alert_t;
 
 /**
