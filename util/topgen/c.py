@@ -527,8 +527,9 @@ class TopGenC:
         # debug bus which is not connected to the CPU LSU.
         regions = [
             region for ((dev_name, if_name), region) in self.devices()
-            if region.base_addr not in memories and dev_name != "rv_dm" and
-            (if_name is None or if_name != 'dbg')
+            if (dev_name == "sram_ctrl_ret_aon" and if_name == 'ram') or
+               (region.base_addr not in memories and dev_name != "rv_dm" and
+                (if_name is None or if_name != 'dbg'))
         ]
         # Note: The memory interface of the retention RAM is in the MMIO address space,
         # which we prefer since it reduces the number of ePMP regions we need.
