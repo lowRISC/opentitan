@@ -105,6 +105,7 @@ rust_library(
         "src/proxy/mod.rs",
         "src/proxy/protocol.rs",
         "src/proxy/socket_server.rs",
+        "src/rom_patch/mod.rs",
         "src/spiflash/flash.rs",
         "src/spiflash/mod.rs",
         "src/spiflash/sfdp.rs",
@@ -302,6 +303,9 @@ rust_test(
         "src/otp/testdata/otp_ctrl_img_dev.hjson",
         "src/otp/testdata/otp_ctrl_mmap.hjson",
         "src/otp/testdata/output.vmem",
+        "src/rom_patch/testdata/key_ecdsa.der",
+        "src/rom_patch/testdata/key_ecdsa.pub.der",
+        "src/rom_patch/testdata/patch.hjson",
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",

@@ -1,0 +1,103 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// An example of an HJSON-formatted ROM patch description.
+
+{
+    patches: [
+        {
+            revision: 1
+            /*
+             * The SRAM loading base address for this patch.
+             * All the patch_code sections will be incrementally loaded
+             * at that location, and the r_base values will be programmed
+             * accordignly.
+             * The sub_routines sections will be loaded at their own base address.
+             */
+            base_addr: 0x10004000
+            regions: [
+                {
+                    // Patching one instruction at 0x8940 with another instruction.
+                    match_addr: 0x00008940
+                    locked: true
+                    patch_code: [
+                        0x05a50513
+                    ]
+                }
+
+                {
+                    /*
+                     * Patching 2 insns at 0x4820 with 4 insns at 0x10000100.
+                     * The code section is a trampoline to a subroutine
+                     * base address (0x10000100).
+                     * The subroutine section is the actual patch,  including a
+                     * jump back to the ROM code.
+                     */
+                    match_addr: 0x00004820
+                    locked: true
+                    patch_code: [
+                        0x53400593
+                        0x00b50563
+                    ]
+                    sub_routines: [
+                        {
+                            // The subroutine will be loaded at base_addr + 0x100 in SRAM.
+                            offset: 0x100
+                            code: [
+                                0x53400593
+                                0x00c60563
+                                0x548a0596
+                                0x0d050563
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+
+        {
+            revision: 2
+            base_addr: 0x10004000
+            regions: [
+                {
+                    match_addr: 0x00020940
+                    locked: true
+                    patch_code: [
+                        0x05a50513
+                    ]
+                }
+
+                {
+                    match_addr: 0x00020820
+                    locked: false
+                    patch_code: [
+                        0x53400654
+                        0x00b40607
+                    ]
+                    sub_routines: [
+                        {
+                            offset: 0x200
+                            code: [
+                                0x45678900
+                                0x34567891
+                                0x548a0596
+                                0x0d050563
+                            ]
+                        }
+                    ]
+                }
+
+                {
+                    match_addr: 0x000020840
+                    locked: true
+                    patch_code: [
+                        0x05a50513
+                        0x548a0596
+                    ]
+                }
+
+            ]
+        }
+    ]
+}
