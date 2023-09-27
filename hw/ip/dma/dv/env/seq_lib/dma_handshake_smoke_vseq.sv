@@ -67,6 +67,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", handshake_value), UVM_HIGH)
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
+                           1'b1,              // Initial transfer
                            dma_config.handshake, // Handshake Enable
                            dma_config.auto_inc_buffer, // Auto-increment Buffer Address
                            dma_config.auto_inc_fifo, // Auto-increment FIFO Address
