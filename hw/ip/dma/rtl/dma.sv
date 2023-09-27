@@ -997,8 +997,6 @@ module dma
 
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
-        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-            ctrl_state_d = DmaShaWait;
         end else if (dma_host_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
@@ -1012,7 +1010,7 @@ module dma
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
             ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
@@ -1020,6 +1018,8 @@ module dma
         end else if (dma_host_tlul_gnt) begin
           // Only Request handled
           ctrl_state_d = DmaWaitHostWriteResponse;
+        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1041,8 +1041,6 @@ module dma
 
         if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
-        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-            ctrl_state_d = DmaShaWait;
         end else if (dma_ctn_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
@@ -1056,7 +1054,7 @@ module dma
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
             ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
@@ -1064,6 +1062,8 @@ module dma
         end else if (dma_ctn_tlul_gnt) begin
           // Only Request handled
           ctrl_state_d = DmaWaitCtnWriteResponse;
+        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1100,8 +1100,6 @@ module dma
 
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
-          end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-            ctrl_state_d = DmaShaWait;
           end else if (transfer_byte_d >= reg2hw.total_data_size.q) begin
             if (use_inline_hashing) begin
               ctrl_state_d = DmaShaFinalize;
@@ -1109,11 +1107,13 @@ module dma
               clear_go     = 1'b1;
               ctrl_state_d = DmaIdle;
             end
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+          end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
             ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
+        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+          ctrl_state_d = DmaShaWait;
         end
       end
 
@@ -1126,7 +1126,7 @@ module dma
         end else if (sha2_ready) begin
           if (transfer_byte_q >= reg2hw.total_data_size.q) begin
             ctrl_state_d = DmaShaFinalize;
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+          end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
             ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
