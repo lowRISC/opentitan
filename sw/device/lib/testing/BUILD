@@ -310,6 +310,15 @@ cc_library(
 )
 
 cc_library(
+    name = "randomness_quality",
+    srcs = ["randomness_quality.c"],
+    hdrs = ["randomness_quality.h"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "rstmgr_testutils",
     srcs = ["rstmgr_testutils.c"],
     hdrs = ["rstmgr_testutils.h"],
