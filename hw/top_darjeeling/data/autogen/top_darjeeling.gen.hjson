@@ -4021,7 +4021,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 8
+          width: 32
           inst_name: soc_proxy
           default: ""
           package: ""
@@ -14462,7 +14462,7 @@
     }
     {
       name: soc_proxy_external
-      width: 8
+      width: 32
       type: interrupt
       module_name: soc_proxy
     }
@@ -18367,7 +18367,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 8
+        width: 32
         inst_name: soc_proxy
         default: ""
         package: ""
@@ -22968,7 +22968,7 @@
         package: ""
         struct: logic
         signame: soc_intr_async_i
-        width: 8
+        width: 32
         type: uni
         default: ""
         direction: in

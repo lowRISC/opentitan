@@ -1466,7 +1466,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralSocProxy;
   for (dif_soc_proxy_irq_t irq = kDifSocProxyIrqExternal0;
-       irq <= kDifSocProxyIrqExternal7; ++irq) {
+       irq <= kDifSocProxyIrqExternal31; ++irq) {
     soc_proxy_irq_expected = irq;
     LOG_INFO("Triggering soc_proxy IRQ %d.", irq);
     CHECK_DIF_OK(dif_soc_proxy_irq_force(&soc_proxy, irq, true));

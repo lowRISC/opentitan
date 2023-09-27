@@ -228,7 +228,7 @@ module top_darjeeling #(
   output soc_proxy_pkg::soc_alert_rsp_t [7:0] soc_recov_alert_rsp_o,
   input  logic       soc_wkup_async_i,
   input  logic       soc_rst_req_async_i,
-  input  logic [7:0] soc_intr_async_i,
+  input  logic [31:0] soc_intr_async_i,
   input  logic [7:0] soc_lsio_trigger_i,
   output logic       sck_monitor_o,
 
@@ -337,7 +337,7 @@ module top_darjeeling #(
   // rv_core_ibex
 
 
-  logic [129:0]  intr_vector;
+  logic [153:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -390,7 +390,7 @@ module top_darjeeling #(
   logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_sensor_ctrl_io_status_change;
   logic intr_sensor_ctrl_init_status_change;
-  logic [7:0] intr_soc_proxy_external;
+  logic [31:0] intr_soc_proxy_external;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -2458,46 +2458,46 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_mbx_pcie1_mbx_abort, // IDs [129 +: 1]
-      intr_mbx_pcie1_mbx_ready, // IDs [128 +: 1]
-      intr_mbx_pcie0_mbx_abort, // IDs [127 +: 1]
-      intr_mbx_pcie0_mbx_ready, // IDs [126 +: 1]
-      intr_mbx_jtag_mbx_abort, // IDs [125 +: 1]
-      intr_mbx_jtag_mbx_ready, // IDs [124 +: 1]
-      intr_mbx6_mbx_abort, // IDs [123 +: 1]
-      intr_mbx6_mbx_ready, // IDs [122 +: 1]
-      intr_mbx5_mbx_abort, // IDs [121 +: 1]
-      intr_mbx5_mbx_ready, // IDs [120 +: 1]
-      intr_mbx4_mbx_abort, // IDs [119 +: 1]
-      intr_mbx4_mbx_ready, // IDs [118 +: 1]
-      intr_mbx3_mbx_abort, // IDs [117 +: 1]
-      intr_mbx3_mbx_ready, // IDs [116 +: 1]
-      intr_mbx2_mbx_abort, // IDs [115 +: 1]
-      intr_mbx2_mbx_ready, // IDs [114 +: 1]
-      intr_mbx1_mbx_abort, // IDs [113 +: 1]
-      intr_mbx1_mbx_ready, // IDs [112 +: 1]
-      intr_mbx0_mbx_abort, // IDs [111 +: 1]
-      intr_mbx0_mbx_ready, // IDs [110 +: 1]
-      intr_dma_dma_memory_buffer_limit, // IDs [109 +: 1]
-      intr_dma_dma_error, // IDs [108 +: 1]
-      intr_dma_dma_done, // IDs [107 +: 1]
-      intr_edn1_edn_fatal_err, // IDs [106 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [105 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [104 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [103 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [102 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [101 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [100 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [99 +: 1]
-      intr_keymgr_dpe_op_done, // IDs [98 +: 1]
-      intr_otbn_done, // IDs [97 +: 1]
-      intr_kmac_kmac_err, // IDs [96 +: 1]
-      intr_kmac_fifo_empty, // IDs [95 +: 1]
-      intr_kmac_kmac_done, // IDs [94 +: 1]
-      intr_hmac_hmac_err, // IDs [93 +: 1]
-      intr_hmac_fifo_empty, // IDs [92 +: 1]
-      intr_hmac_hmac_done, // IDs [91 +: 1]
-      intr_soc_proxy_external, // IDs [83 +: 8]
+      intr_mbx_pcie1_mbx_abort, // IDs [153 +: 1]
+      intr_mbx_pcie1_mbx_ready, // IDs [152 +: 1]
+      intr_mbx_pcie0_mbx_abort, // IDs [151 +: 1]
+      intr_mbx_pcie0_mbx_ready, // IDs [150 +: 1]
+      intr_mbx_jtag_mbx_abort, // IDs [149 +: 1]
+      intr_mbx_jtag_mbx_ready, // IDs [148 +: 1]
+      intr_mbx6_mbx_abort, // IDs [147 +: 1]
+      intr_mbx6_mbx_ready, // IDs [146 +: 1]
+      intr_mbx5_mbx_abort, // IDs [145 +: 1]
+      intr_mbx5_mbx_ready, // IDs [144 +: 1]
+      intr_mbx4_mbx_abort, // IDs [143 +: 1]
+      intr_mbx4_mbx_ready, // IDs [142 +: 1]
+      intr_mbx3_mbx_abort, // IDs [141 +: 1]
+      intr_mbx3_mbx_ready, // IDs [140 +: 1]
+      intr_mbx2_mbx_abort, // IDs [139 +: 1]
+      intr_mbx2_mbx_ready, // IDs [138 +: 1]
+      intr_mbx1_mbx_abort, // IDs [137 +: 1]
+      intr_mbx1_mbx_ready, // IDs [136 +: 1]
+      intr_mbx0_mbx_abort, // IDs [135 +: 1]
+      intr_mbx0_mbx_ready, // IDs [134 +: 1]
+      intr_dma_dma_memory_buffer_limit, // IDs [133 +: 1]
+      intr_dma_dma_error, // IDs [132 +: 1]
+      intr_dma_dma_done, // IDs [131 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [130 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [129 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [128 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [127 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [126 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [125 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [124 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [123 +: 1]
+      intr_keymgr_dpe_op_done, // IDs [122 +: 1]
+      intr_otbn_done, // IDs [121 +: 1]
+      intr_kmac_kmac_err, // IDs [120 +: 1]
+      intr_kmac_fifo_empty, // IDs [119 +: 1]
+      intr_kmac_kmac_done, // IDs [118 +: 1]
+      intr_hmac_hmac_err, // IDs [117 +: 1]
+      intr_hmac_fifo_empty, // IDs [116 +: 1]
+      intr_hmac_hmac_done, // IDs [115 +: 1]
+      intr_soc_proxy_external, // IDs [83 +: 32]
       intr_sensor_ctrl_init_status_change, // IDs [82 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [81 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [80 +: 1]

@@ -1053,84 +1053,132 @@ pub enum TopDarjeelingPlicIrqId {
     SocProxyExternal6 = 89,
     /// soc_proxy_external 7
     SocProxyExternal7 = 90,
+    /// soc_proxy_external 8
+    SocProxyExternal8 = 91,
+    /// soc_proxy_external 9
+    SocProxyExternal9 = 92,
+    /// soc_proxy_external 10
+    SocProxyExternal10 = 93,
+    /// soc_proxy_external 11
+    SocProxyExternal11 = 94,
+    /// soc_proxy_external 12
+    SocProxyExternal12 = 95,
+    /// soc_proxy_external 13
+    SocProxyExternal13 = 96,
+    /// soc_proxy_external 14
+    SocProxyExternal14 = 97,
+    /// soc_proxy_external 15
+    SocProxyExternal15 = 98,
+    /// soc_proxy_external 16
+    SocProxyExternal16 = 99,
+    /// soc_proxy_external 17
+    SocProxyExternal17 = 100,
+    /// soc_proxy_external 18
+    SocProxyExternal18 = 101,
+    /// soc_proxy_external 19
+    SocProxyExternal19 = 102,
+    /// soc_proxy_external 20
+    SocProxyExternal20 = 103,
+    /// soc_proxy_external 21
+    SocProxyExternal21 = 104,
+    /// soc_proxy_external 22
+    SocProxyExternal22 = 105,
+    /// soc_proxy_external 23
+    SocProxyExternal23 = 106,
+    /// soc_proxy_external 24
+    SocProxyExternal24 = 107,
+    /// soc_proxy_external 25
+    SocProxyExternal25 = 108,
+    /// soc_proxy_external 26
+    SocProxyExternal26 = 109,
+    /// soc_proxy_external 27
+    SocProxyExternal27 = 110,
+    /// soc_proxy_external 28
+    SocProxyExternal28 = 111,
+    /// soc_proxy_external 29
+    SocProxyExternal29 = 112,
+    /// soc_proxy_external 30
+    SocProxyExternal30 = 113,
+    /// soc_proxy_external 31
+    SocProxyExternal31 = 114,
     /// hmac_hmac_done
-    HmacHmacDone = 91,
+    HmacHmacDone = 115,
     /// hmac_fifo_empty
-    HmacFifoEmpty = 92,
+    HmacFifoEmpty = 116,
     /// hmac_hmac_err
-    HmacHmacErr = 93,
+    HmacHmacErr = 117,
     /// kmac_kmac_done
-    KmacKmacDone = 94,
+    KmacKmacDone = 118,
     /// kmac_fifo_empty
-    KmacFifoEmpty = 95,
+    KmacFifoEmpty = 119,
     /// kmac_kmac_err
-    KmacKmacErr = 96,
+    KmacKmacErr = 120,
     /// otbn_done
-    OtbnDone = 97,
+    OtbnDone = 121,
     /// keymgr_dpe_op_done
-    KeymgrDpeOpDone = 98,
+    KeymgrDpeOpDone = 122,
     /// csrng_cs_cmd_req_done
-    CsrngCsCmdReqDone = 99,
+    CsrngCsCmdReqDone = 123,
     /// csrng_cs_entropy_req
-    CsrngCsEntropyReq = 100,
+    CsrngCsEntropyReq = 124,
     /// csrng_cs_hw_inst_exc
-    CsrngCsHwInstExc = 101,
+    CsrngCsHwInstExc = 125,
     /// csrng_cs_fatal_err
-    CsrngCsFatalErr = 102,
+    CsrngCsFatalErr = 126,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 103,
+    Edn0EdnCmdReqDone = 127,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 104,
+    Edn0EdnFatalErr = 128,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 105,
+    Edn1EdnCmdReqDone = 129,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 106,
+    Edn1EdnFatalErr = 130,
     /// dma_dma_done
-    DmaDmaDone = 107,
+    DmaDmaDone = 131,
     /// dma_dma_error
-    DmaDmaError = 108,
+    DmaDmaError = 132,
     /// dma_dma_memory_buffer_limit
-    DmaDmaMemoryBufferLimit = 109,
+    DmaDmaMemoryBufferLimit = 133,
     /// mbx0_mbx_ready
-    Mbx0MbxReady = 110,
+    Mbx0MbxReady = 134,
     /// mbx0_mbx_abort
-    Mbx0MbxAbort = 111,
+    Mbx0MbxAbort = 135,
     /// mbx1_mbx_ready
-    Mbx1MbxReady = 112,
+    Mbx1MbxReady = 136,
     /// mbx1_mbx_abort
-    Mbx1MbxAbort = 113,
+    Mbx1MbxAbort = 137,
     /// mbx2_mbx_ready
-    Mbx2MbxReady = 114,
+    Mbx2MbxReady = 138,
     /// mbx2_mbx_abort
-    Mbx2MbxAbort = 115,
+    Mbx2MbxAbort = 139,
     /// mbx3_mbx_ready
-    Mbx3MbxReady = 116,
+    Mbx3MbxReady = 140,
     /// mbx3_mbx_abort
-    Mbx3MbxAbort = 117,
+    Mbx3MbxAbort = 141,
     /// mbx4_mbx_ready
-    Mbx4MbxReady = 118,
+    Mbx4MbxReady = 142,
     /// mbx4_mbx_abort
-    Mbx4MbxAbort = 119,
+    Mbx4MbxAbort = 143,
     /// mbx5_mbx_ready
-    Mbx5MbxReady = 120,
+    Mbx5MbxReady = 144,
     /// mbx5_mbx_abort
-    Mbx5MbxAbort = 121,
+    Mbx5MbxAbort = 145,
     /// mbx6_mbx_ready
-    Mbx6MbxReady = 122,
+    Mbx6MbxReady = 146,
     /// mbx6_mbx_abort
-    Mbx6MbxAbort = 123,
+    Mbx6MbxAbort = 147,
     /// mbx_jtag_mbx_ready
-    MbxJtagMbxReady = 124,
+    MbxJtagMbxReady = 148,
     /// mbx_jtag_mbx_abort
-    MbxJtagMbxAbort = 125,
+    MbxJtagMbxAbort = 149,
     /// mbx_pcie0_mbx_ready
-    MbxPcie0MbxReady = 126,
+    MbxPcie0MbxReady = 150,
     /// mbx_pcie0_mbx_abort
-    MbxPcie0MbxAbort = 127,
+    MbxPcie0MbxAbort = 151,
     /// mbx_pcie1_mbx_ready
-    MbxPcie1MbxReady = 128,
+    MbxPcie1MbxReady = 152,
     /// mbx_pcie1_mbx_abort
-    MbxPcie1MbxAbort = 129,
+    MbxPcie1MbxAbort = 153,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1228,45 +1276,69 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             88 => Ok(Self::SocProxyExternal5),
             89 => Ok(Self::SocProxyExternal6),
             90 => Ok(Self::SocProxyExternal7),
-            91 => Ok(Self::HmacHmacDone),
-            92 => Ok(Self::HmacFifoEmpty),
-            93 => Ok(Self::HmacHmacErr),
-            94 => Ok(Self::KmacKmacDone),
-            95 => Ok(Self::KmacFifoEmpty),
-            96 => Ok(Self::KmacKmacErr),
-            97 => Ok(Self::OtbnDone),
-            98 => Ok(Self::KeymgrDpeOpDone),
-            99 => Ok(Self::CsrngCsCmdReqDone),
-            100 => Ok(Self::CsrngCsEntropyReq),
-            101 => Ok(Self::CsrngCsHwInstExc),
-            102 => Ok(Self::CsrngCsFatalErr),
-            103 => Ok(Self::Edn0EdnCmdReqDone),
-            104 => Ok(Self::Edn0EdnFatalErr),
-            105 => Ok(Self::Edn1EdnCmdReqDone),
-            106 => Ok(Self::Edn1EdnFatalErr),
-            107 => Ok(Self::DmaDmaDone),
-            108 => Ok(Self::DmaDmaError),
-            109 => Ok(Self::DmaDmaMemoryBufferLimit),
-            110 => Ok(Self::Mbx0MbxReady),
-            111 => Ok(Self::Mbx0MbxAbort),
-            112 => Ok(Self::Mbx1MbxReady),
-            113 => Ok(Self::Mbx1MbxAbort),
-            114 => Ok(Self::Mbx2MbxReady),
-            115 => Ok(Self::Mbx2MbxAbort),
-            116 => Ok(Self::Mbx3MbxReady),
-            117 => Ok(Self::Mbx3MbxAbort),
-            118 => Ok(Self::Mbx4MbxReady),
-            119 => Ok(Self::Mbx4MbxAbort),
-            120 => Ok(Self::Mbx5MbxReady),
-            121 => Ok(Self::Mbx5MbxAbort),
-            122 => Ok(Self::Mbx6MbxReady),
-            123 => Ok(Self::Mbx6MbxAbort),
-            124 => Ok(Self::MbxJtagMbxReady),
-            125 => Ok(Self::MbxJtagMbxAbort),
-            126 => Ok(Self::MbxPcie0MbxReady),
-            127 => Ok(Self::MbxPcie0MbxAbort),
-            128 => Ok(Self::MbxPcie1MbxReady),
-            129 => Ok(Self::MbxPcie1MbxAbort),
+            91 => Ok(Self::SocProxyExternal8),
+            92 => Ok(Self::SocProxyExternal9),
+            93 => Ok(Self::SocProxyExternal10),
+            94 => Ok(Self::SocProxyExternal11),
+            95 => Ok(Self::SocProxyExternal12),
+            96 => Ok(Self::SocProxyExternal13),
+            97 => Ok(Self::SocProxyExternal14),
+            98 => Ok(Self::SocProxyExternal15),
+            99 => Ok(Self::SocProxyExternal16),
+            100 => Ok(Self::SocProxyExternal17),
+            101 => Ok(Self::SocProxyExternal18),
+            102 => Ok(Self::SocProxyExternal19),
+            103 => Ok(Self::SocProxyExternal20),
+            104 => Ok(Self::SocProxyExternal21),
+            105 => Ok(Self::SocProxyExternal22),
+            106 => Ok(Self::SocProxyExternal23),
+            107 => Ok(Self::SocProxyExternal24),
+            108 => Ok(Self::SocProxyExternal25),
+            109 => Ok(Self::SocProxyExternal26),
+            110 => Ok(Self::SocProxyExternal27),
+            111 => Ok(Self::SocProxyExternal28),
+            112 => Ok(Self::SocProxyExternal29),
+            113 => Ok(Self::SocProxyExternal30),
+            114 => Ok(Self::SocProxyExternal31),
+            115 => Ok(Self::HmacHmacDone),
+            116 => Ok(Self::HmacFifoEmpty),
+            117 => Ok(Self::HmacHmacErr),
+            118 => Ok(Self::KmacKmacDone),
+            119 => Ok(Self::KmacFifoEmpty),
+            120 => Ok(Self::KmacKmacErr),
+            121 => Ok(Self::OtbnDone),
+            122 => Ok(Self::KeymgrDpeOpDone),
+            123 => Ok(Self::CsrngCsCmdReqDone),
+            124 => Ok(Self::CsrngCsEntropyReq),
+            125 => Ok(Self::CsrngCsHwInstExc),
+            126 => Ok(Self::CsrngCsFatalErr),
+            127 => Ok(Self::Edn0EdnCmdReqDone),
+            128 => Ok(Self::Edn0EdnFatalErr),
+            129 => Ok(Self::Edn1EdnCmdReqDone),
+            130 => Ok(Self::Edn1EdnFatalErr),
+            131 => Ok(Self::DmaDmaDone),
+            132 => Ok(Self::DmaDmaError),
+            133 => Ok(Self::DmaDmaMemoryBufferLimit),
+            134 => Ok(Self::Mbx0MbxReady),
+            135 => Ok(Self::Mbx0MbxAbort),
+            136 => Ok(Self::Mbx1MbxReady),
+            137 => Ok(Self::Mbx1MbxAbort),
+            138 => Ok(Self::Mbx2MbxReady),
+            139 => Ok(Self::Mbx2MbxAbort),
+            140 => Ok(Self::Mbx3MbxReady),
+            141 => Ok(Self::Mbx3MbxAbort),
+            142 => Ok(Self::Mbx4MbxReady),
+            143 => Ok(Self::Mbx4MbxAbort),
+            144 => Ok(Self::Mbx5MbxReady),
+            145 => Ok(Self::Mbx5MbxAbort),
+            146 => Ok(Self::Mbx6MbxReady),
+            147 => Ok(Self::Mbx6MbxAbort),
+            148 => Ok(Self::MbxJtagMbxReady),
+            149 => Ok(Self::MbxJtagMbxAbort),
+            150 => Ok(Self::MbxPcie0MbxReady),
+            151 => Ok(Self::MbxPcie0MbxAbort),
+            152 => Ok(Self::MbxPcie1MbxReady),
+            153 => Ok(Self::MbxPcie1MbxAbort),
             _ => Err(val),
         }
     }
@@ -1661,7 +1733,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 130] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 154] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -1843,6 +1915,54 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     // SocProxyExternal6 -> TopDarjeelingPlicPeripheral::SocProxy
     TopDarjeelingPlicPeripheral::SocProxy,
     // SocProxyExternal7 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal8 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal9 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal10 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal11 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal12 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal13 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal14 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal15 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal16 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal17 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal18 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal19 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal20 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal21 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal22 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal23 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal24 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal25 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal26 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal27 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal28 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal29 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal30 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal31 -> TopDarjeelingPlicPeripheral::SocProxy
     TopDarjeelingPlicPeripheral::SocProxy,
     // HmacHmacDone -> TopDarjeelingPlicPeripheral::Hmac
     TopDarjeelingPlicPeripheral::Hmac,
