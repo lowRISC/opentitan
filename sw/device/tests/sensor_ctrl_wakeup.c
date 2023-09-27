@@ -97,7 +97,7 @@ bool test_main(void) {
 
     // Normal sleep.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, sleep_config));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFour, sleep_config));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");

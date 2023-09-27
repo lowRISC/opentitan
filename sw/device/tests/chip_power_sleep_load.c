@@ -9,7 +9,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
@@ -50,7 +49,6 @@ static dif_pwm_t pwm;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
-static dif_adc_ctrl_t adc_ctrl;
 
 static volatile const bool kCoreClkOff = false;
 static volatile const bool kIoClkOff = false;
@@ -144,8 +142,6 @@ bool test_main(void) {
       &otp_ctrl));
   CHECK_DIF_OK(dif_gpio_init(
       mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
 
   LOG_INFO("Running CHIP Power Sleep Load test");
 
@@ -179,7 +175,7 @@ bool test_main(void) {
     // test's flow....
   } else if ((wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
              (wakeup_reason.request_sources ==
-              kDifPwrmgrWakeupRequestSourceFive)) {
+              kDifPwrmgrWakeupRequestSourceThree)) {
     // Wakeup due to a peripheral request and reason is AON Timer
     prepare_to_exit();
     return true;
@@ -393,23 +389,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
       kWakeUpTime, &wake_up_time_aon_cycles));
 
-  // ADC configuration
-  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleDisabled));
-  CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
-  CHECK(power_up_time_aon_cycles < UINT8_MAX,
-        "power_up_time_aon_cycles must fit into uint8_t");
-  CHECK_DIF_OK(dif_adc_ctrl_configure(
-      &adc_ctrl,
-      (dif_adc_ctrl_config_t){
-          .mode = kDifAdcCtrlLowPowerScanMode,
-          .num_low_power_samples = kNumLowPowerSamples,
-          .num_normal_power_samples = kNumNormalPowerSamples,
-          .power_up_time_aon_cycles = (uint8_t)power_up_time_aon_cycles + 1,
-          .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
-  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
-
-  LOG_INFO("ADC Controller active");
-
   // Power Manager
   dif_pwrmgr_domain_config_t pwrmgr_cfg;
   dif_pwrmgr_request_sources_t pwrmgr_wakeups;
@@ -417,8 +396,7 @@ bool test_main(void) {
   // Specify which request sources are enabled for wake-up
   pwrmgr_wakeups =
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix);
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour);
 
   // Power manager configuration
   pwrmgr_cfg = ((kCoreClkOff ? 0 : kDifPwrmgrDomainOptionCoreClockInLowPower) |

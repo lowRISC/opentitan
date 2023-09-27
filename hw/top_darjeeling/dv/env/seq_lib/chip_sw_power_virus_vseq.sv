@@ -111,7 +111,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
 
   // A utility function to check the FSM states of the IPs.
   virtual task check_ip_activity();
-    logic [4:0] adc_ctrl_fsm_state;
     logic spi_device_cio_csb_i;
     logic spi_host_0_cio_csb_o;
     logic [csrng_pkg::MainSmStateWidth-1:0] csrng_main_fsm_state;
@@ -127,7 +126,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     // Wait for 16 clock cycles.
     cfg.clk_rst_vif.wait_clks(16);
 
-    `_DV_PROBE_AND_CHECK_IDLE(adc_ctrl_fsm_state, adc_ctrl_pkg::PWRDN)
     `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(csrng_main_fsm_state, csrng_pkg::MainSmIdle)

@@ -246,24 +246,24 @@ static void enter_low_power(bool deep_sleep) {
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   // Set the wake_up trigger as AON timer module
-  // (kDifPwrmgrWakeupRequestSourceFive).
+  // (kDifPwrmgrWakeupRequestSourceThree).
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceFive,
+      &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceThree,
       cfg));
   wait_for_interrupt();
 }
 
 /**
  * Verifies that wakeup source is the AON timer
- * (kDifPwrmgrWakeupRequestSourceFive).
+ * (kDifPwrmgrWakeupRequestSourceThree).
  */
 static void check_wakeup_reason(void) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-            &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true,
-        "wakeup reason wrong exp:%d  obs:%d", kDifPwrmgrWakeupRequestSourceFive,
-        wakeup_reason);
+            &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true,
+        "wakeup reason wrong exp:%d  obs:%d",
+        kDifPwrmgrWakeupRequestSourceThree, wakeup_reason);
 }
 
 /**

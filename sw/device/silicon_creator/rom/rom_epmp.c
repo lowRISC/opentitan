@@ -19,7 +19,7 @@ extern char _text_end[];     // End of executable code.
 // very robust at the moment. See #14345 and #14336.
 static_assert(TOP_DARJEELING_MMIO_BASE_ADDR == 0x21100000,
               "MMIO region changed, update ePMP configuration if needed");
-static_assert(TOP_DARJEELING_MMIO_SIZE_BYTES == 0xFF70080,
+static_assert(TOP_DARJEELING_MMIO_SIZE_BYTES == 0xFF60100,
               "MMIO region changed, update ePMP configuration if needed");
 
 static_assert(TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=

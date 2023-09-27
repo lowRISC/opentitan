@@ -250,12 +250,12 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, 0));
     wait_for_interrupt();
     CHECK(false, "Fail to enter in low power mode!");
     OT_UNREACHABLE();
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
     LOG_INFO("Wakeup reset");
     CHECK(UNWRAP(rstmgr_testutils_is_reset_info(
         &rstmgr, kDifRstmgrResetInfoLowPowerExit)));

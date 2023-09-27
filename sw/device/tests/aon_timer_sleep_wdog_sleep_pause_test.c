@@ -75,7 +75,7 @@ bool test_main(void) {
 
     // Deep sleep.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
         /*domain_config=*/0));
 
     // Enter low power mode.

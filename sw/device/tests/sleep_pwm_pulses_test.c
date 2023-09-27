@@ -180,14 +180,14 @@ bool test_main(void) {
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     // Deep sleep.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, 0));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
     LOG_INFO("Wakeup reset");
 
     CHECK(UNWRAP(rstmgr_testutils_is_reset_info(

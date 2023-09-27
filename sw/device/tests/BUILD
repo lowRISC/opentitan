@@ -2433,7 +2433,6 @@ opentitan_functest(
     ],
     test_harness = "//sw/host/tests/chip/power_virus",
     deps = [
-        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
         "//hw/ip/aes:model",
         "//hw/ip/aes/data:aes_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -2455,7 +2454,6 @@ opentitan_functest(
         "//sw/lib/sw/device/base:multibits",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:adc_ctrl",
         "//sw/top_darjeeling/sw/dif:aes",
         "//sw/top_darjeeling/sw/dif:csrng",
         "//sw/top_darjeeling/sw/dif:csrng_shared",

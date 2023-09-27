@@ -45,7 +45,7 @@ bool test_main(void) {
 
     // Configure shallow sleep.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
         kDifPwrmgrDomainOptionMainPowerInLowPower));
 
     // This causes core_sleeping to rise and triggers the injection of the

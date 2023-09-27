@@ -123,7 +123,7 @@ void test_ret_sram_in_normal_sleep(void) {
 
   // Normal sleep.
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFive,
+      &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceThree,
       /*domain_config=*/kDifPwrmgrDomainOptionCoreClockInLowPower |
           kDifPwrmgrDomainOptionUsbClockInActivePower |
           kDifPwrmgrDomainOptionMainPowerInLowPower));
@@ -144,7 +144,7 @@ void enter_deep_sleep(void) {
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Deep sleep.
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+      &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, 0));
 
   // Enter low power mode.
   LOG_INFO("Issue WFI to enter deep sleep");
@@ -207,7 +207,7 @@ bool test_main(void) {
              ret_non_scrambled);
 
     CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-              &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true);
+              &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true);
     // data preserved
     retention_sram_check((check_config_t){.do_write = false, .is_equal = true});
 

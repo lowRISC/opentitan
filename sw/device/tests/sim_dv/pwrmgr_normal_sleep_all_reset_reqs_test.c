@@ -323,8 +323,7 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       config));
   LOG_INFO("ready for pad por");
   // Enter in low power mode.

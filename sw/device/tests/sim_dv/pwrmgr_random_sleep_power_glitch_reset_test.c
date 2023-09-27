@@ -253,7 +253,7 @@ static void config_escalate(dif_aon_timer_t *aon_timer,
 static void low_power_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+      pwrmgr, kDifPwrmgrWakeupRequestSourceThree, 0));
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -266,7 +266,7 @@ static void normal_sleep_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionIoClockInLowPower |
            kDifPwrmgrDomainOptionMainPowerInLowPower;
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceFive, config));
+      pwrmgr, kDifPwrmgrWakeupRequestSourceThree, config));
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -348,8 +348,7 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       0));
   // Enter in low power mode.
   wait_for_interrupt();
@@ -374,8 +373,7 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       config));
   // Enter in low power mode.
   wait_for_interrupt();

@@ -230,9 +230,9 @@ static void enter_low_power(bool deep_sleep) {
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   // Set the wake_up trigger as AON timer module
-  // (kDifPwrmgrWakeupRequestSourceFive).
+  // (kDifPwrmgrWakeupRequestSourceThree).
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceFive,
+      &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceThree,
       cfg));
   wait_for_interrupt();
 }
@@ -363,7 +363,7 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     // Enter normal sleep mode.
     enter_low_power(/*deep_sleep=*/false);
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) ==
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) ==
              true /*AON timer*/) {
     // Cleanup after wakeup
     cleanup_wakeup_src();

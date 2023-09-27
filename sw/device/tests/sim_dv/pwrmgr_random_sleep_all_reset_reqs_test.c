@@ -328,8 +328,7 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       0));
   // Enter in low power mode.
   wait_for_interrupt();
@@ -354,8 +353,7 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       config));
   // Enter in low power mode.
   wait_for_interrupt();

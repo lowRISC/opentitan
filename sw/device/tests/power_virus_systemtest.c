@@ -8,7 +8,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/aes/dif/dif_aes.h"
 #include "sw/ip/aes/test/utils/aes_testutils.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
@@ -32,11 +31,10 @@
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "adc_ctrl_regs.h"  // Generated.
-#include "aes_regs.h"       // Generated.
-#include "csrng_regs.h"     // Generated.
-#include "gpio_regs.h"      // Generated.
-#include "hmac_regs.h"      // Generated.
+#include "aes_regs.h"    // Generated.
+#include "csrng_regs.h"  // Generated.
+#include "gpio_regs.h"   // Generated.
+#include "hmac_regs.h"   // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"       // Generated.
 #include "kmac_regs.h"      // Generated.
@@ -56,7 +54,6 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
  */
 static dif_pinmux_t pinmux;
 static dif_gpio_t gpio;
-static dif_adc_ctrl_t adc_ctrl;
 static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
@@ -197,8 +194,6 @@ void ottf_external_isr(void) {
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_csrng_init(
@@ -292,42 +287,6 @@ static void configure_pinmux_sim(void) {
   // Enable pull-ups for SPI_HOST_0/1 data pins to avoid floating inputs.
   pinmux_testutils_configure_pads(&pinmux, pinmux_pad_attributes,
                                   ARRAYSIZE(pinmux_pad_attributes));
-}
-
-/**
- * Configures adc_ctrl to continuously sample data (applying all filters across
- * both channels) in normal power mode, which is the most power intensive
- * sampling mode.
- */
-static void configure_adc_ctrl_to_continuously_sample(void) {
-  CHECK_DIF_OK(dif_adc_ctrl_configure(
-      &adc_ctrl,
-      (dif_adc_ctrl_config_t){
-          .mode = kDifAdcCtrlNormalPowerScanMode,
-          .power_up_time_aon_cycles = kAdcCtrlPowerUpTimeAonCycles,
-          // Below configurations are unused, so set them to their reset
-          // values.
-          .wake_up_time_aon_cycles = ADC_CTRL_ADC_PD_CTL_WAKEUP_TIME_MASK,
-          .num_low_power_samples = ADC_CTRL_ADC_LP_SAMPLE_CTL_REG_RESVAL,
-          .num_normal_power_samples = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
-      }));
-  for (size_t filter = 0; filter < ADC_CTRL_PARAM_NUM_ADC_FILTER; ++filter) {
-    for (size_t channel = 0; channel < ADC_CTRL_PARAM_NUM_ADC_CHANNEL;
-         ++channel) {
-      CHECK_DIF_OK(dif_adc_ctrl_configure_filter(
-          &adc_ctrl, (dif_adc_ctrl_channel_t)channel,
-          (dif_adc_ctrl_filter_config_t){
-              .filter = (dif_adc_ctrl_filter_t)filter,
-              // Set max range.
-              .min_voltage = 0,
-              .max_voltage = ADC_CTRL_ADC_CHN0_FILTER_CTL_0_MAX_V_0_MASK,
-              .in_range = true,
-              .generate_wakeup_on_match = false,
-              .generate_irq_on_match = false,
-          },
-          kDifToggleEnabled));
-    }
-  }
 }
 
 static void configure_entropy_complex(void) {
@@ -653,12 +612,6 @@ static void max_power_task(void *task_parameters) {
   i2c_ctrl_reg =
       bitfield_bit32_write(i2c_ctrl_reg, I2C_CTRL_ENABLEHOST_BIT, true);
 
-  // Prepare adc_ctrl enablement command
-  uint32_t adc_ctrl_reg =
-      mmio_region_read32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET);
-  adc_ctrl_reg = bitfield_bit32_write(adc_ctrl_reg,
-                                      ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true);
-
   // Prepare GPIO register values (for max power indicator).
   const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
   const uint32_t gpio_off_reg_val = 1u << 16;
@@ -666,10 +619,6 @@ static void max_power_task(void *task_parameters) {
   check_crypto_blocks_idle();
 
   LOG_INFO("Entering max power epoch ...");
-
-  // Enable adc_ctrl
-  mmio_region_write32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
-                      adc_ctrl_reg);
 
   // Enable all I2Cs.
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
@@ -799,7 +748,6 @@ bool test_main(void) {
   // Clear GPIO pin 0 (max power indicator pin).
   CHECK_DIF_OK(
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
-  configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   // Note: configuration of OTBN must be done *before* configuration of the
   // HMAC, as the cryptolib uses HMAC in SHA256 mode, which will cause HMAC

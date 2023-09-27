@@ -193,7 +193,6 @@ static void restore_fault_checker(fault_checker_t *fault_checker) {
 }
 
 // It would be handy to generate these.
-static const char *adc_ctrl_inst_name = "adc_ctrl";
 static const char *aes_inst_name = "aes";
 static const char *aon_timer_inst_name = "aon_timer";
 static const char *clkmgr_inst_name = "clkmgr";
@@ -763,11 +762,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
 
   // Select the fault_checker function, depending on kExpectedAlertNumber.
   switch (kExpectedAlertNumber) {
-    case kTopDarjeelingAlertIdAdcCtrlAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, adc_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
     case kTopDarjeelingAlertIdAesFatalFault: {
       fault_checker_t fc = {aes_fault_checker, aes_inst_name, we_check};
       fault_checker = fc;

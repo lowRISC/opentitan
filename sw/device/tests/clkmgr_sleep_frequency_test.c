@@ -133,7 +133,7 @@ bool test_main(void) {
   // Put chip in normal sleep, and keep Core clock running. All io and usb
   // clocks are stopped, but we expect the stoppage won't trigger errors.
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFive,
+      &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceThree,
       /*domain_config=*/kDifPwrmgrDomainOptionCoreClockInLowPower |
           kDifPwrmgrDomainOptionUsbClockInActivePower |
           kDifPwrmgrDomainOptionMainPowerInLowPower));

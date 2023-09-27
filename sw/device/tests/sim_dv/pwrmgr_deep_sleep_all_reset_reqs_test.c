@@ -317,8 +317,7 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
+       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour),
       0));
   LOG_INFO("ready for pad por");
 

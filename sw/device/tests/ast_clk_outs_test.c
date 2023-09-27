@@ -100,14 +100,14 @@ bool test_main(void) {
     busy_spin_micros(delay_micros);
 
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
         kDifPwrmgrDomainOptionUsbClockInActivePower));
 
     LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
     // Fail if some measurements are enabled.
     bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
         &clkmgr, kDifToggleDisabled));

@@ -7,7 +7,6 @@
 
 #include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
 
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
@@ -20,45 +19,12 @@
 
 static const uint32_t kPinmuxWkupDetector5 = 5;
 
-dif_adc_ctrl_t adc_ctrl;
 dif_aon_timer_t aon_timer;
 dif_flash_ctrl_state_t flash_ctrl;
 dif_pinmux_t pinmux;
 dif_pwrmgr_t pwrmgr;
 dif_rv_plic_t rv_plic;
 dif_sensor_ctrl_t sensor_ctrl;
-
-/**
- * adc_ctrl config for test #2
- * . enable filter 5 and set voltage range (0,200)
- */
-static void prgm_adc_ctrl_wakeup(void *dif) {
-  dif_adc_ctrl_config_t cfg = {
-      .mode = kDifAdcCtrlLowPowerScanMode,
-      .power_up_time_aon_cycles = 7,
-      .wake_up_time_aon_cycles = 100,
-      .num_low_power_samples = 2,
-      .num_normal_power_samples = 8,
-  };
-  CHECK_DIF_OK(dif_adc_ctrl_configure(dif, cfg));
-
-  dif_adc_ctrl_filter_config_t filter_cfg = {
-      .filter = kDifAdcCtrlFilter5,
-      .min_voltage = 0,
-      .max_voltage = 200,
-      .in_range = true,
-      .generate_wakeup_on_match = true,
-      .generate_irq_on_match = false,
-  };
-
-  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(dif, kDifAdcCtrlChannel0,
-                                             filter_cfg, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(dif, kDifAdcCtrlChannel1,
-                                             filter_cfg, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
-      dif, kDifAdcCtrlFilter5, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(dif, kDifToggleEnabled));
-}
 
 /**
  * pinmux config for test #3
@@ -96,34 +62,26 @@ static void prgm_sensor_ctrl_wakeup(void *dif) {
 
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
-        .name = "ADC_CTRL",
-        .dif_handle = &adc_ctrl,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
-        .config = prgm_adc_ctrl_wakeup,
-    },
-    {
         .name = "PINMUX",
         .dif_handle = &pinmux,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
+        .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
         .config = prgm_pinmux_wakeup,
     },
     {
         .name = "AONTIMER",
         .dif_handle = &aon_timer,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
+        .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
         .config = prgm_aontimer_wakeup,
     },
     {
         .name = "SENSOR_CTRL",
         .dif_handle = &sensor_ctrl,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
+        .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
         .config = prgm_sensor_ctrl_wakeup,
     },
 };
 
 void init_units(void) {
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
       &aon_timer));
@@ -177,10 +135,6 @@ static bool get_wakeup_status(void) {
  */
 void cleanup(uint32_t test_idx) {
   switch (test_idx) {
-    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
-          &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
-      break;
     case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX:
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;

@@ -12,7 +12,6 @@
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-#include "adc_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "keymgr_dpe_regs.h"
 #include "otp_ctrl_regs.h"
@@ -36,7 +35,6 @@
        SRAM RET ADDRESS(8)                ?        0xDDAA_55BB
     Group3:
                                           RESET    PRGM (ARBITRARY VALUE)
-       ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
@@ -78,14 +76,12 @@ typedef struct test_register {
 
 static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_adc_ctrl_t adc_ctrl;
 static dif_pinmux_t pinmux;
 static dif_keymgr_dpe_t keymgr_dpe;
 
 enum {
   OTP_CTRL,
   PINMUX,
-  ADC_CTRL,
   KEYMGR_DPE,
 };
 
@@ -105,15 +101,6 @@ static test_register_t kReg[] = {
             .offset = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_OFFSET,
             .write_val = 0x44,
             .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
-
-        },
-    [ADC_CTRL] =
-        {
-            .name = "ADC_CTRL",
-            .base = TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR,
-            .offset = ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
-            .write_val = 0x37,
-            .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
 
         },
     [KEYMGR_DPE] =
@@ -150,9 +137,6 @@ static void init_peripherals(void) {
 
   addr = mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(addr, &otp_ctrl));
-
-  addr = mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_adc_ctrl_init(addr, &adc_ctrl));
 
   addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));

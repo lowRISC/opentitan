@@ -108,7 +108,7 @@ bool test_main(void) {
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     // Enable aon wakeup.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive,
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceThree,
         kDifToggleEnabled));
     LOG_INFO("Enabled aon wakeup");
 
@@ -149,7 +149,7 @@ bool test_main(void) {
     return true;
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
     LOG_ERROR("Unexpected wakeup reset");
     return false;
   }
