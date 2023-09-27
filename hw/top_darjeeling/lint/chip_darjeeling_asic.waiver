@@ -63,10 +63,6 @@ waive -rules {RESET_DRIVER} -location {ast.sv} \
 waive -rules {COMBO_LOOP} -location {chip_darjeeling_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
       -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
 
-# Combo loops through sysrst_ctrl inversion can be ignored
-waive -rules {COMBO_LOOP} -location {chip_darjeeling_asic.sv} -regexp {'outputs\[[0-9]+\]' driven in module 'sysrst_ctrl_pin' by 'inputs\[[0-9]+\]' at sysrst_ctrl_pin} \
-      -comment "sysrst_ctrl creates a feed through path directly for certain muxed pins"
-
 # External clock
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv}  -regexp {'(attr_padring_o|mio_attr)\[28\].pull_select' driven in module} \
       -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"

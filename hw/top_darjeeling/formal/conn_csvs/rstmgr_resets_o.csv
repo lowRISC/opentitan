@@ -40,8 +40,6 @@ CONNECTION, RSTMGR_POR_IO_AON_CLKMGR_RST_ROOT_IO_NI, top_darjeeling.u_rstmgr_aon
 CONNECTION, RSTMGR_POR_IO_DIV2_AON_CLKMGR_RST_ROOT_IO_DIV2_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_por_io_div2_n[0], top_darjeeling.u_clkmgr_aon, rst_root_io_div2_ni
 CONNECTION, RSTMGR_POR_IO_DIV4_AON_CLKMGR_RST_ROOT_IO_DIV4_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_por_io_div4_n[0], top_darjeeling.u_clkmgr_aon, rst_root_io_div4_ni
 CONNECTION, RSTMGR_POR_AON_CLKMGR_RST_ROOT_MAIN_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_por_n[0], top_darjeeling.u_clkmgr_aon, rst_root_main_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_AON_LCRST_CTRL_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_sysrst_ctrl_aon, rst_ni
-CONNECTION, RSTMGR_LC_AON_AON_LCRST_CTRL_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_sysrst_ctrl_aon, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_ADC_CTRL_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_adc_ctrl_aon, rst_ni
 CONNECTION, RSTMGR_LC_AON_AON_ADC_CTRL_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_adc_ctrl_aon, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_PINMUX_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_pinmux_aon, rst_ni

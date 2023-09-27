@@ -131,11 +131,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/sram_ctrl/lint/{tool}"
              },
-             {    name: sysrst_ctrl
-                  fusesoc_core: lowrisc:ip:sysrst_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/sysrst_ctrl/lint/{tool}"
-             },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

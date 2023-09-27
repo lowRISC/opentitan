@@ -31,9 +31,6 @@ CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_MAIN_OTP_CLK, top_darjeeling.u_clkmgr_aon
 CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_RET_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_darjeeling.u_sram_ctrl_ret_aon, clk_i
 CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_RET_OTP_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_darjeeling.u_sram_ctrl_ret_aon, clk_otp_i
 
-#sysrst_ctrl
-CONNECTION, CLKMGR_INFRA_CLK_SYSRST_CTRL_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_darjeeling.u_sysrst_ctrl_aon, clk_i
-
 #xbar
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_MAIN_CLK,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra,    top_darjeeling.u_xbar_main, clk_main_i
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_FIXED_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_darjeeling.u_xbar_main, clk_fixed_i

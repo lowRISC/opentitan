@@ -100,14 +100,6 @@ set_input_delay ${IO_DIV4_IN_DEL}   ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 
 #####################
-# sysrst_ctrl       #
-#####################
-
-# MIO paths that go into sysrst_ctrl and fan out into MIOs or dedicated sysrst_ctrl outputs are async in nature, hence we constrain them using a max delay.
-set SYSRST_MAXDELAY 70.0
-set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_darjeeling/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
-
-#####################
 # AON clk           #
 #####################
 set AON_CLK_PIN u_ast/clk_src_aon_o

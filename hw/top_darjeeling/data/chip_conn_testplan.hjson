@@ -347,7 +347,6 @@
             - sram_ctrl main clk_otp_i
             - sram_ctrl retention clk_i
             - sram_ctrl retention clk_otp_i
-            - sysrst_ctrl clk_i
             - xbar_main clk_fixed_i
             - xbar_peri clk_peri_i
             '''
@@ -356,7 +355,6 @@
               "clkmgr_infra_clk_sram_ctrl_main_otp_clk",
               "clkmgr_infra_clk_sram_ctrl_ret_clk",
               "clkmgr_infra_clk_sram_ctrl_ret_otp_clk",
-              "clkmgr_infra_clk_sysrst_ctrl_clk",
               "clkmgr_infra_clk_xbar_main_fixed_clk",
               "clkmgr_infra_clk_xbar_peri_peri_clk"]
       tags: ["conn"]
@@ -380,15 +378,6 @@
               "clkmgr_infra_clk_rv_core_ibex_edn_clk",
               "clkmgr_infra_clk_sram_ctrl_main_clk",
               "clkmgr_infra_clk_xbar_main_main_clk"]
-      tags: ["conn"]
-    }
-    {
-      name: clkmgr_clk_aon_infra
-      desc: '''Verify clkmgr's `clk_aon_infra` is connected to the following block's clock input:
-            - sysrst_ctrl clk_aon_i
-            '''
-      stage: V2
-      tests: ["clkmgr_infra_clk_sysrst_ctrl_aon_clk"]
       tags: ["conn"]
     }
     {
@@ -981,12 +970,10 @@
       desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
             - adc_ctrl's rst_aon_ni
             - sensor_ctrl's rst_aon_ni
-            - sysrst_ctrl's rst_aon_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_aon_aon_adc_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_sysrst_ctrl_rst_aon_ni"]
+              "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni"]
       tags: ["conn"]
     }
     {
@@ -1002,13 +989,11 @@
             - adc_ctrl's rst_ni
             - sensor_ctrl's rst_ni
             - sram_ctrl_ret's rst_ni
-            - sysrst_ctrl's rst_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_io_div4_aon_adc_ctrl_rst_ni",
               "rstmgr_sys_io_div4_aon_sensor_ctrl_rst_ni",
-              "rstmgr_sys_io_div4_aon_sram_ctrl_ret_rst_ni",
-              "rstmgr_sys_io_div4_aon_sysrst_ctrl_rst_ni"]
+              "rstmgr_sys_io_div4_aon_sram_ctrl_ret_rst_ni"]
       tags: ["conn"]
     }
     {
