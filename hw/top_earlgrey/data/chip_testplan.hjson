@@ -37,6 +37,7 @@
     "hw/top_earlgrey/data/ip/chip_spi_device_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_sram_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rv_timer_testplan.hjson",
   ]
 
   testpoints: [
@@ -524,20 +525,6 @@
             '''
       stage: V2
       tests: ["chip_rv_dm_lc_disabled"]
-    }
-
-    // RV_TIMER (pre-verified IP) integration tests:
-    {
-      name: chip_sw_timer
-      desc: '''Verify the timeout interrupt assertion.
-
-            - Configure the RV_TIMER to generate interrupt after a set timeout.
-            - Issue a WFI to wait for the interrupt to trigger.
-            - Service the interrupt when it triggers; verify that it came from rv_timer.
-            - Verify that the interrupt triggered only after the timeout elapsed.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_timer_irq"]
     }
 
     // AON_TIMER (pre-verified IP) integration tests:
