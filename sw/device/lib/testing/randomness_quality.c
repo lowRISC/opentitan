@@ -43,7 +43,7 @@ static uint64_t diff_squared(uint64_t a, uint64_t b) {
 }
 
 status_t randomness_quality_monobit_test(
-    uint8_t *data, size_t len, randomness_quality_threshold_t threshold) {
+    uint8_t *data, size_t len, randomness_quality_significance_t significance) {
   // Guard against overflow in the bit-count.
   TRY_CHECK(len <= UINT32_MAX);
 
@@ -66,13 +66,13 @@ status_t randomness_quality_monobit_test(
   // Retrieve the threshold values.
   uint64_t threshold_numerator = 0;
   uint64_t threshold_denominator = 1;
-  switch (threshold) {
-    case kRandomnessQualityThresholdFivePercent: {
+  switch (significance) {
+    case kRandomnessQualitySignificanceFivePercent: {
       threshold_numerator = kMonobitFivePercentThresholdNumerator;
       threshold_denominator = kMonobitFivePercentThresholdDenominator;
       break;
     }
-    case kRandomnessQualityThresholdOnePercent: {
+    case kRandomnessQualitySignificanceOnePercent: {
       threshold_numerator = kMonobitOnePercentThresholdNumerator;
       threshold_denominator = kMonobitOnePercentThresholdDenominator;
       break;

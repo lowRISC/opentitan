@@ -14,22 +14,23 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Test failure probability setting.
+ * Test statistical significance setting.
  *
  * The statistical tests in this file will always fail with some probability,
  * even on truly random data. Use these settings to toggle the threshold
- * values.
+ * values. In the Handbook of Applied Cryptography, this setting is denoted
+ * with the Greek letter alpha.
  */
-typedef enum randomness_quality_threshold {
+typedef enum randomness_quality_significance {
   /**
    * Set thresholds for a 5% failure rate on truly random data (alpha = 0.05).
    */
-  kRandomnessQualityThresholdFivePercent,
+  kRandomnessQualitySignificanceFivePercent,
   /**
    * Set thresholds for a 1% failure rate on truly random data (alpha = 0.01).
    */
-  kRandomnessQualityThresholdOnePercent,
-} randomness_quality_threshold_t;
+  kRandomnessQualitySignificanceOnePercent,
+} randomness_quality_significance_t;
 
 /**
  * Monobit test from section 5.4.4 of the Handbook of Applied Cryptography.
@@ -39,11 +40,11 @@ typedef enum randomness_quality_threshold {
  *
  * @param data Random data to check.
  * @param len Length of data.
- * @param threshold Test threshold setting.
+ * @param significance Test statistical significance setting.
  * @return OK if the test passes, a failure code otherwise.
  */
 status_t randomness_quality_monobit_test(
-    uint8_t *data, size_t len, randomness_quality_threshold_t threshold);
+    uint8_t *data, size_t len, randomness_quality_significance_t significance);
 
 #ifdef __cplusplus
 }  // extern "C"
