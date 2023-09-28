@@ -195,17 +195,8 @@ with_unknown! {
         I2c0Sda = 35,
         I2c0Scl = 36,
         Uart0Tx = 37,
-        SensorCtrlAstDebugOut0 = 38,
-        SensorCtrlAstDebugOut1 = 39,
-        SensorCtrlAstDebugOut2 = 40,
-        SensorCtrlAstDebugOut3 = 41,
-        SensorCtrlAstDebugOut4 = 42,
-        SensorCtrlAstDebugOut5 = 43,
-        SensorCtrlAstDebugOut6 = 44,
-        SensorCtrlAstDebugOut7 = 45,
-        SensorCtrlAstDebugOut8 = 46,
-        OtpCtrlTest0 = 47,
-        End = 48,
+        OtpCtrlTest0 = 38,
+        End = 39,
     }
 
     pub enum DirectPads: u32 [default = Self::End] {

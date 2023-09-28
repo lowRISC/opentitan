@@ -828,17 +828,8 @@ package top_darjeeling_pkg;
     MioOutI2c0Sda = 32,
     MioOutI2c0Scl = 33,
     MioOutUart0Tx = 34,
-    MioOutSensorCtrlAstDebugOut0 = 35,
-    MioOutSensorCtrlAstDebugOut1 = 36,
-    MioOutSensorCtrlAstDebugOut2 = 37,
-    MioOutSensorCtrlAstDebugOut3 = 38,
-    MioOutSensorCtrlAstDebugOut4 = 39,
-    MioOutSensorCtrlAstDebugOut5 = 40,
-    MioOutSensorCtrlAstDebugOut6 = 41,
-    MioOutSensorCtrlAstDebugOut7 = 42,
-    MioOutSensorCtrlAstDebugOut8 = 43,
-    MioOutOtpCtrlTest0 = 44,
-    MioOutCount = 45
+    MioOutOtpCtrlTest0 = 35,
+    MioOutCount = 36
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.

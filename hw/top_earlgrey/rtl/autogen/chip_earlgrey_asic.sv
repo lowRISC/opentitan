@@ -1003,14 +1003,6 @@ module chip_earlgrey_asic #(
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
-  assign manual_out_ast_misc = 1'b0;
-  assign manual_oe_ast_misc = 1'b0;
-  always_comb begin
-    // constantly enable pull-down
-    manual_attr_ast_misc = '0;
-    manual_attr_ast_misc.pull_select = 1'b0;
-    manual_attr_ast_misc.pull_en = 1'b1;
-  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
@@ -1019,6 +1011,14 @@ module chip_earlgrey_asic #(
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
+  assign manual_out_ast_misc = 1'b0;
+  assign manual_oe_ast_misc = 1'b0;
+  always_comb begin
+    // constantly enable pull-down
+    manual_attr_ast_misc = '0;
+    manual_attr_ast_misc.pull_select = 1'b0;
+    manual_attr_ast_misc.pull_en = 1'b1;
+  end
   assign manual_out_flash_test_mode0 = 1'b0;
   assign manual_oe_flash_test_mode0 = 1'b0;
   assign manual_out_flash_test_mode1 = 1'b0;
@@ -1141,13 +1141,13 @@ module chip_earlgrey_asic #(
     .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
                                      FLASH_TEST_MODE0}         ),
     .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
+    .ast2pinmux_i                 ( ast2pinmux                 ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
     .all_clk_byp_req_o            ( all_clk_byp_req            ),
     .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 

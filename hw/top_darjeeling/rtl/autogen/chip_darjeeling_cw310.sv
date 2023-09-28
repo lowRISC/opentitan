@@ -966,8 +966,8 @@ module chip_darjeeling_cw310 #(
     .usb_obs_i             ( usb_diff_rx_obs ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
-    .padmux2ast_i          ( pad2ast    ),
-    .ast2padmux_o          ( ast2pinmux ),
+    .padmux2ast_i          ( '0         ),
+    .ast2padmux_o          (            ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),

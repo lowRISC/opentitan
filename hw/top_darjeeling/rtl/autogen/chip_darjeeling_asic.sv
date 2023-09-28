@@ -54,7 +54,6 @@ module chip_darjeeling_asic #(
   inout SOC_GPO9, // Dedicated Pad for soc_proxy_soc_gpo
   inout SOC_GPO10, // Dedicated Pad for soc_proxy_soc_gpo
   inout SOC_GPO11, // Dedicated Pad for soc_proxy_soc_gpo
-  inout AST_MISC, // Manual Pad
 
   // Muxed Pads
   inout IOA0, // MIO Pad 0
@@ -255,11 +254,9 @@ module chip_darjeeling_asic #(
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
-  logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_otp_ext_volt;
-  pad_attr_t manual_attr_ast_misc;
 
 
   //////////////////////
@@ -275,12 +272,11 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(39),
+    .NDioPads(38),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
-      scan_role_pkg::DioPadAstMiscScanRole,
       scan_role_pkg::DioPadSocGpo11ScanRole,
       scan_role_pkg::DioPadSocGpo10ScanRole,
       scan_role_pkg::DioPadSocGpo9ScanRole,
@@ -370,7 +366,6 @@ module chip_darjeeling_asic #(
       scan_role_pkg::MioPadIoa0ScanRole
     }),
     .DioPadBank ({
-      IoBankVcc, // AST_MISC
       IoBankVioa, // SOC_GPO11
       IoBankVioa, // SOC_GPO10
       IoBankVioa, // SOC_GPO9
@@ -460,7 +455,6 @@ module chip_darjeeling_asic #(
       IoBankVioa  // IOA0
     }),
     .DioPadType ({
-      InputStd, // AST_MISC
       BidirStd, // SOC_GPO11
       BidirStd, // SOC_GPO10
       BidirStd, // SOC_GPO9
@@ -556,7 +550,6 @@ module chip_darjeeling_asic #(
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
-      AST_MISC,
       SOC_GPO11,
       SOC_GPO10,
       SOC_GPO9,
@@ -657,7 +650,6 @@ module chip_darjeeling_asic #(
 
     // Core-facing
     .dio_in_o ({
-        manual_in_ast_misc,
         dio_in[DioSocProxySocGpo11],
         dio_in[DioSocProxySocGpo10],
         dio_in[DioSocProxySocGpo9],
@@ -698,7 +690,6 @@ module chip_darjeeling_asic #(
         manual_in_por_n
       }),
     .dio_out_i ({
-        manual_out_ast_misc,
         dio_out[DioSocProxySocGpo11],
         dio_out[DioSocProxySocGpo10],
         dio_out[DioSocProxySocGpo9],
@@ -739,7 +730,6 @@ module chip_darjeeling_asic #(
         manual_out_por_n
       }),
     .dio_oe_i ({
-        manual_oe_ast_misc,
         dio_oe[DioSocProxySocGpo11],
         dio_oe[DioSocProxySocGpo10],
         dio_oe[DioSocProxySocGpo9],
@@ -780,7 +770,6 @@ module chip_darjeeling_asic #(
         manual_oe_por_n
       }),
     .dio_attr_i ({
-        manual_attr_ast_misc,
         dio_attr[DioSocProxySocGpo11],
         dio_attr[DioSocProxySocGpo10],
         dio_attr[DioSocProxySocGpo9],
@@ -987,7 +976,6 @@ module chip_darjeeling_asic #(
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadIoc6];
 
-  assign pad2ast = `PAD2AST_WIRES ;
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
@@ -1106,8 +1094,8 @@ module chip_darjeeling_asic #(
     .usb_obs_i             ( usb_diff_rx_obs ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
-    .padmux2ast_i          ( pad2ast    ),
-    .ast2padmux_o          ( ast2pinmux ),
+    .padmux2ast_i          ( '0         ),
+    .ast2padmux_o          (            ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
@@ -1340,14 +1328,6 @@ module chip_darjeeling_asic #(
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
 
-  assign manual_out_ast_misc = 1'b0;
-  assign manual_oe_ast_misc = 1'b0;
-  always_comb begin
-    // constantly enable pull-down
-    manual_attr_ast_misc = '0;
-    manual_attr_ast_misc.pull_select = 1'b0;
-    manual_attr_ast_misc.pull_en = 1'b1;
-  end
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
@@ -1439,7 +1419,6 @@ module chip_darjeeling_asic #(
     .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 

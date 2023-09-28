@@ -1620,17 +1620,8 @@ typedef enum top_darjeeling_pinmux_outsel {
   kTopDarjeelingPinmuxOutselI2c0Sda = 35, /**< Peripheral Output 32 */
   kTopDarjeelingPinmuxOutselI2c0Scl = 36, /**< Peripheral Output 33 */
   kTopDarjeelingPinmuxOutselUart0Tx = 37, /**< Peripheral Output 34 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut0 = 38, /**< Peripheral Output 35 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut1 = 39, /**< Peripheral Output 36 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut2 = 40, /**< Peripheral Output 37 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut3 = 41, /**< Peripheral Output 38 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut4 = 42, /**< Peripheral Output 39 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut5 = 43, /**< Peripheral Output 40 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut6 = 44, /**< Peripheral Output 41 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut7 = 45, /**< Peripheral Output 42 */
-  kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut8 = 46, /**< Peripheral Output 43 */
-  kTopDarjeelingPinmuxOutselOtpCtrlTest0 = 47, /**< Peripheral Output 44 */
-  kTopDarjeelingPinmuxOutselLast = 47, /**< \internal Last valid outsel value */
+  kTopDarjeelingPinmuxOutselOtpCtrlTest0 = 38, /**< Peripheral Output 35 */
+  kTopDarjeelingPinmuxOutselLast = 38, /**< \internal Last valid outsel value */
 } top_darjeeling_pinmux_outsel_t;
 
 /**

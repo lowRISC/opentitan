@@ -2725,25 +2725,7 @@ pub enum TopDarjeelingPinmuxOutsel {
     /// Peripheral Output 34
     Uart0Tx = 37,
     /// Peripheral Output 35
-    SensorCtrlAstDebugOut0 = 38,
-    /// Peripheral Output 36
-    SensorCtrlAstDebugOut1 = 39,
-    /// Peripheral Output 37
-    SensorCtrlAstDebugOut2 = 40,
-    /// Peripheral Output 38
-    SensorCtrlAstDebugOut3 = 41,
-    /// Peripheral Output 39
-    SensorCtrlAstDebugOut4 = 42,
-    /// Peripheral Output 40
-    SensorCtrlAstDebugOut5 = 43,
-    /// Peripheral Output 41
-    SensorCtrlAstDebugOut6 = 44,
-    /// Peripheral Output 42
-    SensorCtrlAstDebugOut7 = 45,
-    /// Peripheral Output 43
-    SensorCtrlAstDebugOut8 = 46,
-    /// Peripheral Output 44
-    OtpCtrlTest0 = 47,
+    OtpCtrlTest0 = 38,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
@@ -2788,16 +2770,7 @@ impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
             35 => Ok(Self::I2c0Sda),
             36 => Ok(Self::I2c0Scl),
             37 => Ok(Self::Uart0Tx),
-            38 => Ok(Self::SensorCtrlAstDebugOut0),
-            39 => Ok(Self::SensorCtrlAstDebugOut1),
-            40 => Ok(Self::SensorCtrlAstDebugOut2),
-            41 => Ok(Self::SensorCtrlAstDebugOut3),
-            42 => Ok(Self::SensorCtrlAstDebugOut4),
-            43 => Ok(Self::SensorCtrlAstDebugOut5),
-            44 => Ok(Self::SensorCtrlAstDebugOut6),
-            45 => Ok(Self::SensorCtrlAstDebugOut7),
-            46 => Ok(Self::SensorCtrlAstDebugOut8),
-            47 => Ok(Self::OtpCtrlTest0),
+            38 => Ok(Self::OtpCtrlTest0),
             _ => Err(val),
         }
     }

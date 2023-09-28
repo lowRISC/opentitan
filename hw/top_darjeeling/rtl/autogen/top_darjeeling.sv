@@ -215,7 +215,6 @@ module top_darjeeling #(
   input  ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req_i,
   output ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp_o,
   input  ast_pkg::ast_status_t       sensor_ctrl_ast_status_i,
-  input  logic [8:0] ast2pinmux_i,
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
   output tlul_pkg::tl_h2d_t       ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t       ctn_tl_d2h_i,
@@ -256,8 +255,8 @@ module top_darjeeling #(
 
   // Signals
   logic [35:0] mio_p2d;
-  logic [44:0] mio_d2p;
-  logic [44:0] mio_en_d2p;
+  logic [35:0] mio_d2p;
+  logic [35:0] mio_en_d2p;
   logic [35:0] dio_p2d;
   logic [35:0] dio_d2p;
   logic [35:0] dio_en_d2p;
@@ -303,8 +302,6 @@ module top_darjeeling #(
   // pinmux_aon
   // aon_timer_aon
   // sensor_ctrl
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_d2p;
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
   // soc_proxy
   logic [11:0] cio_soc_proxy_soc_gpi_p2d;
   logic [11:0] cio_soc_proxy_soc_gpo_d2p;
@@ -1507,10 +1504,6 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:21])
   ) u_sensor_ctrl (
 
-      // Output
-      .cio_ast_debug_out_o    (cio_sensor_ctrl_ast_debug_out_d2p),
-      .cio_ast_debug_out_en_o (cio_sensor_ctrl_ast_debug_out_en_d2p),
-
       // Interrupt
       .intr_io_status_change_o   (intr_sensor_ctrl_io_status_change),
       .intr_init_status_change_o (intr_sensor_ctrl_init_status_change),
@@ -1524,7 +1517,6 @@ module top_darjeeling #(
       .ast_alert_o(sensor_ctrl_ast_alert_rsp_o),
       .ast_status_i(sensor_ctrl_ast_status_i),
       .ast_init_done_i(ast_init_done_i),
-      .ast2pinmux_i(ast2pinmux_i),
       .wkup_req_o(pwrmgr_aon_wakeups[3]),
       .tl_i(sensor_ctrl_tl_req),
       .tl_o(sensor_ctrl_tl_rsp),
@@ -2961,15 +2953,6 @@ module top_darjeeling #(
   assign mio_d2p[MioOutI2c0Sda] = cio_i2c0_sda_d2p;
   assign mio_d2p[MioOutI2c0Scl] = cio_i2c0_scl_d2p;
   assign mio_d2p[MioOutUart0Tx] = cio_uart0_tx_d2p;
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p[0];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p[1];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_d2p[2];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut3] = cio_sensor_ctrl_ast_debug_out_d2p[3];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut4] = cio_sensor_ctrl_ast_debug_out_d2p[4];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_d2p[5];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_d2p[6];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_d2p[7];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_d2p[8];
   assign mio_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_d2p[0];
 
   // All muxed output enables
@@ -3008,15 +2991,6 @@ module top_darjeeling #(
   assign mio_en_d2p[MioOutI2c0Sda] = cio_i2c0_sda_en_d2p;
   assign mio_en_d2p[MioOutI2c0Scl] = cio_i2c0_scl_en_d2p;
   assign mio_en_d2p[MioOutUart0Tx] = cio_uart0_tx_en_d2p;
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p[0];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p[1];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_en_d2p[2];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut3] = cio_sensor_ctrl_ast_debug_out_en_d2p[3];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut4] = cio_sensor_ctrl_ast_debug_out_en_d2p[4];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_en_d2p[5];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_en_d2p[6];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_en_d2p[7];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_en_d2p[8];
   assign mio_en_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_en_d2p[0];
 
   // All dedicated inputs

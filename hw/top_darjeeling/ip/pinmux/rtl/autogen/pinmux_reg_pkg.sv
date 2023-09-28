@@ -9,7 +9,7 @@ package pinmux_reg_pkg;
   // Param list
   parameter int AttrDw = 13;
   parameter int NMioPeriphIn = 36;
-  parameter int NMioPeriphOut = 45;
+  parameter int NMioPeriphOut = 36;
   parameter int NMioPads = 47;
   parameter int NDioPads = 36;
   parameter int NWkupDetect = 8;
