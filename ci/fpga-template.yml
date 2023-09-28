@@ -14,7 +14,18 @@ steps:
 - template: ./checkout-template.yml
 - template: ./install-package-dependencies.yml
 - bash: |
-    ci/scripts/get-bitstream-strategy.sh "chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+    ci/scripts/get-bitstream-strategy.sh "chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}" \
+      ':!/sw/' \
+      ':!/*.hjson' \
+      ':!/*.tpl' \
+      ':!/site/' \
+      ':!/doc/' \
+      ':!/COMMITTERS' \
+      ':!/CLA' \
+      ':!/*.md' \
+      ':!/.github/' \
+      ':!/hw/**/dv/*' \
+      ':!/hw/dv/'
   displayName: Configure bitstream strategy
 - bash: |
     set -ex
