@@ -1,0 +1,93 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg - typically same as the name of the DUT.
+  name: mbx
+
+  // Top level dut name (sv module).
+  dut: mbx
+
+  // Top level testbench name (sv module).
+  tb: tb
+
+  // Simulator used to sign off this block
+  tool: xcelium
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: lowrisc:dv:mbx_sim:0.1
+
+  // Testplan hjson file.
+  testplan: "{proj_root}/hw/ip/mbx/data/mbx_testplan.hjson"
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/mbx/data/mbx.hjson"
+
+  // Import additional common sim cfg files.
+  import_cfgs: [// Project wide common sim cfg file
+                "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+
+  // Add additional tops for simulation.
+//  sim_tops: ["mbx_bind", "mbx_cov_bind"]
+
+  // Default iterations for all tests - each test entry can override this.
+  reseed: 2
+
+//  overrides: [
+//    //
+//    // Override coverage config files to add our elaboration time coverage exclusions etc.
+//    //
+//    {
+//      name: default_vcs_cov_cfg_file
+//      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/mbx/dv/cov/mbx_cover.cfg"
+//    }
+//    // The jtag agent requires the data and bytenable widths to be increased.
+//    {
+//      name: tl_dw
+//      value: 64
+//    }
+//    {
+//      name: tl_dbw
+//      value: 8
+//    }
+//  ]
+
+//  // Add MBX specific exclusion files.
+//  vcs_cov_excl_files: ["{proj_root}/hw/ip/mbx/dv/cov/mbx_cov_unr_excl.el",
+//                       "{proj_root}/hw/ip/mbx/dv/cov/mbx_terminal_st_excl.el"]
+
+  // Default UVM test and seq class name.
+  uvm_test: mbx_base_test
+  uvm_test_seq: mbx_base_vseq
+
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: mbx_smoke
+      uvm_test_seq: mbx_smoke_vseq
+    }
+
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["mbx_smoke"]
+    }
+//    {
+//      name: stress
+//      tests : [ "mbx_sw_access",
+//              "mbx_sw_smoke",
+//              "mbx_sw_alert_test"
+//      ]
+//    }
+  ]
+}
