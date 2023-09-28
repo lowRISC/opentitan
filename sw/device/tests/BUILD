@@ -2837,8 +2837,17 @@ opentitan_functest(
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
+    cw340 = cw340_params(
+        interface = "hyper340",
+        tags = ["manual"],
+        test_cmds = [
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
     targets = [
         "cw310_test_rom",
+        "cw340_test_rom",
     ],
     test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     deps = [
