@@ -12,4 +12,5 @@
 split_var -module "prim_present" -var "data_state"
 split_var -module "prim_present" -var "round_idx"
 split_var -module "prim_present" -var "round_key"
-split_var -module "prim_prince" -var "data_state"
+split_var -module "prim_prince" -var "data_state_lo"
+split_var -module "prim_prince" -var "data_state_hi"
