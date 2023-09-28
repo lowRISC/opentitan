@@ -107,6 +107,58 @@
       '''
     }
   ],
+  features: [
+    { name: "SPIHOST.USECASE.SERIALNORFLASH",
+      desc: '''
+        The SPI host block can talk to serial NOR flash devices.
+      '''
+    },
+    { name: "SPIHOST.USECASE.PASSTHROUGH",
+      desc: '''
+        The SPI host block can work together with a device to create a pass through.
+      '''
+    },
+    { name: "SPIHOST.RATE.STANDARD",
+      desc: '''
+        Host can operate in standard SPI data rate.
+      '''
+    },
+    { name: "SPIHOST.RATE.DUAL",
+      desc: '''
+        Host can operate in dual SPI data rate.
+      '''
+    },
+    { name: "SPIHOST.RATE.QUAD",
+      desc: '''
+        Host can operate in quad SPI data rate.
+      '''
+    },
+    { name: "SPIHOST.CONFIG.CPOL",
+      desc: '''
+        The polarity of the SPI can be configured.
+      '''
+    },
+    { name: "SPIHOST.CONFIG.CLOCKDIV",
+      desc: '''
+        The clock divider in the SPI host can be configured.
+      '''
+    },
+    { name: "SPIHOST.EVENT.WATERMARK",
+      desc: '''
+        The block can be configured to raise an event on watermarks for transmit and receive queues.
+      '''
+    },
+    { name: "SPIHOST.EVENT.FULL",
+      desc: '''
+        The block can be configured to raise an event when the receive queue is full.
+      '''
+    },
+    { name: "SPIHOST.EVENT.EMPTY",
+      desc: '''
+        The block can be configured to raise an event when the transmit queue is empty.
+      '''
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
