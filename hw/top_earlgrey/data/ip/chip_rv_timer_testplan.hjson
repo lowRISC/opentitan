@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_rv_timer
+  testpoints: [
+    {
+      name: chip_sw_timer
+      desc: '''Verify the timeout interrupt assertion.
+
+            - Configure RV_TIMER to generate an interrupt after a set timeout.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from rv_timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_timer_irq"]
+    }
+  ]
+}
