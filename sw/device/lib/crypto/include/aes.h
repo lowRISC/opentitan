@@ -307,9 +307,9 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
  * @param[out] wrapped_key Pointer to the output wrapped key.
  * @return Result of the aes-kwp wrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_wrap(
-    const crypto_blinded_key_t *key_to_wrap,
-    const crypto_blinded_key_t *key_kek, crypto_word32_buf_t *wrapped_key);
+crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
+                                      const crypto_blinded_key_t *key_kek,
+                                      crypto_word32_buf_t *wrapped_key);
 
 /**
  * Performs the cryptographic key unwrapping operation.
@@ -323,8 +323,8 @@ crypto_status_t otcrypto_aes_kwp_wrap(
  * @return Result of the aes-kwp unwrap operation.
  */
 crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
-                                         const crypto_blinded_key_t *key_kek,
-                                         crypto_blinded_key_t *unwrapped_key);
+                                        const crypto_blinded_key_t *key_kek,
+                                        crypto_blinded_key_t *unwrapped_key);
 
 #ifdef __cplusplus
 }  // extern "C"
