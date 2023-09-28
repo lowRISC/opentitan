@@ -149,7 +149,9 @@ The second ROM partition with patching capability is added to the architecture d
   - Replacement code for potentially faulty instruction(s) in ROM.
 
   - Variable size - few bytes to few KB.
-    To alter a large block of ROM code, the patch can include a branch that redirects execution to code in patch SRAM, that need not be in OTP.
+    A small segment of ROM code (up to 32 bytes) can be overwritten using instructions in the code region.
+    If the replacement is longer than that, the code region can be short and contain just a branch to some other code.
+    This code must be loaded from the OTP ROM patch partition into [patch SRAM](#patch-sram) together with the replacement code.
 
 - **Signature**:
 
