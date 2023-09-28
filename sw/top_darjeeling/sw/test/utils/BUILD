@@ -14,7 +14,6 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_darjeeling/sw/dif:adc_ctrl",
         "//sw/top_darjeeling/sw/dif:alert_handler",
         "//sw/top_darjeeling/sw/dif:aon_timer",
         "//sw/top_darjeeling/sw/dif:csrng",

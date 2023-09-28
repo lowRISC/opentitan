@@ -13,7 +13,6 @@
  * @brief Default ISRs for each IP
  */
 
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
@@ -52,28 +51,6 @@ typedef struct plic_isr_ctx {
    */
   uint32_t hart_id;
 } plic_isr_ctx_t;
-
-/**
- * A handle to a adc_ctrl ISR context struct.
- */
-typedef struct adc_ctrl_isr_ctx {
-  /**
-   * A handle to a adc_ctrl.
-   */
-  dif_adc_ctrl_t *adc_ctrl;
-  /**
-   * The PLIC IRQ ID where this adc_ctrl instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_adc_ctrl_start_irq_id;
-  /**
-   * The adc_ctrl IRQ that is expected to be encountered in the ISR.
-   */
-  dif_adc_ctrl_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} adc_ctrl_isr_ctx_t;
 
 /**
  * A handle to a alert_handler ISR context struct.
@@ -514,20 +491,6 @@ typedef struct uart_isr_ctx {
    */
   bool is_only_irq;
 } uart_isr_ctx_t;
-
-/**
- * Services an adc_ctrl IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param adc_ctrl_ctx A(n) adc_ctrl ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_adc_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_adc_ctrl_irq_t *irq_serviced);
 
 /**
  * Services an alert_handler IRQ.

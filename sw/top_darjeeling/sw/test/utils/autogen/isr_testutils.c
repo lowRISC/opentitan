@@ -8,7 +8,6 @@
 #include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/base/dif/dif_base.h"
@@ -34,52 +33,6 @@
 #include "sw/lib/sw/device/arch/device.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-
-void isr_testutils_adc_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_adc_ctrl_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_adc_ctrl_irq_t irq =
-      (dif_adc_ctrl_irq_t)(plic_irq_id -
-                           adc_ctrl_ctx.plic_adc_ctrl_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (adc_ctrl_ctx.is_only_irq) {
-    dif_adc_ctrl_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(adc_ctrl_ctx.adc_ctrl, &snapshot));
-    CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
-          "Only adc_ctrl IRQ %d expected to fire. Actual IRQ state = %x", irq,
-          snapshot);
-  }
-
-  // TODO(lowRISC/opentitan:#11354): future releases of the ADC Controller HW
-  // should hide the need to also clear the cause CSRs. At which point, this can
-  // be removed.
-  CHECK_DIF_OK(dif_adc_ctrl_irq_clear_causes(adc_ctrl_ctx.adc_ctrl,
-                                             kDifAdcCtrlIrqCauseAll));
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(dif_adc_ctrl_irq_get_type(adc_ctrl_ctx.adc_ctrl, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(adc_ctrl_ctx.adc_ctrl, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
 
 void isr_testutils_alert_handler_isr(
     plic_isr_ctx_t plic_ctx, alert_handler_isr_ctx_t alert_handler_ctx,
