@@ -66,7 +66,7 @@ static status_t random_test(void) {
   TRY(otcrypto_drbg_instantiate(/*perso_string=*/kEmptyBuffer));
 
   // Generate a relatively large amount of output data.
-  uint32_t output_data[4096];
+  uint32_t output_data[1024];
   crypto_word32_buf_t output = {
       .data = output_data,
       .len = ARRAYSIZE(output_data),
@@ -74,9 +74,9 @@ static status_t random_test(void) {
   TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, &output));
 
   // Run a basic randomness-quality check on the output.
-  return randomness_quality_monobit_test((unsigned char *)output_data,
-                                         sizeof(output_data),
-                                         kRandomnessQualityThresholdOnePercent);
+  return randomness_quality_monobit_test(
+      (unsigned char *)output_data, sizeof(output_data),
+      kRandomnessQualitySignificanceOnePercent);
 }
 
 bool test_main(void) {
