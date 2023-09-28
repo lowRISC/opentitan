@@ -179,6 +179,7 @@ secret_key_from_seed:
        w10, w11 <= d1 */
   jal      x1, p256_key_from_seed
 
+  /* TODO(##19875): do not store keymgr-derived values in DMEM! */
   /* Store secret key shares.
        dmem[d0] <= d0
        dmem[d1] <= d1 */
