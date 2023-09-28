@@ -23,42 +23,79 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   } outsel_value_e;
 
   localparam prim_pad_wrapper_pkg::pad_type_e DioPadType[DioCount] = '{
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
-    prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi0
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi1
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi2
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi3
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi4
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi5
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi6
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi7
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi8
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi9
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi10
-    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi11
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sck
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_csb
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo0
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo1
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo2
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo3
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo4
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo5
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo6
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo7
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo8
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo9
-    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo10
-    prim_pad_wrapper_pkg::BidirStd  // DIO soc_gpo11
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D0
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D1
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D2
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_D3
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_CLK
+    prim_pad_wrapper_pkg::BidirStd, // SPI_HOST_CS_L
+    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D0
+    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D1
+    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D2
+    prim_pad_wrapper_pkg::BidirStd, // SPI_DEV_D3
+    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_CLK
+    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_CS_L
+    prim_pad_wrapper_pkg::InputStd, // SPI_DEV_TPM_CS_L
+    prim_pad_wrapper_pkg::InputStd, // UART_RX
+    prim_pad_wrapper_pkg::BidirStd, // UART_TX
+    prim_pad_wrapper_pkg::InputStd, // I2C_SCL
+    prim_pad_wrapper_pkg::BidirStd, // I2C_SDA
+    prim_pad_wrapper_pkg::BidirStd, // GPIO0
+    prim_pad_wrapper_pkg::BidirStd, // GPIO1
+    prim_pad_wrapper_pkg::BidirStd, // GPIO2
+    prim_pad_wrapper_pkg::BidirStd, // GPIO3
+    prim_pad_wrapper_pkg::BidirStd, // GPIO4
+    prim_pad_wrapper_pkg::BidirStd, // GPIO5
+    prim_pad_wrapper_pkg::BidirStd, // GPIO6
+    prim_pad_wrapper_pkg::BidirStd, // GPIO7
+    prim_pad_wrapper_pkg::BidirStd, // GPIO8
+    prim_pad_wrapper_pkg::BidirStd, // GPIO9
+    prim_pad_wrapper_pkg::BidirStd, // GPIO10
+    prim_pad_wrapper_pkg::BidirStd, // GPIO11
+    prim_pad_wrapper_pkg::BidirStd, // GPIO12
+    prim_pad_wrapper_pkg::BidirStd, // GPIO13
+    prim_pad_wrapper_pkg::BidirStd, // GPIO14
+    prim_pad_wrapper_pkg::BidirStd, // GPIO15
+    prim_pad_wrapper_pkg::BidirStd, // GPIO16
+    prim_pad_wrapper_pkg::BidirStd, // GPIO17
+    prim_pad_wrapper_pkg::BidirStd, // GPIO18
+    prim_pad_wrapper_pkg::BidirStd, // GPIO19
+    prim_pad_wrapper_pkg::BidirStd, // GPIO20
+    prim_pad_wrapper_pkg::BidirStd, // GPIO21
+    prim_pad_wrapper_pkg::BidirStd, // GPIO22
+    prim_pad_wrapper_pkg::BidirStd, // GPIO23
+    prim_pad_wrapper_pkg::BidirStd, // GPIO24
+    prim_pad_wrapper_pkg::BidirStd, // GPIO25
+    prim_pad_wrapper_pkg::BidirStd, // GPIO26
+    prim_pad_wrapper_pkg::BidirStd, // GPIO27
+    prim_pad_wrapper_pkg::BidirStd, // GPIO28
+    prim_pad_wrapper_pkg::BidirStd, // GPIO29
+    prim_pad_wrapper_pkg::BidirStd, // GPIO30
+    prim_pad_wrapper_pkg::BidirStd, // GPIO31
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI0
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI1
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI2
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI3
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI4
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI5
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI6
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI7
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI8
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI9
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI10
+    prim_pad_wrapper_pkg::InputStd, // SOC_GPI11
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO0
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO1
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO2
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO3
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO4
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO5
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO6
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO7
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO8
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO9
+    prim_pad_wrapper_pkg::BidirStd, // SOC_GPO10
+    prim_pad_wrapper_pkg::BidirStd  // SOC_GPO11
   };
 
   int dio_input_pads[$];

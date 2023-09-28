@@ -42,10 +42,10 @@
   ]
 
   available_input_list: [
-    { name: "soc_gpi", width: 12, desc: "soc general purpose input" }
+    { name: "soc_gpi", width: 16, desc: "soc general purpose input" }
   ],
   available_output_list: [
-    { name: "soc_gpo", width: 12, desc: "soc general purpose output" }
+    { name: "soc_gpo", width: 16, desc: "soc general purpose output" }
   ],
 
   alert_list: [
@@ -225,14 +225,14 @@
       type:    "uni"
       name:    "soc_gpi_async"
       act:     "req"
-      width:   12 // keep equal to `NumSocGpio`
+      width:   16 // keep equal to `NumSocGpio`
       desc:    "GPI from SoC, async"
     }
     { struct:  "logic"
       type:    "uni"
       name:    "soc_gpo_async"
       act:     "rcv"
-      width:   12 // keep equal to `NumSocGpio`
+      width:   16 // keep equal to `NumSocGpio`
       desc:    "GPO from SoC, async"
     }
   ]

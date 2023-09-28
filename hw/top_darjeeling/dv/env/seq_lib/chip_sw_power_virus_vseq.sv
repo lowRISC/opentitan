@@ -121,8 +121,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
 
-    // Wait for max-power indicator GPIO pin (IOB8) to go up.
-    wait (cfg.chip_vif.mios[top_darjeeling_pkg::MioPadIob8]);
+    // Wait for max-power indicator GPIO pin to go up.
+    wait (cfg.chip_vif.dios[top_darjeeling_pkg::DioPadGpio0]);
     // Wait for 10 clock cycles.
     cfg.clk_rst_vif.wait_clks(10);
 

@@ -97,8 +97,9 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
       // disconnect the mios_if too soon, then it will result in X-prop from the pinmux's (which is
       // in the AON domain) wakeup detection logic. So, we need to disconnect the pin from mios_if
       // at the same time the sw_straps_if is driven.
-      if (pad_type == top_darjeeling_pkg::MioPad &&
-          pad_idx inside {[top_darjeeling_pkg::MioPadIoc2:top_darjeeling_pkg::MioPadIoc0]}) begin
+      if (pad_type == top_darjeeling_pkg::DioPad &&
+          pad_idx inside {[top_darjeeling_pkg::DioPadGpio24:
+                           top_darjeeling_pkg::DioPadGpio22]}) begin
         @(cfg.chip_vif.sw_straps_if.pins_oe);
         drive_pad(pad_type, pad_idx, 1'bz);
       end

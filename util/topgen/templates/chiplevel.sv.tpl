@@ -668,7 +668,11 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
   // external clock comes in at a fixed position
+% if top["name"] != "darjeeling":
   assign ext_clk = mio_in_raw[MioPadIoc6];
+% else:
+  assign ext_clk = dio_in_raw[MioPadMio11];
+  % endif
 
 % if top["name"] != "darjeeling":
   assign pad2ast = `PAD2AST_WIRES ;
@@ -1546,8 +1550,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),
     .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
-% endif
-% if top["name"] == "darjeeling":
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
 % else:
@@ -1558,8 +1560,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .flash_power_down_h_i         ( 1'b0                       ),
     .flash_power_ready_h_i        ( 1'b1                       ),
     .flash_obs_o                  ( flash_obs                  ),
-% endif
     .ast2pinmux_i                 ( ast2pinmux                 ),
+% endif
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 % endif
@@ -1676,7 +1678,11 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
+    % if top["name"] == "darjeeling":
+    unique case ({dio_out[DioGpioGpio11], dio_out[DioGpioGpio10], dio_out[DioGpioGpio9]})
+    % else:
     unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
+    % endif
       3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
       3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
       3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1689,8 +1695,13 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
   logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
+  % if top["name"] == "darjeeling":
+  assign clk_io_div4_trigger_en = dio_out[DioGpioGpio8];
+  assign clk_io_div4_trigger_oe = dio_oe[DioGpioGpio8];
+  % else:
   assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
   assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
+  % endif
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

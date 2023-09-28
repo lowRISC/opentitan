@@ -93,42 +93,79 @@ package chip_common_pkg;
   // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
   // which have different enum numbering in top_darjeeling_pkg.sv.
   parameter top_darjeeling_pkg::dio_pad_e DioToDioPadMap [top_darjeeling_pkg::DioCount] = '{
-    top_darjeeling_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
-    top_darjeeling_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
-    top_darjeeling_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */
-    top_darjeeling_pkg::DioPadSpiHostD3,  /* DioSpiHost0Sd3 */
-    top_darjeeling_pkg::DioPadSpiDevD0,   /* DioSpiDeviceSd0 */
-    top_darjeeling_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
-    top_darjeeling_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
-    top_darjeeling_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
-    top_darjeeling_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
-    top_darjeeling_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
-    top_darjeeling_pkg::DioPadSocGpi0,    /* DioSocProxySocGpi0 */
-    top_darjeeling_pkg::DioPadSocGpi1,    /* DioSocProxySocGpi1 */
-    top_darjeeling_pkg::DioPadSocGpi2,    /* DioSocProxySocGpi2 */
-    top_darjeeling_pkg::DioPadSocGpi3,    /* DioSocProxySocGpi3 */
-    top_darjeeling_pkg::DioPadSocGpi4,    /* DioSocProxySocGpi4 */
-    top_darjeeling_pkg::DioPadSocGpi5,    /* DioSocProxySocGpi5 */
-    top_darjeeling_pkg::DioPadSocGpi6,    /* DioSocProxySocGpi6 */
-    top_darjeeling_pkg::DioPadSocGpi7,    /* DioSocProxySocGpi7 */
-    top_darjeeling_pkg::DioPadSocGpi8,    /* DioSocProxySocGpi8 */
-    top_darjeeling_pkg::DioPadSocGpi9,    /* DioSocProxySocGpi9 */
-    top_darjeeling_pkg::DioPadSocGpi10,   /* DioSocProxySocGpi10 */
-    top_darjeeling_pkg::DioPadSocGpi11,   /* DioSocProxySocGpi11 */
-    top_darjeeling_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_darjeeling_pkg::DioPadSpiHostCsL, /* DioSpiHost0Csb */
-    top_darjeeling_pkg::DioPadSocGpo0,    /* DioSocProxySocGpo0 */
-    top_darjeeling_pkg::DioPadSocGpo1,    /* DioSocProxySocGpo1 */
-    top_darjeeling_pkg::DioPadSocGpo2,    /* DioSocProxySocGpo2 */
-    top_darjeeling_pkg::DioPadSocGpo3,    /* DioSocProxySocGpo3 */
-    top_darjeeling_pkg::DioPadSocGpo4,    /* DioSocProxySocGpo4 */
-    top_darjeeling_pkg::DioPadSocGpo5,    /* DioSocProxySocGpo5 */
-    top_darjeeling_pkg::DioPadSocGpo6,    /* DioSocProxySocGpo6 */
-    top_darjeeling_pkg::DioPadSocGpo7,    /* DioSocProxySocGpo7 */
-    top_darjeeling_pkg::DioPadSocGpo8,    /* DioSocProxySocGpo8 */
-    top_darjeeling_pkg::DioPadSocGpo9,    /* DioSocProxySocGpo9 */
-    top_darjeeling_pkg::DioPadSocGpo10,   /* DioSocProxySocGpo10 */
-    top_darjeeling_pkg::DioPadSocGpo11    /* DioSocProxySocGpo11 */
+    top_darjeeling_pkg::DioPadSpiHostD0,
+    top_darjeeling_pkg::DioPadSpiHostD1,
+    top_darjeeling_pkg::DioPadSpiHostD2,
+    top_darjeeling_pkg::DioPadSpiHostD3,
+    top_darjeeling_pkg::DioPadSpiHostClk,
+    top_darjeeling_pkg::DioPadSpiHostCsL,
+    top_darjeeling_pkg::DioPadSpiDevD0,
+    top_darjeeling_pkg::DioPadSpiDevD1,
+    top_darjeeling_pkg::DioPadSpiDevD2,
+    top_darjeeling_pkg::DioPadSpiDevD3,
+    top_darjeeling_pkg::DioPadSpiDevClk,
+    top_darjeeling_pkg::DioPadSpiDevCsL,
+    top_darjeeling_pkg::DioPadSpiDevTpmCsL,
+    top_darjeeling_pkg::DioPadUartRx,
+    top_darjeeling_pkg::DioPadUartTx,
+    top_darjeeling_pkg::DioPadI2cScl,
+    top_darjeeling_pkg::DioPadI2cSda,
+    top_darjeeling_pkg::DioPadGpio0,
+    top_darjeeling_pkg::DioPadGpio1,
+    top_darjeeling_pkg::DioPadGpio2,
+    top_darjeeling_pkg::DioPadGpio3,
+    top_darjeeling_pkg::DioPadGpio4,
+    top_darjeeling_pkg::DioPadGpio5,
+    top_darjeeling_pkg::DioPadGpio6,
+    top_darjeeling_pkg::DioPadGpio7,
+    top_darjeeling_pkg::DioPadGpio8,
+    top_darjeeling_pkg::DioPadGpio9,
+    top_darjeeling_pkg::DioPadGpio10,
+    top_darjeeling_pkg::DioPadGpio11,
+    top_darjeeling_pkg::DioPadGpio12,
+    top_darjeeling_pkg::DioPadGpio13,
+    top_darjeeling_pkg::DioPadGpio14,
+    top_darjeeling_pkg::DioPadGpio15,
+    top_darjeeling_pkg::DioPadGpio16,
+    top_darjeeling_pkg::DioPadGpio17,
+    top_darjeeling_pkg::DioPadGpio18,
+    top_darjeeling_pkg::DioPadGpio19,
+    top_darjeeling_pkg::DioPadGpio20,
+    top_darjeeling_pkg::DioPadGpio21,
+    top_darjeeling_pkg::DioPadGpio22,
+    top_darjeeling_pkg::DioPadGpio23,
+    top_darjeeling_pkg::DioPadGpio24,
+    top_darjeeling_pkg::DioPadGpio25,
+    top_darjeeling_pkg::DioPadGpio26,
+    top_darjeeling_pkg::DioPadGpio27,
+    top_darjeeling_pkg::DioPadGpio28,
+    top_darjeeling_pkg::DioPadGpio29,
+    top_darjeeling_pkg::DioPadGpio30,
+    top_darjeeling_pkg::DioPadGpio31,
+    top_darjeeling_pkg::DioPadSocGpi0,
+    top_darjeeling_pkg::DioPadSocGpi1,
+    top_darjeeling_pkg::DioPadSocGpi2,
+    top_darjeeling_pkg::DioPadSocGpi3,
+    top_darjeeling_pkg::DioPadSocGpi4,
+    top_darjeeling_pkg::DioPadSocGpi5,
+    top_darjeeling_pkg::DioPadSocGpi6,
+    top_darjeeling_pkg::DioPadSocGpi7,
+    top_darjeeling_pkg::DioPadSocGpi8,
+    top_darjeeling_pkg::DioPadSocGpi9,
+    top_darjeeling_pkg::DioPadSocGpi10,
+    top_darjeeling_pkg::DioPadSocGpi11,
+    top_darjeeling_pkg::DioPadSocGpo0,
+    top_darjeeling_pkg::DioPadSocGpo1,
+    top_darjeeling_pkg::DioPadSocGpo2,
+    top_darjeeling_pkg::DioPadSocGpo3,
+    top_darjeeling_pkg::DioPadSocGpo4,
+    top_darjeeling_pkg::DioPadSocGpo5,
+    top_darjeeling_pkg::DioPadSocGpo6,
+    top_darjeeling_pkg::DioPadSocGpo7,
+    top_darjeeling_pkg::DioPadSocGpo8,
+    top_darjeeling_pkg::DioPadSocGpo9,
+    top_darjeeling_pkg::DioPadSocGpo10,
+    top_darjeeling_pkg::DioPadSocGpo11
   };
 
   typedef struct packed {

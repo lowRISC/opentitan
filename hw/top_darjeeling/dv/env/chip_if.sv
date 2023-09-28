@@ -130,7 +130,7 @@ interface chip_if;
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
   // control the shared (muxed) pads.
   bit disable_mios_x_check = 0;
-  for (genvar i = top_darjeeling_pkg::MioPadIoa0; i < top_darjeeling_pkg::MioPadCount; i++)
+  for (genvar i = top_darjeeling_pkg::MioPadMio0; i < top_darjeeling_pkg::MioPadCount; i++)
   begin : gen_mios_x_check
     wire glitch_free_io;
     assign #1ps glitch_free_io = mios[i];
@@ -188,7 +188,7 @@ interface chip_if;
   assign dios[top_darjeeling_pkg::DioPadSpiDevClk] = enable_spi_host | enable_spi_tpm ?
       spi_host_if.sck : 1'bz;
   assign dios[top_darjeeling_pkg::DioPadSpiDevCsL] = enable_spi_host ? spi_host_if.csb[0] : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIoa7] = enable_spi_tpm ? spi_host_if.csb[1] : 1'bz;
+  assign dios[top_darjeeling_pkg::DioPadSpiDevTpmCsL] = enable_spi_tpm ? spi_host_if.csb[1] : 1'bz;
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_host_agent*", "vif", spi_host_if);
     do begin
@@ -231,12 +231,12 @@ interface chip_if;
 
   // Functional (muxed) interface: DFT straps.
   pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(
-    .pins(mios[top_darjeeling_pkg::MioPadIoc4:top_darjeeling_pkg::MioPadIoc3])
+    .pins(mios[top_darjeeling_pkg::MioPadMio3:top_darjeeling_pkg::MioPadMio2])
   );
 
   // Functional (muxed) interface: TAP straps.
   pins_if #(.Width(2), .PullStrength("Weak")) tap_straps_if(
-    .pins({mios[top_darjeeling_pkg::MioPadIoc5], mios[top_darjeeling_pkg::MioPadIoc8]})
+    .pins({mios[top_darjeeling_pkg::MioPadMio1], mios[top_darjeeling_pkg::MioPadMio0]})
   );
 
   // Weakly pulldown TAP & DFT strap pins in DFT-enabled LC states.
@@ -319,7 +319,7 @@ interface chip_if;
 
   // Functional (muxed) interface: SW straps.
   pins_if #(.Width(3), .PullStrength("Weak")) sw_straps_if(
-    .pins(mios[top_darjeeling_pkg::MioPadIoc2:top_darjeeling_pkg::MioPadIoc0])
+    .pins(dios[top_darjeeling_pkg::DioPadGpio24:top_darjeeling_pkg::DioPadGpio22])
   );
 
   // Functional (muxed) interface: GPIOs.
@@ -330,22 +330,22 @@ interface chip_if;
   // subset. The selection below prevents as much contention as possible on the IOs, considering
   // various modes the testbench AND the device can be in.
   pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpios_if(
-    .pins({mios[top_darjeeling_pkg::MioPadIor13], mios[top_darjeeling_pkg::MioPadIor12],
-           mios[top_darjeeling_pkg::MioPadIor11], mios[top_darjeeling_pkg::MioPadIor10],
-           mios[top_darjeeling_pkg::MioPadIor7], mios[top_darjeeling_pkg::MioPadIor6],
-           mios[top_darjeeling_pkg::MioPadIor5], mios[top_darjeeling_pkg::MioPadIor4],
-           mios[top_darjeeling_pkg::MioPadIor3], mios[top_darjeeling_pkg::MioPadIor2],
-           mios[top_darjeeling_pkg::MioPadIor1], mios[top_darjeeling_pkg::MioPadIor0],
-           mios[top_darjeeling_pkg::MioPadIoc12], mios[top_darjeeling_pkg::MioPadIoc11],
-           mios[top_darjeeling_pkg::MioPadIoc10], mios[top_darjeeling_pkg::MioPadIoc9],
-           mios[top_darjeeling_pkg::MioPadIob12], mios[top_darjeeling_pkg::MioPadIob11],
-           mios[top_darjeeling_pkg::MioPadIob10], mios[top_darjeeling_pkg::MioPadIob9],
-           mios[top_darjeeling_pkg::MioPadIob8], mios[top_darjeeling_pkg::MioPadIob7],
-           mios[top_darjeeling_pkg::MioPadIob6], mios[top_darjeeling_pkg::MioPadIoa8],
-           mios[top_darjeeling_pkg::MioPadIoa7], mios[top_darjeeling_pkg::MioPadIoa6],
-           mios[top_darjeeling_pkg::MioPadIoa5], mios[top_darjeeling_pkg::MioPadIoa4],
-           mios[top_darjeeling_pkg::MioPadIoa3], mios[top_darjeeling_pkg::MioPadIoa2],
-           mios[top_darjeeling_pkg::MioPadIoa1], mios[top_darjeeling_pkg::MioPadIoa0]})
+    .pins({dios[top_darjeeling_pkg::DioPadGpio31], dios[top_darjeeling_pkg::DioPadGpio30],
+           dios[top_darjeeling_pkg::DioPadGpio29], dios[top_darjeeling_pkg::DioPadGpio28],
+           dios[top_darjeeling_pkg::DioPadGpio27], dios[top_darjeeling_pkg::DioPadGpio26],
+           dios[top_darjeeling_pkg::DioPadGpio25], dios[top_darjeeling_pkg::DioPadGpio24],
+           dios[top_darjeeling_pkg::DioPadGpio23], dios[top_darjeeling_pkg::DioPadGpio22],
+           dios[top_darjeeling_pkg::DioPadGpio21], dios[top_darjeeling_pkg::DioPadGpio20],
+           dios[top_darjeeling_pkg::DioPadGpio19], dios[top_darjeeling_pkg::DioPadGpio18],
+           dios[top_darjeeling_pkg::DioPadGpio17], dios[top_darjeeling_pkg::DioPadGpio16],
+           dios[top_darjeeling_pkg::DioPadGpio15], dios[top_darjeeling_pkg::DioPadGpio14],
+           dios[top_darjeeling_pkg::DioPadGpio13], dios[top_darjeeling_pkg::DioPadGpio12],
+           dios[top_darjeeling_pkg::DioPadGpio11], dios[top_darjeeling_pkg::DioPadGpio10],
+           dios[top_darjeeling_pkg::DioPadGpio9],  dios[top_darjeeling_pkg::DioPadGpio8],
+           dios[top_darjeeling_pkg::DioPadGpio7],  dios[top_darjeeling_pkg::DioPadGpio6],
+           dios[top_darjeeling_pkg::DioPadGpio5],  dios[top_darjeeling_pkg::DioPadGpio4],
+           dios[top_darjeeling_pkg::DioPadGpio3],  dios[top_darjeeling_pkg::DioPadGpio2],
+           dios[top_darjeeling_pkg::DioPadGpio1],  dios[top_darjeeling_pkg::DioPadGpio0]})
   );
 
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
@@ -358,57 +358,41 @@ interface chip_if;
   wire __enable_jtag = |tap_straps_if.pins_oe;
   jtag_if jtag_if();
 
-  assign mios[top_darjeeling_pkg::MioPadIor0] = __enable_jtag ? jtag_if.tms : 1'bz;
-  assign jtag_if.tdo = __enable_jtag ? mios[top_darjeeling_pkg::MioPadIor1] : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIor2] = __enable_jtag ? jtag_if.tdi : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIor3] = __enable_jtag ? jtag_if.tck : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIor4] = __enable_jtag ? jtag_if.trst_n : 1'bz;
+  assign mios[top_darjeeling_pkg::MioPadMio4] = __enable_jtag ? jtag_if.tck : 1'bz;
+  assign mios[top_darjeeling_pkg::MioPadMio5] = __enable_jtag ? jtag_if.tms : 1'bz;
+  assign mios[top_darjeeling_pkg::MioPadMio6] = __enable_jtag ? jtag_if.trst_n : 1'bz;
+  assign mios[top_darjeeling_pkg::MioPadMio7] = __enable_jtag ? jtag_if.tdi : 1'bz;
+  assign jtag_if.tdo = __enable_jtag ? mios[top_darjeeling_pkg::MioPadMio8] : 1'bz;
 
   function automatic void set_tdo_pull(bit value);
     if (value) begin
-      mios_if.pins_pd[top_darjeeling_pkg::MioPadIor1] = 0;
-      mios_if.pins_pu[top_darjeeling_pkg::MioPadIor1] = 1;
+      mios_if.pins_pd[top_darjeeling_pkg::MioPadMio8] = 0;
+      mios_if.pins_pu[top_darjeeling_pkg::MioPadMio8] = 1;
     end else begin
-      mios_if.pins_pu[top_darjeeling_pkg::MioPadIor1] = 0;
-      mios_if.pins_pd[top_darjeeling_pkg::MioPadIor1] = 1;
+      mios_if.pins_pu[top_darjeeling_pkg::MioPadMio8] = 0;
+      mios_if.pins_pd[top_darjeeling_pkg::MioPadMio8] = 1;
     end
   endfunction
 
-  // Functional (muxed) interface: Flash controller JTAG.
-  bit enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
-  jtag_if flash_ctrl_jtag_if();
-
-  // TODO: Revisit this logic.
-  wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
-  assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
-  assign mios[top_darjeeling_pkg::MioPadIob0] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tms : 1'bz;
-  assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ?
-      mios[top_darjeeling_pkg::MioPadIob1] : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIob2] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tdi : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadIob3] = flash_ctrl_jtag_enabled ?
-      flash_ctrl_jtag_if.tck : 1'bz;
-
-  // Functional (muxed) interface: Pin wake up signal.
+  // Functional (dedicated) interface: Pin wake up signal.
   // TODO: For these tests, use chip_pins_if instead, so that any pin can be configured to wakeup.
   pins_if #(.Width(1), .PullStrength("Weak")) pinmux_wkup_if(
-    .pins(mios[top_darjeeling_pkg::MioPadIob7])
+    .pins(dios[top_darjeeling_pkg::DioPadGpio0])
   );
 
-  // Functional (muxed) interface: UARTs.
+  // Functional (dedicated) interface: UARTs.
   localparam int AssignedUartTxIos[NUM_UARTS] = {
-      top_darjeeling_pkg::MioPadIoc4
+      top_darjeeling_pkg::DioPadUartTx
   };
   localparam int AssignedUartRxIos[NUM_UARTS] = {
-      top_darjeeling_pkg::MioPadIoc3
+      top_darjeeling_pkg::DioPadUartRx
   };
   bit [NUM_UARTS-1:0] __enable_uart;  // Internal signal.
 
   for (genvar i = 0; i < NUM_UARTS; i++) begin : gen_uart_if_conn
     uart_if uart_if();
-    assign mios[AssignedUartRxIos[i]] = __enable_uart[i] ? uart_if.uart_rx : 1'bz;
-    assign uart_if.uart_tx = __enable_uart[i] ? mios[AssignedUartTxIos[i]] : 1'b1;
+    assign dios[AssignedUartRxIos[i]] = __enable_uart[i] ? uart_if.uart_rx : 1'bz;
+    assign uart_if.uart_tx = __enable_uart[i] ? dios[AssignedUartTxIos[i]] : 1'b1;
 
     initial begin
       uvm_config_db#(virtual uart_if)::set(null, $sformatf("*.env.m_uart_agent%0d*", i),
@@ -424,21 +408,21 @@ interface chip_if;
   // the default pull on the assigned chip IOs to weak pullup to ensure protocol compliance.
   function automatic void enable_uart(int inst_num, bit enable);
     `DV_CHECK_FATAL(inst_num inside {[0:NUM_UARTS-1]}, , MsgId)
-    mios_if.pins_pu[AssignedUartTxIos[inst_num]] = enable;
-    mios_if.pins_pu[AssignedUartRxIos[inst_num]] = enable;
+    dios_if.pins_pu[AssignedUartTxIos[inst_num]] = enable;
+    dios_if.pins_pu[AssignedUartRxIos[inst_num]] = enable;
     __enable_uart[inst_num] = enable;
   endfunction
 
 
-  // Functional (muxed) interface: I2Cs.
+  // Functional (dedicated) interface: I2Cs.
   bit [NUM_I2CS-1:0] __enable_i2c = {NUM_I2CS{1'b0}}; // Internal signal.
 
   // {ioa7, ioa8} are the i2c0 connections
   localparam int AssignedI2cSclIos [NUM_I2CS]  = {
-    top_darjeeling_pkg::MioPadIoa8
+    top_darjeeling_pkg::DioPadI2cScl
   };
   localparam int AssignedI2cSdaIos [NUM_I2CS] = {
-    top_darjeeling_pkg::MioPadIoa7
+    top_darjeeling_pkg::DioPadI2cSda
   };
 
   // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
@@ -449,8 +433,8 @@ interface chip_if;
     i2c_if i2c_if(
       .clk_i(i2c_clks[i]),
       .rst_ni(i2c_rsts[i]),
-      .scl_io(mios[AssignedI2cSclIos[i]]),
-      .sda_io(mios[AssignedI2cSdaIos[i]])
+      .scl_io(dios[AssignedI2cSclIos[i]]),
+      .sda_io(dios[AssignedI2cSdaIos[i]])
     );
 
     // connect to agents
@@ -462,10 +446,10 @@ interface chip_if;
 
   function automatic void enable_i2c(int inst_num, bit enable);
     `DV_CHECK_FATAL(inst_num inside {[0:NUM_I2CS-1]}, , MsgId)
-    mios_if.pins_pu[AssignedI2cSclIos[inst_num]] = enable;
-    mios_if.pins_pd[AssignedI2cSclIos[inst_num]] = 0;
-    mios_if.pins_pu[AssignedI2cSdaIos[inst_num]] = enable;
-    mios_if.pins_pd[AssignedI2cSdaIos[inst_num]] = 0;
+    dios_if.pins_pu[AssignedI2cSclIos[inst_num]] = enable;
+    dios_if.pins_pd[AssignedI2cSclIos[inst_num]] = 0;
+    dios_if.pins_pu[AssignedI2cSdaIos[inst_num]] = enable;
+    dios_if.pins_pd[AssignedI2cSdaIos[inst_num]] = 0;
     __enable_i2c[inst_num] = enable;
   endfunction
 
@@ -473,7 +457,7 @@ interface chip_if;
   //
   // The reset port is passive only.
   clk_rst_if#("ExtClkDriver") ext_clk_if(
-     .clk (mios[top_darjeeling_pkg::MioPadIoc6]),
+     .clk (mios[top_darjeeling_pkg::MioPadMio11]),
     .rst_n(dios[top_darjeeling_pkg::DioPadPorN])
   );
 
@@ -752,7 +736,6 @@ interface chip_if;
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
-    enable_flash_ctrl_jtag = 0;
     pinmux_wkup_if.disconnect();
     enable_spi_host = 1'b 0;
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));
