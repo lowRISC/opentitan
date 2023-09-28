@@ -179,6 +179,28 @@ pkg_tar(
     tags = ["manual"],
 )
 
+bitstream_fragment_from_manifest(
+    name = "chip_earlgrey_cw340_cached_fragment",
+    srcs = [
+        "@bitstreams//:chip_earlgrey_cw340_bitstream",
+        "@bitstreams//:chip_earlgrey_cw340_otp_mmi",
+        "@bitstreams//:chip_earlgrey_cw340_rom_mmi",
+    ],
+    design = "chip_earlgrey_cw340",
+    manifest = "@bitstreams//:manifest",
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "earlgrey_cw340_cached_archive",
+    testonly = True,
+    srcs = [":chip_earlgrey_cw340_cached_fragment"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw340",
+    strip_prefix = "/hw/bitstream/chip_earlgrey_cw340_cached_fragment",
+    tags = ["manual"],
+)
+
 # Packaging rule for spliced bitstreams
 pkg_files(
     name = "package",
