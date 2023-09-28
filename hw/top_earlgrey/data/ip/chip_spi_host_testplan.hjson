@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_spi_host
+  testpoints: [
+    // SPI_HOST (pre-verified IP) integration tests:
+    {
+      name: chip_sw_spi_host_tx_rx
+      desc: '''Verify the transmission of data on the chip's SPI host port.
+
+            - Program the SPI host to send a known payload out of the chip on the SPI host ports.
+            - The testbench receives the payload and plays it back to the SPI host interface.
+            - The SW verifies the sent payload matches the read response and services SPI event
+              interrupts.
+            - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
+
+            Verify all SPI host instances in the chip.
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_host_tx_rx"]
+    }
+  ]
+}
