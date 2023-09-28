@@ -333,7 +333,7 @@ crypto_status_t otcrypto_aes_kwp_wrap(
 /**
  * Performs the cryptographic key unwrapping operation.
  *
- * This keu unwrap function takes a wrapped key `wrapped_key` and using
+ * This key unwrap function takes a wrapped key `wrapped_key` and using
  * encryption key `key_kek` outputs an unwrapped key `unwrapped_key`.
  *
  * @param wrapped_key Pointer to the input wrapped key.
