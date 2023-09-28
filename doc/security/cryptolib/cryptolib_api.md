@@ -102,6 +102,11 @@ This way, a later version of the cryptolib can still recognize and interpret a d
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_lib_version }}
 
+The required security level for the blinded key is chosen using the enum below.
+At high security levels, the crypto library will prioritize protecting the key from sophisticated attacks, even at large performance costs. If the security level is low, the crypto library will still try to protect the key, but may forgo the most costly protections against it.
+
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_key_security_level }}
+
 Data structures for key types and modes help the cryptolib recognize and prevent misuse of a key for the wrong algorithm or mode.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h key_type }}
@@ -205,11 +210,11 @@ Additionally, the GHASH operation can be used to construct GCM with block cipher
 
 ### AES-KWP
 
-AES Key Wrapping with Padding (KWP) is an authenticated encryption scheme designed for encrypting cryptographic keys.
+Key Wrap with Padding (KWP) mode is used for the protection of cryptographic keys.
 AES-KWP is specified in [NIST SP800-38F][kwp-spec].
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_encrypt }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrap }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_unwrap }}
 
 ## Hash functions
 

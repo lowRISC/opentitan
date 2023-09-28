@@ -702,14 +702,14 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_kwp_encrypt(
+crypto_status_t otcrypto_aes_kwp_wrap(
     const crypto_blinded_key_t *key_to_wrap,
     const crypto_blinded_key_t *key_kek, crypto_word32_buf_t *wrapped_key) {
   // TODO: AES-KWP is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_word32_buf_t wrapped_key,
+crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key) {
   // TODO: AES-KWP is not yet implemented.

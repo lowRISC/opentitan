@@ -292,9 +292,9 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
                                       crypto_byte_buf_t output);
 
 /**
- * Performs the AES-KWP authenticated encryption operation.
+ * Performs the cryptographic key wrapping operation.
  *
- * This encrypt function takes an input key `key_to_wrap` and using
+ * This key wrap function takes an input key `key_to_wrap` and using
  * the encryption key `key_kek` outputs a wrapped key `wrapped_key`.
  *
  * The caller should allocate space for the `wrapped_key` buffer,
@@ -305,24 +305,24 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
  * @param key_to_wrap Pointer to the blinded key to be wrapped.
  * @param key_kek Input Pointer to the blinded encryption key.
  * @param[out] wrapped_key Pointer to the output wrapped key.
- * @return Result of the aes-kwp encrypt operation.
+ * @return Result of the aes-kwp wrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_encrypt(
+crypto_status_t otcrypto_aes_kwp_wrap(
     const crypto_blinded_key_t *key_to_wrap,
     const crypto_blinded_key_t *key_kek, crypto_word32_buf_t *wrapped_key);
 
 /**
- * Performs the AES-KWP authenticated decryption operation.
+ * Performs the cryptographic key unwrapping operation.
  *
- * This decrypt function takes a wrapped key `wrapped_key` and using
+ * This key unwrap function takes a wrapped key `wrapped_key` and using
  * encryption key `key_kek` outputs an unwrapped key `unwrapped_key`.
  *
  * @param wrapped_key Pointer to the input wrapped key.
  * @param key_kek Input Pointer to the blinded encryption key.
  * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
- * @return Result of the aes-kwp decrypt operation.
+ * @return Result of the aes-kwp unwrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_word32_buf_t wrapped_key,
+crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key);
 
