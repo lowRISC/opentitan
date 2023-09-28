@@ -34,7 +34,7 @@ from mubi import prim_mubi
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi${nbits}ValsComplementary_A, MuBi${nbits}True == ~MuBi${nbits}False)
 
-  // Test whether the value is supplied is one of the valid enumerations
+  // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_t val);
     return ~(val inside {MuBi${nbits}True, MuBi${nbits}False});
   endfunction : mubi${nbits}_test_invalid
@@ -147,7 +147,7 @@ from mubi import prim_mubi
   endfunction : mubi${nbits}_or_lo
 
   // Performs a logical AND operation between two multibit values.
-  // Tlos treats "False" as logical 1, and all other values are
+  // This treats "False" as logical 1, and all other values are
   // treated as 0.
   function automatic mubi${nbits}_t mubi${nbits}_and_lo(mubi${nbits}_t a, mubi${nbits}_t b);
     return mubi${nbits}_and(a, b, MuBi${nbits}False);
