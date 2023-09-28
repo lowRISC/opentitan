@@ -32,6 +32,7 @@
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rom_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_spi_device_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_sram_ctrl_testplan.hjson",
@@ -1302,47 +1303,8 @@
 
     /////////////////////////////////////////////////////
     // Memory & Controllers                            //
-    // ROM_CTRL, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
+    // RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL           //
     /////////////////////////////////////////////////////
-
-    // ROM_CTRL (pre-verified IP) integration tests:
-    {
-      name: chip_sw_rom_access
-      desc: '''Verify that the CPU can access the rom contents.
-
-            - Verify that the CPU can fetch instructions from the ROM.
-            '''
-      stage: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check"]
-    }
-    {
-      name: chip_sw_rom_ctrl_integrity_check
-      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
-
-            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
-              the ROM. Verify that we can successfully power up the chip in this case.
-            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
-              digest does not match the top 8 words of the ROM.
-            '''
-      stage: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check"]
-    }
-    {
-      name: chip_sw_rom_ctrl_kmac_error
-      desc: '''
-            Verify the effect of KMAC reporting an error during ROM digest computation.
-
-            - Backdoor load a valid test ROM image and bring the DUT out of reset.
-            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
-              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
-              fault.
-            - Verify that KMAC returns an error signal to the ROM controller.
-            - Verify that the ROM controller itself transitions to invalid state and the chip is
-              effectively dead.
-            '''
-      stage: V3
-      tests: []
-    }
 
     // OTP (pre-verified IP) integration tests:
     {

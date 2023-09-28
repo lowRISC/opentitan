@@ -1,0 +1,45 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_rom_ctrl
+  testpoints: [
+    {
+      name: chip_sw_rom_access
+      desc: '''Verify that the CPU can access the rom contents.
+
+            - Verify that the CPU can fetch instructions from the ROM.
+            '''
+      stage: V2
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_integrity_check
+      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
+
+            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
+              the ROM. Verify that we can successfully power up the chip in this case.
+            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
+              digest does not match the top 8 words of the ROM.
+            '''
+      stage: V2
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC reporting an error during ROM digest computation.
+
+            - Backdoor load a valid test ROM image and bring the DUT out of reset.
+            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
+              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
+              fault.
+            - Verify that KMAC returns an error signal to the ROM controller.
+            - Verify that the ROM controller itself transitions to invalid state and the chip is
+              effectively dead.
+            '''
+      stage: V3
+      tests: []
+    }
+  ]
+}
