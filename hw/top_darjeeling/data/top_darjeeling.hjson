@@ -399,17 +399,6 @@
       },
       attr: "templated",
     },
-    // TODO: remove, disentangle wiring in topgen
-    { name: "adc_ctrl_aon",
-      type: "adc_ctrl",
-      clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
-      domain: ["Aon"],
-      base_addr: {
-        hart: "0x31070000",
-      }
-    },
     { name: "pinmux_aon",
       type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
@@ -1205,7 +1194,6 @@
 
     // ext is to create port in the top.
     'external': {
-        'adc_ctrl_aon.adc'                : 'adc'
         'ast.edn'                         : '',
         'ast.lc_dft_en'                   : '',
         'ast.lc_hw_debug_en'              : '',
@@ -1354,8 +1342,6 @@
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1', port_type: '`INOUT_AI'},
-      { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2', port_type: '`INOUT_AI'},
       { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1568,7 +1554,6 @@
       pinout: {
         remove_ports: [],
         remove_pads: [
-          'CC1', 'CC2',
           'OTP_EXT_VOLT'
         ],
 

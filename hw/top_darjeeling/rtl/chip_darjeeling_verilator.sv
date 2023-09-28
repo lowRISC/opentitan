@@ -344,10 +344,6 @@ module chip_darjeeling_verilator (
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
-
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
   entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
@@ -406,9 +402,6 @@ module chip_darjeeling_verilator (
     .por_ni                ( rst_ni ),
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       (  ),
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
     // Direct short to PAD
     .ast2pad_t0_ao         (  ),
     .ast2pad_t1_ao         (  ),
@@ -483,10 +476,10 @@ module chip_darjeeling_verilator (
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
     // adc
-    .adc_pd_i              ( adc_req.pd ),
-    .adc_chnsel_i          ( adc_req.channel_sel ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
+    .adc_pd_i              ( '0 ),
+    .adc_chnsel_i          ( '0 ),
+    .adc_d_o               ( ),
+    .adc_d_val_o           ( ),
     // entropy_src
     .es_req_i              ( entropy_src_hw_if_req ),
     .es_rsp_o              ( entropy_src_hw_if_rsp ),
@@ -575,8 +568,6 @@ module chip_darjeeling_verilator (
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok  ),
     .ast_tl_req_o                 ( base_ast_bus     ),
     .ast_tl_rsp_i                 ( ast_base_bus     ),
-    .adc_req_o                    ( adc_req          ),
-    .adc_rsp_i                    ( adc_rsp          ),
     .ast_edn_req_i                ( ast_edn_edn_req  ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp  ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),

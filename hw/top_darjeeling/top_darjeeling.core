@@ -42,7 +42,6 @@ filesets:
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:aon_timer
-      - lowrisc:ip:adc_ctrl
       - lowrisc:ip:rom_ctrl
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl

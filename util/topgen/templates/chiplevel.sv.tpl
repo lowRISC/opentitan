@@ -732,8 +732,13 @@ module chip_${top["name"]}_${target["name"]} #(
     .usb_io_pu_cal_o       ( usb_io_pu_cal ),
 
     // adc
+% if top["name"] == "earlgrey":
     .adc_a0_ai             ( CC1 ),
     .adc_a1_ai             ( CC2 ),
+% else:
+    .adc_a0_ai             ( '0 ),
+    .adc_a1_ai             ( '0 ),
+% endif
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( IOA2 ),
@@ -817,16 +822,21 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
+% if top["name"] == "darjeeling":
+    // entropy_src
+    .es_req_i              ( entropy_src_hw_if_req ),
+    .es_rsp_o              ( entropy_src_hw_if_rsp ),
+    // adc
+    .adc_pd_i              ( '0 ),
+    .adc_chnsel_i          ( '0 ),
+    .adc_d_o               ( adc_rsp.data ),
+    .adc_d_val_o           ( adc_rsp.data_valid ),
+% else:
     // adc
     .adc_pd_i              ( adc_req.pd ),
     .adc_chnsel_i          ( adc_req.channel_sel ),
     .adc_d_o               ( adc_rsp.data ),
     .adc_d_val_o           ( adc_rsp.data_valid ),
-% if top["name"] == "darjeeling":
-    // entropy_src
-    .es_req_i              ( entropy_src_hw_if_req ),
-    .es_rsp_o              ( entropy_src_hw_if_rsp ),
-% else:
     // rng
     .rng_en_i              ( es_rng_req.rng_enable ),
     .rng_fips_i            ( es_rng_fips ),
@@ -1133,9 +1143,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
+    % if top["name"] != "darjeeling":
     manual_in_cc2,
     manual_in_cc1,
-    % if top["name"] != "darjeeling":
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
     manual_in_flash_test_mode1,
@@ -1236,13 +1246,13 @@ module chip_${top["name"]}_${target["name"]} #(
     .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
-% endif
-    .ast_tl_req_o                 ( base_ast_bus               ),
-    .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),
     .adc_rsp_i                    ( adc_rsp                    ),
+% endif
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
+    .ast_tl_req_o                 ( base_ast_bus               ),
+    .ast_tl_rsp_i                 ( ast_base_bus               ),
     .obs_ctrl_i                   ( obs_ctrl                   ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
@@ -1508,8 +1518,10 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] != "cw305":
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
+% if top["name"] == "earlgrey":
     .adc_req_o                    ( adc_req                    ),
     .adc_rsp_i                    ( adc_rsp                    ),
+% endif
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
