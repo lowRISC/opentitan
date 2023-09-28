@@ -190,6 +190,208 @@
       act:     "req"
     }
   ],
+  features: [
+    {
+      name: "SPI_DEVICE.MODE.GENERIC",
+      desc: '''Single-lane SPI device interface implementing a raw data transfer protocol for bulk-data loading.
+            AKA. Firmware Operation Mode
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.FLASH_EMULATION",
+      desc: '''Emulates the behaviour of a Serial Flash device when connected to an upstream SPI Host.
+            In this mode, the block recognizes SPI Flash commands and can respond entirely in HW.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH",
+      desc: '''The block acts as a proxy to a downstream external SPI Flash, with optional inline filtering and monitoring.
+
+            In this mode, an upstream SPI Host communicates with a downstream external SPI Flash.
+            Traffic received by this block is forwarded to a SPI_HOST instance, which then
+            relays the traffic onto the downstream external SPI flash.
+            Runtime-configurable filtering, payload interception, payload substitution and monitoring operations
+            on the passthrough traffic are provided by the block.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.TPM",
+      desc: '''Acts as a device-side endpoint in compliance with TPM PC Client Platform over SPI.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.CPOL",
+      desc: '''The SPI clock polarity is configurable at runtime via the "CSR.CFG.CPOL" register.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.CPHA",
+      desc: '''The SPI clock phase is configurable at runtime via the "CSR.CFG.CPHA" register.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.LANES",
+      desc: '''1,2 or 4 lane operation is supported by the block.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.SERDES_ORDERING",
+      desc: '''The block allows serialization ordering control for SDI/SDO that can be controlled at runtime.
+            CSR.CFG.rx_order : "RX bit order on SDI. 0 for MSB first, 1 for LSB first."
+            CSR.CFG.tx_order : "TX bit order on SDO. 0 for MSB first, 1 for LSB first.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.CSB_STATUS",
+      desc: '''CSR.STATUS fields show the current status of the two CSB signals (.csb/.tpm_csb).
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS",
+      desc: '''A pair of asynchronous FIFOs (RXFIFO/TXFIFO) interface with the bus in Generic mode.
+
+            - The bus-facing side of the FIFOs is driven by the bus-CLK.
+            - The internal-facing side of the FIFOs is driven by the core-CLK.
+            - Generic-mode logic interfaces the internal-facing sides of the FIFOs with the DPSRAM.
+            - Generic-mode uses the entire DPSRAM space exclusively (See feature SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF).
+            - Writing to "CSR.CONTROL.rst_txfifo" soft-resets the contents of the TXFIFO.
+            - Received data is normally written from the RXFIFO output to the DPSRAM receive buffer on 32b word boundaries.
+            - "CSR.CFG.timer_v" provides configurable control of the delay between the end of unaligned receive data and
+              the construction of an (abnormal) sub-word write to the DPSRAM receive buffer.
+            - "CSR.ASYNC_FIFO_LEVEL.txlvl" and "CSR.ASYNC_FIFO_LEVEL.rxlvl" contain the current levels of each FIFO.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF",
+      desc: '''A dual-port SRAM, notionally split into transmit (TXF) and receive (RXF) circular buffers, holds data in Generic Mode.
+
+            - TXF and RXF sections are defined by CSR.RXF_ADDR and CSR.TXF_ADDR, each of which contains a base and limit value.
+            - The boundary between TXF and RXF sections is configurable at runtime by writing to CSR.RXF_ADDR and CSR.TXF_ADDR.
+            - The current contents of TXF and RXF is defined by CSR.TXF_PTR and CSR.RXF_PTR, each of which contain a rptr and wptr.
+            - HW interfaces the buffers with the bus through two async-fifos (See feature SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS).
+            - CSR.TXF_PTR.rptr and CSR.RXF_PTR.wptr are controlled by HW in response to bus operations that consume or provide data.
+            - SW updates the rptr/wptr values to indicate it has written-to or read-from each buffer.
+            - CSR.STATUS contains empty and full flags for each buffer (.txf_empty/.txf_full/.rxf_empty/.rxf_full)
+            -
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS",
+      desc: '''Device should respond to all specified standard SPI Flash Commands.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
+      desc: '''Hardware contains a number of submodules for handling certain commands.
+            cmdparse, READ, EN4B/EX4B, SFDP, JEDEC, status/busy
+
+            - CSR.FLASH_STATUS contains SW-writable bits that define the response to a Read Status Register command.
+            - Some fields in CSR.FLASH_STATUS may also be modified by HW.
+              - WRDI/WREN commands modify the CSR.FLASH_STATUS.status.WEL bit.
+              - CSR.FLASH_STATUS.status.BUSY may be modified by HW depending on command upload configuration of the
+                CSR.CMDINFO[x].busy field.
+
+            - CSR.JEDEC_CC and CSR.JEDEC_ID provide data for the JEDEC Read command.
+            - The SFDP section of DPSRAM provides data for the Read SFDP command.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR",
+      desc: '''SPI Flash Read commands are provided with data from a DPSRAM section with a ping-pong buffering scheme, or a fixed mailbox region.
+
+            - The readptr crossing the buffer boundary creates a readbuf_flip interrupt.
+            - The readptr crossing the offset CSR.READ_THRESHOLD within a buffer creates a readbuf_watermark interrupt.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.FLASH_EMULATION.DUMMY_CYCLE",
+      desc: '''Insertion of dummy cycles between SPI Flash opcode and data.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.FLASH_EMULATION.WRITE_ENABLE_DISABLE",
+      desc: '''The block supports SPI Flash WREN/WRDI commands from the external host.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.LAST_READ_ADDR",
+      desc: '''The register CSR.LAST_READ_ADDR shows the last address a SPI Flash Read command accessed before CSb de-assertion.
+            MODES : FLASH_EMULATION,PASSTHROUGH
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.CMDINFOS",
+      desc: '''Registers that can contain custom opcode + data for responding to SPI Flash Commands.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.COMMAND_UPLOAD",
+      desc: '''HW can store the received command into the command/address FIFOs and payload buffer.
+            MODES:FLASH_EMULATION,PASSTHROUGH
+
+            - A received SPI Flash command can conditionally be written to the command,address and payload FIFOs.
+            - SW can access data about the uploaded commands via CSR.UPLOAD_STATUS and CSR.UPLOAD_STATUS2.
+            - SW can read CSR.UPLOAD_CMDFIFO to access the command FIFO.
+            - SW can read CSR.UPLOAD_ADDRFIFO to access the address FIFO.
+            - The payload FIFO can be read by accessing the DPSRAM window.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.HW.3B4B_ADDRESSING",
+      desc: '''Support CSR control of 3B/4B operation, plus host control with EN4B/EX4B
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
+      desc: '''Passthrough logic filters the command based on the 256-bit value of the "CMD_FILTER_0" CSR.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.ADDRESS_MANIPULATION",
+      desc: '''By configuring ADDR_SWAP_MASK and ADDR_SWAP_DATA CSRs, certain address bits of Flash Commands can be overwritten on passthrough.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.STATUS_MANIPULATION",
+      desc: '''By configuring PAYLOAD_SWAP_MASK and PAYLOAD_SWAP_DATA CSRs, certain bits of the first 4 payload bytes may be overwritten on passthrough.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.OUTPUT_ENABLE_CONTROL",
+      desc: '''Passthrough module can control the output enable signals on both host and downstream side.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN",
+      desc: '''Allow the block to reply to SPI Flash commands, taking precedence over the data returned by the passthrough device.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.PASSTHROUGH.MAILBOX",
+      desc: '''Return data from the 1kB Mailbox read/write buffer if the command address falls in the range (MAILBOX_ADDR:MAILBOX_ADDR+1kB).
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.TPM.RETURN-BY-HW_REGS",
+      desc: '''Block can auto-respond to a TPM host when the address falls within a configured range using the RETURN-BY-HW registers.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.TPM.AUTO_WAIT",
+      desc: '''If the address of a command does not fall into a pre-configured range, the block automatically returns a WAIT on the bus.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE",
+      desc: '''If not activating the RETURN-BY-HW mode, the block responds to a Host TPM commands when the TPM_READ_FIFO has data >= requested transfer size.
+            '''
+    }
+    {
+      name: "SPI_DEVICE.MODE.TPM.CAPABILITY",
+      desc: '''TPM-mode can advertise the capabilities it supports to the upstream Host by setting CSR.TPM_CAP.
+            '''
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
