@@ -233,7 +233,7 @@ TEST_F(PinmuxTest, SleepStatus) {
       &dif_pinmux_, /*pad=*/3, kDifPinmuxPadKindMio, &in_sleep_mode));
   EXPECT_FALSE(in_sleep_mode);
 
-  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET, 0x00000004u);
+  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0x00000004u);
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_get_state(
       &dif_pinmux_, /*pad=*/2, kDifPinmuxPadKindDio, &in_sleep_mode));
   EXPECT_TRUE(in_sleep_mode);

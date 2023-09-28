@@ -103,8 +103,32 @@ package chip_common_pkg;
     top_darjeeling_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
     top_darjeeling_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
     top_darjeeling_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
+    top_darjeeling_pkg::DioPadSocGpi0,    /* DioSocProxySocGpi0 */
+    top_darjeeling_pkg::DioPadSocGpi1,    /* DioSocProxySocGpi1 */
+    top_darjeeling_pkg::DioPadSocGpi2,    /* DioSocProxySocGpi2 */
+    top_darjeeling_pkg::DioPadSocGpi3,    /* DioSocProxySocGpi3 */
+    top_darjeeling_pkg::DioPadSocGpi4,    /* DioSocProxySocGpi4 */
+    top_darjeeling_pkg::DioPadSocGpi5,    /* DioSocProxySocGpi5 */
+    top_darjeeling_pkg::DioPadSocGpi6,    /* DioSocProxySocGpi6 */
+    top_darjeeling_pkg::DioPadSocGpi7,    /* DioSocProxySocGpi7 */
+    top_darjeeling_pkg::DioPadSocGpi8,    /* DioSocProxySocGpi8 */
+    top_darjeeling_pkg::DioPadSocGpi9,    /* DioSocProxySocGpi9 */
+    top_darjeeling_pkg::DioPadSocGpi10,   /* DioSocProxySocGpi10 */
+    top_darjeeling_pkg::DioPadSocGpi11,   /* DioSocProxySocGpi11 */
     top_darjeeling_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_darjeeling_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
+    top_darjeeling_pkg::DioPadSpiHostCsL, /* DioSpiHost0Csb */
+    top_darjeeling_pkg::DioPadSocGpo0,    /* DioSocProxySocGpo0 */
+    top_darjeeling_pkg::DioPadSocGpo1,    /* DioSocProxySocGpo1 */
+    top_darjeeling_pkg::DioPadSocGpo2,    /* DioSocProxySocGpo2 */
+    top_darjeeling_pkg::DioPadSocGpo3,    /* DioSocProxySocGpo3 */
+    top_darjeeling_pkg::DioPadSocGpo4,    /* DioSocProxySocGpo4 */
+    top_darjeeling_pkg::DioPadSocGpo5,    /* DioSocProxySocGpo5 */
+    top_darjeeling_pkg::DioPadSocGpo6,    /* DioSocProxySocGpo6 */
+    top_darjeeling_pkg::DioPadSocGpo7,    /* DioSocProxySocGpo7 */
+    top_darjeeling_pkg::DioPadSocGpo8,    /* DioSocProxySocGpo8 */
+    top_darjeeling_pkg::DioPadSocGpo9,    /* DioSocProxySocGpo9 */
+    top_darjeeling_pkg::DioPadSocGpo10,   /* DioSocProxySocGpo10 */
+    top_darjeeling_pkg::DioPadSocGpo11    /* DioSocProxySocGpo11 */
   };
 
   typedef struct packed {

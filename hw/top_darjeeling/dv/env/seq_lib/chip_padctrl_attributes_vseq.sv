@@ -33,8 +33,32 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi0
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi1
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi2
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi3
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi4
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi5
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi6
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi7
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi8
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi9
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi10
+    prim_pad_wrapper_pkg::InputStd, // DIO soc_gpi11
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sck
-    prim_pad_wrapper_pkg::BidirStd  // DIO spi_host0_csb
+    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_csb
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo0
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo1
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo2
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo3
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo4
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo5
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo6
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo7
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo8
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo9
+    prim_pad_wrapper_pkg::BidirStd, // DIO soc_gpo10
+    prim_pad_wrapper_pkg::BidirStd  // DIO soc_gpo11
   };
 
   int dio_input_pads[$];

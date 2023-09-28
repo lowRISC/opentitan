@@ -123,6 +123,32 @@ set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18                 } [get
 set_property -dict { PACKAGE_PIN AF24 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #J14 PIN 16 CWIO_IO4 - Capture Trigger
 set_property -dict { PACKAGE_PIN AB21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #J14 PIN  4 CWIO_HS1 - Target clock
 
+## SoC GPIOs
+set_property -dict { PACKAGE_PIN C12  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI0  }]; # C12:USERIOB-1
+set_property -dict { PACKAGE_PIN D13  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI1  }]; # D13:USERIOB-3
+set_property -dict { PACKAGE_PIN C13  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI2  }]; # C13:USERIOB-5
+set_property -dict { PACKAGE_PIN E13  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI3  }]; # E13:USERIOB-7
+set_property -dict { PACKAGE_PIN A8   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI4  }]; #  A8:USERIOB-9
+set_property -dict { PACKAGE_PIN B9   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI5  }]; #  B9:USERIOB-11
+set_property -dict { PACKAGE_PIN A9   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI6  }]; #  A9:USERIOB-15
+set_property -dict { PACKAGE_PIN B10  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI7  }]; # B10:USERIOB-17
+set_property -dict { PACKAGE_PIN A10  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI8  }]; # A10:USERIOB-19
+set_property -dict { PACKAGE_PIN B11  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI9  }]; # B11:USERIOB-21
+set_property -dict { PACKAGE_PIN B12  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI10 }]; # B12:USERIOB-23
+set_property -dict { PACKAGE_PIN A12  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPI11 }]; # A12:USERIOB-25
+set_property -dict { PACKAGE_PIN F10  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO0  }]; # F10:USERIOB-6
+set_property -dict { PACKAGE_PIN H8   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO1  }]; #  H8:USERIOB-8
+set_property -dict { PACKAGE_PIN F8   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO2  }]; #  F8:USERIOB-10
+set_property -dict { PACKAGE_PIN F9   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO3  }]; #  F9:USERIOB-12
+set_property -dict { PACKAGE_PIN E10  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO4  }]; # E10:USERIOB-14
+set_property -dict { PACKAGE_PIN D8   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO5  }]; #  D8:USERIOB-16
+set_property -dict { PACKAGE_PIN D9   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO6  }]; #  D9:USERIOB-18
+set_property -dict { PACKAGE_PIN C9   IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO7  }]; #  C9:USERIOB-24
+set_property -dict { PACKAGE_PIN D10  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO8  }]; # D10:USERIOB-26
+set_property -dict { PACKAGE_PIN E12  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO9  }]; # E12:USERIOB-28
+set_property -dict { PACKAGE_PIN C11  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO10 }]; # C11:USERIOB-30
+set_property -dict { PACKAGE_PIN D11  IOSTANDARD LVCMOS33 } [get_ports { SOC_GPO11 }]; # D11:USERIOB-32
+
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]

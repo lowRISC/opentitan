@@ -33,6 +33,10 @@ module soc_proxy
 
   output logic rst_req_external_o,
 
+  input        [NumSocGpio-1:0] cio_soc_gpi_i,
+  output logic [NumSocGpio-1:0] cio_soc_gpo_o,
+  output logic [NumSocGpio-1:0] cio_soc_gpo_en_o,
+
   input  logic       i2c_lsio_trigger_i,
   input  logic       spi_host_lsio_trigger_i,
   input  logic       uart_lsio_trigger_i,
@@ -51,12 +55,20 @@ module soc_proxy
 
   input  logic soc_rst_req_async_i,
 
+  output logic [NumSocGpio-1:0] soc_gpi_async_o,
+  input  logic [NumSocGpio-1:0] soc_gpo_async_i,
+
   input  logic [NumExternalIrqs-1:0] soc_intr_async_i
 );
 
   // Feed CTN TL-UL ports through.
   assign ctn_tl_h2d_o = ctn_tl_i;
   assign ctn_tl_o = ctn_tl_d2h_i;
+
+  // GPI/O signal feed through.
+  assign soc_gpi_async_o  = cio_soc_gpi_i;
+  assign cio_soc_gpo_en_o = {NumSocGpio{1'b1}};
+  assign cio_soc_gpo_o    = soc_gpo_async_i;
 
   // Register node
   soc_proxy_core_reg2hw_t reg2hw;

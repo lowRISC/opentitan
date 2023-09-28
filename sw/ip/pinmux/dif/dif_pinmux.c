@@ -52,7 +52,7 @@ static bool dif_pinmux_get_sleep_status_bit(dif_pinmux_pad_kind_t kind,
       break;
     case kDifPinmuxPadKindDio:
       num_pads = PINMUX_PARAM_N_DIO_PADS;
-      reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET;
+      reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
       break;
     default:
       return false;

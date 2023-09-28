@@ -1260,6 +1260,8 @@ module chip_${top["name"]}_${target["name"]} #(
 % if top["name"] == "darjeeling":
     .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d          ),
     .ctn_tl_d2h_i                 ( ctn_egress_tl_d2h          ),
+    .soc_gpi_async_o              (                            ),
+    .soc_gpo_async_i              ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),
@@ -1531,6 +1533,8 @@ module chip_${top["name"]}_${target["name"]} #(
 % if top["name"] == "darjeeling":
     .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d          ),
     .ctn_tl_d2h_i                 ( ctn_egress_tl_d2h          ),
+    .soc_gpi_async_o              (                            ),
+    .soc_gpo_async_i              ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),
