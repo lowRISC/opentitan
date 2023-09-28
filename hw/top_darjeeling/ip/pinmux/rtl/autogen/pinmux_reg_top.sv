@@ -26,7 +26,7 @@ module pinmux_reg_top (
 
   import pinmux_reg_pkg::* ;
 
-  localparam int AW = 11;
+  localparam int AW = 12;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -57,9 +57,9 @@ module pinmux_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [505:0] reg_we_check;
+  logic [626:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(506)
+    .OneHotWidth(627)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -1743,6 +1743,78 @@ module pinmux_reg_top (
   logic dio_pad_attr_regwen_11_we;
   logic dio_pad_attr_regwen_11_qs;
   logic dio_pad_attr_regwen_11_wd;
+  logic dio_pad_attr_regwen_12_we;
+  logic dio_pad_attr_regwen_12_qs;
+  logic dio_pad_attr_regwen_12_wd;
+  logic dio_pad_attr_regwen_13_we;
+  logic dio_pad_attr_regwen_13_qs;
+  logic dio_pad_attr_regwen_13_wd;
+  logic dio_pad_attr_regwen_14_we;
+  logic dio_pad_attr_regwen_14_qs;
+  logic dio_pad_attr_regwen_14_wd;
+  logic dio_pad_attr_regwen_15_we;
+  logic dio_pad_attr_regwen_15_qs;
+  logic dio_pad_attr_regwen_15_wd;
+  logic dio_pad_attr_regwen_16_we;
+  logic dio_pad_attr_regwen_16_qs;
+  logic dio_pad_attr_regwen_16_wd;
+  logic dio_pad_attr_regwen_17_we;
+  logic dio_pad_attr_regwen_17_qs;
+  logic dio_pad_attr_regwen_17_wd;
+  logic dio_pad_attr_regwen_18_we;
+  logic dio_pad_attr_regwen_18_qs;
+  logic dio_pad_attr_regwen_18_wd;
+  logic dio_pad_attr_regwen_19_we;
+  logic dio_pad_attr_regwen_19_qs;
+  logic dio_pad_attr_regwen_19_wd;
+  logic dio_pad_attr_regwen_20_we;
+  logic dio_pad_attr_regwen_20_qs;
+  logic dio_pad_attr_regwen_20_wd;
+  logic dio_pad_attr_regwen_21_we;
+  logic dio_pad_attr_regwen_21_qs;
+  logic dio_pad_attr_regwen_21_wd;
+  logic dio_pad_attr_regwen_22_we;
+  logic dio_pad_attr_regwen_22_qs;
+  logic dio_pad_attr_regwen_22_wd;
+  logic dio_pad_attr_regwen_23_we;
+  logic dio_pad_attr_regwen_23_qs;
+  logic dio_pad_attr_regwen_23_wd;
+  logic dio_pad_attr_regwen_24_we;
+  logic dio_pad_attr_regwen_24_qs;
+  logic dio_pad_attr_regwen_24_wd;
+  logic dio_pad_attr_regwen_25_we;
+  logic dio_pad_attr_regwen_25_qs;
+  logic dio_pad_attr_regwen_25_wd;
+  logic dio_pad_attr_regwen_26_we;
+  logic dio_pad_attr_regwen_26_qs;
+  logic dio_pad_attr_regwen_26_wd;
+  logic dio_pad_attr_regwen_27_we;
+  logic dio_pad_attr_regwen_27_qs;
+  logic dio_pad_attr_regwen_27_wd;
+  logic dio_pad_attr_regwen_28_we;
+  logic dio_pad_attr_regwen_28_qs;
+  logic dio_pad_attr_regwen_28_wd;
+  logic dio_pad_attr_regwen_29_we;
+  logic dio_pad_attr_regwen_29_qs;
+  logic dio_pad_attr_regwen_29_wd;
+  logic dio_pad_attr_regwen_30_we;
+  logic dio_pad_attr_regwen_30_qs;
+  logic dio_pad_attr_regwen_30_wd;
+  logic dio_pad_attr_regwen_31_we;
+  logic dio_pad_attr_regwen_31_qs;
+  logic dio_pad_attr_regwen_31_wd;
+  logic dio_pad_attr_regwen_32_we;
+  logic dio_pad_attr_regwen_32_qs;
+  logic dio_pad_attr_regwen_32_wd;
+  logic dio_pad_attr_regwen_33_we;
+  logic dio_pad_attr_regwen_33_qs;
+  logic dio_pad_attr_regwen_33_wd;
+  logic dio_pad_attr_regwen_34_we;
+  logic dio_pad_attr_regwen_34_qs;
+  logic dio_pad_attr_regwen_34_wd;
+  logic dio_pad_attr_regwen_35_we;
+  logic dio_pad_attr_regwen_35_qs;
+  logic dio_pad_attr_regwen_35_wd;
   logic dio_pad_attr_0_re;
   logic dio_pad_attr_0_we;
   logic dio_pad_attr_0_invert_0_qs;
@@ -1983,6 +2055,486 @@ module pinmux_reg_top (
   logic [1:0] dio_pad_attr_11_slew_rate_11_wd;
   logic [3:0] dio_pad_attr_11_drive_strength_11_qs;
   logic [3:0] dio_pad_attr_11_drive_strength_11_wd;
+  logic dio_pad_attr_12_re;
+  logic dio_pad_attr_12_we;
+  logic dio_pad_attr_12_invert_12_qs;
+  logic dio_pad_attr_12_invert_12_wd;
+  logic dio_pad_attr_12_virtual_od_en_12_qs;
+  logic dio_pad_attr_12_virtual_od_en_12_wd;
+  logic dio_pad_attr_12_pull_en_12_qs;
+  logic dio_pad_attr_12_pull_en_12_wd;
+  logic dio_pad_attr_12_pull_select_12_qs;
+  logic dio_pad_attr_12_pull_select_12_wd;
+  logic dio_pad_attr_12_keeper_en_12_qs;
+  logic dio_pad_attr_12_keeper_en_12_wd;
+  logic dio_pad_attr_12_schmitt_en_12_qs;
+  logic dio_pad_attr_12_schmitt_en_12_wd;
+  logic dio_pad_attr_12_od_en_12_qs;
+  logic dio_pad_attr_12_od_en_12_wd;
+  logic [1:0] dio_pad_attr_12_slew_rate_12_qs;
+  logic [1:0] dio_pad_attr_12_slew_rate_12_wd;
+  logic [3:0] dio_pad_attr_12_drive_strength_12_qs;
+  logic [3:0] dio_pad_attr_12_drive_strength_12_wd;
+  logic dio_pad_attr_13_re;
+  logic dio_pad_attr_13_we;
+  logic dio_pad_attr_13_invert_13_qs;
+  logic dio_pad_attr_13_invert_13_wd;
+  logic dio_pad_attr_13_virtual_od_en_13_qs;
+  logic dio_pad_attr_13_virtual_od_en_13_wd;
+  logic dio_pad_attr_13_pull_en_13_qs;
+  logic dio_pad_attr_13_pull_en_13_wd;
+  logic dio_pad_attr_13_pull_select_13_qs;
+  logic dio_pad_attr_13_pull_select_13_wd;
+  logic dio_pad_attr_13_keeper_en_13_qs;
+  logic dio_pad_attr_13_keeper_en_13_wd;
+  logic dio_pad_attr_13_schmitt_en_13_qs;
+  logic dio_pad_attr_13_schmitt_en_13_wd;
+  logic dio_pad_attr_13_od_en_13_qs;
+  logic dio_pad_attr_13_od_en_13_wd;
+  logic [1:0] dio_pad_attr_13_slew_rate_13_qs;
+  logic [1:0] dio_pad_attr_13_slew_rate_13_wd;
+  logic [3:0] dio_pad_attr_13_drive_strength_13_qs;
+  logic [3:0] dio_pad_attr_13_drive_strength_13_wd;
+  logic dio_pad_attr_14_re;
+  logic dio_pad_attr_14_we;
+  logic dio_pad_attr_14_invert_14_qs;
+  logic dio_pad_attr_14_invert_14_wd;
+  logic dio_pad_attr_14_virtual_od_en_14_qs;
+  logic dio_pad_attr_14_virtual_od_en_14_wd;
+  logic dio_pad_attr_14_pull_en_14_qs;
+  logic dio_pad_attr_14_pull_en_14_wd;
+  logic dio_pad_attr_14_pull_select_14_qs;
+  logic dio_pad_attr_14_pull_select_14_wd;
+  logic dio_pad_attr_14_keeper_en_14_qs;
+  logic dio_pad_attr_14_keeper_en_14_wd;
+  logic dio_pad_attr_14_schmitt_en_14_qs;
+  logic dio_pad_attr_14_schmitt_en_14_wd;
+  logic dio_pad_attr_14_od_en_14_qs;
+  logic dio_pad_attr_14_od_en_14_wd;
+  logic [1:0] dio_pad_attr_14_slew_rate_14_qs;
+  logic [1:0] dio_pad_attr_14_slew_rate_14_wd;
+  logic [3:0] dio_pad_attr_14_drive_strength_14_qs;
+  logic [3:0] dio_pad_attr_14_drive_strength_14_wd;
+  logic dio_pad_attr_15_re;
+  logic dio_pad_attr_15_we;
+  logic dio_pad_attr_15_invert_15_qs;
+  logic dio_pad_attr_15_invert_15_wd;
+  logic dio_pad_attr_15_virtual_od_en_15_qs;
+  logic dio_pad_attr_15_virtual_od_en_15_wd;
+  logic dio_pad_attr_15_pull_en_15_qs;
+  logic dio_pad_attr_15_pull_en_15_wd;
+  logic dio_pad_attr_15_pull_select_15_qs;
+  logic dio_pad_attr_15_pull_select_15_wd;
+  logic dio_pad_attr_15_keeper_en_15_qs;
+  logic dio_pad_attr_15_keeper_en_15_wd;
+  logic dio_pad_attr_15_schmitt_en_15_qs;
+  logic dio_pad_attr_15_schmitt_en_15_wd;
+  logic dio_pad_attr_15_od_en_15_qs;
+  logic dio_pad_attr_15_od_en_15_wd;
+  logic [1:0] dio_pad_attr_15_slew_rate_15_qs;
+  logic [1:0] dio_pad_attr_15_slew_rate_15_wd;
+  logic [3:0] dio_pad_attr_15_drive_strength_15_qs;
+  logic [3:0] dio_pad_attr_15_drive_strength_15_wd;
+  logic dio_pad_attr_16_re;
+  logic dio_pad_attr_16_we;
+  logic dio_pad_attr_16_invert_16_qs;
+  logic dio_pad_attr_16_invert_16_wd;
+  logic dio_pad_attr_16_virtual_od_en_16_qs;
+  logic dio_pad_attr_16_virtual_od_en_16_wd;
+  logic dio_pad_attr_16_pull_en_16_qs;
+  logic dio_pad_attr_16_pull_en_16_wd;
+  logic dio_pad_attr_16_pull_select_16_qs;
+  logic dio_pad_attr_16_pull_select_16_wd;
+  logic dio_pad_attr_16_keeper_en_16_qs;
+  logic dio_pad_attr_16_keeper_en_16_wd;
+  logic dio_pad_attr_16_schmitt_en_16_qs;
+  logic dio_pad_attr_16_schmitt_en_16_wd;
+  logic dio_pad_attr_16_od_en_16_qs;
+  logic dio_pad_attr_16_od_en_16_wd;
+  logic [1:0] dio_pad_attr_16_slew_rate_16_qs;
+  logic [1:0] dio_pad_attr_16_slew_rate_16_wd;
+  logic [3:0] dio_pad_attr_16_drive_strength_16_qs;
+  logic [3:0] dio_pad_attr_16_drive_strength_16_wd;
+  logic dio_pad_attr_17_re;
+  logic dio_pad_attr_17_we;
+  logic dio_pad_attr_17_invert_17_qs;
+  logic dio_pad_attr_17_invert_17_wd;
+  logic dio_pad_attr_17_virtual_od_en_17_qs;
+  logic dio_pad_attr_17_virtual_od_en_17_wd;
+  logic dio_pad_attr_17_pull_en_17_qs;
+  logic dio_pad_attr_17_pull_en_17_wd;
+  logic dio_pad_attr_17_pull_select_17_qs;
+  logic dio_pad_attr_17_pull_select_17_wd;
+  logic dio_pad_attr_17_keeper_en_17_qs;
+  logic dio_pad_attr_17_keeper_en_17_wd;
+  logic dio_pad_attr_17_schmitt_en_17_qs;
+  logic dio_pad_attr_17_schmitt_en_17_wd;
+  logic dio_pad_attr_17_od_en_17_qs;
+  logic dio_pad_attr_17_od_en_17_wd;
+  logic [1:0] dio_pad_attr_17_slew_rate_17_qs;
+  logic [1:0] dio_pad_attr_17_slew_rate_17_wd;
+  logic [3:0] dio_pad_attr_17_drive_strength_17_qs;
+  logic [3:0] dio_pad_attr_17_drive_strength_17_wd;
+  logic dio_pad_attr_18_re;
+  logic dio_pad_attr_18_we;
+  logic dio_pad_attr_18_invert_18_qs;
+  logic dio_pad_attr_18_invert_18_wd;
+  logic dio_pad_attr_18_virtual_od_en_18_qs;
+  logic dio_pad_attr_18_virtual_od_en_18_wd;
+  logic dio_pad_attr_18_pull_en_18_qs;
+  logic dio_pad_attr_18_pull_en_18_wd;
+  logic dio_pad_attr_18_pull_select_18_qs;
+  logic dio_pad_attr_18_pull_select_18_wd;
+  logic dio_pad_attr_18_keeper_en_18_qs;
+  logic dio_pad_attr_18_keeper_en_18_wd;
+  logic dio_pad_attr_18_schmitt_en_18_qs;
+  logic dio_pad_attr_18_schmitt_en_18_wd;
+  logic dio_pad_attr_18_od_en_18_qs;
+  logic dio_pad_attr_18_od_en_18_wd;
+  logic [1:0] dio_pad_attr_18_slew_rate_18_qs;
+  logic [1:0] dio_pad_attr_18_slew_rate_18_wd;
+  logic [3:0] dio_pad_attr_18_drive_strength_18_qs;
+  logic [3:0] dio_pad_attr_18_drive_strength_18_wd;
+  logic dio_pad_attr_19_re;
+  logic dio_pad_attr_19_we;
+  logic dio_pad_attr_19_invert_19_qs;
+  logic dio_pad_attr_19_invert_19_wd;
+  logic dio_pad_attr_19_virtual_od_en_19_qs;
+  logic dio_pad_attr_19_virtual_od_en_19_wd;
+  logic dio_pad_attr_19_pull_en_19_qs;
+  logic dio_pad_attr_19_pull_en_19_wd;
+  logic dio_pad_attr_19_pull_select_19_qs;
+  logic dio_pad_attr_19_pull_select_19_wd;
+  logic dio_pad_attr_19_keeper_en_19_qs;
+  logic dio_pad_attr_19_keeper_en_19_wd;
+  logic dio_pad_attr_19_schmitt_en_19_qs;
+  logic dio_pad_attr_19_schmitt_en_19_wd;
+  logic dio_pad_attr_19_od_en_19_qs;
+  logic dio_pad_attr_19_od_en_19_wd;
+  logic [1:0] dio_pad_attr_19_slew_rate_19_qs;
+  logic [1:0] dio_pad_attr_19_slew_rate_19_wd;
+  logic [3:0] dio_pad_attr_19_drive_strength_19_qs;
+  logic [3:0] dio_pad_attr_19_drive_strength_19_wd;
+  logic dio_pad_attr_20_re;
+  logic dio_pad_attr_20_we;
+  logic dio_pad_attr_20_invert_20_qs;
+  logic dio_pad_attr_20_invert_20_wd;
+  logic dio_pad_attr_20_virtual_od_en_20_qs;
+  logic dio_pad_attr_20_virtual_od_en_20_wd;
+  logic dio_pad_attr_20_pull_en_20_qs;
+  logic dio_pad_attr_20_pull_en_20_wd;
+  logic dio_pad_attr_20_pull_select_20_qs;
+  logic dio_pad_attr_20_pull_select_20_wd;
+  logic dio_pad_attr_20_keeper_en_20_qs;
+  logic dio_pad_attr_20_keeper_en_20_wd;
+  logic dio_pad_attr_20_schmitt_en_20_qs;
+  logic dio_pad_attr_20_schmitt_en_20_wd;
+  logic dio_pad_attr_20_od_en_20_qs;
+  logic dio_pad_attr_20_od_en_20_wd;
+  logic [1:0] dio_pad_attr_20_slew_rate_20_qs;
+  logic [1:0] dio_pad_attr_20_slew_rate_20_wd;
+  logic [3:0] dio_pad_attr_20_drive_strength_20_qs;
+  logic [3:0] dio_pad_attr_20_drive_strength_20_wd;
+  logic dio_pad_attr_21_re;
+  logic dio_pad_attr_21_we;
+  logic dio_pad_attr_21_invert_21_qs;
+  logic dio_pad_attr_21_invert_21_wd;
+  logic dio_pad_attr_21_virtual_od_en_21_qs;
+  logic dio_pad_attr_21_virtual_od_en_21_wd;
+  logic dio_pad_attr_21_pull_en_21_qs;
+  logic dio_pad_attr_21_pull_en_21_wd;
+  logic dio_pad_attr_21_pull_select_21_qs;
+  logic dio_pad_attr_21_pull_select_21_wd;
+  logic dio_pad_attr_21_keeper_en_21_qs;
+  logic dio_pad_attr_21_keeper_en_21_wd;
+  logic dio_pad_attr_21_schmitt_en_21_qs;
+  logic dio_pad_attr_21_schmitt_en_21_wd;
+  logic dio_pad_attr_21_od_en_21_qs;
+  logic dio_pad_attr_21_od_en_21_wd;
+  logic [1:0] dio_pad_attr_21_slew_rate_21_qs;
+  logic [1:0] dio_pad_attr_21_slew_rate_21_wd;
+  logic [3:0] dio_pad_attr_21_drive_strength_21_qs;
+  logic [3:0] dio_pad_attr_21_drive_strength_21_wd;
+  logic dio_pad_attr_22_re;
+  logic dio_pad_attr_22_we;
+  logic dio_pad_attr_22_invert_22_qs;
+  logic dio_pad_attr_22_invert_22_wd;
+  logic dio_pad_attr_22_virtual_od_en_22_qs;
+  logic dio_pad_attr_22_virtual_od_en_22_wd;
+  logic dio_pad_attr_22_pull_en_22_qs;
+  logic dio_pad_attr_22_pull_en_22_wd;
+  logic dio_pad_attr_22_pull_select_22_qs;
+  logic dio_pad_attr_22_pull_select_22_wd;
+  logic dio_pad_attr_22_keeper_en_22_qs;
+  logic dio_pad_attr_22_keeper_en_22_wd;
+  logic dio_pad_attr_22_schmitt_en_22_qs;
+  logic dio_pad_attr_22_schmitt_en_22_wd;
+  logic dio_pad_attr_22_od_en_22_qs;
+  logic dio_pad_attr_22_od_en_22_wd;
+  logic [1:0] dio_pad_attr_22_slew_rate_22_qs;
+  logic [1:0] dio_pad_attr_22_slew_rate_22_wd;
+  logic [3:0] dio_pad_attr_22_drive_strength_22_qs;
+  logic [3:0] dio_pad_attr_22_drive_strength_22_wd;
+  logic dio_pad_attr_23_re;
+  logic dio_pad_attr_23_we;
+  logic dio_pad_attr_23_invert_23_qs;
+  logic dio_pad_attr_23_invert_23_wd;
+  logic dio_pad_attr_23_virtual_od_en_23_qs;
+  logic dio_pad_attr_23_virtual_od_en_23_wd;
+  logic dio_pad_attr_23_pull_en_23_qs;
+  logic dio_pad_attr_23_pull_en_23_wd;
+  logic dio_pad_attr_23_pull_select_23_qs;
+  logic dio_pad_attr_23_pull_select_23_wd;
+  logic dio_pad_attr_23_keeper_en_23_qs;
+  logic dio_pad_attr_23_keeper_en_23_wd;
+  logic dio_pad_attr_23_schmitt_en_23_qs;
+  logic dio_pad_attr_23_schmitt_en_23_wd;
+  logic dio_pad_attr_23_od_en_23_qs;
+  logic dio_pad_attr_23_od_en_23_wd;
+  logic [1:0] dio_pad_attr_23_slew_rate_23_qs;
+  logic [1:0] dio_pad_attr_23_slew_rate_23_wd;
+  logic [3:0] dio_pad_attr_23_drive_strength_23_qs;
+  logic [3:0] dio_pad_attr_23_drive_strength_23_wd;
+  logic dio_pad_attr_24_re;
+  logic dio_pad_attr_24_we;
+  logic dio_pad_attr_24_invert_24_qs;
+  logic dio_pad_attr_24_invert_24_wd;
+  logic dio_pad_attr_24_virtual_od_en_24_qs;
+  logic dio_pad_attr_24_virtual_od_en_24_wd;
+  logic dio_pad_attr_24_pull_en_24_qs;
+  logic dio_pad_attr_24_pull_en_24_wd;
+  logic dio_pad_attr_24_pull_select_24_qs;
+  logic dio_pad_attr_24_pull_select_24_wd;
+  logic dio_pad_attr_24_keeper_en_24_qs;
+  logic dio_pad_attr_24_keeper_en_24_wd;
+  logic dio_pad_attr_24_schmitt_en_24_qs;
+  logic dio_pad_attr_24_schmitt_en_24_wd;
+  logic dio_pad_attr_24_od_en_24_qs;
+  logic dio_pad_attr_24_od_en_24_wd;
+  logic [1:0] dio_pad_attr_24_slew_rate_24_qs;
+  logic [1:0] dio_pad_attr_24_slew_rate_24_wd;
+  logic [3:0] dio_pad_attr_24_drive_strength_24_qs;
+  logic [3:0] dio_pad_attr_24_drive_strength_24_wd;
+  logic dio_pad_attr_25_re;
+  logic dio_pad_attr_25_we;
+  logic dio_pad_attr_25_invert_25_qs;
+  logic dio_pad_attr_25_invert_25_wd;
+  logic dio_pad_attr_25_virtual_od_en_25_qs;
+  logic dio_pad_attr_25_virtual_od_en_25_wd;
+  logic dio_pad_attr_25_pull_en_25_qs;
+  logic dio_pad_attr_25_pull_en_25_wd;
+  logic dio_pad_attr_25_pull_select_25_qs;
+  logic dio_pad_attr_25_pull_select_25_wd;
+  logic dio_pad_attr_25_keeper_en_25_qs;
+  logic dio_pad_attr_25_keeper_en_25_wd;
+  logic dio_pad_attr_25_schmitt_en_25_qs;
+  logic dio_pad_attr_25_schmitt_en_25_wd;
+  logic dio_pad_attr_25_od_en_25_qs;
+  logic dio_pad_attr_25_od_en_25_wd;
+  logic [1:0] dio_pad_attr_25_slew_rate_25_qs;
+  logic [1:0] dio_pad_attr_25_slew_rate_25_wd;
+  logic [3:0] dio_pad_attr_25_drive_strength_25_qs;
+  logic [3:0] dio_pad_attr_25_drive_strength_25_wd;
+  logic dio_pad_attr_26_re;
+  logic dio_pad_attr_26_we;
+  logic dio_pad_attr_26_invert_26_qs;
+  logic dio_pad_attr_26_invert_26_wd;
+  logic dio_pad_attr_26_virtual_od_en_26_qs;
+  logic dio_pad_attr_26_virtual_od_en_26_wd;
+  logic dio_pad_attr_26_pull_en_26_qs;
+  logic dio_pad_attr_26_pull_en_26_wd;
+  logic dio_pad_attr_26_pull_select_26_qs;
+  logic dio_pad_attr_26_pull_select_26_wd;
+  logic dio_pad_attr_26_keeper_en_26_qs;
+  logic dio_pad_attr_26_keeper_en_26_wd;
+  logic dio_pad_attr_26_schmitt_en_26_qs;
+  logic dio_pad_attr_26_schmitt_en_26_wd;
+  logic dio_pad_attr_26_od_en_26_qs;
+  logic dio_pad_attr_26_od_en_26_wd;
+  logic [1:0] dio_pad_attr_26_slew_rate_26_qs;
+  logic [1:0] dio_pad_attr_26_slew_rate_26_wd;
+  logic [3:0] dio_pad_attr_26_drive_strength_26_qs;
+  logic [3:0] dio_pad_attr_26_drive_strength_26_wd;
+  logic dio_pad_attr_27_re;
+  logic dio_pad_attr_27_we;
+  logic dio_pad_attr_27_invert_27_qs;
+  logic dio_pad_attr_27_invert_27_wd;
+  logic dio_pad_attr_27_virtual_od_en_27_qs;
+  logic dio_pad_attr_27_virtual_od_en_27_wd;
+  logic dio_pad_attr_27_pull_en_27_qs;
+  logic dio_pad_attr_27_pull_en_27_wd;
+  logic dio_pad_attr_27_pull_select_27_qs;
+  logic dio_pad_attr_27_pull_select_27_wd;
+  logic dio_pad_attr_27_keeper_en_27_qs;
+  logic dio_pad_attr_27_keeper_en_27_wd;
+  logic dio_pad_attr_27_schmitt_en_27_qs;
+  logic dio_pad_attr_27_schmitt_en_27_wd;
+  logic dio_pad_attr_27_od_en_27_qs;
+  logic dio_pad_attr_27_od_en_27_wd;
+  logic [1:0] dio_pad_attr_27_slew_rate_27_qs;
+  logic [1:0] dio_pad_attr_27_slew_rate_27_wd;
+  logic [3:0] dio_pad_attr_27_drive_strength_27_qs;
+  logic [3:0] dio_pad_attr_27_drive_strength_27_wd;
+  logic dio_pad_attr_28_re;
+  logic dio_pad_attr_28_we;
+  logic dio_pad_attr_28_invert_28_qs;
+  logic dio_pad_attr_28_invert_28_wd;
+  logic dio_pad_attr_28_virtual_od_en_28_qs;
+  logic dio_pad_attr_28_virtual_od_en_28_wd;
+  logic dio_pad_attr_28_pull_en_28_qs;
+  logic dio_pad_attr_28_pull_en_28_wd;
+  logic dio_pad_attr_28_pull_select_28_qs;
+  logic dio_pad_attr_28_pull_select_28_wd;
+  logic dio_pad_attr_28_keeper_en_28_qs;
+  logic dio_pad_attr_28_keeper_en_28_wd;
+  logic dio_pad_attr_28_schmitt_en_28_qs;
+  logic dio_pad_attr_28_schmitt_en_28_wd;
+  logic dio_pad_attr_28_od_en_28_qs;
+  logic dio_pad_attr_28_od_en_28_wd;
+  logic [1:0] dio_pad_attr_28_slew_rate_28_qs;
+  logic [1:0] dio_pad_attr_28_slew_rate_28_wd;
+  logic [3:0] dio_pad_attr_28_drive_strength_28_qs;
+  logic [3:0] dio_pad_attr_28_drive_strength_28_wd;
+  logic dio_pad_attr_29_re;
+  logic dio_pad_attr_29_we;
+  logic dio_pad_attr_29_invert_29_qs;
+  logic dio_pad_attr_29_invert_29_wd;
+  logic dio_pad_attr_29_virtual_od_en_29_qs;
+  logic dio_pad_attr_29_virtual_od_en_29_wd;
+  logic dio_pad_attr_29_pull_en_29_qs;
+  logic dio_pad_attr_29_pull_en_29_wd;
+  logic dio_pad_attr_29_pull_select_29_qs;
+  logic dio_pad_attr_29_pull_select_29_wd;
+  logic dio_pad_attr_29_keeper_en_29_qs;
+  logic dio_pad_attr_29_keeper_en_29_wd;
+  logic dio_pad_attr_29_schmitt_en_29_qs;
+  logic dio_pad_attr_29_schmitt_en_29_wd;
+  logic dio_pad_attr_29_od_en_29_qs;
+  logic dio_pad_attr_29_od_en_29_wd;
+  logic [1:0] dio_pad_attr_29_slew_rate_29_qs;
+  logic [1:0] dio_pad_attr_29_slew_rate_29_wd;
+  logic [3:0] dio_pad_attr_29_drive_strength_29_qs;
+  logic [3:0] dio_pad_attr_29_drive_strength_29_wd;
+  logic dio_pad_attr_30_re;
+  logic dio_pad_attr_30_we;
+  logic dio_pad_attr_30_invert_30_qs;
+  logic dio_pad_attr_30_invert_30_wd;
+  logic dio_pad_attr_30_virtual_od_en_30_qs;
+  logic dio_pad_attr_30_virtual_od_en_30_wd;
+  logic dio_pad_attr_30_pull_en_30_qs;
+  logic dio_pad_attr_30_pull_en_30_wd;
+  logic dio_pad_attr_30_pull_select_30_qs;
+  logic dio_pad_attr_30_pull_select_30_wd;
+  logic dio_pad_attr_30_keeper_en_30_qs;
+  logic dio_pad_attr_30_keeper_en_30_wd;
+  logic dio_pad_attr_30_schmitt_en_30_qs;
+  logic dio_pad_attr_30_schmitt_en_30_wd;
+  logic dio_pad_attr_30_od_en_30_qs;
+  logic dio_pad_attr_30_od_en_30_wd;
+  logic [1:0] dio_pad_attr_30_slew_rate_30_qs;
+  logic [1:0] dio_pad_attr_30_slew_rate_30_wd;
+  logic [3:0] dio_pad_attr_30_drive_strength_30_qs;
+  logic [3:0] dio_pad_attr_30_drive_strength_30_wd;
+  logic dio_pad_attr_31_re;
+  logic dio_pad_attr_31_we;
+  logic dio_pad_attr_31_invert_31_qs;
+  logic dio_pad_attr_31_invert_31_wd;
+  logic dio_pad_attr_31_virtual_od_en_31_qs;
+  logic dio_pad_attr_31_virtual_od_en_31_wd;
+  logic dio_pad_attr_31_pull_en_31_qs;
+  logic dio_pad_attr_31_pull_en_31_wd;
+  logic dio_pad_attr_31_pull_select_31_qs;
+  logic dio_pad_attr_31_pull_select_31_wd;
+  logic dio_pad_attr_31_keeper_en_31_qs;
+  logic dio_pad_attr_31_keeper_en_31_wd;
+  logic dio_pad_attr_31_schmitt_en_31_qs;
+  logic dio_pad_attr_31_schmitt_en_31_wd;
+  logic dio_pad_attr_31_od_en_31_qs;
+  logic dio_pad_attr_31_od_en_31_wd;
+  logic [1:0] dio_pad_attr_31_slew_rate_31_qs;
+  logic [1:0] dio_pad_attr_31_slew_rate_31_wd;
+  logic [3:0] dio_pad_attr_31_drive_strength_31_qs;
+  logic [3:0] dio_pad_attr_31_drive_strength_31_wd;
+  logic dio_pad_attr_32_re;
+  logic dio_pad_attr_32_we;
+  logic dio_pad_attr_32_invert_32_qs;
+  logic dio_pad_attr_32_invert_32_wd;
+  logic dio_pad_attr_32_virtual_od_en_32_qs;
+  logic dio_pad_attr_32_virtual_od_en_32_wd;
+  logic dio_pad_attr_32_pull_en_32_qs;
+  logic dio_pad_attr_32_pull_en_32_wd;
+  logic dio_pad_attr_32_pull_select_32_qs;
+  logic dio_pad_attr_32_pull_select_32_wd;
+  logic dio_pad_attr_32_keeper_en_32_qs;
+  logic dio_pad_attr_32_keeper_en_32_wd;
+  logic dio_pad_attr_32_schmitt_en_32_qs;
+  logic dio_pad_attr_32_schmitt_en_32_wd;
+  logic dio_pad_attr_32_od_en_32_qs;
+  logic dio_pad_attr_32_od_en_32_wd;
+  logic [1:0] dio_pad_attr_32_slew_rate_32_qs;
+  logic [1:0] dio_pad_attr_32_slew_rate_32_wd;
+  logic [3:0] dio_pad_attr_32_drive_strength_32_qs;
+  logic [3:0] dio_pad_attr_32_drive_strength_32_wd;
+  logic dio_pad_attr_33_re;
+  logic dio_pad_attr_33_we;
+  logic dio_pad_attr_33_invert_33_qs;
+  logic dio_pad_attr_33_invert_33_wd;
+  logic dio_pad_attr_33_virtual_od_en_33_qs;
+  logic dio_pad_attr_33_virtual_od_en_33_wd;
+  logic dio_pad_attr_33_pull_en_33_qs;
+  logic dio_pad_attr_33_pull_en_33_wd;
+  logic dio_pad_attr_33_pull_select_33_qs;
+  logic dio_pad_attr_33_pull_select_33_wd;
+  logic dio_pad_attr_33_keeper_en_33_qs;
+  logic dio_pad_attr_33_keeper_en_33_wd;
+  logic dio_pad_attr_33_schmitt_en_33_qs;
+  logic dio_pad_attr_33_schmitt_en_33_wd;
+  logic dio_pad_attr_33_od_en_33_qs;
+  logic dio_pad_attr_33_od_en_33_wd;
+  logic [1:0] dio_pad_attr_33_slew_rate_33_qs;
+  logic [1:0] dio_pad_attr_33_slew_rate_33_wd;
+  logic [3:0] dio_pad_attr_33_drive_strength_33_qs;
+  logic [3:0] dio_pad_attr_33_drive_strength_33_wd;
+  logic dio_pad_attr_34_re;
+  logic dio_pad_attr_34_we;
+  logic dio_pad_attr_34_invert_34_qs;
+  logic dio_pad_attr_34_invert_34_wd;
+  logic dio_pad_attr_34_virtual_od_en_34_qs;
+  logic dio_pad_attr_34_virtual_od_en_34_wd;
+  logic dio_pad_attr_34_pull_en_34_qs;
+  logic dio_pad_attr_34_pull_en_34_wd;
+  logic dio_pad_attr_34_pull_select_34_qs;
+  logic dio_pad_attr_34_pull_select_34_wd;
+  logic dio_pad_attr_34_keeper_en_34_qs;
+  logic dio_pad_attr_34_keeper_en_34_wd;
+  logic dio_pad_attr_34_schmitt_en_34_qs;
+  logic dio_pad_attr_34_schmitt_en_34_wd;
+  logic dio_pad_attr_34_od_en_34_qs;
+  logic dio_pad_attr_34_od_en_34_wd;
+  logic [1:0] dio_pad_attr_34_slew_rate_34_qs;
+  logic [1:0] dio_pad_attr_34_slew_rate_34_wd;
+  logic [3:0] dio_pad_attr_34_drive_strength_34_qs;
+  logic [3:0] dio_pad_attr_34_drive_strength_34_wd;
+  logic dio_pad_attr_35_re;
+  logic dio_pad_attr_35_we;
+  logic dio_pad_attr_35_invert_35_qs;
+  logic dio_pad_attr_35_invert_35_wd;
+  logic dio_pad_attr_35_virtual_od_en_35_qs;
+  logic dio_pad_attr_35_virtual_od_en_35_wd;
+  logic dio_pad_attr_35_pull_en_35_qs;
+  logic dio_pad_attr_35_pull_en_35_wd;
+  logic dio_pad_attr_35_pull_select_35_qs;
+  logic dio_pad_attr_35_pull_select_35_wd;
+  logic dio_pad_attr_35_keeper_en_35_qs;
+  logic dio_pad_attr_35_keeper_en_35_wd;
+  logic dio_pad_attr_35_schmitt_en_35_qs;
+  logic dio_pad_attr_35_schmitt_en_35_wd;
+  logic dio_pad_attr_35_od_en_35_qs;
+  logic dio_pad_attr_35_od_en_35_wd;
+  logic [1:0] dio_pad_attr_35_slew_rate_35_qs;
+  logic [1:0] dio_pad_attr_35_slew_rate_35_wd;
+  logic [3:0] dio_pad_attr_35_drive_strength_35_qs;
+  logic [3:0] dio_pad_attr_35_drive_strength_35_wd;
   logic mio_pad_sleep_status_0_we;
   logic mio_pad_sleep_status_0_en_0_qs;
   logic mio_pad_sleep_status_0_en_0_wd;
@@ -2502,31 +3054,80 @@ module pinmux_reg_top (
   logic mio_pad_sleep_mode_46_we;
   logic [1:0] mio_pad_sleep_mode_46_qs;
   logic [1:0] mio_pad_sleep_mode_46_wd;
-  logic dio_pad_sleep_status_we;
-  logic dio_pad_sleep_status_en_0_qs;
-  logic dio_pad_sleep_status_en_0_wd;
-  logic dio_pad_sleep_status_en_1_qs;
-  logic dio_pad_sleep_status_en_1_wd;
-  logic dio_pad_sleep_status_en_2_qs;
-  logic dio_pad_sleep_status_en_2_wd;
-  logic dio_pad_sleep_status_en_3_qs;
-  logic dio_pad_sleep_status_en_3_wd;
-  logic dio_pad_sleep_status_en_4_qs;
-  logic dio_pad_sleep_status_en_4_wd;
-  logic dio_pad_sleep_status_en_5_qs;
-  logic dio_pad_sleep_status_en_5_wd;
-  logic dio_pad_sleep_status_en_6_qs;
-  logic dio_pad_sleep_status_en_6_wd;
-  logic dio_pad_sleep_status_en_7_qs;
-  logic dio_pad_sleep_status_en_7_wd;
-  logic dio_pad_sleep_status_en_8_qs;
-  logic dio_pad_sleep_status_en_8_wd;
-  logic dio_pad_sleep_status_en_9_qs;
-  logic dio_pad_sleep_status_en_9_wd;
-  logic dio_pad_sleep_status_en_10_qs;
-  logic dio_pad_sleep_status_en_10_wd;
-  logic dio_pad_sleep_status_en_11_qs;
-  logic dio_pad_sleep_status_en_11_wd;
+  logic dio_pad_sleep_status_0_we;
+  logic dio_pad_sleep_status_0_en_0_qs;
+  logic dio_pad_sleep_status_0_en_0_wd;
+  logic dio_pad_sleep_status_0_en_1_qs;
+  logic dio_pad_sleep_status_0_en_1_wd;
+  logic dio_pad_sleep_status_0_en_2_qs;
+  logic dio_pad_sleep_status_0_en_2_wd;
+  logic dio_pad_sleep_status_0_en_3_qs;
+  logic dio_pad_sleep_status_0_en_3_wd;
+  logic dio_pad_sleep_status_0_en_4_qs;
+  logic dio_pad_sleep_status_0_en_4_wd;
+  logic dio_pad_sleep_status_0_en_5_qs;
+  logic dio_pad_sleep_status_0_en_5_wd;
+  logic dio_pad_sleep_status_0_en_6_qs;
+  logic dio_pad_sleep_status_0_en_6_wd;
+  logic dio_pad_sleep_status_0_en_7_qs;
+  logic dio_pad_sleep_status_0_en_7_wd;
+  logic dio_pad_sleep_status_0_en_8_qs;
+  logic dio_pad_sleep_status_0_en_8_wd;
+  logic dio_pad_sleep_status_0_en_9_qs;
+  logic dio_pad_sleep_status_0_en_9_wd;
+  logic dio_pad_sleep_status_0_en_10_qs;
+  logic dio_pad_sleep_status_0_en_10_wd;
+  logic dio_pad_sleep_status_0_en_11_qs;
+  logic dio_pad_sleep_status_0_en_11_wd;
+  logic dio_pad_sleep_status_0_en_12_qs;
+  logic dio_pad_sleep_status_0_en_12_wd;
+  logic dio_pad_sleep_status_0_en_13_qs;
+  logic dio_pad_sleep_status_0_en_13_wd;
+  logic dio_pad_sleep_status_0_en_14_qs;
+  logic dio_pad_sleep_status_0_en_14_wd;
+  logic dio_pad_sleep_status_0_en_15_qs;
+  logic dio_pad_sleep_status_0_en_15_wd;
+  logic dio_pad_sleep_status_0_en_16_qs;
+  logic dio_pad_sleep_status_0_en_16_wd;
+  logic dio_pad_sleep_status_0_en_17_qs;
+  logic dio_pad_sleep_status_0_en_17_wd;
+  logic dio_pad_sleep_status_0_en_18_qs;
+  logic dio_pad_sleep_status_0_en_18_wd;
+  logic dio_pad_sleep_status_0_en_19_qs;
+  logic dio_pad_sleep_status_0_en_19_wd;
+  logic dio_pad_sleep_status_0_en_20_qs;
+  logic dio_pad_sleep_status_0_en_20_wd;
+  logic dio_pad_sleep_status_0_en_21_qs;
+  logic dio_pad_sleep_status_0_en_21_wd;
+  logic dio_pad_sleep_status_0_en_22_qs;
+  logic dio_pad_sleep_status_0_en_22_wd;
+  logic dio_pad_sleep_status_0_en_23_qs;
+  logic dio_pad_sleep_status_0_en_23_wd;
+  logic dio_pad_sleep_status_0_en_24_qs;
+  logic dio_pad_sleep_status_0_en_24_wd;
+  logic dio_pad_sleep_status_0_en_25_qs;
+  logic dio_pad_sleep_status_0_en_25_wd;
+  logic dio_pad_sleep_status_0_en_26_qs;
+  logic dio_pad_sleep_status_0_en_26_wd;
+  logic dio_pad_sleep_status_0_en_27_qs;
+  logic dio_pad_sleep_status_0_en_27_wd;
+  logic dio_pad_sleep_status_0_en_28_qs;
+  logic dio_pad_sleep_status_0_en_28_wd;
+  logic dio_pad_sleep_status_0_en_29_qs;
+  logic dio_pad_sleep_status_0_en_29_wd;
+  logic dio_pad_sleep_status_0_en_30_qs;
+  logic dio_pad_sleep_status_0_en_30_wd;
+  logic dio_pad_sleep_status_0_en_31_qs;
+  logic dio_pad_sleep_status_0_en_31_wd;
+  logic dio_pad_sleep_status_1_we;
+  logic dio_pad_sleep_status_1_en_32_qs;
+  logic dio_pad_sleep_status_1_en_32_wd;
+  logic dio_pad_sleep_status_1_en_33_qs;
+  logic dio_pad_sleep_status_1_en_33_wd;
+  logic dio_pad_sleep_status_1_en_34_qs;
+  logic dio_pad_sleep_status_1_en_34_wd;
+  logic dio_pad_sleep_status_1_en_35_qs;
+  logic dio_pad_sleep_status_1_en_35_wd;
   logic dio_pad_sleep_regwen_0_we;
   logic dio_pad_sleep_regwen_0_qs;
   logic dio_pad_sleep_regwen_0_wd;
@@ -2563,6 +3164,78 @@ module pinmux_reg_top (
   logic dio_pad_sleep_regwen_11_we;
   logic dio_pad_sleep_regwen_11_qs;
   logic dio_pad_sleep_regwen_11_wd;
+  logic dio_pad_sleep_regwen_12_we;
+  logic dio_pad_sleep_regwen_12_qs;
+  logic dio_pad_sleep_regwen_12_wd;
+  logic dio_pad_sleep_regwen_13_we;
+  logic dio_pad_sleep_regwen_13_qs;
+  logic dio_pad_sleep_regwen_13_wd;
+  logic dio_pad_sleep_regwen_14_we;
+  logic dio_pad_sleep_regwen_14_qs;
+  logic dio_pad_sleep_regwen_14_wd;
+  logic dio_pad_sleep_regwen_15_we;
+  logic dio_pad_sleep_regwen_15_qs;
+  logic dio_pad_sleep_regwen_15_wd;
+  logic dio_pad_sleep_regwen_16_we;
+  logic dio_pad_sleep_regwen_16_qs;
+  logic dio_pad_sleep_regwen_16_wd;
+  logic dio_pad_sleep_regwen_17_we;
+  logic dio_pad_sleep_regwen_17_qs;
+  logic dio_pad_sleep_regwen_17_wd;
+  logic dio_pad_sleep_regwen_18_we;
+  logic dio_pad_sleep_regwen_18_qs;
+  logic dio_pad_sleep_regwen_18_wd;
+  logic dio_pad_sleep_regwen_19_we;
+  logic dio_pad_sleep_regwen_19_qs;
+  logic dio_pad_sleep_regwen_19_wd;
+  logic dio_pad_sleep_regwen_20_we;
+  logic dio_pad_sleep_regwen_20_qs;
+  logic dio_pad_sleep_regwen_20_wd;
+  logic dio_pad_sleep_regwen_21_we;
+  logic dio_pad_sleep_regwen_21_qs;
+  logic dio_pad_sleep_regwen_21_wd;
+  logic dio_pad_sleep_regwen_22_we;
+  logic dio_pad_sleep_regwen_22_qs;
+  logic dio_pad_sleep_regwen_22_wd;
+  logic dio_pad_sleep_regwen_23_we;
+  logic dio_pad_sleep_regwen_23_qs;
+  logic dio_pad_sleep_regwen_23_wd;
+  logic dio_pad_sleep_regwen_24_we;
+  logic dio_pad_sleep_regwen_24_qs;
+  logic dio_pad_sleep_regwen_24_wd;
+  logic dio_pad_sleep_regwen_25_we;
+  logic dio_pad_sleep_regwen_25_qs;
+  logic dio_pad_sleep_regwen_25_wd;
+  logic dio_pad_sleep_regwen_26_we;
+  logic dio_pad_sleep_regwen_26_qs;
+  logic dio_pad_sleep_regwen_26_wd;
+  logic dio_pad_sleep_regwen_27_we;
+  logic dio_pad_sleep_regwen_27_qs;
+  logic dio_pad_sleep_regwen_27_wd;
+  logic dio_pad_sleep_regwen_28_we;
+  logic dio_pad_sleep_regwen_28_qs;
+  logic dio_pad_sleep_regwen_28_wd;
+  logic dio_pad_sleep_regwen_29_we;
+  logic dio_pad_sleep_regwen_29_qs;
+  logic dio_pad_sleep_regwen_29_wd;
+  logic dio_pad_sleep_regwen_30_we;
+  logic dio_pad_sleep_regwen_30_qs;
+  logic dio_pad_sleep_regwen_30_wd;
+  logic dio_pad_sleep_regwen_31_we;
+  logic dio_pad_sleep_regwen_31_qs;
+  logic dio_pad_sleep_regwen_31_wd;
+  logic dio_pad_sleep_regwen_32_we;
+  logic dio_pad_sleep_regwen_32_qs;
+  logic dio_pad_sleep_regwen_32_wd;
+  logic dio_pad_sleep_regwen_33_we;
+  logic dio_pad_sleep_regwen_33_qs;
+  logic dio_pad_sleep_regwen_33_wd;
+  logic dio_pad_sleep_regwen_34_we;
+  logic dio_pad_sleep_regwen_34_qs;
+  logic dio_pad_sleep_regwen_34_wd;
+  logic dio_pad_sleep_regwen_35_we;
+  logic dio_pad_sleep_regwen_35_qs;
+  logic dio_pad_sleep_regwen_35_wd;
   logic dio_pad_sleep_en_0_we;
   logic dio_pad_sleep_en_0_qs;
   logic dio_pad_sleep_en_0_wd;
@@ -2599,6 +3272,78 @@ module pinmux_reg_top (
   logic dio_pad_sleep_en_11_we;
   logic dio_pad_sleep_en_11_qs;
   logic dio_pad_sleep_en_11_wd;
+  logic dio_pad_sleep_en_12_we;
+  logic dio_pad_sleep_en_12_qs;
+  logic dio_pad_sleep_en_12_wd;
+  logic dio_pad_sleep_en_13_we;
+  logic dio_pad_sleep_en_13_qs;
+  logic dio_pad_sleep_en_13_wd;
+  logic dio_pad_sleep_en_14_we;
+  logic dio_pad_sleep_en_14_qs;
+  logic dio_pad_sleep_en_14_wd;
+  logic dio_pad_sleep_en_15_we;
+  logic dio_pad_sleep_en_15_qs;
+  logic dio_pad_sleep_en_15_wd;
+  logic dio_pad_sleep_en_16_we;
+  logic dio_pad_sleep_en_16_qs;
+  logic dio_pad_sleep_en_16_wd;
+  logic dio_pad_sleep_en_17_we;
+  logic dio_pad_sleep_en_17_qs;
+  logic dio_pad_sleep_en_17_wd;
+  logic dio_pad_sleep_en_18_we;
+  logic dio_pad_sleep_en_18_qs;
+  logic dio_pad_sleep_en_18_wd;
+  logic dio_pad_sleep_en_19_we;
+  logic dio_pad_sleep_en_19_qs;
+  logic dio_pad_sleep_en_19_wd;
+  logic dio_pad_sleep_en_20_we;
+  logic dio_pad_sleep_en_20_qs;
+  logic dio_pad_sleep_en_20_wd;
+  logic dio_pad_sleep_en_21_we;
+  logic dio_pad_sleep_en_21_qs;
+  logic dio_pad_sleep_en_21_wd;
+  logic dio_pad_sleep_en_22_we;
+  logic dio_pad_sleep_en_22_qs;
+  logic dio_pad_sleep_en_22_wd;
+  logic dio_pad_sleep_en_23_we;
+  logic dio_pad_sleep_en_23_qs;
+  logic dio_pad_sleep_en_23_wd;
+  logic dio_pad_sleep_en_24_we;
+  logic dio_pad_sleep_en_24_qs;
+  logic dio_pad_sleep_en_24_wd;
+  logic dio_pad_sleep_en_25_we;
+  logic dio_pad_sleep_en_25_qs;
+  logic dio_pad_sleep_en_25_wd;
+  logic dio_pad_sleep_en_26_we;
+  logic dio_pad_sleep_en_26_qs;
+  logic dio_pad_sleep_en_26_wd;
+  logic dio_pad_sleep_en_27_we;
+  logic dio_pad_sleep_en_27_qs;
+  logic dio_pad_sleep_en_27_wd;
+  logic dio_pad_sleep_en_28_we;
+  logic dio_pad_sleep_en_28_qs;
+  logic dio_pad_sleep_en_28_wd;
+  logic dio_pad_sleep_en_29_we;
+  logic dio_pad_sleep_en_29_qs;
+  logic dio_pad_sleep_en_29_wd;
+  logic dio_pad_sleep_en_30_we;
+  logic dio_pad_sleep_en_30_qs;
+  logic dio_pad_sleep_en_30_wd;
+  logic dio_pad_sleep_en_31_we;
+  logic dio_pad_sleep_en_31_qs;
+  logic dio_pad_sleep_en_31_wd;
+  logic dio_pad_sleep_en_32_we;
+  logic dio_pad_sleep_en_32_qs;
+  logic dio_pad_sleep_en_32_wd;
+  logic dio_pad_sleep_en_33_we;
+  logic dio_pad_sleep_en_33_qs;
+  logic dio_pad_sleep_en_33_wd;
+  logic dio_pad_sleep_en_34_we;
+  logic dio_pad_sleep_en_34_qs;
+  logic dio_pad_sleep_en_34_wd;
+  logic dio_pad_sleep_en_35_we;
+  logic dio_pad_sleep_en_35_qs;
+  logic dio_pad_sleep_en_35_wd;
   logic dio_pad_sleep_mode_0_we;
   logic [1:0] dio_pad_sleep_mode_0_qs;
   logic [1:0] dio_pad_sleep_mode_0_wd;
@@ -2635,6 +3380,78 @@ module pinmux_reg_top (
   logic dio_pad_sleep_mode_11_we;
   logic [1:0] dio_pad_sleep_mode_11_qs;
   logic [1:0] dio_pad_sleep_mode_11_wd;
+  logic dio_pad_sleep_mode_12_we;
+  logic [1:0] dio_pad_sleep_mode_12_qs;
+  logic [1:0] dio_pad_sleep_mode_12_wd;
+  logic dio_pad_sleep_mode_13_we;
+  logic [1:0] dio_pad_sleep_mode_13_qs;
+  logic [1:0] dio_pad_sleep_mode_13_wd;
+  logic dio_pad_sleep_mode_14_we;
+  logic [1:0] dio_pad_sleep_mode_14_qs;
+  logic [1:0] dio_pad_sleep_mode_14_wd;
+  logic dio_pad_sleep_mode_15_we;
+  logic [1:0] dio_pad_sleep_mode_15_qs;
+  logic [1:0] dio_pad_sleep_mode_15_wd;
+  logic dio_pad_sleep_mode_16_we;
+  logic [1:0] dio_pad_sleep_mode_16_qs;
+  logic [1:0] dio_pad_sleep_mode_16_wd;
+  logic dio_pad_sleep_mode_17_we;
+  logic [1:0] dio_pad_sleep_mode_17_qs;
+  logic [1:0] dio_pad_sleep_mode_17_wd;
+  logic dio_pad_sleep_mode_18_we;
+  logic [1:0] dio_pad_sleep_mode_18_qs;
+  logic [1:0] dio_pad_sleep_mode_18_wd;
+  logic dio_pad_sleep_mode_19_we;
+  logic [1:0] dio_pad_sleep_mode_19_qs;
+  logic [1:0] dio_pad_sleep_mode_19_wd;
+  logic dio_pad_sleep_mode_20_we;
+  logic [1:0] dio_pad_sleep_mode_20_qs;
+  logic [1:0] dio_pad_sleep_mode_20_wd;
+  logic dio_pad_sleep_mode_21_we;
+  logic [1:0] dio_pad_sleep_mode_21_qs;
+  logic [1:0] dio_pad_sleep_mode_21_wd;
+  logic dio_pad_sleep_mode_22_we;
+  logic [1:0] dio_pad_sleep_mode_22_qs;
+  logic [1:0] dio_pad_sleep_mode_22_wd;
+  logic dio_pad_sleep_mode_23_we;
+  logic [1:0] dio_pad_sleep_mode_23_qs;
+  logic [1:0] dio_pad_sleep_mode_23_wd;
+  logic dio_pad_sleep_mode_24_we;
+  logic [1:0] dio_pad_sleep_mode_24_qs;
+  logic [1:0] dio_pad_sleep_mode_24_wd;
+  logic dio_pad_sleep_mode_25_we;
+  logic [1:0] dio_pad_sleep_mode_25_qs;
+  logic [1:0] dio_pad_sleep_mode_25_wd;
+  logic dio_pad_sleep_mode_26_we;
+  logic [1:0] dio_pad_sleep_mode_26_qs;
+  logic [1:0] dio_pad_sleep_mode_26_wd;
+  logic dio_pad_sleep_mode_27_we;
+  logic [1:0] dio_pad_sleep_mode_27_qs;
+  logic [1:0] dio_pad_sleep_mode_27_wd;
+  logic dio_pad_sleep_mode_28_we;
+  logic [1:0] dio_pad_sleep_mode_28_qs;
+  logic [1:0] dio_pad_sleep_mode_28_wd;
+  logic dio_pad_sleep_mode_29_we;
+  logic [1:0] dio_pad_sleep_mode_29_qs;
+  logic [1:0] dio_pad_sleep_mode_29_wd;
+  logic dio_pad_sleep_mode_30_we;
+  logic [1:0] dio_pad_sleep_mode_30_qs;
+  logic [1:0] dio_pad_sleep_mode_30_wd;
+  logic dio_pad_sleep_mode_31_we;
+  logic [1:0] dio_pad_sleep_mode_31_qs;
+  logic [1:0] dio_pad_sleep_mode_31_wd;
+  logic dio_pad_sleep_mode_32_we;
+  logic [1:0] dio_pad_sleep_mode_32_qs;
+  logic [1:0] dio_pad_sleep_mode_32_wd;
+  logic dio_pad_sleep_mode_33_we;
+  logic [1:0] dio_pad_sleep_mode_33_qs;
+  logic [1:0] dio_pad_sleep_mode_33_wd;
+  logic dio_pad_sleep_mode_34_we;
+  logic [1:0] dio_pad_sleep_mode_34_qs;
+  logic [1:0] dio_pad_sleep_mode_34_wd;
+  logic dio_pad_sleep_mode_35_we;
+  logic [1:0] dio_pad_sleep_mode_35_qs;
+  logic [1:0] dio_pad_sleep_mode_35_wd;
   logic wkup_detector_regwen_0_we;
   logic wkup_detector_regwen_0_qs;
   logic wkup_detector_regwen_0_wd;
@@ -17786,6 +18603,702 @@ module pinmux_reg_top (
   );
 
 
+  // Subregister 12 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_12]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_12_we),
+    .wd     (dio_pad_attr_regwen_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_13]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_13_we),
+    .wd     (dio_pad_attr_regwen_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_14]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_14_we),
+    .wd     (dio_pad_attr_regwen_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_15]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_15_we),
+    .wd     (dio_pad_attr_regwen_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_16]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_16_we),
+    .wd     (dio_pad_attr_regwen_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_17]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_17_we),
+    .wd     (dio_pad_attr_regwen_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_18]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_18_we),
+    .wd     (dio_pad_attr_regwen_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_19]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_19_we),
+    .wd     (dio_pad_attr_regwen_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_20]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_20_we),
+    .wd     (dio_pad_attr_regwen_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_21]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_21_we),
+    .wd     (dio_pad_attr_regwen_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_22]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_22_we),
+    .wd     (dio_pad_attr_regwen_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_23]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_23_we),
+    .wd     (dio_pad_attr_regwen_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_23_qs)
+  );
+
+
+  // Subregister 24 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_24]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_24 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_24_we),
+    .wd     (dio_pad_attr_regwen_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_24_qs)
+  );
+
+
+  // Subregister 25 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_25]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_25 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_25_we),
+    .wd     (dio_pad_attr_regwen_25_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_25_qs)
+  );
+
+
+  // Subregister 26 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_26]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_26 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_26_we),
+    .wd     (dio_pad_attr_regwen_26_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_26_qs)
+  );
+
+
+  // Subregister 27 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_27]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_27 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_27_we),
+    .wd     (dio_pad_attr_regwen_27_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_27_qs)
+  );
+
+
+  // Subregister 28 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_28]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_28 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_28_we),
+    .wd     (dio_pad_attr_regwen_28_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_28_qs)
+  );
+
+
+  // Subregister 29 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_29]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_29 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_29_we),
+    .wd     (dio_pad_attr_regwen_29_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_29_qs)
+  );
+
+
+  // Subregister 30 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_30]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_30 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_30_we),
+    .wd     (dio_pad_attr_regwen_30_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_30_qs)
+  );
+
+
+  // Subregister 31 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_31]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_31_we),
+    .wd     (dio_pad_attr_regwen_31_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_31_qs)
+  );
+
+
+  // Subregister 32 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_32]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_32_we),
+    .wd     (dio_pad_attr_regwen_32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_32_qs)
+  );
+
+
+  // Subregister 33 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_33]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_33_we),
+    .wd     (dio_pad_attr_regwen_33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_33_qs)
+  );
+
+
+  // Subregister 34 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_34]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_34_we),
+    .wd     (dio_pad_attr_regwen_34_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_34_qs)
+  );
+
+
+  // Subregister 35 of Multireg dio_pad_attr_regwen
+  // R[dio_pad_attr_regwen_35]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_attr_regwen_35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_attr_regwen_35_we),
+    .wd     (dio_pad_attr_regwen_35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_attr_regwen_35_qs)
+  );
+
+
   // Subregister 0 of Multireg dio_pad_attr
   // R[dio_pad_attr_0]: V(True)
   logic dio_pad_attr_0_qe;
@@ -19620,6 +21133,3678 @@ module pinmux_reg_top (
     .qs     (dio_pad_attr_11_drive_strength_11_qs)
   );
   assign reg2hw.dio_pad_attr[11].drive_strength.qe = dio_pad_attr_11_qe;
+
+
+  // Subregister 12 of Multireg dio_pad_attr
+  // R[dio_pad_attr_12]: V(True)
+  logic dio_pad_attr_12_qe;
+  logic [8:0] dio_pad_attr_12_flds_we;
+  assign dio_pad_attr_12_qe = &dio_pad_attr_12_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_12_gated_we;
+  assign dio_pad_attr_12_gated_we = dio_pad_attr_12_we & dio_pad_attr_regwen_12_qs;
+  //   F[invert_12]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_invert_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_invert_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[12].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_invert_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].invert.qe = dio_pad_attr_12_qe;
+
+  //   F[virtual_od_en_12]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_virtual_od_en_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_virtual_od_en_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[12].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_virtual_od_en_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].virtual_od_en.qe = dio_pad_attr_12_qe;
+
+  //   F[pull_en_12]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_pull_en_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_pull_en_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[12].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_pull_en_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].pull_en.qe = dio_pad_attr_12_qe;
+
+  //   F[pull_select_12]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_pull_select_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_pull_select_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[12].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_pull_select_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].pull_select.qe = dio_pad_attr_12_qe;
+
+  //   F[keeper_en_12]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_keeper_en_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_keeper_en_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[12].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_keeper_en_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].keeper_en.qe = dio_pad_attr_12_qe;
+
+  //   F[schmitt_en_12]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_schmitt_en_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_schmitt_en_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[12].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_schmitt_en_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].schmitt_en.qe = dio_pad_attr_12_qe;
+
+  //   F[od_en_12]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_12_od_en_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_od_en_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[12].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_od_en_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].od_en.qe = dio_pad_attr_12_qe;
+
+  //   F[slew_rate_12]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_12_slew_rate_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_slew_rate_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[12].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_slew_rate_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].slew_rate.qe = dio_pad_attr_12_qe;
+
+  //   F[drive_strength_12]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_12_drive_strength_12 (
+    .re     (dio_pad_attr_12_re),
+    .we     (dio_pad_attr_12_gated_we),
+    .wd     (dio_pad_attr_12_drive_strength_12_wd),
+    .d      (hw2reg.dio_pad_attr[12].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_12_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[12].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_12_drive_strength_12_qs)
+  );
+  assign reg2hw.dio_pad_attr[12].drive_strength.qe = dio_pad_attr_12_qe;
+
+
+  // Subregister 13 of Multireg dio_pad_attr
+  // R[dio_pad_attr_13]: V(True)
+  logic dio_pad_attr_13_qe;
+  logic [8:0] dio_pad_attr_13_flds_we;
+  assign dio_pad_attr_13_qe = &dio_pad_attr_13_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_13_gated_we;
+  assign dio_pad_attr_13_gated_we = dio_pad_attr_13_we & dio_pad_attr_regwen_13_qs;
+  //   F[invert_13]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_invert_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_invert_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[13].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_invert_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].invert.qe = dio_pad_attr_13_qe;
+
+  //   F[virtual_od_en_13]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_virtual_od_en_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_virtual_od_en_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[13].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_virtual_od_en_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].virtual_od_en.qe = dio_pad_attr_13_qe;
+
+  //   F[pull_en_13]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_pull_en_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_pull_en_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[13].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_pull_en_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].pull_en.qe = dio_pad_attr_13_qe;
+
+  //   F[pull_select_13]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_pull_select_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_pull_select_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[13].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_pull_select_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].pull_select.qe = dio_pad_attr_13_qe;
+
+  //   F[keeper_en_13]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_keeper_en_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_keeper_en_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[13].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_keeper_en_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].keeper_en.qe = dio_pad_attr_13_qe;
+
+  //   F[schmitt_en_13]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_schmitt_en_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_schmitt_en_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[13].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_schmitt_en_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].schmitt_en.qe = dio_pad_attr_13_qe;
+
+  //   F[od_en_13]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_13_od_en_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_od_en_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[13].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_od_en_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].od_en.qe = dio_pad_attr_13_qe;
+
+  //   F[slew_rate_13]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_13_slew_rate_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_slew_rate_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[13].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_slew_rate_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].slew_rate.qe = dio_pad_attr_13_qe;
+
+  //   F[drive_strength_13]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_13_drive_strength_13 (
+    .re     (dio_pad_attr_13_re),
+    .we     (dio_pad_attr_13_gated_we),
+    .wd     (dio_pad_attr_13_drive_strength_13_wd),
+    .d      (hw2reg.dio_pad_attr[13].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_13_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[13].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_13_drive_strength_13_qs)
+  );
+  assign reg2hw.dio_pad_attr[13].drive_strength.qe = dio_pad_attr_13_qe;
+
+
+  // Subregister 14 of Multireg dio_pad_attr
+  // R[dio_pad_attr_14]: V(True)
+  logic dio_pad_attr_14_qe;
+  logic [8:0] dio_pad_attr_14_flds_we;
+  assign dio_pad_attr_14_qe = &dio_pad_attr_14_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_14_gated_we;
+  assign dio_pad_attr_14_gated_we = dio_pad_attr_14_we & dio_pad_attr_regwen_14_qs;
+  //   F[invert_14]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_invert_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_invert_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[14].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_invert_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].invert.qe = dio_pad_attr_14_qe;
+
+  //   F[virtual_od_en_14]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_virtual_od_en_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_virtual_od_en_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[14].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_virtual_od_en_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].virtual_od_en.qe = dio_pad_attr_14_qe;
+
+  //   F[pull_en_14]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_pull_en_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_pull_en_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[14].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_pull_en_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].pull_en.qe = dio_pad_attr_14_qe;
+
+  //   F[pull_select_14]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_pull_select_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_pull_select_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[14].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_pull_select_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].pull_select.qe = dio_pad_attr_14_qe;
+
+  //   F[keeper_en_14]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_keeper_en_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_keeper_en_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[14].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_keeper_en_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].keeper_en.qe = dio_pad_attr_14_qe;
+
+  //   F[schmitt_en_14]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_schmitt_en_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_schmitt_en_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[14].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_schmitt_en_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].schmitt_en.qe = dio_pad_attr_14_qe;
+
+  //   F[od_en_14]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_14_od_en_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_od_en_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[14].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_od_en_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].od_en.qe = dio_pad_attr_14_qe;
+
+  //   F[slew_rate_14]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_14_slew_rate_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_slew_rate_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[14].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_slew_rate_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].slew_rate.qe = dio_pad_attr_14_qe;
+
+  //   F[drive_strength_14]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_14_drive_strength_14 (
+    .re     (dio_pad_attr_14_re),
+    .we     (dio_pad_attr_14_gated_we),
+    .wd     (dio_pad_attr_14_drive_strength_14_wd),
+    .d      (hw2reg.dio_pad_attr[14].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_14_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[14].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_14_drive_strength_14_qs)
+  );
+  assign reg2hw.dio_pad_attr[14].drive_strength.qe = dio_pad_attr_14_qe;
+
+
+  // Subregister 15 of Multireg dio_pad_attr
+  // R[dio_pad_attr_15]: V(True)
+  logic dio_pad_attr_15_qe;
+  logic [8:0] dio_pad_attr_15_flds_we;
+  assign dio_pad_attr_15_qe = &dio_pad_attr_15_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_15_gated_we;
+  assign dio_pad_attr_15_gated_we = dio_pad_attr_15_we & dio_pad_attr_regwen_15_qs;
+  //   F[invert_15]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_invert_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_invert_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[15].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_invert_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].invert.qe = dio_pad_attr_15_qe;
+
+  //   F[virtual_od_en_15]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_virtual_od_en_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_virtual_od_en_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[15].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_virtual_od_en_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].virtual_od_en.qe = dio_pad_attr_15_qe;
+
+  //   F[pull_en_15]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_pull_en_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_pull_en_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[15].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_pull_en_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].pull_en.qe = dio_pad_attr_15_qe;
+
+  //   F[pull_select_15]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_pull_select_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_pull_select_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[15].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_pull_select_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].pull_select.qe = dio_pad_attr_15_qe;
+
+  //   F[keeper_en_15]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_keeper_en_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_keeper_en_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[15].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_keeper_en_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].keeper_en.qe = dio_pad_attr_15_qe;
+
+  //   F[schmitt_en_15]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_schmitt_en_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_schmitt_en_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[15].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_schmitt_en_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].schmitt_en.qe = dio_pad_attr_15_qe;
+
+  //   F[od_en_15]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_15_od_en_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_od_en_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[15].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_od_en_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].od_en.qe = dio_pad_attr_15_qe;
+
+  //   F[slew_rate_15]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_15_slew_rate_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_slew_rate_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[15].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_slew_rate_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].slew_rate.qe = dio_pad_attr_15_qe;
+
+  //   F[drive_strength_15]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_15_drive_strength_15 (
+    .re     (dio_pad_attr_15_re),
+    .we     (dio_pad_attr_15_gated_we),
+    .wd     (dio_pad_attr_15_drive_strength_15_wd),
+    .d      (hw2reg.dio_pad_attr[15].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_15_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[15].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_15_drive_strength_15_qs)
+  );
+  assign reg2hw.dio_pad_attr[15].drive_strength.qe = dio_pad_attr_15_qe;
+
+
+  // Subregister 16 of Multireg dio_pad_attr
+  // R[dio_pad_attr_16]: V(True)
+  logic dio_pad_attr_16_qe;
+  logic [8:0] dio_pad_attr_16_flds_we;
+  assign dio_pad_attr_16_qe = &dio_pad_attr_16_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_16_gated_we;
+  assign dio_pad_attr_16_gated_we = dio_pad_attr_16_we & dio_pad_attr_regwen_16_qs;
+  //   F[invert_16]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_invert_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_invert_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[16].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_invert_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].invert.qe = dio_pad_attr_16_qe;
+
+  //   F[virtual_od_en_16]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_virtual_od_en_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_virtual_od_en_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[16].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_virtual_od_en_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].virtual_od_en.qe = dio_pad_attr_16_qe;
+
+  //   F[pull_en_16]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_pull_en_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_pull_en_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[16].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_pull_en_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].pull_en.qe = dio_pad_attr_16_qe;
+
+  //   F[pull_select_16]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_pull_select_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_pull_select_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[16].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_pull_select_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].pull_select.qe = dio_pad_attr_16_qe;
+
+  //   F[keeper_en_16]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_keeper_en_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_keeper_en_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[16].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_keeper_en_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].keeper_en.qe = dio_pad_attr_16_qe;
+
+  //   F[schmitt_en_16]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_schmitt_en_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_schmitt_en_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[16].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_schmitt_en_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].schmitt_en.qe = dio_pad_attr_16_qe;
+
+  //   F[od_en_16]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_16_od_en_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_od_en_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[16].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_od_en_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].od_en.qe = dio_pad_attr_16_qe;
+
+  //   F[slew_rate_16]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_16_slew_rate_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_slew_rate_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[16].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_slew_rate_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].slew_rate.qe = dio_pad_attr_16_qe;
+
+  //   F[drive_strength_16]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_16_drive_strength_16 (
+    .re     (dio_pad_attr_16_re),
+    .we     (dio_pad_attr_16_gated_we),
+    .wd     (dio_pad_attr_16_drive_strength_16_wd),
+    .d      (hw2reg.dio_pad_attr[16].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_16_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[16].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_16_drive_strength_16_qs)
+  );
+  assign reg2hw.dio_pad_attr[16].drive_strength.qe = dio_pad_attr_16_qe;
+
+
+  // Subregister 17 of Multireg dio_pad_attr
+  // R[dio_pad_attr_17]: V(True)
+  logic dio_pad_attr_17_qe;
+  logic [8:0] dio_pad_attr_17_flds_we;
+  assign dio_pad_attr_17_qe = &dio_pad_attr_17_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_17_gated_we;
+  assign dio_pad_attr_17_gated_we = dio_pad_attr_17_we & dio_pad_attr_regwen_17_qs;
+  //   F[invert_17]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_invert_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_invert_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[17].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_invert_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].invert.qe = dio_pad_attr_17_qe;
+
+  //   F[virtual_od_en_17]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_virtual_od_en_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_virtual_od_en_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[17].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_virtual_od_en_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].virtual_od_en.qe = dio_pad_attr_17_qe;
+
+  //   F[pull_en_17]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_pull_en_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_pull_en_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[17].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_pull_en_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].pull_en.qe = dio_pad_attr_17_qe;
+
+  //   F[pull_select_17]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_pull_select_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_pull_select_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[17].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_pull_select_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].pull_select.qe = dio_pad_attr_17_qe;
+
+  //   F[keeper_en_17]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_keeper_en_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_keeper_en_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[17].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_keeper_en_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].keeper_en.qe = dio_pad_attr_17_qe;
+
+  //   F[schmitt_en_17]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_schmitt_en_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_schmitt_en_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[17].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_schmitt_en_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].schmitt_en.qe = dio_pad_attr_17_qe;
+
+  //   F[od_en_17]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_17_od_en_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_od_en_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[17].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_od_en_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].od_en.qe = dio_pad_attr_17_qe;
+
+  //   F[slew_rate_17]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_17_slew_rate_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_slew_rate_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[17].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_slew_rate_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].slew_rate.qe = dio_pad_attr_17_qe;
+
+  //   F[drive_strength_17]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_17_drive_strength_17 (
+    .re     (dio_pad_attr_17_re),
+    .we     (dio_pad_attr_17_gated_we),
+    .wd     (dio_pad_attr_17_drive_strength_17_wd),
+    .d      (hw2reg.dio_pad_attr[17].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_17_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[17].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_17_drive_strength_17_qs)
+  );
+  assign reg2hw.dio_pad_attr[17].drive_strength.qe = dio_pad_attr_17_qe;
+
+
+  // Subregister 18 of Multireg dio_pad_attr
+  // R[dio_pad_attr_18]: V(True)
+  logic dio_pad_attr_18_qe;
+  logic [8:0] dio_pad_attr_18_flds_we;
+  assign dio_pad_attr_18_qe = &dio_pad_attr_18_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_18_gated_we;
+  assign dio_pad_attr_18_gated_we = dio_pad_attr_18_we & dio_pad_attr_regwen_18_qs;
+  //   F[invert_18]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_invert_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_invert_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[18].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_invert_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].invert.qe = dio_pad_attr_18_qe;
+
+  //   F[virtual_od_en_18]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_virtual_od_en_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_virtual_od_en_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[18].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_virtual_od_en_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].virtual_od_en.qe = dio_pad_attr_18_qe;
+
+  //   F[pull_en_18]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_pull_en_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_pull_en_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[18].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_pull_en_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].pull_en.qe = dio_pad_attr_18_qe;
+
+  //   F[pull_select_18]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_pull_select_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_pull_select_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[18].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_pull_select_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].pull_select.qe = dio_pad_attr_18_qe;
+
+  //   F[keeper_en_18]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_keeper_en_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_keeper_en_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[18].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_keeper_en_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].keeper_en.qe = dio_pad_attr_18_qe;
+
+  //   F[schmitt_en_18]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_schmitt_en_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_schmitt_en_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[18].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_schmitt_en_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].schmitt_en.qe = dio_pad_attr_18_qe;
+
+  //   F[od_en_18]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_18_od_en_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_od_en_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[18].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_od_en_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].od_en.qe = dio_pad_attr_18_qe;
+
+  //   F[slew_rate_18]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_18_slew_rate_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_slew_rate_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[18].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_slew_rate_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].slew_rate.qe = dio_pad_attr_18_qe;
+
+  //   F[drive_strength_18]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_18_drive_strength_18 (
+    .re     (dio_pad_attr_18_re),
+    .we     (dio_pad_attr_18_gated_we),
+    .wd     (dio_pad_attr_18_drive_strength_18_wd),
+    .d      (hw2reg.dio_pad_attr[18].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_18_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[18].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_18_drive_strength_18_qs)
+  );
+  assign reg2hw.dio_pad_attr[18].drive_strength.qe = dio_pad_attr_18_qe;
+
+
+  // Subregister 19 of Multireg dio_pad_attr
+  // R[dio_pad_attr_19]: V(True)
+  logic dio_pad_attr_19_qe;
+  logic [8:0] dio_pad_attr_19_flds_we;
+  assign dio_pad_attr_19_qe = &dio_pad_attr_19_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_19_gated_we;
+  assign dio_pad_attr_19_gated_we = dio_pad_attr_19_we & dio_pad_attr_regwen_19_qs;
+  //   F[invert_19]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_invert_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_invert_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[19].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_invert_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].invert.qe = dio_pad_attr_19_qe;
+
+  //   F[virtual_od_en_19]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_virtual_od_en_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_virtual_od_en_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[19].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_virtual_od_en_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].virtual_od_en.qe = dio_pad_attr_19_qe;
+
+  //   F[pull_en_19]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_pull_en_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_pull_en_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[19].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_pull_en_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].pull_en.qe = dio_pad_attr_19_qe;
+
+  //   F[pull_select_19]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_pull_select_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_pull_select_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[19].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_pull_select_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].pull_select.qe = dio_pad_attr_19_qe;
+
+  //   F[keeper_en_19]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_keeper_en_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_keeper_en_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[19].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_keeper_en_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].keeper_en.qe = dio_pad_attr_19_qe;
+
+  //   F[schmitt_en_19]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_schmitt_en_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_schmitt_en_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[19].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_schmitt_en_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].schmitt_en.qe = dio_pad_attr_19_qe;
+
+  //   F[od_en_19]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_19_od_en_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_od_en_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[19].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_od_en_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].od_en.qe = dio_pad_attr_19_qe;
+
+  //   F[slew_rate_19]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_19_slew_rate_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_slew_rate_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[19].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_slew_rate_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].slew_rate.qe = dio_pad_attr_19_qe;
+
+  //   F[drive_strength_19]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_19_drive_strength_19 (
+    .re     (dio_pad_attr_19_re),
+    .we     (dio_pad_attr_19_gated_we),
+    .wd     (dio_pad_attr_19_drive_strength_19_wd),
+    .d      (hw2reg.dio_pad_attr[19].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_19_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[19].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_19_drive_strength_19_qs)
+  );
+  assign reg2hw.dio_pad_attr[19].drive_strength.qe = dio_pad_attr_19_qe;
+
+
+  // Subregister 20 of Multireg dio_pad_attr
+  // R[dio_pad_attr_20]: V(True)
+  logic dio_pad_attr_20_qe;
+  logic [8:0] dio_pad_attr_20_flds_we;
+  assign dio_pad_attr_20_qe = &dio_pad_attr_20_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_20_gated_we;
+  assign dio_pad_attr_20_gated_we = dio_pad_attr_20_we & dio_pad_attr_regwen_20_qs;
+  //   F[invert_20]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_invert_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_invert_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[20].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_invert_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].invert.qe = dio_pad_attr_20_qe;
+
+  //   F[virtual_od_en_20]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_virtual_od_en_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_virtual_od_en_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[20].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_virtual_od_en_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].virtual_od_en.qe = dio_pad_attr_20_qe;
+
+  //   F[pull_en_20]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_pull_en_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_pull_en_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[20].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_pull_en_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].pull_en.qe = dio_pad_attr_20_qe;
+
+  //   F[pull_select_20]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_pull_select_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_pull_select_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[20].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_pull_select_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].pull_select.qe = dio_pad_attr_20_qe;
+
+  //   F[keeper_en_20]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_keeper_en_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_keeper_en_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[20].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_keeper_en_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].keeper_en.qe = dio_pad_attr_20_qe;
+
+  //   F[schmitt_en_20]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_schmitt_en_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_schmitt_en_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[20].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_schmitt_en_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].schmitt_en.qe = dio_pad_attr_20_qe;
+
+  //   F[od_en_20]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_20_od_en_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_od_en_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[20].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_od_en_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].od_en.qe = dio_pad_attr_20_qe;
+
+  //   F[slew_rate_20]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_20_slew_rate_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_slew_rate_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[20].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_slew_rate_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].slew_rate.qe = dio_pad_attr_20_qe;
+
+  //   F[drive_strength_20]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_20_drive_strength_20 (
+    .re     (dio_pad_attr_20_re),
+    .we     (dio_pad_attr_20_gated_we),
+    .wd     (dio_pad_attr_20_drive_strength_20_wd),
+    .d      (hw2reg.dio_pad_attr[20].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_20_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[20].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_20_drive_strength_20_qs)
+  );
+  assign reg2hw.dio_pad_attr[20].drive_strength.qe = dio_pad_attr_20_qe;
+
+
+  // Subregister 21 of Multireg dio_pad_attr
+  // R[dio_pad_attr_21]: V(True)
+  logic dio_pad_attr_21_qe;
+  logic [8:0] dio_pad_attr_21_flds_we;
+  assign dio_pad_attr_21_qe = &dio_pad_attr_21_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_21_gated_we;
+  assign dio_pad_attr_21_gated_we = dio_pad_attr_21_we & dio_pad_attr_regwen_21_qs;
+  //   F[invert_21]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_invert_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_invert_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[21].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_invert_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].invert.qe = dio_pad_attr_21_qe;
+
+  //   F[virtual_od_en_21]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_virtual_od_en_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_virtual_od_en_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[21].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_virtual_od_en_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].virtual_od_en.qe = dio_pad_attr_21_qe;
+
+  //   F[pull_en_21]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_pull_en_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_pull_en_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[21].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_pull_en_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].pull_en.qe = dio_pad_attr_21_qe;
+
+  //   F[pull_select_21]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_pull_select_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_pull_select_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[21].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_pull_select_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].pull_select.qe = dio_pad_attr_21_qe;
+
+  //   F[keeper_en_21]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_keeper_en_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_keeper_en_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[21].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_keeper_en_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].keeper_en.qe = dio_pad_attr_21_qe;
+
+  //   F[schmitt_en_21]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_schmitt_en_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_schmitt_en_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[21].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_schmitt_en_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].schmitt_en.qe = dio_pad_attr_21_qe;
+
+  //   F[od_en_21]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_21_od_en_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_od_en_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[21].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_od_en_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].od_en.qe = dio_pad_attr_21_qe;
+
+  //   F[slew_rate_21]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_21_slew_rate_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_slew_rate_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[21].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_slew_rate_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].slew_rate.qe = dio_pad_attr_21_qe;
+
+  //   F[drive_strength_21]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_21_drive_strength_21 (
+    .re     (dio_pad_attr_21_re),
+    .we     (dio_pad_attr_21_gated_we),
+    .wd     (dio_pad_attr_21_drive_strength_21_wd),
+    .d      (hw2reg.dio_pad_attr[21].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_21_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[21].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_21_drive_strength_21_qs)
+  );
+  assign reg2hw.dio_pad_attr[21].drive_strength.qe = dio_pad_attr_21_qe;
+
+
+  // Subregister 22 of Multireg dio_pad_attr
+  // R[dio_pad_attr_22]: V(True)
+  logic dio_pad_attr_22_qe;
+  logic [8:0] dio_pad_attr_22_flds_we;
+  assign dio_pad_attr_22_qe = &dio_pad_attr_22_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_22_gated_we;
+  assign dio_pad_attr_22_gated_we = dio_pad_attr_22_we & dio_pad_attr_regwen_22_qs;
+  //   F[invert_22]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_invert_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_invert_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[22].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_invert_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].invert.qe = dio_pad_attr_22_qe;
+
+  //   F[virtual_od_en_22]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_virtual_od_en_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_virtual_od_en_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[22].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_virtual_od_en_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].virtual_od_en.qe = dio_pad_attr_22_qe;
+
+  //   F[pull_en_22]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_pull_en_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_pull_en_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[22].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_pull_en_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].pull_en.qe = dio_pad_attr_22_qe;
+
+  //   F[pull_select_22]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_pull_select_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_pull_select_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[22].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_pull_select_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].pull_select.qe = dio_pad_attr_22_qe;
+
+  //   F[keeper_en_22]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_keeper_en_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_keeper_en_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[22].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_keeper_en_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].keeper_en.qe = dio_pad_attr_22_qe;
+
+  //   F[schmitt_en_22]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_schmitt_en_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_schmitt_en_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[22].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_schmitt_en_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].schmitt_en.qe = dio_pad_attr_22_qe;
+
+  //   F[od_en_22]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_22_od_en_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_od_en_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[22].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_od_en_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].od_en.qe = dio_pad_attr_22_qe;
+
+  //   F[slew_rate_22]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_22_slew_rate_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_slew_rate_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[22].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_slew_rate_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].slew_rate.qe = dio_pad_attr_22_qe;
+
+  //   F[drive_strength_22]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_22_drive_strength_22 (
+    .re     (dio_pad_attr_22_re),
+    .we     (dio_pad_attr_22_gated_we),
+    .wd     (dio_pad_attr_22_drive_strength_22_wd),
+    .d      (hw2reg.dio_pad_attr[22].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_22_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[22].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_22_drive_strength_22_qs)
+  );
+  assign reg2hw.dio_pad_attr[22].drive_strength.qe = dio_pad_attr_22_qe;
+
+
+  // Subregister 23 of Multireg dio_pad_attr
+  // R[dio_pad_attr_23]: V(True)
+  logic dio_pad_attr_23_qe;
+  logic [8:0] dio_pad_attr_23_flds_we;
+  assign dio_pad_attr_23_qe = &dio_pad_attr_23_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_23_gated_we;
+  assign dio_pad_attr_23_gated_we = dio_pad_attr_23_we & dio_pad_attr_regwen_23_qs;
+  //   F[invert_23]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_invert_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_invert_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[23].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_invert_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].invert.qe = dio_pad_attr_23_qe;
+
+  //   F[virtual_od_en_23]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_virtual_od_en_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_virtual_od_en_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[23].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_virtual_od_en_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].virtual_od_en.qe = dio_pad_attr_23_qe;
+
+  //   F[pull_en_23]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_pull_en_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_pull_en_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[23].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_pull_en_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].pull_en.qe = dio_pad_attr_23_qe;
+
+  //   F[pull_select_23]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_pull_select_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_pull_select_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[23].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_pull_select_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].pull_select.qe = dio_pad_attr_23_qe;
+
+  //   F[keeper_en_23]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_keeper_en_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_keeper_en_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[23].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_keeper_en_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].keeper_en.qe = dio_pad_attr_23_qe;
+
+  //   F[schmitt_en_23]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_schmitt_en_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_schmitt_en_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[23].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_schmitt_en_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].schmitt_en.qe = dio_pad_attr_23_qe;
+
+  //   F[od_en_23]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_23_od_en_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_od_en_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[23].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_od_en_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].od_en.qe = dio_pad_attr_23_qe;
+
+  //   F[slew_rate_23]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_23_slew_rate_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_slew_rate_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[23].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_slew_rate_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].slew_rate.qe = dio_pad_attr_23_qe;
+
+  //   F[drive_strength_23]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_23_drive_strength_23 (
+    .re     (dio_pad_attr_23_re),
+    .we     (dio_pad_attr_23_gated_we),
+    .wd     (dio_pad_attr_23_drive_strength_23_wd),
+    .d      (hw2reg.dio_pad_attr[23].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_23_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[23].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_23_drive_strength_23_qs)
+  );
+  assign reg2hw.dio_pad_attr[23].drive_strength.qe = dio_pad_attr_23_qe;
+
+
+  // Subregister 24 of Multireg dio_pad_attr
+  // R[dio_pad_attr_24]: V(True)
+  logic dio_pad_attr_24_qe;
+  logic [8:0] dio_pad_attr_24_flds_we;
+  assign dio_pad_attr_24_qe = &dio_pad_attr_24_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_24_gated_we;
+  assign dio_pad_attr_24_gated_we = dio_pad_attr_24_we & dio_pad_attr_regwen_24_qs;
+  //   F[invert_24]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_invert_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_invert_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[24].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_invert_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].invert.qe = dio_pad_attr_24_qe;
+
+  //   F[virtual_od_en_24]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_virtual_od_en_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_virtual_od_en_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[24].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_virtual_od_en_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].virtual_od_en.qe = dio_pad_attr_24_qe;
+
+  //   F[pull_en_24]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_pull_en_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_pull_en_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[24].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_pull_en_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].pull_en.qe = dio_pad_attr_24_qe;
+
+  //   F[pull_select_24]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_pull_select_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_pull_select_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[24].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_pull_select_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].pull_select.qe = dio_pad_attr_24_qe;
+
+  //   F[keeper_en_24]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_keeper_en_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_keeper_en_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[24].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_keeper_en_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].keeper_en.qe = dio_pad_attr_24_qe;
+
+  //   F[schmitt_en_24]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_schmitt_en_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_schmitt_en_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[24].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_schmitt_en_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].schmitt_en.qe = dio_pad_attr_24_qe;
+
+  //   F[od_en_24]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_24_od_en_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_od_en_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[24].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_od_en_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].od_en.qe = dio_pad_attr_24_qe;
+
+  //   F[slew_rate_24]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_24_slew_rate_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_slew_rate_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[24].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_slew_rate_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].slew_rate.qe = dio_pad_attr_24_qe;
+
+  //   F[drive_strength_24]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_24_drive_strength_24 (
+    .re     (dio_pad_attr_24_re),
+    .we     (dio_pad_attr_24_gated_we),
+    .wd     (dio_pad_attr_24_drive_strength_24_wd),
+    .d      (hw2reg.dio_pad_attr[24].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_24_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[24].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_24_drive_strength_24_qs)
+  );
+  assign reg2hw.dio_pad_attr[24].drive_strength.qe = dio_pad_attr_24_qe;
+
+
+  // Subregister 25 of Multireg dio_pad_attr
+  // R[dio_pad_attr_25]: V(True)
+  logic dio_pad_attr_25_qe;
+  logic [8:0] dio_pad_attr_25_flds_we;
+  assign dio_pad_attr_25_qe = &dio_pad_attr_25_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_25_gated_we;
+  assign dio_pad_attr_25_gated_we = dio_pad_attr_25_we & dio_pad_attr_regwen_25_qs;
+  //   F[invert_25]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_invert_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_invert_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[25].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_invert_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].invert.qe = dio_pad_attr_25_qe;
+
+  //   F[virtual_od_en_25]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_virtual_od_en_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_virtual_od_en_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[25].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_virtual_od_en_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].virtual_od_en.qe = dio_pad_attr_25_qe;
+
+  //   F[pull_en_25]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_pull_en_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_pull_en_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[25].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_pull_en_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].pull_en.qe = dio_pad_attr_25_qe;
+
+  //   F[pull_select_25]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_pull_select_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_pull_select_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[25].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_pull_select_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].pull_select.qe = dio_pad_attr_25_qe;
+
+  //   F[keeper_en_25]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_keeper_en_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_keeper_en_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[25].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_keeper_en_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].keeper_en.qe = dio_pad_attr_25_qe;
+
+  //   F[schmitt_en_25]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_schmitt_en_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_schmitt_en_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[25].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_schmitt_en_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].schmitt_en.qe = dio_pad_attr_25_qe;
+
+  //   F[od_en_25]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_25_od_en_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_od_en_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[25].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_od_en_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].od_en.qe = dio_pad_attr_25_qe;
+
+  //   F[slew_rate_25]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_25_slew_rate_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_slew_rate_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[25].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_slew_rate_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].slew_rate.qe = dio_pad_attr_25_qe;
+
+  //   F[drive_strength_25]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_25_drive_strength_25 (
+    .re     (dio_pad_attr_25_re),
+    .we     (dio_pad_attr_25_gated_we),
+    .wd     (dio_pad_attr_25_drive_strength_25_wd),
+    .d      (hw2reg.dio_pad_attr[25].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_25_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[25].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_25_drive_strength_25_qs)
+  );
+  assign reg2hw.dio_pad_attr[25].drive_strength.qe = dio_pad_attr_25_qe;
+
+
+  // Subregister 26 of Multireg dio_pad_attr
+  // R[dio_pad_attr_26]: V(True)
+  logic dio_pad_attr_26_qe;
+  logic [8:0] dio_pad_attr_26_flds_we;
+  assign dio_pad_attr_26_qe = &dio_pad_attr_26_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_26_gated_we;
+  assign dio_pad_attr_26_gated_we = dio_pad_attr_26_we & dio_pad_attr_regwen_26_qs;
+  //   F[invert_26]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_invert_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_invert_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[26].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_invert_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].invert.qe = dio_pad_attr_26_qe;
+
+  //   F[virtual_od_en_26]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_virtual_od_en_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_virtual_od_en_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[26].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_virtual_od_en_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].virtual_od_en.qe = dio_pad_attr_26_qe;
+
+  //   F[pull_en_26]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_pull_en_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_pull_en_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[26].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_pull_en_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].pull_en.qe = dio_pad_attr_26_qe;
+
+  //   F[pull_select_26]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_pull_select_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_pull_select_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[26].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_pull_select_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].pull_select.qe = dio_pad_attr_26_qe;
+
+  //   F[keeper_en_26]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_keeper_en_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_keeper_en_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[26].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_keeper_en_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].keeper_en.qe = dio_pad_attr_26_qe;
+
+  //   F[schmitt_en_26]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_schmitt_en_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_schmitt_en_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[26].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_schmitt_en_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].schmitt_en.qe = dio_pad_attr_26_qe;
+
+  //   F[od_en_26]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_26_od_en_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_od_en_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[26].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_od_en_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].od_en.qe = dio_pad_attr_26_qe;
+
+  //   F[slew_rate_26]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_26_slew_rate_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_slew_rate_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[26].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_slew_rate_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].slew_rate.qe = dio_pad_attr_26_qe;
+
+  //   F[drive_strength_26]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_26_drive_strength_26 (
+    .re     (dio_pad_attr_26_re),
+    .we     (dio_pad_attr_26_gated_we),
+    .wd     (dio_pad_attr_26_drive_strength_26_wd),
+    .d      (hw2reg.dio_pad_attr[26].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_26_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[26].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_26_drive_strength_26_qs)
+  );
+  assign reg2hw.dio_pad_attr[26].drive_strength.qe = dio_pad_attr_26_qe;
+
+
+  // Subregister 27 of Multireg dio_pad_attr
+  // R[dio_pad_attr_27]: V(True)
+  logic dio_pad_attr_27_qe;
+  logic [8:0] dio_pad_attr_27_flds_we;
+  assign dio_pad_attr_27_qe = &dio_pad_attr_27_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_27_gated_we;
+  assign dio_pad_attr_27_gated_we = dio_pad_attr_27_we & dio_pad_attr_regwen_27_qs;
+  //   F[invert_27]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_invert_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_invert_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[27].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_invert_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].invert.qe = dio_pad_attr_27_qe;
+
+  //   F[virtual_od_en_27]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_virtual_od_en_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_virtual_od_en_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[27].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_virtual_od_en_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].virtual_od_en.qe = dio_pad_attr_27_qe;
+
+  //   F[pull_en_27]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_pull_en_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_pull_en_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[27].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_pull_en_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].pull_en.qe = dio_pad_attr_27_qe;
+
+  //   F[pull_select_27]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_pull_select_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_pull_select_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[27].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_pull_select_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].pull_select.qe = dio_pad_attr_27_qe;
+
+  //   F[keeper_en_27]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_keeper_en_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_keeper_en_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[27].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_keeper_en_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].keeper_en.qe = dio_pad_attr_27_qe;
+
+  //   F[schmitt_en_27]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_schmitt_en_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_schmitt_en_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[27].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_schmitt_en_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].schmitt_en.qe = dio_pad_attr_27_qe;
+
+  //   F[od_en_27]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_27_od_en_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_od_en_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[27].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_od_en_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].od_en.qe = dio_pad_attr_27_qe;
+
+  //   F[slew_rate_27]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_27_slew_rate_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_slew_rate_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[27].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_slew_rate_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].slew_rate.qe = dio_pad_attr_27_qe;
+
+  //   F[drive_strength_27]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_27_drive_strength_27 (
+    .re     (dio_pad_attr_27_re),
+    .we     (dio_pad_attr_27_gated_we),
+    .wd     (dio_pad_attr_27_drive_strength_27_wd),
+    .d      (hw2reg.dio_pad_attr[27].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_27_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[27].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_27_drive_strength_27_qs)
+  );
+  assign reg2hw.dio_pad_attr[27].drive_strength.qe = dio_pad_attr_27_qe;
+
+
+  // Subregister 28 of Multireg dio_pad_attr
+  // R[dio_pad_attr_28]: V(True)
+  logic dio_pad_attr_28_qe;
+  logic [8:0] dio_pad_attr_28_flds_we;
+  assign dio_pad_attr_28_qe = &dio_pad_attr_28_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_28_gated_we;
+  assign dio_pad_attr_28_gated_we = dio_pad_attr_28_we & dio_pad_attr_regwen_28_qs;
+  //   F[invert_28]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_invert_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_invert_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[28].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_invert_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].invert.qe = dio_pad_attr_28_qe;
+
+  //   F[virtual_od_en_28]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_virtual_od_en_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_virtual_od_en_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[28].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_virtual_od_en_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].virtual_od_en.qe = dio_pad_attr_28_qe;
+
+  //   F[pull_en_28]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_pull_en_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_pull_en_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[28].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_pull_en_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].pull_en.qe = dio_pad_attr_28_qe;
+
+  //   F[pull_select_28]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_pull_select_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_pull_select_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[28].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_pull_select_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].pull_select.qe = dio_pad_attr_28_qe;
+
+  //   F[keeper_en_28]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_keeper_en_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_keeper_en_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[28].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_keeper_en_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].keeper_en.qe = dio_pad_attr_28_qe;
+
+  //   F[schmitt_en_28]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_schmitt_en_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_schmitt_en_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[28].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_schmitt_en_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].schmitt_en.qe = dio_pad_attr_28_qe;
+
+  //   F[od_en_28]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_28_od_en_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_od_en_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[28].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_od_en_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].od_en.qe = dio_pad_attr_28_qe;
+
+  //   F[slew_rate_28]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_28_slew_rate_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_slew_rate_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[28].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_slew_rate_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].slew_rate.qe = dio_pad_attr_28_qe;
+
+  //   F[drive_strength_28]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_28_drive_strength_28 (
+    .re     (dio_pad_attr_28_re),
+    .we     (dio_pad_attr_28_gated_we),
+    .wd     (dio_pad_attr_28_drive_strength_28_wd),
+    .d      (hw2reg.dio_pad_attr[28].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_28_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[28].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_28_drive_strength_28_qs)
+  );
+  assign reg2hw.dio_pad_attr[28].drive_strength.qe = dio_pad_attr_28_qe;
+
+
+  // Subregister 29 of Multireg dio_pad_attr
+  // R[dio_pad_attr_29]: V(True)
+  logic dio_pad_attr_29_qe;
+  logic [8:0] dio_pad_attr_29_flds_we;
+  assign dio_pad_attr_29_qe = &dio_pad_attr_29_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_29_gated_we;
+  assign dio_pad_attr_29_gated_we = dio_pad_attr_29_we & dio_pad_attr_regwen_29_qs;
+  //   F[invert_29]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_invert_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_invert_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[29].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_invert_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].invert.qe = dio_pad_attr_29_qe;
+
+  //   F[virtual_od_en_29]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_virtual_od_en_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_virtual_od_en_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[29].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_virtual_od_en_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].virtual_od_en.qe = dio_pad_attr_29_qe;
+
+  //   F[pull_en_29]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_pull_en_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_pull_en_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[29].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_pull_en_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].pull_en.qe = dio_pad_attr_29_qe;
+
+  //   F[pull_select_29]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_pull_select_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_pull_select_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[29].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_pull_select_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].pull_select.qe = dio_pad_attr_29_qe;
+
+  //   F[keeper_en_29]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_keeper_en_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_keeper_en_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[29].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_keeper_en_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].keeper_en.qe = dio_pad_attr_29_qe;
+
+  //   F[schmitt_en_29]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_schmitt_en_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_schmitt_en_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[29].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_schmitt_en_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].schmitt_en.qe = dio_pad_attr_29_qe;
+
+  //   F[od_en_29]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_29_od_en_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_od_en_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[29].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_od_en_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].od_en.qe = dio_pad_attr_29_qe;
+
+  //   F[slew_rate_29]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_29_slew_rate_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_slew_rate_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[29].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_slew_rate_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].slew_rate.qe = dio_pad_attr_29_qe;
+
+  //   F[drive_strength_29]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_29_drive_strength_29 (
+    .re     (dio_pad_attr_29_re),
+    .we     (dio_pad_attr_29_gated_we),
+    .wd     (dio_pad_attr_29_drive_strength_29_wd),
+    .d      (hw2reg.dio_pad_attr[29].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_29_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[29].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_29_drive_strength_29_qs)
+  );
+  assign reg2hw.dio_pad_attr[29].drive_strength.qe = dio_pad_attr_29_qe;
+
+
+  // Subregister 30 of Multireg dio_pad_attr
+  // R[dio_pad_attr_30]: V(True)
+  logic dio_pad_attr_30_qe;
+  logic [8:0] dio_pad_attr_30_flds_we;
+  assign dio_pad_attr_30_qe = &dio_pad_attr_30_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_30_gated_we;
+  assign dio_pad_attr_30_gated_we = dio_pad_attr_30_we & dio_pad_attr_regwen_30_qs;
+  //   F[invert_30]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_invert_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_invert_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[30].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_invert_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].invert.qe = dio_pad_attr_30_qe;
+
+  //   F[virtual_od_en_30]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_virtual_od_en_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_virtual_od_en_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[30].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_virtual_od_en_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].virtual_od_en.qe = dio_pad_attr_30_qe;
+
+  //   F[pull_en_30]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_pull_en_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_pull_en_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[30].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_pull_en_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].pull_en.qe = dio_pad_attr_30_qe;
+
+  //   F[pull_select_30]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_pull_select_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_pull_select_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[30].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_pull_select_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].pull_select.qe = dio_pad_attr_30_qe;
+
+  //   F[keeper_en_30]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_keeper_en_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_keeper_en_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[30].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_keeper_en_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].keeper_en.qe = dio_pad_attr_30_qe;
+
+  //   F[schmitt_en_30]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_schmitt_en_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_schmitt_en_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[30].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_schmitt_en_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].schmitt_en.qe = dio_pad_attr_30_qe;
+
+  //   F[od_en_30]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_30_od_en_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_od_en_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[30].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_od_en_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].od_en.qe = dio_pad_attr_30_qe;
+
+  //   F[slew_rate_30]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_30_slew_rate_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_slew_rate_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[30].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_slew_rate_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].slew_rate.qe = dio_pad_attr_30_qe;
+
+  //   F[drive_strength_30]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_30_drive_strength_30 (
+    .re     (dio_pad_attr_30_re),
+    .we     (dio_pad_attr_30_gated_we),
+    .wd     (dio_pad_attr_30_drive_strength_30_wd),
+    .d      (hw2reg.dio_pad_attr[30].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_30_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[30].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_30_drive_strength_30_qs)
+  );
+  assign reg2hw.dio_pad_attr[30].drive_strength.qe = dio_pad_attr_30_qe;
+
+
+  // Subregister 31 of Multireg dio_pad_attr
+  // R[dio_pad_attr_31]: V(True)
+  logic dio_pad_attr_31_qe;
+  logic [8:0] dio_pad_attr_31_flds_we;
+  assign dio_pad_attr_31_qe = &dio_pad_attr_31_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_31_gated_we;
+  assign dio_pad_attr_31_gated_we = dio_pad_attr_31_we & dio_pad_attr_regwen_31_qs;
+  //   F[invert_31]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_invert_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_invert_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[31].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_invert_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].invert.qe = dio_pad_attr_31_qe;
+
+  //   F[virtual_od_en_31]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_virtual_od_en_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_virtual_od_en_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[31].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_virtual_od_en_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].virtual_od_en.qe = dio_pad_attr_31_qe;
+
+  //   F[pull_en_31]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_pull_en_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_pull_en_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[31].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_pull_en_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].pull_en.qe = dio_pad_attr_31_qe;
+
+  //   F[pull_select_31]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_pull_select_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_pull_select_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[31].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_pull_select_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].pull_select.qe = dio_pad_attr_31_qe;
+
+  //   F[keeper_en_31]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_keeper_en_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_keeper_en_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[31].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_keeper_en_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].keeper_en.qe = dio_pad_attr_31_qe;
+
+  //   F[schmitt_en_31]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_schmitt_en_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_schmitt_en_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[31].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_schmitt_en_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].schmitt_en.qe = dio_pad_attr_31_qe;
+
+  //   F[od_en_31]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_31_od_en_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_od_en_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[31].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_od_en_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].od_en.qe = dio_pad_attr_31_qe;
+
+  //   F[slew_rate_31]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_31_slew_rate_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_slew_rate_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[31].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_slew_rate_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].slew_rate.qe = dio_pad_attr_31_qe;
+
+  //   F[drive_strength_31]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_31_drive_strength_31 (
+    .re     (dio_pad_attr_31_re),
+    .we     (dio_pad_attr_31_gated_we),
+    .wd     (dio_pad_attr_31_drive_strength_31_wd),
+    .d      (hw2reg.dio_pad_attr[31].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_31_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[31].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_31_drive_strength_31_qs)
+  );
+  assign reg2hw.dio_pad_attr[31].drive_strength.qe = dio_pad_attr_31_qe;
+
+
+  // Subregister 32 of Multireg dio_pad_attr
+  // R[dio_pad_attr_32]: V(True)
+  logic dio_pad_attr_32_qe;
+  logic [8:0] dio_pad_attr_32_flds_we;
+  assign dio_pad_attr_32_qe = &dio_pad_attr_32_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_32_gated_we;
+  assign dio_pad_attr_32_gated_we = dio_pad_attr_32_we & dio_pad_attr_regwen_32_qs;
+  //   F[invert_32]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_invert_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_invert_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[32].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_invert_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].invert.qe = dio_pad_attr_32_qe;
+
+  //   F[virtual_od_en_32]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_virtual_od_en_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_virtual_od_en_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[32].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_virtual_od_en_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].virtual_od_en.qe = dio_pad_attr_32_qe;
+
+  //   F[pull_en_32]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_pull_en_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_pull_en_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[32].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_pull_en_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].pull_en.qe = dio_pad_attr_32_qe;
+
+  //   F[pull_select_32]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_pull_select_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_pull_select_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[32].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_pull_select_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].pull_select.qe = dio_pad_attr_32_qe;
+
+  //   F[keeper_en_32]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_keeper_en_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_keeper_en_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[32].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_keeper_en_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].keeper_en.qe = dio_pad_attr_32_qe;
+
+  //   F[schmitt_en_32]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_schmitt_en_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_schmitt_en_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[32].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_schmitt_en_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].schmitt_en.qe = dio_pad_attr_32_qe;
+
+  //   F[od_en_32]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_32_od_en_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_od_en_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[32].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_od_en_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].od_en.qe = dio_pad_attr_32_qe;
+
+  //   F[slew_rate_32]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_32_slew_rate_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_slew_rate_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[32].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_slew_rate_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].slew_rate.qe = dio_pad_attr_32_qe;
+
+  //   F[drive_strength_32]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_32_drive_strength_32 (
+    .re     (dio_pad_attr_32_re),
+    .we     (dio_pad_attr_32_gated_we),
+    .wd     (dio_pad_attr_32_drive_strength_32_wd),
+    .d      (hw2reg.dio_pad_attr[32].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_32_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[32].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_32_drive_strength_32_qs)
+  );
+  assign reg2hw.dio_pad_attr[32].drive_strength.qe = dio_pad_attr_32_qe;
+
+
+  // Subregister 33 of Multireg dio_pad_attr
+  // R[dio_pad_attr_33]: V(True)
+  logic dio_pad_attr_33_qe;
+  logic [8:0] dio_pad_attr_33_flds_we;
+  assign dio_pad_attr_33_qe = &dio_pad_attr_33_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_33_gated_we;
+  assign dio_pad_attr_33_gated_we = dio_pad_attr_33_we & dio_pad_attr_regwen_33_qs;
+  //   F[invert_33]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_invert_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_invert_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[33].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_invert_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].invert.qe = dio_pad_attr_33_qe;
+
+  //   F[virtual_od_en_33]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_virtual_od_en_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_virtual_od_en_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[33].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_virtual_od_en_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].virtual_od_en.qe = dio_pad_attr_33_qe;
+
+  //   F[pull_en_33]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_pull_en_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_pull_en_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[33].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_pull_en_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].pull_en.qe = dio_pad_attr_33_qe;
+
+  //   F[pull_select_33]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_pull_select_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_pull_select_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[33].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_pull_select_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].pull_select.qe = dio_pad_attr_33_qe;
+
+  //   F[keeper_en_33]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_keeper_en_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_keeper_en_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[33].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_keeper_en_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].keeper_en.qe = dio_pad_attr_33_qe;
+
+  //   F[schmitt_en_33]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_schmitt_en_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_schmitt_en_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[33].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_schmitt_en_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].schmitt_en.qe = dio_pad_attr_33_qe;
+
+  //   F[od_en_33]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_33_od_en_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_od_en_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[33].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_od_en_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].od_en.qe = dio_pad_attr_33_qe;
+
+  //   F[slew_rate_33]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_33_slew_rate_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_slew_rate_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[33].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_slew_rate_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].slew_rate.qe = dio_pad_attr_33_qe;
+
+  //   F[drive_strength_33]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_33_drive_strength_33 (
+    .re     (dio_pad_attr_33_re),
+    .we     (dio_pad_attr_33_gated_we),
+    .wd     (dio_pad_attr_33_drive_strength_33_wd),
+    .d      (hw2reg.dio_pad_attr[33].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_33_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[33].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_33_drive_strength_33_qs)
+  );
+  assign reg2hw.dio_pad_attr[33].drive_strength.qe = dio_pad_attr_33_qe;
+
+
+  // Subregister 34 of Multireg dio_pad_attr
+  // R[dio_pad_attr_34]: V(True)
+  logic dio_pad_attr_34_qe;
+  logic [8:0] dio_pad_attr_34_flds_we;
+  assign dio_pad_attr_34_qe = &dio_pad_attr_34_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_34_gated_we;
+  assign dio_pad_attr_34_gated_we = dio_pad_attr_34_we & dio_pad_attr_regwen_34_qs;
+  //   F[invert_34]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_invert_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_invert_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[34].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_invert_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].invert.qe = dio_pad_attr_34_qe;
+
+  //   F[virtual_od_en_34]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_virtual_od_en_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_virtual_od_en_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[34].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_virtual_od_en_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].virtual_od_en.qe = dio_pad_attr_34_qe;
+
+  //   F[pull_en_34]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_pull_en_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_pull_en_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[34].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_pull_en_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].pull_en.qe = dio_pad_attr_34_qe;
+
+  //   F[pull_select_34]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_pull_select_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_pull_select_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[34].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_pull_select_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].pull_select.qe = dio_pad_attr_34_qe;
+
+  //   F[keeper_en_34]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_keeper_en_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_keeper_en_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[34].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_keeper_en_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].keeper_en.qe = dio_pad_attr_34_qe;
+
+  //   F[schmitt_en_34]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_schmitt_en_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_schmitt_en_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[34].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_schmitt_en_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].schmitt_en.qe = dio_pad_attr_34_qe;
+
+  //   F[od_en_34]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_34_od_en_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_od_en_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[34].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_od_en_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].od_en.qe = dio_pad_attr_34_qe;
+
+  //   F[slew_rate_34]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_34_slew_rate_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_slew_rate_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[34].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_slew_rate_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].slew_rate.qe = dio_pad_attr_34_qe;
+
+  //   F[drive_strength_34]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_34_drive_strength_34 (
+    .re     (dio_pad_attr_34_re),
+    .we     (dio_pad_attr_34_gated_we),
+    .wd     (dio_pad_attr_34_drive_strength_34_wd),
+    .d      (hw2reg.dio_pad_attr[34].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_34_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[34].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_34_drive_strength_34_qs)
+  );
+  assign reg2hw.dio_pad_attr[34].drive_strength.qe = dio_pad_attr_34_qe;
+
+
+  // Subregister 35 of Multireg dio_pad_attr
+  // R[dio_pad_attr_35]: V(True)
+  logic dio_pad_attr_35_qe;
+  logic [8:0] dio_pad_attr_35_flds_we;
+  assign dio_pad_attr_35_qe = &dio_pad_attr_35_flds_we;
+  // Create REGWEN-gated WE signal
+  logic dio_pad_attr_35_gated_we;
+  assign dio_pad_attr_35_gated_we = dio_pad_attr_35_we & dio_pad_attr_regwen_35_qs;
+  //   F[invert_35]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_invert_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_invert_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].invert.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[0]),
+    .q      (reg2hw.dio_pad_attr[35].invert.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_invert_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].invert.qe = dio_pad_attr_35_qe;
+
+  //   F[virtual_od_en_35]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_virtual_od_en_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_virtual_od_en_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].virtual_od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[1]),
+    .q      (reg2hw.dio_pad_attr[35].virtual_od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_virtual_od_en_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].virtual_od_en.qe = dio_pad_attr_35_qe;
+
+  //   F[pull_en_35]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_pull_en_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_pull_en_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].pull_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[2]),
+    .q      (reg2hw.dio_pad_attr[35].pull_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_pull_en_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].pull_en.qe = dio_pad_attr_35_qe;
+
+  //   F[pull_select_35]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_pull_select_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_pull_select_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].pull_select.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[3]),
+    .q      (reg2hw.dio_pad_attr[35].pull_select.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_pull_select_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].pull_select.qe = dio_pad_attr_35_qe;
+
+  //   F[keeper_en_35]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_keeper_en_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_keeper_en_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].keeper_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[4]),
+    .q      (reg2hw.dio_pad_attr[35].keeper_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_keeper_en_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].keeper_en.qe = dio_pad_attr_35_qe;
+
+  //   F[schmitt_en_35]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_schmitt_en_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_schmitt_en_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].schmitt_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[5]),
+    .q      (reg2hw.dio_pad_attr[35].schmitt_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_schmitt_en_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].schmitt_en.qe = dio_pad_attr_35_qe;
+
+  //   F[od_en_35]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_dio_pad_attr_35_od_en_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_od_en_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].od_en.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[6]),
+    .q      (reg2hw.dio_pad_attr[35].od_en.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_od_en_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].od_en.qe = dio_pad_attr_35_qe;
+
+  //   F[slew_rate_35]: 17:16
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_dio_pad_attr_35_slew_rate_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_slew_rate_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].slew_rate.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[7]),
+    .q      (reg2hw.dio_pad_attr[35].slew_rate.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_slew_rate_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].slew_rate.qe = dio_pad_attr_35_qe;
+
+  //   F[drive_strength_35]: 23:20
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_dio_pad_attr_35_drive_strength_35 (
+    .re     (dio_pad_attr_35_re),
+    .we     (dio_pad_attr_35_gated_we),
+    .wd     (dio_pad_attr_35_drive_strength_35_wd),
+    .d      (hw2reg.dio_pad_attr[35].drive_strength.d),
+    .qre    (),
+    .qe     (dio_pad_attr_35_flds_we[8]),
+    .q      (reg2hw.dio_pad_attr[35].drive_strength.q),
+    .ds     (),
+    .qs     (dio_pad_attr_35_drive_strength_35_qs)
+  );
+  assign reg2hw.dio_pad_attr[35].drive_strength.qe = dio_pad_attr_35_qe;
 
 
   // Subregister 0 of Multireg mio_pad_sleep_status
@@ -25269,20 +30454,20 @@ module pinmux_reg_top (
 
 
   // Subregister 0 of Multireg dio_pad_sleep_status
-  // R[dio_pad_sleep_status]: V(False)
+  // R[dio_pad_sleep_status_0]: V(False)
   //   F[en_0]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_0 (
+  ) u_dio_pad_sleep_status_0_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_0_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_0_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[0].de),
@@ -25294,7 +30479,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_0_qs)
+    .qs     (dio_pad_sleep_status_0_en_0_qs)
   );
 
   //   F[en_1]: 1:1
@@ -25303,13 +30488,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_1 (
+  ) u_dio_pad_sleep_status_0_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_1_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_1_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[1].de),
@@ -25321,7 +30506,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_1_qs)
+    .qs     (dio_pad_sleep_status_0_en_1_qs)
   );
 
   //   F[en_2]: 2:2
@@ -25330,13 +30515,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_2 (
+  ) u_dio_pad_sleep_status_0_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_2_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_2_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[2].de),
@@ -25348,7 +30533,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_2_qs)
+    .qs     (dio_pad_sleep_status_0_en_2_qs)
   );
 
   //   F[en_3]: 3:3
@@ -25357,13 +30542,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_3 (
+  ) u_dio_pad_sleep_status_0_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_3_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_3_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[3].de),
@@ -25375,7 +30560,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_3_qs)
+    .qs     (dio_pad_sleep_status_0_en_3_qs)
   );
 
   //   F[en_4]: 4:4
@@ -25384,13 +30569,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_4 (
+  ) u_dio_pad_sleep_status_0_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_4_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_4_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[4].de),
@@ -25402,7 +30587,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_4_qs)
+    .qs     (dio_pad_sleep_status_0_en_4_qs)
   );
 
   //   F[en_5]: 5:5
@@ -25411,13 +30596,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_5 (
+  ) u_dio_pad_sleep_status_0_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_5_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_5_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[5].de),
@@ -25429,7 +30614,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_5_qs)
+    .qs     (dio_pad_sleep_status_0_en_5_qs)
   );
 
   //   F[en_6]: 6:6
@@ -25438,13 +30623,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_6 (
+  ) u_dio_pad_sleep_status_0_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_6_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_6_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[6].de),
@@ -25456,7 +30641,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_6_qs)
+    .qs     (dio_pad_sleep_status_0_en_6_qs)
   );
 
   //   F[en_7]: 7:7
@@ -25465,13 +30650,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_7 (
+  ) u_dio_pad_sleep_status_0_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_7_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_7_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[7].de),
@@ -25483,7 +30668,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_7_qs)
+    .qs     (dio_pad_sleep_status_0_en_7_qs)
   );
 
   //   F[en_8]: 8:8
@@ -25492,13 +30677,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_8 (
+  ) u_dio_pad_sleep_status_0_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_8_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_8_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[8].de),
@@ -25510,7 +30695,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_8_qs)
+    .qs     (dio_pad_sleep_status_0_en_8_qs)
   );
 
   //   F[en_9]: 9:9
@@ -25519,13 +30704,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_9 (
+  ) u_dio_pad_sleep_status_0_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_9_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_9_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[9].de),
@@ -25537,7 +30722,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_9_qs)
+    .qs     (dio_pad_sleep_status_0_en_9_qs)
   );
 
   //   F[en_10]: 10:10
@@ -25546,13 +30731,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_10 (
+  ) u_dio_pad_sleep_status_0_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_10_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_10_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[10].de),
@@ -25564,7 +30749,7 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_10_qs)
+    .qs     (dio_pad_sleep_status_0_en_10_qs)
   );
 
   //   F[en_11]: 11:11
@@ -25573,13 +30758,13 @@ module pinmux_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dio_pad_sleep_status_en_11 (
+  ) u_dio_pad_sleep_status_0_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dio_pad_sleep_status_we),
-    .wd     (dio_pad_sleep_status_en_11_wd),
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_11_wd),
 
     // from internal hardware
     .de     (hw2reg.dio_pad_sleep_status[11].de),
@@ -25591,7 +30776,658 @@ module pinmux_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (dio_pad_sleep_status_en_11_qs)
+    .qs     (dio_pad_sleep_status_0_en_11_qs)
+  );
+
+  //   F[en_12]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_12_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[12].de),
+    .d      (hw2reg.dio_pad_sleep_status[12].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[12].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_12_qs)
+  );
+
+  //   F[en_13]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_13_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[13].de),
+    .d      (hw2reg.dio_pad_sleep_status[13].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[13].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_13_qs)
+  );
+
+  //   F[en_14]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_14_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[14].de),
+    .d      (hw2reg.dio_pad_sleep_status[14].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[14].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_14_qs)
+  );
+
+  //   F[en_15]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_15_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[15].de),
+    .d      (hw2reg.dio_pad_sleep_status[15].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[15].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_15_qs)
+  );
+
+  //   F[en_16]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_16_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[16].de),
+    .d      (hw2reg.dio_pad_sleep_status[16].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[16].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_16_qs)
+  );
+
+  //   F[en_17]: 17:17
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_17_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[17].de),
+    .d      (hw2reg.dio_pad_sleep_status[17].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[17].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_17_qs)
+  );
+
+  //   F[en_18]: 18:18
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_18_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[18].de),
+    .d      (hw2reg.dio_pad_sleep_status[18].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[18].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_18_qs)
+  );
+
+  //   F[en_19]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_19_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[19].de),
+    .d      (hw2reg.dio_pad_sleep_status[19].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[19].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_19_qs)
+  );
+
+  //   F[en_20]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_20_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[20].de),
+    .d      (hw2reg.dio_pad_sleep_status[20].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[20].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_20_qs)
+  );
+
+  //   F[en_21]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_21_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[21].de),
+    .d      (hw2reg.dio_pad_sleep_status[21].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[21].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_21_qs)
+  );
+
+  //   F[en_22]: 22:22
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_22_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[22].de),
+    .d      (hw2reg.dio_pad_sleep_status[22].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[22].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_22_qs)
+  );
+
+  //   F[en_23]: 23:23
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_23_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[23].de),
+    .d      (hw2reg.dio_pad_sleep_status[23].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[23].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_23_qs)
+  );
+
+  //   F[en_24]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_24 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_24_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[24].de),
+    .d      (hw2reg.dio_pad_sleep_status[24].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[24].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_24_qs)
+  );
+
+  //   F[en_25]: 25:25
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_25 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_25_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[25].de),
+    .d      (hw2reg.dio_pad_sleep_status[25].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[25].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_25_qs)
+  );
+
+  //   F[en_26]: 26:26
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_26 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_26_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[26].de),
+    .d      (hw2reg.dio_pad_sleep_status[26].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[26].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_26_qs)
+  );
+
+  //   F[en_27]: 27:27
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_27 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_27_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[27].de),
+    .d      (hw2reg.dio_pad_sleep_status[27].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[27].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_27_qs)
+  );
+
+  //   F[en_28]: 28:28
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_28 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_28_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[28].de),
+    .d      (hw2reg.dio_pad_sleep_status[28].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[28].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_28_qs)
+  );
+
+  //   F[en_29]: 29:29
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_29 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_29_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[29].de),
+    .d      (hw2reg.dio_pad_sleep_status[29].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[29].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_29_qs)
+  );
+
+  //   F[en_30]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_30 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_30_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[30].de),
+    .d      (hw2reg.dio_pad_sleep_status[30].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[30].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_30_qs)
+  );
+
+  //   F[en_31]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_0_en_31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_0_we),
+    .wd     (dio_pad_sleep_status_0_en_31_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[31].de),
+    .d      (hw2reg.dio_pad_sleep_status[31].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[31].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_0_en_31_qs)
+  );
+
+
+  // Subregister 1 of Multireg dio_pad_sleep_status
+  // R[dio_pad_sleep_status_1]: V(False)
+  //   F[en_32]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_1_en_32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_1_we),
+    .wd     (dio_pad_sleep_status_1_en_32_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[32].de),
+    .d      (hw2reg.dio_pad_sleep_status[32].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[32].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_1_en_32_qs)
+  );
+
+  //   F[en_33]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_1_en_33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_1_we),
+    .wd     (dio_pad_sleep_status_1_en_33_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[33].de),
+    .d      (hw2reg.dio_pad_sleep_status[33].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[33].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_1_en_33_qs)
+  );
+
+  //   F[en_34]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_1_en_34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_1_we),
+    .wd     (dio_pad_sleep_status_1_en_34_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[34].de),
+    .d      (hw2reg.dio_pad_sleep_status[34].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[34].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_1_en_34_qs)
+  );
+
+  //   F[en_35]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_status_1_en_35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_status_1_we),
+    .wd     (dio_pad_sleep_status_1_en_35_wd),
+
+    // from internal hardware
+    .de     (hw2reg.dio_pad_sleep_status[35].de),
+    .d      (hw2reg.dio_pad_sleep_status[35].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_status[35].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_status_1_en_35_qs)
   );
 
 
@@ -25940,6 +31776,702 @@ module pinmux_reg_top (
 
     // to register interface (read)
     .qs     (dio_pad_sleep_regwen_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_12]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_12_we),
+    .wd     (dio_pad_sleep_regwen_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_13]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_13_we),
+    .wd     (dio_pad_sleep_regwen_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_14]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_14_we),
+    .wd     (dio_pad_sleep_regwen_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_15]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_15_we),
+    .wd     (dio_pad_sleep_regwen_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_16]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_16_we),
+    .wd     (dio_pad_sleep_regwen_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_17]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_17_we),
+    .wd     (dio_pad_sleep_regwen_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_18]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_18_we),
+    .wd     (dio_pad_sleep_regwen_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_19]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_19_we),
+    .wd     (dio_pad_sleep_regwen_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_20]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_20_we),
+    .wd     (dio_pad_sleep_regwen_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_21]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_21_we),
+    .wd     (dio_pad_sleep_regwen_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_22]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_22_we),
+    .wd     (dio_pad_sleep_regwen_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_23]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_23_we),
+    .wd     (dio_pad_sleep_regwen_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_23_qs)
+  );
+
+
+  // Subregister 24 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_24]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_24 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_24_we),
+    .wd     (dio_pad_sleep_regwen_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_24_qs)
+  );
+
+
+  // Subregister 25 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_25]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_25 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_25_we),
+    .wd     (dio_pad_sleep_regwen_25_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_25_qs)
+  );
+
+
+  // Subregister 26 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_26]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_26 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_26_we),
+    .wd     (dio_pad_sleep_regwen_26_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_26_qs)
+  );
+
+
+  // Subregister 27 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_27]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_27 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_27_we),
+    .wd     (dio_pad_sleep_regwen_27_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_27_qs)
+  );
+
+
+  // Subregister 28 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_28]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_28 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_28_we),
+    .wd     (dio_pad_sleep_regwen_28_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_28_qs)
+  );
+
+
+  // Subregister 29 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_29]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_29 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_29_we),
+    .wd     (dio_pad_sleep_regwen_29_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_29_qs)
+  );
+
+
+  // Subregister 30 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_30]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_30 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_30_we),
+    .wd     (dio_pad_sleep_regwen_30_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_30_qs)
+  );
+
+
+  // Subregister 31 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_31]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_31_we),
+    .wd     (dio_pad_sleep_regwen_31_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_31_qs)
+  );
+
+
+  // Subregister 32 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_32]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_32_we),
+    .wd     (dio_pad_sleep_regwen_32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_32_qs)
+  );
+
+
+  // Subregister 33 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_33]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_33_we),
+    .wd     (dio_pad_sleep_regwen_33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_33_qs)
+  );
+
+
+  // Subregister 34 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_34]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_34_we),
+    .wd     (dio_pad_sleep_regwen_34_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_34_qs)
+  );
+
+
+  // Subregister 35 of Multireg dio_pad_sleep_regwen
+  // R[dio_pad_sleep_regwen_35]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_regwen_35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_regwen_35_we),
+    .wd     (dio_pad_sleep_regwen_35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_regwen_35_qs)
   );
 
 
@@ -26327,6 +32859,774 @@ module pinmux_reg_top (
   );
 
 
+  // Subregister 12 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_12_gated_we;
+  assign dio_pad_sleep_en_12_gated_we = dio_pad_sleep_en_12_we & dio_pad_sleep_regwen_12_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_12_gated_we),
+    .wd     (dio_pad_sleep_en_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[12].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_13_gated_we;
+  assign dio_pad_sleep_en_13_gated_we = dio_pad_sleep_en_13_we & dio_pad_sleep_regwen_13_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_13_gated_we),
+    .wd     (dio_pad_sleep_en_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[13].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_14_gated_we;
+  assign dio_pad_sleep_en_14_gated_we = dio_pad_sleep_en_14_we & dio_pad_sleep_regwen_14_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_14_gated_we),
+    .wd     (dio_pad_sleep_en_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[14].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_15_gated_we;
+  assign dio_pad_sleep_en_15_gated_we = dio_pad_sleep_en_15_we & dio_pad_sleep_regwen_15_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_15_gated_we),
+    .wd     (dio_pad_sleep_en_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[15].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_16_gated_we;
+  assign dio_pad_sleep_en_16_gated_we = dio_pad_sleep_en_16_we & dio_pad_sleep_regwen_16_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_16_gated_we),
+    .wd     (dio_pad_sleep_en_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[16].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_17_gated_we;
+  assign dio_pad_sleep_en_17_gated_we = dio_pad_sleep_en_17_we & dio_pad_sleep_regwen_17_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_17_gated_we),
+    .wd     (dio_pad_sleep_en_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[17].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_18_gated_we;
+  assign dio_pad_sleep_en_18_gated_we = dio_pad_sleep_en_18_we & dio_pad_sleep_regwen_18_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_18_gated_we),
+    .wd     (dio_pad_sleep_en_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[18].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_19_gated_we;
+  assign dio_pad_sleep_en_19_gated_we = dio_pad_sleep_en_19_we & dio_pad_sleep_regwen_19_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_19_gated_we),
+    .wd     (dio_pad_sleep_en_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[19].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_20_gated_we;
+  assign dio_pad_sleep_en_20_gated_we = dio_pad_sleep_en_20_we & dio_pad_sleep_regwen_20_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_20_gated_we),
+    .wd     (dio_pad_sleep_en_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[20].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_21_gated_we;
+  assign dio_pad_sleep_en_21_gated_we = dio_pad_sleep_en_21_we & dio_pad_sleep_regwen_21_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_21_gated_we),
+    .wd     (dio_pad_sleep_en_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[21].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_22_gated_we;
+  assign dio_pad_sleep_en_22_gated_we = dio_pad_sleep_en_22_we & dio_pad_sleep_regwen_22_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_22_gated_we),
+    .wd     (dio_pad_sleep_en_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[22].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_23_gated_we;
+  assign dio_pad_sleep_en_23_gated_we = dio_pad_sleep_en_23_we & dio_pad_sleep_regwen_23_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_23_gated_we),
+    .wd     (dio_pad_sleep_en_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[23].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_23_qs)
+  );
+
+
+  // Subregister 24 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_24_gated_we;
+  assign dio_pad_sleep_en_24_gated_we = dio_pad_sleep_en_24_we & dio_pad_sleep_regwen_24_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_24 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_24_gated_we),
+    .wd     (dio_pad_sleep_en_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[24].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_24_qs)
+  );
+
+
+  // Subregister 25 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_25_gated_we;
+  assign dio_pad_sleep_en_25_gated_we = dio_pad_sleep_en_25_we & dio_pad_sleep_regwen_25_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_25 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_25_gated_we),
+    .wd     (dio_pad_sleep_en_25_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[25].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_25_qs)
+  );
+
+
+  // Subregister 26 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_26_gated_we;
+  assign dio_pad_sleep_en_26_gated_we = dio_pad_sleep_en_26_we & dio_pad_sleep_regwen_26_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_26 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_26_gated_we),
+    .wd     (dio_pad_sleep_en_26_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[26].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_26_qs)
+  );
+
+
+  // Subregister 27 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_27_gated_we;
+  assign dio_pad_sleep_en_27_gated_we = dio_pad_sleep_en_27_we & dio_pad_sleep_regwen_27_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_27 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_27_gated_we),
+    .wd     (dio_pad_sleep_en_27_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[27].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_27_qs)
+  );
+
+
+  // Subregister 28 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_28_gated_we;
+  assign dio_pad_sleep_en_28_gated_we = dio_pad_sleep_en_28_we & dio_pad_sleep_regwen_28_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_28 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_28_gated_we),
+    .wd     (dio_pad_sleep_en_28_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[28].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_28_qs)
+  );
+
+
+  // Subregister 29 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_29_gated_we;
+  assign dio_pad_sleep_en_29_gated_we = dio_pad_sleep_en_29_we & dio_pad_sleep_regwen_29_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_29 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_29_gated_we),
+    .wd     (dio_pad_sleep_en_29_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[29].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_29_qs)
+  );
+
+
+  // Subregister 30 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_30_gated_we;
+  assign dio_pad_sleep_en_30_gated_we = dio_pad_sleep_en_30_we & dio_pad_sleep_regwen_30_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_30 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_30_gated_we),
+    .wd     (dio_pad_sleep_en_30_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[30].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_30_qs)
+  );
+
+
+  // Subregister 31 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_31_gated_we;
+  assign dio_pad_sleep_en_31_gated_we = dio_pad_sleep_en_31_we & dio_pad_sleep_regwen_31_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_31_gated_we),
+    .wd     (dio_pad_sleep_en_31_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[31].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_31_qs)
+  );
+
+
+  // Subregister 32 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_32_gated_we;
+  assign dio_pad_sleep_en_32_gated_we = dio_pad_sleep_en_32_we & dio_pad_sleep_regwen_32_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_32_gated_we),
+    .wd     (dio_pad_sleep_en_32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[32].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_32_qs)
+  );
+
+
+  // Subregister 33 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_33_gated_we;
+  assign dio_pad_sleep_en_33_gated_we = dio_pad_sleep_en_33_we & dio_pad_sleep_regwen_33_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_33_gated_we),
+    .wd     (dio_pad_sleep_en_33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[33].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_33_qs)
+  );
+
+
+  // Subregister 34 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_34_gated_we;
+  assign dio_pad_sleep_en_34_gated_we = dio_pad_sleep_en_34_we & dio_pad_sleep_regwen_34_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_34_gated_we),
+    .wd     (dio_pad_sleep_en_34_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[34].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_34_qs)
+  );
+
+
+  // Subregister 35 of Multireg dio_pad_sleep_en
+  // R[dio_pad_sleep_en_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_en_35_gated_we;
+  assign dio_pad_sleep_en_35_gated_we = dio_pad_sleep_en_35_we & dio_pad_sleep_regwen_35_qs;
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_en_35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_en_35_gated_we),
+    .wd     (dio_pad_sleep_en_35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_en[35].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_en_35_qs)
+  );
+
+
   // Subregister 0 of Multireg dio_pad_sleep_mode
   // R[dio_pad_sleep_mode_0]: V(False)
   // Create REGWEN-gated WE signal
@@ -26708,6 +34008,774 @@ module pinmux_reg_top (
 
     // to register interface (read)
     .qs     (dio_pad_sleep_mode_11_qs)
+  );
+
+
+  // Subregister 12 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_12]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_12_gated_we;
+  assign dio_pad_sleep_mode_12_gated_we = dio_pad_sleep_mode_12_we & dio_pad_sleep_regwen_12_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_12_gated_we),
+    .wd     (dio_pad_sleep_mode_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[12].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_12_qs)
+  );
+
+
+  // Subregister 13 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_13]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_13_gated_we;
+  assign dio_pad_sleep_mode_13_gated_we = dio_pad_sleep_mode_13_we & dio_pad_sleep_regwen_13_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_13_gated_we),
+    .wd     (dio_pad_sleep_mode_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[13].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_13_qs)
+  );
+
+
+  // Subregister 14 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_14]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_14_gated_we;
+  assign dio_pad_sleep_mode_14_gated_we = dio_pad_sleep_mode_14_we & dio_pad_sleep_regwen_14_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_14_gated_we),
+    .wd     (dio_pad_sleep_mode_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[14].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_14_qs)
+  );
+
+
+  // Subregister 15 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_15]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_15_gated_we;
+  assign dio_pad_sleep_mode_15_gated_we = dio_pad_sleep_mode_15_we & dio_pad_sleep_regwen_15_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_15_gated_we),
+    .wd     (dio_pad_sleep_mode_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[15].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_15_qs)
+  );
+
+
+  // Subregister 16 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_16]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_16_gated_we;
+  assign dio_pad_sleep_mode_16_gated_we = dio_pad_sleep_mode_16_we & dio_pad_sleep_regwen_16_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_16_gated_we),
+    .wd     (dio_pad_sleep_mode_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[16].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_16_qs)
+  );
+
+
+  // Subregister 17 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_17]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_17_gated_we;
+  assign dio_pad_sleep_mode_17_gated_we = dio_pad_sleep_mode_17_we & dio_pad_sleep_regwen_17_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_17_gated_we),
+    .wd     (dio_pad_sleep_mode_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[17].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_17_qs)
+  );
+
+
+  // Subregister 18 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_18]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_18_gated_we;
+  assign dio_pad_sleep_mode_18_gated_we = dio_pad_sleep_mode_18_we & dio_pad_sleep_regwen_18_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_18_gated_we),
+    .wd     (dio_pad_sleep_mode_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[18].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_18_qs)
+  );
+
+
+  // Subregister 19 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_19]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_19_gated_we;
+  assign dio_pad_sleep_mode_19_gated_we = dio_pad_sleep_mode_19_we & dio_pad_sleep_regwen_19_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_19_gated_we),
+    .wd     (dio_pad_sleep_mode_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[19].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_19_qs)
+  );
+
+
+  // Subregister 20 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_20]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_20_gated_we;
+  assign dio_pad_sleep_mode_20_gated_we = dio_pad_sleep_mode_20_we & dio_pad_sleep_regwen_20_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_20_gated_we),
+    .wd     (dio_pad_sleep_mode_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[20].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_20_qs)
+  );
+
+
+  // Subregister 21 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_21]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_21_gated_we;
+  assign dio_pad_sleep_mode_21_gated_we = dio_pad_sleep_mode_21_we & dio_pad_sleep_regwen_21_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_21_gated_we),
+    .wd     (dio_pad_sleep_mode_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[21].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_21_qs)
+  );
+
+
+  // Subregister 22 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_22]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_22_gated_we;
+  assign dio_pad_sleep_mode_22_gated_we = dio_pad_sleep_mode_22_we & dio_pad_sleep_regwen_22_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_22_gated_we),
+    .wd     (dio_pad_sleep_mode_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[22].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_22_qs)
+  );
+
+
+  // Subregister 23 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_23]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_23_gated_we;
+  assign dio_pad_sleep_mode_23_gated_we = dio_pad_sleep_mode_23_we & dio_pad_sleep_regwen_23_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_23_gated_we),
+    .wd     (dio_pad_sleep_mode_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[23].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_23_qs)
+  );
+
+
+  // Subregister 24 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_24]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_24_gated_we;
+  assign dio_pad_sleep_mode_24_gated_we = dio_pad_sleep_mode_24_we & dio_pad_sleep_regwen_24_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_24 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_24_gated_we),
+    .wd     (dio_pad_sleep_mode_24_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[24].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_24_qs)
+  );
+
+
+  // Subregister 25 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_25]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_25_gated_we;
+  assign dio_pad_sleep_mode_25_gated_we = dio_pad_sleep_mode_25_we & dio_pad_sleep_regwen_25_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_25 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_25_gated_we),
+    .wd     (dio_pad_sleep_mode_25_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[25].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_25_qs)
+  );
+
+
+  // Subregister 26 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_26]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_26_gated_we;
+  assign dio_pad_sleep_mode_26_gated_we = dio_pad_sleep_mode_26_we & dio_pad_sleep_regwen_26_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_26 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_26_gated_we),
+    .wd     (dio_pad_sleep_mode_26_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[26].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_26_qs)
+  );
+
+
+  // Subregister 27 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_27]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_27_gated_we;
+  assign dio_pad_sleep_mode_27_gated_we = dio_pad_sleep_mode_27_we & dio_pad_sleep_regwen_27_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_27 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_27_gated_we),
+    .wd     (dio_pad_sleep_mode_27_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[27].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_27_qs)
+  );
+
+
+  // Subregister 28 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_28]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_28_gated_we;
+  assign dio_pad_sleep_mode_28_gated_we = dio_pad_sleep_mode_28_we & dio_pad_sleep_regwen_28_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_28 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_28_gated_we),
+    .wd     (dio_pad_sleep_mode_28_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[28].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_28_qs)
+  );
+
+
+  // Subregister 29 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_29]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_29_gated_we;
+  assign dio_pad_sleep_mode_29_gated_we = dio_pad_sleep_mode_29_we & dio_pad_sleep_regwen_29_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_29 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_29_gated_we),
+    .wd     (dio_pad_sleep_mode_29_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[29].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_29_qs)
+  );
+
+
+  // Subregister 30 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_30]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_30_gated_we;
+  assign dio_pad_sleep_mode_30_gated_we = dio_pad_sleep_mode_30_we & dio_pad_sleep_regwen_30_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_30 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_30_gated_we),
+    .wd     (dio_pad_sleep_mode_30_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[30].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_30_qs)
+  );
+
+
+  // Subregister 31 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_31]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_31_gated_we;
+  assign dio_pad_sleep_mode_31_gated_we = dio_pad_sleep_mode_31_we & dio_pad_sleep_regwen_31_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_31 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_31_gated_we),
+    .wd     (dio_pad_sleep_mode_31_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[31].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_31_qs)
+  );
+
+
+  // Subregister 32 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_32]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_32_gated_we;
+  assign dio_pad_sleep_mode_32_gated_we = dio_pad_sleep_mode_32_we & dio_pad_sleep_regwen_32_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_32 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_32_gated_we),
+    .wd     (dio_pad_sleep_mode_32_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[32].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_32_qs)
+  );
+
+
+  // Subregister 33 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_33]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_33_gated_we;
+  assign dio_pad_sleep_mode_33_gated_we = dio_pad_sleep_mode_33_we & dio_pad_sleep_regwen_33_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_33 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_33_gated_we),
+    .wd     (dio_pad_sleep_mode_33_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[33].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_33_qs)
+  );
+
+
+  // Subregister 34 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_34]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_34_gated_we;
+  assign dio_pad_sleep_mode_34_gated_we = dio_pad_sleep_mode_34_we & dio_pad_sleep_regwen_34_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_34 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_34_gated_we),
+    .wd     (dio_pad_sleep_mode_34_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[34].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_34_qs)
+  );
+
+
+  // Subregister 35 of Multireg dio_pad_sleep_mode
+  // R[dio_pad_sleep_mode_35]: V(False)
+  // Create REGWEN-gated WE signal
+  logic dio_pad_sleep_mode_35_gated_we;
+  assign dio_pad_sleep_mode_35_gated_we = dio_pad_sleep_mode_35_we & dio_pad_sleep_regwen_35_qs;
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h2),
+    .Mubi    (1'b0)
+  ) u_dio_pad_sleep_mode_35 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (dio_pad_sleep_mode_35_gated_we),
+    .wd     (dio_pad_sleep_mode_35_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dio_pad_sleep_mode[35].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dio_pad_sleep_mode_35_qs)
   );
 
 
@@ -28645,7 +36713,7 @@ module pinmux_reg_top (
 
 
 
-  logic [505:0] addr_hit;
+  logic [626:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[  0] = (reg_addr == PINMUX_ALERT_TEST_OFFSET);
@@ -28921,239 +36989,360 @@ module pinmux_reg_top (
     addr_hit[270] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_9_OFFSET);
     addr_hit[271] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_10_OFFSET);
     addr_hit[272] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_11_OFFSET);
-    addr_hit[273] = (reg_addr == PINMUX_DIO_PAD_ATTR_0_OFFSET);
-    addr_hit[274] = (reg_addr == PINMUX_DIO_PAD_ATTR_1_OFFSET);
-    addr_hit[275] = (reg_addr == PINMUX_DIO_PAD_ATTR_2_OFFSET);
-    addr_hit[276] = (reg_addr == PINMUX_DIO_PAD_ATTR_3_OFFSET);
-    addr_hit[277] = (reg_addr == PINMUX_DIO_PAD_ATTR_4_OFFSET);
-    addr_hit[278] = (reg_addr == PINMUX_DIO_PAD_ATTR_5_OFFSET);
-    addr_hit[279] = (reg_addr == PINMUX_DIO_PAD_ATTR_6_OFFSET);
-    addr_hit[280] = (reg_addr == PINMUX_DIO_PAD_ATTR_7_OFFSET);
-    addr_hit[281] = (reg_addr == PINMUX_DIO_PAD_ATTR_8_OFFSET);
-    addr_hit[282] = (reg_addr == PINMUX_DIO_PAD_ATTR_9_OFFSET);
-    addr_hit[283] = (reg_addr == PINMUX_DIO_PAD_ATTR_10_OFFSET);
-    addr_hit[284] = (reg_addr == PINMUX_DIO_PAD_ATTR_11_OFFSET);
-    addr_hit[285] = (reg_addr == PINMUX_MIO_PAD_SLEEP_STATUS_0_OFFSET);
-    addr_hit[286] = (reg_addr == PINMUX_MIO_PAD_SLEEP_STATUS_1_OFFSET);
-    addr_hit[287] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_0_OFFSET);
-    addr_hit[288] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_1_OFFSET);
-    addr_hit[289] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_2_OFFSET);
-    addr_hit[290] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_3_OFFSET);
-    addr_hit[291] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_4_OFFSET);
-    addr_hit[292] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_5_OFFSET);
-    addr_hit[293] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_6_OFFSET);
-    addr_hit[294] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_7_OFFSET);
-    addr_hit[295] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_8_OFFSET);
-    addr_hit[296] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_9_OFFSET);
-    addr_hit[297] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_10_OFFSET);
-    addr_hit[298] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_11_OFFSET);
-    addr_hit[299] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_12_OFFSET);
-    addr_hit[300] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_13_OFFSET);
-    addr_hit[301] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_14_OFFSET);
-    addr_hit[302] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_15_OFFSET);
-    addr_hit[303] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_16_OFFSET);
-    addr_hit[304] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_17_OFFSET);
-    addr_hit[305] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_18_OFFSET);
-    addr_hit[306] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_19_OFFSET);
-    addr_hit[307] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_20_OFFSET);
-    addr_hit[308] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_21_OFFSET);
-    addr_hit[309] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_22_OFFSET);
-    addr_hit[310] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_23_OFFSET);
-    addr_hit[311] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_24_OFFSET);
-    addr_hit[312] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_25_OFFSET);
-    addr_hit[313] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_26_OFFSET);
-    addr_hit[314] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_27_OFFSET);
-    addr_hit[315] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_28_OFFSET);
-    addr_hit[316] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_29_OFFSET);
-    addr_hit[317] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_30_OFFSET);
-    addr_hit[318] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_31_OFFSET);
-    addr_hit[319] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_32_OFFSET);
-    addr_hit[320] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_33_OFFSET);
-    addr_hit[321] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_34_OFFSET);
-    addr_hit[322] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_35_OFFSET);
-    addr_hit[323] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_36_OFFSET);
-    addr_hit[324] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_37_OFFSET);
-    addr_hit[325] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_38_OFFSET);
-    addr_hit[326] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_39_OFFSET);
-    addr_hit[327] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_40_OFFSET);
-    addr_hit[328] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_41_OFFSET);
-    addr_hit[329] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_42_OFFSET);
-    addr_hit[330] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_43_OFFSET);
-    addr_hit[331] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_44_OFFSET);
-    addr_hit[332] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_45_OFFSET);
-    addr_hit[333] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_46_OFFSET);
-    addr_hit[334] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_0_OFFSET);
-    addr_hit[335] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_1_OFFSET);
-    addr_hit[336] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_2_OFFSET);
-    addr_hit[337] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_3_OFFSET);
-    addr_hit[338] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_4_OFFSET);
-    addr_hit[339] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_5_OFFSET);
-    addr_hit[340] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_6_OFFSET);
-    addr_hit[341] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_7_OFFSET);
-    addr_hit[342] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_8_OFFSET);
-    addr_hit[343] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_9_OFFSET);
-    addr_hit[344] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_10_OFFSET);
-    addr_hit[345] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_11_OFFSET);
-    addr_hit[346] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_12_OFFSET);
-    addr_hit[347] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_13_OFFSET);
-    addr_hit[348] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_14_OFFSET);
-    addr_hit[349] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_15_OFFSET);
-    addr_hit[350] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_16_OFFSET);
-    addr_hit[351] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_17_OFFSET);
-    addr_hit[352] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_18_OFFSET);
-    addr_hit[353] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_19_OFFSET);
-    addr_hit[354] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_20_OFFSET);
-    addr_hit[355] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_21_OFFSET);
-    addr_hit[356] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_22_OFFSET);
-    addr_hit[357] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_23_OFFSET);
-    addr_hit[358] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_24_OFFSET);
-    addr_hit[359] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_25_OFFSET);
-    addr_hit[360] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_26_OFFSET);
-    addr_hit[361] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_27_OFFSET);
-    addr_hit[362] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_28_OFFSET);
-    addr_hit[363] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_29_OFFSET);
-    addr_hit[364] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_30_OFFSET);
-    addr_hit[365] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_31_OFFSET);
-    addr_hit[366] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_32_OFFSET);
-    addr_hit[367] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_33_OFFSET);
-    addr_hit[368] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_34_OFFSET);
-    addr_hit[369] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_35_OFFSET);
-    addr_hit[370] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_36_OFFSET);
-    addr_hit[371] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_37_OFFSET);
-    addr_hit[372] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_38_OFFSET);
-    addr_hit[373] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_39_OFFSET);
-    addr_hit[374] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_40_OFFSET);
-    addr_hit[375] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_41_OFFSET);
-    addr_hit[376] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_42_OFFSET);
-    addr_hit[377] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_43_OFFSET);
-    addr_hit[378] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_44_OFFSET);
-    addr_hit[379] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_45_OFFSET);
-    addr_hit[380] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_46_OFFSET);
-    addr_hit[381] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_0_OFFSET);
-    addr_hit[382] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_1_OFFSET);
-    addr_hit[383] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_2_OFFSET);
-    addr_hit[384] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_3_OFFSET);
-    addr_hit[385] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_4_OFFSET);
-    addr_hit[386] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_5_OFFSET);
-    addr_hit[387] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_6_OFFSET);
-    addr_hit[388] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_7_OFFSET);
-    addr_hit[389] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_8_OFFSET);
-    addr_hit[390] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_9_OFFSET);
-    addr_hit[391] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_10_OFFSET);
-    addr_hit[392] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_11_OFFSET);
-    addr_hit[393] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_12_OFFSET);
-    addr_hit[394] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_13_OFFSET);
-    addr_hit[395] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_14_OFFSET);
-    addr_hit[396] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_15_OFFSET);
-    addr_hit[397] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_16_OFFSET);
-    addr_hit[398] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_17_OFFSET);
-    addr_hit[399] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_18_OFFSET);
-    addr_hit[400] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_19_OFFSET);
-    addr_hit[401] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_20_OFFSET);
-    addr_hit[402] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_21_OFFSET);
-    addr_hit[403] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_22_OFFSET);
-    addr_hit[404] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_23_OFFSET);
-    addr_hit[405] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_24_OFFSET);
-    addr_hit[406] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_25_OFFSET);
-    addr_hit[407] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_26_OFFSET);
-    addr_hit[408] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_27_OFFSET);
-    addr_hit[409] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_28_OFFSET);
-    addr_hit[410] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_29_OFFSET);
-    addr_hit[411] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_30_OFFSET);
-    addr_hit[412] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_31_OFFSET);
-    addr_hit[413] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_32_OFFSET);
-    addr_hit[414] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_33_OFFSET);
-    addr_hit[415] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_34_OFFSET);
-    addr_hit[416] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_35_OFFSET);
-    addr_hit[417] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_36_OFFSET);
-    addr_hit[418] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_37_OFFSET);
-    addr_hit[419] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_38_OFFSET);
-    addr_hit[420] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_39_OFFSET);
-    addr_hit[421] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_40_OFFSET);
-    addr_hit[422] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_41_OFFSET);
-    addr_hit[423] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_42_OFFSET);
-    addr_hit[424] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_43_OFFSET);
-    addr_hit[425] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_44_OFFSET);
-    addr_hit[426] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_45_OFFSET);
-    addr_hit[427] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_46_OFFSET);
-    addr_hit[428] = (reg_addr == PINMUX_DIO_PAD_SLEEP_STATUS_OFFSET);
-    addr_hit[429] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_0_OFFSET);
-    addr_hit[430] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_1_OFFSET);
-    addr_hit[431] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_2_OFFSET);
-    addr_hit[432] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_3_OFFSET);
-    addr_hit[433] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_4_OFFSET);
-    addr_hit[434] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_5_OFFSET);
-    addr_hit[435] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_6_OFFSET);
-    addr_hit[436] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_7_OFFSET);
-    addr_hit[437] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_8_OFFSET);
-    addr_hit[438] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_9_OFFSET);
-    addr_hit[439] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_10_OFFSET);
-    addr_hit[440] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_11_OFFSET);
-    addr_hit[441] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_0_OFFSET);
-    addr_hit[442] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_1_OFFSET);
-    addr_hit[443] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_2_OFFSET);
-    addr_hit[444] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_3_OFFSET);
-    addr_hit[445] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_4_OFFSET);
-    addr_hit[446] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_5_OFFSET);
-    addr_hit[447] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_6_OFFSET);
-    addr_hit[448] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_7_OFFSET);
-    addr_hit[449] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_8_OFFSET);
-    addr_hit[450] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_9_OFFSET);
-    addr_hit[451] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_10_OFFSET);
-    addr_hit[452] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_11_OFFSET);
-    addr_hit[453] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_0_OFFSET);
-    addr_hit[454] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_1_OFFSET);
-    addr_hit[455] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_2_OFFSET);
-    addr_hit[456] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_3_OFFSET);
-    addr_hit[457] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_4_OFFSET);
-    addr_hit[458] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_5_OFFSET);
-    addr_hit[459] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_6_OFFSET);
-    addr_hit[460] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_7_OFFSET);
-    addr_hit[461] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_8_OFFSET);
-    addr_hit[462] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_9_OFFSET);
-    addr_hit[463] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_10_OFFSET);
-    addr_hit[464] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_11_OFFSET);
-    addr_hit[465] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_0_OFFSET);
-    addr_hit[466] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_1_OFFSET);
-    addr_hit[467] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_2_OFFSET);
-    addr_hit[468] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_3_OFFSET);
-    addr_hit[469] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_4_OFFSET);
-    addr_hit[470] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_5_OFFSET);
-    addr_hit[471] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_6_OFFSET);
-    addr_hit[472] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_7_OFFSET);
-    addr_hit[473] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_0_OFFSET);
-    addr_hit[474] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_1_OFFSET);
-    addr_hit[475] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_2_OFFSET);
-    addr_hit[476] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_3_OFFSET);
-    addr_hit[477] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_4_OFFSET);
-    addr_hit[478] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_5_OFFSET);
-    addr_hit[479] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_6_OFFSET);
-    addr_hit[480] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_7_OFFSET);
-    addr_hit[481] = (reg_addr == PINMUX_WKUP_DETECTOR_0_OFFSET);
-    addr_hit[482] = (reg_addr == PINMUX_WKUP_DETECTOR_1_OFFSET);
-    addr_hit[483] = (reg_addr == PINMUX_WKUP_DETECTOR_2_OFFSET);
-    addr_hit[484] = (reg_addr == PINMUX_WKUP_DETECTOR_3_OFFSET);
-    addr_hit[485] = (reg_addr == PINMUX_WKUP_DETECTOR_4_OFFSET);
-    addr_hit[486] = (reg_addr == PINMUX_WKUP_DETECTOR_5_OFFSET);
-    addr_hit[487] = (reg_addr == PINMUX_WKUP_DETECTOR_6_OFFSET);
-    addr_hit[488] = (reg_addr == PINMUX_WKUP_DETECTOR_7_OFFSET);
-    addr_hit[489] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET);
-    addr_hit[490] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET);
-    addr_hit[491] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_2_OFFSET);
-    addr_hit[492] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_3_OFFSET);
-    addr_hit[493] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_4_OFFSET);
-    addr_hit[494] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_5_OFFSET);
-    addr_hit[495] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_6_OFFSET);
-    addr_hit[496] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_7_OFFSET);
-    addr_hit[497] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET);
-    addr_hit[498] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET);
-    addr_hit[499] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_2_OFFSET);
-    addr_hit[500] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_3_OFFSET);
-    addr_hit[501] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_4_OFFSET);
-    addr_hit[502] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_5_OFFSET);
-    addr_hit[503] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_6_OFFSET);
-    addr_hit[504] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_7_OFFSET);
-    addr_hit[505] = (reg_addr == PINMUX_WKUP_CAUSE_OFFSET);
+    addr_hit[273] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_12_OFFSET);
+    addr_hit[274] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_13_OFFSET);
+    addr_hit[275] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_14_OFFSET);
+    addr_hit[276] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_15_OFFSET);
+    addr_hit[277] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_16_OFFSET);
+    addr_hit[278] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_17_OFFSET);
+    addr_hit[279] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_18_OFFSET);
+    addr_hit[280] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_19_OFFSET);
+    addr_hit[281] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_20_OFFSET);
+    addr_hit[282] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_21_OFFSET);
+    addr_hit[283] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_22_OFFSET);
+    addr_hit[284] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_23_OFFSET);
+    addr_hit[285] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_24_OFFSET);
+    addr_hit[286] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_25_OFFSET);
+    addr_hit[287] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_26_OFFSET);
+    addr_hit[288] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_27_OFFSET);
+    addr_hit[289] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_28_OFFSET);
+    addr_hit[290] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_29_OFFSET);
+    addr_hit[291] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_30_OFFSET);
+    addr_hit[292] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_31_OFFSET);
+    addr_hit[293] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_32_OFFSET);
+    addr_hit[294] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_33_OFFSET);
+    addr_hit[295] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_34_OFFSET);
+    addr_hit[296] = (reg_addr == PINMUX_DIO_PAD_ATTR_REGWEN_35_OFFSET);
+    addr_hit[297] = (reg_addr == PINMUX_DIO_PAD_ATTR_0_OFFSET);
+    addr_hit[298] = (reg_addr == PINMUX_DIO_PAD_ATTR_1_OFFSET);
+    addr_hit[299] = (reg_addr == PINMUX_DIO_PAD_ATTR_2_OFFSET);
+    addr_hit[300] = (reg_addr == PINMUX_DIO_PAD_ATTR_3_OFFSET);
+    addr_hit[301] = (reg_addr == PINMUX_DIO_PAD_ATTR_4_OFFSET);
+    addr_hit[302] = (reg_addr == PINMUX_DIO_PAD_ATTR_5_OFFSET);
+    addr_hit[303] = (reg_addr == PINMUX_DIO_PAD_ATTR_6_OFFSET);
+    addr_hit[304] = (reg_addr == PINMUX_DIO_PAD_ATTR_7_OFFSET);
+    addr_hit[305] = (reg_addr == PINMUX_DIO_PAD_ATTR_8_OFFSET);
+    addr_hit[306] = (reg_addr == PINMUX_DIO_PAD_ATTR_9_OFFSET);
+    addr_hit[307] = (reg_addr == PINMUX_DIO_PAD_ATTR_10_OFFSET);
+    addr_hit[308] = (reg_addr == PINMUX_DIO_PAD_ATTR_11_OFFSET);
+    addr_hit[309] = (reg_addr == PINMUX_DIO_PAD_ATTR_12_OFFSET);
+    addr_hit[310] = (reg_addr == PINMUX_DIO_PAD_ATTR_13_OFFSET);
+    addr_hit[311] = (reg_addr == PINMUX_DIO_PAD_ATTR_14_OFFSET);
+    addr_hit[312] = (reg_addr == PINMUX_DIO_PAD_ATTR_15_OFFSET);
+    addr_hit[313] = (reg_addr == PINMUX_DIO_PAD_ATTR_16_OFFSET);
+    addr_hit[314] = (reg_addr == PINMUX_DIO_PAD_ATTR_17_OFFSET);
+    addr_hit[315] = (reg_addr == PINMUX_DIO_PAD_ATTR_18_OFFSET);
+    addr_hit[316] = (reg_addr == PINMUX_DIO_PAD_ATTR_19_OFFSET);
+    addr_hit[317] = (reg_addr == PINMUX_DIO_PAD_ATTR_20_OFFSET);
+    addr_hit[318] = (reg_addr == PINMUX_DIO_PAD_ATTR_21_OFFSET);
+    addr_hit[319] = (reg_addr == PINMUX_DIO_PAD_ATTR_22_OFFSET);
+    addr_hit[320] = (reg_addr == PINMUX_DIO_PAD_ATTR_23_OFFSET);
+    addr_hit[321] = (reg_addr == PINMUX_DIO_PAD_ATTR_24_OFFSET);
+    addr_hit[322] = (reg_addr == PINMUX_DIO_PAD_ATTR_25_OFFSET);
+    addr_hit[323] = (reg_addr == PINMUX_DIO_PAD_ATTR_26_OFFSET);
+    addr_hit[324] = (reg_addr == PINMUX_DIO_PAD_ATTR_27_OFFSET);
+    addr_hit[325] = (reg_addr == PINMUX_DIO_PAD_ATTR_28_OFFSET);
+    addr_hit[326] = (reg_addr == PINMUX_DIO_PAD_ATTR_29_OFFSET);
+    addr_hit[327] = (reg_addr == PINMUX_DIO_PAD_ATTR_30_OFFSET);
+    addr_hit[328] = (reg_addr == PINMUX_DIO_PAD_ATTR_31_OFFSET);
+    addr_hit[329] = (reg_addr == PINMUX_DIO_PAD_ATTR_32_OFFSET);
+    addr_hit[330] = (reg_addr == PINMUX_DIO_PAD_ATTR_33_OFFSET);
+    addr_hit[331] = (reg_addr == PINMUX_DIO_PAD_ATTR_34_OFFSET);
+    addr_hit[332] = (reg_addr == PINMUX_DIO_PAD_ATTR_35_OFFSET);
+    addr_hit[333] = (reg_addr == PINMUX_MIO_PAD_SLEEP_STATUS_0_OFFSET);
+    addr_hit[334] = (reg_addr == PINMUX_MIO_PAD_SLEEP_STATUS_1_OFFSET);
+    addr_hit[335] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_0_OFFSET);
+    addr_hit[336] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_1_OFFSET);
+    addr_hit[337] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_2_OFFSET);
+    addr_hit[338] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_3_OFFSET);
+    addr_hit[339] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_4_OFFSET);
+    addr_hit[340] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_5_OFFSET);
+    addr_hit[341] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_6_OFFSET);
+    addr_hit[342] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_7_OFFSET);
+    addr_hit[343] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_8_OFFSET);
+    addr_hit[344] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_9_OFFSET);
+    addr_hit[345] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_10_OFFSET);
+    addr_hit[346] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_11_OFFSET);
+    addr_hit[347] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_12_OFFSET);
+    addr_hit[348] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_13_OFFSET);
+    addr_hit[349] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_14_OFFSET);
+    addr_hit[350] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_15_OFFSET);
+    addr_hit[351] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_16_OFFSET);
+    addr_hit[352] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_17_OFFSET);
+    addr_hit[353] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_18_OFFSET);
+    addr_hit[354] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_19_OFFSET);
+    addr_hit[355] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_20_OFFSET);
+    addr_hit[356] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_21_OFFSET);
+    addr_hit[357] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_22_OFFSET);
+    addr_hit[358] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_23_OFFSET);
+    addr_hit[359] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_24_OFFSET);
+    addr_hit[360] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_25_OFFSET);
+    addr_hit[361] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_26_OFFSET);
+    addr_hit[362] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_27_OFFSET);
+    addr_hit[363] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_28_OFFSET);
+    addr_hit[364] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_29_OFFSET);
+    addr_hit[365] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_30_OFFSET);
+    addr_hit[366] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_31_OFFSET);
+    addr_hit[367] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_32_OFFSET);
+    addr_hit[368] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_33_OFFSET);
+    addr_hit[369] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_34_OFFSET);
+    addr_hit[370] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_35_OFFSET);
+    addr_hit[371] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_36_OFFSET);
+    addr_hit[372] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_37_OFFSET);
+    addr_hit[373] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_38_OFFSET);
+    addr_hit[374] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_39_OFFSET);
+    addr_hit[375] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_40_OFFSET);
+    addr_hit[376] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_41_OFFSET);
+    addr_hit[377] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_42_OFFSET);
+    addr_hit[378] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_43_OFFSET);
+    addr_hit[379] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_44_OFFSET);
+    addr_hit[380] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_45_OFFSET);
+    addr_hit[381] = (reg_addr == PINMUX_MIO_PAD_SLEEP_REGWEN_46_OFFSET);
+    addr_hit[382] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_0_OFFSET);
+    addr_hit[383] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_1_OFFSET);
+    addr_hit[384] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_2_OFFSET);
+    addr_hit[385] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_3_OFFSET);
+    addr_hit[386] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_4_OFFSET);
+    addr_hit[387] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_5_OFFSET);
+    addr_hit[388] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_6_OFFSET);
+    addr_hit[389] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_7_OFFSET);
+    addr_hit[390] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_8_OFFSET);
+    addr_hit[391] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_9_OFFSET);
+    addr_hit[392] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_10_OFFSET);
+    addr_hit[393] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_11_OFFSET);
+    addr_hit[394] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_12_OFFSET);
+    addr_hit[395] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_13_OFFSET);
+    addr_hit[396] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_14_OFFSET);
+    addr_hit[397] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_15_OFFSET);
+    addr_hit[398] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_16_OFFSET);
+    addr_hit[399] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_17_OFFSET);
+    addr_hit[400] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_18_OFFSET);
+    addr_hit[401] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_19_OFFSET);
+    addr_hit[402] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_20_OFFSET);
+    addr_hit[403] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_21_OFFSET);
+    addr_hit[404] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_22_OFFSET);
+    addr_hit[405] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_23_OFFSET);
+    addr_hit[406] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_24_OFFSET);
+    addr_hit[407] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_25_OFFSET);
+    addr_hit[408] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_26_OFFSET);
+    addr_hit[409] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_27_OFFSET);
+    addr_hit[410] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_28_OFFSET);
+    addr_hit[411] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_29_OFFSET);
+    addr_hit[412] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_30_OFFSET);
+    addr_hit[413] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_31_OFFSET);
+    addr_hit[414] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_32_OFFSET);
+    addr_hit[415] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_33_OFFSET);
+    addr_hit[416] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_34_OFFSET);
+    addr_hit[417] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_35_OFFSET);
+    addr_hit[418] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_36_OFFSET);
+    addr_hit[419] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_37_OFFSET);
+    addr_hit[420] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_38_OFFSET);
+    addr_hit[421] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_39_OFFSET);
+    addr_hit[422] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_40_OFFSET);
+    addr_hit[423] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_41_OFFSET);
+    addr_hit[424] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_42_OFFSET);
+    addr_hit[425] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_43_OFFSET);
+    addr_hit[426] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_44_OFFSET);
+    addr_hit[427] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_45_OFFSET);
+    addr_hit[428] = (reg_addr == PINMUX_MIO_PAD_SLEEP_EN_46_OFFSET);
+    addr_hit[429] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_0_OFFSET);
+    addr_hit[430] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_1_OFFSET);
+    addr_hit[431] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_2_OFFSET);
+    addr_hit[432] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_3_OFFSET);
+    addr_hit[433] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_4_OFFSET);
+    addr_hit[434] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_5_OFFSET);
+    addr_hit[435] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_6_OFFSET);
+    addr_hit[436] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_7_OFFSET);
+    addr_hit[437] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_8_OFFSET);
+    addr_hit[438] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_9_OFFSET);
+    addr_hit[439] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_10_OFFSET);
+    addr_hit[440] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_11_OFFSET);
+    addr_hit[441] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_12_OFFSET);
+    addr_hit[442] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_13_OFFSET);
+    addr_hit[443] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_14_OFFSET);
+    addr_hit[444] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_15_OFFSET);
+    addr_hit[445] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_16_OFFSET);
+    addr_hit[446] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_17_OFFSET);
+    addr_hit[447] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_18_OFFSET);
+    addr_hit[448] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_19_OFFSET);
+    addr_hit[449] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_20_OFFSET);
+    addr_hit[450] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_21_OFFSET);
+    addr_hit[451] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_22_OFFSET);
+    addr_hit[452] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_23_OFFSET);
+    addr_hit[453] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_24_OFFSET);
+    addr_hit[454] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_25_OFFSET);
+    addr_hit[455] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_26_OFFSET);
+    addr_hit[456] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_27_OFFSET);
+    addr_hit[457] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_28_OFFSET);
+    addr_hit[458] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_29_OFFSET);
+    addr_hit[459] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_30_OFFSET);
+    addr_hit[460] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_31_OFFSET);
+    addr_hit[461] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_32_OFFSET);
+    addr_hit[462] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_33_OFFSET);
+    addr_hit[463] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_34_OFFSET);
+    addr_hit[464] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_35_OFFSET);
+    addr_hit[465] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_36_OFFSET);
+    addr_hit[466] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_37_OFFSET);
+    addr_hit[467] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_38_OFFSET);
+    addr_hit[468] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_39_OFFSET);
+    addr_hit[469] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_40_OFFSET);
+    addr_hit[470] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_41_OFFSET);
+    addr_hit[471] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_42_OFFSET);
+    addr_hit[472] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_43_OFFSET);
+    addr_hit[473] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_44_OFFSET);
+    addr_hit[474] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_45_OFFSET);
+    addr_hit[475] = (reg_addr == PINMUX_MIO_PAD_SLEEP_MODE_46_OFFSET);
+    addr_hit[476] = (reg_addr == PINMUX_DIO_PAD_SLEEP_STATUS_0_OFFSET);
+    addr_hit[477] = (reg_addr == PINMUX_DIO_PAD_SLEEP_STATUS_1_OFFSET);
+    addr_hit[478] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_0_OFFSET);
+    addr_hit[479] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_1_OFFSET);
+    addr_hit[480] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_2_OFFSET);
+    addr_hit[481] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_3_OFFSET);
+    addr_hit[482] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_4_OFFSET);
+    addr_hit[483] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_5_OFFSET);
+    addr_hit[484] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_6_OFFSET);
+    addr_hit[485] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_7_OFFSET);
+    addr_hit[486] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_8_OFFSET);
+    addr_hit[487] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_9_OFFSET);
+    addr_hit[488] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_10_OFFSET);
+    addr_hit[489] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_11_OFFSET);
+    addr_hit[490] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_12_OFFSET);
+    addr_hit[491] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_13_OFFSET);
+    addr_hit[492] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_14_OFFSET);
+    addr_hit[493] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_15_OFFSET);
+    addr_hit[494] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_16_OFFSET);
+    addr_hit[495] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_17_OFFSET);
+    addr_hit[496] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_18_OFFSET);
+    addr_hit[497] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_19_OFFSET);
+    addr_hit[498] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_20_OFFSET);
+    addr_hit[499] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_21_OFFSET);
+    addr_hit[500] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_22_OFFSET);
+    addr_hit[501] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_23_OFFSET);
+    addr_hit[502] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_24_OFFSET);
+    addr_hit[503] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_25_OFFSET);
+    addr_hit[504] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_26_OFFSET);
+    addr_hit[505] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_27_OFFSET);
+    addr_hit[506] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_28_OFFSET);
+    addr_hit[507] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_29_OFFSET);
+    addr_hit[508] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_30_OFFSET);
+    addr_hit[509] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_31_OFFSET);
+    addr_hit[510] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_32_OFFSET);
+    addr_hit[511] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_33_OFFSET);
+    addr_hit[512] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_34_OFFSET);
+    addr_hit[513] = (reg_addr == PINMUX_DIO_PAD_SLEEP_REGWEN_35_OFFSET);
+    addr_hit[514] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_0_OFFSET);
+    addr_hit[515] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_1_OFFSET);
+    addr_hit[516] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_2_OFFSET);
+    addr_hit[517] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_3_OFFSET);
+    addr_hit[518] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_4_OFFSET);
+    addr_hit[519] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_5_OFFSET);
+    addr_hit[520] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_6_OFFSET);
+    addr_hit[521] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_7_OFFSET);
+    addr_hit[522] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_8_OFFSET);
+    addr_hit[523] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_9_OFFSET);
+    addr_hit[524] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_10_OFFSET);
+    addr_hit[525] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_11_OFFSET);
+    addr_hit[526] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_12_OFFSET);
+    addr_hit[527] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_13_OFFSET);
+    addr_hit[528] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_14_OFFSET);
+    addr_hit[529] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_15_OFFSET);
+    addr_hit[530] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_16_OFFSET);
+    addr_hit[531] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_17_OFFSET);
+    addr_hit[532] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_18_OFFSET);
+    addr_hit[533] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_19_OFFSET);
+    addr_hit[534] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_20_OFFSET);
+    addr_hit[535] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_21_OFFSET);
+    addr_hit[536] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_22_OFFSET);
+    addr_hit[537] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_23_OFFSET);
+    addr_hit[538] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_24_OFFSET);
+    addr_hit[539] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_25_OFFSET);
+    addr_hit[540] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_26_OFFSET);
+    addr_hit[541] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_27_OFFSET);
+    addr_hit[542] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_28_OFFSET);
+    addr_hit[543] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_29_OFFSET);
+    addr_hit[544] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_30_OFFSET);
+    addr_hit[545] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_31_OFFSET);
+    addr_hit[546] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_32_OFFSET);
+    addr_hit[547] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_33_OFFSET);
+    addr_hit[548] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_34_OFFSET);
+    addr_hit[549] = (reg_addr == PINMUX_DIO_PAD_SLEEP_EN_35_OFFSET);
+    addr_hit[550] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_0_OFFSET);
+    addr_hit[551] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_1_OFFSET);
+    addr_hit[552] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_2_OFFSET);
+    addr_hit[553] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_3_OFFSET);
+    addr_hit[554] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_4_OFFSET);
+    addr_hit[555] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_5_OFFSET);
+    addr_hit[556] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_6_OFFSET);
+    addr_hit[557] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_7_OFFSET);
+    addr_hit[558] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_8_OFFSET);
+    addr_hit[559] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_9_OFFSET);
+    addr_hit[560] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_10_OFFSET);
+    addr_hit[561] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_11_OFFSET);
+    addr_hit[562] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_12_OFFSET);
+    addr_hit[563] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_13_OFFSET);
+    addr_hit[564] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_14_OFFSET);
+    addr_hit[565] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_15_OFFSET);
+    addr_hit[566] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_16_OFFSET);
+    addr_hit[567] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_17_OFFSET);
+    addr_hit[568] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_18_OFFSET);
+    addr_hit[569] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_19_OFFSET);
+    addr_hit[570] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_20_OFFSET);
+    addr_hit[571] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_21_OFFSET);
+    addr_hit[572] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_22_OFFSET);
+    addr_hit[573] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_23_OFFSET);
+    addr_hit[574] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_24_OFFSET);
+    addr_hit[575] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_25_OFFSET);
+    addr_hit[576] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_26_OFFSET);
+    addr_hit[577] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_27_OFFSET);
+    addr_hit[578] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_28_OFFSET);
+    addr_hit[579] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_29_OFFSET);
+    addr_hit[580] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_30_OFFSET);
+    addr_hit[581] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_31_OFFSET);
+    addr_hit[582] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_32_OFFSET);
+    addr_hit[583] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_33_OFFSET);
+    addr_hit[584] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_34_OFFSET);
+    addr_hit[585] = (reg_addr == PINMUX_DIO_PAD_SLEEP_MODE_35_OFFSET);
+    addr_hit[586] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_0_OFFSET);
+    addr_hit[587] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_1_OFFSET);
+    addr_hit[588] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_2_OFFSET);
+    addr_hit[589] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_3_OFFSET);
+    addr_hit[590] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_4_OFFSET);
+    addr_hit[591] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_5_OFFSET);
+    addr_hit[592] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_6_OFFSET);
+    addr_hit[593] = (reg_addr == PINMUX_WKUP_DETECTOR_REGWEN_7_OFFSET);
+    addr_hit[594] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_0_OFFSET);
+    addr_hit[595] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_1_OFFSET);
+    addr_hit[596] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_2_OFFSET);
+    addr_hit[597] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_3_OFFSET);
+    addr_hit[598] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_4_OFFSET);
+    addr_hit[599] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_5_OFFSET);
+    addr_hit[600] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_6_OFFSET);
+    addr_hit[601] = (reg_addr == PINMUX_WKUP_DETECTOR_EN_7_OFFSET);
+    addr_hit[602] = (reg_addr == PINMUX_WKUP_DETECTOR_0_OFFSET);
+    addr_hit[603] = (reg_addr == PINMUX_WKUP_DETECTOR_1_OFFSET);
+    addr_hit[604] = (reg_addr == PINMUX_WKUP_DETECTOR_2_OFFSET);
+    addr_hit[605] = (reg_addr == PINMUX_WKUP_DETECTOR_3_OFFSET);
+    addr_hit[606] = (reg_addr == PINMUX_WKUP_DETECTOR_4_OFFSET);
+    addr_hit[607] = (reg_addr == PINMUX_WKUP_DETECTOR_5_OFFSET);
+    addr_hit[608] = (reg_addr == PINMUX_WKUP_DETECTOR_6_OFFSET);
+    addr_hit[609] = (reg_addr == PINMUX_WKUP_DETECTOR_7_OFFSET);
+    addr_hit[610] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_0_OFFSET);
+    addr_hit[611] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_1_OFFSET);
+    addr_hit[612] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_2_OFFSET);
+    addr_hit[613] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_3_OFFSET);
+    addr_hit[614] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_4_OFFSET);
+    addr_hit[615] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_5_OFFSET);
+    addr_hit[616] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_6_OFFSET);
+    addr_hit[617] = (reg_addr == PINMUX_WKUP_DETECTOR_CNT_TH_7_OFFSET);
+    addr_hit[618] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_0_OFFSET);
+    addr_hit[619] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_1_OFFSET);
+    addr_hit[620] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_2_OFFSET);
+    addr_hit[621] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_3_OFFSET);
+    addr_hit[622] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_4_OFFSET);
+    addr_hit[623] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_5_OFFSET);
+    addr_hit[624] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_6_OFFSET);
+    addr_hit[625] = (reg_addr == PINMUX_WKUP_DETECTOR_PADSEL_7_OFFSET);
+    addr_hit[626] = (reg_addr == PINMUX_WKUP_CAUSE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -29666,7 +37855,128 @@ module pinmux_reg_top (
                (addr_hit[502] & (|(PINMUX_PERMIT[502] & ~reg_be))) |
                (addr_hit[503] & (|(PINMUX_PERMIT[503] & ~reg_be))) |
                (addr_hit[504] & (|(PINMUX_PERMIT[504] & ~reg_be))) |
-               (addr_hit[505] & (|(PINMUX_PERMIT[505] & ~reg_be)))));
+               (addr_hit[505] & (|(PINMUX_PERMIT[505] & ~reg_be))) |
+               (addr_hit[506] & (|(PINMUX_PERMIT[506] & ~reg_be))) |
+               (addr_hit[507] & (|(PINMUX_PERMIT[507] & ~reg_be))) |
+               (addr_hit[508] & (|(PINMUX_PERMIT[508] & ~reg_be))) |
+               (addr_hit[509] & (|(PINMUX_PERMIT[509] & ~reg_be))) |
+               (addr_hit[510] & (|(PINMUX_PERMIT[510] & ~reg_be))) |
+               (addr_hit[511] & (|(PINMUX_PERMIT[511] & ~reg_be))) |
+               (addr_hit[512] & (|(PINMUX_PERMIT[512] & ~reg_be))) |
+               (addr_hit[513] & (|(PINMUX_PERMIT[513] & ~reg_be))) |
+               (addr_hit[514] & (|(PINMUX_PERMIT[514] & ~reg_be))) |
+               (addr_hit[515] & (|(PINMUX_PERMIT[515] & ~reg_be))) |
+               (addr_hit[516] & (|(PINMUX_PERMIT[516] & ~reg_be))) |
+               (addr_hit[517] & (|(PINMUX_PERMIT[517] & ~reg_be))) |
+               (addr_hit[518] & (|(PINMUX_PERMIT[518] & ~reg_be))) |
+               (addr_hit[519] & (|(PINMUX_PERMIT[519] & ~reg_be))) |
+               (addr_hit[520] & (|(PINMUX_PERMIT[520] & ~reg_be))) |
+               (addr_hit[521] & (|(PINMUX_PERMIT[521] & ~reg_be))) |
+               (addr_hit[522] & (|(PINMUX_PERMIT[522] & ~reg_be))) |
+               (addr_hit[523] & (|(PINMUX_PERMIT[523] & ~reg_be))) |
+               (addr_hit[524] & (|(PINMUX_PERMIT[524] & ~reg_be))) |
+               (addr_hit[525] & (|(PINMUX_PERMIT[525] & ~reg_be))) |
+               (addr_hit[526] & (|(PINMUX_PERMIT[526] & ~reg_be))) |
+               (addr_hit[527] & (|(PINMUX_PERMIT[527] & ~reg_be))) |
+               (addr_hit[528] & (|(PINMUX_PERMIT[528] & ~reg_be))) |
+               (addr_hit[529] & (|(PINMUX_PERMIT[529] & ~reg_be))) |
+               (addr_hit[530] & (|(PINMUX_PERMIT[530] & ~reg_be))) |
+               (addr_hit[531] & (|(PINMUX_PERMIT[531] & ~reg_be))) |
+               (addr_hit[532] & (|(PINMUX_PERMIT[532] & ~reg_be))) |
+               (addr_hit[533] & (|(PINMUX_PERMIT[533] & ~reg_be))) |
+               (addr_hit[534] & (|(PINMUX_PERMIT[534] & ~reg_be))) |
+               (addr_hit[535] & (|(PINMUX_PERMIT[535] & ~reg_be))) |
+               (addr_hit[536] & (|(PINMUX_PERMIT[536] & ~reg_be))) |
+               (addr_hit[537] & (|(PINMUX_PERMIT[537] & ~reg_be))) |
+               (addr_hit[538] & (|(PINMUX_PERMIT[538] & ~reg_be))) |
+               (addr_hit[539] & (|(PINMUX_PERMIT[539] & ~reg_be))) |
+               (addr_hit[540] & (|(PINMUX_PERMIT[540] & ~reg_be))) |
+               (addr_hit[541] & (|(PINMUX_PERMIT[541] & ~reg_be))) |
+               (addr_hit[542] & (|(PINMUX_PERMIT[542] & ~reg_be))) |
+               (addr_hit[543] & (|(PINMUX_PERMIT[543] & ~reg_be))) |
+               (addr_hit[544] & (|(PINMUX_PERMIT[544] & ~reg_be))) |
+               (addr_hit[545] & (|(PINMUX_PERMIT[545] & ~reg_be))) |
+               (addr_hit[546] & (|(PINMUX_PERMIT[546] & ~reg_be))) |
+               (addr_hit[547] & (|(PINMUX_PERMIT[547] & ~reg_be))) |
+               (addr_hit[548] & (|(PINMUX_PERMIT[548] & ~reg_be))) |
+               (addr_hit[549] & (|(PINMUX_PERMIT[549] & ~reg_be))) |
+               (addr_hit[550] & (|(PINMUX_PERMIT[550] & ~reg_be))) |
+               (addr_hit[551] & (|(PINMUX_PERMIT[551] & ~reg_be))) |
+               (addr_hit[552] & (|(PINMUX_PERMIT[552] & ~reg_be))) |
+               (addr_hit[553] & (|(PINMUX_PERMIT[553] & ~reg_be))) |
+               (addr_hit[554] & (|(PINMUX_PERMIT[554] & ~reg_be))) |
+               (addr_hit[555] & (|(PINMUX_PERMIT[555] & ~reg_be))) |
+               (addr_hit[556] & (|(PINMUX_PERMIT[556] & ~reg_be))) |
+               (addr_hit[557] & (|(PINMUX_PERMIT[557] & ~reg_be))) |
+               (addr_hit[558] & (|(PINMUX_PERMIT[558] & ~reg_be))) |
+               (addr_hit[559] & (|(PINMUX_PERMIT[559] & ~reg_be))) |
+               (addr_hit[560] & (|(PINMUX_PERMIT[560] & ~reg_be))) |
+               (addr_hit[561] & (|(PINMUX_PERMIT[561] & ~reg_be))) |
+               (addr_hit[562] & (|(PINMUX_PERMIT[562] & ~reg_be))) |
+               (addr_hit[563] & (|(PINMUX_PERMIT[563] & ~reg_be))) |
+               (addr_hit[564] & (|(PINMUX_PERMIT[564] & ~reg_be))) |
+               (addr_hit[565] & (|(PINMUX_PERMIT[565] & ~reg_be))) |
+               (addr_hit[566] & (|(PINMUX_PERMIT[566] & ~reg_be))) |
+               (addr_hit[567] & (|(PINMUX_PERMIT[567] & ~reg_be))) |
+               (addr_hit[568] & (|(PINMUX_PERMIT[568] & ~reg_be))) |
+               (addr_hit[569] & (|(PINMUX_PERMIT[569] & ~reg_be))) |
+               (addr_hit[570] & (|(PINMUX_PERMIT[570] & ~reg_be))) |
+               (addr_hit[571] & (|(PINMUX_PERMIT[571] & ~reg_be))) |
+               (addr_hit[572] & (|(PINMUX_PERMIT[572] & ~reg_be))) |
+               (addr_hit[573] & (|(PINMUX_PERMIT[573] & ~reg_be))) |
+               (addr_hit[574] & (|(PINMUX_PERMIT[574] & ~reg_be))) |
+               (addr_hit[575] & (|(PINMUX_PERMIT[575] & ~reg_be))) |
+               (addr_hit[576] & (|(PINMUX_PERMIT[576] & ~reg_be))) |
+               (addr_hit[577] & (|(PINMUX_PERMIT[577] & ~reg_be))) |
+               (addr_hit[578] & (|(PINMUX_PERMIT[578] & ~reg_be))) |
+               (addr_hit[579] & (|(PINMUX_PERMIT[579] & ~reg_be))) |
+               (addr_hit[580] & (|(PINMUX_PERMIT[580] & ~reg_be))) |
+               (addr_hit[581] & (|(PINMUX_PERMIT[581] & ~reg_be))) |
+               (addr_hit[582] & (|(PINMUX_PERMIT[582] & ~reg_be))) |
+               (addr_hit[583] & (|(PINMUX_PERMIT[583] & ~reg_be))) |
+               (addr_hit[584] & (|(PINMUX_PERMIT[584] & ~reg_be))) |
+               (addr_hit[585] & (|(PINMUX_PERMIT[585] & ~reg_be))) |
+               (addr_hit[586] & (|(PINMUX_PERMIT[586] & ~reg_be))) |
+               (addr_hit[587] & (|(PINMUX_PERMIT[587] & ~reg_be))) |
+               (addr_hit[588] & (|(PINMUX_PERMIT[588] & ~reg_be))) |
+               (addr_hit[589] & (|(PINMUX_PERMIT[589] & ~reg_be))) |
+               (addr_hit[590] & (|(PINMUX_PERMIT[590] & ~reg_be))) |
+               (addr_hit[591] & (|(PINMUX_PERMIT[591] & ~reg_be))) |
+               (addr_hit[592] & (|(PINMUX_PERMIT[592] & ~reg_be))) |
+               (addr_hit[593] & (|(PINMUX_PERMIT[593] & ~reg_be))) |
+               (addr_hit[594] & (|(PINMUX_PERMIT[594] & ~reg_be))) |
+               (addr_hit[595] & (|(PINMUX_PERMIT[595] & ~reg_be))) |
+               (addr_hit[596] & (|(PINMUX_PERMIT[596] & ~reg_be))) |
+               (addr_hit[597] & (|(PINMUX_PERMIT[597] & ~reg_be))) |
+               (addr_hit[598] & (|(PINMUX_PERMIT[598] & ~reg_be))) |
+               (addr_hit[599] & (|(PINMUX_PERMIT[599] & ~reg_be))) |
+               (addr_hit[600] & (|(PINMUX_PERMIT[600] & ~reg_be))) |
+               (addr_hit[601] & (|(PINMUX_PERMIT[601] & ~reg_be))) |
+               (addr_hit[602] & (|(PINMUX_PERMIT[602] & ~reg_be))) |
+               (addr_hit[603] & (|(PINMUX_PERMIT[603] & ~reg_be))) |
+               (addr_hit[604] & (|(PINMUX_PERMIT[604] & ~reg_be))) |
+               (addr_hit[605] & (|(PINMUX_PERMIT[605] & ~reg_be))) |
+               (addr_hit[606] & (|(PINMUX_PERMIT[606] & ~reg_be))) |
+               (addr_hit[607] & (|(PINMUX_PERMIT[607] & ~reg_be))) |
+               (addr_hit[608] & (|(PINMUX_PERMIT[608] & ~reg_be))) |
+               (addr_hit[609] & (|(PINMUX_PERMIT[609] & ~reg_be))) |
+               (addr_hit[610] & (|(PINMUX_PERMIT[610] & ~reg_be))) |
+               (addr_hit[611] & (|(PINMUX_PERMIT[611] & ~reg_be))) |
+               (addr_hit[612] & (|(PINMUX_PERMIT[612] & ~reg_be))) |
+               (addr_hit[613] & (|(PINMUX_PERMIT[613] & ~reg_be))) |
+               (addr_hit[614] & (|(PINMUX_PERMIT[614] & ~reg_be))) |
+               (addr_hit[615] & (|(PINMUX_PERMIT[615] & ~reg_be))) |
+               (addr_hit[616] & (|(PINMUX_PERMIT[616] & ~reg_be))) |
+               (addr_hit[617] & (|(PINMUX_PERMIT[617] & ~reg_be))) |
+               (addr_hit[618] & (|(PINMUX_PERMIT[618] & ~reg_be))) |
+               (addr_hit[619] & (|(PINMUX_PERMIT[619] & ~reg_be))) |
+               (addr_hit[620] & (|(PINMUX_PERMIT[620] & ~reg_be))) |
+               (addr_hit[621] & (|(PINMUX_PERMIT[621] & ~reg_be))) |
+               (addr_hit[622] & (|(PINMUX_PERMIT[622] & ~reg_be))) |
+               (addr_hit[623] & (|(PINMUX_PERMIT[623] & ~reg_be))) |
+               (addr_hit[624] & (|(PINMUX_PERMIT[624] & ~reg_be))) |
+               (addr_hit[625] & (|(PINMUX_PERMIT[625] & ~reg_be))) |
+               (addr_hit[626] & (|(PINMUX_PERMIT[626] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -31288,8 +39598,80 @@ module pinmux_reg_top (
   assign dio_pad_attr_regwen_11_we = addr_hit[272] & reg_we & !reg_error;
 
   assign dio_pad_attr_regwen_11_wd = reg_wdata[0];
-  assign dio_pad_attr_0_re = addr_hit[273] & reg_re & !reg_error;
-  assign dio_pad_attr_0_we = addr_hit[273] & reg_we & !reg_error;
+  assign dio_pad_attr_regwen_12_we = addr_hit[273] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_12_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_13_we = addr_hit[274] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_13_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_14_we = addr_hit[275] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_14_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_15_we = addr_hit[276] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_15_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_16_we = addr_hit[277] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_16_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_17_we = addr_hit[278] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_17_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_18_we = addr_hit[279] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_18_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_19_we = addr_hit[280] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_19_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_20_we = addr_hit[281] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_20_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_21_we = addr_hit[282] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_21_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_22_we = addr_hit[283] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_22_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_23_we = addr_hit[284] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_23_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_24_we = addr_hit[285] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_24_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_25_we = addr_hit[286] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_25_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_26_we = addr_hit[287] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_26_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_27_we = addr_hit[288] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_27_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_28_we = addr_hit[289] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_28_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_29_we = addr_hit[290] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_29_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_30_we = addr_hit[291] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_30_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_31_we = addr_hit[292] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_31_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_32_we = addr_hit[293] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_32_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_33_we = addr_hit[294] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_33_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_34_we = addr_hit[295] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_34_wd = reg_wdata[0];
+  assign dio_pad_attr_regwen_35_we = addr_hit[296] & reg_we & !reg_error;
+
+  assign dio_pad_attr_regwen_35_wd = reg_wdata[0];
+  assign dio_pad_attr_0_re = addr_hit[297] & reg_re & !reg_error;
+  assign dio_pad_attr_0_we = addr_hit[297] & reg_we & !reg_error;
 
   assign dio_pad_attr_0_invert_0_wd = reg_wdata[0];
 
@@ -31308,8 +39690,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_0_slew_rate_0_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_0_drive_strength_0_wd = reg_wdata[23:20];
-  assign dio_pad_attr_1_re = addr_hit[274] & reg_re & !reg_error;
-  assign dio_pad_attr_1_we = addr_hit[274] & reg_we & !reg_error;
+  assign dio_pad_attr_1_re = addr_hit[298] & reg_re & !reg_error;
+  assign dio_pad_attr_1_we = addr_hit[298] & reg_we & !reg_error;
 
   assign dio_pad_attr_1_invert_1_wd = reg_wdata[0];
 
@@ -31328,8 +39710,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_1_slew_rate_1_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_1_drive_strength_1_wd = reg_wdata[23:20];
-  assign dio_pad_attr_2_re = addr_hit[275] & reg_re & !reg_error;
-  assign dio_pad_attr_2_we = addr_hit[275] & reg_we & !reg_error;
+  assign dio_pad_attr_2_re = addr_hit[299] & reg_re & !reg_error;
+  assign dio_pad_attr_2_we = addr_hit[299] & reg_we & !reg_error;
 
   assign dio_pad_attr_2_invert_2_wd = reg_wdata[0];
 
@@ -31348,8 +39730,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_2_slew_rate_2_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_2_drive_strength_2_wd = reg_wdata[23:20];
-  assign dio_pad_attr_3_re = addr_hit[276] & reg_re & !reg_error;
-  assign dio_pad_attr_3_we = addr_hit[276] & reg_we & !reg_error;
+  assign dio_pad_attr_3_re = addr_hit[300] & reg_re & !reg_error;
+  assign dio_pad_attr_3_we = addr_hit[300] & reg_we & !reg_error;
 
   assign dio_pad_attr_3_invert_3_wd = reg_wdata[0];
 
@@ -31368,8 +39750,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_3_slew_rate_3_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_3_drive_strength_3_wd = reg_wdata[23:20];
-  assign dio_pad_attr_4_re = addr_hit[277] & reg_re & !reg_error;
-  assign dio_pad_attr_4_we = addr_hit[277] & reg_we & !reg_error;
+  assign dio_pad_attr_4_re = addr_hit[301] & reg_re & !reg_error;
+  assign dio_pad_attr_4_we = addr_hit[301] & reg_we & !reg_error;
 
   assign dio_pad_attr_4_invert_4_wd = reg_wdata[0];
 
@@ -31388,8 +39770,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_4_slew_rate_4_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_4_drive_strength_4_wd = reg_wdata[23:20];
-  assign dio_pad_attr_5_re = addr_hit[278] & reg_re & !reg_error;
-  assign dio_pad_attr_5_we = addr_hit[278] & reg_we & !reg_error;
+  assign dio_pad_attr_5_re = addr_hit[302] & reg_re & !reg_error;
+  assign dio_pad_attr_5_we = addr_hit[302] & reg_we & !reg_error;
 
   assign dio_pad_attr_5_invert_5_wd = reg_wdata[0];
 
@@ -31408,8 +39790,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_5_slew_rate_5_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_5_drive_strength_5_wd = reg_wdata[23:20];
-  assign dio_pad_attr_6_re = addr_hit[279] & reg_re & !reg_error;
-  assign dio_pad_attr_6_we = addr_hit[279] & reg_we & !reg_error;
+  assign dio_pad_attr_6_re = addr_hit[303] & reg_re & !reg_error;
+  assign dio_pad_attr_6_we = addr_hit[303] & reg_we & !reg_error;
 
   assign dio_pad_attr_6_invert_6_wd = reg_wdata[0];
 
@@ -31428,8 +39810,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_6_slew_rate_6_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_6_drive_strength_6_wd = reg_wdata[23:20];
-  assign dio_pad_attr_7_re = addr_hit[280] & reg_re & !reg_error;
-  assign dio_pad_attr_7_we = addr_hit[280] & reg_we & !reg_error;
+  assign dio_pad_attr_7_re = addr_hit[304] & reg_re & !reg_error;
+  assign dio_pad_attr_7_we = addr_hit[304] & reg_we & !reg_error;
 
   assign dio_pad_attr_7_invert_7_wd = reg_wdata[0];
 
@@ -31448,8 +39830,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_7_slew_rate_7_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_7_drive_strength_7_wd = reg_wdata[23:20];
-  assign dio_pad_attr_8_re = addr_hit[281] & reg_re & !reg_error;
-  assign dio_pad_attr_8_we = addr_hit[281] & reg_we & !reg_error;
+  assign dio_pad_attr_8_re = addr_hit[305] & reg_re & !reg_error;
+  assign dio_pad_attr_8_we = addr_hit[305] & reg_we & !reg_error;
 
   assign dio_pad_attr_8_invert_8_wd = reg_wdata[0];
 
@@ -31468,8 +39850,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_8_slew_rate_8_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_8_drive_strength_8_wd = reg_wdata[23:20];
-  assign dio_pad_attr_9_re = addr_hit[282] & reg_re & !reg_error;
-  assign dio_pad_attr_9_we = addr_hit[282] & reg_we & !reg_error;
+  assign dio_pad_attr_9_re = addr_hit[306] & reg_re & !reg_error;
+  assign dio_pad_attr_9_we = addr_hit[306] & reg_we & !reg_error;
 
   assign dio_pad_attr_9_invert_9_wd = reg_wdata[0];
 
@@ -31488,8 +39870,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_9_slew_rate_9_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_9_drive_strength_9_wd = reg_wdata[23:20];
-  assign dio_pad_attr_10_re = addr_hit[283] & reg_re & !reg_error;
-  assign dio_pad_attr_10_we = addr_hit[283] & reg_we & !reg_error;
+  assign dio_pad_attr_10_re = addr_hit[307] & reg_re & !reg_error;
+  assign dio_pad_attr_10_we = addr_hit[307] & reg_we & !reg_error;
 
   assign dio_pad_attr_10_invert_10_wd = reg_wdata[0];
 
@@ -31508,8 +39890,8 @@ module pinmux_reg_top (
   assign dio_pad_attr_10_slew_rate_10_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_10_drive_strength_10_wd = reg_wdata[23:20];
-  assign dio_pad_attr_11_re = addr_hit[284] & reg_re & !reg_error;
-  assign dio_pad_attr_11_we = addr_hit[284] & reg_we & !reg_error;
+  assign dio_pad_attr_11_re = addr_hit[308] & reg_re & !reg_error;
+  assign dio_pad_attr_11_we = addr_hit[308] & reg_we & !reg_error;
 
   assign dio_pad_attr_11_invert_11_wd = reg_wdata[0];
 
@@ -31528,7 +39910,487 @@ module pinmux_reg_top (
   assign dio_pad_attr_11_slew_rate_11_wd = reg_wdata[17:16];
 
   assign dio_pad_attr_11_drive_strength_11_wd = reg_wdata[23:20];
-  assign mio_pad_sleep_status_0_we = addr_hit[285] & reg_we & !reg_error;
+  assign dio_pad_attr_12_re = addr_hit[309] & reg_re & !reg_error;
+  assign dio_pad_attr_12_we = addr_hit[309] & reg_we & !reg_error;
+
+  assign dio_pad_attr_12_invert_12_wd = reg_wdata[0];
+
+  assign dio_pad_attr_12_virtual_od_en_12_wd = reg_wdata[1];
+
+  assign dio_pad_attr_12_pull_en_12_wd = reg_wdata[2];
+
+  assign dio_pad_attr_12_pull_select_12_wd = reg_wdata[3];
+
+  assign dio_pad_attr_12_keeper_en_12_wd = reg_wdata[4];
+
+  assign dio_pad_attr_12_schmitt_en_12_wd = reg_wdata[5];
+
+  assign dio_pad_attr_12_od_en_12_wd = reg_wdata[6];
+
+  assign dio_pad_attr_12_slew_rate_12_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_12_drive_strength_12_wd = reg_wdata[23:20];
+  assign dio_pad_attr_13_re = addr_hit[310] & reg_re & !reg_error;
+  assign dio_pad_attr_13_we = addr_hit[310] & reg_we & !reg_error;
+
+  assign dio_pad_attr_13_invert_13_wd = reg_wdata[0];
+
+  assign dio_pad_attr_13_virtual_od_en_13_wd = reg_wdata[1];
+
+  assign dio_pad_attr_13_pull_en_13_wd = reg_wdata[2];
+
+  assign dio_pad_attr_13_pull_select_13_wd = reg_wdata[3];
+
+  assign dio_pad_attr_13_keeper_en_13_wd = reg_wdata[4];
+
+  assign dio_pad_attr_13_schmitt_en_13_wd = reg_wdata[5];
+
+  assign dio_pad_attr_13_od_en_13_wd = reg_wdata[6];
+
+  assign dio_pad_attr_13_slew_rate_13_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_13_drive_strength_13_wd = reg_wdata[23:20];
+  assign dio_pad_attr_14_re = addr_hit[311] & reg_re & !reg_error;
+  assign dio_pad_attr_14_we = addr_hit[311] & reg_we & !reg_error;
+
+  assign dio_pad_attr_14_invert_14_wd = reg_wdata[0];
+
+  assign dio_pad_attr_14_virtual_od_en_14_wd = reg_wdata[1];
+
+  assign dio_pad_attr_14_pull_en_14_wd = reg_wdata[2];
+
+  assign dio_pad_attr_14_pull_select_14_wd = reg_wdata[3];
+
+  assign dio_pad_attr_14_keeper_en_14_wd = reg_wdata[4];
+
+  assign dio_pad_attr_14_schmitt_en_14_wd = reg_wdata[5];
+
+  assign dio_pad_attr_14_od_en_14_wd = reg_wdata[6];
+
+  assign dio_pad_attr_14_slew_rate_14_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_14_drive_strength_14_wd = reg_wdata[23:20];
+  assign dio_pad_attr_15_re = addr_hit[312] & reg_re & !reg_error;
+  assign dio_pad_attr_15_we = addr_hit[312] & reg_we & !reg_error;
+
+  assign dio_pad_attr_15_invert_15_wd = reg_wdata[0];
+
+  assign dio_pad_attr_15_virtual_od_en_15_wd = reg_wdata[1];
+
+  assign dio_pad_attr_15_pull_en_15_wd = reg_wdata[2];
+
+  assign dio_pad_attr_15_pull_select_15_wd = reg_wdata[3];
+
+  assign dio_pad_attr_15_keeper_en_15_wd = reg_wdata[4];
+
+  assign dio_pad_attr_15_schmitt_en_15_wd = reg_wdata[5];
+
+  assign dio_pad_attr_15_od_en_15_wd = reg_wdata[6];
+
+  assign dio_pad_attr_15_slew_rate_15_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_15_drive_strength_15_wd = reg_wdata[23:20];
+  assign dio_pad_attr_16_re = addr_hit[313] & reg_re & !reg_error;
+  assign dio_pad_attr_16_we = addr_hit[313] & reg_we & !reg_error;
+
+  assign dio_pad_attr_16_invert_16_wd = reg_wdata[0];
+
+  assign dio_pad_attr_16_virtual_od_en_16_wd = reg_wdata[1];
+
+  assign dio_pad_attr_16_pull_en_16_wd = reg_wdata[2];
+
+  assign dio_pad_attr_16_pull_select_16_wd = reg_wdata[3];
+
+  assign dio_pad_attr_16_keeper_en_16_wd = reg_wdata[4];
+
+  assign dio_pad_attr_16_schmitt_en_16_wd = reg_wdata[5];
+
+  assign dio_pad_attr_16_od_en_16_wd = reg_wdata[6];
+
+  assign dio_pad_attr_16_slew_rate_16_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_16_drive_strength_16_wd = reg_wdata[23:20];
+  assign dio_pad_attr_17_re = addr_hit[314] & reg_re & !reg_error;
+  assign dio_pad_attr_17_we = addr_hit[314] & reg_we & !reg_error;
+
+  assign dio_pad_attr_17_invert_17_wd = reg_wdata[0];
+
+  assign dio_pad_attr_17_virtual_od_en_17_wd = reg_wdata[1];
+
+  assign dio_pad_attr_17_pull_en_17_wd = reg_wdata[2];
+
+  assign dio_pad_attr_17_pull_select_17_wd = reg_wdata[3];
+
+  assign dio_pad_attr_17_keeper_en_17_wd = reg_wdata[4];
+
+  assign dio_pad_attr_17_schmitt_en_17_wd = reg_wdata[5];
+
+  assign dio_pad_attr_17_od_en_17_wd = reg_wdata[6];
+
+  assign dio_pad_attr_17_slew_rate_17_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_17_drive_strength_17_wd = reg_wdata[23:20];
+  assign dio_pad_attr_18_re = addr_hit[315] & reg_re & !reg_error;
+  assign dio_pad_attr_18_we = addr_hit[315] & reg_we & !reg_error;
+
+  assign dio_pad_attr_18_invert_18_wd = reg_wdata[0];
+
+  assign dio_pad_attr_18_virtual_od_en_18_wd = reg_wdata[1];
+
+  assign dio_pad_attr_18_pull_en_18_wd = reg_wdata[2];
+
+  assign dio_pad_attr_18_pull_select_18_wd = reg_wdata[3];
+
+  assign dio_pad_attr_18_keeper_en_18_wd = reg_wdata[4];
+
+  assign dio_pad_attr_18_schmitt_en_18_wd = reg_wdata[5];
+
+  assign dio_pad_attr_18_od_en_18_wd = reg_wdata[6];
+
+  assign dio_pad_attr_18_slew_rate_18_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_18_drive_strength_18_wd = reg_wdata[23:20];
+  assign dio_pad_attr_19_re = addr_hit[316] & reg_re & !reg_error;
+  assign dio_pad_attr_19_we = addr_hit[316] & reg_we & !reg_error;
+
+  assign dio_pad_attr_19_invert_19_wd = reg_wdata[0];
+
+  assign dio_pad_attr_19_virtual_od_en_19_wd = reg_wdata[1];
+
+  assign dio_pad_attr_19_pull_en_19_wd = reg_wdata[2];
+
+  assign dio_pad_attr_19_pull_select_19_wd = reg_wdata[3];
+
+  assign dio_pad_attr_19_keeper_en_19_wd = reg_wdata[4];
+
+  assign dio_pad_attr_19_schmitt_en_19_wd = reg_wdata[5];
+
+  assign dio_pad_attr_19_od_en_19_wd = reg_wdata[6];
+
+  assign dio_pad_attr_19_slew_rate_19_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_19_drive_strength_19_wd = reg_wdata[23:20];
+  assign dio_pad_attr_20_re = addr_hit[317] & reg_re & !reg_error;
+  assign dio_pad_attr_20_we = addr_hit[317] & reg_we & !reg_error;
+
+  assign dio_pad_attr_20_invert_20_wd = reg_wdata[0];
+
+  assign dio_pad_attr_20_virtual_od_en_20_wd = reg_wdata[1];
+
+  assign dio_pad_attr_20_pull_en_20_wd = reg_wdata[2];
+
+  assign dio_pad_attr_20_pull_select_20_wd = reg_wdata[3];
+
+  assign dio_pad_attr_20_keeper_en_20_wd = reg_wdata[4];
+
+  assign dio_pad_attr_20_schmitt_en_20_wd = reg_wdata[5];
+
+  assign dio_pad_attr_20_od_en_20_wd = reg_wdata[6];
+
+  assign dio_pad_attr_20_slew_rate_20_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_20_drive_strength_20_wd = reg_wdata[23:20];
+  assign dio_pad_attr_21_re = addr_hit[318] & reg_re & !reg_error;
+  assign dio_pad_attr_21_we = addr_hit[318] & reg_we & !reg_error;
+
+  assign dio_pad_attr_21_invert_21_wd = reg_wdata[0];
+
+  assign dio_pad_attr_21_virtual_od_en_21_wd = reg_wdata[1];
+
+  assign dio_pad_attr_21_pull_en_21_wd = reg_wdata[2];
+
+  assign dio_pad_attr_21_pull_select_21_wd = reg_wdata[3];
+
+  assign dio_pad_attr_21_keeper_en_21_wd = reg_wdata[4];
+
+  assign dio_pad_attr_21_schmitt_en_21_wd = reg_wdata[5];
+
+  assign dio_pad_attr_21_od_en_21_wd = reg_wdata[6];
+
+  assign dio_pad_attr_21_slew_rate_21_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_21_drive_strength_21_wd = reg_wdata[23:20];
+  assign dio_pad_attr_22_re = addr_hit[319] & reg_re & !reg_error;
+  assign dio_pad_attr_22_we = addr_hit[319] & reg_we & !reg_error;
+
+  assign dio_pad_attr_22_invert_22_wd = reg_wdata[0];
+
+  assign dio_pad_attr_22_virtual_od_en_22_wd = reg_wdata[1];
+
+  assign dio_pad_attr_22_pull_en_22_wd = reg_wdata[2];
+
+  assign dio_pad_attr_22_pull_select_22_wd = reg_wdata[3];
+
+  assign dio_pad_attr_22_keeper_en_22_wd = reg_wdata[4];
+
+  assign dio_pad_attr_22_schmitt_en_22_wd = reg_wdata[5];
+
+  assign dio_pad_attr_22_od_en_22_wd = reg_wdata[6];
+
+  assign dio_pad_attr_22_slew_rate_22_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_22_drive_strength_22_wd = reg_wdata[23:20];
+  assign dio_pad_attr_23_re = addr_hit[320] & reg_re & !reg_error;
+  assign dio_pad_attr_23_we = addr_hit[320] & reg_we & !reg_error;
+
+  assign dio_pad_attr_23_invert_23_wd = reg_wdata[0];
+
+  assign dio_pad_attr_23_virtual_od_en_23_wd = reg_wdata[1];
+
+  assign dio_pad_attr_23_pull_en_23_wd = reg_wdata[2];
+
+  assign dio_pad_attr_23_pull_select_23_wd = reg_wdata[3];
+
+  assign dio_pad_attr_23_keeper_en_23_wd = reg_wdata[4];
+
+  assign dio_pad_attr_23_schmitt_en_23_wd = reg_wdata[5];
+
+  assign dio_pad_attr_23_od_en_23_wd = reg_wdata[6];
+
+  assign dio_pad_attr_23_slew_rate_23_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_23_drive_strength_23_wd = reg_wdata[23:20];
+  assign dio_pad_attr_24_re = addr_hit[321] & reg_re & !reg_error;
+  assign dio_pad_attr_24_we = addr_hit[321] & reg_we & !reg_error;
+
+  assign dio_pad_attr_24_invert_24_wd = reg_wdata[0];
+
+  assign dio_pad_attr_24_virtual_od_en_24_wd = reg_wdata[1];
+
+  assign dio_pad_attr_24_pull_en_24_wd = reg_wdata[2];
+
+  assign dio_pad_attr_24_pull_select_24_wd = reg_wdata[3];
+
+  assign dio_pad_attr_24_keeper_en_24_wd = reg_wdata[4];
+
+  assign dio_pad_attr_24_schmitt_en_24_wd = reg_wdata[5];
+
+  assign dio_pad_attr_24_od_en_24_wd = reg_wdata[6];
+
+  assign dio_pad_attr_24_slew_rate_24_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_24_drive_strength_24_wd = reg_wdata[23:20];
+  assign dio_pad_attr_25_re = addr_hit[322] & reg_re & !reg_error;
+  assign dio_pad_attr_25_we = addr_hit[322] & reg_we & !reg_error;
+
+  assign dio_pad_attr_25_invert_25_wd = reg_wdata[0];
+
+  assign dio_pad_attr_25_virtual_od_en_25_wd = reg_wdata[1];
+
+  assign dio_pad_attr_25_pull_en_25_wd = reg_wdata[2];
+
+  assign dio_pad_attr_25_pull_select_25_wd = reg_wdata[3];
+
+  assign dio_pad_attr_25_keeper_en_25_wd = reg_wdata[4];
+
+  assign dio_pad_attr_25_schmitt_en_25_wd = reg_wdata[5];
+
+  assign dio_pad_attr_25_od_en_25_wd = reg_wdata[6];
+
+  assign dio_pad_attr_25_slew_rate_25_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_25_drive_strength_25_wd = reg_wdata[23:20];
+  assign dio_pad_attr_26_re = addr_hit[323] & reg_re & !reg_error;
+  assign dio_pad_attr_26_we = addr_hit[323] & reg_we & !reg_error;
+
+  assign dio_pad_attr_26_invert_26_wd = reg_wdata[0];
+
+  assign dio_pad_attr_26_virtual_od_en_26_wd = reg_wdata[1];
+
+  assign dio_pad_attr_26_pull_en_26_wd = reg_wdata[2];
+
+  assign dio_pad_attr_26_pull_select_26_wd = reg_wdata[3];
+
+  assign dio_pad_attr_26_keeper_en_26_wd = reg_wdata[4];
+
+  assign dio_pad_attr_26_schmitt_en_26_wd = reg_wdata[5];
+
+  assign dio_pad_attr_26_od_en_26_wd = reg_wdata[6];
+
+  assign dio_pad_attr_26_slew_rate_26_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_26_drive_strength_26_wd = reg_wdata[23:20];
+  assign dio_pad_attr_27_re = addr_hit[324] & reg_re & !reg_error;
+  assign dio_pad_attr_27_we = addr_hit[324] & reg_we & !reg_error;
+
+  assign dio_pad_attr_27_invert_27_wd = reg_wdata[0];
+
+  assign dio_pad_attr_27_virtual_od_en_27_wd = reg_wdata[1];
+
+  assign dio_pad_attr_27_pull_en_27_wd = reg_wdata[2];
+
+  assign dio_pad_attr_27_pull_select_27_wd = reg_wdata[3];
+
+  assign dio_pad_attr_27_keeper_en_27_wd = reg_wdata[4];
+
+  assign dio_pad_attr_27_schmitt_en_27_wd = reg_wdata[5];
+
+  assign dio_pad_attr_27_od_en_27_wd = reg_wdata[6];
+
+  assign dio_pad_attr_27_slew_rate_27_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_27_drive_strength_27_wd = reg_wdata[23:20];
+  assign dio_pad_attr_28_re = addr_hit[325] & reg_re & !reg_error;
+  assign dio_pad_attr_28_we = addr_hit[325] & reg_we & !reg_error;
+
+  assign dio_pad_attr_28_invert_28_wd = reg_wdata[0];
+
+  assign dio_pad_attr_28_virtual_od_en_28_wd = reg_wdata[1];
+
+  assign dio_pad_attr_28_pull_en_28_wd = reg_wdata[2];
+
+  assign dio_pad_attr_28_pull_select_28_wd = reg_wdata[3];
+
+  assign dio_pad_attr_28_keeper_en_28_wd = reg_wdata[4];
+
+  assign dio_pad_attr_28_schmitt_en_28_wd = reg_wdata[5];
+
+  assign dio_pad_attr_28_od_en_28_wd = reg_wdata[6];
+
+  assign dio_pad_attr_28_slew_rate_28_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_28_drive_strength_28_wd = reg_wdata[23:20];
+  assign dio_pad_attr_29_re = addr_hit[326] & reg_re & !reg_error;
+  assign dio_pad_attr_29_we = addr_hit[326] & reg_we & !reg_error;
+
+  assign dio_pad_attr_29_invert_29_wd = reg_wdata[0];
+
+  assign dio_pad_attr_29_virtual_od_en_29_wd = reg_wdata[1];
+
+  assign dio_pad_attr_29_pull_en_29_wd = reg_wdata[2];
+
+  assign dio_pad_attr_29_pull_select_29_wd = reg_wdata[3];
+
+  assign dio_pad_attr_29_keeper_en_29_wd = reg_wdata[4];
+
+  assign dio_pad_attr_29_schmitt_en_29_wd = reg_wdata[5];
+
+  assign dio_pad_attr_29_od_en_29_wd = reg_wdata[6];
+
+  assign dio_pad_attr_29_slew_rate_29_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_29_drive_strength_29_wd = reg_wdata[23:20];
+  assign dio_pad_attr_30_re = addr_hit[327] & reg_re & !reg_error;
+  assign dio_pad_attr_30_we = addr_hit[327] & reg_we & !reg_error;
+
+  assign dio_pad_attr_30_invert_30_wd = reg_wdata[0];
+
+  assign dio_pad_attr_30_virtual_od_en_30_wd = reg_wdata[1];
+
+  assign dio_pad_attr_30_pull_en_30_wd = reg_wdata[2];
+
+  assign dio_pad_attr_30_pull_select_30_wd = reg_wdata[3];
+
+  assign dio_pad_attr_30_keeper_en_30_wd = reg_wdata[4];
+
+  assign dio_pad_attr_30_schmitt_en_30_wd = reg_wdata[5];
+
+  assign dio_pad_attr_30_od_en_30_wd = reg_wdata[6];
+
+  assign dio_pad_attr_30_slew_rate_30_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_30_drive_strength_30_wd = reg_wdata[23:20];
+  assign dio_pad_attr_31_re = addr_hit[328] & reg_re & !reg_error;
+  assign dio_pad_attr_31_we = addr_hit[328] & reg_we & !reg_error;
+
+  assign dio_pad_attr_31_invert_31_wd = reg_wdata[0];
+
+  assign dio_pad_attr_31_virtual_od_en_31_wd = reg_wdata[1];
+
+  assign dio_pad_attr_31_pull_en_31_wd = reg_wdata[2];
+
+  assign dio_pad_attr_31_pull_select_31_wd = reg_wdata[3];
+
+  assign dio_pad_attr_31_keeper_en_31_wd = reg_wdata[4];
+
+  assign dio_pad_attr_31_schmitt_en_31_wd = reg_wdata[5];
+
+  assign dio_pad_attr_31_od_en_31_wd = reg_wdata[6];
+
+  assign dio_pad_attr_31_slew_rate_31_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_31_drive_strength_31_wd = reg_wdata[23:20];
+  assign dio_pad_attr_32_re = addr_hit[329] & reg_re & !reg_error;
+  assign dio_pad_attr_32_we = addr_hit[329] & reg_we & !reg_error;
+
+  assign dio_pad_attr_32_invert_32_wd = reg_wdata[0];
+
+  assign dio_pad_attr_32_virtual_od_en_32_wd = reg_wdata[1];
+
+  assign dio_pad_attr_32_pull_en_32_wd = reg_wdata[2];
+
+  assign dio_pad_attr_32_pull_select_32_wd = reg_wdata[3];
+
+  assign dio_pad_attr_32_keeper_en_32_wd = reg_wdata[4];
+
+  assign dio_pad_attr_32_schmitt_en_32_wd = reg_wdata[5];
+
+  assign dio_pad_attr_32_od_en_32_wd = reg_wdata[6];
+
+  assign dio_pad_attr_32_slew_rate_32_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_32_drive_strength_32_wd = reg_wdata[23:20];
+  assign dio_pad_attr_33_re = addr_hit[330] & reg_re & !reg_error;
+  assign dio_pad_attr_33_we = addr_hit[330] & reg_we & !reg_error;
+
+  assign dio_pad_attr_33_invert_33_wd = reg_wdata[0];
+
+  assign dio_pad_attr_33_virtual_od_en_33_wd = reg_wdata[1];
+
+  assign dio_pad_attr_33_pull_en_33_wd = reg_wdata[2];
+
+  assign dio_pad_attr_33_pull_select_33_wd = reg_wdata[3];
+
+  assign dio_pad_attr_33_keeper_en_33_wd = reg_wdata[4];
+
+  assign dio_pad_attr_33_schmitt_en_33_wd = reg_wdata[5];
+
+  assign dio_pad_attr_33_od_en_33_wd = reg_wdata[6];
+
+  assign dio_pad_attr_33_slew_rate_33_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_33_drive_strength_33_wd = reg_wdata[23:20];
+  assign dio_pad_attr_34_re = addr_hit[331] & reg_re & !reg_error;
+  assign dio_pad_attr_34_we = addr_hit[331] & reg_we & !reg_error;
+
+  assign dio_pad_attr_34_invert_34_wd = reg_wdata[0];
+
+  assign dio_pad_attr_34_virtual_od_en_34_wd = reg_wdata[1];
+
+  assign dio_pad_attr_34_pull_en_34_wd = reg_wdata[2];
+
+  assign dio_pad_attr_34_pull_select_34_wd = reg_wdata[3];
+
+  assign dio_pad_attr_34_keeper_en_34_wd = reg_wdata[4];
+
+  assign dio_pad_attr_34_schmitt_en_34_wd = reg_wdata[5];
+
+  assign dio_pad_attr_34_od_en_34_wd = reg_wdata[6];
+
+  assign dio_pad_attr_34_slew_rate_34_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_34_drive_strength_34_wd = reg_wdata[23:20];
+  assign dio_pad_attr_35_re = addr_hit[332] & reg_re & !reg_error;
+  assign dio_pad_attr_35_we = addr_hit[332] & reg_we & !reg_error;
+
+  assign dio_pad_attr_35_invert_35_wd = reg_wdata[0];
+
+  assign dio_pad_attr_35_virtual_od_en_35_wd = reg_wdata[1];
+
+  assign dio_pad_attr_35_pull_en_35_wd = reg_wdata[2];
+
+  assign dio_pad_attr_35_pull_select_35_wd = reg_wdata[3];
+
+  assign dio_pad_attr_35_keeper_en_35_wd = reg_wdata[4];
+
+  assign dio_pad_attr_35_schmitt_en_35_wd = reg_wdata[5];
+
+  assign dio_pad_attr_35_od_en_35_wd = reg_wdata[6];
+
+  assign dio_pad_attr_35_slew_rate_35_wd = reg_wdata[17:16];
+
+  assign dio_pad_attr_35_drive_strength_35_wd = reg_wdata[23:20];
+  assign mio_pad_sleep_status_0_we = addr_hit[333] & reg_we & !reg_error;
 
   assign mio_pad_sleep_status_0_en_0_wd = reg_wdata[0];
 
@@ -31593,7 +40455,7 @@ module pinmux_reg_top (
   assign mio_pad_sleep_status_0_en_30_wd = reg_wdata[30];
 
   assign mio_pad_sleep_status_0_en_31_wd = reg_wdata[31];
-  assign mio_pad_sleep_status_1_we = addr_hit[286] & reg_we & !reg_error;
+  assign mio_pad_sleep_status_1_we = addr_hit[334] & reg_we & !reg_error;
 
   assign mio_pad_sleep_status_1_en_32_wd = reg_wdata[0];
 
@@ -31624,675 +40486,940 @@ module pinmux_reg_top (
   assign mio_pad_sleep_status_1_en_45_wd = reg_wdata[13];
 
   assign mio_pad_sleep_status_1_en_46_wd = reg_wdata[14];
-  assign mio_pad_sleep_regwen_0_we = addr_hit[287] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_0_we = addr_hit[335] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_0_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_1_we = addr_hit[288] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_1_we = addr_hit[336] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_1_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_2_we = addr_hit[289] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_2_we = addr_hit[337] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_2_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_3_we = addr_hit[290] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_3_we = addr_hit[338] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_3_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_4_we = addr_hit[291] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_4_we = addr_hit[339] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_4_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_5_we = addr_hit[292] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_5_we = addr_hit[340] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_5_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_6_we = addr_hit[293] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_6_we = addr_hit[341] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_6_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_7_we = addr_hit[294] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_7_we = addr_hit[342] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_7_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_8_we = addr_hit[295] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_8_we = addr_hit[343] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_8_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_9_we = addr_hit[296] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_9_we = addr_hit[344] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_9_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_10_we = addr_hit[297] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_10_we = addr_hit[345] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_10_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_11_we = addr_hit[298] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_11_we = addr_hit[346] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_11_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_12_we = addr_hit[299] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_12_we = addr_hit[347] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_12_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_13_we = addr_hit[300] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_13_we = addr_hit[348] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_13_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_14_we = addr_hit[301] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_14_we = addr_hit[349] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_14_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_15_we = addr_hit[302] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_15_we = addr_hit[350] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_15_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_16_we = addr_hit[303] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_16_we = addr_hit[351] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_16_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_17_we = addr_hit[304] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_17_we = addr_hit[352] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_17_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_18_we = addr_hit[305] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_18_we = addr_hit[353] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_18_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_19_we = addr_hit[306] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_19_we = addr_hit[354] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_19_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_20_we = addr_hit[307] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_20_we = addr_hit[355] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_20_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_21_we = addr_hit[308] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_21_we = addr_hit[356] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_21_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_22_we = addr_hit[309] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_22_we = addr_hit[357] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_22_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_23_we = addr_hit[310] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_23_we = addr_hit[358] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_23_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_24_we = addr_hit[311] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_24_we = addr_hit[359] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_24_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_25_we = addr_hit[312] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_25_we = addr_hit[360] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_25_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_26_we = addr_hit[313] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_26_we = addr_hit[361] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_26_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_27_we = addr_hit[314] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_27_we = addr_hit[362] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_27_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_28_we = addr_hit[315] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_28_we = addr_hit[363] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_28_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_29_we = addr_hit[316] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_29_we = addr_hit[364] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_29_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_30_we = addr_hit[317] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_30_we = addr_hit[365] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_30_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_31_we = addr_hit[318] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_31_we = addr_hit[366] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_31_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_32_we = addr_hit[319] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_32_we = addr_hit[367] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_32_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_33_we = addr_hit[320] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_33_we = addr_hit[368] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_33_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_34_we = addr_hit[321] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_34_we = addr_hit[369] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_34_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_35_we = addr_hit[322] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_35_we = addr_hit[370] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_35_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_36_we = addr_hit[323] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_36_we = addr_hit[371] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_36_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_37_we = addr_hit[324] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_37_we = addr_hit[372] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_37_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_38_we = addr_hit[325] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_38_we = addr_hit[373] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_38_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_39_we = addr_hit[326] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_39_we = addr_hit[374] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_39_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_40_we = addr_hit[327] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_40_we = addr_hit[375] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_40_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_41_we = addr_hit[328] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_41_we = addr_hit[376] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_41_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_42_we = addr_hit[329] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_42_we = addr_hit[377] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_42_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_43_we = addr_hit[330] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_43_we = addr_hit[378] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_43_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_44_we = addr_hit[331] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_44_we = addr_hit[379] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_44_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_45_we = addr_hit[332] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_45_we = addr_hit[380] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_45_wd = reg_wdata[0];
-  assign mio_pad_sleep_regwen_46_we = addr_hit[333] & reg_we & !reg_error;
+  assign mio_pad_sleep_regwen_46_we = addr_hit[381] & reg_we & !reg_error;
 
   assign mio_pad_sleep_regwen_46_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_0_we = addr_hit[334] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_0_we = addr_hit[382] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_0_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_1_we = addr_hit[335] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_1_we = addr_hit[383] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_1_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_2_we = addr_hit[336] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_2_we = addr_hit[384] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_2_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_3_we = addr_hit[337] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_3_we = addr_hit[385] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_3_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_4_we = addr_hit[338] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_4_we = addr_hit[386] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_4_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_5_we = addr_hit[339] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_5_we = addr_hit[387] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_5_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_6_we = addr_hit[340] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_6_we = addr_hit[388] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_6_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_7_we = addr_hit[341] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_7_we = addr_hit[389] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_7_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_8_we = addr_hit[342] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_8_we = addr_hit[390] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_8_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_9_we = addr_hit[343] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_9_we = addr_hit[391] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_9_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_10_we = addr_hit[344] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_10_we = addr_hit[392] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_10_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_11_we = addr_hit[345] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_11_we = addr_hit[393] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_11_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_12_we = addr_hit[346] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_12_we = addr_hit[394] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_12_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_13_we = addr_hit[347] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_13_we = addr_hit[395] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_13_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_14_we = addr_hit[348] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_14_we = addr_hit[396] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_14_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_15_we = addr_hit[349] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_15_we = addr_hit[397] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_15_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_16_we = addr_hit[350] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_16_we = addr_hit[398] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_16_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_17_we = addr_hit[351] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_17_we = addr_hit[399] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_17_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_18_we = addr_hit[352] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_18_we = addr_hit[400] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_18_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_19_we = addr_hit[353] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_19_we = addr_hit[401] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_19_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_20_we = addr_hit[354] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_20_we = addr_hit[402] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_20_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_21_we = addr_hit[355] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_21_we = addr_hit[403] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_21_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_22_we = addr_hit[356] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_22_we = addr_hit[404] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_22_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_23_we = addr_hit[357] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_23_we = addr_hit[405] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_23_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_24_we = addr_hit[358] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_24_we = addr_hit[406] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_24_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_25_we = addr_hit[359] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_25_we = addr_hit[407] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_25_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_26_we = addr_hit[360] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_26_we = addr_hit[408] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_26_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_27_we = addr_hit[361] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_27_we = addr_hit[409] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_27_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_28_we = addr_hit[362] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_28_we = addr_hit[410] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_28_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_29_we = addr_hit[363] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_29_we = addr_hit[411] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_29_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_30_we = addr_hit[364] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_30_we = addr_hit[412] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_30_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_31_we = addr_hit[365] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_31_we = addr_hit[413] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_31_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_32_we = addr_hit[366] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_32_we = addr_hit[414] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_32_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_33_we = addr_hit[367] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_33_we = addr_hit[415] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_33_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_34_we = addr_hit[368] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_34_we = addr_hit[416] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_34_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_35_we = addr_hit[369] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_35_we = addr_hit[417] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_35_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_36_we = addr_hit[370] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_36_we = addr_hit[418] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_36_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_37_we = addr_hit[371] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_37_we = addr_hit[419] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_37_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_38_we = addr_hit[372] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_38_we = addr_hit[420] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_38_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_39_we = addr_hit[373] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_39_we = addr_hit[421] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_39_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_40_we = addr_hit[374] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_40_we = addr_hit[422] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_40_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_41_we = addr_hit[375] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_41_we = addr_hit[423] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_41_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_42_we = addr_hit[376] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_42_we = addr_hit[424] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_42_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_43_we = addr_hit[377] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_43_we = addr_hit[425] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_43_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_44_we = addr_hit[378] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_44_we = addr_hit[426] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_44_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_45_we = addr_hit[379] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_45_we = addr_hit[427] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_45_wd = reg_wdata[0];
-  assign mio_pad_sleep_en_46_we = addr_hit[380] & reg_we & !reg_error;
+  assign mio_pad_sleep_en_46_we = addr_hit[428] & reg_we & !reg_error;
 
   assign mio_pad_sleep_en_46_wd = reg_wdata[0];
-  assign mio_pad_sleep_mode_0_we = addr_hit[381] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_0_we = addr_hit[429] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_0_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_1_we = addr_hit[382] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_1_we = addr_hit[430] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_1_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_2_we = addr_hit[383] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_2_we = addr_hit[431] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_2_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_3_we = addr_hit[384] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_3_we = addr_hit[432] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_3_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_4_we = addr_hit[385] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_4_we = addr_hit[433] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_4_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_5_we = addr_hit[386] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_5_we = addr_hit[434] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_5_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_6_we = addr_hit[387] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_6_we = addr_hit[435] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_6_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_7_we = addr_hit[388] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_7_we = addr_hit[436] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_7_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_8_we = addr_hit[389] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_8_we = addr_hit[437] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_8_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_9_we = addr_hit[390] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_9_we = addr_hit[438] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_9_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_10_we = addr_hit[391] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_10_we = addr_hit[439] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_10_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_11_we = addr_hit[392] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_11_we = addr_hit[440] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_11_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_12_we = addr_hit[393] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_12_we = addr_hit[441] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_12_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_13_we = addr_hit[394] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_13_we = addr_hit[442] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_13_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_14_we = addr_hit[395] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_14_we = addr_hit[443] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_14_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_15_we = addr_hit[396] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_15_we = addr_hit[444] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_15_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_16_we = addr_hit[397] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_16_we = addr_hit[445] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_16_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_17_we = addr_hit[398] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_17_we = addr_hit[446] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_17_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_18_we = addr_hit[399] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_18_we = addr_hit[447] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_18_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_19_we = addr_hit[400] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_19_we = addr_hit[448] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_19_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_20_we = addr_hit[401] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_20_we = addr_hit[449] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_20_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_21_we = addr_hit[402] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_21_we = addr_hit[450] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_21_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_22_we = addr_hit[403] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_22_we = addr_hit[451] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_22_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_23_we = addr_hit[404] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_23_we = addr_hit[452] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_23_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_24_we = addr_hit[405] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_24_we = addr_hit[453] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_24_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_25_we = addr_hit[406] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_25_we = addr_hit[454] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_25_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_26_we = addr_hit[407] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_26_we = addr_hit[455] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_26_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_27_we = addr_hit[408] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_27_we = addr_hit[456] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_27_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_28_we = addr_hit[409] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_28_we = addr_hit[457] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_28_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_29_we = addr_hit[410] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_29_we = addr_hit[458] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_29_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_30_we = addr_hit[411] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_30_we = addr_hit[459] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_30_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_31_we = addr_hit[412] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_31_we = addr_hit[460] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_31_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_32_we = addr_hit[413] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_32_we = addr_hit[461] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_32_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_33_we = addr_hit[414] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_33_we = addr_hit[462] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_33_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_34_we = addr_hit[415] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_34_we = addr_hit[463] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_34_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_35_we = addr_hit[416] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_35_we = addr_hit[464] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_35_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_36_we = addr_hit[417] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_36_we = addr_hit[465] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_36_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_37_we = addr_hit[418] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_37_we = addr_hit[466] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_37_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_38_we = addr_hit[419] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_38_we = addr_hit[467] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_38_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_39_we = addr_hit[420] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_39_we = addr_hit[468] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_39_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_40_we = addr_hit[421] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_40_we = addr_hit[469] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_40_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_41_we = addr_hit[422] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_41_we = addr_hit[470] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_41_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_42_we = addr_hit[423] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_42_we = addr_hit[471] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_42_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_43_we = addr_hit[424] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_43_we = addr_hit[472] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_43_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_44_we = addr_hit[425] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_44_we = addr_hit[473] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_44_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_45_we = addr_hit[426] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_45_we = addr_hit[474] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_45_wd = reg_wdata[1:0];
-  assign mio_pad_sleep_mode_46_we = addr_hit[427] & reg_we & !reg_error;
+  assign mio_pad_sleep_mode_46_we = addr_hit[475] & reg_we & !reg_error;
 
   assign mio_pad_sleep_mode_46_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_status_we = addr_hit[428] & reg_we & !reg_error;
+  assign dio_pad_sleep_status_0_we = addr_hit[476] & reg_we & !reg_error;
 
-  assign dio_pad_sleep_status_en_0_wd = reg_wdata[0];
+  assign dio_pad_sleep_status_0_en_0_wd = reg_wdata[0];
 
-  assign dio_pad_sleep_status_en_1_wd = reg_wdata[1];
+  assign dio_pad_sleep_status_0_en_1_wd = reg_wdata[1];
 
-  assign dio_pad_sleep_status_en_2_wd = reg_wdata[2];
+  assign dio_pad_sleep_status_0_en_2_wd = reg_wdata[2];
 
-  assign dio_pad_sleep_status_en_3_wd = reg_wdata[3];
+  assign dio_pad_sleep_status_0_en_3_wd = reg_wdata[3];
 
-  assign dio_pad_sleep_status_en_4_wd = reg_wdata[4];
+  assign dio_pad_sleep_status_0_en_4_wd = reg_wdata[4];
 
-  assign dio_pad_sleep_status_en_5_wd = reg_wdata[5];
+  assign dio_pad_sleep_status_0_en_5_wd = reg_wdata[5];
 
-  assign dio_pad_sleep_status_en_6_wd = reg_wdata[6];
+  assign dio_pad_sleep_status_0_en_6_wd = reg_wdata[6];
 
-  assign dio_pad_sleep_status_en_7_wd = reg_wdata[7];
+  assign dio_pad_sleep_status_0_en_7_wd = reg_wdata[7];
 
-  assign dio_pad_sleep_status_en_8_wd = reg_wdata[8];
+  assign dio_pad_sleep_status_0_en_8_wd = reg_wdata[8];
 
-  assign dio_pad_sleep_status_en_9_wd = reg_wdata[9];
+  assign dio_pad_sleep_status_0_en_9_wd = reg_wdata[9];
 
-  assign dio_pad_sleep_status_en_10_wd = reg_wdata[10];
+  assign dio_pad_sleep_status_0_en_10_wd = reg_wdata[10];
 
-  assign dio_pad_sleep_status_en_11_wd = reg_wdata[11];
-  assign dio_pad_sleep_regwen_0_we = addr_hit[429] & reg_we & !reg_error;
+  assign dio_pad_sleep_status_0_en_11_wd = reg_wdata[11];
+
+  assign dio_pad_sleep_status_0_en_12_wd = reg_wdata[12];
+
+  assign dio_pad_sleep_status_0_en_13_wd = reg_wdata[13];
+
+  assign dio_pad_sleep_status_0_en_14_wd = reg_wdata[14];
+
+  assign dio_pad_sleep_status_0_en_15_wd = reg_wdata[15];
+
+  assign dio_pad_sleep_status_0_en_16_wd = reg_wdata[16];
+
+  assign dio_pad_sleep_status_0_en_17_wd = reg_wdata[17];
+
+  assign dio_pad_sleep_status_0_en_18_wd = reg_wdata[18];
+
+  assign dio_pad_sleep_status_0_en_19_wd = reg_wdata[19];
+
+  assign dio_pad_sleep_status_0_en_20_wd = reg_wdata[20];
+
+  assign dio_pad_sleep_status_0_en_21_wd = reg_wdata[21];
+
+  assign dio_pad_sleep_status_0_en_22_wd = reg_wdata[22];
+
+  assign dio_pad_sleep_status_0_en_23_wd = reg_wdata[23];
+
+  assign dio_pad_sleep_status_0_en_24_wd = reg_wdata[24];
+
+  assign dio_pad_sleep_status_0_en_25_wd = reg_wdata[25];
+
+  assign dio_pad_sleep_status_0_en_26_wd = reg_wdata[26];
+
+  assign dio_pad_sleep_status_0_en_27_wd = reg_wdata[27];
+
+  assign dio_pad_sleep_status_0_en_28_wd = reg_wdata[28];
+
+  assign dio_pad_sleep_status_0_en_29_wd = reg_wdata[29];
+
+  assign dio_pad_sleep_status_0_en_30_wd = reg_wdata[30];
+
+  assign dio_pad_sleep_status_0_en_31_wd = reg_wdata[31];
+  assign dio_pad_sleep_status_1_we = addr_hit[477] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_status_1_en_32_wd = reg_wdata[0];
+
+  assign dio_pad_sleep_status_1_en_33_wd = reg_wdata[1];
+
+  assign dio_pad_sleep_status_1_en_34_wd = reg_wdata[2];
+
+  assign dio_pad_sleep_status_1_en_35_wd = reg_wdata[3];
+  assign dio_pad_sleep_regwen_0_we = addr_hit[478] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_0_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_1_we = addr_hit[430] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_1_we = addr_hit[479] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_1_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_2_we = addr_hit[431] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_2_we = addr_hit[480] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_2_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_3_we = addr_hit[432] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_3_we = addr_hit[481] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_3_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_4_we = addr_hit[433] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_4_we = addr_hit[482] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_4_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_5_we = addr_hit[434] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_5_we = addr_hit[483] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_5_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_6_we = addr_hit[435] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_6_we = addr_hit[484] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_6_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_7_we = addr_hit[436] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_7_we = addr_hit[485] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_7_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_8_we = addr_hit[437] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_8_we = addr_hit[486] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_8_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_9_we = addr_hit[438] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_9_we = addr_hit[487] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_9_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_10_we = addr_hit[439] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_10_we = addr_hit[488] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_10_wd = reg_wdata[0];
-  assign dio_pad_sleep_regwen_11_we = addr_hit[440] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_11_we = addr_hit[489] & reg_we & !reg_error;
 
   assign dio_pad_sleep_regwen_11_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_0_we = addr_hit[441] & reg_we & !reg_error;
+  assign dio_pad_sleep_regwen_12_we = addr_hit[490] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_12_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_13_we = addr_hit[491] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_13_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_14_we = addr_hit[492] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_14_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_15_we = addr_hit[493] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_15_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_16_we = addr_hit[494] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_16_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_17_we = addr_hit[495] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_17_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_18_we = addr_hit[496] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_18_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_19_we = addr_hit[497] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_19_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_20_we = addr_hit[498] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_20_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_21_we = addr_hit[499] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_21_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_22_we = addr_hit[500] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_22_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_23_we = addr_hit[501] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_23_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_24_we = addr_hit[502] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_24_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_25_we = addr_hit[503] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_25_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_26_we = addr_hit[504] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_26_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_27_we = addr_hit[505] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_27_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_28_we = addr_hit[506] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_28_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_29_we = addr_hit[507] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_29_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_30_we = addr_hit[508] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_30_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_31_we = addr_hit[509] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_31_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_32_we = addr_hit[510] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_32_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_33_we = addr_hit[511] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_33_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_34_we = addr_hit[512] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_34_wd = reg_wdata[0];
+  assign dio_pad_sleep_regwen_35_we = addr_hit[513] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_regwen_35_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_0_we = addr_hit[514] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_0_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_1_we = addr_hit[442] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_1_we = addr_hit[515] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_1_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_2_we = addr_hit[443] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_2_we = addr_hit[516] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_2_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_3_we = addr_hit[444] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_3_we = addr_hit[517] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_3_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_4_we = addr_hit[445] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_4_we = addr_hit[518] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_4_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_5_we = addr_hit[446] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_5_we = addr_hit[519] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_5_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_6_we = addr_hit[447] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_6_we = addr_hit[520] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_6_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_7_we = addr_hit[448] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_7_we = addr_hit[521] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_7_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_8_we = addr_hit[449] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_8_we = addr_hit[522] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_8_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_9_we = addr_hit[450] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_9_we = addr_hit[523] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_9_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_10_we = addr_hit[451] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_10_we = addr_hit[524] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_10_wd = reg_wdata[0];
-  assign dio_pad_sleep_en_11_we = addr_hit[452] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_11_we = addr_hit[525] & reg_we & !reg_error;
 
   assign dio_pad_sleep_en_11_wd = reg_wdata[0];
-  assign dio_pad_sleep_mode_0_we = addr_hit[453] & reg_we & !reg_error;
+  assign dio_pad_sleep_en_12_we = addr_hit[526] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_12_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_13_we = addr_hit[527] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_13_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_14_we = addr_hit[528] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_14_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_15_we = addr_hit[529] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_15_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_16_we = addr_hit[530] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_16_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_17_we = addr_hit[531] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_17_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_18_we = addr_hit[532] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_18_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_19_we = addr_hit[533] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_19_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_20_we = addr_hit[534] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_20_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_21_we = addr_hit[535] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_21_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_22_we = addr_hit[536] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_22_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_23_we = addr_hit[537] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_23_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_24_we = addr_hit[538] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_24_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_25_we = addr_hit[539] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_25_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_26_we = addr_hit[540] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_26_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_27_we = addr_hit[541] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_27_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_28_we = addr_hit[542] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_28_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_29_we = addr_hit[543] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_29_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_30_we = addr_hit[544] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_30_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_31_we = addr_hit[545] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_31_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_32_we = addr_hit[546] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_32_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_33_we = addr_hit[547] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_33_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_34_we = addr_hit[548] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_34_wd = reg_wdata[0];
+  assign dio_pad_sleep_en_35_we = addr_hit[549] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_en_35_wd = reg_wdata[0];
+  assign dio_pad_sleep_mode_0_we = addr_hit[550] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_0_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_1_we = addr_hit[454] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_1_we = addr_hit[551] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_1_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_2_we = addr_hit[455] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_2_we = addr_hit[552] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_2_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_3_we = addr_hit[456] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_3_we = addr_hit[553] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_3_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_4_we = addr_hit[457] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_4_we = addr_hit[554] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_4_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_5_we = addr_hit[458] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_5_we = addr_hit[555] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_5_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_6_we = addr_hit[459] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_6_we = addr_hit[556] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_6_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_7_we = addr_hit[460] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_7_we = addr_hit[557] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_7_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_8_we = addr_hit[461] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_8_we = addr_hit[558] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_8_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_9_we = addr_hit[462] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_9_we = addr_hit[559] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_9_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_10_we = addr_hit[463] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_10_we = addr_hit[560] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_10_wd = reg_wdata[1:0];
-  assign dio_pad_sleep_mode_11_we = addr_hit[464] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_11_we = addr_hit[561] & reg_we & !reg_error;
 
   assign dio_pad_sleep_mode_11_wd = reg_wdata[1:0];
-  assign wkup_detector_regwen_0_we = addr_hit[465] & reg_we & !reg_error;
+  assign dio_pad_sleep_mode_12_we = addr_hit[562] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_12_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_13_we = addr_hit[563] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_13_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_14_we = addr_hit[564] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_14_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_15_we = addr_hit[565] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_15_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_16_we = addr_hit[566] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_16_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_17_we = addr_hit[567] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_17_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_18_we = addr_hit[568] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_18_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_19_we = addr_hit[569] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_19_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_20_we = addr_hit[570] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_20_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_21_we = addr_hit[571] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_21_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_22_we = addr_hit[572] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_22_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_23_we = addr_hit[573] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_23_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_24_we = addr_hit[574] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_24_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_25_we = addr_hit[575] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_25_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_26_we = addr_hit[576] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_26_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_27_we = addr_hit[577] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_27_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_28_we = addr_hit[578] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_28_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_29_we = addr_hit[579] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_29_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_30_we = addr_hit[580] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_30_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_31_we = addr_hit[581] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_31_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_32_we = addr_hit[582] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_32_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_33_we = addr_hit[583] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_33_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_34_we = addr_hit[584] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_34_wd = reg_wdata[1:0];
+  assign dio_pad_sleep_mode_35_we = addr_hit[585] & reg_we & !reg_error;
+
+  assign dio_pad_sleep_mode_35_wd = reg_wdata[1:0];
+  assign wkup_detector_regwen_0_we = addr_hit[586] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_0_wd = reg_wdata[0];
-  assign wkup_detector_regwen_1_we = addr_hit[466] & reg_we & !reg_error;
+  assign wkup_detector_regwen_1_we = addr_hit[587] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_1_wd = reg_wdata[0];
-  assign wkup_detector_regwen_2_we = addr_hit[467] & reg_we & !reg_error;
+  assign wkup_detector_regwen_2_we = addr_hit[588] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_2_wd = reg_wdata[0];
-  assign wkup_detector_regwen_3_we = addr_hit[468] & reg_we & !reg_error;
+  assign wkup_detector_regwen_3_we = addr_hit[589] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_3_wd = reg_wdata[0];
-  assign wkup_detector_regwen_4_we = addr_hit[469] & reg_we & !reg_error;
+  assign wkup_detector_regwen_4_we = addr_hit[590] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_4_wd = reg_wdata[0];
-  assign wkup_detector_regwen_5_we = addr_hit[470] & reg_we & !reg_error;
+  assign wkup_detector_regwen_5_we = addr_hit[591] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_5_wd = reg_wdata[0];
-  assign wkup_detector_regwen_6_we = addr_hit[471] & reg_we & !reg_error;
+  assign wkup_detector_regwen_6_we = addr_hit[592] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_6_wd = reg_wdata[0];
-  assign wkup_detector_regwen_7_we = addr_hit[472] & reg_we & !reg_error;
+  assign wkup_detector_regwen_7_we = addr_hit[593] & reg_we & !reg_error;
 
   assign wkup_detector_regwen_7_wd = reg_wdata[0];
-  assign wkup_detector_en_0_we = addr_hit[473] & reg_we & !reg_error;
+  assign wkup_detector_en_0_we = addr_hit[594] & reg_we & !reg_error;
 
-  assign wkup_detector_en_1_we = addr_hit[474] & reg_we & !reg_error;
+  assign wkup_detector_en_1_we = addr_hit[595] & reg_we & !reg_error;
 
-  assign wkup_detector_en_2_we = addr_hit[475] & reg_we & !reg_error;
+  assign wkup_detector_en_2_we = addr_hit[596] & reg_we & !reg_error;
 
-  assign wkup_detector_en_3_we = addr_hit[476] & reg_we & !reg_error;
+  assign wkup_detector_en_3_we = addr_hit[597] & reg_we & !reg_error;
 
-  assign wkup_detector_en_4_we = addr_hit[477] & reg_we & !reg_error;
+  assign wkup_detector_en_4_we = addr_hit[598] & reg_we & !reg_error;
 
-  assign wkup_detector_en_5_we = addr_hit[478] & reg_we & !reg_error;
+  assign wkup_detector_en_5_we = addr_hit[599] & reg_we & !reg_error;
 
-  assign wkup_detector_en_6_we = addr_hit[479] & reg_we & !reg_error;
+  assign wkup_detector_en_6_we = addr_hit[600] & reg_we & !reg_error;
 
-  assign wkup_detector_en_7_we = addr_hit[480] & reg_we & !reg_error;
+  assign wkup_detector_en_7_we = addr_hit[601] & reg_we & !reg_error;
 
-  assign wkup_detector_0_we = addr_hit[481] & reg_we & !reg_error;
-
-
-
-  assign wkup_detector_1_we = addr_hit[482] & reg_we & !reg_error;
+  assign wkup_detector_0_we = addr_hit[602] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_2_we = addr_hit[483] & reg_we & !reg_error;
+  assign wkup_detector_1_we = addr_hit[603] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_3_we = addr_hit[484] & reg_we & !reg_error;
+  assign wkup_detector_2_we = addr_hit[604] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_4_we = addr_hit[485] & reg_we & !reg_error;
+  assign wkup_detector_3_we = addr_hit[605] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_5_we = addr_hit[486] & reg_we & !reg_error;
+  assign wkup_detector_4_we = addr_hit[606] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_6_we = addr_hit[487] & reg_we & !reg_error;
+  assign wkup_detector_5_we = addr_hit[607] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_7_we = addr_hit[488] & reg_we & !reg_error;
+  assign wkup_detector_6_we = addr_hit[608] & reg_we & !reg_error;
 
 
 
-  assign wkup_detector_cnt_th_0_we = addr_hit[489] & reg_we & !reg_error;
+  assign wkup_detector_7_we = addr_hit[609] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_1_we = addr_hit[490] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_2_we = addr_hit[491] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_3_we = addr_hit[492] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_0_we = addr_hit[610] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_4_we = addr_hit[493] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_1_we = addr_hit[611] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_5_we = addr_hit[494] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_2_we = addr_hit[612] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_6_we = addr_hit[495] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_3_we = addr_hit[613] & reg_we & !reg_error;
 
-  assign wkup_detector_cnt_th_7_we = addr_hit[496] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_4_we = addr_hit[614] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_0_we = addr_hit[497] & reg_we & !reg_error;
+  assign wkup_detector_cnt_th_5_we = addr_hit[615] & reg_we & !reg_error;
+
+  assign wkup_detector_cnt_th_6_we = addr_hit[616] & reg_we & !reg_error;
+
+  assign wkup_detector_cnt_th_7_we = addr_hit[617] & reg_we & !reg_error;
+
+  assign wkup_detector_padsel_0_we = addr_hit[618] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_0_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_1_we = addr_hit[498] & reg_we & !reg_error;
+  assign wkup_detector_padsel_1_we = addr_hit[619] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_1_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_2_we = addr_hit[499] & reg_we & !reg_error;
+  assign wkup_detector_padsel_2_we = addr_hit[620] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_2_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_3_we = addr_hit[500] & reg_we & !reg_error;
+  assign wkup_detector_padsel_3_we = addr_hit[621] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_3_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_4_we = addr_hit[501] & reg_we & !reg_error;
+  assign wkup_detector_padsel_4_we = addr_hit[622] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_4_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_5_we = addr_hit[502] & reg_we & !reg_error;
+  assign wkup_detector_padsel_5_we = addr_hit[623] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_5_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_6_we = addr_hit[503] & reg_we & !reg_error;
+  assign wkup_detector_padsel_6_we = addr_hit[624] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_6_wd = reg_wdata[5:0];
-  assign wkup_detector_padsel_7_we = addr_hit[504] & reg_we & !reg_error;
+  assign wkup_detector_padsel_7_we = addr_hit[625] & reg_we & !reg_error;
 
   assign wkup_detector_padsel_7_wd = reg_wdata[5:0];
-  assign wkup_cause_we = addr_hit[505] & reg_we & !reg_error;
+  assign wkup_cause_we = addr_hit[626] & reg_we & !reg_error;
 
 
 
@@ -32578,239 +41705,360 @@ module pinmux_reg_top (
     reg_we_check[270] = dio_pad_attr_regwen_9_we;
     reg_we_check[271] = dio_pad_attr_regwen_10_we;
     reg_we_check[272] = dio_pad_attr_regwen_11_we;
-    reg_we_check[273] = dio_pad_attr_0_gated_we;
-    reg_we_check[274] = dio_pad_attr_1_gated_we;
-    reg_we_check[275] = dio_pad_attr_2_gated_we;
-    reg_we_check[276] = dio_pad_attr_3_gated_we;
-    reg_we_check[277] = dio_pad_attr_4_gated_we;
-    reg_we_check[278] = dio_pad_attr_5_gated_we;
-    reg_we_check[279] = dio_pad_attr_6_gated_we;
-    reg_we_check[280] = dio_pad_attr_7_gated_we;
-    reg_we_check[281] = dio_pad_attr_8_gated_we;
-    reg_we_check[282] = dio_pad_attr_9_gated_we;
-    reg_we_check[283] = dio_pad_attr_10_gated_we;
-    reg_we_check[284] = dio_pad_attr_11_gated_we;
-    reg_we_check[285] = mio_pad_sleep_status_0_we;
-    reg_we_check[286] = mio_pad_sleep_status_1_we;
-    reg_we_check[287] = mio_pad_sleep_regwen_0_we;
-    reg_we_check[288] = mio_pad_sleep_regwen_1_we;
-    reg_we_check[289] = mio_pad_sleep_regwen_2_we;
-    reg_we_check[290] = mio_pad_sleep_regwen_3_we;
-    reg_we_check[291] = mio_pad_sleep_regwen_4_we;
-    reg_we_check[292] = mio_pad_sleep_regwen_5_we;
-    reg_we_check[293] = mio_pad_sleep_regwen_6_we;
-    reg_we_check[294] = mio_pad_sleep_regwen_7_we;
-    reg_we_check[295] = mio_pad_sleep_regwen_8_we;
-    reg_we_check[296] = mio_pad_sleep_regwen_9_we;
-    reg_we_check[297] = mio_pad_sleep_regwen_10_we;
-    reg_we_check[298] = mio_pad_sleep_regwen_11_we;
-    reg_we_check[299] = mio_pad_sleep_regwen_12_we;
-    reg_we_check[300] = mio_pad_sleep_regwen_13_we;
-    reg_we_check[301] = mio_pad_sleep_regwen_14_we;
-    reg_we_check[302] = mio_pad_sleep_regwen_15_we;
-    reg_we_check[303] = mio_pad_sleep_regwen_16_we;
-    reg_we_check[304] = mio_pad_sleep_regwen_17_we;
-    reg_we_check[305] = mio_pad_sleep_regwen_18_we;
-    reg_we_check[306] = mio_pad_sleep_regwen_19_we;
-    reg_we_check[307] = mio_pad_sleep_regwen_20_we;
-    reg_we_check[308] = mio_pad_sleep_regwen_21_we;
-    reg_we_check[309] = mio_pad_sleep_regwen_22_we;
-    reg_we_check[310] = mio_pad_sleep_regwen_23_we;
-    reg_we_check[311] = mio_pad_sleep_regwen_24_we;
-    reg_we_check[312] = mio_pad_sleep_regwen_25_we;
-    reg_we_check[313] = mio_pad_sleep_regwen_26_we;
-    reg_we_check[314] = mio_pad_sleep_regwen_27_we;
-    reg_we_check[315] = mio_pad_sleep_regwen_28_we;
-    reg_we_check[316] = mio_pad_sleep_regwen_29_we;
-    reg_we_check[317] = mio_pad_sleep_regwen_30_we;
-    reg_we_check[318] = mio_pad_sleep_regwen_31_we;
-    reg_we_check[319] = mio_pad_sleep_regwen_32_we;
-    reg_we_check[320] = mio_pad_sleep_regwen_33_we;
-    reg_we_check[321] = mio_pad_sleep_regwen_34_we;
-    reg_we_check[322] = mio_pad_sleep_regwen_35_we;
-    reg_we_check[323] = mio_pad_sleep_regwen_36_we;
-    reg_we_check[324] = mio_pad_sleep_regwen_37_we;
-    reg_we_check[325] = mio_pad_sleep_regwen_38_we;
-    reg_we_check[326] = mio_pad_sleep_regwen_39_we;
-    reg_we_check[327] = mio_pad_sleep_regwen_40_we;
-    reg_we_check[328] = mio_pad_sleep_regwen_41_we;
-    reg_we_check[329] = mio_pad_sleep_regwen_42_we;
-    reg_we_check[330] = mio_pad_sleep_regwen_43_we;
-    reg_we_check[331] = mio_pad_sleep_regwen_44_we;
-    reg_we_check[332] = mio_pad_sleep_regwen_45_we;
-    reg_we_check[333] = mio_pad_sleep_regwen_46_we;
-    reg_we_check[334] = mio_pad_sleep_en_0_gated_we;
-    reg_we_check[335] = mio_pad_sleep_en_1_gated_we;
-    reg_we_check[336] = mio_pad_sleep_en_2_gated_we;
-    reg_we_check[337] = mio_pad_sleep_en_3_gated_we;
-    reg_we_check[338] = mio_pad_sleep_en_4_gated_we;
-    reg_we_check[339] = mio_pad_sleep_en_5_gated_we;
-    reg_we_check[340] = mio_pad_sleep_en_6_gated_we;
-    reg_we_check[341] = mio_pad_sleep_en_7_gated_we;
-    reg_we_check[342] = mio_pad_sleep_en_8_gated_we;
-    reg_we_check[343] = mio_pad_sleep_en_9_gated_we;
-    reg_we_check[344] = mio_pad_sleep_en_10_gated_we;
-    reg_we_check[345] = mio_pad_sleep_en_11_gated_we;
-    reg_we_check[346] = mio_pad_sleep_en_12_gated_we;
-    reg_we_check[347] = mio_pad_sleep_en_13_gated_we;
-    reg_we_check[348] = mio_pad_sleep_en_14_gated_we;
-    reg_we_check[349] = mio_pad_sleep_en_15_gated_we;
-    reg_we_check[350] = mio_pad_sleep_en_16_gated_we;
-    reg_we_check[351] = mio_pad_sleep_en_17_gated_we;
-    reg_we_check[352] = mio_pad_sleep_en_18_gated_we;
-    reg_we_check[353] = mio_pad_sleep_en_19_gated_we;
-    reg_we_check[354] = mio_pad_sleep_en_20_gated_we;
-    reg_we_check[355] = mio_pad_sleep_en_21_gated_we;
-    reg_we_check[356] = mio_pad_sleep_en_22_gated_we;
-    reg_we_check[357] = mio_pad_sleep_en_23_gated_we;
-    reg_we_check[358] = mio_pad_sleep_en_24_gated_we;
-    reg_we_check[359] = mio_pad_sleep_en_25_gated_we;
-    reg_we_check[360] = mio_pad_sleep_en_26_gated_we;
-    reg_we_check[361] = mio_pad_sleep_en_27_gated_we;
-    reg_we_check[362] = mio_pad_sleep_en_28_gated_we;
-    reg_we_check[363] = mio_pad_sleep_en_29_gated_we;
-    reg_we_check[364] = mio_pad_sleep_en_30_gated_we;
-    reg_we_check[365] = mio_pad_sleep_en_31_gated_we;
-    reg_we_check[366] = mio_pad_sleep_en_32_gated_we;
-    reg_we_check[367] = mio_pad_sleep_en_33_gated_we;
-    reg_we_check[368] = mio_pad_sleep_en_34_gated_we;
-    reg_we_check[369] = mio_pad_sleep_en_35_gated_we;
-    reg_we_check[370] = mio_pad_sleep_en_36_gated_we;
-    reg_we_check[371] = mio_pad_sleep_en_37_gated_we;
-    reg_we_check[372] = mio_pad_sleep_en_38_gated_we;
-    reg_we_check[373] = mio_pad_sleep_en_39_gated_we;
-    reg_we_check[374] = mio_pad_sleep_en_40_gated_we;
-    reg_we_check[375] = mio_pad_sleep_en_41_gated_we;
-    reg_we_check[376] = mio_pad_sleep_en_42_gated_we;
-    reg_we_check[377] = mio_pad_sleep_en_43_gated_we;
-    reg_we_check[378] = mio_pad_sleep_en_44_gated_we;
-    reg_we_check[379] = mio_pad_sleep_en_45_gated_we;
-    reg_we_check[380] = mio_pad_sleep_en_46_gated_we;
-    reg_we_check[381] = mio_pad_sleep_mode_0_gated_we;
-    reg_we_check[382] = mio_pad_sleep_mode_1_gated_we;
-    reg_we_check[383] = mio_pad_sleep_mode_2_gated_we;
-    reg_we_check[384] = mio_pad_sleep_mode_3_gated_we;
-    reg_we_check[385] = mio_pad_sleep_mode_4_gated_we;
-    reg_we_check[386] = mio_pad_sleep_mode_5_gated_we;
-    reg_we_check[387] = mio_pad_sleep_mode_6_gated_we;
-    reg_we_check[388] = mio_pad_sleep_mode_7_gated_we;
-    reg_we_check[389] = mio_pad_sleep_mode_8_gated_we;
-    reg_we_check[390] = mio_pad_sleep_mode_9_gated_we;
-    reg_we_check[391] = mio_pad_sleep_mode_10_gated_we;
-    reg_we_check[392] = mio_pad_sleep_mode_11_gated_we;
-    reg_we_check[393] = mio_pad_sleep_mode_12_gated_we;
-    reg_we_check[394] = mio_pad_sleep_mode_13_gated_we;
-    reg_we_check[395] = mio_pad_sleep_mode_14_gated_we;
-    reg_we_check[396] = mio_pad_sleep_mode_15_gated_we;
-    reg_we_check[397] = mio_pad_sleep_mode_16_gated_we;
-    reg_we_check[398] = mio_pad_sleep_mode_17_gated_we;
-    reg_we_check[399] = mio_pad_sleep_mode_18_gated_we;
-    reg_we_check[400] = mio_pad_sleep_mode_19_gated_we;
-    reg_we_check[401] = mio_pad_sleep_mode_20_gated_we;
-    reg_we_check[402] = mio_pad_sleep_mode_21_gated_we;
-    reg_we_check[403] = mio_pad_sleep_mode_22_gated_we;
-    reg_we_check[404] = mio_pad_sleep_mode_23_gated_we;
-    reg_we_check[405] = mio_pad_sleep_mode_24_gated_we;
-    reg_we_check[406] = mio_pad_sleep_mode_25_gated_we;
-    reg_we_check[407] = mio_pad_sleep_mode_26_gated_we;
-    reg_we_check[408] = mio_pad_sleep_mode_27_gated_we;
-    reg_we_check[409] = mio_pad_sleep_mode_28_gated_we;
-    reg_we_check[410] = mio_pad_sleep_mode_29_gated_we;
-    reg_we_check[411] = mio_pad_sleep_mode_30_gated_we;
-    reg_we_check[412] = mio_pad_sleep_mode_31_gated_we;
-    reg_we_check[413] = mio_pad_sleep_mode_32_gated_we;
-    reg_we_check[414] = mio_pad_sleep_mode_33_gated_we;
-    reg_we_check[415] = mio_pad_sleep_mode_34_gated_we;
-    reg_we_check[416] = mio_pad_sleep_mode_35_gated_we;
-    reg_we_check[417] = mio_pad_sleep_mode_36_gated_we;
-    reg_we_check[418] = mio_pad_sleep_mode_37_gated_we;
-    reg_we_check[419] = mio_pad_sleep_mode_38_gated_we;
-    reg_we_check[420] = mio_pad_sleep_mode_39_gated_we;
-    reg_we_check[421] = mio_pad_sleep_mode_40_gated_we;
-    reg_we_check[422] = mio_pad_sleep_mode_41_gated_we;
-    reg_we_check[423] = mio_pad_sleep_mode_42_gated_we;
-    reg_we_check[424] = mio_pad_sleep_mode_43_gated_we;
-    reg_we_check[425] = mio_pad_sleep_mode_44_gated_we;
-    reg_we_check[426] = mio_pad_sleep_mode_45_gated_we;
-    reg_we_check[427] = mio_pad_sleep_mode_46_gated_we;
-    reg_we_check[428] = dio_pad_sleep_status_we;
-    reg_we_check[429] = dio_pad_sleep_regwen_0_we;
-    reg_we_check[430] = dio_pad_sleep_regwen_1_we;
-    reg_we_check[431] = dio_pad_sleep_regwen_2_we;
-    reg_we_check[432] = dio_pad_sleep_regwen_3_we;
-    reg_we_check[433] = dio_pad_sleep_regwen_4_we;
-    reg_we_check[434] = dio_pad_sleep_regwen_5_we;
-    reg_we_check[435] = dio_pad_sleep_regwen_6_we;
-    reg_we_check[436] = dio_pad_sleep_regwen_7_we;
-    reg_we_check[437] = dio_pad_sleep_regwen_8_we;
-    reg_we_check[438] = dio_pad_sleep_regwen_9_we;
-    reg_we_check[439] = dio_pad_sleep_regwen_10_we;
-    reg_we_check[440] = dio_pad_sleep_regwen_11_we;
-    reg_we_check[441] = dio_pad_sleep_en_0_gated_we;
-    reg_we_check[442] = dio_pad_sleep_en_1_gated_we;
-    reg_we_check[443] = dio_pad_sleep_en_2_gated_we;
-    reg_we_check[444] = dio_pad_sleep_en_3_gated_we;
-    reg_we_check[445] = dio_pad_sleep_en_4_gated_we;
-    reg_we_check[446] = dio_pad_sleep_en_5_gated_we;
-    reg_we_check[447] = dio_pad_sleep_en_6_gated_we;
-    reg_we_check[448] = dio_pad_sleep_en_7_gated_we;
-    reg_we_check[449] = dio_pad_sleep_en_8_gated_we;
-    reg_we_check[450] = dio_pad_sleep_en_9_gated_we;
-    reg_we_check[451] = dio_pad_sleep_en_10_gated_we;
-    reg_we_check[452] = dio_pad_sleep_en_11_gated_we;
-    reg_we_check[453] = dio_pad_sleep_mode_0_gated_we;
-    reg_we_check[454] = dio_pad_sleep_mode_1_gated_we;
-    reg_we_check[455] = dio_pad_sleep_mode_2_gated_we;
-    reg_we_check[456] = dio_pad_sleep_mode_3_gated_we;
-    reg_we_check[457] = dio_pad_sleep_mode_4_gated_we;
-    reg_we_check[458] = dio_pad_sleep_mode_5_gated_we;
-    reg_we_check[459] = dio_pad_sleep_mode_6_gated_we;
-    reg_we_check[460] = dio_pad_sleep_mode_7_gated_we;
-    reg_we_check[461] = dio_pad_sleep_mode_8_gated_we;
-    reg_we_check[462] = dio_pad_sleep_mode_9_gated_we;
-    reg_we_check[463] = dio_pad_sleep_mode_10_gated_we;
-    reg_we_check[464] = dio_pad_sleep_mode_11_gated_we;
-    reg_we_check[465] = wkup_detector_regwen_0_we;
-    reg_we_check[466] = wkup_detector_regwen_1_we;
-    reg_we_check[467] = wkup_detector_regwen_2_we;
-    reg_we_check[468] = wkup_detector_regwen_3_we;
-    reg_we_check[469] = wkup_detector_regwen_4_we;
-    reg_we_check[470] = wkup_detector_regwen_5_we;
-    reg_we_check[471] = wkup_detector_regwen_6_we;
-    reg_we_check[472] = wkup_detector_regwen_7_we;
-    reg_we_check[473] = wkup_detector_en_0_we;
-    reg_we_check[474] = wkup_detector_en_1_we;
-    reg_we_check[475] = wkup_detector_en_2_we;
-    reg_we_check[476] = wkup_detector_en_3_we;
-    reg_we_check[477] = wkup_detector_en_4_we;
-    reg_we_check[478] = wkup_detector_en_5_we;
-    reg_we_check[479] = wkup_detector_en_6_we;
-    reg_we_check[480] = wkup_detector_en_7_we;
-    reg_we_check[481] = wkup_detector_0_we;
-    reg_we_check[482] = wkup_detector_1_we;
-    reg_we_check[483] = wkup_detector_2_we;
-    reg_we_check[484] = wkup_detector_3_we;
-    reg_we_check[485] = wkup_detector_4_we;
-    reg_we_check[486] = wkup_detector_5_we;
-    reg_we_check[487] = wkup_detector_6_we;
-    reg_we_check[488] = wkup_detector_7_we;
-    reg_we_check[489] = wkup_detector_cnt_th_0_we;
-    reg_we_check[490] = wkup_detector_cnt_th_1_we;
-    reg_we_check[491] = wkup_detector_cnt_th_2_we;
-    reg_we_check[492] = wkup_detector_cnt_th_3_we;
-    reg_we_check[493] = wkup_detector_cnt_th_4_we;
-    reg_we_check[494] = wkup_detector_cnt_th_5_we;
-    reg_we_check[495] = wkup_detector_cnt_th_6_we;
-    reg_we_check[496] = wkup_detector_cnt_th_7_we;
-    reg_we_check[497] = wkup_detector_padsel_0_gated_we;
-    reg_we_check[498] = wkup_detector_padsel_1_gated_we;
-    reg_we_check[499] = wkup_detector_padsel_2_gated_we;
-    reg_we_check[500] = wkup_detector_padsel_3_gated_we;
-    reg_we_check[501] = wkup_detector_padsel_4_gated_we;
-    reg_we_check[502] = wkup_detector_padsel_5_gated_we;
-    reg_we_check[503] = wkup_detector_padsel_6_gated_we;
-    reg_we_check[504] = wkup_detector_padsel_7_gated_we;
-    reg_we_check[505] = wkup_cause_we;
+    reg_we_check[273] = dio_pad_attr_regwen_12_we;
+    reg_we_check[274] = dio_pad_attr_regwen_13_we;
+    reg_we_check[275] = dio_pad_attr_regwen_14_we;
+    reg_we_check[276] = dio_pad_attr_regwen_15_we;
+    reg_we_check[277] = dio_pad_attr_regwen_16_we;
+    reg_we_check[278] = dio_pad_attr_regwen_17_we;
+    reg_we_check[279] = dio_pad_attr_regwen_18_we;
+    reg_we_check[280] = dio_pad_attr_regwen_19_we;
+    reg_we_check[281] = dio_pad_attr_regwen_20_we;
+    reg_we_check[282] = dio_pad_attr_regwen_21_we;
+    reg_we_check[283] = dio_pad_attr_regwen_22_we;
+    reg_we_check[284] = dio_pad_attr_regwen_23_we;
+    reg_we_check[285] = dio_pad_attr_regwen_24_we;
+    reg_we_check[286] = dio_pad_attr_regwen_25_we;
+    reg_we_check[287] = dio_pad_attr_regwen_26_we;
+    reg_we_check[288] = dio_pad_attr_regwen_27_we;
+    reg_we_check[289] = dio_pad_attr_regwen_28_we;
+    reg_we_check[290] = dio_pad_attr_regwen_29_we;
+    reg_we_check[291] = dio_pad_attr_regwen_30_we;
+    reg_we_check[292] = dio_pad_attr_regwen_31_we;
+    reg_we_check[293] = dio_pad_attr_regwen_32_we;
+    reg_we_check[294] = dio_pad_attr_regwen_33_we;
+    reg_we_check[295] = dio_pad_attr_regwen_34_we;
+    reg_we_check[296] = dio_pad_attr_regwen_35_we;
+    reg_we_check[297] = dio_pad_attr_0_gated_we;
+    reg_we_check[298] = dio_pad_attr_1_gated_we;
+    reg_we_check[299] = dio_pad_attr_2_gated_we;
+    reg_we_check[300] = dio_pad_attr_3_gated_we;
+    reg_we_check[301] = dio_pad_attr_4_gated_we;
+    reg_we_check[302] = dio_pad_attr_5_gated_we;
+    reg_we_check[303] = dio_pad_attr_6_gated_we;
+    reg_we_check[304] = dio_pad_attr_7_gated_we;
+    reg_we_check[305] = dio_pad_attr_8_gated_we;
+    reg_we_check[306] = dio_pad_attr_9_gated_we;
+    reg_we_check[307] = dio_pad_attr_10_gated_we;
+    reg_we_check[308] = dio_pad_attr_11_gated_we;
+    reg_we_check[309] = dio_pad_attr_12_gated_we;
+    reg_we_check[310] = dio_pad_attr_13_gated_we;
+    reg_we_check[311] = dio_pad_attr_14_gated_we;
+    reg_we_check[312] = dio_pad_attr_15_gated_we;
+    reg_we_check[313] = dio_pad_attr_16_gated_we;
+    reg_we_check[314] = dio_pad_attr_17_gated_we;
+    reg_we_check[315] = dio_pad_attr_18_gated_we;
+    reg_we_check[316] = dio_pad_attr_19_gated_we;
+    reg_we_check[317] = dio_pad_attr_20_gated_we;
+    reg_we_check[318] = dio_pad_attr_21_gated_we;
+    reg_we_check[319] = dio_pad_attr_22_gated_we;
+    reg_we_check[320] = dio_pad_attr_23_gated_we;
+    reg_we_check[321] = dio_pad_attr_24_gated_we;
+    reg_we_check[322] = dio_pad_attr_25_gated_we;
+    reg_we_check[323] = dio_pad_attr_26_gated_we;
+    reg_we_check[324] = dio_pad_attr_27_gated_we;
+    reg_we_check[325] = dio_pad_attr_28_gated_we;
+    reg_we_check[326] = dio_pad_attr_29_gated_we;
+    reg_we_check[327] = dio_pad_attr_30_gated_we;
+    reg_we_check[328] = dio_pad_attr_31_gated_we;
+    reg_we_check[329] = dio_pad_attr_32_gated_we;
+    reg_we_check[330] = dio_pad_attr_33_gated_we;
+    reg_we_check[331] = dio_pad_attr_34_gated_we;
+    reg_we_check[332] = dio_pad_attr_35_gated_we;
+    reg_we_check[333] = mio_pad_sleep_status_0_we;
+    reg_we_check[334] = mio_pad_sleep_status_1_we;
+    reg_we_check[335] = mio_pad_sleep_regwen_0_we;
+    reg_we_check[336] = mio_pad_sleep_regwen_1_we;
+    reg_we_check[337] = mio_pad_sleep_regwen_2_we;
+    reg_we_check[338] = mio_pad_sleep_regwen_3_we;
+    reg_we_check[339] = mio_pad_sleep_regwen_4_we;
+    reg_we_check[340] = mio_pad_sleep_regwen_5_we;
+    reg_we_check[341] = mio_pad_sleep_regwen_6_we;
+    reg_we_check[342] = mio_pad_sleep_regwen_7_we;
+    reg_we_check[343] = mio_pad_sleep_regwen_8_we;
+    reg_we_check[344] = mio_pad_sleep_regwen_9_we;
+    reg_we_check[345] = mio_pad_sleep_regwen_10_we;
+    reg_we_check[346] = mio_pad_sleep_regwen_11_we;
+    reg_we_check[347] = mio_pad_sleep_regwen_12_we;
+    reg_we_check[348] = mio_pad_sleep_regwen_13_we;
+    reg_we_check[349] = mio_pad_sleep_regwen_14_we;
+    reg_we_check[350] = mio_pad_sleep_regwen_15_we;
+    reg_we_check[351] = mio_pad_sleep_regwen_16_we;
+    reg_we_check[352] = mio_pad_sleep_regwen_17_we;
+    reg_we_check[353] = mio_pad_sleep_regwen_18_we;
+    reg_we_check[354] = mio_pad_sleep_regwen_19_we;
+    reg_we_check[355] = mio_pad_sleep_regwen_20_we;
+    reg_we_check[356] = mio_pad_sleep_regwen_21_we;
+    reg_we_check[357] = mio_pad_sleep_regwen_22_we;
+    reg_we_check[358] = mio_pad_sleep_regwen_23_we;
+    reg_we_check[359] = mio_pad_sleep_regwen_24_we;
+    reg_we_check[360] = mio_pad_sleep_regwen_25_we;
+    reg_we_check[361] = mio_pad_sleep_regwen_26_we;
+    reg_we_check[362] = mio_pad_sleep_regwen_27_we;
+    reg_we_check[363] = mio_pad_sleep_regwen_28_we;
+    reg_we_check[364] = mio_pad_sleep_regwen_29_we;
+    reg_we_check[365] = mio_pad_sleep_regwen_30_we;
+    reg_we_check[366] = mio_pad_sleep_regwen_31_we;
+    reg_we_check[367] = mio_pad_sleep_regwen_32_we;
+    reg_we_check[368] = mio_pad_sleep_regwen_33_we;
+    reg_we_check[369] = mio_pad_sleep_regwen_34_we;
+    reg_we_check[370] = mio_pad_sleep_regwen_35_we;
+    reg_we_check[371] = mio_pad_sleep_regwen_36_we;
+    reg_we_check[372] = mio_pad_sleep_regwen_37_we;
+    reg_we_check[373] = mio_pad_sleep_regwen_38_we;
+    reg_we_check[374] = mio_pad_sleep_regwen_39_we;
+    reg_we_check[375] = mio_pad_sleep_regwen_40_we;
+    reg_we_check[376] = mio_pad_sleep_regwen_41_we;
+    reg_we_check[377] = mio_pad_sleep_regwen_42_we;
+    reg_we_check[378] = mio_pad_sleep_regwen_43_we;
+    reg_we_check[379] = mio_pad_sleep_regwen_44_we;
+    reg_we_check[380] = mio_pad_sleep_regwen_45_we;
+    reg_we_check[381] = mio_pad_sleep_regwen_46_we;
+    reg_we_check[382] = mio_pad_sleep_en_0_gated_we;
+    reg_we_check[383] = mio_pad_sleep_en_1_gated_we;
+    reg_we_check[384] = mio_pad_sleep_en_2_gated_we;
+    reg_we_check[385] = mio_pad_sleep_en_3_gated_we;
+    reg_we_check[386] = mio_pad_sleep_en_4_gated_we;
+    reg_we_check[387] = mio_pad_sleep_en_5_gated_we;
+    reg_we_check[388] = mio_pad_sleep_en_6_gated_we;
+    reg_we_check[389] = mio_pad_sleep_en_7_gated_we;
+    reg_we_check[390] = mio_pad_sleep_en_8_gated_we;
+    reg_we_check[391] = mio_pad_sleep_en_9_gated_we;
+    reg_we_check[392] = mio_pad_sleep_en_10_gated_we;
+    reg_we_check[393] = mio_pad_sleep_en_11_gated_we;
+    reg_we_check[394] = mio_pad_sleep_en_12_gated_we;
+    reg_we_check[395] = mio_pad_sleep_en_13_gated_we;
+    reg_we_check[396] = mio_pad_sleep_en_14_gated_we;
+    reg_we_check[397] = mio_pad_sleep_en_15_gated_we;
+    reg_we_check[398] = mio_pad_sleep_en_16_gated_we;
+    reg_we_check[399] = mio_pad_sleep_en_17_gated_we;
+    reg_we_check[400] = mio_pad_sleep_en_18_gated_we;
+    reg_we_check[401] = mio_pad_sleep_en_19_gated_we;
+    reg_we_check[402] = mio_pad_sleep_en_20_gated_we;
+    reg_we_check[403] = mio_pad_sleep_en_21_gated_we;
+    reg_we_check[404] = mio_pad_sleep_en_22_gated_we;
+    reg_we_check[405] = mio_pad_sleep_en_23_gated_we;
+    reg_we_check[406] = mio_pad_sleep_en_24_gated_we;
+    reg_we_check[407] = mio_pad_sleep_en_25_gated_we;
+    reg_we_check[408] = mio_pad_sleep_en_26_gated_we;
+    reg_we_check[409] = mio_pad_sleep_en_27_gated_we;
+    reg_we_check[410] = mio_pad_sleep_en_28_gated_we;
+    reg_we_check[411] = mio_pad_sleep_en_29_gated_we;
+    reg_we_check[412] = mio_pad_sleep_en_30_gated_we;
+    reg_we_check[413] = mio_pad_sleep_en_31_gated_we;
+    reg_we_check[414] = mio_pad_sleep_en_32_gated_we;
+    reg_we_check[415] = mio_pad_sleep_en_33_gated_we;
+    reg_we_check[416] = mio_pad_sleep_en_34_gated_we;
+    reg_we_check[417] = mio_pad_sleep_en_35_gated_we;
+    reg_we_check[418] = mio_pad_sleep_en_36_gated_we;
+    reg_we_check[419] = mio_pad_sleep_en_37_gated_we;
+    reg_we_check[420] = mio_pad_sleep_en_38_gated_we;
+    reg_we_check[421] = mio_pad_sleep_en_39_gated_we;
+    reg_we_check[422] = mio_pad_sleep_en_40_gated_we;
+    reg_we_check[423] = mio_pad_sleep_en_41_gated_we;
+    reg_we_check[424] = mio_pad_sleep_en_42_gated_we;
+    reg_we_check[425] = mio_pad_sleep_en_43_gated_we;
+    reg_we_check[426] = mio_pad_sleep_en_44_gated_we;
+    reg_we_check[427] = mio_pad_sleep_en_45_gated_we;
+    reg_we_check[428] = mio_pad_sleep_en_46_gated_we;
+    reg_we_check[429] = mio_pad_sleep_mode_0_gated_we;
+    reg_we_check[430] = mio_pad_sleep_mode_1_gated_we;
+    reg_we_check[431] = mio_pad_sleep_mode_2_gated_we;
+    reg_we_check[432] = mio_pad_sleep_mode_3_gated_we;
+    reg_we_check[433] = mio_pad_sleep_mode_4_gated_we;
+    reg_we_check[434] = mio_pad_sleep_mode_5_gated_we;
+    reg_we_check[435] = mio_pad_sleep_mode_6_gated_we;
+    reg_we_check[436] = mio_pad_sleep_mode_7_gated_we;
+    reg_we_check[437] = mio_pad_sleep_mode_8_gated_we;
+    reg_we_check[438] = mio_pad_sleep_mode_9_gated_we;
+    reg_we_check[439] = mio_pad_sleep_mode_10_gated_we;
+    reg_we_check[440] = mio_pad_sleep_mode_11_gated_we;
+    reg_we_check[441] = mio_pad_sleep_mode_12_gated_we;
+    reg_we_check[442] = mio_pad_sleep_mode_13_gated_we;
+    reg_we_check[443] = mio_pad_sleep_mode_14_gated_we;
+    reg_we_check[444] = mio_pad_sleep_mode_15_gated_we;
+    reg_we_check[445] = mio_pad_sleep_mode_16_gated_we;
+    reg_we_check[446] = mio_pad_sleep_mode_17_gated_we;
+    reg_we_check[447] = mio_pad_sleep_mode_18_gated_we;
+    reg_we_check[448] = mio_pad_sleep_mode_19_gated_we;
+    reg_we_check[449] = mio_pad_sleep_mode_20_gated_we;
+    reg_we_check[450] = mio_pad_sleep_mode_21_gated_we;
+    reg_we_check[451] = mio_pad_sleep_mode_22_gated_we;
+    reg_we_check[452] = mio_pad_sleep_mode_23_gated_we;
+    reg_we_check[453] = mio_pad_sleep_mode_24_gated_we;
+    reg_we_check[454] = mio_pad_sleep_mode_25_gated_we;
+    reg_we_check[455] = mio_pad_sleep_mode_26_gated_we;
+    reg_we_check[456] = mio_pad_sleep_mode_27_gated_we;
+    reg_we_check[457] = mio_pad_sleep_mode_28_gated_we;
+    reg_we_check[458] = mio_pad_sleep_mode_29_gated_we;
+    reg_we_check[459] = mio_pad_sleep_mode_30_gated_we;
+    reg_we_check[460] = mio_pad_sleep_mode_31_gated_we;
+    reg_we_check[461] = mio_pad_sleep_mode_32_gated_we;
+    reg_we_check[462] = mio_pad_sleep_mode_33_gated_we;
+    reg_we_check[463] = mio_pad_sleep_mode_34_gated_we;
+    reg_we_check[464] = mio_pad_sleep_mode_35_gated_we;
+    reg_we_check[465] = mio_pad_sleep_mode_36_gated_we;
+    reg_we_check[466] = mio_pad_sleep_mode_37_gated_we;
+    reg_we_check[467] = mio_pad_sleep_mode_38_gated_we;
+    reg_we_check[468] = mio_pad_sleep_mode_39_gated_we;
+    reg_we_check[469] = mio_pad_sleep_mode_40_gated_we;
+    reg_we_check[470] = mio_pad_sleep_mode_41_gated_we;
+    reg_we_check[471] = mio_pad_sleep_mode_42_gated_we;
+    reg_we_check[472] = mio_pad_sleep_mode_43_gated_we;
+    reg_we_check[473] = mio_pad_sleep_mode_44_gated_we;
+    reg_we_check[474] = mio_pad_sleep_mode_45_gated_we;
+    reg_we_check[475] = mio_pad_sleep_mode_46_gated_we;
+    reg_we_check[476] = dio_pad_sleep_status_0_we;
+    reg_we_check[477] = dio_pad_sleep_status_1_we;
+    reg_we_check[478] = dio_pad_sleep_regwen_0_we;
+    reg_we_check[479] = dio_pad_sleep_regwen_1_we;
+    reg_we_check[480] = dio_pad_sleep_regwen_2_we;
+    reg_we_check[481] = dio_pad_sleep_regwen_3_we;
+    reg_we_check[482] = dio_pad_sleep_regwen_4_we;
+    reg_we_check[483] = dio_pad_sleep_regwen_5_we;
+    reg_we_check[484] = dio_pad_sleep_regwen_6_we;
+    reg_we_check[485] = dio_pad_sleep_regwen_7_we;
+    reg_we_check[486] = dio_pad_sleep_regwen_8_we;
+    reg_we_check[487] = dio_pad_sleep_regwen_9_we;
+    reg_we_check[488] = dio_pad_sleep_regwen_10_we;
+    reg_we_check[489] = dio_pad_sleep_regwen_11_we;
+    reg_we_check[490] = dio_pad_sleep_regwen_12_we;
+    reg_we_check[491] = dio_pad_sleep_regwen_13_we;
+    reg_we_check[492] = dio_pad_sleep_regwen_14_we;
+    reg_we_check[493] = dio_pad_sleep_regwen_15_we;
+    reg_we_check[494] = dio_pad_sleep_regwen_16_we;
+    reg_we_check[495] = dio_pad_sleep_regwen_17_we;
+    reg_we_check[496] = dio_pad_sleep_regwen_18_we;
+    reg_we_check[497] = dio_pad_sleep_regwen_19_we;
+    reg_we_check[498] = dio_pad_sleep_regwen_20_we;
+    reg_we_check[499] = dio_pad_sleep_regwen_21_we;
+    reg_we_check[500] = dio_pad_sleep_regwen_22_we;
+    reg_we_check[501] = dio_pad_sleep_regwen_23_we;
+    reg_we_check[502] = dio_pad_sleep_regwen_24_we;
+    reg_we_check[503] = dio_pad_sleep_regwen_25_we;
+    reg_we_check[504] = dio_pad_sleep_regwen_26_we;
+    reg_we_check[505] = dio_pad_sleep_regwen_27_we;
+    reg_we_check[506] = dio_pad_sleep_regwen_28_we;
+    reg_we_check[507] = dio_pad_sleep_regwen_29_we;
+    reg_we_check[508] = dio_pad_sleep_regwen_30_we;
+    reg_we_check[509] = dio_pad_sleep_regwen_31_we;
+    reg_we_check[510] = dio_pad_sleep_regwen_32_we;
+    reg_we_check[511] = dio_pad_sleep_regwen_33_we;
+    reg_we_check[512] = dio_pad_sleep_regwen_34_we;
+    reg_we_check[513] = dio_pad_sleep_regwen_35_we;
+    reg_we_check[514] = dio_pad_sleep_en_0_gated_we;
+    reg_we_check[515] = dio_pad_sleep_en_1_gated_we;
+    reg_we_check[516] = dio_pad_sleep_en_2_gated_we;
+    reg_we_check[517] = dio_pad_sleep_en_3_gated_we;
+    reg_we_check[518] = dio_pad_sleep_en_4_gated_we;
+    reg_we_check[519] = dio_pad_sleep_en_5_gated_we;
+    reg_we_check[520] = dio_pad_sleep_en_6_gated_we;
+    reg_we_check[521] = dio_pad_sleep_en_7_gated_we;
+    reg_we_check[522] = dio_pad_sleep_en_8_gated_we;
+    reg_we_check[523] = dio_pad_sleep_en_9_gated_we;
+    reg_we_check[524] = dio_pad_sleep_en_10_gated_we;
+    reg_we_check[525] = dio_pad_sleep_en_11_gated_we;
+    reg_we_check[526] = dio_pad_sleep_en_12_gated_we;
+    reg_we_check[527] = dio_pad_sleep_en_13_gated_we;
+    reg_we_check[528] = dio_pad_sleep_en_14_gated_we;
+    reg_we_check[529] = dio_pad_sleep_en_15_gated_we;
+    reg_we_check[530] = dio_pad_sleep_en_16_gated_we;
+    reg_we_check[531] = dio_pad_sleep_en_17_gated_we;
+    reg_we_check[532] = dio_pad_sleep_en_18_gated_we;
+    reg_we_check[533] = dio_pad_sleep_en_19_gated_we;
+    reg_we_check[534] = dio_pad_sleep_en_20_gated_we;
+    reg_we_check[535] = dio_pad_sleep_en_21_gated_we;
+    reg_we_check[536] = dio_pad_sleep_en_22_gated_we;
+    reg_we_check[537] = dio_pad_sleep_en_23_gated_we;
+    reg_we_check[538] = dio_pad_sleep_en_24_gated_we;
+    reg_we_check[539] = dio_pad_sleep_en_25_gated_we;
+    reg_we_check[540] = dio_pad_sleep_en_26_gated_we;
+    reg_we_check[541] = dio_pad_sleep_en_27_gated_we;
+    reg_we_check[542] = dio_pad_sleep_en_28_gated_we;
+    reg_we_check[543] = dio_pad_sleep_en_29_gated_we;
+    reg_we_check[544] = dio_pad_sleep_en_30_gated_we;
+    reg_we_check[545] = dio_pad_sleep_en_31_gated_we;
+    reg_we_check[546] = dio_pad_sleep_en_32_gated_we;
+    reg_we_check[547] = dio_pad_sleep_en_33_gated_we;
+    reg_we_check[548] = dio_pad_sleep_en_34_gated_we;
+    reg_we_check[549] = dio_pad_sleep_en_35_gated_we;
+    reg_we_check[550] = dio_pad_sleep_mode_0_gated_we;
+    reg_we_check[551] = dio_pad_sleep_mode_1_gated_we;
+    reg_we_check[552] = dio_pad_sleep_mode_2_gated_we;
+    reg_we_check[553] = dio_pad_sleep_mode_3_gated_we;
+    reg_we_check[554] = dio_pad_sleep_mode_4_gated_we;
+    reg_we_check[555] = dio_pad_sleep_mode_5_gated_we;
+    reg_we_check[556] = dio_pad_sleep_mode_6_gated_we;
+    reg_we_check[557] = dio_pad_sleep_mode_7_gated_we;
+    reg_we_check[558] = dio_pad_sleep_mode_8_gated_we;
+    reg_we_check[559] = dio_pad_sleep_mode_9_gated_we;
+    reg_we_check[560] = dio_pad_sleep_mode_10_gated_we;
+    reg_we_check[561] = dio_pad_sleep_mode_11_gated_we;
+    reg_we_check[562] = dio_pad_sleep_mode_12_gated_we;
+    reg_we_check[563] = dio_pad_sleep_mode_13_gated_we;
+    reg_we_check[564] = dio_pad_sleep_mode_14_gated_we;
+    reg_we_check[565] = dio_pad_sleep_mode_15_gated_we;
+    reg_we_check[566] = dio_pad_sleep_mode_16_gated_we;
+    reg_we_check[567] = dio_pad_sleep_mode_17_gated_we;
+    reg_we_check[568] = dio_pad_sleep_mode_18_gated_we;
+    reg_we_check[569] = dio_pad_sleep_mode_19_gated_we;
+    reg_we_check[570] = dio_pad_sleep_mode_20_gated_we;
+    reg_we_check[571] = dio_pad_sleep_mode_21_gated_we;
+    reg_we_check[572] = dio_pad_sleep_mode_22_gated_we;
+    reg_we_check[573] = dio_pad_sleep_mode_23_gated_we;
+    reg_we_check[574] = dio_pad_sleep_mode_24_gated_we;
+    reg_we_check[575] = dio_pad_sleep_mode_25_gated_we;
+    reg_we_check[576] = dio_pad_sleep_mode_26_gated_we;
+    reg_we_check[577] = dio_pad_sleep_mode_27_gated_we;
+    reg_we_check[578] = dio_pad_sleep_mode_28_gated_we;
+    reg_we_check[579] = dio_pad_sleep_mode_29_gated_we;
+    reg_we_check[580] = dio_pad_sleep_mode_30_gated_we;
+    reg_we_check[581] = dio_pad_sleep_mode_31_gated_we;
+    reg_we_check[582] = dio_pad_sleep_mode_32_gated_we;
+    reg_we_check[583] = dio_pad_sleep_mode_33_gated_we;
+    reg_we_check[584] = dio_pad_sleep_mode_34_gated_we;
+    reg_we_check[585] = dio_pad_sleep_mode_35_gated_we;
+    reg_we_check[586] = wkup_detector_regwen_0_we;
+    reg_we_check[587] = wkup_detector_regwen_1_we;
+    reg_we_check[588] = wkup_detector_regwen_2_we;
+    reg_we_check[589] = wkup_detector_regwen_3_we;
+    reg_we_check[590] = wkup_detector_regwen_4_we;
+    reg_we_check[591] = wkup_detector_regwen_5_we;
+    reg_we_check[592] = wkup_detector_regwen_6_we;
+    reg_we_check[593] = wkup_detector_regwen_7_we;
+    reg_we_check[594] = wkup_detector_en_0_we;
+    reg_we_check[595] = wkup_detector_en_1_we;
+    reg_we_check[596] = wkup_detector_en_2_we;
+    reg_we_check[597] = wkup_detector_en_3_we;
+    reg_we_check[598] = wkup_detector_en_4_we;
+    reg_we_check[599] = wkup_detector_en_5_we;
+    reg_we_check[600] = wkup_detector_en_6_we;
+    reg_we_check[601] = wkup_detector_en_7_we;
+    reg_we_check[602] = wkup_detector_0_we;
+    reg_we_check[603] = wkup_detector_1_we;
+    reg_we_check[604] = wkup_detector_2_we;
+    reg_we_check[605] = wkup_detector_3_we;
+    reg_we_check[606] = wkup_detector_4_we;
+    reg_we_check[607] = wkup_detector_5_we;
+    reg_we_check[608] = wkup_detector_6_we;
+    reg_we_check[609] = wkup_detector_7_we;
+    reg_we_check[610] = wkup_detector_cnt_th_0_we;
+    reg_we_check[611] = wkup_detector_cnt_th_1_we;
+    reg_we_check[612] = wkup_detector_cnt_th_2_we;
+    reg_we_check[613] = wkup_detector_cnt_th_3_we;
+    reg_we_check[614] = wkup_detector_cnt_th_4_we;
+    reg_we_check[615] = wkup_detector_cnt_th_5_we;
+    reg_we_check[616] = wkup_detector_cnt_th_6_we;
+    reg_we_check[617] = wkup_detector_cnt_th_7_we;
+    reg_we_check[618] = wkup_detector_padsel_0_gated_we;
+    reg_we_check[619] = wkup_detector_padsel_1_gated_we;
+    reg_we_check[620] = wkup_detector_padsel_2_gated_we;
+    reg_we_check[621] = wkup_detector_padsel_3_gated_we;
+    reg_we_check[622] = wkup_detector_padsel_4_gated_we;
+    reg_we_check[623] = wkup_detector_padsel_5_gated_we;
+    reg_we_check[624] = wkup_detector_padsel_6_gated_we;
+    reg_we_check[625] = wkup_detector_padsel_7_gated_we;
+    reg_we_check[626] = wkup_cause_we;
   end
 
   // Read data return
@@ -34286,6 +43534,102 @@ module pinmux_reg_top (
       end
 
       addr_hit[273]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_12_qs;
+      end
+
+      addr_hit[274]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_13_qs;
+      end
+
+      addr_hit[275]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_14_qs;
+      end
+
+      addr_hit[276]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_15_qs;
+      end
+
+      addr_hit[277]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_16_qs;
+      end
+
+      addr_hit[278]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_17_qs;
+      end
+
+      addr_hit[279]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_18_qs;
+      end
+
+      addr_hit[280]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_19_qs;
+      end
+
+      addr_hit[281]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_20_qs;
+      end
+
+      addr_hit[282]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_21_qs;
+      end
+
+      addr_hit[283]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_22_qs;
+      end
+
+      addr_hit[284]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_23_qs;
+      end
+
+      addr_hit[285]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_24_qs;
+      end
+
+      addr_hit[286]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_25_qs;
+      end
+
+      addr_hit[287]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_26_qs;
+      end
+
+      addr_hit[288]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_27_qs;
+      end
+
+      addr_hit[289]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_28_qs;
+      end
+
+      addr_hit[290]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_29_qs;
+      end
+
+      addr_hit[291]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_30_qs;
+      end
+
+      addr_hit[292]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_31_qs;
+      end
+
+      addr_hit[293]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_32_qs;
+      end
+
+      addr_hit[294]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_33_qs;
+      end
+
+      addr_hit[295]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_34_qs;
+      end
+
+      addr_hit[296]: begin
+        reg_rdata_next[0] = dio_pad_attr_regwen_35_qs;
+      end
+
+      addr_hit[297]: begin
         reg_rdata_next[0] = dio_pad_attr_0_invert_0_qs;
         reg_rdata_next[1] = dio_pad_attr_0_virtual_od_en_0_qs;
         reg_rdata_next[2] = dio_pad_attr_0_pull_en_0_qs;
@@ -34297,7 +43641,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_0_drive_strength_0_qs;
       end
 
-      addr_hit[274]: begin
+      addr_hit[298]: begin
         reg_rdata_next[0] = dio_pad_attr_1_invert_1_qs;
         reg_rdata_next[1] = dio_pad_attr_1_virtual_od_en_1_qs;
         reg_rdata_next[2] = dio_pad_attr_1_pull_en_1_qs;
@@ -34309,7 +43653,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_1_drive_strength_1_qs;
       end
 
-      addr_hit[275]: begin
+      addr_hit[299]: begin
         reg_rdata_next[0] = dio_pad_attr_2_invert_2_qs;
         reg_rdata_next[1] = dio_pad_attr_2_virtual_od_en_2_qs;
         reg_rdata_next[2] = dio_pad_attr_2_pull_en_2_qs;
@@ -34321,7 +43665,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_2_drive_strength_2_qs;
       end
 
-      addr_hit[276]: begin
+      addr_hit[300]: begin
         reg_rdata_next[0] = dio_pad_attr_3_invert_3_qs;
         reg_rdata_next[1] = dio_pad_attr_3_virtual_od_en_3_qs;
         reg_rdata_next[2] = dio_pad_attr_3_pull_en_3_qs;
@@ -34333,7 +43677,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_3_drive_strength_3_qs;
       end
 
-      addr_hit[277]: begin
+      addr_hit[301]: begin
         reg_rdata_next[0] = dio_pad_attr_4_invert_4_qs;
         reg_rdata_next[1] = dio_pad_attr_4_virtual_od_en_4_qs;
         reg_rdata_next[2] = dio_pad_attr_4_pull_en_4_qs;
@@ -34345,7 +43689,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_4_drive_strength_4_qs;
       end
 
-      addr_hit[278]: begin
+      addr_hit[302]: begin
         reg_rdata_next[0] = dio_pad_attr_5_invert_5_qs;
         reg_rdata_next[1] = dio_pad_attr_5_virtual_od_en_5_qs;
         reg_rdata_next[2] = dio_pad_attr_5_pull_en_5_qs;
@@ -34357,7 +43701,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_5_drive_strength_5_qs;
       end
 
-      addr_hit[279]: begin
+      addr_hit[303]: begin
         reg_rdata_next[0] = dio_pad_attr_6_invert_6_qs;
         reg_rdata_next[1] = dio_pad_attr_6_virtual_od_en_6_qs;
         reg_rdata_next[2] = dio_pad_attr_6_pull_en_6_qs;
@@ -34369,7 +43713,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_6_drive_strength_6_qs;
       end
 
-      addr_hit[280]: begin
+      addr_hit[304]: begin
         reg_rdata_next[0] = dio_pad_attr_7_invert_7_qs;
         reg_rdata_next[1] = dio_pad_attr_7_virtual_od_en_7_qs;
         reg_rdata_next[2] = dio_pad_attr_7_pull_en_7_qs;
@@ -34381,7 +43725,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_7_drive_strength_7_qs;
       end
 
-      addr_hit[281]: begin
+      addr_hit[305]: begin
         reg_rdata_next[0] = dio_pad_attr_8_invert_8_qs;
         reg_rdata_next[1] = dio_pad_attr_8_virtual_od_en_8_qs;
         reg_rdata_next[2] = dio_pad_attr_8_pull_en_8_qs;
@@ -34393,7 +43737,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_8_drive_strength_8_qs;
       end
 
-      addr_hit[282]: begin
+      addr_hit[306]: begin
         reg_rdata_next[0] = dio_pad_attr_9_invert_9_qs;
         reg_rdata_next[1] = dio_pad_attr_9_virtual_od_en_9_qs;
         reg_rdata_next[2] = dio_pad_attr_9_pull_en_9_qs;
@@ -34405,7 +43749,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_9_drive_strength_9_qs;
       end
 
-      addr_hit[283]: begin
+      addr_hit[307]: begin
         reg_rdata_next[0] = dio_pad_attr_10_invert_10_qs;
         reg_rdata_next[1] = dio_pad_attr_10_virtual_od_en_10_qs;
         reg_rdata_next[2] = dio_pad_attr_10_pull_en_10_qs;
@@ -34417,7 +43761,7 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_10_drive_strength_10_qs;
       end
 
-      addr_hit[284]: begin
+      addr_hit[308]: begin
         reg_rdata_next[0] = dio_pad_attr_11_invert_11_qs;
         reg_rdata_next[1] = dio_pad_attr_11_virtual_od_en_11_qs;
         reg_rdata_next[2] = dio_pad_attr_11_pull_en_11_qs;
@@ -34429,7 +43773,295 @@ module pinmux_reg_top (
         reg_rdata_next[23:20] = dio_pad_attr_11_drive_strength_11_qs;
       end
 
-      addr_hit[285]: begin
+      addr_hit[309]: begin
+        reg_rdata_next[0] = dio_pad_attr_12_invert_12_qs;
+        reg_rdata_next[1] = dio_pad_attr_12_virtual_od_en_12_qs;
+        reg_rdata_next[2] = dio_pad_attr_12_pull_en_12_qs;
+        reg_rdata_next[3] = dio_pad_attr_12_pull_select_12_qs;
+        reg_rdata_next[4] = dio_pad_attr_12_keeper_en_12_qs;
+        reg_rdata_next[5] = dio_pad_attr_12_schmitt_en_12_qs;
+        reg_rdata_next[6] = dio_pad_attr_12_od_en_12_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_12_slew_rate_12_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_12_drive_strength_12_qs;
+      end
+
+      addr_hit[310]: begin
+        reg_rdata_next[0] = dio_pad_attr_13_invert_13_qs;
+        reg_rdata_next[1] = dio_pad_attr_13_virtual_od_en_13_qs;
+        reg_rdata_next[2] = dio_pad_attr_13_pull_en_13_qs;
+        reg_rdata_next[3] = dio_pad_attr_13_pull_select_13_qs;
+        reg_rdata_next[4] = dio_pad_attr_13_keeper_en_13_qs;
+        reg_rdata_next[5] = dio_pad_attr_13_schmitt_en_13_qs;
+        reg_rdata_next[6] = dio_pad_attr_13_od_en_13_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_13_slew_rate_13_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_13_drive_strength_13_qs;
+      end
+
+      addr_hit[311]: begin
+        reg_rdata_next[0] = dio_pad_attr_14_invert_14_qs;
+        reg_rdata_next[1] = dio_pad_attr_14_virtual_od_en_14_qs;
+        reg_rdata_next[2] = dio_pad_attr_14_pull_en_14_qs;
+        reg_rdata_next[3] = dio_pad_attr_14_pull_select_14_qs;
+        reg_rdata_next[4] = dio_pad_attr_14_keeper_en_14_qs;
+        reg_rdata_next[5] = dio_pad_attr_14_schmitt_en_14_qs;
+        reg_rdata_next[6] = dio_pad_attr_14_od_en_14_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_14_slew_rate_14_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_14_drive_strength_14_qs;
+      end
+
+      addr_hit[312]: begin
+        reg_rdata_next[0] = dio_pad_attr_15_invert_15_qs;
+        reg_rdata_next[1] = dio_pad_attr_15_virtual_od_en_15_qs;
+        reg_rdata_next[2] = dio_pad_attr_15_pull_en_15_qs;
+        reg_rdata_next[3] = dio_pad_attr_15_pull_select_15_qs;
+        reg_rdata_next[4] = dio_pad_attr_15_keeper_en_15_qs;
+        reg_rdata_next[5] = dio_pad_attr_15_schmitt_en_15_qs;
+        reg_rdata_next[6] = dio_pad_attr_15_od_en_15_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_15_slew_rate_15_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_15_drive_strength_15_qs;
+      end
+
+      addr_hit[313]: begin
+        reg_rdata_next[0] = dio_pad_attr_16_invert_16_qs;
+        reg_rdata_next[1] = dio_pad_attr_16_virtual_od_en_16_qs;
+        reg_rdata_next[2] = dio_pad_attr_16_pull_en_16_qs;
+        reg_rdata_next[3] = dio_pad_attr_16_pull_select_16_qs;
+        reg_rdata_next[4] = dio_pad_attr_16_keeper_en_16_qs;
+        reg_rdata_next[5] = dio_pad_attr_16_schmitt_en_16_qs;
+        reg_rdata_next[6] = dio_pad_attr_16_od_en_16_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_16_slew_rate_16_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_16_drive_strength_16_qs;
+      end
+
+      addr_hit[314]: begin
+        reg_rdata_next[0] = dio_pad_attr_17_invert_17_qs;
+        reg_rdata_next[1] = dio_pad_attr_17_virtual_od_en_17_qs;
+        reg_rdata_next[2] = dio_pad_attr_17_pull_en_17_qs;
+        reg_rdata_next[3] = dio_pad_attr_17_pull_select_17_qs;
+        reg_rdata_next[4] = dio_pad_attr_17_keeper_en_17_qs;
+        reg_rdata_next[5] = dio_pad_attr_17_schmitt_en_17_qs;
+        reg_rdata_next[6] = dio_pad_attr_17_od_en_17_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_17_slew_rate_17_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_17_drive_strength_17_qs;
+      end
+
+      addr_hit[315]: begin
+        reg_rdata_next[0] = dio_pad_attr_18_invert_18_qs;
+        reg_rdata_next[1] = dio_pad_attr_18_virtual_od_en_18_qs;
+        reg_rdata_next[2] = dio_pad_attr_18_pull_en_18_qs;
+        reg_rdata_next[3] = dio_pad_attr_18_pull_select_18_qs;
+        reg_rdata_next[4] = dio_pad_attr_18_keeper_en_18_qs;
+        reg_rdata_next[5] = dio_pad_attr_18_schmitt_en_18_qs;
+        reg_rdata_next[6] = dio_pad_attr_18_od_en_18_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_18_slew_rate_18_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_18_drive_strength_18_qs;
+      end
+
+      addr_hit[316]: begin
+        reg_rdata_next[0] = dio_pad_attr_19_invert_19_qs;
+        reg_rdata_next[1] = dio_pad_attr_19_virtual_od_en_19_qs;
+        reg_rdata_next[2] = dio_pad_attr_19_pull_en_19_qs;
+        reg_rdata_next[3] = dio_pad_attr_19_pull_select_19_qs;
+        reg_rdata_next[4] = dio_pad_attr_19_keeper_en_19_qs;
+        reg_rdata_next[5] = dio_pad_attr_19_schmitt_en_19_qs;
+        reg_rdata_next[6] = dio_pad_attr_19_od_en_19_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_19_slew_rate_19_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_19_drive_strength_19_qs;
+      end
+
+      addr_hit[317]: begin
+        reg_rdata_next[0] = dio_pad_attr_20_invert_20_qs;
+        reg_rdata_next[1] = dio_pad_attr_20_virtual_od_en_20_qs;
+        reg_rdata_next[2] = dio_pad_attr_20_pull_en_20_qs;
+        reg_rdata_next[3] = dio_pad_attr_20_pull_select_20_qs;
+        reg_rdata_next[4] = dio_pad_attr_20_keeper_en_20_qs;
+        reg_rdata_next[5] = dio_pad_attr_20_schmitt_en_20_qs;
+        reg_rdata_next[6] = dio_pad_attr_20_od_en_20_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_20_slew_rate_20_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_20_drive_strength_20_qs;
+      end
+
+      addr_hit[318]: begin
+        reg_rdata_next[0] = dio_pad_attr_21_invert_21_qs;
+        reg_rdata_next[1] = dio_pad_attr_21_virtual_od_en_21_qs;
+        reg_rdata_next[2] = dio_pad_attr_21_pull_en_21_qs;
+        reg_rdata_next[3] = dio_pad_attr_21_pull_select_21_qs;
+        reg_rdata_next[4] = dio_pad_attr_21_keeper_en_21_qs;
+        reg_rdata_next[5] = dio_pad_attr_21_schmitt_en_21_qs;
+        reg_rdata_next[6] = dio_pad_attr_21_od_en_21_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_21_slew_rate_21_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_21_drive_strength_21_qs;
+      end
+
+      addr_hit[319]: begin
+        reg_rdata_next[0] = dio_pad_attr_22_invert_22_qs;
+        reg_rdata_next[1] = dio_pad_attr_22_virtual_od_en_22_qs;
+        reg_rdata_next[2] = dio_pad_attr_22_pull_en_22_qs;
+        reg_rdata_next[3] = dio_pad_attr_22_pull_select_22_qs;
+        reg_rdata_next[4] = dio_pad_attr_22_keeper_en_22_qs;
+        reg_rdata_next[5] = dio_pad_attr_22_schmitt_en_22_qs;
+        reg_rdata_next[6] = dio_pad_attr_22_od_en_22_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_22_slew_rate_22_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_22_drive_strength_22_qs;
+      end
+
+      addr_hit[320]: begin
+        reg_rdata_next[0] = dio_pad_attr_23_invert_23_qs;
+        reg_rdata_next[1] = dio_pad_attr_23_virtual_od_en_23_qs;
+        reg_rdata_next[2] = dio_pad_attr_23_pull_en_23_qs;
+        reg_rdata_next[3] = dio_pad_attr_23_pull_select_23_qs;
+        reg_rdata_next[4] = dio_pad_attr_23_keeper_en_23_qs;
+        reg_rdata_next[5] = dio_pad_attr_23_schmitt_en_23_qs;
+        reg_rdata_next[6] = dio_pad_attr_23_od_en_23_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_23_slew_rate_23_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_23_drive_strength_23_qs;
+      end
+
+      addr_hit[321]: begin
+        reg_rdata_next[0] = dio_pad_attr_24_invert_24_qs;
+        reg_rdata_next[1] = dio_pad_attr_24_virtual_od_en_24_qs;
+        reg_rdata_next[2] = dio_pad_attr_24_pull_en_24_qs;
+        reg_rdata_next[3] = dio_pad_attr_24_pull_select_24_qs;
+        reg_rdata_next[4] = dio_pad_attr_24_keeper_en_24_qs;
+        reg_rdata_next[5] = dio_pad_attr_24_schmitt_en_24_qs;
+        reg_rdata_next[6] = dio_pad_attr_24_od_en_24_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_24_slew_rate_24_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_24_drive_strength_24_qs;
+      end
+
+      addr_hit[322]: begin
+        reg_rdata_next[0] = dio_pad_attr_25_invert_25_qs;
+        reg_rdata_next[1] = dio_pad_attr_25_virtual_od_en_25_qs;
+        reg_rdata_next[2] = dio_pad_attr_25_pull_en_25_qs;
+        reg_rdata_next[3] = dio_pad_attr_25_pull_select_25_qs;
+        reg_rdata_next[4] = dio_pad_attr_25_keeper_en_25_qs;
+        reg_rdata_next[5] = dio_pad_attr_25_schmitt_en_25_qs;
+        reg_rdata_next[6] = dio_pad_attr_25_od_en_25_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_25_slew_rate_25_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_25_drive_strength_25_qs;
+      end
+
+      addr_hit[323]: begin
+        reg_rdata_next[0] = dio_pad_attr_26_invert_26_qs;
+        reg_rdata_next[1] = dio_pad_attr_26_virtual_od_en_26_qs;
+        reg_rdata_next[2] = dio_pad_attr_26_pull_en_26_qs;
+        reg_rdata_next[3] = dio_pad_attr_26_pull_select_26_qs;
+        reg_rdata_next[4] = dio_pad_attr_26_keeper_en_26_qs;
+        reg_rdata_next[5] = dio_pad_attr_26_schmitt_en_26_qs;
+        reg_rdata_next[6] = dio_pad_attr_26_od_en_26_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_26_slew_rate_26_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_26_drive_strength_26_qs;
+      end
+
+      addr_hit[324]: begin
+        reg_rdata_next[0] = dio_pad_attr_27_invert_27_qs;
+        reg_rdata_next[1] = dio_pad_attr_27_virtual_od_en_27_qs;
+        reg_rdata_next[2] = dio_pad_attr_27_pull_en_27_qs;
+        reg_rdata_next[3] = dio_pad_attr_27_pull_select_27_qs;
+        reg_rdata_next[4] = dio_pad_attr_27_keeper_en_27_qs;
+        reg_rdata_next[5] = dio_pad_attr_27_schmitt_en_27_qs;
+        reg_rdata_next[6] = dio_pad_attr_27_od_en_27_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_27_slew_rate_27_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_27_drive_strength_27_qs;
+      end
+
+      addr_hit[325]: begin
+        reg_rdata_next[0] = dio_pad_attr_28_invert_28_qs;
+        reg_rdata_next[1] = dio_pad_attr_28_virtual_od_en_28_qs;
+        reg_rdata_next[2] = dio_pad_attr_28_pull_en_28_qs;
+        reg_rdata_next[3] = dio_pad_attr_28_pull_select_28_qs;
+        reg_rdata_next[4] = dio_pad_attr_28_keeper_en_28_qs;
+        reg_rdata_next[5] = dio_pad_attr_28_schmitt_en_28_qs;
+        reg_rdata_next[6] = dio_pad_attr_28_od_en_28_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_28_slew_rate_28_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_28_drive_strength_28_qs;
+      end
+
+      addr_hit[326]: begin
+        reg_rdata_next[0] = dio_pad_attr_29_invert_29_qs;
+        reg_rdata_next[1] = dio_pad_attr_29_virtual_od_en_29_qs;
+        reg_rdata_next[2] = dio_pad_attr_29_pull_en_29_qs;
+        reg_rdata_next[3] = dio_pad_attr_29_pull_select_29_qs;
+        reg_rdata_next[4] = dio_pad_attr_29_keeper_en_29_qs;
+        reg_rdata_next[5] = dio_pad_attr_29_schmitt_en_29_qs;
+        reg_rdata_next[6] = dio_pad_attr_29_od_en_29_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_29_slew_rate_29_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_29_drive_strength_29_qs;
+      end
+
+      addr_hit[327]: begin
+        reg_rdata_next[0] = dio_pad_attr_30_invert_30_qs;
+        reg_rdata_next[1] = dio_pad_attr_30_virtual_od_en_30_qs;
+        reg_rdata_next[2] = dio_pad_attr_30_pull_en_30_qs;
+        reg_rdata_next[3] = dio_pad_attr_30_pull_select_30_qs;
+        reg_rdata_next[4] = dio_pad_attr_30_keeper_en_30_qs;
+        reg_rdata_next[5] = dio_pad_attr_30_schmitt_en_30_qs;
+        reg_rdata_next[6] = dio_pad_attr_30_od_en_30_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_30_slew_rate_30_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_30_drive_strength_30_qs;
+      end
+
+      addr_hit[328]: begin
+        reg_rdata_next[0] = dio_pad_attr_31_invert_31_qs;
+        reg_rdata_next[1] = dio_pad_attr_31_virtual_od_en_31_qs;
+        reg_rdata_next[2] = dio_pad_attr_31_pull_en_31_qs;
+        reg_rdata_next[3] = dio_pad_attr_31_pull_select_31_qs;
+        reg_rdata_next[4] = dio_pad_attr_31_keeper_en_31_qs;
+        reg_rdata_next[5] = dio_pad_attr_31_schmitt_en_31_qs;
+        reg_rdata_next[6] = dio_pad_attr_31_od_en_31_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_31_slew_rate_31_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_31_drive_strength_31_qs;
+      end
+
+      addr_hit[329]: begin
+        reg_rdata_next[0] = dio_pad_attr_32_invert_32_qs;
+        reg_rdata_next[1] = dio_pad_attr_32_virtual_od_en_32_qs;
+        reg_rdata_next[2] = dio_pad_attr_32_pull_en_32_qs;
+        reg_rdata_next[3] = dio_pad_attr_32_pull_select_32_qs;
+        reg_rdata_next[4] = dio_pad_attr_32_keeper_en_32_qs;
+        reg_rdata_next[5] = dio_pad_attr_32_schmitt_en_32_qs;
+        reg_rdata_next[6] = dio_pad_attr_32_od_en_32_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_32_slew_rate_32_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_32_drive_strength_32_qs;
+      end
+
+      addr_hit[330]: begin
+        reg_rdata_next[0] = dio_pad_attr_33_invert_33_qs;
+        reg_rdata_next[1] = dio_pad_attr_33_virtual_od_en_33_qs;
+        reg_rdata_next[2] = dio_pad_attr_33_pull_en_33_qs;
+        reg_rdata_next[3] = dio_pad_attr_33_pull_select_33_qs;
+        reg_rdata_next[4] = dio_pad_attr_33_keeper_en_33_qs;
+        reg_rdata_next[5] = dio_pad_attr_33_schmitt_en_33_qs;
+        reg_rdata_next[6] = dio_pad_attr_33_od_en_33_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_33_slew_rate_33_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_33_drive_strength_33_qs;
+      end
+
+      addr_hit[331]: begin
+        reg_rdata_next[0] = dio_pad_attr_34_invert_34_qs;
+        reg_rdata_next[1] = dio_pad_attr_34_virtual_od_en_34_qs;
+        reg_rdata_next[2] = dio_pad_attr_34_pull_en_34_qs;
+        reg_rdata_next[3] = dio_pad_attr_34_pull_select_34_qs;
+        reg_rdata_next[4] = dio_pad_attr_34_keeper_en_34_qs;
+        reg_rdata_next[5] = dio_pad_attr_34_schmitt_en_34_qs;
+        reg_rdata_next[6] = dio_pad_attr_34_od_en_34_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_34_slew_rate_34_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_34_drive_strength_34_qs;
+      end
+
+      addr_hit[332]: begin
+        reg_rdata_next[0] = dio_pad_attr_35_invert_35_qs;
+        reg_rdata_next[1] = dio_pad_attr_35_virtual_od_en_35_qs;
+        reg_rdata_next[2] = dio_pad_attr_35_pull_en_35_qs;
+        reg_rdata_next[3] = dio_pad_attr_35_pull_select_35_qs;
+        reg_rdata_next[4] = dio_pad_attr_35_keeper_en_35_qs;
+        reg_rdata_next[5] = dio_pad_attr_35_schmitt_en_35_qs;
+        reg_rdata_next[6] = dio_pad_attr_35_od_en_35_qs;
+        reg_rdata_next[17:16] = dio_pad_attr_35_slew_rate_35_qs;
+        reg_rdata_next[23:20] = dio_pad_attr_35_drive_strength_35_qs;
+      end
+
+      addr_hit[333]: begin
         reg_rdata_next[0] = mio_pad_sleep_status_0_en_0_qs;
         reg_rdata_next[1] = mio_pad_sleep_status_0_en_1_qs;
         reg_rdata_next[2] = mio_pad_sleep_status_0_en_2_qs;
@@ -34464,7 +44096,7 @@ module pinmux_reg_top (
         reg_rdata_next[31] = mio_pad_sleep_status_0_en_31_qs;
       end
 
-      addr_hit[286]: begin
+      addr_hit[334]: begin
         reg_rdata_next[0] = mio_pad_sleep_status_1_en_32_qs;
         reg_rdata_next[1] = mio_pad_sleep_status_1_en_33_qs;
         reg_rdata_next[2] = mio_pad_sleep_status_1_en_34_qs;
@@ -34482,866 +44114,1181 @@ module pinmux_reg_top (
         reg_rdata_next[14] = mio_pad_sleep_status_1_en_46_qs;
       end
 
-      addr_hit[287]: begin
+      addr_hit[335]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_0_qs;
       end
 
-      addr_hit[288]: begin
+      addr_hit[336]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_1_qs;
       end
 
-      addr_hit[289]: begin
+      addr_hit[337]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_2_qs;
       end
 
-      addr_hit[290]: begin
+      addr_hit[338]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_3_qs;
       end
 
-      addr_hit[291]: begin
+      addr_hit[339]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_4_qs;
       end
 
-      addr_hit[292]: begin
+      addr_hit[340]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_5_qs;
       end
 
-      addr_hit[293]: begin
+      addr_hit[341]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_6_qs;
       end
 
-      addr_hit[294]: begin
+      addr_hit[342]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_7_qs;
       end
 
-      addr_hit[295]: begin
+      addr_hit[343]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_8_qs;
       end
 
-      addr_hit[296]: begin
+      addr_hit[344]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_9_qs;
       end
 
-      addr_hit[297]: begin
+      addr_hit[345]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_10_qs;
       end
 
-      addr_hit[298]: begin
+      addr_hit[346]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_11_qs;
       end
 
-      addr_hit[299]: begin
+      addr_hit[347]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_12_qs;
       end
 
-      addr_hit[300]: begin
+      addr_hit[348]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_13_qs;
       end
 
-      addr_hit[301]: begin
+      addr_hit[349]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_14_qs;
       end
 
-      addr_hit[302]: begin
+      addr_hit[350]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_15_qs;
       end
 
-      addr_hit[303]: begin
+      addr_hit[351]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_16_qs;
       end
 
-      addr_hit[304]: begin
+      addr_hit[352]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_17_qs;
       end
 
-      addr_hit[305]: begin
+      addr_hit[353]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_18_qs;
       end
 
-      addr_hit[306]: begin
+      addr_hit[354]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_19_qs;
       end
 
-      addr_hit[307]: begin
+      addr_hit[355]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_20_qs;
       end
 
-      addr_hit[308]: begin
+      addr_hit[356]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_21_qs;
       end
 
-      addr_hit[309]: begin
+      addr_hit[357]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_22_qs;
       end
 
-      addr_hit[310]: begin
+      addr_hit[358]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_23_qs;
       end
 
-      addr_hit[311]: begin
+      addr_hit[359]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_24_qs;
       end
 
-      addr_hit[312]: begin
+      addr_hit[360]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_25_qs;
       end
 
-      addr_hit[313]: begin
+      addr_hit[361]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_26_qs;
       end
 
-      addr_hit[314]: begin
+      addr_hit[362]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_27_qs;
       end
 
-      addr_hit[315]: begin
+      addr_hit[363]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_28_qs;
       end
 
-      addr_hit[316]: begin
+      addr_hit[364]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_29_qs;
       end
 
-      addr_hit[317]: begin
+      addr_hit[365]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_30_qs;
       end
 
-      addr_hit[318]: begin
+      addr_hit[366]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_31_qs;
       end
 
-      addr_hit[319]: begin
+      addr_hit[367]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_32_qs;
       end
 
-      addr_hit[320]: begin
+      addr_hit[368]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_33_qs;
       end
 
-      addr_hit[321]: begin
+      addr_hit[369]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_34_qs;
       end
 
-      addr_hit[322]: begin
+      addr_hit[370]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_35_qs;
       end
 
-      addr_hit[323]: begin
+      addr_hit[371]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_36_qs;
       end
 
-      addr_hit[324]: begin
+      addr_hit[372]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_37_qs;
       end
 
-      addr_hit[325]: begin
+      addr_hit[373]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_38_qs;
       end
 
-      addr_hit[326]: begin
+      addr_hit[374]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_39_qs;
       end
 
-      addr_hit[327]: begin
+      addr_hit[375]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_40_qs;
       end
 
-      addr_hit[328]: begin
+      addr_hit[376]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_41_qs;
       end
 
-      addr_hit[329]: begin
+      addr_hit[377]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_42_qs;
       end
 
-      addr_hit[330]: begin
+      addr_hit[378]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_43_qs;
       end
 
-      addr_hit[331]: begin
+      addr_hit[379]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_44_qs;
       end
 
-      addr_hit[332]: begin
+      addr_hit[380]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_45_qs;
       end
 
-      addr_hit[333]: begin
+      addr_hit[381]: begin
         reg_rdata_next[0] = mio_pad_sleep_regwen_46_qs;
       end
 
-      addr_hit[334]: begin
+      addr_hit[382]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_0_qs;
       end
 
-      addr_hit[335]: begin
+      addr_hit[383]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_1_qs;
       end
 
-      addr_hit[336]: begin
+      addr_hit[384]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_2_qs;
       end
 
-      addr_hit[337]: begin
+      addr_hit[385]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_3_qs;
       end
 
-      addr_hit[338]: begin
+      addr_hit[386]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_4_qs;
       end
 
-      addr_hit[339]: begin
+      addr_hit[387]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_5_qs;
       end
 
-      addr_hit[340]: begin
+      addr_hit[388]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_6_qs;
       end
 
-      addr_hit[341]: begin
+      addr_hit[389]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_7_qs;
       end
 
-      addr_hit[342]: begin
+      addr_hit[390]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_8_qs;
       end
 
-      addr_hit[343]: begin
+      addr_hit[391]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_9_qs;
       end
 
-      addr_hit[344]: begin
+      addr_hit[392]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_10_qs;
       end
 
-      addr_hit[345]: begin
+      addr_hit[393]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_11_qs;
       end
 
-      addr_hit[346]: begin
+      addr_hit[394]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_12_qs;
       end
 
-      addr_hit[347]: begin
+      addr_hit[395]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_13_qs;
       end
 
-      addr_hit[348]: begin
+      addr_hit[396]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_14_qs;
       end
 
-      addr_hit[349]: begin
+      addr_hit[397]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_15_qs;
       end
 
-      addr_hit[350]: begin
+      addr_hit[398]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_16_qs;
       end
 
-      addr_hit[351]: begin
+      addr_hit[399]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_17_qs;
       end
 
-      addr_hit[352]: begin
+      addr_hit[400]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_18_qs;
       end
 
-      addr_hit[353]: begin
+      addr_hit[401]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_19_qs;
       end
 
-      addr_hit[354]: begin
+      addr_hit[402]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_20_qs;
       end
 
-      addr_hit[355]: begin
+      addr_hit[403]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_21_qs;
       end
 
-      addr_hit[356]: begin
+      addr_hit[404]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_22_qs;
       end
 
-      addr_hit[357]: begin
+      addr_hit[405]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_23_qs;
       end
 
-      addr_hit[358]: begin
+      addr_hit[406]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_24_qs;
       end
 
-      addr_hit[359]: begin
+      addr_hit[407]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_25_qs;
       end
 
-      addr_hit[360]: begin
+      addr_hit[408]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_26_qs;
       end
 
-      addr_hit[361]: begin
+      addr_hit[409]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_27_qs;
       end
 
-      addr_hit[362]: begin
+      addr_hit[410]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_28_qs;
       end
 
-      addr_hit[363]: begin
+      addr_hit[411]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_29_qs;
       end
 
-      addr_hit[364]: begin
+      addr_hit[412]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_30_qs;
       end
 
-      addr_hit[365]: begin
+      addr_hit[413]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_31_qs;
       end
 
-      addr_hit[366]: begin
+      addr_hit[414]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_32_qs;
       end
 
-      addr_hit[367]: begin
+      addr_hit[415]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_33_qs;
       end
 
-      addr_hit[368]: begin
+      addr_hit[416]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_34_qs;
       end
 
-      addr_hit[369]: begin
+      addr_hit[417]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_35_qs;
       end
 
-      addr_hit[370]: begin
+      addr_hit[418]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_36_qs;
       end
 
-      addr_hit[371]: begin
+      addr_hit[419]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_37_qs;
       end
 
-      addr_hit[372]: begin
+      addr_hit[420]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_38_qs;
       end
 
-      addr_hit[373]: begin
+      addr_hit[421]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_39_qs;
       end
 
-      addr_hit[374]: begin
+      addr_hit[422]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_40_qs;
       end
 
-      addr_hit[375]: begin
+      addr_hit[423]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_41_qs;
       end
 
-      addr_hit[376]: begin
+      addr_hit[424]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_42_qs;
       end
 
-      addr_hit[377]: begin
+      addr_hit[425]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_43_qs;
       end
 
-      addr_hit[378]: begin
+      addr_hit[426]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_44_qs;
       end
 
-      addr_hit[379]: begin
+      addr_hit[427]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_45_qs;
       end
 
-      addr_hit[380]: begin
+      addr_hit[428]: begin
         reg_rdata_next[0] = mio_pad_sleep_en_46_qs;
       end
 
-      addr_hit[381]: begin
+      addr_hit[429]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_0_qs;
       end
 
-      addr_hit[382]: begin
+      addr_hit[430]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_1_qs;
       end
 
-      addr_hit[383]: begin
+      addr_hit[431]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_2_qs;
       end
 
-      addr_hit[384]: begin
+      addr_hit[432]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_3_qs;
       end
 
-      addr_hit[385]: begin
+      addr_hit[433]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_4_qs;
       end
 
-      addr_hit[386]: begin
+      addr_hit[434]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_5_qs;
       end
 
-      addr_hit[387]: begin
+      addr_hit[435]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_6_qs;
       end
 
-      addr_hit[388]: begin
+      addr_hit[436]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_7_qs;
       end
 
-      addr_hit[389]: begin
+      addr_hit[437]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_8_qs;
       end
 
-      addr_hit[390]: begin
+      addr_hit[438]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_9_qs;
       end
 
-      addr_hit[391]: begin
+      addr_hit[439]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_10_qs;
       end
 
-      addr_hit[392]: begin
+      addr_hit[440]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_11_qs;
       end
 
-      addr_hit[393]: begin
+      addr_hit[441]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_12_qs;
       end
 
-      addr_hit[394]: begin
+      addr_hit[442]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_13_qs;
       end
 
-      addr_hit[395]: begin
+      addr_hit[443]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_14_qs;
       end
 
-      addr_hit[396]: begin
+      addr_hit[444]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_15_qs;
       end
 
-      addr_hit[397]: begin
+      addr_hit[445]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_16_qs;
       end
 
-      addr_hit[398]: begin
+      addr_hit[446]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_17_qs;
       end
 
-      addr_hit[399]: begin
+      addr_hit[447]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_18_qs;
       end
 
-      addr_hit[400]: begin
+      addr_hit[448]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_19_qs;
       end
 
-      addr_hit[401]: begin
+      addr_hit[449]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_20_qs;
       end
 
-      addr_hit[402]: begin
+      addr_hit[450]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_21_qs;
       end
 
-      addr_hit[403]: begin
+      addr_hit[451]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_22_qs;
       end
 
-      addr_hit[404]: begin
+      addr_hit[452]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_23_qs;
       end
 
-      addr_hit[405]: begin
+      addr_hit[453]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_24_qs;
       end
 
-      addr_hit[406]: begin
+      addr_hit[454]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_25_qs;
       end
 
-      addr_hit[407]: begin
+      addr_hit[455]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_26_qs;
       end
 
-      addr_hit[408]: begin
+      addr_hit[456]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_27_qs;
       end
 
-      addr_hit[409]: begin
+      addr_hit[457]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_28_qs;
       end
 
-      addr_hit[410]: begin
+      addr_hit[458]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_29_qs;
       end
 
-      addr_hit[411]: begin
+      addr_hit[459]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_30_qs;
       end
 
-      addr_hit[412]: begin
+      addr_hit[460]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_31_qs;
       end
 
-      addr_hit[413]: begin
+      addr_hit[461]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_32_qs;
       end
 
-      addr_hit[414]: begin
+      addr_hit[462]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_33_qs;
       end
 
-      addr_hit[415]: begin
+      addr_hit[463]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_34_qs;
       end
 
-      addr_hit[416]: begin
+      addr_hit[464]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_35_qs;
       end
 
-      addr_hit[417]: begin
+      addr_hit[465]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_36_qs;
       end
 
-      addr_hit[418]: begin
+      addr_hit[466]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_37_qs;
       end
 
-      addr_hit[419]: begin
+      addr_hit[467]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_38_qs;
       end
 
-      addr_hit[420]: begin
+      addr_hit[468]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_39_qs;
       end
 
-      addr_hit[421]: begin
+      addr_hit[469]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_40_qs;
       end
 
-      addr_hit[422]: begin
+      addr_hit[470]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_41_qs;
       end
 
-      addr_hit[423]: begin
+      addr_hit[471]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_42_qs;
       end
 
-      addr_hit[424]: begin
+      addr_hit[472]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_43_qs;
       end
 
-      addr_hit[425]: begin
+      addr_hit[473]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_44_qs;
       end
 
-      addr_hit[426]: begin
+      addr_hit[474]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_45_qs;
       end
 
-      addr_hit[427]: begin
+      addr_hit[475]: begin
         reg_rdata_next[1:0] = mio_pad_sleep_mode_46_qs;
       end
 
-      addr_hit[428]: begin
-        reg_rdata_next[0] = dio_pad_sleep_status_en_0_qs;
-        reg_rdata_next[1] = dio_pad_sleep_status_en_1_qs;
-        reg_rdata_next[2] = dio_pad_sleep_status_en_2_qs;
-        reg_rdata_next[3] = dio_pad_sleep_status_en_3_qs;
-        reg_rdata_next[4] = dio_pad_sleep_status_en_4_qs;
-        reg_rdata_next[5] = dio_pad_sleep_status_en_5_qs;
-        reg_rdata_next[6] = dio_pad_sleep_status_en_6_qs;
-        reg_rdata_next[7] = dio_pad_sleep_status_en_7_qs;
-        reg_rdata_next[8] = dio_pad_sleep_status_en_8_qs;
-        reg_rdata_next[9] = dio_pad_sleep_status_en_9_qs;
-        reg_rdata_next[10] = dio_pad_sleep_status_en_10_qs;
-        reg_rdata_next[11] = dio_pad_sleep_status_en_11_qs;
+      addr_hit[476]: begin
+        reg_rdata_next[0] = dio_pad_sleep_status_0_en_0_qs;
+        reg_rdata_next[1] = dio_pad_sleep_status_0_en_1_qs;
+        reg_rdata_next[2] = dio_pad_sleep_status_0_en_2_qs;
+        reg_rdata_next[3] = dio_pad_sleep_status_0_en_3_qs;
+        reg_rdata_next[4] = dio_pad_sleep_status_0_en_4_qs;
+        reg_rdata_next[5] = dio_pad_sleep_status_0_en_5_qs;
+        reg_rdata_next[6] = dio_pad_sleep_status_0_en_6_qs;
+        reg_rdata_next[7] = dio_pad_sleep_status_0_en_7_qs;
+        reg_rdata_next[8] = dio_pad_sleep_status_0_en_8_qs;
+        reg_rdata_next[9] = dio_pad_sleep_status_0_en_9_qs;
+        reg_rdata_next[10] = dio_pad_sleep_status_0_en_10_qs;
+        reg_rdata_next[11] = dio_pad_sleep_status_0_en_11_qs;
+        reg_rdata_next[12] = dio_pad_sleep_status_0_en_12_qs;
+        reg_rdata_next[13] = dio_pad_sleep_status_0_en_13_qs;
+        reg_rdata_next[14] = dio_pad_sleep_status_0_en_14_qs;
+        reg_rdata_next[15] = dio_pad_sleep_status_0_en_15_qs;
+        reg_rdata_next[16] = dio_pad_sleep_status_0_en_16_qs;
+        reg_rdata_next[17] = dio_pad_sleep_status_0_en_17_qs;
+        reg_rdata_next[18] = dio_pad_sleep_status_0_en_18_qs;
+        reg_rdata_next[19] = dio_pad_sleep_status_0_en_19_qs;
+        reg_rdata_next[20] = dio_pad_sleep_status_0_en_20_qs;
+        reg_rdata_next[21] = dio_pad_sleep_status_0_en_21_qs;
+        reg_rdata_next[22] = dio_pad_sleep_status_0_en_22_qs;
+        reg_rdata_next[23] = dio_pad_sleep_status_0_en_23_qs;
+        reg_rdata_next[24] = dio_pad_sleep_status_0_en_24_qs;
+        reg_rdata_next[25] = dio_pad_sleep_status_0_en_25_qs;
+        reg_rdata_next[26] = dio_pad_sleep_status_0_en_26_qs;
+        reg_rdata_next[27] = dio_pad_sleep_status_0_en_27_qs;
+        reg_rdata_next[28] = dio_pad_sleep_status_0_en_28_qs;
+        reg_rdata_next[29] = dio_pad_sleep_status_0_en_29_qs;
+        reg_rdata_next[30] = dio_pad_sleep_status_0_en_30_qs;
+        reg_rdata_next[31] = dio_pad_sleep_status_0_en_31_qs;
       end
 
-      addr_hit[429]: begin
+      addr_hit[477]: begin
+        reg_rdata_next[0] = dio_pad_sleep_status_1_en_32_qs;
+        reg_rdata_next[1] = dio_pad_sleep_status_1_en_33_qs;
+        reg_rdata_next[2] = dio_pad_sleep_status_1_en_34_qs;
+        reg_rdata_next[3] = dio_pad_sleep_status_1_en_35_qs;
+      end
+
+      addr_hit[478]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_0_qs;
       end
 
-      addr_hit[430]: begin
+      addr_hit[479]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_1_qs;
       end
 
-      addr_hit[431]: begin
+      addr_hit[480]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_2_qs;
       end
 
-      addr_hit[432]: begin
+      addr_hit[481]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_3_qs;
       end
 
-      addr_hit[433]: begin
+      addr_hit[482]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_4_qs;
       end
 
-      addr_hit[434]: begin
+      addr_hit[483]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_5_qs;
       end
 
-      addr_hit[435]: begin
+      addr_hit[484]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_6_qs;
       end
 
-      addr_hit[436]: begin
+      addr_hit[485]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_7_qs;
       end
 
-      addr_hit[437]: begin
+      addr_hit[486]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_8_qs;
       end
 
-      addr_hit[438]: begin
+      addr_hit[487]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_9_qs;
       end
 
-      addr_hit[439]: begin
+      addr_hit[488]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_10_qs;
       end
 
-      addr_hit[440]: begin
+      addr_hit[489]: begin
         reg_rdata_next[0] = dio_pad_sleep_regwen_11_qs;
       end
 
-      addr_hit[441]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_0_qs;
-      end
-
-      addr_hit[442]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_1_qs;
-      end
-
-      addr_hit[443]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_2_qs;
-      end
-
-      addr_hit[444]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_3_qs;
-      end
-
-      addr_hit[445]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_4_qs;
-      end
-
-      addr_hit[446]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_5_qs;
-      end
-
-      addr_hit[447]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_6_qs;
-      end
-
-      addr_hit[448]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_7_qs;
-      end
-
-      addr_hit[449]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_8_qs;
-      end
-
-      addr_hit[450]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_9_qs;
-      end
-
-      addr_hit[451]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_10_qs;
-      end
-
-      addr_hit[452]: begin
-        reg_rdata_next[0] = dio_pad_sleep_en_11_qs;
-      end
-
-      addr_hit[453]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_0_qs;
-      end
-
-      addr_hit[454]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_1_qs;
-      end
-
-      addr_hit[455]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_2_qs;
-      end
-
-      addr_hit[456]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_3_qs;
-      end
-
-      addr_hit[457]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_4_qs;
-      end
-
-      addr_hit[458]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_5_qs;
-      end
-
-      addr_hit[459]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_6_qs;
-      end
-
-      addr_hit[460]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_7_qs;
-      end
-
-      addr_hit[461]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_8_qs;
-      end
-
-      addr_hit[462]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_9_qs;
-      end
-
-      addr_hit[463]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_10_qs;
-      end
-
-      addr_hit[464]: begin
-        reg_rdata_next[1:0] = dio_pad_sleep_mode_11_qs;
-      end
-
-      addr_hit[465]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_0_qs;
-      end
-
-      addr_hit[466]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_1_qs;
-      end
-
-      addr_hit[467]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_2_qs;
-      end
-
-      addr_hit[468]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_3_qs;
-      end
-
-      addr_hit[469]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_4_qs;
-      end
-
-      addr_hit[470]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_5_qs;
-      end
-
-      addr_hit[471]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_6_qs;
-      end
-
-      addr_hit[472]: begin
-        reg_rdata_next[0] = wkup_detector_regwen_7_qs;
-      end
-
-      addr_hit[473]: begin
-        reg_rdata_next = DW'(wkup_detector_en_0_qs);
-      end
-      addr_hit[474]: begin
-        reg_rdata_next = DW'(wkup_detector_en_1_qs);
-      end
-      addr_hit[475]: begin
-        reg_rdata_next = DW'(wkup_detector_en_2_qs);
-      end
-      addr_hit[476]: begin
-        reg_rdata_next = DW'(wkup_detector_en_3_qs);
-      end
-      addr_hit[477]: begin
-        reg_rdata_next = DW'(wkup_detector_en_4_qs);
-      end
-      addr_hit[478]: begin
-        reg_rdata_next = DW'(wkup_detector_en_5_qs);
-      end
-      addr_hit[479]: begin
-        reg_rdata_next = DW'(wkup_detector_en_6_qs);
-      end
-      addr_hit[480]: begin
-        reg_rdata_next = DW'(wkup_detector_en_7_qs);
-      end
-      addr_hit[481]: begin
-        reg_rdata_next = DW'(wkup_detector_0_qs);
-      end
-      addr_hit[482]: begin
-        reg_rdata_next = DW'(wkup_detector_1_qs);
-      end
-      addr_hit[483]: begin
-        reg_rdata_next = DW'(wkup_detector_2_qs);
-      end
-      addr_hit[484]: begin
-        reg_rdata_next = DW'(wkup_detector_3_qs);
-      end
-      addr_hit[485]: begin
-        reg_rdata_next = DW'(wkup_detector_4_qs);
-      end
-      addr_hit[486]: begin
-        reg_rdata_next = DW'(wkup_detector_5_qs);
-      end
-      addr_hit[487]: begin
-        reg_rdata_next = DW'(wkup_detector_6_qs);
-      end
-      addr_hit[488]: begin
-        reg_rdata_next = DW'(wkup_detector_7_qs);
-      end
-      addr_hit[489]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_0_qs);
-      end
       addr_hit[490]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_1_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_12_qs;
       end
+
       addr_hit[491]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_2_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_13_qs;
       end
+
       addr_hit[492]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_3_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_14_qs;
       end
+
       addr_hit[493]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_4_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_15_qs;
       end
+
       addr_hit[494]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_5_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_16_qs;
       end
+
       addr_hit[495]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_6_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_17_qs;
       end
+
       addr_hit[496]: begin
-        reg_rdata_next = DW'(wkup_detector_cnt_th_7_qs);
+        reg_rdata_next[0] = dio_pad_sleep_regwen_18_qs;
       end
+
       addr_hit[497]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_0_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_19_qs;
       end
 
       addr_hit[498]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_1_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_20_qs;
       end
 
       addr_hit[499]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_2_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_21_qs;
       end
 
       addr_hit[500]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_3_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_22_qs;
       end
 
       addr_hit[501]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_4_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_23_qs;
       end
 
       addr_hit[502]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_5_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_24_qs;
       end
 
       addr_hit[503]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_6_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_25_qs;
       end
 
       addr_hit[504]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_7_qs;
+        reg_rdata_next[0] = dio_pad_sleep_regwen_26_qs;
       end
 
       addr_hit[505]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_27_qs;
+      end
+
+      addr_hit[506]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_28_qs;
+      end
+
+      addr_hit[507]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_29_qs;
+      end
+
+      addr_hit[508]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_30_qs;
+      end
+
+      addr_hit[509]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_31_qs;
+      end
+
+      addr_hit[510]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_32_qs;
+      end
+
+      addr_hit[511]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_33_qs;
+      end
+
+      addr_hit[512]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_34_qs;
+      end
+
+      addr_hit[513]: begin
+        reg_rdata_next[0] = dio_pad_sleep_regwen_35_qs;
+      end
+
+      addr_hit[514]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_0_qs;
+      end
+
+      addr_hit[515]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_1_qs;
+      end
+
+      addr_hit[516]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_2_qs;
+      end
+
+      addr_hit[517]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_3_qs;
+      end
+
+      addr_hit[518]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_4_qs;
+      end
+
+      addr_hit[519]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_5_qs;
+      end
+
+      addr_hit[520]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_6_qs;
+      end
+
+      addr_hit[521]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_7_qs;
+      end
+
+      addr_hit[522]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_8_qs;
+      end
+
+      addr_hit[523]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_9_qs;
+      end
+
+      addr_hit[524]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_10_qs;
+      end
+
+      addr_hit[525]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_11_qs;
+      end
+
+      addr_hit[526]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_12_qs;
+      end
+
+      addr_hit[527]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_13_qs;
+      end
+
+      addr_hit[528]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_14_qs;
+      end
+
+      addr_hit[529]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_15_qs;
+      end
+
+      addr_hit[530]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_16_qs;
+      end
+
+      addr_hit[531]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_17_qs;
+      end
+
+      addr_hit[532]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_18_qs;
+      end
+
+      addr_hit[533]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_19_qs;
+      end
+
+      addr_hit[534]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_20_qs;
+      end
+
+      addr_hit[535]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_21_qs;
+      end
+
+      addr_hit[536]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_22_qs;
+      end
+
+      addr_hit[537]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_23_qs;
+      end
+
+      addr_hit[538]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_24_qs;
+      end
+
+      addr_hit[539]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_25_qs;
+      end
+
+      addr_hit[540]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_26_qs;
+      end
+
+      addr_hit[541]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_27_qs;
+      end
+
+      addr_hit[542]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_28_qs;
+      end
+
+      addr_hit[543]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_29_qs;
+      end
+
+      addr_hit[544]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_30_qs;
+      end
+
+      addr_hit[545]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_31_qs;
+      end
+
+      addr_hit[546]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_32_qs;
+      end
+
+      addr_hit[547]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_33_qs;
+      end
+
+      addr_hit[548]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_34_qs;
+      end
+
+      addr_hit[549]: begin
+        reg_rdata_next[0] = dio_pad_sleep_en_35_qs;
+      end
+
+      addr_hit[550]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_0_qs;
+      end
+
+      addr_hit[551]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_1_qs;
+      end
+
+      addr_hit[552]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_2_qs;
+      end
+
+      addr_hit[553]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_3_qs;
+      end
+
+      addr_hit[554]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_4_qs;
+      end
+
+      addr_hit[555]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_5_qs;
+      end
+
+      addr_hit[556]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_6_qs;
+      end
+
+      addr_hit[557]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_7_qs;
+      end
+
+      addr_hit[558]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_8_qs;
+      end
+
+      addr_hit[559]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_9_qs;
+      end
+
+      addr_hit[560]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_10_qs;
+      end
+
+      addr_hit[561]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_11_qs;
+      end
+
+      addr_hit[562]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_12_qs;
+      end
+
+      addr_hit[563]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_13_qs;
+      end
+
+      addr_hit[564]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_14_qs;
+      end
+
+      addr_hit[565]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_15_qs;
+      end
+
+      addr_hit[566]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_16_qs;
+      end
+
+      addr_hit[567]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_17_qs;
+      end
+
+      addr_hit[568]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_18_qs;
+      end
+
+      addr_hit[569]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_19_qs;
+      end
+
+      addr_hit[570]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_20_qs;
+      end
+
+      addr_hit[571]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_21_qs;
+      end
+
+      addr_hit[572]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_22_qs;
+      end
+
+      addr_hit[573]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_23_qs;
+      end
+
+      addr_hit[574]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_24_qs;
+      end
+
+      addr_hit[575]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_25_qs;
+      end
+
+      addr_hit[576]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_26_qs;
+      end
+
+      addr_hit[577]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_27_qs;
+      end
+
+      addr_hit[578]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_28_qs;
+      end
+
+      addr_hit[579]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_29_qs;
+      end
+
+      addr_hit[580]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_30_qs;
+      end
+
+      addr_hit[581]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_31_qs;
+      end
+
+      addr_hit[582]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_32_qs;
+      end
+
+      addr_hit[583]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_33_qs;
+      end
+
+      addr_hit[584]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_34_qs;
+      end
+
+      addr_hit[585]: begin
+        reg_rdata_next[1:0] = dio_pad_sleep_mode_35_qs;
+      end
+
+      addr_hit[586]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_0_qs;
+      end
+
+      addr_hit[587]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_1_qs;
+      end
+
+      addr_hit[588]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_2_qs;
+      end
+
+      addr_hit[589]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_3_qs;
+      end
+
+      addr_hit[590]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_4_qs;
+      end
+
+      addr_hit[591]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_5_qs;
+      end
+
+      addr_hit[592]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_6_qs;
+      end
+
+      addr_hit[593]: begin
+        reg_rdata_next[0] = wkup_detector_regwen_7_qs;
+      end
+
+      addr_hit[594]: begin
+        reg_rdata_next = DW'(wkup_detector_en_0_qs);
+      end
+      addr_hit[595]: begin
+        reg_rdata_next = DW'(wkup_detector_en_1_qs);
+      end
+      addr_hit[596]: begin
+        reg_rdata_next = DW'(wkup_detector_en_2_qs);
+      end
+      addr_hit[597]: begin
+        reg_rdata_next = DW'(wkup_detector_en_3_qs);
+      end
+      addr_hit[598]: begin
+        reg_rdata_next = DW'(wkup_detector_en_4_qs);
+      end
+      addr_hit[599]: begin
+        reg_rdata_next = DW'(wkup_detector_en_5_qs);
+      end
+      addr_hit[600]: begin
+        reg_rdata_next = DW'(wkup_detector_en_6_qs);
+      end
+      addr_hit[601]: begin
+        reg_rdata_next = DW'(wkup_detector_en_7_qs);
+      end
+      addr_hit[602]: begin
+        reg_rdata_next = DW'(wkup_detector_0_qs);
+      end
+      addr_hit[603]: begin
+        reg_rdata_next = DW'(wkup_detector_1_qs);
+      end
+      addr_hit[604]: begin
+        reg_rdata_next = DW'(wkup_detector_2_qs);
+      end
+      addr_hit[605]: begin
+        reg_rdata_next = DW'(wkup_detector_3_qs);
+      end
+      addr_hit[606]: begin
+        reg_rdata_next = DW'(wkup_detector_4_qs);
+      end
+      addr_hit[607]: begin
+        reg_rdata_next = DW'(wkup_detector_5_qs);
+      end
+      addr_hit[608]: begin
+        reg_rdata_next = DW'(wkup_detector_6_qs);
+      end
+      addr_hit[609]: begin
+        reg_rdata_next = DW'(wkup_detector_7_qs);
+      end
+      addr_hit[610]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_0_qs);
+      end
+      addr_hit[611]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_1_qs);
+      end
+      addr_hit[612]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_2_qs);
+      end
+      addr_hit[613]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_3_qs);
+      end
+      addr_hit[614]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_4_qs);
+      end
+      addr_hit[615]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_5_qs);
+      end
+      addr_hit[616]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_6_qs);
+      end
+      addr_hit[617]: begin
+        reg_rdata_next = DW'(wkup_detector_cnt_th_7_qs);
+      end
+      addr_hit[618]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_0_qs;
+      end
+
+      addr_hit[619]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_1_qs;
+      end
+
+      addr_hit[620]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_2_qs;
+      end
+
+      addr_hit[621]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_3_qs;
+      end
+
+      addr_hit[622]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_4_qs;
+      end
+
+      addr_hit[623]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_5_qs;
+      end
+
+      addr_hit[624]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_6_qs;
+      end
+
+      addr_hit[625]: begin
+        reg_rdata_next[5:0] = wkup_detector_padsel_7_qs;
+      end
+
+      addr_hit[626]: begin
         reg_rdata_next = DW'(wkup_cause_qs);
       end
       default: begin
@@ -35360,79 +45307,79 @@ module pinmux_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[473]: begin
+      addr_hit[594]: begin
         reg_busy_sel = wkup_detector_en_0_busy;
       end
-      addr_hit[474]: begin
+      addr_hit[595]: begin
         reg_busy_sel = wkup_detector_en_1_busy;
       end
-      addr_hit[475]: begin
+      addr_hit[596]: begin
         reg_busy_sel = wkup_detector_en_2_busy;
       end
-      addr_hit[476]: begin
+      addr_hit[597]: begin
         reg_busy_sel = wkup_detector_en_3_busy;
       end
-      addr_hit[477]: begin
+      addr_hit[598]: begin
         reg_busy_sel = wkup_detector_en_4_busy;
       end
-      addr_hit[478]: begin
+      addr_hit[599]: begin
         reg_busy_sel = wkup_detector_en_5_busy;
       end
-      addr_hit[479]: begin
+      addr_hit[600]: begin
         reg_busy_sel = wkup_detector_en_6_busy;
       end
-      addr_hit[480]: begin
+      addr_hit[601]: begin
         reg_busy_sel = wkup_detector_en_7_busy;
       end
-      addr_hit[481]: begin
+      addr_hit[602]: begin
         reg_busy_sel = wkup_detector_0_busy;
       end
-      addr_hit[482]: begin
+      addr_hit[603]: begin
         reg_busy_sel = wkup_detector_1_busy;
       end
-      addr_hit[483]: begin
+      addr_hit[604]: begin
         reg_busy_sel = wkup_detector_2_busy;
       end
-      addr_hit[484]: begin
+      addr_hit[605]: begin
         reg_busy_sel = wkup_detector_3_busy;
       end
-      addr_hit[485]: begin
+      addr_hit[606]: begin
         reg_busy_sel = wkup_detector_4_busy;
       end
-      addr_hit[486]: begin
+      addr_hit[607]: begin
         reg_busy_sel = wkup_detector_5_busy;
       end
-      addr_hit[487]: begin
+      addr_hit[608]: begin
         reg_busy_sel = wkup_detector_6_busy;
       end
-      addr_hit[488]: begin
+      addr_hit[609]: begin
         reg_busy_sel = wkup_detector_7_busy;
       end
-      addr_hit[489]: begin
+      addr_hit[610]: begin
         reg_busy_sel = wkup_detector_cnt_th_0_busy;
       end
-      addr_hit[490]: begin
+      addr_hit[611]: begin
         reg_busy_sel = wkup_detector_cnt_th_1_busy;
       end
-      addr_hit[491]: begin
+      addr_hit[612]: begin
         reg_busy_sel = wkup_detector_cnt_th_2_busy;
       end
-      addr_hit[492]: begin
+      addr_hit[613]: begin
         reg_busy_sel = wkup_detector_cnt_th_3_busy;
       end
-      addr_hit[493]: begin
+      addr_hit[614]: begin
         reg_busy_sel = wkup_detector_cnt_th_4_busy;
       end
-      addr_hit[494]: begin
+      addr_hit[615]: begin
         reg_busy_sel = wkup_detector_cnt_th_5_busy;
       end
-      addr_hit[495]: begin
+      addr_hit[616]: begin
         reg_busy_sel = wkup_detector_cnt_th_6_busy;
       end
-      addr_hit[496]: begin
+      addr_hit[617]: begin
         reg_busy_sel = wkup_detector_cnt_th_7_busy;
       end
-      addr_hit[505]: begin
+      addr_hit[626]: begin
         reg_busy_sel = wkup_cause_busy;
       end
       default: begin

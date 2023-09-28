@@ -473,6 +473,30 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 11   | SPI_DEV_D3    | VIOA   | BidirStd  | direct            | SPI device data            |
 | 12   | SPI_DEV_CLK   | VIOA   | InputStd  | direct            | SPI device clock           |
 | 13   | SPI_DEV_CS_L  | VIOA   | InputStd  | direct            | SPI device chip select     |
+| 14   | SOC_GPI0      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 15   | SOC_GPI1      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 16   | SOC_GPI2      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 17   | SOC_GPI3      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 18   | SOC_GPI4      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 19   | SOC_GPI5      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 20   | SOC_GPI6      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 21   | SOC_GPI7      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 22   | SOC_GPI8      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 23   | SOC_GPI9      | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 24   | SOC_GPI10     | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 25   | SOC_GPI11     | VIOA   | InputStd  | direct            | SoC general purpose input  |
+| 26   | SOC_GPO0      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 27   | SOC_GPO1      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 28   | SOC_GPO2      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 29   | SOC_GPO3      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 30   | SOC_GPO4      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 31   | SOC_GPO5      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 32   | SOC_GPO6      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 33   | SOC_GPO7      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 34   | SOC_GPO8      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 35   | SOC_GPO9      | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 36   | SOC_GPO10     | VIOA   | BidirStd  | direct            | SoC general purpose output |
+| 37   | SOC_GPO11     | VIOA   | BidirStd  | direct            | SoC general purpose output |
 | 0    | IOA0          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
 | 1    | IOA1          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
 | 2    | IOA2          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |

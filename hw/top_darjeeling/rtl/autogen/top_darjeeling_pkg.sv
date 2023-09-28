@@ -149,7 +149,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for pinmux_aon in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_PINMUX_AON_SIZE_BYTES = 32'h800;
+  parameter int unsigned TOP_DARJEELING_PINMUX_AON_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for aon_timer_aon in top darjeeling.
@@ -853,9 +853,33 @@ package top_darjeeling_pkg;
     DioSpiDeviceSd3 = 7,
     DioSpiDeviceSck = 8,
     DioSpiDeviceCsb = 9,
-    DioSpiHost0Sck = 10,
-    DioSpiHost0Csb = 11,
-    DioCount = 12
+    DioSocProxySocGpi0 = 10,
+    DioSocProxySocGpi1 = 11,
+    DioSocProxySocGpi2 = 12,
+    DioSocProxySocGpi3 = 13,
+    DioSocProxySocGpi4 = 14,
+    DioSocProxySocGpi5 = 15,
+    DioSocProxySocGpi6 = 16,
+    DioSocProxySocGpi7 = 17,
+    DioSocProxySocGpi8 = 18,
+    DioSocProxySocGpi9 = 19,
+    DioSocProxySocGpi10 = 20,
+    DioSocProxySocGpi11 = 21,
+    DioSpiHost0Sck = 22,
+    DioSpiHost0Csb = 23,
+    DioSocProxySocGpo0 = 24,
+    DioSocProxySocGpo1 = 25,
+    DioSocProxySocGpo2 = 26,
+    DioSocProxySocGpo3 = 27,
+    DioSocProxySocGpo4 = 28,
+    DioSocProxySocGpo5 = 29,
+    DioSocProxySocGpo6 = 30,
+    DioSocProxySocGpo7 = 31,
+    DioSocProxySocGpo8 = 32,
+    DioSocProxySocGpo9 = 33,
+    DioSocProxySocGpo10 = 34,
+    DioSocProxySocGpo11 = 35,
+    DioCount = 36
   } dio_e;
 
   // Enumeration for the types of pads.
@@ -933,6 +957,30 @@ package top_darjeeling_pkg;
     DioPadSpiDevD3 = 11,
     DioPadSpiDevClk = 12,
     DioPadSpiDevCsL = 13,
+    DioPadSocGpi0 = 14,
+    DioPadSocGpi1 = 15,
+    DioPadSocGpi2 = 16,
+    DioPadSocGpi3 = 17,
+    DioPadSocGpi4 = 18,
+    DioPadSocGpi5 = 19,
+    DioPadSocGpi6 = 20,
+    DioPadSocGpi7 = 21,
+    DioPadSocGpi8 = 22,
+    DioPadSocGpi9 = 23,
+    DioPadSocGpi10 = 24,
+    DioPadSocGpi11 = 25,
+    DioPadSocGpo0 = 26,
+    DioPadSocGpo1 = 27,
+    DioPadSocGpo2 = 28,
+    DioPadSocGpo3 = 29,
+    DioPadSocGpo4 = 30,
+    DioPadSocGpo5 = 31,
+    DioPadSocGpo6 = 32,
+    DioPadSocGpo7 = 33,
+    DioPadSocGpo8 = 34,
+    DioPadSocGpo9 = 35,
+    DioPadSocGpo10 = 36,
+    DioPadSocGpo11 = 37,
     DioPadCount
   } dio_pad_e;
 

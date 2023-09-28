@@ -3948,6 +3948,36 @@
           index: -1
         }
         {
+          name: soc_gpi_async
+          desc: GPI from SoC, async
+          struct: logic
+          type: uni
+          act: req
+          width: 12
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          external: true
+          top_signame: soc_gpi_async
+          conn_type: false
+          index: -1
+        }
+        {
+          name: soc_gpo_async
+          desc: GPO from SoC, async
+          struct: logic
+          type: uni
+          act: rcv
+          width: 12
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          external: true
+          top_signame: soc_gpo_async
+          conn_type: false
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -9415,6 +9445,8 @@
       soc_proxy.soc_rst_req_async: soc_rst_req_async
       soc_proxy.soc_intr_async: soc_intr_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
+      soc_proxy.soc_gpi_async: soc_gpi_async
+      soc_proxy.soc_gpo_async: soc_gpo_async
       spi_device.sck_monitor: sck_monitor
     }
   }
@@ -11386,7 +11418,7 @@
               {
                 hart: 0x30460000
               }
-              size_byte: 0x800
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -12464,6 +12496,222 @@
         idx: 13
       }
       {
+        name: SOC_GPI0
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 14
+      }
+      {
+        name: SOC_GPI1
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 15
+      }
+      {
+        name: SOC_GPI2
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 16
+      }
+      {
+        name: SOC_GPI3
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 17
+      }
+      {
+        name: SOC_GPI4
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 18
+      }
+      {
+        name: SOC_GPI5
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 19
+      }
+      {
+        name: SOC_GPI6
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 20
+      }
+      {
+        name: SOC_GPI7
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 21
+      }
+      {
+        name: SOC_GPI8
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 22
+      }
+      {
+        name: SOC_GPI9
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 23
+      }
+      {
+        name: SOC_GPI10
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 24
+      }
+      {
+        name: SOC_GPI11
+        type: InputStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose input
+        port_type: inout
+        idx: 25
+      }
+      {
+        name: SOC_GPO0
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 26
+      }
+      {
+        name: SOC_GPO1
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 27
+      }
+      {
+        name: SOC_GPO2
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 28
+      }
+      {
+        name: SOC_GPO3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 29
+      }
+      {
+        name: SOC_GPO4
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 30
+      }
+      {
+        name: SOC_GPO5
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 31
+      }
+      {
+        name: SOC_GPO6
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 32
+      }
+      {
+        name: SOC_GPO7
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 33
+      }
+      {
+        name: SOC_GPO8
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 34
+      }
+      {
+        name: SOC_GPO9
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 35
+      }
+      {
+        name: SOC_GPO10
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 36
+      }
+      {
+        name: SOC_GPO11
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SoC general purpose output
+        port_type: inout
+        idx: 37
+      }
+      {
         name: IOA0
         type: BidirStd
         bank: VIOA
@@ -12985,6 +13233,198 @@
         port: sd[3]
         connection: direct
         pad: SPI_DEV_D3
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[0]
+        connection: direct
+        pad: SOC_GPI0
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[1]
+        connection: direct
+        pad: SOC_GPI1
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[2]
+        connection: direct
+        pad: SOC_GPI2
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[3]
+        connection: direct
+        pad: SOC_GPI3
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[4]
+        connection: direct
+        pad: SOC_GPI4
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[5]
+        connection: direct
+        pad: SOC_GPI5
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[6]
+        connection: direct
+        pad: SOC_GPI6
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[7]
+        connection: direct
+        pad: SOC_GPI7
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[8]
+        connection: direct
+        pad: SOC_GPI8
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[9]
+        connection: direct
+        pad: SOC_GPI9
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[10]
+        connection: direct
+        pad: SOC_GPI10
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpi[11]
+        connection: direct
+        pad: SOC_GPI11
+        desc: ""
+        attr: InputStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[0]
+        connection: direct
+        pad: SOC_GPO0
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[1]
+        connection: direct
+        pad: SOC_GPO1
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[2]
+        connection: direct
+        pad: SOC_GPO2
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[3]
+        connection: direct
+        pad: SOC_GPO3
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[4]
+        connection: direct
+        pad: SOC_GPO4
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[5]
+        connection: direct
+        pad: SOC_GPO5
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[6]
+        connection: direct
+        pad: SOC_GPO6
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[7]
+        connection: direct
+        pad: SOC_GPO7
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[8]
+        connection: direct
+        pad: SOC_GPO8
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[9]
+        connection: direct
+        pad: SOC_GPO9
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[10]
+        connection: direct
+        pad: SOC_GPO10
+        desc: ""
+        attr: BidirStd
+      }
+      {
+        instance: soc_proxy
+        port: soc_gpo[11]
+        connection: direct
+        pad: SOC_GPO11
         desc: ""
         attr: BidirStd
       }
@@ -13526,6 +13966,138 @@
         glob_idx: 9
       }
       {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 0
+        pad: SOC_GPI0
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 10
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 1
+        pad: SOC_GPI1
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 11
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 2
+        pad: SOC_GPI2
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 12
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 3
+        pad: SOC_GPI3
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 13
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 4
+        pad: SOC_GPI4
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 14
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 5
+        pad: SOC_GPI5
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 15
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 6
+        pad: SOC_GPI6
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 16
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 7
+        pad: SOC_GPI7
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 17
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 8
+        pad: SOC_GPI8
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 18
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 9
+        pad: SOC_GPI9
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 19
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 10
+        pad: SOC_GPI10
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 20
+      }
+      {
+        name: soc_proxy_soc_gpi
+        width: 12
+        type: input
+        idx: 11
+        pad: SOC_GPI11
+        attr: InputStd
+        connection: direct
+        desc: ""
+        glob_idx: 21
+      }
+      {
         name: uart0_rx
         width: 1
         type: input
@@ -13556,7 +14128,7 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 10
+        glob_idx: 22
       }
       {
         name: spi_host0_csb
@@ -13567,7 +14139,139 @@
         attr: BidirStd
         connection: direct
         desc: ""
-        glob_idx: 11
+        glob_idx: 23
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 0
+        pad: SOC_GPO0
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 24
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 1
+        pad: SOC_GPO1
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 25
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 2
+        pad: SOC_GPO2
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 26
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 3
+        pad: SOC_GPO3
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 27
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 4
+        pad: SOC_GPO4
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 28
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 5
+        pad: SOC_GPO5
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 29
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 6
+        pad: SOC_GPO6
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 30
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 7
+        pad: SOC_GPO7
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 31
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 8
+        pad: SOC_GPO8
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 32
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 9
+        pad: SOC_GPO9
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 33
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 10
+        pad: SOC_GPO10
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 34
+      }
+      {
+        name: soc_proxy_soc_gpo
+        width: 12
+        type: output
+        idx: 11
+        pad: SOC_GPO11
+        attr: BidirStd
+        connection: direct
+        desc: ""
+        glob_idx: 35
       }
       {
         name: uart0_tx
@@ -13696,9 +14400,9 @@
       dedicated:
       {
         inouts: 8
-        inputs: 2
-        outputs: 2
-        pads: 14
+        inputs: 14
+        outputs: 14
+        pads: 38
       }
       muxed:
       {
@@ -18145,6 +18849,36 @@
         package: ""
         external: true
         top_signame: soc_intr_async
+        conn_type: false
+        index: -1
+      }
+      {
+        name: soc_gpi_async
+        desc: GPI from SoC, async
+        struct: logic
+        type: uni
+        act: req
+        width: 12
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        external: true
+        top_signame: soc_gpi_async
+        conn_type: false
+        index: -1
+      }
+      {
+        name: soc_gpo_async
+        desc: GPO from SoC, async
+        struct: logic
+        type: uni
+        act: rcv
+        width: 12
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        external: true
+        top_signame: soc_gpo_async
         conn_type: false
         index: -1
       }
@@ -22723,6 +23457,30 @@
         conn_type: false
         index: -1
         netname: soc_lsio_trigger
+      }
+      {
+        package: ""
+        struct: logic
+        signame: soc_gpi_async_o
+        width: 12
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: soc_gpi_async
+      }
+      {
+        package: ""
+        struct: logic
+        signame: soc_gpo_async_i
+        width: 12
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: soc_gpo_async
       }
       {
         package: ""

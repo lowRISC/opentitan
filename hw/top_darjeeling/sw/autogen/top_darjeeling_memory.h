@@ -331,7 +331,7 @@
  * address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
  * `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x800
+#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x1000
 /**
  * Peripheral base address for aon_timer_aon in top darjeeling.
  *

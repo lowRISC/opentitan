@@ -33,6 +33,30 @@ module chip_darjeeling_cw310 #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
+  inout SOC_GPI0, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI1, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI2, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI3, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI4, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI5, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI6, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI7, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI8, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI9, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI10, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPI11, // Dedicated Pad for soc_proxy_soc_gpi
+  inout SOC_GPO0, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO1, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO2, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO3, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO4, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO5, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO6, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO7, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO8, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO9, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO10, // Dedicated Pad for soc_proxy_soc_gpo
+  inout SOC_GPO11, // Dedicated Pad for soc_proxy_soc_gpo
   inout IO_CLK, // Manual Pad
   inout POR_BUTTON_N, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
@@ -125,8 +149,32 @@ module chip_darjeeling_cw310 #(
     usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO soc_proxy_soc_gpo
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO soc_proxy_soc_gpi
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirStd, // DIO spi_device_sd
@@ -228,7 +276,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [60:0] unused_sig;
+  logic [84:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -240,13 +288,37 @@ module chip_darjeeling_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(17),
+    .NDioPads(41),
     .NMioPads(47),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
       InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
+      BidirStd, // SOC_GPO11
+      BidirStd, // SOC_GPO10
+      BidirStd, // SOC_GPO9
+      BidirStd, // SOC_GPO8
+      BidirStd, // SOC_GPO7
+      BidirStd, // SOC_GPO6
+      BidirStd, // SOC_GPO5
+      BidirStd, // SOC_GPO4
+      BidirStd, // SOC_GPO3
+      BidirStd, // SOC_GPO2
+      BidirStd, // SOC_GPO1
+      BidirStd, // SOC_GPO0
+      InputStd, // SOC_GPI11
+      InputStd, // SOC_GPI10
+      InputStd, // SOC_GPI9
+      InputStd, // SOC_GPI8
+      InputStd, // SOC_GPI7
+      InputStd, // SOC_GPI6
+      InputStd, // SOC_GPI5
+      InputStd, // SOC_GPI4
+      InputStd, // SOC_GPI3
+      InputStd, // SOC_GPI2
+      InputStd, // SOC_GPI1
+      InputStd, // SOC_GPI0
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -321,6 +393,30 @@ module chip_darjeeling_cw310 #(
       IO_CLKOUT,
       POR_BUTTON_N,
       IO_CLK,
+      SOC_GPO11,
+      SOC_GPO10,
+      SOC_GPO9,
+      SOC_GPO8,
+      SOC_GPO7,
+      SOC_GPO6,
+      SOC_GPO5,
+      SOC_GPO4,
+      SOC_GPO3,
+      SOC_GPO2,
+      SOC_GPO1,
+      SOC_GPO0,
+      SOC_GPI11,
+      SOC_GPI10,
+      SOC_GPI9,
+      SOC_GPI8,
+      SOC_GPI7,
+      SOC_GPI6,
+      SOC_GPI5,
+      SOC_GPI4,
+      SOC_GPI3,
+      SOC_GPI2,
+      SOC_GPI1,
+      SOC_GPI0,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -400,6 +496,30 @@ module chip_darjeeling_cw310 #(
         manual_in_io_clkout,
         manual_in_por_button_n,
         manual_in_io_clk,
+        dio_in[DioSocProxySocGpo11],
+        dio_in[DioSocProxySocGpo10],
+        dio_in[DioSocProxySocGpo9],
+        dio_in[DioSocProxySocGpo8],
+        dio_in[DioSocProxySocGpo7],
+        dio_in[DioSocProxySocGpo6],
+        dio_in[DioSocProxySocGpo5],
+        dio_in[DioSocProxySocGpo4],
+        dio_in[DioSocProxySocGpo3],
+        dio_in[DioSocProxySocGpo2],
+        dio_in[DioSocProxySocGpo1],
+        dio_in[DioSocProxySocGpo0],
+        dio_in[DioSocProxySocGpi11],
+        dio_in[DioSocProxySocGpi10],
+        dio_in[DioSocProxySocGpi9],
+        dio_in[DioSocProxySocGpi8],
+        dio_in[DioSocProxySocGpi7],
+        dio_in[DioSocProxySocGpi6],
+        dio_in[DioSocProxySocGpi5],
+        dio_in[DioSocProxySocGpi4],
+        dio_in[DioSocProxySocGpi3],
+        dio_in[DioSocProxySocGpi2],
+        dio_in[DioSocProxySocGpi1],
+        dio_in[DioSocProxySocGpi0],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -419,6 +539,30 @@ module chip_darjeeling_cw310 #(
         manual_out_io_clkout,
         manual_out_por_button_n,
         manual_out_io_clk,
+        dio_out[DioSocProxySocGpo11],
+        dio_out[DioSocProxySocGpo10],
+        dio_out[DioSocProxySocGpo9],
+        dio_out[DioSocProxySocGpo8],
+        dio_out[DioSocProxySocGpo7],
+        dio_out[DioSocProxySocGpo6],
+        dio_out[DioSocProxySocGpo5],
+        dio_out[DioSocProxySocGpo4],
+        dio_out[DioSocProxySocGpo3],
+        dio_out[DioSocProxySocGpo2],
+        dio_out[DioSocProxySocGpo1],
+        dio_out[DioSocProxySocGpo0],
+        dio_out[DioSocProxySocGpi11],
+        dio_out[DioSocProxySocGpi10],
+        dio_out[DioSocProxySocGpi9],
+        dio_out[DioSocProxySocGpi8],
+        dio_out[DioSocProxySocGpi7],
+        dio_out[DioSocProxySocGpi6],
+        dio_out[DioSocProxySocGpi5],
+        dio_out[DioSocProxySocGpi4],
+        dio_out[DioSocProxySocGpi3],
+        dio_out[DioSocProxySocGpi2],
+        dio_out[DioSocProxySocGpi1],
+        dio_out[DioSocProxySocGpi0],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -438,6 +582,30 @@ module chip_darjeeling_cw310 #(
         manual_oe_io_clkout,
         manual_oe_por_button_n,
         manual_oe_io_clk,
+        dio_oe[DioSocProxySocGpo11],
+        dio_oe[DioSocProxySocGpo10],
+        dio_oe[DioSocProxySocGpo9],
+        dio_oe[DioSocProxySocGpo8],
+        dio_oe[DioSocProxySocGpo7],
+        dio_oe[DioSocProxySocGpo6],
+        dio_oe[DioSocProxySocGpo5],
+        dio_oe[DioSocProxySocGpo4],
+        dio_oe[DioSocProxySocGpo3],
+        dio_oe[DioSocProxySocGpo2],
+        dio_oe[DioSocProxySocGpo1],
+        dio_oe[DioSocProxySocGpo0],
+        dio_oe[DioSocProxySocGpi11],
+        dio_oe[DioSocProxySocGpi10],
+        dio_oe[DioSocProxySocGpi9],
+        dio_oe[DioSocProxySocGpi8],
+        dio_oe[DioSocProxySocGpi7],
+        dio_oe[DioSocProxySocGpi6],
+        dio_oe[DioSocProxySocGpi5],
+        dio_oe[DioSocProxySocGpi4],
+        dio_oe[DioSocProxySocGpi3],
+        dio_oe[DioSocProxySocGpi2],
+        dio_oe[DioSocProxySocGpi1],
+        dio_oe[DioSocProxySocGpi0],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -457,6 +625,30 @@ module chip_darjeeling_cw310 #(
         manual_attr_io_clkout,
         manual_attr_por_button_n,
         manual_attr_io_clk,
+        dio_attr[DioSocProxySocGpo11],
+        dio_attr[DioSocProxySocGpo10],
+        dio_attr[DioSocProxySocGpo9],
+        dio_attr[DioSocProxySocGpo8],
+        dio_attr[DioSocProxySocGpo7],
+        dio_attr[DioSocProxySocGpo6],
+        dio_attr[DioSocProxySocGpo5],
+        dio_attr[DioSocProxySocGpo4],
+        dio_attr[DioSocProxySocGpo3],
+        dio_attr[DioSocProxySocGpo2],
+        dio_attr[DioSocProxySocGpo1],
+        dio_attr[DioSocProxySocGpo0],
+        dio_attr[DioSocProxySocGpi11],
+        dio_attr[DioSocProxySocGpi10],
+        dio_attr[DioSocProxySocGpi9],
+        dio_attr[DioSocProxySocGpi8],
+        dio_attr[DioSocProxySocGpi7],
+        dio_attr[DioSocProxySocGpi6],
+        dio_attr[DioSocProxySocGpi5],
+        dio_attr[DioSocProxySocGpi4],
+        dio_attr[DioSocProxySocGpi3],
+        dio_attr[DioSocProxySocGpi2],
+        dio_attr[DioSocProxySocGpi1],
+        dio_attr[DioSocProxySocGpi0],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
@@ -1095,6 +1287,8 @@ module chip_darjeeling_cw310 #(
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
     .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d          ),
     .ctn_tl_d2h_i                 ( ctn_egress_tl_d2h          ),
+    .soc_gpi_async_o              (                            ),
+    .soc_gpo_async_i              ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),

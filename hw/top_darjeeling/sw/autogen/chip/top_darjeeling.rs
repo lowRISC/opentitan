@@ -202,7 +202,7 @@ pub const TOP_DARJEELING_PINMUX_AON_BASE_ADDR: usize = 0x30460000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
 /// `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
-pub const TOP_DARJEELING_PINMUX_AON_SIZE_BYTES: usize = 0x800;
+pub const TOP_DARJEELING_PINMUX_AON_SIZE_BYTES: usize = 0x1000;
 /// Peripheral base address for aon_timer_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -2202,7 +2202,7 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 87
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 pub const TOP_DARJEELING_NUM_MIO_PADS: usize = 47;
-pub const TOP_DARJEELING_NUM_DIO_PADS: usize = 12;
+pub const TOP_DARJEELING_NUM_DIO_PADS: usize = 36;
 
 pub const TOP_DARJEELING_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
 pub const TOP_DARJEELING_PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
@@ -2816,8 +2816,32 @@ pub enum TopDarjeelingDirectPads {
     SpiDeviceSd3 = 7,
     SpiDeviceSck = 8,
     SpiDeviceCsb = 9,
-    SpiHost0Sck = 10,
-    SpiHost0Csb = 11,
+    SocProxySocGpi0 = 10,
+    SocProxySocGpi1 = 11,
+    SocProxySocGpi2 = 12,
+    SocProxySocGpi3 = 13,
+    SocProxySocGpi4 = 14,
+    SocProxySocGpi5 = 15,
+    SocProxySocGpi6 = 16,
+    SocProxySocGpi7 = 17,
+    SocProxySocGpi8 = 18,
+    SocProxySocGpi9 = 19,
+    SocProxySocGpi10 = 20,
+    SocProxySocGpi11 = 21,
+    SpiHost0Sck = 22,
+    SpiHost0Csb = 23,
+    SocProxySocGpo0 = 24,
+    SocProxySocGpo1 = 25,
+    SocProxySocGpo2 = 26,
+    SocProxySocGpo3 = 27,
+    SocProxySocGpo4 = 28,
+    SocProxySocGpo5 = 29,
+    SocProxySocGpo6 = 30,
+    SocProxySocGpo7 = 31,
+    SocProxySocGpo8 = 32,
+    SocProxySocGpo9 = 33,
+    SocProxySocGpo10 = 34,
+    SocProxySocGpo11 = 35,
 }
 
 impl TryFrom<u32> for TopDarjeelingDirectPads {
@@ -2834,8 +2858,32 @@ impl TryFrom<u32> for TopDarjeelingDirectPads {
             7 => Ok(Self::SpiDeviceSd3),
             8 => Ok(Self::SpiDeviceSck),
             9 => Ok(Self::SpiDeviceCsb),
-            10 => Ok(Self::SpiHost0Sck),
-            11 => Ok(Self::SpiHost0Csb),
+            10 => Ok(Self::SocProxySocGpi0),
+            11 => Ok(Self::SocProxySocGpi1),
+            12 => Ok(Self::SocProxySocGpi2),
+            13 => Ok(Self::SocProxySocGpi3),
+            14 => Ok(Self::SocProxySocGpi4),
+            15 => Ok(Self::SocProxySocGpi5),
+            16 => Ok(Self::SocProxySocGpi6),
+            17 => Ok(Self::SocProxySocGpi7),
+            18 => Ok(Self::SocProxySocGpi8),
+            19 => Ok(Self::SocProxySocGpi9),
+            20 => Ok(Self::SocProxySocGpi10),
+            21 => Ok(Self::SocProxySocGpi11),
+            22 => Ok(Self::SpiHost0Sck),
+            23 => Ok(Self::SpiHost0Csb),
+            24 => Ok(Self::SocProxySocGpo0),
+            25 => Ok(Self::SocProxySocGpo1),
+            26 => Ok(Self::SocProxySocGpo2),
+            27 => Ok(Self::SocProxySocGpo3),
+            28 => Ok(Self::SocProxySocGpo4),
+            29 => Ok(Self::SocProxySocGpo5),
+            30 => Ok(Self::SocProxySocGpo6),
+            31 => Ok(Self::SocProxySocGpo7),
+            32 => Ok(Self::SocProxySocGpo8),
+            33 => Ok(Self::SocProxySocGpo9),
+            34 => Ok(Self::SocProxySocGpo10),
+            35 => Ok(Self::SocProxySocGpo11),
             _ => Err(val),
         }
     }

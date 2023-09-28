@@ -278,7 +278,7 @@ extern "C" {
  * address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
  * `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x800u
+#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x1000u
 
 /**
  * Peripheral base address for aon_timer_aon in top darjeeling.
@@ -1420,7 +1420,7 @@ extern const top_darjeeling_alert_peripheral_t
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
 #define TOP_DARJEELING_NUM_MIO_PADS 47
-#define TOP_DARJEELING_NUM_DIO_PADS 12
+#define TOP_DARJEELING_NUM_DIO_PADS 36
 
 #define TOP_DARJEELING_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 #define TOP_DARJEELING_PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
@@ -1647,9 +1647,33 @@ typedef enum top_darjeeling_direct_pads {
   kTopDarjeelingDirectPadsSpiDeviceSd3 = 7, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceSck = 8, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceCsb = 9, /**<  */
-  kTopDarjeelingDirectPadsSpiHost0Sck = 10, /**<  */
-  kTopDarjeelingDirectPadsSpiHost0Csb = 11, /**<  */
-  kTopDarjeelingDirectPadsLast = 11, /**< \internal Last valid direct pad */
+  kTopDarjeelingDirectPadsSocProxySocGpi0 = 10, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi1 = 11, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi2 = 12, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi3 = 13, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi4 = 14, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi5 = 15, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi6 = 16, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi7 = 17, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi8 = 18, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi9 = 19, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi10 = 20, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi11 = 21, /**<  */
+  kTopDarjeelingDirectPadsSpiHost0Sck = 22, /**<  */
+  kTopDarjeelingDirectPadsSpiHost0Csb = 23, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo0 = 24, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo1 = 25, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo2 = 26, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo3 = 27, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo4 = 28, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo5 = 29, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo6 = 30, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo7 = 31, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo8 = 32, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo9 = 33, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo10 = 34, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo11 = 35, /**<  */
+  kTopDarjeelingDirectPadsLast = 35, /**< \internal Last valid direct pad */
 } top_darjeeling_direct_pads_t;
 
 /**

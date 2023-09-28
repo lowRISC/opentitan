@@ -235,7 +235,7 @@ pub const TOP_DARJEELING_PINMUX_AON_BASE_ADDR: usize = 0x30460000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
 /// `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
-pub const TOP_DARJEELING_PINMUX_AON_SIZE_BYTES: usize = 0x800;
+pub const TOP_DARJEELING_PINMUX_AON_SIZE_BYTES: usize = 0x1000;
 /// Peripheral base address for aon_timer_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

@@ -128,9 +128,9 @@ module top_darjeeling #(
   output logic [46:0] mio_out_o,
   output logic [46:0] mio_oe_o,
   // Dedicated I/O
-  input        [11:0] dio_in_i,
-  output logic [11:0] dio_out_o,
-  output logic [11:0] dio_oe_o,
+  input        [35:0] dio_in_i,
+  output logic [35:0] dio_out_o,
+  output logic [35:0] dio_oe_o,
 
   // pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
@@ -227,6 +227,8 @@ module top_darjeeling #(
   input  logic       soc_rst_req_async_i,
   input  logic [31:0] soc_intr_async_i,
   input  logic [7:0] soc_lsio_trigger_i,
+  output logic [11:0] soc_gpi_async_o,
+  input  logic [11:0] soc_gpo_async_i,
   output logic       sck_monitor_o,
 
 
@@ -256,9 +258,9 @@ module top_darjeeling #(
   logic [35:0] mio_p2d;
   logic [44:0] mio_d2p;
   logic [44:0] mio_en_d2p;
-  logic [11:0] dio_p2d;
-  logic [11:0] dio_d2p;
-  logic [11:0] dio_en_d2p;
+  logic [35:0] dio_p2d;
+  logic [35:0] dio_d2p;
+  logic [35:0] dio_en_d2p;
   // uart0
   logic        cio_uart0_rx_p2d;
   logic        cio_uart0_tx_d2p;
@@ -304,6 +306,9 @@ module top_darjeeling #(
   logic [8:0]  cio_sensor_ctrl_ast_debug_out_d2p;
   logic [8:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
   // soc_proxy
+  logic [11:0] cio_soc_proxy_soc_gpi_p2d;
+  logic [11:0] cio_soc_proxy_soc_gpo_d2p;
+  logic [11:0] cio_soc_proxy_soc_gpo_en_d2p;
   // sram_ctrl_ret_aon
   // rv_dm
   // rv_plic
@@ -1534,6 +1539,13 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:23])
   ) u_soc_proxy (
 
+      // Input
+      .cio_soc_gpi_i    (cio_soc_proxy_soc_gpi_p2d),
+
+      // Output
+      .cio_soc_gpo_o    (cio_soc_proxy_soc_gpo_d2p),
+      .cio_soc_gpo_en_o (cio_soc_proxy_soc_gpo_en_d2p),
+
       // Interrupt
       .intr_external_o (intr_soc_proxy_external),
       // [23]: fatal_alert_intg
@@ -1574,6 +1586,8 @@ module top_darjeeling #(
       .soc_wkup_async_i(soc_wkup_async_i),
       .soc_rst_req_async_i(soc_rst_req_async_i),
       .soc_intr_async_i(soc_intr_async_i),
+      .soc_gpi_async_o(soc_gpi_async_o),
+      .soc_gpo_async_i(soc_gpo_async_i),
       .core_tl_i(soc_proxy_core_tl_req),
       .core_tl_o(soc_proxy_core_tl_rsp),
       .ctn_tl_i(soc_proxy_ctn_tl_req),
@@ -3006,7 +3020,7 @@ module top_darjeeling #(
   assign mio_en_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_en_d2p[0];
 
   // All dedicated inputs
-  logic [11:0] unused_dio_p2d;
+  logic [35:0] unused_dio_p2d;
   assign unused_dio_p2d = dio_p2d;
   assign cio_spi_host0_sd_p2d[0] = dio_p2d[DioSpiHost0Sd0];
   assign cio_spi_host0_sd_p2d[1] = dio_p2d[DioSpiHost0Sd1];
@@ -3018,6 +3032,18 @@ module top_darjeeling #(
   assign cio_spi_device_sd_p2d[3] = dio_p2d[DioSpiDeviceSd3];
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
+  assign cio_soc_proxy_soc_gpi_p2d[0] = dio_p2d[DioSocProxySocGpi0];
+  assign cio_soc_proxy_soc_gpi_p2d[1] = dio_p2d[DioSocProxySocGpi1];
+  assign cio_soc_proxy_soc_gpi_p2d[2] = dio_p2d[DioSocProxySocGpi2];
+  assign cio_soc_proxy_soc_gpi_p2d[3] = dio_p2d[DioSocProxySocGpi3];
+  assign cio_soc_proxy_soc_gpi_p2d[4] = dio_p2d[DioSocProxySocGpi4];
+  assign cio_soc_proxy_soc_gpi_p2d[5] = dio_p2d[DioSocProxySocGpi5];
+  assign cio_soc_proxy_soc_gpi_p2d[6] = dio_p2d[DioSocProxySocGpi6];
+  assign cio_soc_proxy_soc_gpi_p2d[7] = dio_p2d[DioSocProxySocGpi7];
+  assign cio_soc_proxy_soc_gpi_p2d[8] = dio_p2d[DioSocProxySocGpi8];
+  assign cio_soc_proxy_soc_gpi_p2d[9] = dio_p2d[DioSocProxySocGpi9];
+  assign cio_soc_proxy_soc_gpi_p2d[10] = dio_p2d[DioSocProxySocGpi10];
+  assign cio_soc_proxy_soc_gpi_p2d[11] = dio_p2d[DioSocProxySocGpi11];
 
     // All dedicated outputs
   assign dio_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_d2p[0];
@@ -3030,8 +3056,32 @@ module top_darjeeling #(
   assign dio_d2p[DioSpiDeviceSd3] = cio_spi_device_sd_d2p[3];
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi0] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi1] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi2] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi3] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi4] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi5] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi6] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi7] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi8] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi9] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi10] = 1'b0;
+  assign dio_d2p[DioSocProxySocGpi11] = 1'b0;
   assign dio_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_d2p;
   assign dio_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_d2p;
+  assign dio_d2p[DioSocProxySocGpo0] = cio_soc_proxy_soc_gpo_d2p[0];
+  assign dio_d2p[DioSocProxySocGpo1] = cio_soc_proxy_soc_gpo_d2p[1];
+  assign dio_d2p[DioSocProxySocGpo2] = cio_soc_proxy_soc_gpo_d2p[2];
+  assign dio_d2p[DioSocProxySocGpo3] = cio_soc_proxy_soc_gpo_d2p[3];
+  assign dio_d2p[DioSocProxySocGpo4] = cio_soc_proxy_soc_gpo_d2p[4];
+  assign dio_d2p[DioSocProxySocGpo5] = cio_soc_proxy_soc_gpo_d2p[5];
+  assign dio_d2p[DioSocProxySocGpo6] = cio_soc_proxy_soc_gpo_d2p[6];
+  assign dio_d2p[DioSocProxySocGpo7] = cio_soc_proxy_soc_gpo_d2p[7];
+  assign dio_d2p[DioSocProxySocGpo8] = cio_soc_proxy_soc_gpo_d2p[8];
+  assign dio_d2p[DioSocProxySocGpo9] = cio_soc_proxy_soc_gpo_d2p[9];
+  assign dio_d2p[DioSocProxySocGpo10] = cio_soc_proxy_soc_gpo_d2p[10];
+  assign dio_d2p[DioSocProxySocGpo11] = cio_soc_proxy_soc_gpo_d2p[11];
 
   // All dedicated output enables
   assign dio_en_d2p[DioSpiHost0Sd0] = cio_spi_host0_sd_en_d2p[0];
@@ -3044,8 +3094,32 @@ module top_darjeeling #(
   assign dio_en_d2p[DioSpiDeviceSd3] = cio_spi_device_sd_en_d2p[3];
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi0] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi1] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi2] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi3] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi4] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi5] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi6] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi7] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi8] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi9] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi10] = 1'b0;
+  assign dio_en_d2p[DioSocProxySocGpi11] = 1'b0;
   assign dio_en_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_en_d2p;
   assign dio_en_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_en_d2p;
+  assign dio_en_d2p[DioSocProxySocGpo0] = cio_soc_proxy_soc_gpo_en_d2p[0];
+  assign dio_en_d2p[DioSocProxySocGpo1] = cio_soc_proxy_soc_gpo_en_d2p[1];
+  assign dio_en_d2p[DioSocProxySocGpo2] = cio_soc_proxy_soc_gpo_en_d2p[2];
+  assign dio_en_d2p[DioSocProxySocGpo3] = cio_soc_proxy_soc_gpo_en_d2p[3];
+  assign dio_en_d2p[DioSocProxySocGpo4] = cio_soc_proxy_soc_gpo_en_d2p[4];
+  assign dio_en_d2p[DioSocProxySocGpo5] = cio_soc_proxy_soc_gpo_en_d2p[5];
+  assign dio_en_d2p[DioSocProxySocGpo6] = cio_soc_proxy_soc_gpo_en_d2p[6];
+  assign dio_en_d2p[DioSocProxySocGpo7] = cio_soc_proxy_soc_gpo_en_d2p[7];
+  assign dio_en_d2p[DioSocProxySocGpo8] = cio_soc_proxy_soc_gpo_en_d2p[8];
+  assign dio_en_d2p[DioSocProxySocGpo9] = cio_soc_proxy_soc_gpo_en_d2p[9];
+  assign dio_en_d2p[DioSocProxySocGpo10] = cio_soc_proxy_soc_gpo_en_d2p[10];
+  assign dio_en_d2p[DioSocProxySocGpo11] = cio_soc_proxy_soc_gpo_en_d2p[11];
 
 
   // make sure scanmode_i is never X (including during reset)
