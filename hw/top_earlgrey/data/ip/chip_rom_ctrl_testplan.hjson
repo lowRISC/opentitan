@@ -10,7 +10,9 @@
 
             - Verify that the CPU can fetch instructions from the ROM.
             '''
+      features: ["ROM_CTRL.SCRAMBLED"]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -33,6 +35,7 @@
               any SiVal stage.
 
             '''
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
       stage: V2
       si_stage: None
       tests: ["chip_sw_rom_ctrl_integrity_check"]
@@ -51,6 +54,7 @@
               effectively dead.
             '''
       stage: V3
+      si_stage: None
       tests: []
     }
     {
