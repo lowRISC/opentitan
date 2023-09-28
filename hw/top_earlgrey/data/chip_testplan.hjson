@@ -25,6 +25,7 @@
     "hw/top_earlgrey/data/ip/chip_edn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_entropy_src_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_gpio_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_i2c_testplan.hjson"
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
@@ -38,7 +39,7 @@
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
     // IO Peripherals                                                        //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM //
+    // UART, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM       //
     ///////////////////////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
@@ -95,40 +96,6 @@
             '''
       stage: V1
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
-    }
-
-    // GPIO (pre-verified IP) integration tests:
-    {
-      name: chip_sw_gpio_out
-      desc: '''Verify GPIO outputs.
-
-            SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
-            pins. The testbench checks the value for correctness and verifies that there is no
-            aliasing between the pins.
-            '''
-      stage: V1
-      tests: ["chip_sw_gpio"]
-    }
-    {
-      name: chip_sw_gpio_in
-      desc: '''Verify GPIO inputs.
-
-            The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
-            the pins. SW test ensures that the GPIO values read from the CSR is correct.
-            '''
-      stage: V1
-      tests: ["chip_sw_gpio"]
-    }
-    {
-      name: chip_sw_gpio_irq
-      desc: '''Verify GPIO interrupts.
-
-            The SW test configures the GPIOs to be in input mode and enables all of them to generate
-            an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
-            interrupt corresponding to the right pin is seen.
-            '''
-      stage: V1
-      tests: ["chip_sw_gpio"]
     }
 
     // SPI_DEVICE (pre-verified IP) integration tests:

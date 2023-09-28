@@ -75,7 +75,25 @@
       desc: "End-to-end bus integrity scheme."
     }
   ]
-
+  features: [
+    {
+      name: "GPIO.IN.INTR_CTRL"
+      desc: '''Input interrupts can be triggered identified by detecting either level or edge.
+      There are four detection modes available: rising edge, falling edge, high-level, and low-level.
+      '''
+    }
+    {
+      name: "GPIO.IN.FILTER"
+      desc: '''GPIO module provides noise filter control.
+      It can be enabled with programing GPIO.CTRL_EN_INPUT_FILTER.
+      Once it enables, input value must be stable for 16cycles before transitioning
+      '''
+    }
+    {
+      name: "GPIO.OUT.MASK"
+      desc: 'Masked output access enables to modify either upper or lower 16bits of output register  without a Read-Modify-Write.'
+    }
+  ]
   regwidth: "32",
   registers: [
     { name: "DATA_IN",

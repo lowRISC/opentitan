@@ -1,0 +1,46 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_gpio
+  testpoints: [
+    {
+      name: chip_sw_gpio_out
+      desc: '''Verify GPIO outputs.
+
+            SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
+            pins. The testbench checks the value for correctness and verifies that there is no
+            aliasing between the pins.
+            '''
+      features: ["GPIO.OUT.MASK"]
+      stage: V1
+      si_stage: SV1
+      tests: ["chip_sw_gpio"]
+    }
+    {
+      name: chip_sw_gpio_in
+      desc: '''Verify GPIO inputs.
+
+            The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
+            the pins. SW test ensures that the GPIO values read from the CSR is correct.
+            '''
+      features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
+      stage: V1
+      si_stage: SV1
+      tests: ["chip_sw_gpio"]
+    }
+    {
+      name: chip_sw_gpio_irq
+      desc: '''Verify GPIO interrupts.
+
+            The SW test configures the GPIOs to be in input mode and enables all of them to generate
+            an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
+            interrupt corresponding to the right pin is seen.
+            '''
+      features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
+      stage: V1
+      si_stage: SV1
+      tests: ["chip_sw_gpio"]
+    }
+  ]
+}
