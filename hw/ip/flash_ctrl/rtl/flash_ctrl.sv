@@ -98,7 +98,8 @@ module flash_ctrl
   input logic [75:0] debug_flash_wdata,
   input logic [75:0] debug_flash_wmask,
 
-  input logic        datapath_i
+  input logic        datapath_i,
+  input logic        info_init_i
 );
 
   //////////////////////////////////////////////////////////
@@ -1377,6 +1378,7 @@ module flash_ctrl
     .debug_flash_wdata_i (debug_flash_wdata),
     .debug_flash_wmask_i (debug_flash_wmask),
     .datapath_i,
+    .info_init_i,
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni

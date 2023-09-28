@@ -94,5 +94,18 @@
         }
       ],
     },
+    { name: "Info_init",
+      desc: "If 0 original datapath, 1 jtag datapath",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:1" },
+        { bits: "0",
+          name: "info_init",
+          resval: "0",
+          desc: "if 0: original datapaht, if 1 jtag datapath",
+        }
+      ],
+    },
   ],
 }

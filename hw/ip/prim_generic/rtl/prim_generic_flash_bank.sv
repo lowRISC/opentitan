@@ -43,7 +43,8 @@ module prim_flash_bank #(
   input logic [15:0]           debug_flash_addr_i,
   input logic [75:0]           debug_flash_wdata_i,
   input logic [75:0]           debug_flash_wmask_i,
-  input logic                  datapath_i, 
+  input logic                  datapath_i,
+  input logic                  info_init_i,
   input                        flash_power_ready_h_i,
   input                        flash_power_down_h_i
 );
@@ -420,12 +421,22 @@ module prim_flash_bank #(
   logic [75:0]      debug_flash_wdata;
   logic [75:0]      debug_flash_wmask;
 
+  logic             info_flash_write;
+  logic [AddrW-1:0] info_flash_addr;
+  logic [75:0]      info_flash_wdata;
+  logic [75:0]      info_flash_wmask;
+
   assign debug_flash_write = datapath_i ?  debug_flash_write_i : mem_wr            ;
   assign debug_flash_req   = datapath_i ?  debug_flash_req_i   : data_mem_req      ;
   assign debug_flash_addr  = datapath_i ?  debug_flash_addr_i  : mem_addr          ;
   assign debug_flash_wdata = datapath_i ?  debug_flash_wdata_i : mem_wdata         ;
-  assign debug_flash_wmask = datapath_i ?  debug_flash_wmask_i : {DataWidth{1'b1}} ; 
-  
+  assign debug_flash_wmask = datapath_i ?  debug_flash_wmask_i : {DataWidth{1'b1}} ;
+
+  assign info_flash_write = info_init_i ?  debug_flash_write_i : mem_wr                  ;
+  assign info_flash_addr  = info_init_i ?  debug_flash_addr_i  : mem_addr[0 +: InfoAddrW];
+  assign info_flash_wdata = info_init_i ?  debug_flash_wdata_i : mem_wdata               ;
+  assign info_flash_wmask = info_init_i ?  debug_flash_wmask_i : {DataWidth{1'b1}}       ;
+
 
   prim_ram_1p #(
     .Width(DataWidth),
@@ -449,9 +460,11 @@ module prim_flash_bank #(
     // when info partitions are selected for bank erase, all info types are erased.
     // if NOT bank erase, then only the selected info partition is erased
     logic info_mem_req;
+    logic info_flash_req;
     assign info_mem_req = mem_req &
                           (mem_part == flash_ctrl_pkg::FlashPartInfo) &
                           ((mem_info_sel == info_type) | mem_bk_erase);
+    assign info_flash_req   = info_init_i ?  debug_flash_req_i   : info_mem_req            ;
 
     prim_ram_1p #(
       .Width(DataWidth),
@@ -460,11 +473,11 @@ module prim_flash_bank #(
     ) u_info_mem (
       .clk_i,
       .rst_ni,
-      .req_i    (info_mem_req),
-      .write_i  (mem_wr),
-      .addr_i   (mem_addr[0 +: InfoAddrW]),
-      .wdata_i  (mem_wdata),
-      .wmask_i  ({DataWidth{1'b1}}),
+      .req_i    (info_flash_req),//info_mem_req),
+      .write_i  (info_flash_write),//mem_wr),
+      .addr_i   (info_flash_addr),//mem_addr[0 +: InfoAddrW]),
+      .wdata_i  (info_flash_wdata),//mem_wdata),
+      .wmask_i  (info_flash_wmask),//{DataWidth{1'b1}}),
       .rdata_o  (rd_nom_data_info[info_type]),
       .cfg_i    ('0)
     );

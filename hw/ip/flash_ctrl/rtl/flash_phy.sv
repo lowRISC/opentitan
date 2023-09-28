@@ -48,7 +48,8 @@ module flash_phy
   input logic [15:0] debug_flash_addr_i,
   input logic [75:0] debug_flash_wdata_i,
   input logic [75:0] debug_flash_wmask_i,
-  input logic        datapath_i, 
+  input logic        datapath_i,
+  input logic        info_init_i,
   output logic [7:0] fla_obs_o,
   output logic fatal_prim_flash_alert_o,
   output logic recov_prim_flash_alert_o
@@ -371,11 +372,12 @@ module flash_phy
     .flash_test_voltage_h_io,
     // Debug Mode Interface
     .debug_flash_write_i,
-    .debug_flash_req_i,  
-    .debug_flash_addr_i,  
+    .debug_flash_req_i,
+    .debug_flash_addr_i,
     .debug_flash_wdata_i,
-    .debug_flash_wmask_i, 
-    .datapath_i,        
+    .debug_flash_wmask_i,
+    .datapath_i,
+    .info_init_i,
     .flash_err_o(flash_ctrl_o.macro_err),
     .fatal_alert_o(fatal_prim_flash_alert_o),
     .recov_alert_o(recov_prim_flash_alert_o)

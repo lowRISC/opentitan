@@ -582,7 +582,8 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_aon_usbdev_wake_detect_active;
    
-  logic        datapath_o; 
+  logic        datapath_o;
+  logic        info_init_o;
   logic        debug_flash_write;
   logic        debug_flash_req;
   logic [15:0] debug_flash_addr;
@@ -2104,7 +2105,8 @@ module top_earlgrey #(
     .flash_wdata_o(debug_flash_wdata),
     .flash_wmask_o(debug_flash_wmask),
     .bootmode_i,
-    .datapath_o
+    .datapath_o,
+    .info_init_o
   ); 
   flash_ctrl #(               
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:35]),
@@ -2180,6 +2182,7 @@ module top_earlgrey #(
       .debug_flash_wdata,
       .debug_flash_wmask,
       .datapath_i(datapath_o),
+      .info_init_i(info_init_o),
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
