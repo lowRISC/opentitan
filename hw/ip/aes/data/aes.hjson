@@ -232,6 +232,92 @@
     }
   ],
 
+  //////////////
+  // Features //
+  //////////////
+
+  features: [
+    {
+      name: "AES.KEY_LEN.128",
+      desc: "AES can perform both operations (encryption and decryption) for key length 128."
+    }
+    {
+      name: "AES.KEY_LEN.192",
+      desc: '''
+            AES can perform both operations (encryption and decryption) for key length 192.
+            This feature can be disabled using a compile-time Verilog parameter.
+            '''
+    }
+    {
+      name: "AES.KEY_LEN.256",
+      desc: "AES can perform both operations (encryption and decryption) for key length 256."
+    }
+    {
+      name: "AES.MODE.ECB",
+      desc: "AES can perform both operations (encryption and decryption) in Electronic Codebook (ECB) Mode for all three key lengths (128/192/256)."
+    }
+    {
+      name: "AES.MODE.CBC",
+      desc: "AES can perform both operations (encryption and decryption) in Cipher Block Chaining (CBC) Mode for all three key lengths (128/192/256)."
+    }
+    {
+      name: "AES.MODE.CFB-128",
+      desc: '''
+            AES can perform both operations (encryption and decryption) in Cipher Feedback (CFB) Mode for all three key lengths (128/192/256).
+            Note that the only supported data-segment size is 128.
+            '''
+    }
+    {
+      name: "AES.MODE.OFB",
+      desc: "AES can perform both operations (encryption and decryption) in Output Feedback (OFB) Mode for all three key lengths (128/192/256)."
+    }
+    {
+      name: "AES.MODE.CTR",
+      desc: "AES can perform both operations (encryption and decryption) in Counter (CTR) Mode for all three key lengths (128/192/256)."
+    }
+    {
+      name: "AES.KEY.SIDELOAD",
+      desc: "The key can be loaded directly from the keymgr."
+    }
+    {
+      name: "AES.CLEAR.DATA_OUT",
+      desc: "Output data registers can be cleared using pseudo-random data."
+    }
+    {
+      name: "AES.CLEAR.KEY_IV_DATA_IN",
+      desc: "Keys, IV registers and input data registers can be cleared using pseudo-random data."
+    }
+    {
+      name: "AES.PRNG.RESEED_RATE",
+      desc: '''
+            Reseed rate of the internal PRNG used for masking.
+            It can be set to three different values:
+            -Once per block
+            -Once per approximately 64 blocks
+            -Once per approximately 8K blocks
+            '''
+    }
+    {
+      name: "AES.PRNG.KEY_TOUCH_FORCES_RESEED",
+      desc: "AES can force re-seeding of internal PRNGs used for masking and clearing every time a new key is provided."
+    }
+    {
+      name: "AES.PRNG.FORCE_MASKS",
+      desc: '''
+            AES can block advancing of the internal PRNG used for masking, thereby forcing masks to a constant value.
+            This feature can be disabled using tha compile-time Verilog parameter.
+            '''
+    }
+    {
+      name: "AES.MANUAL_OPERATION",
+      desc: '''
+            Operations (encryption and decryption) could be processed in two ways:
+            -AES tracks whether data has been written/read, and starts the operation automatically (default).
+            -AES only starts the operation after receiving a start trigger.
+            '''
+    }
+  ],
+
   /////////////////////
   // Countermeasures //
   /////////////////////
