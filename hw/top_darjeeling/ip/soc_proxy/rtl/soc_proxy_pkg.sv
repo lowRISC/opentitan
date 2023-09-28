@@ -41,7 +41,7 @@ package soc_proxy_pkg;
     NumAlertSources
   } soc_proxy_alert_e;
 
-  localparam int unsigned NumSocGpio = 12;
+  localparam int unsigned NumSocGpio = 16;
   // Assertions on these constants are part of the `soc_proxy` module (since they can't be put into
   // this package).
   localparam int unsigned NumInternalAlerts = FatalAlertIntg - FatalAlertIntg + 1;
