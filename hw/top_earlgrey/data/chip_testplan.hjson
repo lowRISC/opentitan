@@ -20,6 +20,7 @@
 
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_aon_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_sysrst_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_edn_testplan.hjson",
@@ -456,112 +457,6 @@
       stage: V2
       tests: ["chip_rv_dm_lc_disabled"]
     }
-
-    // AON_TIMER (pre-verified IP) integration tests:
-    {
-      name: chip_sw_aon_timer_wakeup_irq
-      desc: '''Verify the AON timer wake up interrupt in normal operating state.
-
-            - Program the PLIC to let the AON timer wake up interrupt the CPU.
-            - Program the AON timer to generate the wake up timeout interrupt after some time.
-            - Issue a WFI to wait for the interrupt to trigger.
-            - Service the interrupt when it triggers; verify that it came from AON timer.
-            - Verify that the interrupt triggered only after the timeout elapsed.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_irq"]
-    }
-    {
-      name: chip_sw_aon_timer_sleep_wakeup
-      desc: '''Verify that AON timer can wake up the chip from a deep sleep state.
-
-            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
-              phase.
-            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
-            - Program the AON timer to wake up the chip in a reasonable amount of time.
-            - Have the CPU issue WFI to signal the pwrmgr to go into sleep state.
-            - Verify via assertion checks, the wake up request occurs after the timeout has elapsed.
-            - After reset followed by AON timer wake up, read the reset cause register to confirm
-              the AON timer wake up phase.
-            - After the test sequence is complete, read the wake up threshold register - it should
-              not be reset.
-            '''
-      stage: V2
-      tests: ["chip_sw_pwrmgr_smoketest"]
-    }
-    {
-      name: chip_sw_aon_timer_wdog_bark_irq
-      desc: '''Verify the watchdog bark reception in normal state.
-
-            - Program the PLIC to let the wdog bark signal interrupt the CPU.
-            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
-            - Service the bark interrupt upon reception.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_irq"]
-    }
-    {
-      name: chip_sw_aon_timer_wdog_lc_escalate
-      desc: '''Verify that the LC escalation signal disables the AON timer wdog.
-
-            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
-            - Start the escalation process and fail the test in the interrupt handler in case the
-              bark interrupt is fired.
-            - Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but the
-              phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is
-              programed to bark and bite.
-            - Trigger an alert to cause an escalation condition before the bark signal asserts.
-            - After the reset ensure that the reset cause was due to the escalation to prove that
-              the wdog was disabled.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_wdog_lc_escalate"]
-    }
-    {
-      name: chip_sw_aon_timer_wdog_bite_reset
-      desc: '''Verify the watchdog bite causing reset in the normal state.
-
-            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
-              phase.
-            - Program the AON timer wdog to 'bark' after some time.
-            - Let the bark escalate to bite, which should result in a reset request.
-            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
-              the wdog reset phase.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
-    }
-    {
-      name: chip_sw_aon_timer_sleep_wdog_bite_reset
-      desc: '''Verify the watchdog bite causing reset in sleep state.
-
-            - Repeat the steps in chip_aon_timer_wdog_bite_reset test, but with following changes:
-            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
-            - Issue a WFI after programming the wdog, so that the reset request due to bite occurs
-              during deep sleep state.
-            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
-              the wdog reset phase.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
-    }
-    {
-      name: chip_sw_aon_timer_sleep_wdog_sleep_pause
-      desc: '''Verify that the wdog can be paused in sleep state.
-
-            - Repeat the steps in chip_aon_timer_sleep_wakeup test, but with following changes:
-            - Program the wdog to 'bite' a little sooner than the AON timer wake up.
-            - Also, program the wdog to pause during sleep.
-            - Issue a WFI after programming the wdog, so that the reset request occurs during deep
-              sleep state.
-            - After reset followed by AON timer wake up, read the reset cause register to confirm
-              that the AON timer woke up the chip, not the wdog reset.
-            - Un-pause the wdog and service the bark interrupt.
-            '''
-      stage: V2
-      tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
-    }
-
     // PLIC integration tests:
     {
       name: chip_sw_plic_all_irqs
