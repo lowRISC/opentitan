@@ -7,12 +7,11 @@
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
       name: chip_sw_entropy_src_ast_rng_req
-      desc: '''Verify the RNG req to ast.
+      desc: '''Verify the RNG req to AST.
 
-            - Program the entropy src in normal RNG mode.
-            - Route the entropy data received from RNG to the FIFO.
-            - Verify that the FIFO depth is non-zero via SW - indicating the reception of data over
-              the AST RNG interface.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable Firmware Override - Extract & Insert to route entropy received from AST to the observe FIFO.
+            - Verify that the observe FIFO depth is non-zero via SW - indicating the reception of data over the AST RNG interface.
             - Verify the correctness of the received data with assertion based connectivity checks.
             '''
       stage: V2
@@ -57,9 +56,11 @@
       name: chip_sw_entropy_src_known_answer_tests
       desc: '''Verify our ability to run known-answer tests in SW.
 
-            - Configure the device in firmware-bypass mode.
-            - Feed NIST test-defined entropy sequences into the conditioner
-            - Read the entropy_data_fifo via SW; verify that it reads the expected values.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable Firmware Override - Extract & Insert.
+            - Feed NIST test-defined entropy sequences into ENTROPY_SRC via the FW_OV_WR_DATA register.
+            - Trigger the hardware conditioner.
+            - Read the conditioned entropy from ENTROPY_SRC via the ENTROPY_DATA register; verify that it reads the expected values.
             '''
       stage: V2
       tests: ["chip_sw_entropy_src_kat_test"]
