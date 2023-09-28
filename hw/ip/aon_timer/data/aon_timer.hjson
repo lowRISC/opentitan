@@ -95,6 +95,48 @@
       width:   "1"
     }
   ],
+  features: [
+    { name: "AON_TIMER.WAKEUP.WAKEUP_CONFIG",
+      desc: '''
+            The AON_TIMER wake-up period can be configured.
+            '''
+    },
+    { name: "AON_TIMER.WAKEUP.WAKEUP_REQUEST",
+      desc: '''
+            The AON_TIMER can wake-up the core from sleep mode.
+            '''
+    },
+    { name: "AON_TIMER.WAKEUP.INTERRUPT",
+      desc: '''
+            The AON_TIMER block triggers interrupts when the wakeup threshold is reached.
+            '''
+    },
+    { name: "AON_TIMER.WATCHDOG.BARK",
+      desc: '''
+            The AON_TIMER watchdog barks if not petted in the programed time. A bark triggers an interrup and a wakeup.
+            '''
+    },
+    { name: "AON_TIMER.WATCHDOG.BITE",
+      desc: '''
+            The AON_TIMER watchdog bites if not petted in the programmed time. A bite triggers a reset.
+            '''
+    },
+    { name: "AON_TIMER.WATCHDOG.PAUSE",
+      desc: '''
+            Configure the watchdog to pause during sleep mode, resuming after wake-up.
+            '''
+    },
+    { name: "AON_TIMER.WATCHDOG.DISABLE_BY_LC_CTRL",
+      desc: '''
+            The watchdog is disabled when the life cycle controller escalates.
+            '''
+    },
+    { name: "AON_TIMER.WATCHDOG.INTERRUPT",
+      desc: '''
+            An interrupt is triggered when the watchdog bark threshold is reached.
+            '''
+    },
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
