@@ -2201,8 +2201,8 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 87
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-pub const TOP_DARJEELING_NUM_MIO_PADS: usize = 47;
-pub const TOP_DARJEELING_NUM_DIO_PADS: usize = 36;
+pub const TOP_DARJEELING_NUM_MIO_PADS: usize = 12;
+pub const TOP_DARJEELING_NUM_DIO_PADS: usize = 73;
 
 pub const TOP_DARJEELING_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET: usize = 2;
 pub const TOP_DARJEELING_PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
@@ -2211,119 +2211,23 @@ pub const TOP_DARJEELING_PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
 #[repr(u32)]
 pub enum TopDarjeelingPinmuxPeripheralIn {
     /// Peripheral Input 0
-    GpioGpio0 = 0,
+    SocProxySocGpi12 = 0,
     /// Peripheral Input 1
-    GpioGpio1 = 1,
+    SocProxySocGpi13 = 1,
     /// Peripheral Input 2
-    GpioGpio2 = 2,
+    SocProxySocGpi14 = 2,
     /// Peripheral Input 3
-    GpioGpio3 = 3,
-    /// Peripheral Input 4
-    GpioGpio4 = 4,
-    /// Peripheral Input 5
-    GpioGpio5 = 5,
-    /// Peripheral Input 6
-    GpioGpio6 = 6,
-    /// Peripheral Input 7
-    GpioGpio7 = 7,
-    /// Peripheral Input 8
-    GpioGpio8 = 8,
-    /// Peripheral Input 9
-    GpioGpio9 = 9,
-    /// Peripheral Input 10
-    GpioGpio10 = 10,
-    /// Peripheral Input 11
-    GpioGpio11 = 11,
-    /// Peripheral Input 12
-    GpioGpio12 = 12,
-    /// Peripheral Input 13
-    GpioGpio13 = 13,
-    /// Peripheral Input 14
-    GpioGpio14 = 14,
-    /// Peripheral Input 15
-    GpioGpio15 = 15,
-    /// Peripheral Input 16
-    GpioGpio16 = 16,
-    /// Peripheral Input 17
-    GpioGpio17 = 17,
-    /// Peripheral Input 18
-    GpioGpio18 = 18,
-    /// Peripheral Input 19
-    GpioGpio19 = 19,
-    /// Peripheral Input 20
-    GpioGpio20 = 20,
-    /// Peripheral Input 21
-    GpioGpio21 = 21,
-    /// Peripheral Input 22
-    GpioGpio22 = 22,
-    /// Peripheral Input 23
-    GpioGpio23 = 23,
-    /// Peripheral Input 24
-    GpioGpio24 = 24,
-    /// Peripheral Input 25
-    GpioGpio25 = 25,
-    /// Peripheral Input 26
-    GpioGpio26 = 26,
-    /// Peripheral Input 27
-    GpioGpio27 = 27,
-    /// Peripheral Input 28
-    GpioGpio28 = 28,
-    /// Peripheral Input 29
-    GpioGpio29 = 29,
-    /// Peripheral Input 30
-    GpioGpio30 = 30,
-    /// Peripheral Input 31
-    GpioGpio31 = 31,
-    /// Peripheral Input 32
-    I2c0Sda = 32,
-    /// Peripheral Input 33
-    I2c0Scl = 33,
-    /// Peripheral Input 34
-    Uart0Rx = 34,
-    /// Peripheral Input 35
-    SpiDeviceTpmCsb = 35,
+    SocProxySocGpi15 = 3,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxPeripheralIn {
     type Error = u32;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         match val {
-            0 => Ok(Self::GpioGpio0),
-            1 => Ok(Self::GpioGpio1),
-            2 => Ok(Self::GpioGpio2),
-            3 => Ok(Self::GpioGpio3),
-            4 => Ok(Self::GpioGpio4),
-            5 => Ok(Self::GpioGpio5),
-            6 => Ok(Self::GpioGpio6),
-            7 => Ok(Self::GpioGpio7),
-            8 => Ok(Self::GpioGpio8),
-            9 => Ok(Self::GpioGpio9),
-            10 => Ok(Self::GpioGpio10),
-            11 => Ok(Self::GpioGpio11),
-            12 => Ok(Self::GpioGpio12),
-            13 => Ok(Self::GpioGpio13),
-            14 => Ok(Self::GpioGpio14),
-            15 => Ok(Self::GpioGpio15),
-            16 => Ok(Self::GpioGpio16),
-            17 => Ok(Self::GpioGpio17),
-            18 => Ok(Self::GpioGpio18),
-            19 => Ok(Self::GpioGpio19),
-            20 => Ok(Self::GpioGpio20),
-            21 => Ok(Self::GpioGpio21),
-            22 => Ok(Self::GpioGpio22),
-            23 => Ok(Self::GpioGpio23),
-            24 => Ok(Self::GpioGpio24),
-            25 => Ok(Self::GpioGpio25),
-            26 => Ok(Self::GpioGpio26),
-            27 => Ok(Self::GpioGpio27),
-            28 => Ok(Self::GpioGpio28),
-            29 => Ok(Self::GpioGpio29),
-            30 => Ok(Self::GpioGpio30),
-            31 => Ok(Self::GpioGpio31),
-            32 => Ok(Self::I2c0Sda),
-            33 => Ok(Self::I2c0Scl),
-            34 => Ok(Self::Uart0Rx),
-            35 => Ok(Self::SpiDeviceTpmCsb),
+            0 => Ok(Self::SocProxySocGpi12),
+            1 => Ok(Self::SocProxySocGpi13),
+            2 => Ok(Self::SocProxySocGpi14),
+            3 => Ok(Self::SocProxySocGpi15),
             _ => Err(val),
         }
     }
@@ -2337,99 +2241,29 @@ pub enum TopDarjeelingPinmuxInsel {
     /// Tie constantly to one
     ConstantOne = 1,
     /// MIO Pad 0
-    Ioa0 = 2,
+    Mio0 = 2,
     /// MIO Pad 1
-    Ioa1 = 3,
+    Mio1 = 3,
     /// MIO Pad 2
-    Ioa2 = 4,
+    Mio2 = 4,
     /// MIO Pad 3
-    Ioa3 = 5,
+    Mio3 = 5,
     /// MIO Pad 4
-    Ioa4 = 6,
+    Mio4 = 6,
     /// MIO Pad 5
-    Ioa5 = 7,
+    Mio5 = 7,
     /// MIO Pad 6
-    Ioa6 = 8,
+    Mio6 = 8,
     /// MIO Pad 7
-    Ioa7 = 9,
+    Mio7 = 9,
     /// MIO Pad 8
-    Ioa8 = 10,
+    Mio8 = 10,
     /// MIO Pad 9
-    Iob0 = 11,
+    Mio9 = 11,
     /// MIO Pad 10
-    Iob1 = 12,
+    Mio10 = 12,
     /// MIO Pad 11
-    Iob2 = 13,
-    /// MIO Pad 12
-    Iob3 = 14,
-    /// MIO Pad 13
-    Iob4 = 15,
-    /// MIO Pad 14
-    Iob5 = 16,
-    /// MIO Pad 15
-    Iob6 = 17,
-    /// MIO Pad 16
-    Iob7 = 18,
-    /// MIO Pad 17
-    Iob8 = 19,
-    /// MIO Pad 18
-    Iob9 = 20,
-    /// MIO Pad 19
-    Iob10 = 21,
-    /// MIO Pad 20
-    Iob11 = 22,
-    /// MIO Pad 21
-    Iob12 = 23,
-    /// MIO Pad 22
-    Ioc0 = 24,
-    /// MIO Pad 23
-    Ioc1 = 25,
-    /// MIO Pad 24
-    Ioc2 = 26,
-    /// MIO Pad 25
-    Ioc3 = 27,
-    /// MIO Pad 26
-    Ioc4 = 28,
-    /// MIO Pad 27
-    Ioc5 = 29,
-    /// MIO Pad 28
-    Ioc6 = 30,
-    /// MIO Pad 29
-    Ioc7 = 31,
-    /// MIO Pad 30
-    Ioc8 = 32,
-    /// MIO Pad 31
-    Ioc9 = 33,
-    /// MIO Pad 32
-    Ioc10 = 34,
-    /// MIO Pad 33
-    Ioc11 = 35,
-    /// MIO Pad 34
-    Ioc12 = 36,
-    /// MIO Pad 35
-    Ior0 = 37,
-    /// MIO Pad 36
-    Ior1 = 38,
-    /// MIO Pad 37
-    Ior2 = 39,
-    /// MIO Pad 38
-    Ior3 = 40,
-    /// MIO Pad 39
-    Ior4 = 41,
-    /// MIO Pad 40
-    Ior5 = 42,
-    /// MIO Pad 41
-    Ior6 = 43,
-    /// MIO Pad 42
-    Ior7 = 44,
-    /// MIO Pad 43
-    Ior10 = 45,
-    /// MIO Pad 44
-    Ior11 = 46,
-    /// MIO Pad 45
-    Ior12 = 47,
-    /// MIO Pad 46
-    Ior13 = 48,
+    Mio11 = 13,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxInsel {
@@ -2438,53 +2272,18 @@ impl TryFrom<u32> for TopDarjeelingPinmuxInsel {
         match val {
             0 => Ok(Self::ConstantZero),
             1 => Ok(Self::ConstantOne),
-            2 => Ok(Self::Ioa0),
-            3 => Ok(Self::Ioa1),
-            4 => Ok(Self::Ioa2),
-            5 => Ok(Self::Ioa3),
-            6 => Ok(Self::Ioa4),
-            7 => Ok(Self::Ioa5),
-            8 => Ok(Self::Ioa6),
-            9 => Ok(Self::Ioa7),
-            10 => Ok(Self::Ioa8),
-            11 => Ok(Self::Iob0),
-            12 => Ok(Self::Iob1),
-            13 => Ok(Self::Iob2),
-            14 => Ok(Self::Iob3),
-            15 => Ok(Self::Iob4),
-            16 => Ok(Self::Iob5),
-            17 => Ok(Self::Iob6),
-            18 => Ok(Self::Iob7),
-            19 => Ok(Self::Iob8),
-            20 => Ok(Self::Iob9),
-            21 => Ok(Self::Iob10),
-            22 => Ok(Self::Iob11),
-            23 => Ok(Self::Iob12),
-            24 => Ok(Self::Ioc0),
-            25 => Ok(Self::Ioc1),
-            26 => Ok(Self::Ioc2),
-            27 => Ok(Self::Ioc3),
-            28 => Ok(Self::Ioc4),
-            29 => Ok(Self::Ioc5),
-            30 => Ok(Self::Ioc6),
-            31 => Ok(Self::Ioc7),
-            32 => Ok(Self::Ioc8),
-            33 => Ok(Self::Ioc9),
-            34 => Ok(Self::Ioc10),
-            35 => Ok(Self::Ioc11),
-            36 => Ok(Self::Ioc12),
-            37 => Ok(Self::Ior0),
-            38 => Ok(Self::Ior1),
-            39 => Ok(Self::Ior2),
-            40 => Ok(Self::Ior3),
-            41 => Ok(Self::Ior4),
-            42 => Ok(Self::Ior5),
-            43 => Ok(Self::Ior6),
-            44 => Ok(Self::Ior7),
-            45 => Ok(Self::Ior10),
-            46 => Ok(Self::Ior11),
-            47 => Ok(Self::Ior12),
-            48 => Ok(Self::Ior13),
+            2 => Ok(Self::Mio0),
+            3 => Ok(Self::Mio1),
+            4 => Ok(Self::Mio2),
+            5 => Ok(Self::Mio3),
+            6 => Ok(Self::Mio4),
+            7 => Ok(Self::Mio5),
+            8 => Ok(Self::Mio6),
+            9 => Ok(Self::Mio7),
+            10 => Ok(Self::Mio8),
+            11 => Ok(Self::Mio9),
+            12 => Ok(Self::Mio10),
+            13 => Ok(Self::Mio11),
             _ => Err(val),
         }
     }
@@ -2494,152 +2293,47 @@ impl TryFrom<u32> for TopDarjeelingPinmuxInsel {
 #[repr(u32)]
 pub enum TopDarjeelingPinmuxMioOut {
     /// MIO Pad 0
-    Ioa0 = 0,
+    Mio0 = 0,
     /// MIO Pad 1
-    Ioa1 = 1,
+    Mio1 = 1,
     /// MIO Pad 2
-    Ioa2 = 2,
+    Mio2 = 2,
     /// MIO Pad 3
-    Ioa3 = 3,
+    Mio3 = 3,
     /// MIO Pad 4
-    Ioa4 = 4,
+    Mio4 = 4,
     /// MIO Pad 5
-    Ioa5 = 5,
+    Mio5 = 5,
     /// MIO Pad 6
-    Ioa6 = 6,
+    Mio6 = 6,
     /// MIO Pad 7
-    Ioa7 = 7,
+    Mio7 = 7,
     /// MIO Pad 8
-    Ioa8 = 8,
+    Mio8 = 8,
     /// MIO Pad 9
-    Iob0 = 9,
+    Mio9 = 9,
     /// MIO Pad 10
-    Iob1 = 10,
+    Mio10 = 10,
     /// MIO Pad 11
-    Iob2 = 11,
-    /// MIO Pad 12
-    Iob3 = 12,
-    /// MIO Pad 13
-    Iob4 = 13,
-    /// MIO Pad 14
-    Iob5 = 14,
-    /// MIO Pad 15
-    Iob6 = 15,
-    /// MIO Pad 16
-    Iob7 = 16,
-    /// MIO Pad 17
-    Iob8 = 17,
-    /// MIO Pad 18
-    Iob9 = 18,
-    /// MIO Pad 19
-    Iob10 = 19,
-    /// MIO Pad 20
-    Iob11 = 20,
-    /// MIO Pad 21
-    Iob12 = 21,
-    /// MIO Pad 22
-    Ioc0 = 22,
-    /// MIO Pad 23
-    Ioc1 = 23,
-    /// MIO Pad 24
-    Ioc2 = 24,
-    /// MIO Pad 25
-    Ioc3 = 25,
-    /// MIO Pad 26
-    Ioc4 = 26,
-    /// MIO Pad 27
-    Ioc5 = 27,
-    /// MIO Pad 28
-    Ioc6 = 28,
-    /// MIO Pad 29
-    Ioc7 = 29,
-    /// MIO Pad 30
-    Ioc8 = 30,
-    /// MIO Pad 31
-    Ioc9 = 31,
-    /// MIO Pad 32
-    Ioc10 = 32,
-    /// MIO Pad 33
-    Ioc11 = 33,
-    /// MIO Pad 34
-    Ioc12 = 34,
-    /// MIO Pad 35
-    Ior0 = 35,
-    /// MIO Pad 36
-    Ior1 = 36,
-    /// MIO Pad 37
-    Ior2 = 37,
-    /// MIO Pad 38
-    Ior3 = 38,
-    /// MIO Pad 39
-    Ior4 = 39,
-    /// MIO Pad 40
-    Ior5 = 40,
-    /// MIO Pad 41
-    Ior6 = 41,
-    /// MIO Pad 42
-    Ior7 = 42,
-    /// MIO Pad 43
-    Ior10 = 43,
-    /// MIO Pad 44
-    Ior11 = 44,
-    /// MIO Pad 45
-    Ior12 = 45,
-    /// MIO Pad 46
-    Ior13 = 46,
+    Mio11 = 11,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxMioOut {
     type Error = u32;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         match val {
-            0 => Ok(Self::Ioa0),
-            1 => Ok(Self::Ioa1),
-            2 => Ok(Self::Ioa2),
-            3 => Ok(Self::Ioa3),
-            4 => Ok(Self::Ioa4),
-            5 => Ok(Self::Ioa5),
-            6 => Ok(Self::Ioa6),
-            7 => Ok(Self::Ioa7),
-            8 => Ok(Self::Ioa8),
-            9 => Ok(Self::Iob0),
-            10 => Ok(Self::Iob1),
-            11 => Ok(Self::Iob2),
-            12 => Ok(Self::Iob3),
-            13 => Ok(Self::Iob4),
-            14 => Ok(Self::Iob5),
-            15 => Ok(Self::Iob6),
-            16 => Ok(Self::Iob7),
-            17 => Ok(Self::Iob8),
-            18 => Ok(Self::Iob9),
-            19 => Ok(Self::Iob10),
-            20 => Ok(Self::Iob11),
-            21 => Ok(Self::Iob12),
-            22 => Ok(Self::Ioc0),
-            23 => Ok(Self::Ioc1),
-            24 => Ok(Self::Ioc2),
-            25 => Ok(Self::Ioc3),
-            26 => Ok(Self::Ioc4),
-            27 => Ok(Self::Ioc5),
-            28 => Ok(Self::Ioc6),
-            29 => Ok(Self::Ioc7),
-            30 => Ok(Self::Ioc8),
-            31 => Ok(Self::Ioc9),
-            32 => Ok(Self::Ioc10),
-            33 => Ok(Self::Ioc11),
-            34 => Ok(Self::Ioc12),
-            35 => Ok(Self::Ior0),
-            36 => Ok(Self::Ior1),
-            37 => Ok(Self::Ior2),
-            38 => Ok(Self::Ior3),
-            39 => Ok(Self::Ior4),
-            40 => Ok(Self::Ior5),
-            41 => Ok(Self::Ior6),
-            42 => Ok(Self::Ior7),
-            43 => Ok(Self::Ior10),
-            44 => Ok(Self::Ior11),
-            45 => Ok(Self::Ior12),
-            46 => Ok(Self::Ior13),
+            0 => Ok(Self::Mio0),
+            1 => Ok(Self::Mio1),
+            2 => Ok(Self::Mio2),
+            3 => Ok(Self::Mio3),
+            4 => Ok(Self::Mio4),
+            5 => Ok(Self::Mio5),
+            6 => Ok(Self::Mio6),
+            7 => Ok(Self::Mio7),
+            8 => Ok(Self::Mio8),
+            9 => Ok(Self::Mio9),
+            10 => Ok(Self::Mio10),
+            11 => Ok(Self::Mio11),
             _ => Err(val),
         }
     }
@@ -2655,77 +2349,15 @@ pub enum TopDarjeelingPinmuxOutsel {
     /// Tie constantly to high-Z
     ConstantHighZ = 2,
     /// Peripheral Output 0
-    GpioGpio0 = 3,
+    SocProxySocGpo12 = 3,
     /// Peripheral Output 1
-    GpioGpio1 = 4,
+    SocProxySocGpo13 = 4,
     /// Peripheral Output 2
-    GpioGpio2 = 5,
+    SocProxySocGpo14 = 5,
     /// Peripheral Output 3
-    GpioGpio3 = 6,
+    SocProxySocGpo15 = 6,
     /// Peripheral Output 4
-    GpioGpio4 = 7,
-    /// Peripheral Output 5
-    GpioGpio5 = 8,
-    /// Peripheral Output 6
-    GpioGpio6 = 9,
-    /// Peripheral Output 7
-    GpioGpio7 = 10,
-    /// Peripheral Output 8
-    GpioGpio8 = 11,
-    /// Peripheral Output 9
-    GpioGpio9 = 12,
-    /// Peripheral Output 10
-    GpioGpio10 = 13,
-    /// Peripheral Output 11
-    GpioGpio11 = 14,
-    /// Peripheral Output 12
-    GpioGpio12 = 15,
-    /// Peripheral Output 13
-    GpioGpio13 = 16,
-    /// Peripheral Output 14
-    GpioGpio14 = 17,
-    /// Peripheral Output 15
-    GpioGpio15 = 18,
-    /// Peripheral Output 16
-    GpioGpio16 = 19,
-    /// Peripheral Output 17
-    GpioGpio17 = 20,
-    /// Peripheral Output 18
-    GpioGpio18 = 21,
-    /// Peripheral Output 19
-    GpioGpio19 = 22,
-    /// Peripheral Output 20
-    GpioGpio20 = 23,
-    /// Peripheral Output 21
-    GpioGpio21 = 24,
-    /// Peripheral Output 22
-    GpioGpio22 = 25,
-    /// Peripheral Output 23
-    GpioGpio23 = 26,
-    /// Peripheral Output 24
-    GpioGpio24 = 27,
-    /// Peripheral Output 25
-    GpioGpio25 = 28,
-    /// Peripheral Output 26
-    GpioGpio26 = 29,
-    /// Peripheral Output 27
-    GpioGpio27 = 30,
-    /// Peripheral Output 28
-    GpioGpio28 = 31,
-    /// Peripheral Output 29
-    GpioGpio29 = 32,
-    /// Peripheral Output 30
-    GpioGpio30 = 33,
-    /// Peripheral Output 31
-    GpioGpio31 = 34,
-    /// Peripheral Output 32
-    I2c0Sda = 35,
-    /// Peripheral Output 33
-    I2c0Scl = 36,
-    /// Peripheral Output 34
-    Uart0Tx = 37,
-    /// Peripheral Output 35
-    OtpCtrlTest0 = 38,
+    OtpCtrlTest0 = 7,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
@@ -2735,42 +2367,11 @@ impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
             0 => Ok(Self::ConstantZero),
             1 => Ok(Self::ConstantOne),
             2 => Ok(Self::ConstantHighZ),
-            3 => Ok(Self::GpioGpio0),
-            4 => Ok(Self::GpioGpio1),
-            5 => Ok(Self::GpioGpio2),
-            6 => Ok(Self::GpioGpio3),
-            7 => Ok(Self::GpioGpio4),
-            8 => Ok(Self::GpioGpio5),
-            9 => Ok(Self::GpioGpio6),
-            10 => Ok(Self::GpioGpio7),
-            11 => Ok(Self::GpioGpio8),
-            12 => Ok(Self::GpioGpio9),
-            13 => Ok(Self::GpioGpio10),
-            14 => Ok(Self::GpioGpio11),
-            15 => Ok(Self::GpioGpio12),
-            16 => Ok(Self::GpioGpio13),
-            17 => Ok(Self::GpioGpio14),
-            18 => Ok(Self::GpioGpio15),
-            19 => Ok(Self::GpioGpio16),
-            20 => Ok(Self::GpioGpio17),
-            21 => Ok(Self::GpioGpio18),
-            22 => Ok(Self::GpioGpio19),
-            23 => Ok(Self::GpioGpio20),
-            24 => Ok(Self::GpioGpio21),
-            25 => Ok(Self::GpioGpio22),
-            26 => Ok(Self::GpioGpio23),
-            27 => Ok(Self::GpioGpio24),
-            28 => Ok(Self::GpioGpio25),
-            29 => Ok(Self::GpioGpio26),
-            30 => Ok(Self::GpioGpio27),
-            31 => Ok(Self::GpioGpio28),
-            32 => Ok(Self::GpioGpio29),
-            33 => Ok(Self::GpioGpio30),
-            34 => Ok(Self::GpioGpio31),
-            35 => Ok(Self::I2c0Sda),
-            36 => Ok(Self::I2c0Scl),
-            37 => Ok(Self::Uart0Tx),
-            38 => Ok(Self::OtpCtrlTest0),
+            3 => Ok(Self::SocProxySocGpo12),
+            4 => Ok(Self::SocProxySocGpo13),
+            5 => Ok(Self::SocProxySocGpo14),
+            6 => Ok(Self::SocProxySocGpo15),
+            7 => Ok(Self::OtpCtrlTest0),
             _ => Err(val),
         }
     }
@@ -2787,34 +2388,71 @@ pub enum TopDarjeelingDirectPads {
     SpiDeviceSd1 = 5,
     SpiDeviceSd2 = 6,
     SpiDeviceSd3 = 7,
-    SpiDeviceSck = 8,
-    SpiDeviceCsb = 9,
-    SocProxySocGpi0 = 10,
-    SocProxySocGpi1 = 11,
-    SocProxySocGpi2 = 12,
-    SocProxySocGpi3 = 13,
-    SocProxySocGpi4 = 14,
-    SocProxySocGpi5 = 15,
-    SocProxySocGpi6 = 16,
-    SocProxySocGpi7 = 17,
-    SocProxySocGpi8 = 18,
-    SocProxySocGpi9 = 19,
-    SocProxySocGpi10 = 20,
-    SocProxySocGpi11 = 21,
-    SpiHost0Sck = 22,
-    SpiHost0Csb = 23,
-    SocProxySocGpo0 = 24,
-    SocProxySocGpo1 = 25,
-    SocProxySocGpo2 = 26,
-    SocProxySocGpo3 = 27,
-    SocProxySocGpo4 = 28,
-    SocProxySocGpo5 = 29,
-    SocProxySocGpo6 = 30,
-    SocProxySocGpo7 = 31,
-    SocProxySocGpo8 = 32,
-    SocProxySocGpo9 = 33,
-    SocProxySocGpo10 = 34,
-    SocProxySocGpo11 = 35,
+    I2c0Scl = 8,
+    I2c0Sda = 9,
+    GpioGpio0 = 10,
+    GpioGpio1 = 11,
+    GpioGpio2 = 12,
+    GpioGpio3 = 13,
+    GpioGpio4 = 14,
+    GpioGpio5 = 15,
+    GpioGpio6 = 16,
+    GpioGpio7 = 17,
+    GpioGpio8 = 18,
+    GpioGpio9 = 19,
+    GpioGpio10 = 20,
+    GpioGpio11 = 21,
+    GpioGpio12 = 22,
+    GpioGpio13 = 23,
+    GpioGpio14 = 24,
+    GpioGpio15 = 25,
+    GpioGpio16 = 26,
+    GpioGpio17 = 27,
+    GpioGpio18 = 28,
+    GpioGpio19 = 29,
+    GpioGpio20 = 30,
+    GpioGpio21 = 31,
+    GpioGpio22 = 32,
+    GpioGpio23 = 33,
+    GpioGpio24 = 34,
+    GpioGpio25 = 35,
+    GpioGpio26 = 36,
+    GpioGpio27 = 37,
+    GpioGpio28 = 38,
+    GpioGpio29 = 39,
+    GpioGpio30 = 40,
+    GpioGpio31 = 41,
+    SpiDeviceSck = 42,
+    SpiDeviceCsb = 43,
+    SpiDeviceTpmCsb = 44,
+    Uart0Rx = 45,
+    SocProxySocGpi0 = 46,
+    SocProxySocGpi1 = 47,
+    SocProxySocGpi2 = 48,
+    SocProxySocGpi3 = 49,
+    SocProxySocGpi4 = 50,
+    SocProxySocGpi5 = 51,
+    SocProxySocGpi6 = 52,
+    SocProxySocGpi7 = 53,
+    SocProxySocGpi8 = 54,
+    SocProxySocGpi9 = 55,
+    SocProxySocGpi10 = 56,
+    SocProxySocGpi11 = 57,
+    SpiHost0Sck = 58,
+    SpiHost0Csb = 59,
+    Uart0Tx = 60,
+    SocProxySocGpo0 = 61,
+    SocProxySocGpo1 = 62,
+    SocProxySocGpo2 = 63,
+    SocProxySocGpo3 = 64,
+    SocProxySocGpo4 = 65,
+    SocProxySocGpo5 = 66,
+    SocProxySocGpo6 = 67,
+    SocProxySocGpo7 = 68,
+    SocProxySocGpo8 = 69,
+    SocProxySocGpo9 = 70,
+    SocProxySocGpo10 = 71,
+    SocProxySocGpo11 = 72,
 }
 
 impl TryFrom<u32> for TopDarjeelingDirectPads {
@@ -2829,34 +2467,71 @@ impl TryFrom<u32> for TopDarjeelingDirectPads {
             5 => Ok(Self::SpiDeviceSd1),
             6 => Ok(Self::SpiDeviceSd2),
             7 => Ok(Self::SpiDeviceSd3),
-            8 => Ok(Self::SpiDeviceSck),
-            9 => Ok(Self::SpiDeviceCsb),
-            10 => Ok(Self::SocProxySocGpi0),
-            11 => Ok(Self::SocProxySocGpi1),
-            12 => Ok(Self::SocProxySocGpi2),
-            13 => Ok(Self::SocProxySocGpi3),
-            14 => Ok(Self::SocProxySocGpi4),
-            15 => Ok(Self::SocProxySocGpi5),
-            16 => Ok(Self::SocProxySocGpi6),
-            17 => Ok(Self::SocProxySocGpi7),
-            18 => Ok(Self::SocProxySocGpi8),
-            19 => Ok(Self::SocProxySocGpi9),
-            20 => Ok(Self::SocProxySocGpi10),
-            21 => Ok(Self::SocProxySocGpi11),
-            22 => Ok(Self::SpiHost0Sck),
-            23 => Ok(Self::SpiHost0Csb),
-            24 => Ok(Self::SocProxySocGpo0),
-            25 => Ok(Self::SocProxySocGpo1),
-            26 => Ok(Self::SocProxySocGpo2),
-            27 => Ok(Self::SocProxySocGpo3),
-            28 => Ok(Self::SocProxySocGpo4),
-            29 => Ok(Self::SocProxySocGpo5),
-            30 => Ok(Self::SocProxySocGpo6),
-            31 => Ok(Self::SocProxySocGpo7),
-            32 => Ok(Self::SocProxySocGpo8),
-            33 => Ok(Self::SocProxySocGpo9),
-            34 => Ok(Self::SocProxySocGpo10),
-            35 => Ok(Self::SocProxySocGpo11),
+            8 => Ok(Self::I2c0Scl),
+            9 => Ok(Self::I2c0Sda),
+            10 => Ok(Self::GpioGpio0),
+            11 => Ok(Self::GpioGpio1),
+            12 => Ok(Self::GpioGpio2),
+            13 => Ok(Self::GpioGpio3),
+            14 => Ok(Self::GpioGpio4),
+            15 => Ok(Self::GpioGpio5),
+            16 => Ok(Self::GpioGpio6),
+            17 => Ok(Self::GpioGpio7),
+            18 => Ok(Self::GpioGpio8),
+            19 => Ok(Self::GpioGpio9),
+            20 => Ok(Self::GpioGpio10),
+            21 => Ok(Self::GpioGpio11),
+            22 => Ok(Self::GpioGpio12),
+            23 => Ok(Self::GpioGpio13),
+            24 => Ok(Self::GpioGpio14),
+            25 => Ok(Self::GpioGpio15),
+            26 => Ok(Self::GpioGpio16),
+            27 => Ok(Self::GpioGpio17),
+            28 => Ok(Self::GpioGpio18),
+            29 => Ok(Self::GpioGpio19),
+            30 => Ok(Self::GpioGpio20),
+            31 => Ok(Self::GpioGpio21),
+            32 => Ok(Self::GpioGpio22),
+            33 => Ok(Self::GpioGpio23),
+            34 => Ok(Self::GpioGpio24),
+            35 => Ok(Self::GpioGpio25),
+            36 => Ok(Self::GpioGpio26),
+            37 => Ok(Self::GpioGpio27),
+            38 => Ok(Self::GpioGpio28),
+            39 => Ok(Self::GpioGpio29),
+            40 => Ok(Self::GpioGpio30),
+            41 => Ok(Self::GpioGpio31),
+            42 => Ok(Self::SpiDeviceSck),
+            43 => Ok(Self::SpiDeviceCsb),
+            44 => Ok(Self::SpiDeviceTpmCsb),
+            45 => Ok(Self::Uart0Rx),
+            46 => Ok(Self::SocProxySocGpi0),
+            47 => Ok(Self::SocProxySocGpi1),
+            48 => Ok(Self::SocProxySocGpi2),
+            49 => Ok(Self::SocProxySocGpi3),
+            50 => Ok(Self::SocProxySocGpi4),
+            51 => Ok(Self::SocProxySocGpi5),
+            52 => Ok(Self::SocProxySocGpi6),
+            53 => Ok(Self::SocProxySocGpi7),
+            54 => Ok(Self::SocProxySocGpi8),
+            55 => Ok(Self::SocProxySocGpi9),
+            56 => Ok(Self::SocProxySocGpi10),
+            57 => Ok(Self::SocProxySocGpi11),
+            58 => Ok(Self::SpiHost0Sck),
+            59 => Ok(Self::SpiHost0Csb),
+            60 => Ok(Self::Uart0Tx),
+            61 => Ok(Self::SocProxySocGpo0),
+            62 => Ok(Self::SocProxySocGpo1),
+            63 => Ok(Self::SocProxySocGpo2),
+            64 => Ok(Self::SocProxySocGpo3),
+            65 => Ok(Self::SocProxySocGpo4),
+            66 => Ok(Self::SocProxySocGpo5),
+            67 => Ok(Self::SocProxySocGpo6),
+            68 => Ok(Self::SocProxySocGpo7),
+            69 => Ok(Self::SocProxySocGpo8),
+            70 => Ok(Self::SocProxySocGpo9),
+            71 => Ok(Self::SocProxySocGpo10),
+            72 => Ok(Self::SocProxySocGpo11),
             _ => Err(val),
         }
     }
@@ -2865,106 +2540,36 @@ impl TryFrom<u32> for TopDarjeelingDirectPads {
 /// Muxed Pad Selects
 #[repr(u32)]
 pub enum TopDarjeelingMuxedPads {
-    Ioa0 = 0,
-    Ioa1 = 1,
-    Ioa2 = 2,
-    Ioa3 = 3,
-    Ioa4 = 4,
-    Ioa5 = 5,
-    Ioa6 = 6,
-    Ioa7 = 7,
-    Ioa8 = 8,
-    Iob0 = 9,
-    Iob1 = 10,
-    Iob2 = 11,
-    Iob3 = 12,
-    Iob4 = 13,
-    Iob5 = 14,
-    Iob6 = 15,
-    Iob7 = 16,
-    Iob8 = 17,
-    Iob9 = 18,
-    Iob10 = 19,
-    Iob11 = 20,
-    Iob12 = 21,
-    Ioc0 = 22,
-    Ioc1 = 23,
-    Ioc2 = 24,
-    Ioc3 = 25,
-    Ioc4 = 26,
-    Ioc5 = 27,
-    Ioc6 = 28,
-    Ioc7 = 29,
-    Ioc8 = 30,
-    Ioc9 = 31,
-    Ioc10 = 32,
-    Ioc11 = 33,
-    Ioc12 = 34,
-    Ior0 = 35,
-    Ior1 = 36,
-    Ior2 = 37,
-    Ior3 = 38,
-    Ior4 = 39,
-    Ior5 = 40,
-    Ior6 = 41,
-    Ior7 = 42,
-    Ior10 = 43,
-    Ior11 = 44,
-    Ior12 = 45,
-    Ior13 = 46,
+    Mio0 = 0,
+    Mio1 = 1,
+    Mio2 = 2,
+    Mio3 = 3,
+    Mio4 = 4,
+    Mio5 = 5,
+    Mio6 = 6,
+    Mio7 = 7,
+    Mio8 = 8,
+    Mio9 = 9,
+    Mio10 = 10,
+    Mio11 = 11,
 }
 
 impl TryFrom<u32> for TopDarjeelingMuxedPads {
     type Error = u32;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         match val {
-            0 => Ok(Self::Ioa0),
-            1 => Ok(Self::Ioa1),
-            2 => Ok(Self::Ioa2),
-            3 => Ok(Self::Ioa3),
-            4 => Ok(Self::Ioa4),
-            5 => Ok(Self::Ioa5),
-            6 => Ok(Self::Ioa6),
-            7 => Ok(Self::Ioa7),
-            8 => Ok(Self::Ioa8),
-            9 => Ok(Self::Iob0),
-            10 => Ok(Self::Iob1),
-            11 => Ok(Self::Iob2),
-            12 => Ok(Self::Iob3),
-            13 => Ok(Self::Iob4),
-            14 => Ok(Self::Iob5),
-            15 => Ok(Self::Iob6),
-            16 => Ok(Self::Iob7),
-            17 => Ok(Self::Iob8),
-            18 => Ok(Self::Iob9),
-            19 => Ok(Self::Iob10),
-            20 => Ok(Self::Iob11),
-            21 => Ok(Self::Iob12),
-            22 => Ok(Self::Ioc0),
-            23 => Ok(Self::Ioc1),
-            24 => Ok(Self::Ioc2),
-            25 => Ok(Self::Ioc3),
-            26 => Ok(Self::Ioc4),
-            27 => Ok(Self::Ioc5),
-            28 => Ok(Self::Ioc6),
-            29 => Ok(Self::Ioc7),
-            30 => Ok(Self::Ioc8),
-            31 => Ok(Self::Ioc9),
-            32 => Ok(Self::Ioc10),
-            33 => Ok(Self::Ioc11),
-            34 => Ok(Self::Ioc12),
-            35 => Ok(Self::Ior0),
-            36 => Ok(Self::Ior1),
-            37 => Ok(Self::Ior2),
-            38 => Ok(Self::Ior3),
-            39 => Ok(Self::Ior4),
-            40 => Ok(Self::Ior5),
-            41 => Ok(Self::Ior6),
-            42 => Ok(Self::Ior7),
-            43 => Ok(Self::Ior10),
-            44 => Ok(Self::Ior11),
-            45 => Ok(Self::Ior12),
-            46 => Ok(Self::Ior13),
+            0 => Ok(Self::Mio0),
+            1 => Ok(Self::Mio1),
+            2 => Ok(Self::Mio2),
+            3 => Ok(Self::Mio3),
+            4 => Ok(Self::Mio4),
+            5 => Ok(Self::Mio5),
+            6 => Ok(Self::Mio6),
+            7 => Ok(Self::Mio7),
+            8 => Ok(Self::Mio8),
+            9 => Ok(Self::Mio9),
+            10 => Ok(Self::Mio10),
+            11 => Ok(Self::Mio11),
             _ => Err(val),
         }
     }

@@ -1419,8 +1419,8 @@ extern const top_darjeeling_alert_peripheral_t
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
-#define TOP_DARJEELING_NUM_MIO_PADS 47
-#define TOP_DARJEELING_NUM_DIO_PADS 36
+#define TOP_DARJEELING_NUM_MIO_PADS 12
+#define TOP_DARJEELING_NUM_DIO_PADS 73
 
 #define TOP_DARJEELING_PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 #define TOP_DARJEELING_PINMUX_PERIPH_OUTSEL_IDX_OFFSET 3
@@ -1429,43 +1429,11 @@ extern const top_darjeeling_alert_peripheral_t
  * Pinmux Peripheral Input.
  */
 typedef enum top_darjeeling_pinmux_peripheral_in {
-  kTopDarjeelingPinmuxPeripheralInGpioGpio0 = 0, /**< Peripheral Input 0 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio1 = 1, /**< Peripheral Input 1 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio2 = 2, /**< Peripheral Input 2 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio3 = 3, /**< Peripheral Input 3 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio4 = 4, /**< Peripheral Input 4 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio5 = 5, /**< Peripheral Input 5 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio6 = 6, /**< Peripheral Input 6 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio7 = 7, /**< Peripheral Input 7 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio8 = 8, /**< Peripheral Input 8 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio9 = 9, /**< Peripheral Input 9 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio10 = 10, /**< Peripheral Input 10 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio11 = 11, /**< Peripheral Input 11 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio12 = 12, /**< Peripheral Input 12 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio13 = 13, /**< Peripheral Input 13 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio14 = 14, /**< Peripheral Input 14 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio15 = 15, /**< Peripheral Input 15 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio16 = 16, /**< Peripheral Input 16 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio17 = 17, /**< Peripheral Input 17 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio18 = 18, /**< Peripheral Input 18 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio19 = 19, /**< Peripheral Input 19 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio20 = 20, /**< Peripheral Input 20 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio21 = 21, /**< Peripheral Input 21 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio22 = 22, /**< Peripheral Input 22 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio23 = 23, /**< Peripheral Input 23 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio24 = 24, /**< Peripheral Input 24 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio25 = 25, /**< Peripheral Input 25 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio26 = 26, /**< Peripheral Input 26 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio27 = 27, /**< Peripheral Input 27 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio28 = 28, /**< Peripheral Input 28 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio29 = 29, /**< Peripheral Input 29 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio30 = 30, /**< Peripheral Input 30 */
-  kTopDarjeelingPinmuxPeripheralInGpioGpio31 = 31, /**< Peripheral Input 31 */
-  kTopDarjeelingPinmuxPeripheralInI2c0Sda = 32, /**< Peripheral Input 32 */
-  kTopDarjeelingPinmuxPeripheralInI2c0Scl = 33, /**< Peripheral Input 33 */
-  kTopDarjeelingPinmuxPeripheralInUart0Rx = 34, /**< Peripheral Input 34 */
-  kTopDarjeelingPinmuxPeripheralInSpiDeviceTpmCsb = 35, /**< Peripheral Input 35 */
-  kTopDarjeelingPinmuxPeripheralInLast = 35, /**< \internal Last valid peripheral input */
+  kTopDarjeelingPinmuxPeripheralInSocProxySocGpi12 = 0, /**< Peripheral Input 0 */
+  kTopDarjeelingPinmuxPeripheralInSocProxySocGpi13 = 1, /**< Peripheral Input 1 */
+  kTopDarjeelingPinmuxPeripheralInSocProxySocGpi14 = 2, /**< Peripheral Input 2 */
+  kTopDarjeelingPinmuxPeripheralInSocProxySocGpi15 = 3, /**< Peripheral Input 3 */
+  kTopDarjeelingPinmuxPeripheralInLast = 3, /**< \internal Last valid peripheral input */
 } top_darjeeling_pinmux_peripheral_in_t;
 
 /**
@@ -1474,108 +1442,38 @@ typedef enum top_darjeeling_pinmux_peripheral_in {
 typedef enum top_darjeeling_pinmux_insel {
   kTopDarjeelingPinmuxInselConstantZero = 0, /**< Tie constantly to zero */
   kTopDarjeelingPinmuxInselConstantOne = 1, /**< Tie constantly to one */
-  kTopDarjeelingPinmuxInselIoa0 = 2, /**< MIO Pad 0 */
-  kTopDarjeelingPinmuxInselIoa1 = 3, /**< MIO Pad 1 */
-  kTopDarjeelingPinmuxInselIoa2 = 4, /**< MIO Pad 2 */
-  kTopDarjeelingPinmuxInselIoa3 = 5, /**< MIO Pad 3 */
-  kTopDarjeelingPinmuxInselIoa4 = 6, /**< MIO Pad 4 */
-  kTopDarjeelingPinmuxInselIoa5 = 7, /**< MIO Pad 5 */
-  kTopDarjeelingPinmuxInselIoa6 = 8, /**< MIO Pad 6 */
-  kTopDarjeelingPinmuxInselIoa7 = 9, /**< MIO Pad 7 */
-  kTopDarjeelingPinmuxInselIoa8 = 10, /**< MIO Pad 8 */
-  kTopDarjeelingPinmuxInselIob0 = 11, /**< MIO Pad 9 */
-  kTopDarjeelingPinmuxInselIob1 = 12, /**< MIO Pad 10 */
-  kTopDarjeelingPinmuxInselIob2 = 13, /**< MIO Pad 11 */
-  kTopDarjeelingPinmuxInselIob3 = 14, /**< MIO Pad 12 */
-  kTopDarjeelingPinmuxInselIob4 = 15, /**< MIO Pad 13 */
-  kTopDarjeelingPinmuxInselIob5 = 16, /**< MIO Pad 14 */
-  kTopDarjeelingPinmuxInselIob6 = 17, /**< MIO Pad 15 */
-  kTopDarjeelingPinmuxInselIob7 = 18, /**< MIO Pad 16 */
-  kTopDarjeelingPinmuxInselIob8 = 19, /**< MIO Pad 17 */
-  kTopDarjeelingPinmuxInselIob9 = 20, /**< MIO Pad 18 */
-  kTopDarjeelingPinmuxInselIob10 = 21, /**< MIO Pad 19 */
-  kTopDarjeelingPinmuxInselIob11 = 22, /**< MIO Pad 20 */
-  kTopDarjeelingPinmuxInselIob12 = 23, /**< MIO Pad 21 */
-  kTopDarjeelingPinmuxInselIoc0 = 24, /**< MIO Pad 22 */
-  kTopDarjeelingPinmuxInselIoc1 = 25, /**< MIO Pad 23 */
-  kTopDarjeelingPinmuxInselIoc2 = 26, /**< MIO Pad 24 */
-  kTopDarjeelingPinmuxInselIoc3 = 27, /**< MIO Pad 25 */
-  kTopDarjeelingPinmuxInselIoc4 = 28, /**< MIO Pad 26 */
-  kTopDarjeelingPinmuxInselIoc5 = 29, /**< MIO Pad 27 */
-  kTopDarjeelingPinmuxInselIoc6 = 30, /**< MIO Pad 28 */
-  kTopDarjeelingPinmuxInselIoc7 = 31, /**< MIO Pad 29 */
-  kTopDarjeelingPinmuxInselIoc8 = 32, /**< MIO Pad 30 */
-  kTopDarjeelingPinmuxInselIoc9 = 33, /**< MIO Pad 31 */
-  kTopDarjeelingPinmuxInselIoc10 = 34, /**< MIO Pad 32 */
-  kTopDarjeelingPinmuxInselIoc11 = 35, /**< MIO Pad 33 */
-  kTopDarjeelingPinmuxInselIoc12 = 36, /**< MIO Pad 34 */
-  kTopDarjeelingPinmuxInselIor0 = 37, /**< MIO Pad 35 */
-  kTopDarjeelingPinmuxInselIor1 = 38, /**< MIO Pad 36 */
-  kTopDarjeelingPinmuxInselIor2 = 39, /**< MIO Pad 37 */
-  kTopDarjeelingPinmuxInselIor3 = 40, /**< MIO Pad 38 */
-  kTopDarjeelingPinmuxInselIor4 = 41, /**< MIO Pad 39 */
-  kTopDarjeelingPinmuxInselIor5 = 42, /**< MIO Pad 40 */
-  kTopDarjeelingPinmuxInselIor6 = 43, /**< MIO Pad 41 */
-  kTopDarjeelingPinmuxInselIor7 = 44, /**< MIO Pad 42 */
-  kTopDarjeelingPinmuxInselIor10 = 45, /**< MIO Pad 43 */
-  kTopDarjeelingPinmuxInselIor11 = 46, /**< MIO Pad 44 */
-  kTopDarjeelingPinmuxInselIor12 = 47, /**< MIO Pad 45 */
-  kTopDarjeelingPinmuxInselIor13 = 48, /**< MIO Pad 46 */
-  kTopDarjeelingPinmuxInselLast = 48, /**< \internal Last valid insel value */
+  kTopDarjeelingPinmuxInselMio0 = 2, /**< MIO Pad 0 */
+  kTopDarjeelingPinmuxInselMio1 = 3, /**< MIO Pad 1 */
+  kTopDarjeelingPinmuxInselMio2 = 4, /**< MIO Pad 2 */
+  kTopDarjeelingPinmuxInselMio3 = 5, /**< MIO Pad 3 */
+  kTopDarjeelingPinmuxInselMio4 = 6, /**< MIO Pad 4 */
+  kTopDarjeelingPinmuxInselMio5 = 7, /**< MIO Pad 5 */
+  kTopDarjeelingPinmuxInselMio6 = 8, /**< MIO Pad 6 */
+  kTopDarjeelingPinmuxInselMio7 = 9, /**< MIO Pad 7 */
+  kTopDarjeelingPinmuxInselMio8 = 10, /**< MIO Pad 8 */
+  kTopDarjeelingPinmuxInselMio9 = 11, /**< MIO Pad 9 */
+  kTopDarjeelingPinmuxInselMio10 = 12, /**< MIO Pad 10 */
+  kTopDarjeelingPinmuxInselMio11 = 13, /**< MIO Pad 11 */
+  kTopDarjeelingPinmuxInselLast = 13, /**< \internal Last valid insel value */
 } top_darjeeling_pinmux_insel_t;
 
 /**
  * Pinmux MIO Output.
  */
 typedef enum top_darjeeling_pinmux_mio_out {
-  kTopDarjeelingPinmuxMioOutIoa0 = 0, /**< MIO Pad 0 */
-  kTopDarjeelingPinmuxMioOutIoa1 = 1, /**< MIO Pad 1 */
-  kTopDarjeelingPinmuxMioOutIoa2 = 2, /**< MIO Pad 2 */
-  kTopDarjeelingPinmuxMioOutIoa3 = 3, /**< MIO Pad 3 */
-  kTopDarjeelingPinmuxMioOutIoa4 = 4, /**< MIO Pad 4 */
-  kTopDarjeelingPinmuxMioOutIoa5 = 5, /**< MIO Pad 5 */
-  kTopDarjeelingPinmuxMioOutIoa6 = 6, /**< MIO Pad 6 */
-  kTopDarjeelingPinmuxMioOutIoa7 = 7, /**< MIO Pad 7 */
-  kTopDarjeelingPinmuxMioOutIoa8 = 8, /**< MIO Pad 8 */
-  kTopDarjeelingPinmuxMioOutIob0 = 9, /**< MIO Pad 9 */
-  kTopDarjeelingPinmuxMioOutIob1 = 10, /**< MIO Pad 10 */
-  kTopDarjeelingPinmuxMioOutIob2 = 11, /**< MIO Pad 11 */
-  kTopDarjeelingPinmuxMioOutIob3 = 12, /**< MIO Pad 12 */
-  kTopDarjeelingPinmuxMioOutIob4 = 13, /**< MIO Pad 13 */
-  kTopDarjeelingPinmuxMioOutIob5 = 14, /**< MIO Pad 14 */
-  kTopDarjeelingPinmuxMioOutIob6 = 15, /**< MIO Pad 15 */
-  kTopDarjeelingPinmuxMioOutIob7 = 16, /**< MIO Pad 16 */
-  kTopDarjeelingPinmuxMioOutIob8 = 17, /**< MIO Pad 17 */
-  kTopDarjeelingPinmuxMioOutIob9 = 18, /**< MIO Pad 18 */
-  kTopDarjeelingPinmuxMioOutIob10 = 19, /**< MIO Pad 19 */
-  kTopDarjeelingPinmuxMioOutIob11 = 20, /**< MIO Pad 20 */
-  kTopDarjeelingPinmuxMioOutIob12 = 21, /**< MIO Pad 21 */
-  kTopDarjeelingPinmuxMioOutIoc0 = 22, /**< MIO Pad 22 */
-  kTopDarjeelingPinmuxMioOutIoc1 = 23, /**< MIO Pad 23 */
-  kTopDarjeelingPinmuxMioOutIoc2 = 24, /**< MIO Pad 24 */
-  kTopDarjeelingPinmuxMioOutIoc3 = 25, /**< MIO Pad 25 */
-  kTopDarjeelingPinmuxMioOutIoc4 = 26, /**< MIO Pad 26 */
-  kTopDarjeelingPinmuxMioOutIoc5 = 27, /**< MIO Pad 27 */
-  kTopDarjeelingPinmuxMioOutIoc6 = 28, /**< MIO Pad 28 */
-  kTopDarjeelingPinmuxMioOutIoc7 = 29, /**< MIO Pad 29 */
-  kTopDarjeelingPinmuxMioOutIoc8 = 30, /**< MIO Pad 30 */
-  kTopDarjeelingPinmuxMioOutIoc9 = 31, /**< MIO Pad 31 */
-  kTopDarjeelingPinmuxMioOutIoc10 = 32, /**< MIO Pad 32 */
-  kTopDarjeelingPinmuxMioOutIoc11 = 33, /**< MIO Pad 33 */
-  kTopDarjeelingPinmuxMioOutIoc12 = 34, /**< MIO Pad 34 */
-  kTopDarjeelingPinmuxMioOutIor0 = 35, /**< MIO Pad 35 */
-  kTopDarjeelingPinmuxMioOutIor1 = 36, /**< MIO Pad 36 */
-  kTopDarjeelingPinmuxMioOutIor2 = 37, /**< MIO Pad 37 */
-  kTopDarjeelingPinmuxMioOutIor3 = 38, /**< MIO Pad 38 */
-  kTopDarjeelingPinmuxMioOutIor4 = 39, /**< MIO Pad 39 */
-  kTopDarjeelingPinmuxMioOutIor5 = 40, /**< MIO Pad 40 */
-  kTopDarjeelingPinmuxMioOutIor6 = 41, /**< MIO Pad 41 */
-  kTopDarjeelingPinmuxMioOutIor7 = 42, /**< MIO Pad 42 */
-  kTopDarjeelingPinmuxMioOutIor10 = 43, /**< MIO Pad 43 */
-  kTopDarjeelingPinmuxMioOutIor11 = 44, /**< MIO Pad 44 */
-  kTopDarjeelingPinmuxMioOutIor12 = 45, /**< MIO Pad 45 */
-  kTopDarjeelingPinmuxMioOutIor13 = 46, /**< MIO Pad 46 */
-  kTopDarjeelingPinmuxMioOutLast = 46, /**< \internal Last valid mio output */
+  kTopDarjeelingPinmuxMioOutMio0 = 0, /**< MIO Pad 0 */
+  kTopDarjeelingPinmuxMioOutMio1 = 1, /**< MIO Pad 1 */
+  kTopDarjeelingPinmuxMioOutMio2 = 2, /**< MIO Pad 2 */
+  kTopDarjeelingPinmuxMioOutMio3 = 3, /**< MIO Pad 3 */
+  kTopDarjeelingPinmuxMioOutMio4 = 4, /**< MIO Pad 4 */
+  kTopDarjeelingPinmuxMioOutMio5 = 5, /**< MIO Pad 5 */
+  kTopDarjeelingPinmuxMioOutMio6 = 6, /**< MIO Pad 6 */
+  kTopDarjeelingPinmuxMioOutMio7 = 7, /**< MIO Pad 7 */
+  kTopDarjeelingPinmuxMioOutMio8 = 8, /**< MIO Pad 8 */
+  kTopDarjeelingPinmuxMioOutMio9 = 9, /**< MIO Pad 9 */
+  kTopDarjeelingPinmuxMioOutMio10 = 10, /**< MIO Pad 10 */
+  kTopDarjeelingPinmuxMioOutMio11 = 11, /**< MIO Pad 11 */
+  kTopDarjeelingPinmuxMioOutLast = 11, /**< \internal Last valid mio output */
 } top_darjeeling_pinmux_mio_out_t;
 
 /**
@@ -1585,43 +1483,12 @@ typedef enum top_darjeeling_pinmux_outsel {
   kTopDarjeelingPinmuxOutselConstantZero = 0, /**< Tie constantly to zero */
   kTopDarjeelingPinmuxOutselConstantOne = 1, /**< Tie constantly to one */
   kTopDarjeelingPinmuxOutselConstantHighZ = 2, /**< Tie constantly to high-Z */
-  kTopDarjeelingPinmuxOutselGpioGpio0 = 3, /**< Peripheral Output 0 */
-  kTopDarjeelingPinmuxOutselGpioGpio1 = 4, /**< Peripheral Output 1 */
-  kTopDarjeelingPinmuxOutselGpioGpio2 = 5, /**< Peripheral Output 2 */
-  kTopDarjeelingPinmuxOutselGpioGpio3 = 6, /**< Peripheral Output 3 */
-  kTopDarjeelingPinmuxOutselGpioGpio4 = 7, /**< Peripheral Output 4 */
-  kTopDarjeelingPinmuxOutselGpioGpio5 = 8, /**< Peripheral Output 5 */
-  kTopDarjeelingPinmuxOutselGpioGpio6 = 9, /**< Peripheral Output 6 */
-  kTopDarjeelingPinmuxOutselGpioGpio7 = 10, /**< Peripheral Output 7 */
-  kTopDarjeelingPinmuxOutselGpioGpio8 = 11, /**< Peripheral Output 8 */
-  kTopDarjeelingPinmuxOutselGpioGpio9 = 12, /**< Peripheral Output 9 */
-  kTopDarjeelingPinmuxOutselGpioGpio10 = 13, /**< Peripheral Output 10 */
-  kTopDarjeelingPinmuxOutselGpioGpio11 = 14, /**< Peripheral Output 11 */
-  kTopDarjeelingPinmuxOutselGpioGpio12 = 15, /**< Peripheral Output 12 */
-  kTopDarjeelingPinmuxOutselGpioGpio13 = 16, /**< Peripheral Output 13 */
-  kTopDarjeelingPinmuxOutselGpioGpio14 = 17, /**< Peripheral Output 14 */
-  kTopDarjeelingPinmuxOutselGpioGpio15 = 18, /**< Peripheral Output 15 */
-  kTopDarjeelingPinmuxOutselGpioGpio16 = 19, /**< Peripheral Output 16 */
-  kTopDarjeelingPinmuxOutselGpioGpio17 = 20, /**< Peripheral Output 17 */
-  kTopDarjeelingPinmuxOutselGpioGpio18 = 21, /**< Peripheral Output 18 */
-  kTopDarjeelingPinmuxOutselGpioGpio19 = 22, /**< Peripheral Output 19 */
-  kTopDarjeelingPinmuxOutselGpioGpio20 = 23, /**< Peripheral Output 20 */
-  kTopDarjeelingPinmuxOutselGpioGpio21 = 24, /**< Peripheral Output 21 */
-  kTopDarjeelingPinmuxOutselGpioGpio22 = 25, /**< Peripheral Output 22 */
-  kTopDarjeelingPinmuxOutselGpioGpio23 = 26, /**< Peripheral Output 23 */
-  kTopDarjeelingPinmuxOutselGpioGpio24 = 27, /**< Peripheral Output 24 */
-  kTopDarjeelingPinmuxOutselGpioGpio25 = 28, /**< Peripheral Output 25 */
-  kTopDarjeelingPinmuxOutselGpioGpio26 = 29, /**< Peripheral Output 26 */
-  kTopDarjeelingPinmuxOutselGpioGpio27 = 30, /**< Peripheral Output 27 */
-  kTopDarjeelingPinmuxOutselGpioGpio28 = 31, /**< Peripheral Output 28 */
-  kTopDarjeelingPinmuxOutselGpioGpio29 = 32, /**< Peripheral Output 29 */
-  kTopDarjeelingPinmuxOutselGpioGpio30 = 33, /**< Peripheral Output 30 */
-  kTopDarjeelingPinmuxOutselGpioGpio31 = 34, /**< Peripheral Output 31 */
-  kTopDarjeelingPinmuxOutselI2c0Sda = 35, /**< Peripheral Output 32 */
-  kTopDarjeelingPinmuxOutselI2c0Scl = 36, /**< Peripheral Output 33 */
-  kTopDarjeelingPinmuxOutselUart0Tx = 37, /**< Peripheral Output 34 */
-  kTopDarjeelingPinmuxOutselOtpCtrlTest0 = 38, /**< Peripheral Output 35 */
-  kTopDarjeelingPinmuxOutselLast = 38, /**< \internal Last valid outsel value */
+  kTopDarjeelingPinmuxOutselSocProxySocGpo12 = 3, /**< Peripheral Output 0 */
+  kTopDarjeelingPinmuxOutselSocProxySocGpo13 = 4, /**< Peripheral Output 1 */
+  kTopDarjeelingPinmuxOutselSocProxySocGpo14 = 5, /**< Peripheral Output 2 */
+  kTopDarjeelingPinmuxOutselSocProxySocGpo15 = 6, /**< Peripheral Output 3 */
+  kTopDarjeelingPinmuxOutselOtpCtrlTest0 = 7, /**< Peripheral Output 4 */
+  kTopDarjeelingPinmuxOutselLast = 7, /**< \internal Last valid outsel value */
 } top_darjeeling_pinmux_outsel_t;
 
 /**
@@ -1636,89 +1503,91 @@ typedef enum top_darjeeling_direct_pads {
   kTopDarjeelingDirectPadsSpiDeviceSd1 = 5, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceSd2 = 6, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceSd3 = 7, /**<  */
-  kTopDarjeelingDirectPadsSpiDeviceSck = 8, /**<  */
-  kTopDarjeelingDirectPadsSpiDeviceCsb = 9, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi0 = 10, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi1 = 11, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi2 = 12, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi3 = 13, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi4 = 14, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi5 = 15, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi6 = 16, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi7 = 17, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi8 = 18, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi9 = 19, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi10 = 20, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpi11 = 21, /**<  */
-  kTopDarjeelingDirectPadsSpiHost0Sck = 22, /**<  */
-  kTopDarjeelingDirectPadsSpiHost0Csb = 23, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo0 = 24, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo1 = 25, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo2 = 26, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo3 = 27, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo4 = 28, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo5 = 29, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo6 = 30, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo7 = 31, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo8 = 32, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo9 = 33, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo10 = 34, /**<  */
-  kTopDarjeelingDirectPadsSocProxySocGpo11 = 35, /**<  */
-  kTopDarjeelingDirectPadsLast = 35, /**< \internal Last valid direct pad */
+  kTopDarjeelingDirectPadsI2c0Scl = 8, /**<  */
+  kTopDarjeelingDirectPadsI2c0Sda = 9, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio0 = 10, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio1 = 11, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio2 = 12, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio3 = 13, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio4 = 14, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio5 = 15, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio6 = 16, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio7 = 17, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio8 = 18, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio9 = 19, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio10 = 20, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio11 = 21, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio12 = 22, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio13 = 23, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio14 = 24, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio15 = 25, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio16 = 26, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio17 = 27, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio18 = 28, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio19 = 29, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio20 = 30, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio21 = 31, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio22 = 32, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio23 = 33, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio24 = 34, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio25 = 35, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio26 = 36, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio27 = 37, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio28 = 38, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio29 = 39, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio30 = 40, /**<  */
+  kTopDarjeelingDirectPadsGpioGpio31 = 41, /**<  */
+  kTopDarjeelingDirectPadsSpiDeviceSck = 42, /**<  */
+  kTopDarjeelingDirectPadsSpiDeviceCsb = 43, /**<  */
+  kTopDarjeelingDirectPadsSpiDeviceTpmCsb = 44, /**<  */
+  kTopDarjeelingDirectPadsUart0Rx = 45, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi0 = 46, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi1 = 47, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi2 = 48, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi3 = 49, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi4 = 50, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi5 = 51, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi6 = 52, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi7 = 53, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi8 = 54, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi9 = 55, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi10 = 56, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpi11 = 57, /**<  */
+  kTopDarjeelingDirectPadsSpiHost0Sck = 58, /**<  */
+  kTopDarjeelingDirectPadsSpiHost0Csb = 59, /**<  */
+  kTopDarjeelingDirectPadsUart0Tx = 60, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo0 = 61, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo1 = 62, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo2 = 63, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo3 = 64, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo4 = 65, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo5 = 66, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo6 = 67, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo7 = 68, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo8 = 69, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo9 = 70, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo10 = 71, /**<  */
+  kTopDarjeelingDirectPadsSocProxySocGpo11 = 72, /**<  */
+  kTopDarjeelingDirectPadsLast = 72, /**< \internal Last valid direct pad */
 } top_darjeeling_direct_pads_t;
 
 /**
  * Muxed Pad Selects
  */
 typedef enum top_darjeeling_muxed_pads {
-  kTopDarjeelingMuxedPadsIoa0 = 0, /**<  */
-  kTopDarjeelingMuxedPadsIoa1 = 1, /**<  */
-  kTopDarjeelingMuxedPadsIoa2 = 2, /**<  */
-  kTopDarjeelingMuxedPadsIoa3 = 3, /**<  */
-  kTopDarjeelingMuxedPadsIoa4 = 4, /**<  */
-  kTopDarjeelingMuxedPadsIoa5 = 5, /**<  */
-  kTopDarjeelingMuxedPadsIoa6 = 6, /**<  */
-  kTopDarjeelingMuxedPadsIoa7 = 7, /**<  */
-  kTopDarjeelingMuxedPadsIoa8 = 8, /**<  */
-  kTopDarjeelingMuxedPadsIob0 = 9, /**<  */
-  kTopDarjeelingMuxedPadsIob1 = 10, /**<  */
-  kTopDarjeelingMuxedPadsIob2 = 11, /**<  */
-  kTopDarjeelingMuxedPadsIob3 = 12, /**<  */
-  kTopDarjeelingMuxedPadsIob4 = 13, /**<  */
-  kTopDarjeelingMuxedPadsIob5 = 14, /**<  */
-  kTopDarjeelingMuxedPadsIob6 = 15, /**<  */
-  kTopDarjeelingMuxedPadsIob7 = 16, /**<  */
-  kTopDarjeelingMuxedPadsIob8 = 17, /**<  */
-  kTopDarjeelingMuxedPadsIob9 = 18, /**<  */
-  kTopDarjeelingMuxedPadsIob10 = 19, /**<  */
-  kTopDarjeelingMuxedPadsIob11 = 20, /**<  */
-  kTopDarjeelingMuxedPadsIob12 = 21, /**<  */
-  kTopDarjeelingMuxedPadsIoc0 = 22, /**<  */
-  kTopDarjeelingMuxedPadsIoc1 = 23, /**<  */
-  kTopDarjeelingMuxedPadsIoc2 = 24, /**<  */
-  kTopDarjeelingMuxedPadsIoc3 = 25, /**<  */
-  kTopDarjeelingMuxedPadsIoc4 = 26, /**<  */
-  kTopDarjeelingMuxedPadsIoc5 = 27, /**<  */
-  kTopDarjeelingMuxedPadsIoc6 = 28, /**<  */
-  kTopDarjeelingMuxedPadsIoc7 = 29, /**<  */
-  kTopDarjeelingMuxedPadsIoc8 = 30, /**<  */
-  kTopDarjeelingMuxedPadsIoc9 = 31, /**<  */
-  kTopDarjeelingMuxedPadsIoc10 = 32, /**<  */
-  kTopDarjeelingMuxedPadsIoc11 = 33, /**<  */
-  kTopDarjeelingMuxedPadsIoc12 = 34, /**<  */
-  kTopDarjeelingMuxedPadsIor0 = 35, /**<  */
-  kTopDarjeelingMuxedPadsIor1 = 36, /**<  */
-  kTopDarjeelingMuxedPadsIor2 = 37, /**<  */
-  kTopDarjeelingMuxedPadsIor3 = 38, /**<  */
-  kTopDarjeelingMuxedPadsIor4 = 39, /**<  */
-  kTopDarjeelingMuxedPadsIor5 = 40, /**<  */
-  kTopDarjeelingMuxedPadsIor6 = 41, /**<  */
-  kTopDarjeelingMuxedPadsIor7 = 42, /**<  */
-  kTopDarjeelingMuxedPadsIor10 = 43, /**<  */
-  kTopDarjeelingMuxedPadsIor11 = 44, /**<  */
-  kTopDarjeelingMuxedPadsIor12 = 45, /**<  */
-  kTopDarjeelingMuxedPadsIor13 = 46, /**<  */
-  kTopDarjeelingMuxedPadsLast = 46, /**< \internal Last valid muxed pad */
+  kTopDarjeelingMuxedPadsMio0 = 0, /**<  */
+  kTopDarjeelingMuxedPadsMio1 = 1, /**<  */
+  kTopDarjeelingMuxedPadsMio2 = 2, /**<  */
+  kTopDarjeelingMuxedPadsMio3 = 3, /**<  */
+  kTopDarjeelingMuxedPadsMio4 = 4, /**<  */
+  kTopDarjeelingMuxedPadsMio5 = 5, /**<  */
+  kTopDarjeelingMuxedPadsMio6 = 6, /**<  */
+  kTopDarjeelingMuxedPadsMio7 = 7, /**<  */
+  kTopDarjeelingMuxedPadsMio8 = 8, /**<  */
+  kTopDarjeelingMuxedPadsMio9 = 9, /**<  */
+  kTopDarjeelingMuxedPadsMio10 = 10, /**<  */
+  kTopDarjeelingMuxedPadsMio11 = 11, /**<  */
+  kTopDarjeelingMuxedPadsLast = 11, /**< \internal Last valid muxed pad */
 } top_darjeeling_muxed_pads_t;
 
 /**

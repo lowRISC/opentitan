@@ -356,25 +356,25 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "36",
+      default: "4",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "36",
+      default: "5",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "47",
+      default: "12",
       local: "true"
     },
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "36",
+      default: "73",
       local: "true"
     },
     { name: "NWkupDetect",
@@ -441,7 +441,7 @@
                   regwen_multi: "true",
                   cname:        "IN",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "3:0",
                       name: "IN",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1,
@@ -486,7 +486,7 @@
                   regwen_multi: "true",
                   cname:        "OUT",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "2:0",
                       name: "OUT",
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z,
@@ -697,6 +697,7 @@
     { multireg: { name:     "MIO_PAD_SLEEP_STATUS",
                   desc:     "Register indicating whether the corresponding pad is in sleep mode.",
                   count:    "NMioPads",
+                  compact:  "false",
                   swaccess: "rw0c",
                   hwaccess: "hrw",
                   cname:    "MIO_PAD",
@@ -809,6 +810,7 @@
     { multireg: { name:     "DIO_PAD_SLEEP_STATUS",
                   desc:     "Register indicating whether the corresponding pad is in sleep mode.",
                   count:    "NDioPads",
+                  compact:  "false",
                   swaccess: "rw0c",
                   hwaccess: "hrw",
                   cname:    "DIO_PAD",
@@ -1088,7 +1090,7 @@
                   regwen_multi: "true",
                   cname:        "DETECTOR",
                   fields: [
-                    { bits: "5:0",
+                    { bits: "6:0",
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).

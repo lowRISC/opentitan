@@ -30,6 +30,43 @@ module chip_darjeeling_asic #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
+  inout SPI_DEV_TPM_CS_L, // Dedicated Pad for spi_device_tpm_csb
+  inout UART_RX, // Dedicated Pad for uart0_rx
+  inout UART_TX, // Dedicated Pad for uart0_tx
+  inout I2C_SCL, // Dedicated Pad for i2c0_scl
+  inout I2C_SDA, // Dedicated Pad for i2c0_sda
+  inout GPIO0, // Dedicated Pad for gpio_gpio
+  inout GPIO1, // Dedicated Pad for gpio_gpio
+  inout GPIO2, // Dedicated Pad for gpio_gpio
+  inout GPIO3, // Dedicated Pad for gpio_gpio
+  inout GPIO4, // Dedicated Pad for gpio_gpio
+  inout GPIO5, // Dedicated Pad for gpio_gpio
+  inout GPIO6, // Dedicated Pad for gpio_gpio
+  inout GPIO7, // Dedicated Pad for gpio_gpio
+  inout GPIO8, // Dedicated Pad for gpio_gpio
+  inout GPIO9, // Dedicated Pad for gpio_gpio
+  inout GPIO10, // Dedicated Pad for gpio_gpio
+  inout GPIO11, // Dedicated Pad for gpio_gpio
+  inout GPIO12, // Dedicated Pad for gpio_gpio
+  inout GPIO13, // Dedicated Pad for gpio_gpio
+  inout GPIO14, // Dedicated Pad for gpio_gpio
+  inout GPIO15, // Dedicated Pad for gpio_gpio
+  inout GPIO16, // Dedicated Pad for gpio_gpio
+  inout GPIO17, // Dedicated Pad for gpio_gpio
+  inout GPIO18, // Dedicated Pad for gpio_gpio
+  inout GPIO19, // Dedicated Pad for gpio_gpio
+  inout GPIO20, // Dedicated Pad for gpio_gpio
+  inout GPIO21, // Dedicated Pad for gpio_gpio
+  inout GPIO22, // Dedicated Pad for gpio_gpio
+  inout GPIO23, // Dedicated Pad for gpio_gpio
+  inout GPIO24, // Dedicated Pad for gpio_gpio
+  inout GPIO25, // Dedicated Pad for gpio_gpio
+  inout GPIO26, // Dedicated Pad for gpio_gpio
+  inout GPIO27, // Dedicated Pad for gpio_gpio
+  inout GPIO28, // Dedicated Pad for gpio_gpio
+  inout GPIO29, // Dedicated Pad for gpio_gpio
+  inout GPIO30, // Dedicated Pad for gpio_gpio
+  inout GPIO31, // Dedicated Pad for gpio_gpio
   inout SOC_GPI0, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI1, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI2, // Dedicated Pad for soc_proxy_soc_gpi
@@ -56,53 +93,18 @@ module chip_darjeeling_asic #(
   inout SOC_GPO11, // Dedicated Pad for soc_proxy_soc_gpo
 
   // Muxed Pads
-  inout IOA0, // MIO Pad 0
-  inout IOA1, // MIO Pad 1
-  `INOUT_AO IOA2, // MIO Pad 2
-  `INOUT_AO IOA3, // MIO Pad 3
-  inout IOA4, // MIO Pad 4
-  inout IOA5, // MIO Pad 5
-  inout IOA6, // MIO Pad 6
-  inout IOA7, // MIO Pad 7
-  inout IOA8, // MIO Pad 8
-  inout IOB0, // MIO Pad 9
-  inout IOB1, // MIO Pad 10
-  inout IOB2, // MIO Pad 11
-  inout IOB3, // MIO Pad 12
-  inout IOB4, // MIO Pad 13
-  inout IOB5, // MIO Pad 14
-  inout IOB6, // MIO Pad 15
-  inout IOB7, // MIO Pad 16
-  inout IOB8, // MIO Pad 17
-  inout IOB9, // MIO Pad 18
-  inout IOB10, // MIO Pad 19
-  inout IOB11, // MIO Pad 20
-  inout IOB12, // MIO Pad 21
-  inout IOC0, // MIO Pad 22
-  inout IOC1, // MIO Pad 23
-  inout IOC2, // MIO Pad 24
-  inout IOC3, // MIO Pad 25
-  inout IOC4, // MIO Pad 26
-  inout IOC5, // MIO Pad 27
-  inout IOC6, // MIO Pad 28
-  inout IOC7, // MIO Pad 29
-  inout IOC8, // MIO Pad 30
-  inout IOC9, // MIO Pad 31
-  inout IOC10, // MIO Pad 32
-  inout IOC11, // MIO Pad 33
-  inout IOC12, // MIO Pad 34
-  inout IOR0, // MIO Pad 35
-  inout IOR1, // MIO Pad 36
-  inout IOR2, // MIO Pad 37
-  inout IOR3, // MIO Pad 38
-  inout IOR4, // MIO Pad 39
-  inout IOR5, // MIO Pad 40
-  inout IOR6, // MIO Pad 41
-  inout IOR7, // MIO Pad 42
-  inout IOR10, // MIO Pad 43
-  inout IOR11, // MIO Pad 44
-  inout IOR12, // MIO Pad 45
-  inout IOR13  // MIO Pad 46
+  inout MIO0, // MIO Pad 0
+  inout MIO1, // MIO Pad 1
+  inout MIO2, // MIO Pad 2
+  inout MIO3, // MIO Pad 3
+  inout MIO4, // MIO Pad 4
+  inout MIO5, // MIO Pad 5
+  inout MIO6, // MIO Pad 6
+  inout MIO7, // MIO Pad 7
+  inout MIO8, // MIO Pad 8
+  inout MIO9, // MIO Pad 9
+  inout MIO10, // MIO Pad 10
+  inout MIO11  // MIO Pad 11
 );
 
   import top_darjeeling_pkg::*;
@@ -112,15 +114,15 @@ module chip_darjeeling_asic #(
   // Special Signal Indices //
   ////////////////////////////
 
-  localparam int Tap0PadIdx = 30;
-  localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 25;
-  localparam int Dft1PadIdx = 26;
-  localparam int TckPadIdx = 38;
-  localparam int TmsPadIdx = 35;
-  localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 37;
-  localparam int TdoPadIdx = 36;
+  localparam int Tap0PadIdx = 0;
+  localparam int Tap1PadIdx = 1;
+  localparam int Dft0PadIdx = 2;
+  localparam int Dft1PadIdx = 3;
+  localparam int TckPadIdx = 4;
+  localparam int TmsPadIdx = 5;
+  localparam int TrstNPadIdx = 6;
+  localparam int TdiPadIdx = 7;
+  localparam int TdoPadIdx = 8;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -154,6 +156,7 @@ module chip_darjeeling_asic #(
       BidirStd, // DIO soc_proxy_soc_gpo
       BidirStd, // DIO soc_proxy_soc_gpo
       BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO uart0_tx
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO soc_proxy_soc_gpi
@@ -168,8 +171,44 @@ module chip_darjeeling_asic #(
       InputStd, // DIO soc_proxy_soc_gpi
       InputStd, // DIO soc_proxy_soc_gpi
       InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO uart0_rx
+      InputStd, // DIO spi_device_tpm_csb
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO i2c0_sda
+      BidirStd, // DIO i2c0_scl
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -180,47 +219,12 @@ module chip_darjeeling_asic #(
       BidirStd  // DIO spi_host0_sd
     },
     mio_pad_type: {
-      BidirOd, // MIO Pad 46
-      BidirOd, // MIO Pad 45
-      BidirOd, // MIO Pad 44
-      BidirOd, // MIO Pad 43
-      BidirStd, // MIO Pad 42
-      BidirStd, // MIO Pad 41
-      BidirStd, // MIO Pad 40
-      BidirStd, // MIO Pad 39
-      BidirStd, // MIO Pad 38
-      BidirStd, // MIO Pad 37
-      BidirStd, // MIO Pad 36
-      BidirStd, // MIO Pad 35
-      BidirOd, // MIO Pad 34
-      BidirOd, // MIO Pad 33
-      BidirOd, // MIO Pad 32
-      BidirStd, // MIO Pad 31
-      BidirStd, // MIO Pad 30
-      BidirStd, // MIO Pad 29
-      BidirStd, // MIO Pad 28
-      BidirStd, // MIO Pad 27
-      BidirStd, // MIO Pad 26
-      BidirStd, // MIO Pad 25
-      BidirStd, // MIO Pad 24
-      BidirStd, // MIO Pad 23
-      BidirStd, // MIO Pad 22
-      BidirOd, // MIO Pad 21
-      BidirOd, // MIO Pad 20
-      BidirOd, // MIO Pad 19
-      BidirOd, // MIO Pad 18
-      BidirStd, // MIO Pad 17
-      BidirStd, // MIO Pad 16
-      BidirStd, // MIO Pad 15
-      BidirStd, // MIO Pad 14
-      BidirStd, // MIO Pad 13
-      BidirStd, // MIO Pad 12
       BidirStd, // MIO Pad 11
       BidirStd, // MIO Pad 10
       BidirStd, // MIO Pad 9
-      BidirOd, // MIO Pad 8
-      BidirOd, // MIO Pad 7
-      BidirOd, // MIO Pad 6
+      BidirStd, // MIO Pad 8
+      BidirStd, // MIO Pad 7
+      BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
       BidirStd, // MIO Pad 3
@@ -272,8 +276,8 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(38),
-    .NMioPads(47),
+    .NDioPads(75),
+    .NMioPads(12),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
@@ -301,6 +305,43 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadSocGpi2ScanRole,
       scan_role_pkg::DioPadSocGpi1ScanRole,
       scan_role_pkg::DioPadSocGpi0ScanRole,
+      scan_role_pkg::DioPadGpio31ScanRole,
+      scan_role_pkg::DioPadGpio30ScanRole,
+      scan_role_pkg::DioPadGpio29ScanRole,
+      scan_role_pkg::DioPadGpio28ScanRole,
+      scan_role_pkg::DioPadGpio27ScanRole,
+      scan_role_pkg::DioPadGpio26ScanRole,
+      scan_role_pkg::DioPadGpio25ScanRole,
+      scan_role_pkg::DioPadGpio24ScanRole,
+      scan_role_pkg::DioPadGpio23ScanRole,
+      scan_role_pkg::DioPadGpio22ScanRole,
+      scan_role_pkg::DioPadGpio21ScanRole,
+      scan_role_pkg::DioPadGpio20ScanRole,
+      scan_role_pkg::DioPadGpio19ScanRole,
+      scan_role_pkg::DioPadGpio18ScanRole,
+      scan_role_pkg::DioPadGpio17ScanRole,
+      scan_role_pkg::DioPadGpio16ScanRole,
+      scan_role_pkg::DioPadGpio15ScanRole,
+      scan_role_pkg::DioPadGpio14ScanRole,
+      scan_role_pkg::DioPadGpio13ScanRole,
+      scan_role_pkg::DioPadGpio12ScanRole,
+      scan_role_pkg::DioPadGpio11ScanRole,
+      scan_role_pkg::DioPadGpio10ScanRole,
+      scan_role_pkg::DioPadGpio9ScanRole,
+      scan_role_pkg::DioPadGpio8ScanRole,
+      scan_role_pkg::DioPadGpio7ScanRole,
+      scan_role_pkg::DioPadGpio6ScanRole,
+      scan_role_pkg::DioPadGpio5ScanRole,
+      scan_role_pkg::DioPadGpio4ScanRole,
+      scan_role_pkg::DioPadGpio3ScanRole,
+      scan_role_pkg::DioPadGpio2ScanRole,
+      scan_role_pkg::DioPadGpio1ScanRole,
+      scan_role_pkg::DioPadGpio0ScanRole,
+      scan_role_pkg::DioPadI2cSdaScanRole,
+      scan_role_pkg::DioPadI2cSclScanRole,
+      scan_role_pkg::DioPadUartTxScanRole,
+      scan_role_pkg::DioPadUartRxScanRole,
+      scan_role_pkg::DioPadSpiDevTpmCsLScanRole,
       scan_role_pkg::DioPadSpiDevCsLScanRole,
       scan_role_pkg::DioPadSpiDevClkScanRole,
       scan_role_pkg::DioPadSpiDevD3ScanRole,
@@ -317,142 +358,109 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
-      scan_role_pkg::MioPadIor13ScanRole,
-      scan_role_pkg::MioPadIor12ScanRole,
-      scan_role_pkg::MioPadIor11ScanRole,
-      scan_role_pkg::MioPadIor10ScanRole,
-      scan_role_pkg::MioPadIor7ScanRole,
-      scan_role_pkg::MioPadIor6ScanRole,
-      scan_role_pkg::MioPadIor5ScanRole,
-      scan_role_pkg::MioPadIor4ScanRole,
-      scan_role_pkg::MioPadIor3ScanRole,
-      scan_role_pkg::MioPadIor2ScanRole,
-      scan_role_pkg::MioPadIor1ScanRole,
-      scan_role_pkg::MioPadIor0ScanRole,
-      scan_role_pkg::MioPadIoc12ScanRole,
-      scan_role_pkg::MioPadIoc11ScanRole,
-      scan_role_pkg::MioPadIoc10ScanRole,
-      scan_role_pkg::MioPadIoc9ScanRole,
-      scan_role_pkg::MioPadIoc8ScanRole,
-      scan_role_pkg::MioPadIoc7ScanRole,
-      scan_role_pkg::MioPadIoc6ScanRole,
-      scan_role_pkg::MioPadIoc5ScanRole,
-      scan_role_pkg::MioPadIoc4ScanRole,
-      scan_role_pkg::MioPadIoc3ScanRole,
-      scan_role_pkg::MioPadIoc2ScanRole,
-      scan_role_pkg::MioPadIoc1ScanRole,
-      scan_role_pkg::MioPadIoc0ScanRole,
-      scan_role_pkg::MioPadIob12ScanRole,
-      scan_role_pkg::MioPadIob11ScanRole,
-      scan_role_pkg::MioPadIob10ScanRole,
-      scan_role_pkg::MioPadIob9ScanRole,
-      scan_role_pkg::MioPadIob8ScanRole,
-      scan_role_pkg::MioPadIob7ScanRole,
-      scan_role_pkg::MioPadIob6ScanRole,
-      scan_role_pkg::MioPadIob5ScanRole,
-      scan_role_pkg::MioPadIob4ScanRole,
-      scan_role_pkg::MioPadIob3ScanRole,
-      scan_role_pkg::MioPadIob2ScanRole,
-      scan_role_pkg::MioPadIob1ScanRole,
-      scan_role_pkg::MioPadIob0ScanRole,
-      scan_role_pkg::MioPadIoa8ScanRole,
-      scan_role_pkg::MioPadIoa7ScanRole,
-      scan_role_pkg::MioPadIoa6ScanRole,
-      scan_role_pkg::MioPadIoa5ScanRole,
-      scan_role_pkg::MioPadIoa4ScanRole,
-      scan_role_pkg::MioPadIoa3ScanRole,
-      scan_role_pkg::MioPadIoa2ScanRole,
-      scan_role_pkg::MioPadIoa1ScanRole,
-      scan_role_pkg::MioPadIoa0ScanRole
+      scan_role_pkg::MioPadMio11ScanRole,
+      scan_role_pkg::MioPadMio10ScanRole,
+      scan_role_pkg::MioPadMio9ScanRole,
+      scan_role_pkg::MioPadMio8ScanRole,
+      scan_role_pkg::MioPadMio7ScanRole,
+      scan_role_pkg::MioPadMio6ScanRole,
+      scan_role_pkg::MioPadMio5ScanRole,
+      scan_role_pkg::MioPadMio4ScanRole,
+      scan_role_pkg::MioPadMio3ScanRole,
+      scan_role_pkg::MioPadMio2ScanRole,
+      scan_role_pkg::MioPadMio1ScanRole,
+      scan_role_pkg::MioPadMio0ScanRole
     }),
     .DioPadBank ({
-      IoBankVioa, // SOC_GPO11
-      IoBankVioa, // SOC_GPO10
-      IoBankVioa, // SOC_GPO9
-      IoBankVioa, // SOC_GPO8
-      IoBankVioa, // SOC_GPO7
-      IoBankVioa, // SOC_GPO6
-      IoBankVioa, // SOC_GPO5
-      IoBankVioa, // SOC_GPO4
-      IoBankVioa, // SOC_GPO3
-      IoBankVioa, // SOC_GPO2
-      IoBankVioa, // SOC_GPO1
-      IoBankVioa, // SOC_GPO0
-      IoBankVioa, // SOC_GPI11
-      IoBankVioa, // SOC_GPI10
-      IoBankVioa, // SOC_GPI9
-      IoBankVioa, // SOC_GPI8
-      IoBankVioa, // SOC_GPI7
-      IoBankVioa, // SOC_GPI6
-      IoBankVioa, // SOC_GPI5
-      IoBankVioa, // SOC_GPI4
-      IoBankVioa, // SOC_GPI3
-      IoBankVioa, // SOC_GPI2
-      IoBankVioa, // SOC_GPI1
-      IoBankVioa, // SOC_GPI0
-      IoBankVioa, // SPI_DEV_CS_L
-      IoBankVioa, // SPI_DEV_CLK
-      IoBankVioa, // SPI_DEV_D3
-      IoBankVioa, // SPI_DEV_D2
-      IoBankVioa, // SPI_DEV_D1
-      IoBankVioa, // SPI_DEV_D0
-      IoBankVioa, // SPI_HOST_CS_L
-      IoBankVioa, // SPI_HOST_CLK
-      IoBankVioa, // SPI_HOST_D3
-      IoBankVioa, // SPI_HOST_D2
-      IoBankVioa, // SPI_HOST_D1
-      IoBankVioa, // SPI_HOST_D0
-      IoBankVcc, // OTP_EXT_VOLT
-      IoBankVcc  // POR_N
+      IoBankVio, // SOC_GPO11
+      IoBankVio, // SOC_GPO10
+      IoBankVio, // SOC_GPO9
+      IoBankVio, // SOC_GPO8
+      IoBankVio, // SOC_GPO7
+      IoBankVio, // SOC_GPO6
+      IoBankVio, // SOC_GPO5
+      IoBankVio, // SOC_GPO4
+      IoBankVio, // SOC_GPO3
+      IoBankVio, // SOC_GPO2
+      IoBankVio, // SOC_GPO1
+      IoBankVio, // SOC_GPO0
+      IoBankVio, // SOC_GPI11
+      IoBankVio, // SOC_GPI10
+      IoBankVio, // SOC_GPI9
+      IoBankVio, // SOC_GPI8
+      IoBankVio, // SOC_GPI7
+      IoBankVio, // SOC_GPI6
+      IoBankVio, // SOC_GPI5
+      IoBankVio, // SOC_GPI4
+      IoBankVio, // SOC_GPI3
+      IoBankVio, // SOC_GPI2
+      IoBankVio, // SOC_GPI1
+      IoBankVio, // SOC_GPI0
+      IoBankVio, // GPIO31
+      IoBankVio, // GPIO30
+      IoBankVio, // GPIO29
+      IoBankVio, // GPIO28
+      IoBankVio, // GPIO27
+      IoBankVio, // GPIO26
+      IoBankVio, // GPIO25
+      IoBankVio, // GPIO24
+      IoBankVio, // GPIO23
+      IoBankVio, // GPIO22
+      IoBankVio, // GPIO21
+      IoBankVio, // GPIO20
+      IoBankVio, // GPIO19
+      IoBankVio, // GPIO18
+      IoBankVio, // GPIO17
+      IoBankVio, // GPIO16
+      IoBankVio, // GPIO15
+      IoBankVio, // GPIO14
+      IoBankVio, // GPIO13
+      IoBankVio, // GPIO12
+      IoBankVio, // GPIO11
+      IoBankVio, // GPIO10
+      IoBankVio, // GPIO9
+      IoBankVio, // GPIO8
+      IoBankVio, // GPIO7
+      IoBankVio, // GPIO6
+      IoBankVio, // GPIO5
+      IoBankVio, // GPIO4
+      IoBankVio, // GPIO3
+      IoBankVio, // GPIO2
+      IoBankVio, // GPIO1
+      IoBankVio, // GPIO0
+      IoBankVio, // I2C_SDA
+      IoBankVio, // I2C_SCL
+      IoBankVio, // UART_TX
+      IoBankVio, // UART_RX
+      IoBankVio, // SPI_DEV_TPM_CS_L
+      IoBankVio, // SPI_DEV_CS_L
+      IoBankVio, // SPI_DEV_CLK
+      IoBankVio, // SPI_DEV_D3
+      IoBankVio, // SPI_DEV_D2
+      IoBankVio, // SPI_DEV_D1
+      IoBankVio, // SPI_DEV_D0
+      IoBankVio, // SPI_HOST_CS_L
+      IoBankVio, // SPI_HOST_CLK
+      IoBankVio, // SPI_HOST_D3
+      IoBankVio, // SPI_HOST_D2
+      IoBankVio, // SPI_HOST_D1
+      IoBankVio, // SPI_HOST_D0
+      IoBankVio, // OTP_EXT_VOLT
+      IoBankVio  // POR_N
     }),
     .MioPadBank ({
-      IoBankVcc, // IOR13
-      IoBankVcc, // IOR12
-      IoBankVcc, // IOR11
-      IoBankVcc, // IOR10
-      IoBankVcc, // IOR7
-      IoBankVcc, // IOR6
-      IoBankVcc, // IOR5
-      IoBankVcc, // IOR4
-      IoBankVcc, // IOR3
-      IoBankVcc, // IOR2
-      IoBankVcc, // IOR1
-      IoBankVcc, // IOR0
-      IoBankVcc, // IOC12
-      IoBankVcc, // IOC11
-      IoBankVcc, // IOC10
-      IoBankVcc, // IOC9
-      IoBankVcc, // IOC8
-      IoBankVcc, // IOC7
-      IoBankVcc, // IOC6
-      IoBankVcc, // IOC5
-      IoBankVcc, // IOC4
-      IoBankVcc, // IOC3
-      IoBankVcc, // IOC2
-      IoBankVcc, // IOC1
-      IoBankVcc, // IOC0
-      IoBankViob, // IOB12
-      IoBankViob, // IOB11
-      IoBankViob, // IOB10
-      IoBankViob, // IOB9
-      IoBankViob, // IOB8
-      IoBankViob, // IOB7
-      IoBankViob, // IOB6
-      IoBankViob, // IOB5
-      IoBankViob, // IOB4
-      IoBankViob, // IOB3
-      IoBankViob, // IOB2
-      IoBankViob, // IOB1
-      IoBankViob, // IOB0
-      IoBankVioa, // IOA8
-      IoBankVioa, // IOA7
-      IoBankVioa, // IOA6
-      IoBankVioa, // IOA5
-      IoBankVioa, // IOA4
-      IoBankVioa, // IOA3
-      IoBankVioa, // IOA2
-      IoBankVioa, // IOA1
-      IoBankVioa  // IOA0
+      IoBankVio, // MIO11
+      IoBankVio, // MIO10
+      IoBankVio, // MIO9
+      IoBankVio, // MIO8
+      IoBankVio, // MIO7
+      IoBankVio, // MIO6
+      IoBankVio, // MIO5
+      IoBankVio, // MIO4
+      IoBankVio, // MIO3
+      IoBankVio, // MIO2
+      IoBankVio, // MIO1
+      IoBankVio  // MIO0
     }),
     .DioPadType ({
       BidirStd, // SOC_GPO11
@@ -479,6 +487,43 @@ module chip_darjeeling_asic #(
       InputStd, // SOC_GPI2
       InputStd, // SOC_GPI1
       InputStd, // SOC_GPI0
+      BidirStd, // GPIO31
+      BidirStd, // GPIO30
+      BidirStd, // GPIO29
+      BidirStd, // GPIO28
+      BidirStd, // GPIO27
+      BidirStd, // GPIO26
+      BidirStd, // GPIO25
+      BidirStd, // GPIO24
+      BidirStd, // GPIO23
+      BidirStd, // GPIO22
+      BidirStd, // GPIO21
+      BidirStd, // GPIO20
+      BidirStd, // GPIO19
+      BidirStd, // GPIO18
+      BidirStd, // GPIO17
+      BidirStd, // GPIO16
+      BidirStd, // GPIO15
+      BidirStd, // GPIO14
+      BidirStd, // GPIO13
+      BidirStd, // GPIO12
+      BidirStd, // GPIO11
+      BidirStd, // GPIO10
+      BidirStd, // GPIO9
+      BidirStd, // GPIO8
+      BidirStd, // GPIO7
+      BidirStd, // GPIO6
+      BidirStd, // GPIO5
+      BidirStd, // GPIO4
+      BidirStd, // GPIO3
+      BidirStd, // GPIO2
+      BidirStd, // GPIO1
+      BidirStd, // GPIO0
+      BidirStd, // I2C_SDA
+      BidirStd, // I2C_SCL
+      BidirStd, // UART_TX
+      InputStd, // UART_RX
+      InputStd, // SPI_DEV_TPM_CS_L
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -495,53 +540,18 @@ module chip_darjeeling_asic #(
       InputStd  // POR_N
     }),
     .MioPadType ({
-      BidirOd, // IOR13
-      BidirOd, // IOR12
-      BidirOd, // IOR11
-      BidirOd, // IOR10
-      BidirStd, // IOR7
-      BidirStd, // IOR6
-      BidirStd, // IOR5
-      BidirStd, // IOR4
-      BidirStd, // IOR3
-      BidirStd, // IOR2
-      BidirStd, // IOR1
-      BidirStd, // IOR0
-      BidirOd, // IOC12
-      BidirOd, // IOC11
-      BidirOd, // IOC10
-      BidirStd, // IOC9
-      BidirStd, // IOC8
-      BidirStd, // IOC7
-      BidirStd, // IOC6
-      BidirStd, // IOC5
-      BidirStd, // IOC4
-      BidirStd, // IOC3
-      BidirStd, // IOC2
-      BidirStd, // IOC1
-      BidirStd, // IOC0
-      BidirOd, // IOB12
-      BidirOd, // IOB11
-      BidirOd, // IOB10
-      BidirOd, // IOB9
-      BidirStd, // IOB8
-      BidirStd, // IOB7
-      BidirStd, // IOB6
-      BidirStd, // IOB5
-      BidirStd, // IOB4
-      BidirStd, // IOB3
-      BidirStd, // IOB2
-      BidirStd, // IOB1
-      BidirStd, // IOB0
-      BidirOd, // IOA8
-      BidirOd, // IOA7
-      BidirOd, // IOA6
-      BidirStd, // IOA5
-      BidirStd, // IOA4
-      BidirStd, // IOA3
-      BidirStd, // IOA2
-      BidirStd, // IOA1
-      BidirStd  // IOA0
+      BidirStd, // MIO11
+      BidirStd, // MIO10
+      BidirStd, // MIO9
+      BidirStd, // MIO8
+      BidirStd, // MIO7
+      BidirStd, // MIO6
+      BidirStd, // MIO5
+      BidirStd, // MIO4
+      BidirStd, // MIO3
+      BidirStd, // MIO2
+      BidirStd, // MIO1
+      BidirStd  // MIO0
     })
   ) u_padring (
   // This is only used for scan and DFT purposes
@@ -574,6 +584,43 @@ module chip_darjeeling_asic #(
       SOC_GPI2,
       SOC_GPI1,
       SOC_GPI0,
+      GPIO31,
+      GPIO30,
+      GPIO29,
+      GPIO28,
+      GPIO27,
+      GPIO26,
+      GPIO25,
+      GPIO24,
+      GPIO23,
+      GPIO22,
+      GPIO21,
+      GPIO20,
+      GPIO19,
+      GPIO18,
+      GPIO17,
+      GPIO16,
+      GPIO15,
+      GPIO14,
+      GPIO13,
+      GPIO12,
+      GPIO11,
+      GPIO10,
+      GPIO9,
+      GPIO8,
+      GPIO7,
+      GPIO6,
+      GPIO5,
+      GPIO4,
+      GPIO3,
+      GPIO2,
+      GPIO1,
+      GPIO0,
+      I2C_SDA,
+      I2C_SCL,
+      UART_TX,
+      UART_RX,
+      SPI_DEV_TPM_CS_L,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -591,61 +638,18 @@ module chip_darjeeling_asic #(
     }),
 
     .mio_pad_io ({
-      IOR13,
-      IOR12,
-      IOR11,
-      IOR10,
-      IOR7,
-      IOR6,
-      IOR5,
-      IOR4,
-      IOR3,
-      IOR2,
-      IOR1,
-      IOR0,
-      IOC12,
-      IOC11,
-      IOC10,
-      IOC9,
-      IOC8,
-      IOC7,
-      IOC6,
-      IOC5,
-      IOC4,
-      IOC3,
-      IOC2,
-      IOC1,
-      IOC0,
-      IOB12,
-      IOB11,
-      IOB10,
-      IOB9,
-      IOB8,
-      IOB7,
-      IOB6,
-      IOB5,
-      IOB4,
-      IOB3,
-      IOB2,
-      IOB1,
-      IOB0,
-      IOA8,
-      IOA7,
-      IOA6,
-      IOA5,
-      IOA4,
-`ifdef ANALOGSIM
-      '0,
-`else
-      IOA3,
-`endif
-`ifdef ANALOGSIM
-      '0,
-`else
-      IOA2,
-`endif
-      IOA1,
-      IOA0
+      MIO11,
+      MIO10,
+      MIO9,
+      MIO8,
+      MIO7,
+      MIO6,
+      MIO5,
+      MIO4,
+      MIO3,
+      MIO2,
+      MIO1,
+      MIO0
     }),
 
     // Core-facing
@@ -674,6 +678,43 @@ module chip_darjeeling_asic #(
         dio_in[DioSocProxySocGpi2],
         dio_in[DioSocProxySocGpi1],
         dio_in[DioSocProxySocGpi0],
+        dio_in[DioGpioGpio31],
+        dio_in[DioGpioGpio30],
+        dio_in[DioGpioGpio29],
+        dio_in[DioGpioGpio28],
+        dio_in[DioGpioGpio27],
+        dio_in[DioGpioGpio26],
+        dio_in[DioGpioGpio25],
+        dio_in[DioGpioGpio24],
+        dio_in[DioGpioGpio23],
+        dio_in[DioGpioGpio22],
+        dio_in[DioGpioGpio21],
+        dio_in[DioGpioGpio20],
+        dio_in[DioGpioGpio19],
+        dio_in[DioGpioGpio18],
+        dio_in[DioGpioGpio17],
+        dio_in[DioGpioGpio16],
+        dio_in[DioGpioGpio15],
+        dio_in[DioGpioGpio14],
+        dio_in[DioGpioGpio13],
+        dio_in[DioGpioGpio12],
+        dio_in[DioGpioGpio11],
+        dio_in[DioGpioGpio10],
+        dio_in[DioGpioGpio9],
+        dio_in[DioGpioGpio8],
+        dio_in[DioGpioGpio7],
+        dio_in[DioGpioGpio6],
+        dio_in[DioGpioGpio5],
+        dio_in[DioGpioGpio4],
+        dio_in[DioGpioGpio3],
+        dio_in[DioGpioGpio2],
+        dio_in[DioGpioGpio1],
+        dio_in[DioGpioGpio0],
+        dio_in[DioI2c0Sda],
+        dio_in[DioI2c0Scl],
+        dio_in[DioUart0Tx],
+        dio_in[DioUart0Rx],
+        dio_in[DioSpiDeviceTpmCsb],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -714,6 +755,43 @@ module chip_darjeeling_asic #(
         dio_out[DioSocProxySocGpi2],
         dio_out[DioSocProxySocGpi1],
         dio_out[DioSocProxySocGpi0],
+        dio_out[DioGpioGpio31],
+        dio_out[DioGpioGpio30],
+        dio_out[DioGpioGpio29],
+        dio_out[DioGpioGpio28],
+        dio_out[DioGpioGpio27],
+        dio_out[DioGpioGpio26],
+        dio_out[DioGpioGpio25],
+        dio_out[DioGpioGpio24],
+        dio_out[DioGpioGpio23],
+        dio_out[DioGpioGpio22],
+        dio_out[DioGpioGpio21],
+        dio_out[DioGpioGpio20],
+        dio_out[DioGpioGpio19],
+        dio_out[DioGpioGpio18],
+        dio_out[DioGpioGpio17],
+        dio_out[DioGpioGpio16],
+        dio_out[DioGpioGpio15],
+        dio_out[DioGpioGpio14],
+        dio_out[DioGpioGpio13],
+        dio_out[DioGpioGpio12],
+        dio_out[DioGpioGpio11],
+        dio_out[DioGpioGpio10],
+        dio_out[DioGpioGpio9],
+        dio_out[DioGpioGpio8],
+        dio_out[DioGpioGpio7],
+        dio_out[DioGpioGpio6],
+        dio_out[DioGpioGpio5],
+        dio_out[DioGpioGpio4],
+        dio_out[DioGpioGpio3],
+        dio_out[DioGpioGpio2],
+        dio_out[DioGpioGpio1],
+        dio_out[DioGpioGpio0],
+        dio_out[DioI2c0Sda],
+        dio_out[DioI2c0Scl],
+        dio_out[DioUart0Tx],
+        dio_out[DioUart0Rx],
+        dio_out[DioSpiDeviceTpmCsb],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -754,6 +832,43 @@ module chip_darjeeling_asic #(
         dio_oe[DioSocProxySocGpi2],
         dio_oe[DioSocProxySocGpi1],
         dio_oe[DioSocProxySocGpi0],
+        dio_oe[DioGpioGpio31],
+        dio_oe[DioGpioGpio30],
+        dio_oe[DioGpioGpio29],
+        dio_oe[DioGpioGpio28],
+        dio_oe[DioGpioGpio27],
+        dio_oe[DioGpioGpio26],
+        dio_oe[DioGpioGpio25],
+        dio_oe[DioGpioGpio24],
+        dio_oe[DioGpioGpio23],
+        dio_oe[DioGpioGpio22],
+        dio_oe[DioGpioGpio21],
+        dio_oe[DioGpioGpio20],
+        dio_oe[DioGpioGpio19],
+        dio_oe[DioGpioGpio18],
+        dio_oe[DioGpioGpio17],
+        dio_oe[DioGpioGpio16],
+        dio_oe[DioGpioGpio15],
+        dio_oe[DioGpioGpio14],
+        dio_oe[DioGpioGpio13],
+        dio_oe[DioGpioGpio12],
+        dio_oe[DioGpioGpio11],
+        dio_oe[DioGpioGpio10],
+        dio_oe[DioGpioGpio9],
+        dio_oe[DioGpioGpio8],
+        dio_oe[DioGpioGpio7],
+        dio_oe[DioGpioGpio6],
+        dio_oe[DioGpioGpio5],
+        dio_oe[DioGpioGpio4],
+        dio_oe[DioGpioGpio3],
+        dio_oe[DioGpioGpio2],
+        dio_oe[DioGpioGpio1],
+        dio_oe[DioGpioGpio0],
+        dio_oe[DioI2c0Sda],
+        dio_oe[DioI2c0Scl],
+        dio_oe[DioUart0Tx],
+        dio_oe[DioUart0Rx],
+        dio_oe[DioSpiDeviceTpmCsb],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -794,6 +909,43 @@ module chip_darjeeling_asic #(
         dio_attr[DioSocProxySocGpi2],
         dio_attr[DioSocProxySocGpi1],
         dio_attr[DioSocProxySocGpi0],
+        dio_attr[DioGpioGpio31],
+        dio_attr[DioGpioGpio30],
+        dio_attr[DioGpioGpio29],
+        dio_attr[DioGpioGpio28],
+        dio_attr[DioGpioGpio27],
+        dio_attr[DioGpioGpio26],
+        dio_attr[DioGpioGpio25],
+        dio_attr[DioGpioGpio24],
+        dio_attr[DioGpioGpio23],
+        dio_attr[DioGpioGpio22],
+        dio_attr[DioGpioGpio21],
+        dio_attr[DioGpioGpio20],
+        dio_attr[DioGpioGpio19],
+        dio_attr[DioGpioGpio18],
+        dio_attr[DioGpioGpio17],
+        dio_attr[DioGpioGpio16],
+        dio_attr[DioGpioGpio15],
+        dio_attr[DioGpioGpio14],
+        dio_attr[DioGpioGpio13],
+        dio_attr[DioGpioGpio12],
+        dio_attr[DioGpioGpio11],
+        dio_attr[DioGpioGpio10],
+        dio_attr[DioGpioGpio9],
+        dio_attr[DioGpioGpio8],
+        dio_attr[DioGpioGpio7],
+        dio_attr[DioGpioGpio6],
+        dio_attr[DioGpioGpio5],
+        dio_attr[DioGpioGpio4],
+        dio_attr[DioGpioGpio3],
+        dio_attr[DioGpioGpio2],
+        dio_attr[DioGpioGpio1],
+        dio_attr[DioGpioGpio0],
+        dio_attr[DioI2c0Sda],
+        dio_attr[DioI2c0Scl],
+        dio_attr[DioUart0Tx],
+        dio_attr[DioUart0Rx],
+        dio_attr[DioSpiDeviceTpmCsb],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
@@ -810,11 +962,11 @@ module chip_darjeeling_asic #(
         manual_attr_por_n
       }),
 
-    .mio_in_o (mio_in[46:0]),
-    .mio_out_i (mio_out[46:0]),
-    .mio_oe_i (mio_oe[46:0]),
-    .mio_attr_i (mio_attr[46:0]),
-    .mio_in_raw_o (mio_in_raw[46:0])
+    .mio_in_o (mio_in[11:0]),
+    .mio_out_i (mio_out[11:0]),
+    .mio_oe_i (mio_oe[11:0]),
+    .mio_attr_i (mio_attr[11:0]),
+    .mio_in_raw_o (mio_in_raw[11:0])
   );
 
 
@@ -974,7 +1126,7 @@ module chip_darjeeling_asic #(
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
   // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadIoc6];
+  assign ext_clk = dio_in_raw[MioPadMio11];
 
 
   // AST does not use all clocks / resets forwarded to it

@@ -457,93 +457,95 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 ### Pinout
 
 <!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_darjeeling/data/autogen/top_darjeeling.gen.hjson -g pinout -->
-| ID   | Name          | Bank   | Type      | Connection Type   | Description                |
-|:-----|:--------------|:-------|:----------|:------------------|:---------------------------|
-| 0    | POR_N         | VCC    | InputStd  | manual            | System reset               |
-| 1    | OTP_EXT_VOLT  | VCC    | AnalogIn1 | manual            | OTP external voltage input |
-| 2    | SPI_HOST_D0   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 3    | SPI_HOST_D1   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 4    | SPI_HOST_D2   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 5    | SPI_HOST_D3   | VIOA   | BidirStd  | direct            | SPI host data              |
-| 6    | SPI_HOST_CLK  | VIOA   | BidirStd  | direct            | SPI host clock             |
-| 7    | SPI_HOST_CS_L | VIOA   | BidirStd  | direct            | SPI host chip select       |
-| 8    | SPI_DEV_D0    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 9    | SPI_DEV_D1    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 10   | SPI_DEV_D2    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 11   | SPI_DEV_D3    | VIOA   | BidirStd  | direct            | SPI device data            |
-| 12   | SPI_DEV_CLK   | VIOA   | InputStd  | direct            | SPI device clock           |
-| 13   | SPI_DEV_CS_L  | VIOA   | InputStd  | direct            | SPI device chip select     |
-| 14   | SOC_GPI0      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 15   | SOC_GPI1      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 16   | SOC_GPI2      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 17   | SOC_GPI3      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 18   | SOC_GPI4      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 19   | SOC_GPI5      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 20   | SOC_GPI6      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 21   | SOC_GPI7      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 22   | SOC_GPI8      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 23   | SOC_GPI9      | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 24   | SOC_GPI10     | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 25   | SOC_GPI11     | VIOA   | InputStd  | direct            | SoC general purpose input  |
-| 26   | SOC_GPO0      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 27   | SOC_GPO1      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 28   | SOC_GPO2      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 29   | SOC_GPO3      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 30   | SOC_GPO4      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 31   | SOC_GPO5      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 32   | SOC_GPO6      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 33   | SOC_GPO7      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 34   | SOC_GPO8      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 35   | SOC_GPO9      | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 36   | SOC_GPO10     | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 37   | SOC_GPO11     | VIOA   | BidirStd  | direct            | SoC general purpose output |
-| 0    | IOA0          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 1    | IOA1          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 2    | IOA2          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 3    | IOA3          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 4    | IOA4          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 5    | IOA5          | VIOA   | BidirStd  | muxed             | Muxed IO pad               |
-| 6    | IOA6          | VIOA   | BidirOd   | muxed             | Muxed IO pad               |
-| 7    | IOA7          | VIOA   | BidirOd   | muxed             | Muxed IO pad               |
-| 8    | IOA8          | VIOA   | BidirOd   | muxed             | Muxed IO pad               |
-| 9    | IOB0          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 10   | IOB1          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 11   | IOB2          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 12   | IOB3          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 13   | IOB4          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 14   | IOB5          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 15   | IOB6          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 16   | IOB7          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 17   | IOB8          | VIOB   | BidirStd  | muxed             | Muxed IO pad               |
-| 18   | IOB9          | VIOB   | BidirOd   | muxed             | Muxed IO pad               |
-| 19   | IOB10         | VIOB   | BidirOd   | muxed             | Muxed IO pad               |
-| 20   | IOB11         | VIOB   | BidirOd   | muxed             | Muxed IO pad               |
-| 21   | IOB12         | VIOB   | BidirOd   | muxed             | Muxed IO pad               |
-| 22   | IOC0          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 23   | IOC1          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 24   | IOC2          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 25   | IOC3          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 26   | IOC4          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 27   | IOC5          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 28   | IOC6          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 29   | IOC7          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 30   | IOC8          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 31   | IOC9          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 32   | IOC10         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 33   | IOC11         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 34   | IOC12         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 35   | IOR0          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 36   | IOR1          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 37   | IOR2          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 38   | IOR3          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 39   | IOR4          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 40   | IOR5          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 41   | IOR6          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 42   | IOR7          | VCC    | BidirStd  | muxed             | Muxed IO pad               |
-| 43   | IOR10         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 44   | IOR11         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 45   | IOR12         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
-| 46   | IOR13         | VCC    | BidirOd   | muxed             | Muxed IO pad               |
+| ID   | Name             | Bank   | Type      | Connection Type   | Description                |
+|:-----|:-----------------|:-------|:----------|:------------------|:---------------------------|
+| 0    | POR_N            | VIO    | InputStd  | manual            | System reset               |
+| 1    | OTP_EXT_VOLT     | VIO    | AnalogIn1 | manual            | OTP external voltage input |
+| 2    | SPI_HOST_D0      | VIO    | BidirStd  | direct            | SPI host data              |
+| 3    | SPI_HOST_D1      | VIO    | BidirStd  | direct            | SPI host data              |
+| 4    | SPI_HOST_D2      | VIO    | BidirStd  | direct            | SPI host data              |
+| 5    | SPI_HOST_D3      | VIO    | BidirStd  | direct            | SPI host data              |
+| 6    | SPI_HOST_CLK     | VIO    | BidirStd  | direct            | SPI host clock             |
+| 7    | SPI_HOST_CS_L    | VIO    | BidirStd  | direct            | SPI host chip select       |
+| 8    | SPI_DEV_D0       | VIO    | BidirStd  | direct            | SPI device data            |
+| 9    | SPI_DEV_D1       | VIO    | BidirStd  | direct            | SPI device data            |
+| 10   | SPI_DEV_D2       | VIO    | BidirStd  | direct            | SPI device data            |
+| 11   | SPI_DEV_D3       | VIO    | BidirStd  | direct            | SPI device data            |
+| 12   | SPI_DEV_CLK      | VIO    | InputStd  | direct            | SPI device clock           |
+| 13   | SPI_DEV_CS_L     | VIO    | InputStd  | direct            | SPI device chip select     |
+| 14   | SPI_DEV_TPM_CS_L | VIO    | InputStd  | direct            | SPI device TPM chip select |
+| 15   | UART_RX          | VIO    | InputStd  | direct            | UART receive               |
+| 16   | UART_TX          | VIO    | BidirStd  | direct            | UART transmit              |
+| 17   | I2C_SCL          | VIO    | BidirStd  | direct            | I2C clock                  |
+| 18   | I2C_SDA          | VIO    | BidirStd  | direct            | I2C data                   |
+| 19   | GPIO0            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 20   | GPIO1            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 21   | GPIO2            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 22   | GPIO3            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 23   | GPIO4            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 24   | GPIO5            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 25   | GPIO6            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 26   | GPIO7            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 27   | GPIO8            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 28   | GPIO9            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 29   | GPIO10           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 30   | GPIO11           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 31   | GPIO12           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 32   | GPIO13           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 33   | GPIO14           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 34   | GPIO15           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 35   | GPIO16           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 36   | GPIO17           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 37   | GPIO18           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 38   | GPIO19           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 39   | GPIO20           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 40   | GPIO21           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 41   | GPIO22           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 42   | GPIO23           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 43   | GPIO24           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 44   | GPIO25           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 45   | GPIO26           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 46   | GPIO27           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 47   | GPIO28           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 48   | GPIO29           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 49   | GPIO30           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 50   | GPIO31           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 51   | SOC_GPI0         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 52   | SOC_GPI1         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 53   | SOC_GPI2         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 54   | SOC_GPI3         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 55   | SOC_GPI4         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 56   | SOC_GPI5         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 57   | SOC_GPI6         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 58   | SOC_GPI7         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 59   | SOC_GPI8         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 60   | SOC_GPI9         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 61   | SOC_GPI10        | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 62   | SOC_GPI11        | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 63   | SOC_GPO0         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 64   | SOC_GPO1         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 65   | SOC_GPO2         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 66   | SOC_GPO3         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 67   | SOC_GPO4         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 68   | SOC_GPO5         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 69   | SOC_GPO6         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 70   | SOC_GPO7         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 71   | SOC_GPO8         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 72   | SOC_GPO9         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 73   | SOC_GPO10        | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 74   | SOC_GPO11        | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 0    | MIO0             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 1    | MIO1             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 2    | MIO2             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 3    | MIO3             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 4    | MIO4             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 5    | MIO5             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 6    | MIO6             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 7    | MIO7             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 8    | MIO8             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 9    | MIO9             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 10   | MIO10            | VIO    | BidirStd  | muxed             | Muxed IO pad               |
+| 11   | MIO11            | VIO    | BidirStd  | muxed             | Muxed IO pad               |
 
 <!-- END CMDGEN -->
 

@@ -7,5 +7,5 @@ util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson -o hw/top_darjeeli
 
 |  Target Name  |  #IO Banks  |  #Muxed Pads  |  #Direct Pads  |  #Manual Pads  |  #Total Pads  |                                Pinout / Pinmux Tables                                 |
 |:-------------:|:-----------:|:-------------:|:--------------:|:--------------:|:-------------:|:-------------------------------------------------------------------------------------:|
-|     ASIC      |      4      |      47       |       36       |       2        |      85       | [Pinout Table](../../../top_darjeeling/ip/pinmux/doc/autogen/pinout_asic/index.html)  |
-|     CW310     |      4      |      47       |       36       |       5        |      88       | [Pinout Table](../../../top_darjeeling/ip/pinmux/doc/autogen/pinout_cw310/index.html) |
+|     ASIC      |      1      |      12       |       73       |       2        |      87       | [Pinout Table](../../../top_darjeeling/ip/pinmux/doc/autogen/pinout_asic/index.html)  |
+|     CW310     |      1      |      12       |       73       |       5        |      90       | [Pinout Table](../../../top_darjeeling/ip/pinmux/doc/autogen/pinout_cw310/index.html) |

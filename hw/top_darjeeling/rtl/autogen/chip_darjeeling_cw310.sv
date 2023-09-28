@@ -33,6 +33,43 @@ module chip_darjeeling_cw310 #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
+  inout SPI_DEV_TPM_CS_L, // Dedicated Pad for spi_device_tpm_csb
+  inout UART_RX, // Dedicated Pad for uart0_rx
+  inout UART_TX, // Dedicated Pad for uart0_tx
+  inout I2C_SCL, // Dedicated Pad for i2c0_scl
+  inout I2C_SDA, // Dedicated Pad for i2c0_sda
+  inout GPIO0, // Dedicated Pad for gpio_gpio
+  inout GPIO1, // Dedicated Pad for gpio_gpio
+  inout GPIO2, // Dedicated Pad for gpio_gpio
+  inout GPIO3, // Dedicated Pad for gpio_gpio
+  inout GPIO4, // Dedicated Pad for gpio_gpio
+  inout GPIO5, // Dedicated Pad for gpio_gpio
+  inout GPIO6, // Dedicated Pad for gpio_gpio
+  inout GPIO7, // Dedicated Pad for gpio_gpio
+  inout GPIO8, // Dedicated Pad for gpio_gpio
+  inout GPIO9, // Dedicated Pad for gpio_gpio
+  inout GPIO10, // Dedicated Pad for gpio_gpio
+  inout GPIO11, // Dedicated Pad for gpio_gpio
+  inout GPIO12, // Dedicated Pad for gpio_gpio
+  inout GPIO13, // Dedicated Pad for gpio_gpio
+  inout GPIO14, // Dedicated Pad for gpio_gpio
+  inout GPIO15, // Dedicated Pad for gpio_gpio
+  inout GPIO16, // Dedicated Pad for gpio_gpio
+  inout GPIO17, // Dedicated Pad for gpio_gpio
+  inout GPIO18, // Dedicated Pad for gpio_gpio
+  inout GPIO19, // Dedicated Pad for gpio_gpio
+  inout GPIO20, // Dedicated Pad for gpio_gpio
+  inout GPIO21, // Dedicated Pad for gpio_gpio
+  inout GPIO22, // Dedicated Pad for gpio_gpio
+  inout GPIO23, // Dedicated Pad for gpio_gpio
+  inout GPIO24, // Dedicated Pad for gpio_gpio
+  inout GPIO25, // Dedicated Pad for gpio_gpio
+  inout GPIO26, // Dedicated Pad for gpio_gpio
+  inout GPIO27, // Dedicated Pad for gpio_gpio
+  inout GPIO28, // Dedicated Pad for gpio_gpio
+  inout GPIO29, // Dedicated Pad for gpio_gpio
+  inout GPIO30, // Dedicated Pad for gpio_gpio
+  inout GPIO31, // Dedicated Pad for gpio_gpio
   inout SOC_GPI0, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI1, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI2, // Dedicated Pad for soc_proxy_soc_gpi
@@ -63,53 +100,18 @@ module chip_darjeeling_cw310 #(
   inout IO_TRIGGER, // Manual Pad
 
   // Muxed Pads
-  inout IOA0, // MIO Pad 0
-  inout IOA1, // MIO Pad 1
-  `INOUT_AO IOA2, // MIO Pad 2
-  `INOUT_AO IOA3, // MIO Pad 3
-  inout IOA4, // MIO Pad 4
-  inout IOA5, // MIO Pad 5
-  inout IOA6, // MIO Pad 6
-  inout IOA7, // MIO Pad 7
-  inout IOA8, // MIO Pad 8
-  inout IOB0, // MIO Pad 9
-  inout IOB1, // MIO Pad 10
-  inout IOB2, // MIO Pad 11
-  inout IOB3, // MIO Pad 12
-  inout IOB4, // MIO Pad 13
-  inout IOB5, // MIO Pad 14
-  inout IOB6, // MIO Pad 15
-  inout IOB7, // MIO Pad 16
-  inout IOB8, // MIO Pad 17
-  inout IOB9, // MIO Pad 18
-  inout IOB10, // MIO Pad 19
-  inout IOB11, // MIO Pad 20
-  inout IOB12, // MIO Pad 21
-  inout IOC0, // MIO Pad 22
-  inout IOC1, // MIO Pad 23
-  inout IOC2, // MIO Pad 24
-  inout IOC3, // MIO Pad 25
-  inout IOC4, // MIO Pad 26
-  inout IOC5, // MIO Pad 27
-  inout IOC6, // MIO Pad 28
-  inout IOC7, // MIO Pad 29
-  inout IOC8, // MIO Pad 30
-  inout IOC9, // MIO Pad 31
-  inout IOC10, // MIO Pad 32
-  inout IOC11, // MIO Pad 33
-  inout IOC12, // MIO Pad 34
-  inout IOR0, // MIO Pad 35
-  inout IOR1, // MIO Pad 36
-  inout IOR2, // MIO Pad 37
-  inout IOR3, // MIO Pad 38
-  inout IOR4, // MIO Pad 39
-  inout IOR5, // MIO Pad 40
-  inout IOR6, // MIO Pad 41
-  inout IOR7, // MIO Pad 42
-  inout IOR10, // MIO Pad 43
-  inout IOR11, // MIO Pad 44
-  inout IOR12, // MIO Pad 45
-  inout IOR13  // MIO Pad 46
+  inout MIO0, // MIO Pad 0
+  inout MIO1, // MIO Pad 1
+  inout MIO2, // MIO Pad 2
+  inout MIO3, // MIO Pad 3
+  inout MIO4, // MIO Pad 4
+  inout MIO5, // MIO Pad 5
+  inout MIO6, // MIO Pad 6
+  inout MIO7, // MIO Pad 7
+  inout MIO8, // MIO Pad 8
+  inout MIO9, // MIO Pad 9
+  inout MIO10, // MIO Pad 10
+  inout MIO11  // MIO Pad 11
 );
 
   import top_darjeeling_pkg::*;
@@ -119,15 +121,15 @@ module chip_darjeeling_cw310 #(
   // Special Signal Indices //
   ////////////////////////////
 
-  localparam int Tap0PadIdx = 30;
-  localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 25;
-  localparam int Dft1PadIdx = 26;
-  localparam int TckPadIdx = 38;
-  localparam int TmsPadIdx = 35;
-  localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 37;
-  localparam int TdoPadIdx = 36;
+  localparam int Tap0PadIdx = 0;
+  localparam int Tap1PadIdx = 1;
+  localparam int Dft0PadIdx = 2;
+  localparam int Dft1PadIdx = 3;
+  localparam int TckPadIdx = 4;
+  localparam int TmsPadIdx = 5;
+  localparam int TrstNPadIdx = 6;
+  localparam int TdiPadIdx = 7;
+  localparam int TdoPadIdx = 8;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -161,6 +163,7 @@ module chip_darjeeling_cw310 #(
       BidirStd, // DIO soc_proxy_soc_gpo
       BidirStd, // DIO soc_proxy_soc_gpo
       BidirStd, // DIO soc_proxy_soc_gpo
+      BidirStd, // DIO uart0_tx
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO soc_proxy_soc_gpi
@@ -175,8 +178,44 @@ module chip_darjeeling_cw310 #(
       InputStd, // DIO soc_proxy_soc_gpi
       InputStd, // DIO soc_proxy_soc_gpi
       InputStd, // DIO soc_proxy_soc_gpi
+      InputStd, // DIO uart0_rx
+      InputStd, // DIO spi_device_tpm_csb
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO i2c0_sda
+      BidirStd, // DIO i2c0_scl
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -187,47 +226,12 @@ module chip_darjeeling_cw310 #(
       BidirStd  // DIO spi_host0_sd
     },
     mio_pad_type: {
-      BidirOd, // MIO Pad 46
-      BidirOd, // MIO Pad 45
-      BidirOd, // MIO Pad 44
-      BidirOd, // MIO Pad 43
-      BidirStd, // MIO Pad 42
-      BidirStd, // MIO Pad 41
-      BidirStd, // MIO Pad 40
-      BidirStd, // MIO Pad 39
-      BidirStd, // MIO Pad 38
-      BidirStd, // MIO Pad 37
-      BidirStd, // MIO Pad 36
-      BidirStd, // MIO Pad 35
-      BidirOd, // MIO Pad 34
-      BidirOd, // MIO Pad 33
-      BidirOd, // MIO Pad 32
-      BidirStd, // MIO Pad 31
-      BidirStd, // MIO Pad 30
-      BidirStd, // MIO Pad 29
-      BidirStd, // MIO Pad 28
-      BidirStd, // MIO Pad 27
-      BidirStd, // MIO Pad 26
-      BidirStd, // MIO Pad 25
-      BidirStd, // MIO Pad 24
-      BidirStd, // MIO Pad 23
-      BidirStd, // MIO Pad 22
-      BidirOd, // MIO Pad 21
-      BidirOd, // MIO Pad 20
-      BidirOd, // MIO Pad 19
-      BidirOd, // MIO Pad 18
-      BidirStd, // MIO Pad 17
-      BidirStd, // MIO Pad 16
-      BidirStd, // MIO Pad 15
-      BidirStd, // MIO Pad 14
-      BidirStd, // MIO Pad 13
-      BidirStd, // MIO Pad 12
       BidirStd, // MIO Pad 11
       BidirStd, // MIO Pad 10
       BidirStd, // MIO Pad 9
-      BidirOd, // MIO Pad 8
-      BidirOd, // MIO Pad 7
-      BidirOd, // MIO Pad 6
+      BidirStd, // MIO Pad 8
+      BidirStd, // MIO Pad 7
+      BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
       BidirStd, // MIO Pad 3
@@ -276,7 +280,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [84:0] unused_sig;
+  logic [86:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -288,8 +292,8 @@ module chip_darjeeling_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(41),
-    .NMioPads(47),
+    .NDioPads(78),
+    .NMioPads(12),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
@@ -319,6 +323,43 @@ module chip_darjeeling_cw310 #(
       InputStd, // SOC_GPI2
       InputStd, // SOC_GPI1
       InputStd, // SOC_GPI0
+      BidirStd, // GPIO31
+      BidirStd, // GPIO30
+      BidirStd, // GPIO29
+      BidirStd, // GPIO28
+      BidirStd, // GPIO27
+      BidirStd, // GPIO26
+      BidirStd, // GPIO25
+      BidirStd, // GPIO24
+      BidirStd, // GPIO23
+      BidirStd, // GPIO22
+      BidirStd, // GPIO21
+      BidirStd, // GPIO20
+      BidirStd, // GPIO19
+      BidirStd, // GPIO18
+      BidirStd, // GPIO17
+      BidirStd, // GPIO16
+      BidirStd, // GPIO15
+      BidirStd, // GPIO14
+      BidirStd, // GPIO13
+      BidirStd, // GPIO12
+      BidirStd, // GPIO11
+      BidirStd, // GPIO10
+      BidirStd, // GPIO9
+      BidirStd, // GPIO8
+      BidirStd, // GPIO7
+      BidirStd, // GPIO6
+      BidirStd, // GPIO5
+      BidirStd, // GPIO4
+      BidirStd, // GPIO3
+      BidirStd, // GPIO2
+      BidirStd, // GPIO1
+      BidirStd, // GPIO0
+      BidirStd, // I2C_SDA
+      BidirStd, // I2C_SCL
+      BidirStd, // UART_TX
+      InputStd, // UART_RX
+      InputStd, // SPI_DEV_TPM_CS_L
       InputStd, // SPI_DEV_CS_L
       InputStd, // SPI_DEV_CLK
       BidirStd, // SPI_DEV_D3
@@ -334,53 +375,18 @@ module chip_darjeeling_cw310 #(
       InputStd  // POR_N
     }),
     .MioPadType ({
-      BidirOd, // IOR13
-      BidirOd, // IOR12
-      BidirOd, // IOR11
-      BidirOd, // IOR10
-      BidirStd, // IOR7
-      BidirStd, // IOR6
-      BidirStd, // IOR5
-      BidirStd, // IOR4
-      BidirStd, // IOR3
-      BidirStd, // IOR2
-      BidirStd, // IOR1
-      BidirStd, // IOR0
-      BidirOd, // IOC12
-      BidirOd, // IOC11
-      BidirOd, // IOC10
-      BidirStd, // IOC9
-      BidirStd, // IOC8
-      BidirStd, // IOC7
-      BidirStd, // IOC6
-      BidirStd, // IOC5
-      BidirStd, // IOC4
-      BidirStd, // IOC3
-      BidirStd, // IOC2
-      BidirStd, // IOC1
-      BidirStd, // IOC0
-      BidirOd, // IOB12
-      BidirOd, // IOB11
-      BidirOd, // IOB10
-      BidirOd, // IOB9
-      BidirStd, // IOB8
-      BidirStd, // IOB7
-      BidirStd, // IOB6
-      BidirStd, // IOB5
-      BidirStd, // IOB4
-      BidirStd, // IOB3
-      BidirStd, // IOB2
-      BidirStd, // IOB1
-      BidirStd, // IOB0
-      BidirOd, // IOA8
-      BidirOd, // IOA7
-      BidirOd, // IOA6
-      BidirStd, // IOA5
-      BidirStd, // IOA4
-      BidirStd, // IOA3
-      BidirStd, // IOA2
-      BidirStd, // IOA1
-      BidirStd  // IOA0
+      BidirStd, // MIO11
+      BidirStd, // MIO10
+      BidirStd, // MIO9
+      BidirStd, // MIO8
+      BidirStd, // MIO7
+      BidirStd, // MIO6
+      BidirStd, // MIO5
+      BidirStd, // MIO4
+      BidirStd, // MIO3
+      BidirStd, // MIO2
+      BidirStd, // MIO1
+      BidirStd  // MIO0
     })
   ) u_padring (
   // This is only used for scan and DFT purposes
@@ -417,6 +423,43 @@ module chip_darjeeling_cw310 #(
       SOC_GPI2,
       SOC_GPI1,
       SOC_GPI0,
+      GPIO31,
+      GPIO30,
+      GPIO29,
+      GPIO28,
+      GPIO27,
+      GPIO26,
+      GPIO25,
+      GPIO24,
+      GPIO23,
+      GPIO22,
+      GPIO21,
+      GPIO20,
+      GPIO19,
+      GPIO18,
+      GPIO17,
+      GPIO16,
+      GPIO15,
+      GPIO14,
+      GPIO13,
+      GPIO12,
+      GPIO11,
+      GPIO10,
+      GPIO9,
+      GPIO8,
+      GPIO7,
+      GPIO6,
+      GPIO5,
+      GPIO4,
+      GPIO3,
+      GPIO2,
+      GPIO1,
+      GPIO0,
+      I2C_SDA,
+      I2C_SCL,
+      UART_TX,
+      UART_RX,
+      SPI_DEV_TPM_CS_L,
       SPI_DEV_CS_L,
       SPI_DEV_CLK,
       SPI_DEV_D3,
@@ -433,61 +476,18 @@ module chip_darjeeling_cw310 #(
     }),
 
     .mio_pad_io ({
-      IOR13,
-      IOR12,
-      IOR11,
-      IOR10,
-      IOR7,
-      IOR6,
-      IOR5,
-      IOR4,
-      IOR3,
-      IOR2,
-      IOR1,
-      IOR0,
-      IOC12,
-      IOC11,
-      IOC10,
-      IOC9,
-      IOC8,
-      IOC7,
-      IOC6,
-      IOC5,
-      IOC4,
-      IOC3,
-      IOC2,
-      IOC1,
-      IOC0,
-      IOB12,
-      IOB11,
-      IOB10,
-      IOB9,
-      IOB8,
-      IOB7,
-      IOB6,
-      IOB5,
-      IOB4,
-      IOB3,
-      IOB2,
-      IOB1,
-      IOB0,
-      IOA8,
-      IOA7,
-      IOA6,
-      IOA5,
-      IOA4,
-`ifdef ANALOGSIM
-      '0,
-`else
-      IOA3,
-`endif
-`ifdef ANALOGSIM
-      '0,
-`else
-      IOA2,
-`endif
-      IOA1,
-      IOA0
+      MIO11,
+      MIO10,
+      MIO9,
+      MIO8,
+      MIO7,
+      MIO6,
+      MIO5,
+      MIO4,
+      MIO3,
+      MIO2,
+      MIO1,
+      MIO0
     }),
 
     // Core-facing
@@ -520,6 +520,43 @@ module chip_darjeeling_cw310 #(
         dio_in[DioSocProxySocGpi2],
         dio_in[DioSocProxySocGpi1],
         dio_in[DioSocProxySocGpi0],
+        dio_in[DioGpioGpio31],
+        dio_in[DioGpioGpio30],
+        dio_in[DioGpioGpio29],
+        dio_in[DioGpioGpio28],
+        dio_in[DioGpioGpio27],
+        dio_in[DioGpioGpio26],
+        dio_in[DioGpioGpio25],
+        dio_in[DioGpioGpio24],
+        dio_in[DioGpioGpio23],
+        dio_in[DioGpioGpio22],
+        dio_in[DioGpioGpio21],
+        dio_in[DioGpioGpio20],
+        dio_in[DioGpioGpio19],
+        dio_in[DioGpioGpio18],
+        dio_in[DioGpioGpio17],
+        dio_in[DioGpioGpio16],
+        dio_in[DioGpioGpio15],
+        dio_in[DioGpioGpio14],
+        dio_in[DioGpioGpio13],
+        dio_in[DioGpioGpio12],
+        dio_in[DioGpioGpio11],
+        dio_in[DioGpioGpio10],
+        dio_in[DioGpioGpio9],
+        dio_in[DioGpioGpio8],
+        dio_in[DioGpioGpio7],
+        dio_in[DioGpioGpio6],
+        dio_in[DioGpioGpio5],
+        dio_in[DioGpioGpio4],
+        dio_in[DioGpioGpio3],
+        dio_in[DioGpioGpio2],
+        dio_in[DioGpioGpio1],
+        dio_in[DioGpioGpio0],
+        dio_in[DioI2c0Sda],
+        dio_in[DioI2c0Scl],
+        dio_in[DioUart0Tx],
+        dio_in[DioUart0Rx],
+        dio_in[DioSpiDeviceTpmCsb],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -563,6 +600,43 @@ module chip_darjeeling_cw310 #(
         dio_out[DioSocProxySocGpi2],
         dio_out[DioSocProxySocGpi1],
         dio_out[DioSocProxySocGpi0],
+        dio_out[DioGpioGpio31],
+        dio_out[DioGpioGpio30],
+        dio_out[DioGpioGpio29],
+        dio_out[DioGpioGpio28],
+        dio_out[DioGpioGpio27],
+        dio_out[DioGpioGpio26],
+        dio_out[DioGpioGpio25],
+        dio_out[DioGpioGpio24],
+        dio_out[DioGpioGpio23],
+        dio_out[DioGpioGpio22],
+        dio_out[DioGpioGpio21],
+        dio_out[DioGpioGpio20],
+        dio_out[DioGpioGpio19],
+        dio_out[DioGpioGpio18],
+        dio_out[DioGpioGpio17],
+        dio_out[DioGpioGpio16],
+        dio_out[DioGpioGpio15],
+        dio_out[DioGpioGpio14],
+        dio_out[DioGpioGpio13],
+        dio_out[DioGpioGpio12],
+        dio_out[DioGpioGpio11],
+        dio_out[DioGpioGpio10],
+        dio_out[DioGpioGpio9],
+        dio_out[DioGpioGpio8],
+        dio_out[DioGpioGpio7],
+        dio_out[DioGpioGpio6],
+        dio_out[DioGpioGpio5],
+        dio_out[DioGpioGpio4],
+        dio_out[DioGpioGpio3],
+        dio_out[DioGpioGpio2],
+        dio_out[DioGpioGpio1],
+        dio_out[DioGpioGpio0],
+        dio_out[DioI2c0Sda],
+        dio_out[DioI2c0Scl],
+        dio_out[DioUart0Tx],
+        dio_out[DioUart0Rx],
+        dio_out[DioSpiDeviceTpmCsb],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -606,6 +680,43 @@ module chip_darjeeling_cw310 #(
         dio_oe[DioSocProxySocGpi2],
         dio_oe[DioSocProxySocGpi1],
         dio_oe[DioSocProxySocGpi0],
+        dio_oe[DioGpioGpio31],
+        dio_oe[DioGpioGpio30],
+        dio_oe[DioGpioGpio29],
+        dio_oe[DioGpioGpio28],
+        dio_oe[DioGpioGpio27],
+        dio_oe[DioGpioGpio26],
+        dio_oe[DioGpioGpio25],
+        dio_oe[DioGpioGpio24],
+        dio_oe[DioGpioGpio23],
+        dio_oe[DioGpioGpio22],
+        dio_oe[DioGpioGpio21],
+        dio_oe[DioGpioGpio20],
+        dio_oe[DioGpioGpio19],
+        dio_oe[DioGpioGpio18],
+        dio_oe[DioGpioGpio17],
+        dio_oe[DioGpioGpio16],
+        dio_oe[DioGpioGpio15],
+        dio_oe[DioGpioGpio14],
+        dio_oe[DioGpioGpio13],
+        dio_oe[DioGpioGpio12],
+        dio_oe[DioGpioGpio11],
+        dio_oe[DioGpioGpio10],
+        dio_oe[DioGpioGpio9],
+        dio_oe[DioGpioGpio8],
+        dio_oe[DioGpioGpio7],
+        dio_oe[DioGpioGpio6],
+        dio_oe[DioGpioGpio5],
+        dio_oe[DioGpioGpio4],
+        dio_oe[DioGpioGpio3],
+        dio_oe[DioGpioGpio2],
+        dio_oe[DioGpioGpio1],
+        dio_oe[DioGpioGpio0],
+        dio_oe[DioI2c0Sda],
+        dio_oe[DioI2c0Scl],
+        dio_oe[DioUart0Tx],
+        dio_oe[DioUart0Rx],
+        dio_oe[DioSpiDeviceTpmCsb],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -649,6 +760,43 @@ module chip_darjeeling_cw310 #(
         dio_attr[DioSocProxySocGpi2],
         dio_attr[DioSocProxySocGpi1],
         dio_attr[DioSocProxySocGpi0],
+        dio_attr[DioGpioGpio31],
+        dio_attr[DioGpioGpio30],
+        dio_attr[DioGpioGpio29],
+        dio_attr[DioGpioGpio28],
+        dio_attr[DioGpioGpio27],
+        dio_attr[DioGpioGpio26],
+        dio_attr[DioGpioGpio25],
+        dio_attr[DioGpioGpio24],
+        dio_attr[DioGpioGpio23],
+        dio_attr[DioGpioGpio22],
+        dio_attr[DioGpioGpio21],
+        dio_attr[DioGpioGpio20],
+        dio_attr[DioGpioGpio19],
+        dio_attr[DioGpioGpio18],
+        dio_attr[DioGpioGpio17],
+        dio_attr[DioGpioGpio16],
+        dio_attr[DioGpioGpio15],
+        dio_attr[DioGpioGpio14],
+        dio_attr[DioGpioGpio13],
+        dio_attr[DioGpioGpio12],
+        dio_attr[DioGpioGpio11],
+        dio_attr[DioGpioGpio10],
+        dio_attr[DioGpioGpio9],
+        dio_attr[DioGpioGpio8],
+        dio_attr[DioGpioGpio7],
+        dio_attr[DioGpioGpio6],
+        dio_attr[DioGpioGpio5],
+        dio_attr[DioGpioGpio4],
+        dio_attr[DioGpioGpio3],
+        dio_attr[DioGpioGpio2],
+        dio_attr[DioGpioGpio1],
+        dio_attr[DioGpioGpio0],
+        dio_attr[DioI2c0Sda],
+        dio_attr[DioI2c0Scl],
+        dio_attr[DioUart0Tx],
+        dio_attr[DioUart0Rx],
+        dio_attr[DioSpiDeviceTpmCsb],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
@@ -664,11 +812,11 @@ module chip_darjeeling_cw310 #(
         manual_attr_por_n
       }),
 
-    .mio_in_o (mio_in[46:0]),
-    .mio_out_i (mio_out[46:0]),
-    .mio_oe_i (mio_oe[46:0]),
-    .mio_attr_i (mio_attr[46:0]),
-    .mio_in_raw_o (mio_in_raw[46:0])
+    .mio_in_o (mio_in[11:0]),
+    .mio_out_i (mio_out[11:0]),
+    .mio_oe_i (mio_oe[11:0]),
+    .mio_attr_i (mio_attr[11:0]),
+    .mio_in_raw_o (mio_in_raw[11:0])
   );
 
 
@@ -1295,7 +1443,6 @@ module chip_darjeeling_cw310 #(
     .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
@@ -1378,7 +1525,7 @@ module chip_darjeeling_cw310 #(
 
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
+    unique case ({dio_out[DioGpioGpio11], dio_out[DioGpioGpio10], dio_out[DioGpioGpio9]})
       3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
       3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
       3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1390,8 +1537,8 @@ module chip_darjeeling_cw310 #(
 
   logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
   logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
-  assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_en = dio_out[DioGpioGpio8];
+  assign clk_io_div4_trigger_oe = dio_oe[DioGpioGpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
