@@ -1,0 +1,66 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for building an FPGA bitstream
+
+parameters:
+- name: top_name
+  type: string
+- name: design_suffix
+  type: string
+
+steps:
+- template: ./checkout-template.yml
+- template: ./install-package-dependencies.yml
+- bash: |
+    ci/scripts/get-bitstream-strategy.sh "chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+  displayName: Configure bitstream strategy
+- bash: |
+    set -ex
+    . util/build_consts.sh
+    bazel_package="//hw/bitstream"
+    design_name=chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}
+    cached_archive="${bazel_package}:${design_name}_cached_archive"
+    ci/bazelisk.sh build "${cached_archive}"
+    bitstream_archive=$($REPO_TOP/bazelisk.sh outquery "${cached_archive}")
+    cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
+  condition: eq(variables.bitstreamStrategy, 'cached')
+  displayName: Extract cached bitstream
+- bash: |
+    set -ex
+    bazel_package=//hw/bitstream/vivado
+    bitstream_target=${bazel_package}:fpga_${{ parameters.design_suffix }}
+    archive_target=${bazel_package}:${{ parameters.top_name }}_${{ parameters.design_suffix }}_archive
+    trap 'get_logs' EXIT
+    get_logs() {
+      design_name=chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}
+      SUB_PATH="hw/top_${{ parameters.top_name }}/${design_name}"
+      mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+      cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+        $($REPO_TOP/bazelisk.sh outquery-all ${bitstream_target})
+      bitstream_archive=$($REPO_TOP/bazelisk.sh outquery ${archive_target})
+      cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
+    }
+
+    . util/build_consts.sh
+    module load "xilinx/vivado/$(VIVADO_VERSION)"
+    ci/bazelisk.sh build ${archive_target}
+  condition: ne(variables.bitstreamStrategy, 'cached')
+  displayName: Build and splice bitstream with Vivado
+- bash: |
+    . util/build_consts.sh
+    echo "Synthesis log"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/synth_1/runme.log || true
+
+    echo "Implementation log"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/impl_1/runme.log || true
+  condition: ne(variables.bitstreamStrategy, 'cached')
+  displayName: Display synthesis & implementation logs
+- publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+  artifact: partial-build-bin-$(System.PhaseName)
+  displayName: Upload step outputs
+- publish: "$(Build.ArtifactStagingDirectory)"
+  artifact: chip_${{ parameters.top_name }}_cw310-build-out
+  displayName: Upload artifacts for CW310
+  condition: failed()

@@ -424,53 +424,10 @@ jobs:
   pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw310" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
-    displayName: Configure bitstream strategy
-  - bash: |
-      set -ex
-      . util/build_consts.sh
-      cached_archive=//hw/bitstream:earlgrey_cw310_cached_archive
-      ci/bazelisk.sh build "${cached_archive}"
-      bitstream_archive=$($REPO_TOP/bazelisk.sh outquery "${cached_archive}")
-      cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
-    condition: eq(variables.bitstreamStrategy, 'cached')
-    displayName: Extract cached bitstream
-  - bash: |
-      set -ex
-      trap 'get_logs' EXIT
-      get_logs() {
-        mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310/
-        cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310/ \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
-        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
-          //hw/bitstream/vivado:earlgrey_cw310_archive)
-        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
-      }
-
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw310_archive
-    condition: ne(variables.bitstreamStrategy, 'cached')
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo "Synthesis log"
-      cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log || true
-
-      echo "Implementation log"
-      cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
-    condition: ne(variables.bitstreamStrategy, 'cached')
-    displayName: Display synthesis & implementation logs
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: partial-build-bin-$(System.PhaseName)
-    displayName: Upload step outputs
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw310-build-out
-    displayName: Upload artifacts for CW310
-    condition: failed()
+  - template: ci/fpga-template.yml
+    parameters:
+      top_name: earlgrey
+      design_suffix: cw310
 
 - job: chip_earlgrey_cw310_hyperdebug
   displayName: CW310's Earl Grey Bitstream for Hyperdebug
@@ -481,40 +438,10 @@ jobs:
   pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -ex
-      trap 'get_logs' EXIT
-      get_logs() {
-        mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
-        cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
-        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
-          //hw/bitstream/vivado:earlgrey_cw310_hyperdebug_archive)
-        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
-      }
-
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw310_hyperdebug_archive
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo "Synthesis log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
-
-      echo "Implementation log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
-    displayName: Display synthesis & implementation logs
-    condition: succeededOrFailed()
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: partial-build-bin-$(System.PhaseName)
-    displayName: Upload step outputs
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw310_hyperdebug-build-out
-    displayName: Upload artifacts for CW310
-    condition: failed()
+  - template: ci/fpga-template.yml
+    parameters:
+      top_name: earlgrey
+      design_suffix: cw310_hyperdebug
 
 - job: chip_earlgrey_cw340
   displayName: CW340's Earl Grey Bitstream
@@ -525,40 +452,10 @@ jobs:
   pool: ci-public-eda
   timeoutInMinutes: 150
   steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -ex
-      trap 'get_logs' EXIT
-      get_logs() {
-        mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/
-        cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/ \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw340)
-        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
-          //hw/bitstream/vivado:earlgrey_cw340_archive)
-        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
-      }
-
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw340_archive
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo "Synthesis log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/build.fpga_cw340/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/synth_1/runme.log || true
-
-      echo "Implementation log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/build.fpga_cw340/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/impl_1/runme.log || true
-    displayName: Display synthesis & implementation logs
-    condition: succeededOrFailed()
-  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-    artifact: partial-build-bin-$(System.PhaseName)
-    displayName: Upload step outputs
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw340-build-out
-    displayName: Upload artifacts for CW340
-    condition: failed()
+  - template: ci/fpga-template.yml
+    parameters:
+      top_name: earlgrey
+      design_suffix: cw340
 
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
