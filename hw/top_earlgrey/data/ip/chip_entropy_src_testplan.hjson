@@ -13,9 +13,19 @@
             - Enable Firmware Override - Extract & Insert to route entropy received from AST to the observe FIFO.
             - Verify that the observe FIFO depth is non-zero via SW - indicating the reception of data over the AST RNG interface.
             - Verify the correctness of the received data with assertion based connectivity checks.
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT feature, which is gated by OTP.
+              This test might thus need to be done in a secure facility.
+            - In silicon, it's not possible to check whether the values match.
+              However, checking that the observe FIFO actually fills up is a very fundamental test prior to the validation testing.
             '''
+      features: ["ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"]
       stage: V2
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_ast_rng_req"]
+      bazel: []
     },
     {
       name: chip_sw_entropy_src_csrng
@@ -34,8 +44,11 @@
             - Issue instantiate and reseed commands from edn0 and edn1. Check that for each
               command, there is a corresponding entropy request interrupt.
             '''
+      features: ["ENTROPY_SRC.MODE.FIPS"]
       stage: V2
+      si_stage: SV3
       tests: ["chip_sw_entropy_src_csrng"]
+      bazel: []
     },
     {
       name: chip_sw_entropy_src_fuse_en_fw_read
@@ -50,7 +63,9 @@
             - Read the internal state via SW and verify that the entropy valid bit is zero.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
+      bazel: []
     },
     {
       name: chip_sw_entropy_src_known_answer_tests
@@ -61,9 +76,122 @@
             - Feed NIST test-defined entropy sequences into ENTROPY_SRC via the FW_OV_WR_DATA register.
             - Trigger the hardware conditioner.
             - Read the conditioned entropy from ENTROPY_SRC via the ENTROPY_DATA register; verify that it reads the expected values.
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.ROUTE_TO_FIRMWARE and ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT features, which are gated by OTP.
+              This test might thus need to be done in a secure facility.
             '''
+      features: [
+        "ENTROPY_SRC.ROUTE_TO_FIRMWARE",
+        "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"
+      ]
       stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_kat_test"]
+      bazel: []
+    },
+    {
+      name: chip_sw_entropy_src_bypass_mode_health_tests
+      desc: '''
+            Verify that ENTROPY_SRC:
+            - provides one initial seed in boot-time / bypass mode only,
+            - signals a recoverable alert if the total failure counter hits the threshold in boot-time / bypass mode.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Configure loose health test threshold values for boot-time / bypass mode.
+            - Enable ENTROPY_SRC in boot-time / bypass mode.
+            - Enable CSRNG.
+            - Enable both EDNs in boot-time request mode.
+            - Trigger the execution of a cryptographic hardware block consuming entropy (e.g. AES) to test EDN0.
+            - Verify the entropy consuming endpoint finishes its operation.
+            - Trigger the execution of an OTBN program requiring entropy from both EDN1 and EDN0.
+            - Verify the OTBN program hangs.
+            - Disable the entropy complex.
+            - Configure unrealistically stringent health test threshold values for boot-time / bypass mode.
+            - Configure an alert threshold value of 1 in the ALERT_THRESHOLD register.
+            - Enable ENTROPY_SRC in boot-time / bypass mode.
+            - Enable CSRNG.
+            - Enable both EDNs in boot-time request mode.
+            - Verify that ENTROPY_SRC triggers a recoverable alert and sets the RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.BYPASS",
+        "ENTROPY_SRC.HEALTH_TESTS",
+      ]
+      stage: V3
+      si_stage: SV3
+      tests: []
+      bazel: []
+    },
+    {
+      name: chip_sw_entropy_src_fips_mode_health_tests
+      desc: '''
+            Verify that ENTROPY_SRC:
+            - provides continuous entropy in FIPS/CC compliant mode,
+            - works with different health test window sizes in FIPS mode,
+            - signals a recoverable alert and stops serving entropy if the total failure counter hits the threshold in FIPS mode.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Configure realistic health test threshold values for FIPS/CC compliant mode.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable both EDNs in auto request mode.
+            - Trigger the execution of various cryptographic hardware blocks consuming entropy to stress test the entropy complex.
+            - Verify that all entropy consuming endpoints can finish their operations and do not hang.
+            - Repeat the procedure with different health test window sizes for FIPS mode.
+            - Disable the entropy complex.
+            - Configure unrealistically stringent health test threshold values for FIPS mode.
+            - Configure a low alert threshold value in the ALERT_THRESHOLD register.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable both EDNs in auto request mode and with low values for the generate length parameter to request fresh entropy more often.
+            - Trigger the execution of various cryptographic hardware blocks consuming entropy to stress test the entropy complex.
+            - Verify that ENTROPY_SRC triggers a recoverable alert and sets the RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit.
+            - Verify that various entropy consuming endpoints hang as ENTROPY_SRC stops generating entropy after triggering the recoverable alert.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.FIPS",
+        "ENTROPY_SRC.HEALTH_TESTS",
+      ]
+      stage: V3
+      si_stage: SV3
+      tests: []
+      bazel: []
+    },
+    {
+      name: chip_sw_entropy_src_validation
+      desc: '''
+            Enable validation of the four channels of the digital noise source / physical true random number generator (PTRNG) at the ENTROPY_SRC input, and verify that ENTROPY_SRC allows observing raw entropy through the observe FIFO while serving entropy to consumers.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Configure realistic health test threshold values for FIPS/CC compliant mode.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable Firmware Override - Observe.
+            - Enable CSRNG.
+            - Enable both EDNs in auto request mode.
+            - Trigger the execution of various cryptographic hardware blocks consuming entropy to stress test the entropy complex.
+            - Verify that all entropy consuming endpoints can finish their operations and do not hang.
+            - Verify that the observe FIFO depth is non-zero and read out post-health test entropy for validation testing.
+            - Repeat the procedure four times with the ENTROPY_SRC.RNG_BIT_ENABLE feature being enabled (once for every channel).
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.FW_OV.OBSERVE feature, which is gated by OTP.
+              This test might thus need to be done in a secure facility.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.FIPS",
+        "ENTROPY_SRC.FW_OV.OBSERVE",
+        "ENTROPY_SRC.RNG_BIT_ENABLE",
+      ]
+      stage: V3
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      tests: []
+      bazel: []
     },
   ]
 }
