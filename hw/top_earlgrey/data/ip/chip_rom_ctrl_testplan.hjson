@@ -21,8 +21,20 @@
               the ROM. Verify that we can successfully power up the chip in this case.
             - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
               digest does not match the top 8 words of the ROM.
+
+            Notes for silicon targets:
+
+            - The only thing that this test can do at the SiVal stage
+              is to ensure that the expected and measured digests are
+              readable and have the values we expect.
+
+            - That (simpler) check is done in the separate
+              chip_sw_rom_ctrl_digests test, so this test doesn't have
+              any SiVal stage.
+
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -39,6 +51,23 @@
               effectively dead.
             '''
       stage: V3
+      tests: []
+    }
+    {
+      name: chip_sw_rom_ctrl_digests
+      desc: '''
+
+        Check that the (real and expected) ROM digests are accessible
+        through CSRs.
+
+        - Read the DIGEST_* and EXP_DIGEST_* CSRs and check they match
+          (if they differed, we wouldn't be running!)
+        - Check that they also match the digest words that we expect.
+
+      '''
+      features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
+      stage: V3
+      si_stage: SV3
       tests: []
     }
   ]
