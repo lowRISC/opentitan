@@ -41,6 +41,13 @@
     { protocol: "tlul", direction: "device", name: "ctn" }
   ]
 
+  available_input_list: [
+    { name: "soc_gpi", width: 12, desc: "soc general purpose input" }
+  ],
+  available_output_list: [
+    { name: "soc_gpo", width: 12, desc: "soc general purpose output" }
+  ],
+
   alert_list: [
     { name: "fatal_alert_intg"
       desc: "Fatal bus integrity alert"
@@ -213,6 +220,20 @@
       act:     "rcv"
       width:   32 // keep equal to `NumExternalIrqs`
       desc:    "Interrupt request from SoC, asynchronous, level-encoded"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "soc_gpi_async"
+      act:     "req"
+      width:   12 // keep equal to `NumSocGpio`
+      desc:    "GPI from SoC, async"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "soc_gpo_async"
+      act:     "rcv"
+      width:   12 // keep equal to `NumSocGpio`
+      desc:    "GPO from SoC, async"
     }
   ]
 
