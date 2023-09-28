@@ -36,6 +36,16 @@ typedef struct ecdsa_p256_signature_t {
 status_t ecdsa_p256_keygen_start(void);
 
 /**
+ * Start an async ECDSA/P-256 sideloaded keypair generation operation on OTBN.
+ *
+ * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
+ * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdsa_p256_sideload_keygen_start(void);
+
+/**
  * Finish an async ECDSA/P-256 keypair generation operation on OTBN.
  *
  * Blocks until OTBN is idle.
@@ -48,6 +58,17 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
                                     p256_point_t *public_key);
 
 /**
+ * Start an async ECDSA/P-256 sideloaded keypair generation operation on OTBN.
+ *
+ * This routine will only read back the public key, instead of both public and
+ * private as with `ecdsa_p256_keygen_finalize`. Blocks until OTBN is idle.
+ *
+ * @param[out] public_key Public key.
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdsa_p256_sideload_keygen_finalize(p256_point_t *public_key);
+
+/**
  * Start an async ECDSA/P-256 signature generation operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
@@ -58,6 +79,18 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
  */
 status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
                                const p256_masked_scalar_t *private_key);
+
+/**
+ * Start an async ECDSA/P-256 signature generation operation on OTBN.
+ *
+ * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
+ * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param digest Digest of the message to sign.
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdsa_p256_sideload_sign_start(
+    const uint32_t digest[kP256ScalarWords]);
 
 /**
  * Finish an async ECDSA/P-256 signature generation operation on OTBN.

@@ -60,6 +60,18 @@ enum {
    * Value taken from `p256_ecdsa.s`.
    */
   kOtbnEcdsaModeVerify = 0x727,
+  /*
+   * Mode to generate a sideloaded key.
+   *
+   * Value taken from `p256_ecdsa.s`.
+   */
+  kOtbnEcdsaModeSideloadKeygen = 0x5e8,
+  /*
+   * Mode to sign with a sideloaded key.
+   *
+   * Value taken from `p256_ecdsa.s`.
+   */
+  kOtbnEcdsaModeSideloadSign = 0x49e,
 };
 
 status_t ecdsa_p256_keygen_start(void) {
@@ -68,6 +80,18 @@ status_t ecdsa_p256_keygen_start(void) {
 
   // Set mode so start() will jump into keygen.
   uint32_t mode = kOtbnEcdsaModeKeygen;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdsa_p256_sideload_keygen_start(void) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
+
+  // Set mode so start() will jump into sideload-keygen.
+  uint32_t mode = kOtbnEcdsaModeSideloadKeygen;
   HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
   // Start the OTBN routine.
@@ -95,15 +119,30 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
   return OTCRYPTO_OK;
 }
 
-status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
-                               const p256_masked_scalar_t *private_key) {
-  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
-  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
+status_t ecdsa_p256_sideload_keygen_finalize(p256_point_t *public_key) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
-  // Set mode so start() will jump into signing.
-  uint32_t mode = kOtbnEcdsaModeSign;
-  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+  // Read the public key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdsaX, public_key->x));
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdsaY, public_key->y));
 
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Set the message digest for signature generation or verification.
+ *
+ * OTBN requires the digest in little-endian form, so this routine flips the
+ * bytes.
+ *
+ * @param digest Digest to set (big-endian).
+ * @return OK or error.
+ */
+static status_t set_message_digest(const uint32_t digest[kP256ScalarWords]) {
   // Set the message digest. We swap all the bytes so that OTBN can interpret
   // the digest as a little-endian integer, which is a more natural fit for the
   // architecture than the big-endian form requested by the specification (FIPS
@@ -113,12 +152,41 @@ status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
     digest_little_endian[i] =
         __builtin_bswap32(digest[kP256ScalarWords - 1 - i]);
   }
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest_little_endian,
-                               kOtbnVarEcdsaMsg));
+  return otbn_dmem_write(kP256ScalarWords, digest_little_endian,
+                         kOtbnVarEcdsaMsg);
+}
+
+status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
+                               const p256_masked_scalar_t *private_key) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
+
+  // Set mode so start() will jump into signing.
+  uint32_t mode = kOtbnEcdsaModeSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest));
 
   // Set the private key shares.
   HARDENED_TRY(
       p256_masked_scalar_write(private_key, kOtbnVarEcdsaD0, kOtbnVarEcdsaD1));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdsa_p256_sideload_sign_start(
+    const uint32_t digest[kP256ScalarWords]) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdsa));
+
+  // Set mode so start() will jump into sideloaded signing.
+  uint32_t mode = kOtbnEcdsaModeSideloadSign;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
+
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -150,17 +218,8 @@ status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
   uint32_t mode = kOtbnEcdsaModeVerify;
   HARDENED_TRY(otbn_dmem_write(kOtbnEcdsaModeWords, &mode, kOtbnVarEcdsaMode));
 
-  // Set the message digest. We swap all the bytes so that OTBN can interpret
-  // the digest as a little-endian integer, which is a more natural fit for the
-  // architecture than the big-endian form requested by the specification (FIPS
-  // 186-5, section B.2.1).
-  uint32_t digest_little_endian[kP256ScalarWords];
-  for (size_t i = 0; i < kP256ScalarWords; i++) {
-    digest_little_endian[i] =
-        __builtin_bswap32(digest[kP256ScalarWords - 1 - i]);
-  }
-  HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, digest_little_endian,
-                               kOtbnVarEcdsaMsg));
+  // Set the message digest.
+  HARDENED_TRY(set_message_digest(digest));
 
   // Set the signature R.
   HARDENED_TRY(otbn_dmem_write(kP256ScalarWords, signature->r, kOtbnVarEcdsaR));

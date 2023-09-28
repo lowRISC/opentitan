@@ -165,6 +165,24 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "ecdsa_p256_sideload_functest",
+    srcs = ["ecdsa_p256_sideload_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 autogen_cryptotest_header(
     name = "ecdsa_p256_verify_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:ecdsa_p256_verify_testvectors_hardcoded",
