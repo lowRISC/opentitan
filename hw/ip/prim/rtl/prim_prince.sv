@@ -106,14 +106,7 @@ module prim_prince #(
   //////////////
 
   // State variable for holding the rounds
-  //
-  // The "split_var" hint that we pass to verilator here tells it to schedule the different parts of
-  // data_state separately. This avoids an UNOPTFLAT error where it would otherwise see a dependency
-  // chain
-  //
-  //    data_state -> data_state_round -> data_state_xor -> data_state
-  //
-  logic [NumRoundsHalf*2+1:0][DataWidth-1:0] data_state /* verilator split_var */;
+  logic [NumRoundsHalf*2+1:0][DataWidth-1:0] data_state;
 
   // pre-round XOR
   always_comb begin : p_pre_round_xor
