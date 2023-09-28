@@ -73,6 +73,27 @@
       desc: "A fatal error. Fatal alerts are non-recoverable and will be asserted until a hard reset."
     }
   ],
+
+  features: [
+    { name: "ROM_CTRL.SCRAMBLED",
+      desc: '''
+        ROM data is scrambled.
+      '''
+    },
+    { name: "ROM_CTRL.DIGESTS",
+      desc: '''
+        A signature of the ROM contents is computed at startup.
+        This is available in the DIGEST_<i> CSRs.
+      '''
+    },
+    { name: "ROM_CTRL.EXP_DIGESTS",
+      desc: '''
+        The chip has an expected ROM signature.
+        This is available in the EXP_DIGEST_<i> CSRs.
+      '''
+    },
+  ]
+
   inter_signal_list: [
     // Interface to memory configuration
     { name:    "rom_cfg",
