@@ -18,8 +18,7 @@
 crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
                                       ecc_public_key_t *public_key) {
-  const crypto_key_config_t config = private_key->config;
-  HARDENED_TRY(otcrypto_ecdsa_keygen_async_start(elliptic_curve, &config));
+  HARDENED_TRY(otcrypto_ecdsa_keygen_async_start(elliptic_curve, private_key));
   return otcrypto_ecdsa_keygen_async_finalize(elliptic_curve, private_key,
                                               public_key);
 }
@@ -47,8 +46,7 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
 crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
                                      ecc_public_key_t *public_key) {
-  HARDENED_TRY(
-      otcrypto_ecdh_keygen_async_start(elliptic_curve, &private_key->config));
+  HARDENED_TRY(otcrypto_ecdh_keygen_async_start(elliptic_curve, private_key));
   return otcrypto_ecdh_keygen_async_finalize(elliptic_curve, private_key,
                                              public_key);
 }
@@ -144,19 +142,31 @@ static status_t key_config_check(const ecc_curve_t *elliptic_curve,
   return OTCRYPTO_FATAL_ERR;
 }
 
+/**
+ * Calls keymgr to sideload key material into OTBN.
+ *
+ * This routine should only ever be called on hardware-backed keys.
+ *
+ * @param private_key Sideloaded key handle.
+ * @return OK or error.
+ */
+static status_t sideload_key_seed(const crypto_blinded_key_t *private_key) {
+  keymgr_diversification_t diversification;
+  HARDENED_TRY(
+      keyblob_to_keymgr_diversification(private_key, &diversification));
+  return keymgr_generate_key_otbn(diversification);
+}
+
 crypto_status_t otcrypto_ecdsa_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config) {
-  if (elliptic_curve == NULL || config == NULL) {
+    const ecc_curve_t *elliptic_curve,
+    const crypto_blinded_key_t *private_key) {
+  if (elliptic_curve == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (config->hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Check the key configuration.
-  HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdsa));
+  HARDENED_TRY(
+      key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdsa));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -165,7 +175,16 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      HARDENED_TRY(ecdsa_p256_keygen_start());
+      if (private_key->config.hw_backed == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+        HARDENED_TRY(sideload_key_seed(private_key));
+        return ecdsa_p256_sideload_keygen_start();
+      } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+        HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+        return ecdsa_p256_keygen_start();
+      } else {
+        return OTCRYPTO_BAD_ARGS;
+      }
       return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
@@ -195,9 +214,10 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
  */
 static status_t p256_private_key_length_check(
     const crypto_blinded_key_t *private_key) {
-  if (private_key->config.hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Skip the length check in this case; if the salt is the wrong length, the
+    // keyblob library will catch it before we sideload the key.
+    return OTCRYPTO_OK;
   }
 
   // Since sideloaded keys are not supported, the keyblob may not be NULL.
@@ -259,17 +279,27 @@ static status_t internal_ecdsa_p256_keygen_finalize(
   HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
 
-  // Note: This operation wipes DMEM after retrieving the keys, so if an error
-  // occurs after this point then the keys would be unrecoverable. This should
-  // be the last potentially error-causing line before returning to the caller.
-  p256_masked_scalar_t sk;
   p256_point_t pk;
-  HARDENED_TRY(ecdsa_p256_keygen_finalize(&sk, &pk));
-
-  // Prepare the private key.
-  keyblob_from_shares(sk.share0, sk.share1, private_key->config,
-                      private_key->keyblob);
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Note: This operation wipes DMEM after retrieving the keys, so if an error
+    // occurs after this point then the keys would be unrecoverable. This should
+    // be the last potentially error-causing line before returning to the
+    // caller.
+    HARDENED_TRY(ecdsa_p256_sideload_keygen_finalize(&pk));
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    p256_masked_scalar_t sk;
+    // Note: This operation wipes DMEM after retrieving the keys, so if an error
+    // occurs after this point then the keys would be unrecoverable. This should
+    // be the last potentially error-causing line before returning to the
+    // caller.
+    HARDENED_TRY(ecdsa_p256_keygen_finalize(&sk, &pk));
+    // Prepare the private key.
+    keyblob_from_shares(sk.share0, sk.share1, private_key->config,
+                        private_key->keyblob);
+    private_key->checksum = integrity_blinded_checksum(private_key);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Prepare the public key.
   memcpy(public_key->x.key, pk.x, kP256CoordBytes);
@@ -328,7 +358,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
       HARDENED_TRY(
           internal_ecdsa_p256_keygen_finalize(private_key, public_key));
-      return OTCRYPTO_OK;
+      break;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
@@ -340,9 +370,8 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Should never get here.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 /**
@@ -355,12 +384,22 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
 static status_t internal_ecdsa_p256_sign_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_byte_buf_t input_message) {
-  if (private_key->config.hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
+  // Get the SHA256 digest of the message.
+  hmac_sha_init();
+  hmac_update(input_message.data, input_message.len);
+  hmac_digest_t digest;
+  hmac_final(&digest);
 
-  // Check the private key size.
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Load the key and start in sideloaded-key mode.
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return ecdsa_p256_sideload_sign_start(digest.digest);
+  } else if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+
+  // Check the key length.
   HARDENED_TRY(p256_private_key_length_check(private_key));
 
   // Get pointers to the individual shares within the blinded key.
@@ -372,12 +411,6 @@ static status_t internal_ecdsa_p256_sign_start(
   p256_masked_scalar_t sk;
   memcpy(sk.share0, share0, sizeof(sk.share0));
   memcpy(sk.share1, share1, sizeof(sk.share1));
-
-  // Get the SHA256 digest of the message.
-  hmac_sha_init();
-  hmac_update(input_message.data, input_message.len);
-  hmac_digest_t digest;
-  hmac_final(&digest);
 
   // Start the asynchronous signature-generation routine.
   return ecdsa_p256_sign_start(digest.digest, &sk);
@@ -472,7 +505,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
       HARDENED_TRY(internal_ecdsa_p256_sign_finalize(signature));
-      return OTCRYPTO_OK;
+      break;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
@@ -484,9 +517,8 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Should never get here.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  // Clear the OTBN sideload slot (in case the key was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 /**
@@ -636,18 +668,20 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
 }
 
 crypto_status_t otcrypto_ecdh_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config) {
-  if (elliptic_curve == NULL || config == NULL) {
+    const ecc_curve_t *elliptic_curve,
+    const crypto_blinded_key_t *private_key) {
+  if (elliptic_curve == NULL || private_key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (config->hw_backed != kHardenedBoolFalse) {
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
     // TODO: Implement support for sideloaded keys.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
   // Check the key configuration.
-  HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdh));
+  HARDENED_TRY(
+      key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdh));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -737,7 +771,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
       HARDENED_TRY(internal_ecdh_p256_keygen_finalize(private_key, public_key));
-      return OTCRYPTO_OK;
+      break;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
@@ -749,9 +783,8 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Should never get here.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  // Clear the OTBN sideload slot (in case the key was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 /**
@@ -894,7 +927,7 @@ crypto_status_t otcrypto_ecdh_async_finalize(
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
       HARDENED_TRY(internal_ecdh_p256_finalize(shared_secret));
-      return OTCRYPTO_OK;
+      break;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
@@ -906,13 +939,12 @@ crypto_status_t otcrypto_ecdh_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Should never get here.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
+  // Clear the OTBN sideload slot (in case the key was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 crypto_status_t otcrypto_ed25519_keygen_async_start(
-    const crypto_key_config_t *config) {
+    const crypto_blinded_key_t *private_key) {
   // TODO: Ed25519 is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
@@ -952,7 +984,7 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
 }
 
 crypto_status_t otcrypto_x25519_keygen_async_start(
-    const crypto_key_config_t *config) {
+    const crypto_blinded_key_t *private_key) {
   // TODO: X25519 is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
