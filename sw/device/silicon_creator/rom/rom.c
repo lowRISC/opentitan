@@ -579,11 +579,8 @@ void rom_main(void) {
   SHUTDOWN_IF_ERROR(rom_init());
   
   // Populate embedded emulated Flash (bank 0)
-  if(*pad_bootmode == 0x1){
-    rom_printf("Loading rom_ext from extenal SPI flash\r\n");
-    printf("Loading rom_ext from extenal SPI flash\r\n");
+  if(*pad_bootmode == 0x1)
     spi_flash_load_data();
-  }
   
   //rom_bootstrap_message();
   
