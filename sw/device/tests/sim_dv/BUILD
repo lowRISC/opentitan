@@ -12,7 +12,6 @@ opentitan_functest(
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",

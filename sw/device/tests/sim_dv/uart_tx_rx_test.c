@@ -19,9 +19,6 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
-// TODO, remove it once pinout configuration is provided
-#include "pinmux_regs.h"
-
 #define UART_DATASET_SIZE 128
 
 static dif_uart_t uart;
@@ -133,38 +130,6 @@ static volatile bool exp_uart_irq_tx_empty;
 static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
-
-// Configures the pinmux to connect the UART instance to chip IOs based on the
-// ChromeOS pinout configuration.
-//
-// The pinout configuration is documented here:
-// https://github.com/lowRISC/opentitan/blob/master/hw/top_darjeeling/data/top_darjeeling.hjson
-// TODO: Pinout configuration APIs based on customer usecases will be
-// auto-generated in future. This function is a stop-gap solution until that is
-// made available.
-static void pinmux_connect_uart_to_pads(uint32_t rx_pin_in_idx,
-                                        uint32_t rx_uart_idx,
-                                        uint32_t tx_pin_out_idx,
-                                        uint32_t tx_uart_idx) {
-  mmio_region_t reg32 =
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR +
-                            PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
-  uint32_t reg_value = rx_pin_in_idx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  ptrdiff_t reg_offset = (ptrdiff_t)rx_uart_idx << 2;
-  uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-
-  reg32 = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR +
-                                PINMUX_MIO_OUTSEL_0_REG_OFFSET);
-  reg_value = tx_uart_idx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = (ptrdiff_t)tx_pin_out_idx << 2;
-  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-}
 
 void update_uart_base_addr_and_irq_id(void) {
   switch (kUartIdx) {
@@ -498,10 +463,6 @@ bool test_main(void) {
   update_uart_base_addr_and_irq_id();
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
-
-  pinmux_connect_uart_to_pads(
-      kTopDarjeelingPinmuxInselIoc3, kTopDarjeelingPinmuxPeripheralInUart0Rx,
-      kTopDarjeelingPinmuxMioOutIoc4, kTopDarjeelingPinmuxOutselUart0Tx);
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);

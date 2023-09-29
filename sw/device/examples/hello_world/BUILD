@@ -41,10 +41,8 @@ cc_library(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:gpio",
-        "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 

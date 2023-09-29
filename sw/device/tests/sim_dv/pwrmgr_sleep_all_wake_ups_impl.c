@@ -34,8 +34,8 @@ dif_sensor_ctrl_t sensor_ctrl;
 static void prgm_pinmux_wakeup(void *dif) {
   dif_pinmux_wakeup_config_t detector_cfg = {
       .signal_filter = kDifToggleDisabled,
-      .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopDarjeelingPinmuxInselIob7,
+      .pad_type = kDifPinmuxPadKindDio,
+      .pad_select = kTopDarjeelingDirectPadsGpioGpio0,
       .mode = kDifPinmuxWakeupModePositiveEdge,
       .counter_threshold = 0 /* Don't need for posedge detection */,
   };

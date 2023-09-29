@@ -1001,36 +1001,37 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "gpio_pinmux_test",
-    srcs = ["gpio_pinmux_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        tags = ["manual"],
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/gpio",
-    verilator = verilator_params(
-        timeout = "eternal",
-        test_cmds = [],
-    ),
-    deps = [
-        "//sw/device/lib/testing/json:command",
-        "//sw/device/lib/testing/json:gpio",
-        "//sw/device/lib/testing/json:pinmux_config",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:gpio",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-    ],
-)
+# TODO: re-enable this test for verilator and the FPGA
+# opentitan_functest(
+#     name = "gpio_pinmux_test",
+#     srcs = ["gpio_pinmux_test.c"],
+#     cw310 = cw310_params(
+#         interface = "hyper310",
+#         tags = ["manual"],
+#         test_cmds = [
+#             "--bitstream=\"$(location {bitstream})\"",
+#             "--bootstrap=\"$(location {flash})\"",
+#         ],
+#     ),
+#     targets = [
+#         "verilator",
+#         "cw310_test_rom",
+#     ],
+#     test_harness = "//sw/host/tests/chip/gpio",
+#     verilator = verilator_params(
+#         timeout = "eternal",
+#         test_cmds = [],
+#     ),
+#     deps = [
+#         "//sw/device/lib/testing/json:command",
+#         "//sw/device/lib/testing/json:gpio",
+#         "//sw/device/lib/testing/json:pinmux_config",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:gpio",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#     ],
+# )
 
 opentitan_functest(
     name = "hmac_enc_test",

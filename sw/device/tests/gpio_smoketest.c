@@ -5,7 +5,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -14,7 +13,6 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_gpio_t gpio;
-static dif_pinmux_t pinmux;
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -57,20 +55,6 @@ static void test_gpio_write(uint32_t write_val, uint32_t compare_mask) {
  */
 bool test_main(void) {
   uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-  // Assign GPIOs in the pinmux
-  for (size_t i = 0; i < kDifGpioNumPins; ++i) {
-    if (gpio_mask & (1u << i)) {
-      dif_pinmux_index_t mio = kPinmuxTestutilsGpioMioOutPins[i];
-      dif_pinmux_index_t gpio_out = kTopDarjeelingPinmuxOutselGpioGpio0 + i;
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio_out));
-      mio = kPinmuxTestutilsGpioInselPins[i];
-      dif_pinmux_index_t gpio_in =
-          kTopDarjeelingPinmuxPeripheralInGpioGpio0 + i;
-      CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio_in, mio));
-    }
-  }
   CHECK_DIF_OK(dif_gpio_init(
       mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, gpio_mask));

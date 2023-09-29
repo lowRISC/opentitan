@@ -155,13 +155,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
-  // Set IoA7 for tpm csb.
-  // Longer term this needs to migrate to a top specific, platform specific
-  // setting.
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopDarjeelingPinmuxPeripheralInSpiDeviceTpmCsb,
-      kTopDarjeelingPinmuxInselIoa7));
-
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {
       .slew_rate = 0,
@@ -169,9 +162,9 @@ bool test_main(void) {
       .flags = kDifPinmuxPadAttrPullResistorEnable |
                kDifPinmuxPadAttrPullResistorUp};
 
-  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopDarjeelingMuxedPadsIoa7,
-                                          kDifPinmuxPadKindMio, in_attr,
-                                          &out_attr));
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
+      &pinmux, kTopDarjeelingDirectPadsSpiDeviceTpmCsb, kDifPinmuxPadKindDio,
+      in_attr, &out_attr));
 
   CHECK_DIF_OK(
       dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, tpm_config));

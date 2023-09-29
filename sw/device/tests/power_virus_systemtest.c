@@ -224,26 +224,8 @@ static void init_peripheral_handles(void) {
 }
 
 static void configure_pinmux(void) {
-  // Configure UART0 (console) and SW strapping pins.
+  // SW strapping pins.
   pinmux_testutils_init(&pinmux);
-
-  // Configure GPIO max-power period indicator pin on IOB8.
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIob8,
-                                        kTopDarjeelingPinmuxOutselGpioGpio0));
-
-  // I2C0:
-  //    SDA on IOA7
-  //    SCL on IOA8
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c0Scl,
-                                       kTopDarjeelingPinmuxInselIoa8));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c0Sda,
-                                       kTopDarjeelingPinmuxInselIoa7));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa8,
-                                        kTopDarjeelingPinmuxOutselI2c0Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa7,
-                                        kTopDarjeelingPinmuxOutselI2c0Sda));
 }
 
 /**

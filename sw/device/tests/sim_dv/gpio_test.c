@@ -5,7 +5,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
@@ -18,7 +17,6 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_gpio_t gpio;
-static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 
 // These indicate the GPIO pin irq expected to fire, declared volatile since
@@ -197,28 +195,7 @@ void ottf_external_isr(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-void configure_pinmux(void) {
-  for (size_t i = 0; i < kDifGpioNumPins; ++i) {
-    dif_pinmux_index_t mio = kPinmuxTestutilsGpioInselPins[i];
-    dif_pinmux_index_t periph_io =
-        kTopDarjeelingPinmuxPeripheralInGpioGpio0 + i;
-    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, periph_io, mio));
-  }
-
-  for (size_t i = 0; i < kDifGpioNumPins; ++i) {
-    dif_pinmux_index_t mio = kPinmuxTestutilsGpioMioOutPins[i];
-    dif_pinmux_index_t periph_io = kTopDarjeelingPinmuxOutselGpioGpio0 + i;
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, periph_io));
-  }
-}
-
 bool test_main(void) {
-  // Initialize the pinmux.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-  pinmux_testutils_init(&pinmux);
-  configure_pinmux();
-
   // Initialize the GPIO.
   CHECK_DIF_OK(dif_gpio_init(
       mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));

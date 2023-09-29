@@ -145,20 +145,15 @@ bool test_main(void) {
 
   LOG_INFO("Running CHIP Power Sleep Load test");
 
-  // Testplan: "The test should set a GPIO (mapped to the IOA2 pin) to high
+  // Testplan: "The test should set a GPIO (mapped to the GPIO2 pin) to high
   // while the power state of interest is active"
 
   const uint32_t kGpioMask = 0x00000004;
 
-  // PINMUX
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, (kTopDarjeelingPinmuxMioOutIoa0 + 2),
-                               (kTopDarjeelingPinmuxOutselGpioGpio0 + 2)));
-
   // Set output modes of all GPIO pins
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
 
-  // Write to set IOA2 low at the start of the test:
+  // Write to set GPIO2 low at the start of the test:
   CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
 
   LOG_INFO("GPIO active");

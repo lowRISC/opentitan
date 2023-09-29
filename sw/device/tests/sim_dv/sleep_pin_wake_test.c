@@ -30,12 +30,14 @@ static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 static dif_flash_ctrl_state_t flash_ctrl_state;
 
-static const uint32_t kNumDio = 16;  // top_darjeeling has 16 DIOs
+static const uint32_t kNumDio = 73;
 
+// TODO: Double check whether these exclusions are really needed (addition
+// of the chip_if made things much more flexible).
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
-#define NUM_DIRECT_DIO 5
-static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
+#define NUM_DIRECT_DIO 0
+static const uint32_t kDirectDio[1] = {0};
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                                   .hart_id = kTopDarjeelingPlicTargetIbex0};
@@ -110,13 +112,6 @@ bool test_main(void) {
             TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
         0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
     LOG_INFO("detector %0d is selected", wakeup_detector_selected);
-    // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
-    // disabled for this test. Remove this later.
-    dif_pinmux_pad_attr_t out_attr;
-    dif_pinmux_pad_attr_t in_attr = {0};
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopDarjeelingMuxedPadsIoc3,
-                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     // This print is placed here on purpose.
     // sv sequence is waiting for this print log followed by

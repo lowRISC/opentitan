@@ -6,8 +6,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
-#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
@@ -20,43 +18,10 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_gpio_t gpio;
-static dif_pinmux_t pinmux;
 static dif_spi_device_handle_t spi;
 static dif_uart_t uart;
 
-static dif_pinmux_index_t leds[] = {
-    kTopDarjeelingPinmuxMioOutIor10,
-    kTopDarjeelingPinmuxMioOutIor11,
-    kTopDarjeelingPinmuxMioOutIor12,
-    kTopDarjeelingPinmuxMioOutIor13,
-};
-
-static dif_pinmux_index_t switches[] = {
-    kTopDarjeelingPinmuxInselIob6,
-    kTopDarjeelingPinmuxInselIob9,
-    kTopDarjeelingPinmuxInselIob10,
-    kTopDarjeelingPinmuxInselIor5,
-};
-
-void configure_pinmux(void) {
-  pinmux_testutils_init(&pinmux);
-  // Hook up some LEDs.
-  for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
-    dif_pinmux_index_t gpio = kTopDarjeelingPinmuxOutselGpioGpio0 + i;
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
-  }
-  // Hook up DIP switches.
-  for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
-    dif_pinmux_index_t gpio = kTopDarjeelingPinmuxPeripheralInGpioGpio8 + i;
-    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
-  }
-}
-
 void _ottf_main(void) {
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-  configure_pinmux();
-
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart));
 

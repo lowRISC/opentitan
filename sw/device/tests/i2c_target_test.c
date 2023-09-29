@@ -171,8 +171,8 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
   dif_pinmux_wakeup_config_t wakeup_cfg = {
       .mode = kDifPinmuxWakeupModeAnyEdge,
       .signal_filter = false,
-      .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopDarjeelingPinmuxInselIoa7,
+      .pad_type = kDifPinmuxPadKindDio,
+      .pad_select = kTopDarjeelingDirectPadsI2c0Sda,
   };
   TRY(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;
@@ -272,8 +272,6 @@ static status_t test_init(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
-
-  TRY(i2c_testutils_select_pinmux(&pinmux, 0));
 
   TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
   TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));

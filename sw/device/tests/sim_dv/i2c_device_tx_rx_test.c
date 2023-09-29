@@ -152,8 +152,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
-  CHECK_STATUS_OK(i2c_testutils_select_pinmux(&pinmux, kI2cIdx));
-
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.
   for (uint32_t i = 0; i < kNumI2cIrqs; ++i) {

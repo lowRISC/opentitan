@@ -104,13 +104,13 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   LOG_INFO("Chosen GPIO value: %2x", gpio_val);
 
   // 4. Configure PINMUX Retention value opposite to the chosen value.
-  pad_kind = kDifPinmuxPadKindMio;
+  pad_kind = kDifPinmuxPadKindDio;
   for (int i = 0; i < kNumGpioPads; i++) {
     // GPIO are assigned starting from MIO0
     pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
                                        : kDifPinmuxSleepModeHigh;
     CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
-        pinmux, (dif_pinmux_index_t)(kTopDarjeelingPinmuxMioOutIoa0 + i),
+        pinmux, (dif_pinmux_index_t)(kTopDarjeelingDirectPadsGpioGpio0 + i),
         pad_kind, pad_mode));
   }
 
@@ -124,7 +124,7 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   // 7. Turn-off retention.
   for (int i = 0; i < kNumGpioPads; i++) {
     CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
-        pinmux, (dif_pinmux_index_t)(kTopDarjeelingPinmuxMioOutIoa0 + i),
+        pinmux, (dif_pinmux_index_t)(kTopDarjeelingDirectPadsGpioGpio0 + i),
         pad_kind));
   }
 }
@@ -140,17 +140,6 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
       dif_gpio_output_set_enabled_all(gpio, (dif_gpio_state_t)0x000000FFu));
   CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
                                      (dif_gpio_state_t)0x00000000));
-
-  // Configure PINMUX to GPIO
-  for (int i = 0; i < kNumGpioPads; i++) {
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        pinmux,
-        (dif_pinmux_index_t)(kTopDarjeelingPinmuxPeripheralInGpioGpio0 + i),
-        (dif_pinmux_index_t)(kTopDarjeelingPinmuxInselIoa0 + i)));
-    CHECK_DIF_OK(dif_pinmux_output_select(
-        pinmux, (dif_pinmux_index_t)(kTopDarjeelingPinmuxMioOutIoa0 + i),
-        (dif_pinmux_index_t)(kTopDarjeelingPinmuxOutselGpioGpio0 + i)));
-  }
 }
 
 bool test_main(void) {
@@ -184,8 +173,8 @@ bool test_main(void) {
   // Wakeup configs
   wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
   wakeup_cfg.signal_filter = false;
-  wakeup_cfg.pad_type = 0;                                // MIO
-  wakeup_cfg.pad_select = kTopDarjeelingPinmuxInselIoa8;  // MIO08
+  wakeup_cfg.pad_type = kDifPinmuxPadKindDio;
+  wakeup_cfg.pad_select = kTopDarjeelingDirectPadsGpioGpio8;
 
   // Configure Wakeup Detector 0
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));

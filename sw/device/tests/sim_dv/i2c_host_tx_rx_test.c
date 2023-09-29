@@ -8,7 +8,6 @@
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/i2c/test/utils/i2c_testutils.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/lib/sw/device/arch/device.h"
@@ -20,11 +19,7 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
-// TODO, remove it once pinout configuration is provided
-#include "pinmux_regs.h"
-
 static dif_i2c_t i2c;
-static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -145,19 +140,6 @@ void config_i2c_with_index(void) {
       // right now.
       // plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c0SdaUnstable;
       plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c0CmdComplete;
-
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c0Scl,
-          kTopDarjeelingPinmuxInselIoa8));
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c0Sda,
-          kTopDarjeelingPinmuxInselIoa7));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIoa8,
-                                            kTopDarjeelingPinmuxOutselI2c0Scl));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIoa7,
-                                            kTopDarjeelingPinmuxOutselI2c0Sda));
       break;
     default:
       LOG_FATAL("Unsupported i2c index %d", kI2cIdx);
@@ -226,8 +208,6 @@ void issue_test_transactions(bool skip_stop) {
 
 bool test_main(void) {
   LOG_INFO("Testing I2C index %d", kI2cIdx);
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
 
   config_i2c_with_index();
 

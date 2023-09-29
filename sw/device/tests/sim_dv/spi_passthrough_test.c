@@ -41,18 +41,6 @@ static dif_spi_host_t spi_host0;
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
     {
-        .pad = kTopDarjeelingMuxedPadsIob1,
-        .kind = kDifPinmuxPadKindMio,
-        .flags = kDifPinmuxPadAttrPullResistorEnable |
-                 kDifPinmuxPadAttrPullResistorUp,
-    },
-    {
-        .pad = kTopDarjeelingMuxedPadsIob3,
-        .kind = kDifPinmuxPadKindMio,
-        .flags = kDifPinmuxPadAttrPullResistorEnable |
-                 kDifPinmuxPadAttrPullResistorUp,
-    },
-    {
         .pad = kTopDarjeelingDirectPadsSpiHost0Sd0,
         .kind = kDifPinmuxPadKindDio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
