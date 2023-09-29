@@ -223,9 +223,13 @@ class edn_base_vseq extends cip_base_vseq #(
     csr_spinwait(.ptr(reg_field), .exp_data(exp_data));
     // Clear interrupt_enable
     csr_wr(.ptr(ral.intr_enable), .value(32'd0));
+    // This assertion has to be disabled, since FIFO clear on edn_disable leads
+    // to unstable h_data (when FIFO write error introduced unaccounted values in FIFO)
+    $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
     ral.ctrl.cmd_fifo_rst.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
+    $asserton(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
     // Expect/Clear interrupt bit
     check_interrupts(.interrupts((1 << FifoErr)), .check_set(1'b1));
     `DV_CHECK(uvm_hdl_release(path1));

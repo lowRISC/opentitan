@@ -57,20 +57,22 @@ package edn_env_pkg;
   typedef enum int {
     sfifo_rescmd_err      = 0,
     sfifo_gencmd_err      = 1,
-    edn_ack_sm_err        = 2,
-    edn_main_sm_err       = 3,
-    edn_cntr_err          = 4,
-    fifo_write_err        = 5,
-    fifo_read_err         = 6,
-    fifo_state_err        = 7,
-    sfifo_rescmd_err_test = 8,
-    sfifo_gencmd_err_test = 9,
-    edn_ack_sm_err_test   = 10,
-    edn_main_sm_err_test  = 11,
-    edn_cntr_err_test     = 12,
-    fifo_write_err_test   = 13,
-    fifo_read_err_test    = 14,
-    fifo_state_err_test   = 15
+    sfifo_output_err      = 2,
+    edn_ack_sm_err        = 3,
+    edn_main_sm_err       = 4,
+    edn_cntr_err          = 5,
+    fifo_write_err        = 6,
+    fifo_read_err         = 7,
+    fifo_state_err        = 8,
+    sfifo_rescmd_err_test = 9,
+    sfifo_gencmd_err_test = 10,
+    sfifo_output_err_test = 11,
+    edn_ack_sm_err_test   = 12,
+    edn_main_sm_err_test  = 13,
+    edn_cntr_err_test     = 14,
+    fifo_write_err_test   = 15,
+    fifo_read_err_test    = 16,
+    fifo_state_err_test   = 17
   } err_code_e;
 
   typedef enum int {
