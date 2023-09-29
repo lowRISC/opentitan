@@ -268,14 +268,14 @@ TEST_F(AbortTest, BadArg) { EXPECT_DIF_BADARG(dif_dma_abort(nullptr)); }
 class MemoryRangeLockTest : public DmaTestInitialized {};
 
 TEST_F(MemoryRangeLockTest, SetSuccess) {
-  EXPECT_WRITE32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_WRITE32(DMA_RANGE_REGWEN_REG_OFFSET, kMultiBitBool4False);
 
   EXPECT_DIF_OK(dif_dma_memory_range_lock(&dma_));
 }
 
 TEST_F(MemoryRangeLockTest, GetLocked) {
   bool locked = false;
-  EXPECT_READ32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(DMA_RANGE_REGWEN_REG_OFFSET, kMultiBitBool4False);
 
   EXPECT_DIF_OK(dif_dma_is_memory_range_locked(&dma_, &locked));
   EXPECT_TRUE(locked);
