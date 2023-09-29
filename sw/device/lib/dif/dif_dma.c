@@ -151,7 +151,7 @@ dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma) {
     return kDifBadArg;
   }
 
-  mmio_region_write32(dma->base_addr, DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_RANGE_REGWEN_REG_OFFSET,
                       kMultiBitBool4False);
   return kDifOk;
 }
@@ -162,9 +162,8 @@ dif_result_t dif_dma_is_memory_range_locked(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  *is_locked =
-      kMultiBitBool4False ==
-      mmio_region_read32(dma->base_addr, DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET);
+  *is_locked = kMultiBitBool4False ==
+               mmio_region_read32(dma->base_addr, DMA_RANGE_REGWEN_REG_OFFSET);
   return kDifOk;
 }
 
