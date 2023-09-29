@@ -148,7 +148,7 @@ The idle indication signal `pwr_otp_o.otp_idle` indicates whether there is an on
 Since the power manager may run in a different clock domain, the `pwr_otp_i.otp_init` signal is synchronized within the OTP controller.
 The power manager is responsible for synchronizing the `pwr_otp_o.otp_done` and `pwr_otp_o.otp_idle` signals.
 
-See also [power manager documentation](../../pwrmgr/README.md).
+See also [power manager documentation](../../../top_earlgrey/ip_autogen/pwrmgr/README.md).
 
 ### Life Cycle Interfaces
 

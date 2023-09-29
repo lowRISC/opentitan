@@ -59,7 +59,7 @@ The RSTMGR RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/REA
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 ### Stimulus strategy
-The following test sequences and covergroups are described in more detail in the testplan at `hw/ip/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
+The following test sequences and covergroups are described in more detail in the testplan at `hw/top_earlgrey/ip_autogen/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
 
 This IP is only reset via the `por_n_i` input, and by `scan_rst_ni` qualified by `scanmode_i` being active.
 The regular `rst_ni` input is connected to its own `resets_o.rst_por_io_div4_n[0]` output, so the reset output from `clk_rst_if` is not connected.
@@ -107,9 +107,9 @@ The latter are described in the testplan.
 * TLUL assertions: The `tb/rstmgr_bind.sv` file binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * Response to pwrmgr's `rst_lc_req` and `rst_sys_req` inputs: these trigger transitions in `rst_lc_src_n` and `rst_sys_rst_n` outputs.
-  Checked via SVAs in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
+  Checked via SVAs in [`hw/top_earlgrey/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Response to `cpu_i.ndmreset_req` input: after it is asserted, rstmgr's `rst_sys_src_n` should go active.
-  Checked via SVA in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
+  Checked via SVA in [`hw/top_earlgrey/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Resets cascade hierarchically per [Reset Topology](../doc/theory_of_operation.md#reset-topology).
   Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
 * POR must be active for at least 32 consecutive cycles before going inactive before output resets go inactive.

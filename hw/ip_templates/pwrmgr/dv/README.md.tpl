@@ -228,7 +228,7 @@ They are driven by sequences as they need to.
 
 ${"####"} Assertions
 The [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv) module binds a few modules containing assertions to the IP as follows:
-* TLUL assertions: the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) ensures TileLink interface protocol compliance.
+* TLUL assertions: the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) ensures TileLink interface protocol compliance.
 * Clock enables assertions:
   The `pwrmgr_clock_enables_sva_if` module contains assertions checking that the various clk_en outputs correspond to the settings in the `control` CSR.
 * CLKMGR clk_en to status handshake assertions:

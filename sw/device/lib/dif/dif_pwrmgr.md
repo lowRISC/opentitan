@@ -1,6 +1,6 @@
 # Power Manager DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Power Manager DIF](../../../../hw/ip/pwrmgr/README.md).
+This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Power Manager DIF](../../../../hw/top_earlgrey/ip_autogen/pwrmgr/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
 
 <h2>DIF Checklist</h2>

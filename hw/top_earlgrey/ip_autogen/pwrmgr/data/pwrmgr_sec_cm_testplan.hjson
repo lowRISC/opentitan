@@ -1,0 +1,216 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../pwrmgr/data/pwrmgr.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../pwrmgr/data/pwrmgr_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
+            This entry is covered by tl_access_test
+            (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            This will not trigger rst_req, but
+            send fatal alert
+            '''
+      stage: V2S
+      tests: ["pwrmgr_tl_intg_err"]
+    }
+    {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+
+            **Stimulus**:
+            - Use comprehensive stimulus - reset and wakeup -
+              as background traffic to ensure this counter measure
+              is valid for various states of fast and slow state.
+            - Drive lc_hw_debug_en_i and lc_dft_en_i with
+              mixed valid and invalid values.
+
+            **Check**:
+            - Collect coverage by binding cip_mubi_cov_if to
+              tb.dut.lc_hw_debug_en_i and tb.dut.lc_dft_en_i
+            - Add assertion to check whether rom_intg_chk_dis
+              is set to '1' only when lc_dft_en_i or lc_hw_debug_en_i
+              is high.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm_lc_ctrl_intersig_mubi"]
+    }
+    {
+      name: sec_cm_rom_ctrl_intersig_mubi
+      desc: '''Verify the countermeasure(s) ROM_CTRL.INTERSIG.MUBI.
+
+            **Stimulus**:
+            - Use comprehensive stimulus - reset and wakeup -
+              as background traffic to ensure this counter measure
+              is valid for various states of fast and slow fsm.
+            - Drive rom_ctrl_i with mixed valid and invalid values.
+
+            **Check**:
+            - Collect coverage by binding cip_mubi_cov_if to
+              tb.dut.rom_ctrl_i
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm_rom_ctrl_intersig_mubi"]
+    }
+    {
+      name: sec_cm_rstmgr_intersig_mubi
+      desc: '''Verify the countermeasure(s) RSTMGR.INTERSIG.MUBI.
+
+            **Stimulus**:
+            - Drive tb.dut.sw_rst_req_i with mixed valid and invalid values
+
+            **Check**:
+            - See sw rst only happens when dut gets valid value.
+            - Collect coverage by binding cip_mubi_cov_if to
+              tb.dut.sw_rst_req_i
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm_rstmgr_intersig_mubi"]
+    }
+    {
+      name: sec_cm_esc_rx_clk_bkgn_chk
+      desc: '''Verify the countermeasure(s) ESC_RX.CLK.BKGN_CHK.
+
+            **Stimulus**:
+            - At FastPwrStateActive state, create escalation clock
+              or reset failure by stopping clock or asserting reset.
+
+            **Check**:
+            - Expecting esc_timeout event and trigger rstreqs[ResetEscIdx]
+              and fatal alert event. After alert agent process
+              the alert by asserting escalation reset, see if dut
+              is back to normal operation state.
+
+            '''
+      stage: V2S
+      tests: ["pwrmgr_esc_clk_rst_malfunc"]
+    }
+    {
+      name: sec_cm_esc_rx_clk_local_esc
+      desc: '''Verify the countermeasure(s) ESC_RX.CLK.LOCAL_ESC.
+
+            This is triggered by common cm primitives (SecCmPrimCount).
+            (https://github.com/lowRISC/opentitan/blob/master
+            /hw/dv/sv/cip_lib/doc/index.md#security-verification
+            -for-common-countermeasure-primitives)
+
+            **Check**:
+            - Detect fast state transition to FastPwrStateResetPrep.
+              And this will trigger rstreqs[ResetEscIdx].
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm"]
+    }
+    {
+      name: sec_cm_fsm_sparse
+      desc: '''Verify the countermeasure(s) FSM.SPARSE.
+            This is triggered by common cm primitives (SecCmPrimSparseFsmFlop).
+            (https://github.com/lowRISC/opentitan/blob/master
+            /hw/dv/sv/cip_lib/doc/index.md#security-verification
+            -for-common-countermeasure-primitives)
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm"]
+    }
+    {
+      name: sec_cm_fsm_terminal
+      desc: '''Verify the countermeasure(s) FSM.TERMINAL.
+
+            This is caused by any invalid (slow|fast) state.
+
+            **Check**:
+            If slow state is invalid, fast state becomes FastPwrStateInvalid,
+            pwr_ast_o.pwr_clamp =1 and pwr_ast_o.main_pd_n = 0.
+            If fast state is invalid, pwr_rst_o.rst_lc_req = 3,
+            pwr_rst_o.rst_sys_req = 3 and pwr_clk_o = 0.
+            Dut should be recovered by asserting rst_n = 0.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm"]
+    }
+    {
+      name: sec_cm_ctrl_flow_global_esc
+      desc: '''Verify the countermeasure(s) CTRL_FLOW.GLOBAL_ESC.
+
+            **Stimulus**:
+            - Send escalation request to esc_rst_tx_i.
+
+            **Check**:
+            - Check fast state transition to FastPwrStateResetPrep
+              and get pwr_rst_req.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_global_esc"]
+    }
+    {
+      name: sec_cm_main_pd_rst_local_esc
+      desc: '''Verify the countermeasure(s) MAIN_PD.RST.LOCAL_ESC.
+
+            **Stimulus**:
+            - Create power reset glitch by setting 'tb.dut.rst_main_ni' to 0.
+
+            **Check**:
+            - Check fast state transition to FastPwrStateResetPrep
+              and get pwr_rst_req.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_glitch"]
+    }
+    {
+      name: sec_cm_ctrl_config_regwen
+      desc: '''Verify the countermeasure(s) CTRL.CONFIG.REGWEN.
+
+            **Stimulus**:
+            - Initiate low power transition by setting
+              PWRMGR.CONTROL.LOW_POWER_HINT to 1. Wait for a few cycle
+              to ensure the csr value propagates to slow clock domain.
+              Then issue csr write to PWRMGR.CONTROL
+
+            **Check**:
+            - After the csr update under PWRMGR.CTRL_CFG_REGWEN = 0,
+              read back and check the value is not updated by
+              the csr udate attempt.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_sec_cm_ctrl_config_regwen"]
+    }
+    {
+      name: sec_cm_wakeup_config_regwen
+      desc: '''Verify the countermeasure(s) WAKEUP.CONFIG.REGWEN.
+
+            This is covered by auto csr test.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_csr_rw"]
+    }
+    {
+      name: sec_cm_reset_config_regwen
+      desc: '''Verify the countermeasure(s) RESET.CONFIG.REGWEN.
+
+            This is covered by auto csr test.
+            '''
+      stage: V2S
+      tests: ["pwrmgr_csr_rw"]
+    }
+  ]
+}

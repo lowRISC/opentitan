@@ -155,6 +155,7 @@ def generate_xbars(top: Dict[str, object], out_path: Path) -> None:
 
 
 def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating alert_handler with ipgen")
     topname = top["name"]
 
     # default values
@@ -210,6 +211,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
 
 
 def generate_plic(top: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating rv_plic with ipgen")
     topname = top["name"]
     params = {}
 
@@ -421,9 +423,9 @@ def generate_clkmgr(top: Dict[str, object], cfg_path: Path,
     generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
 
 
-# generate pwrmgr
 def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
-    log.info("Generating pwrmgr")
+    log.info("Generating pwrmgr with ipgen")
+    topname = top["name"]
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
@@ -443,43 +445,15 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         log.warning("The design has no reset request sources. "
                     "Reset requests are not supported.")
 
-    # Define target path
-    spec_ip_path = out_path / "ip" / "pwrmgr"
-    rtl_path = spec_ip_path / "rtl" / "autogen"
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = spec_ip_path / "data/autogen"
-    data_path.mkdir(parents=True, exist_ok=True)
+    params = {
+        "top_name": topname,
+        "NumWkups": n_wkups,
+        "Wkups": top["wakeups"],
+        "rst_reqs": top["reset_requests"],
+        "NumRstReqs": n_rstreqs
+    }
 
-    # Determine source path for template files from ip directory.
-    orig_ip_path = SRCTREE_TOP / "hw" / "ip" / "pwrmgr"
-    tpl_path = orig_ip_path / "data"
-    hjson_tpl_path = tpl_path / "pwrmgr.hjson.tpl"
-    original_rtl_path = orig_ip_path / "rtl"
-
-    # Render and write out hjson
-    out = StringIO()
-    with hjson_tpl_path.open(mode="r", encoding="UTF-8") as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(NumWkups=n_wkups,
-                                   Wkups=top["wakeups"],
-                                   rst_reqs=top["reset_requests"],
-                                   NumRstReqs=n_rstreqs)
-
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("pwrmgr hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pwrmgr config file")
-        return
-
-    hjson_path = data_path / "pwrmgr.hjson"
-    with hjson_path.open(mode="w", encoding="UTF-8") as fout:
-        fout.write(genhdr + out)
-
-    # Generate reg files
-    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
+    ipgen_render("pwrmgr", topname, params, out_path)
 
 
 def get_rst_ni(top: Dict[str, object]) -> object:

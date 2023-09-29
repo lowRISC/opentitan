@@ -23,7 +23,6 @@
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
 | [`pinmux`]       | Multiplexes between on-chip hardware blocks and pins; can be configured at runtime                                                |
 | [`pwm`]          | Transmission of pulse-width modulated output signals with adjustable duty cycle                                                   |
-| [`pwrmgr`]       | Sequences on-chip power, clocks, and resets through different reset and power states                                              |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
 | [`rstmgr`]       | Controls the on-chip reset signals, records reset cause and CPU crash dump for software                                           |
 | [`rv_core_ibex`] | Dual-core lockstep 32-bit RISC-V processor running application and control software                                               |
@@ -58,7 +57,6 @@
 [`pattgen`]: ./pattgen/README.md
 [`pinmux`]: ./pinmux/README.md
 [`pwm`]: ./pwm/README.md
-[`pwrmgr`]: ./pwrmgr/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
 [`rstmgr`]: ./rstmgr/README.md
 [`rv_core_ibex`]: ./rv_core_ibex/README.md
