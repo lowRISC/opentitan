@@ -52,11 +52,12 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[512 / 32];
-  crypto_word32_buf_t actual_digest = {
-      .data = actual_digest_data,
+  hash_digest_t actual_digest = {
       .len = ARRAYSIZE(actual_digest_data),
+      .data = actual_digest_data,
+      .mode = kHashModeSha512,
   };
-  TRY(otcrypto_hash(input_message, kHashModeSha512, &actual_digest));
+  TRY(otcrypto_hash(input_message, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
@@ -88,9 +89,10 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[512 / 32];
-  crypto_word32_buf_t actual_digest = {
+  hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
+      .mode = kHashModeSha512,
   };
   TRY(otcrypto_hash_final(&ctx, &actual_digest));
 

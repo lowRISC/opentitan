@@ -25,13 +25,13 @@ static kmac_test_vector_t *current_test_vector = NULL;
  * @param security_str Security strength (in bits).
  * @param[out] mode SHAKE mode enum value.
  */
-status_t get_shake_mode(size_t security_strength, xof_shake_mode_t *mode) {
+status_t get_shake_mode(size_t security_strength, hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kXofShakeModeShake128;
+      *mode = kHashXofModeShake128;
       break;
     case 256:
-      *mode = kXofShakeModeShake256;
+      *mode = kHashXofModeShake256;
       break;
     default:
       LOG_INFO("Invalid security strength for SHAKE: %d bits",
@@ -47,13 +47,13 @@ status_t get_shake_mode(size_t security_strength, xof_shake_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode cSHAKE mode enum value.
  */
-status_t get_cshake_mode(size_t security_strength, xof_cshake_mode_t *mode) {
+status_t get_cshake_mode(size_t security_strength, hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kXofCshakeModeCshake128;
+      *mode = kHashXofModeCshake128;
       break;
     case 256:
-      *mode = kXofCshakeModeCshake256;
+      *mode = kHashXofModeCshake256;
       break;
     default:
       LOG_INFO("Invalid security strength for cSHAKE: %d bits",
@@ -120,41 +120,43 @@ static status_t run_test_vector(void) {
     digest_num_words++;
   }
   uint32_t digest[digest_num_words];
-  crypto_word32_buf_t digest_buf = {
+  hash_digest_t digest_buf = {
       .data = digest,
       .len = digest_num_words,
   };
 
   switch (current_test_vector->test_operation) {
     case kKmacTestOperationShake: {
-      xof_shake_mode_t mode;
-      TRY(get_shake_mode(current_test_vector->security_strength, &mode));
-      TRY(otcrypto_xof_shake(current_test_vector->input_msg, mode,
-                             current_test_vector->digest.len, &digest_buf));
+      TRY(get_shake_mode(current_test_vector->security_strength,
+                         &digest_buf.mode));
+      TRY(otcrypto_xof_shake(current_test_vector->input_msg, &digest_buf));
       break;
     }
     case kKmacTestOperationCshake: {
-      xof_cshake_mode_t mode;
-      TRY(get_cshake_mode(current_test_vector->security_strength, &mode));
-      TRY(otcrypto_xof_cshake(current_test_vector->input_msg, mode,
+      TRY(get_cshake_mode(current_test_vector->security_strength,
+                          &digest_buf.mode));
+      TRY(otcrypto_xof_cshake(current_test_vector->input_msg,
                               current_test_vector->func_name,
-                              current_test_vector->cust_str,
-                              current_test_vector->digest.len, &digest_buf));
+                              current_test_vector->cust_str, &digest_buf));
       break;
     }
     case kKmacTestOperationSha3: {
-      hash_mode_t mode;
-      TRY(get_sha3_mode(current_test_vector->security_strength, &mode));
-      TRY(otcrypto_hash(current_test_vector->input_msg, mode, &digest_buf));
+      TRY(get_sha3_mode(current_test_vector->security_strength,
+                        &digest_buf.mode));
+      TRY(otcrypto_hash(current_test_vector->input_msg, &digest_buf));
       break;
     }
     case kKmacTestOperationKmac: {
       kmac_mode_t mode;
       TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
+      crypto_word32_buf_t tag_buf = {
+          .data = digest_buf.data,
+          .len = digest_buf.len,
+      };
       TRY(otcrypto_kmac(&current_test_vector->key,
                         current_test_vector->input_msg, mode,
                         current_test_vector->cust_str,
-                        current_test_vector->digest.len, &digest_buf));
+                        current_test_vector->digest.len, &tag_buf));
       break;
     }
     default: {

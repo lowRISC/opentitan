@@ -200,16 +200,17 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   } else {
     // If the key is longer than the hash function block size, we need to hash
     // it and write the digest into the start of K0.
-    crypto_word32_buf_t key_digest = {
+    hash_digest_t key_digest = {
         .len = digest_words,
         .data = k0,
+        .mode = hash_mode,
     };
     HARDENED_TRY(otcrypto_hash(
         (crypto_const_byte_buf_t){
             .len = key->config.key_length,
             .data = (unsigned char *)unmasked_key,
         },
-        hash_mode, &key_digest));
+        &key_digest));
   }
 
   // Compute (K0 ^ ipad).
@@ -255,9 +256,16 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Create digest buffer that points to the tag.
+  hash_digest_t digest_buf = {
+      .mode = ctx->inner.mode,
+      .len = tag->len,
+      .data = tag->data,
+  };
+
   // Finalize the computation of the inner hash = H(K0 ^ ipad || message) and
   // store it in `tag` temporarily.
-  HARDENED_TRY(otcrypto_hash_final(&ctx->inner, tag));
+  HARDENED_TRY(otcrypto_hash_final(&ctx->inner, &digest_buf));
 
   // Finalize the computation of the outer hash
   //    = H(K0 ^ opad || H(K0 ^ ipad || message)).
@@ -265,5 +273,6 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
       &ctx->outer,
       (crypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag->len,
                                 .data = (unsigned char *)tag->data}));
-  return otcrypto_hash_final(&ctx->outer, tag);
+
+  return otcrypto_hash_final(&ctx->outer, &digest_buf);
 }
