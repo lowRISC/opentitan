@@ -15,92 +15,7 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
-void pinmux_testutils_init(dif_pinmux_t *pinmux) {
-  // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio22,
-      kTopDarjeelingPinmuxInselIoc0));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio23,
-      kTopDarjeelingPinmuxInselIoc1));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio24,
-      kTopDarjeelingPinmuxInselIoc2));
-
-  // Configure UART0 RX input to connect to MIO pad IOC3
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInUart0Rx,
-                                       kTopDarjeelingPinmuxInselIoc3));
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc3,
-                               kTopDarjeelingPinmuxOutselConstantHighZ));
-  // Configure UART0 TX output to connect to MIO pad IOC4
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc4,
-                                        kTopDarjeelingPinmuxOutselUart0Tx));
-
-#if !OT_IS_ENGLISH_BREAKFAST
-  // Enable pull-ups on UART0 RX
-  // Pull-ups are available only on certain platforms.
-  if (kDeviceType == kDeviceSimDV) {
-    dif_pinmux_pad_attr_t out_attr;
-    dif_pinmux_pad_attr_t in_attr = {
-        .slew_rate = 0,
-        .drive_strength = 0,
-        .flags = kDifPinmuxPadAttrPullResistorEnable |
-                 kDifPinmuxPadAttrPullResistorUp};
-
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, kTopDarjeelingMuxedPadsIoc3,
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
-  };
-#endif
-}
-
-// Mapping of Chip IOs to the GPIO peripheral.
-//
-// Depending on the simulation platform, there may be a limitation to how chip
-// IOs are allocated to the GPIO peripheral, even for testing. The DV testbench
-// does not have this limitation, and is able to allocate as many chip IOs as
-// the number of GPIOs supported by the peripheral. At this time, these pin
-// assignments matches DV (see `hw/top_darjeeling/dv/env/chip_if.sv`).
-//
-// The pinout spreadsheet allocates fewer pins to GPIOs than what the GPIO IP
-// supports. This oversubscription is intentional to maximize testing.
-const dif_pinmux_index_t kPinmuxTestutilsGpioInselPins[kDifGpioNumPins] = {
-    kTopDarjeelingPinmuxInselIoa0,  kTopDarjeelingPinmuxInselIoa1,
-    kTopDarjeelingPinmuxInselIoa2,  kTopDarjeelingPinmuxInselIoa3,
-    kTopDarjeelingPinmuxInselIoa4,  kTopDarjeelingPinmuxInselIoa5,
-    kTopDarjeelingPinmuxInselIoa6,  kTopDarjeelingPinmuxInselIoa7,
-    kTopDarjeelingPinmuxInselIoa8,  kTopDarjeelingPinmuxInselIob6,
-    kTopDarjeelingPinmuxInselIob7,  kTopDarjeelingPinmuxInselIob8,
-    kTopDarjeelingPinmuxInselIob9,  kTopDarjeelingPinmuxInselIob10,
-    kTopDarjeelingPinmuxInselIob11, kTopDarjeelingPinmuxInselIob12,
-    kTopDarjeelingPinmuxInselIoc9,  kTopDarjeelingPinmuxInselIoc10,
-    kTopDarjeelingPinmuxInselIoc11, kTopDarjeelingPinmuxInselIoc12,
-    kTopDarjeelingPinmuxInselIor0,  kTopDarjeelingPinmuxInselIor1,
-    kTopDarjeelingPinmuxInselIor2,  kTopDarjeelingPinmuxInselIor3,
-    kTopDarjeelingPinmuxInselIor4,  kTopDarjeelingPinmuxInselIor5,
-    kTopDarjeelingPinmuxInselIor6,  kTopDarjeelingPinmuxInselIor7,
-    kTopDarjeelingPinmuxInselIor10, kTopDarjeelingPinmuxInselIor11,
-    kTopDarjeelingPinmuxInselIor12, kTopDarjeelingPinmuxInselIor13};
-
-const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
-    kTopDarjeelingPinmuxMioOutIoa0,  kTopDarjeelingPinmuxMioOutIoa1,
-    kTopDarjeelingPinmuxMioOutIoa2,  kTopDarjeelingPinmuxMioOutIoa3,
-    kTopDarjeelingPinmuxMioOutIoa4,  kTopDarjeelingPinmuxMioOutIoa5,
-    kTopDarjeelingPinmuxMioOutIoa6,  kTopDarjeelingPinmuxMioOutIoa7,
-    kTopDarjeelingPinmuxMioOutIoa8,  kTopDarjeelingPinmuxMioOutIob6,
-    kTopDarjeelingPinmuxMioOutIob7,  kTopDarjeelingPinmuxMioOutIob8,
-    kTopDarjeelingPinmuxMioOutIob9,  kTopDarjeelingPinmuxMioOutIob10,
-    kTopDarjeelingPinmuxMioOutIob11, kTopDarjeelingPinmuxMioOutIob12,
-    kTopDarjeelingPinmuxMioOutIoc9,  kTopDarjeelingPinmuxMioOutIoc10,
-    kTopDarjeelingPinmuxMioOutIoc11, kTopDarjeelingPinmuxMioOutIoc12,
-    kTopDarjeelingPinmuxMioOutIor0,  kTopDarjeelingPinmuxMioOutIor1,
-    kTopDarjeelingPinmuxMioOutIor2,  kTopDarjeelingPinmuxMioOutIor3,
-    kTopDarjeelingPinmuxMioOutIor4,  kTopDarjeelingPinmuxMioOutIor5,
-    kTopDarjeelingPinmuxMioOutIor6,  kTopDarjeelingPinmuxMioOutIor7,
-    kTopDarjeelingPinmuxMioOutIor10, kTopDarjeelingPinmuxMioOutIor11,
-    kTopDarjeelingPinmuxMioOutIor12, kTopDarjeelingPinmuxMioOutIor13};
+void pinmux_testutils_init(dif_pinmux_t *pinmux) {}
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
   if (kDeviceType == kDeviceFpgaCw310) {
@@ -117,7 +32,7 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   // Turn off the pull enable on the pad and read the IO.
   dif_pinmux_pad_attr_t attr = {.flags = 0};
   dif_pinmux_pad_attr_t attr_out;
-  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindDio,
                                           attr, &attr_out));
   bool state;
   // The value read is unmodified by the internal pull resistors and represents
@@ -131,7 +46,7 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   // external signal is strong, the external value will win.
   attr.flags = kDifPinmuxPadAttrPullResistorEnable |
                (state ? 0 : kDifPinmuxPadAttrPullResistorUp);
-  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindDio,
                                           attr, &attr_out));
   // Combine the result of the contest between the external signal in internal
   // pull resistors.  This represents the lower bit of the 4 possible states.
@@ -143,12 +58,12 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio) {
   uint32_t strap = 0;
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 22,
-                                           kTopDarjeelingMuxedPadsIoc0);
+                                           kTopDarjeelingDirectPadsGpioGpio22);
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 23,
-                                           kTopDarjeelingMuxedPadsIoc1)
+                                           kTopDarjeelingDirectPadsGpioGpio23)
            << 2;
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 24,
-                                           kTopDarjeelingMuxedPadsIoc2)
+                                           kTopDarjeelingDirectPadsGpioGpio24)
            << 4;
   return strap;
 }

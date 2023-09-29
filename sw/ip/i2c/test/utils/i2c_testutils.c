@@ -210,22 +210,6 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                     uint8_t i2c_id) {
-  // Configure sda pin.
-  TRY(dif_pinmux_input_select(pinmux, kPinmuxConf[i2c_id].sda.peripheral_in,
-                              kPinmuxConf[i2c_id].sda.insel));
-  TRY(dif_pinmux_output_select(pinmux, kPinmuxConf[i2c_id].sda.mio_out,
-                               kPinmuxConf[i2c_id].sda.outsel));
-
-  // Configure scl pin.
-  TRY(dif_pinmux_input_select(pinmux, kPinmuxConf[i2c_id].scl.peripheral_in,
-                              kPinmuxConf[i2c_id].scl.insel));
-  TRY(dif_pinmux_output_select(pinmux, kPinmuxConf[i2c_id].scl.mio_out,
-                               kPinmuxConf[i2c_id].scl.outsel));
-  return OK_STATUS();
-}
-
 status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed) {
   uint32_t speed_khz = 0;
   switch (speed) {

@@ -8,51 +8,7 @@
 #include <stdint.h>
 
 #include "sw/ip/i2c/dif/dif_i2c.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/lib/sw/device/base/status.h"
-
-/**
- * Pinmux configuration for a single pin.
- */
-typedef struct i2c_pinmux_map {
-  /**
-   * Pinmux MIO Output.
-   */
-  const dif_pinmux_index_t mio_out;
-  /**
-   * Pinmux MIO Input Selector.
-   */
-  const dif_pinmux_index_t insel;
-  /**
-   * Pinmux Peripheral Input.
-   */
-  const dif_pinmux_index_t peripheral_in;
-  /**
-   * Pinmux Peripheral Output Selector.
-   */
-  const dif_pinmux_index_t outsel;
-} i2c_pinmux_map_t;
-
-/**
- * Pinmux configuration for I2C pins.
- */
-typedef struct i2c_pinmux_conf {
-  /**
-   * SDA configuration.
-   */
-  i2c_pinmux_map_t sda;
-  /**
-   * SCL configuration.
-   */
-  i2c_pinmux_map_t scl;
-} i2c_pinmux_conf_t;
-
-/**
- * I2C pinmux configuratrion.
- *
- * This array provides pinmux configuration information for all defined I2Cs.
- */
-extern const i2c_pinmux_conf_t kPinmuxConf[];
 
 /**
  * Construct an I2C write as an I2C host.
@@ -162,17 +118,6 @@ OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
                                           uint8_t byte_count, uint8_t *addr,
                                           uint8_t *bytes, uint8_t *cont_byte);
-
-/**
- * Initialize the pinmux.
- *
- * @param pimmux A pinmux handler.
- * @param kI2cIdx The i2c identifier.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                     uint8_t kI2cIdx);
 
 /**
  * Return whether the fifo is empty.

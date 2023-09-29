@@ -66,16 +66,9 @@
 /**
  * Pinmux peripheral input values for software strap pins.
  */
-#define SW_STRAP_0_PERIPH 22
-#define SW_STRAP_1_PERIPH 23
-#define SW_STRAP_2_PERIPH 24
-
-/**
- * Pinmux MIO input selector values for software strap pins.
- */
-#define SW_STRAP_0_INSEL 24
-#define SW_STRAP_1_INSEL 25
-#define SW_STRAP_2_INSEL 26
+#define SW_STRAP_0_GPIO 22
+#define SW_STRAP_1_GPIO 23
+#define SW_STRAP_2_GPIO 24
 
 /**
  * Pads of the software strap pins.
@@ -87,27 +80,24 @@
 /**
  * Mask for the software strap pins.
  */
-#define SW_STRAP_MASK                                    \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (1 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_MASK \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (1 << SW_STRAP_0_GPIO))
 
 /**
  * RMA entry strap value.
  *
- * We expect strong pull-ups on SW_STRAP_2_PERIPH and SW_STRAP_1_PERIPH, and
- * strong pull-down on SW_STRAP_0_PERIPH, i.e. `11_11_00`.
+ * We expect strong pull-ups on SW_STRAP_2_GPIO and SW_STRAP_1_GPIO, and
+ * strong pull-down on SW_STRAP_0_GPIO, i.e. `11_11_00`.
  */
-#define SW_STRAP_RMA_ENTRY                               \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (0 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_RMA_ENTRY \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (0 << SW_STRAP_0_GPIO))
 
 /**
  * Bootstrap strap value.
  *
  * We expect strong pull-ups on all software strap pins, i.e. `11_11_11`.
  */
-#define SW_STRAP_BOOTSTRAP                               \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (1 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_BOOTSTRAP \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (1 << SW_STRAP_0_GPIO))
 
 #endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_CHIP_H_
