@@ -2,48 +2,48 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  "template_param_list": [
+  template_param_list: [
     {
-      "name": "n_alerts",
-      "desc": "Number of alert sources",
-      "type": "int",
-      "default": 4
-    },
+      name: "n_alerts"
+      desc: "Number of alert sources"
+      type: "int"
+      default: "4"
+    }
     {
-      "name": "esc_cnt_dw",
-      "desc": "Width of escalation counter",
-      "type": "int",
-      "default": 32
-    },
+      name: "esc_cnt_dw"
+      desc: "Width of escalation counter"
+      type: "int"
+      default: "32"
+    }
     {
-      "name": "accu_cnt_dw",
-      "desc": "Width of accumulator"
-      "type": "int"
-      "default": 16
-    },
+      name: "accu_cnt_dw"
+      desc: "Width of accumulator"
+      type: "int"
+      default: "16"
+    }
     {
-      "name": "async_on",
-      "desc": "Enables asynchronous sygnalling between specific alert RX/TX pairs"
-      "type": "object"
-      "default": []
-    },
+      name: "async_on"
+      desc: "Enables asynchronous signalling between specific alert RX/TX pairs"
+      type: "object"
+      default: []
+    }
     {
-      "name": "n_classes",
-      "desc": "Number of supported classes (leave this at 4 at the moment)"
-      "type": "int"
-      "default": 4
-    },
+      name: "n_classes"
+      desc: "Number of supported classes (leave this at 4 at the moment)"
+      type: "int"
+      default: "4"
+    }
     {
-      "name": "n_lpg",
-      "desc": "Number of low-power groups (LPGs)"
-      "type": "int"
-      "default": 1
-    },
+      name: "n_lpg"
+      desc: "Number of low-power groups (LPGs)"
+      type: "int"
+      default: "1"
+    }
     {
-      "name": "lpg_map",
-      "desc": "Defines a mapping from alerts to LPGs"
-      "type": "object"
-      "default": []
-    },
-  ],
+      name: "lpg_map"
+      desc: "Defines a mapping from alerts to LPGs"
+      type: "object"
+      default: []
+    }
+  ]
 }
