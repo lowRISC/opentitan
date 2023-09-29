@@ -35,6 +35,7 @@ waive -rules {ARITH_CONTEXT} -location {sha2_pad.sv} -regexp {Bitlength of arith
       -comment "Bitwidth overflow is intended"
 
 waive -rules {INTEGER}        -location {hmac_pkg.sv} -regexp {'amt' of type int used as a}
+      -comment "rotate function behaves as static, it is called with constant in the design"
 waive -rules {TWO_STATE_TYPE} -location {hmac_pkg.sv} -regexp {'amt' is of two state type 'int'} \
       -comment "shift function behaves as static, it is called with constant in the design"
 
@@ -43,3 +44,16 @@ waive -rules {INTEGER}        -location {tlul_socket_1n.sv} -regexp {'idx' of ty
 
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {hmac.sv} -regexp {'msg_fifo_wmask.* is not read} \
       -comment "Only first bit in a byte is used"
+
+waive -rules {INTEGER} -location {hmac_multimode_pkg.sv} -regexp {'amt' of type integer used as a non-constant value}
+      -comment "rotate function behaves as static, it is called with constant in the design"
+waive -rules {ARITH_CONTEXT} -location {hmac_multimode_pkg.sv} -regexp {Bitlength of arithmetic operation 'h_i\[3\]\[31:0\] \+ temp1' is self-determined in this context} \
+      -comment "Bitwidth overflow is intended"
+waive -rules {ARITH_CONTEXT} -location {hmac_multimode_pkg.sv} -regexp {Bitlength of arithmetic operation '\(temp1 \+ temp2\)' is self-determined in this context} \
+      -comment "Bitwidth overflow is intended"
+waive -rules {RESET_ONLY} -location {sha2_multimode_pad.sv} -regexp {'tx_count\[4:0\]' is synchronously reset but has no other synchronous assignments}
+      -comment "Only upper bits are written"
+waive -rules {CONST_FF} -location {sha2_multimode_pad.sv} -regexp {Flip-flop 'tx_count\[4:0\]' is driven by constant zeros}
+      -comment "Only upper bits are written"
+waive -rules {INPUT_NOT_READ} -location {hmac_multimode_pkg.sv} -regexp {Input port 'h_i\[0:7\]\[63:32\]' is not read from in function 'compress_256'}
+      -comment "Upper are only used in SHA2-384/512"
