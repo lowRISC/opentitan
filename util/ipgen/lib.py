@@ -214,7 +214,7 @@ class IpConfig:
 
             if key not in template_params:
                 raise ValueError(
-                    f"The IP configuration has a key {key!r} which is a "
+                    f"The IP configuration has a key {key!r} which is not a "
                     "valid parameter.")
 
             param_type = template_params[key].param_type
