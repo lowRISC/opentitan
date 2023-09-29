@@ -151,7 +151,7 @@ class edn_base_vseq extends cip_base_vseq #(
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
                       bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0);
 
-    cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+    cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags), .glen(glen));
 
     case (cmd_type)
       "boot_ins": csr_wr(.ptr(ral.boot_ins_cmd), .value({glen, flags, clen, 1'b0, acmd}));

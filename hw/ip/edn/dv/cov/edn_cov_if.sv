@@ -63,12 +63,17 @@ interface edn_cov_if (
     }
   endgroup : edn_endpoints_cg
 
-  covergroup edn_cs_cmds_cg with function sample(bit[3:0]  clen,
+  covergroup edn_cs_cmds_cg with function sample(csrng_pkg::acmd_e acmd,
+                                                 bit[3:0]  clen,
                                                  bit[3:0]  flags,
                                                  bit[18:0] glen
                                                 );
     option.name         = "edn_cs_cmds_cg";
     option.per_instance = 1;
+
+    cp_acmd: coverpoint acmd {
+      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV };
+    }
 
     cp_clen: coverpoint clen {
       bins no_cmd_data   = { 0 };
@@ -86,7 +91,23 @@ interface edn_cov_if (
       ignore_bins zero = { 0 };
     }
 
-    cr_clen_flags_glen:   cross cp_clen, cp_flags, cp_glen;
+    // for generate cmds, clen & glen matter
+    cr_acmd_clen_glen: cross cp_acmd, cp_clen, cp_glen {
+      ignore_bins glen_not_used_cross = ! binsof(cp_acmd) intersect { csrng_pkg::GEN };
+    }
+
+    // for instantiate and reseed cmds, clen & flag0 matter
+    cr_acmd_clen_flags: cross cp_acmd, cp_clen, cp_flags {
+      ignore_bins flag0_not_used_cross =
+          ! binsof(cp_acmd) intersect { csrng_pkg::INS, csrng_pkg::RES };
+    }
+
+    // for update cmds, only clen matters
+    cr_acmd_clen: cross cp_acmd, cp_clen {
+      ignore_bins non_upd_cross = ! binsof(cp_acmd) intersect { csrng_pkg::UPD };
+    }
+
+    // for uninstantiate cmds, nothing else matters
   endgroup : edn_cs_cmds_cg
 
   covergroup edn_error_cg with function sample(err_code_test_e err_test);
@@ -117,8 +138,8 @@ interface edn_cov_if (
                            cfg.auto_req_mode);
   endfunction
 
-  function automatic void cg_cs_cmds_sample(bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
-    edn_cs_cmds_cg_inst.sample(clen, flags, glen);
+  function automatic void cg_cs_cmds_sample(csrng_pkg::acmd_e acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
+    edn_cs_cmds_cg_inst.sample(acmd, clen, flags, glen);
   endfunction
 
   function automatic void cg_error_sample(bit[31:0] err_code);
