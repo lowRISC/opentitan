@@ -14,6 +14,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules/opentitan:defs.bzl", "EARLGREY_TEST_ENVS", "opentitan_test")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
 
@@ -2309,9 +2310,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
