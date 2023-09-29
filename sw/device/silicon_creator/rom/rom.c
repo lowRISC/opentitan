@@ -124,7 +124,7 @@ static void rom_bootstrap_message(void) {
 void init_spi_host(dif_spi_host_t *spi_host,
                    uint32_t peripheral_clock_freq_hz) {
   dif_spi_host_config_t config = {
-      .spi_clock = peripheral_clock_freq_hz / 4,// 100, for tape out 1MHz, in sim 50MHz
+      .spi_clock = peripheral_clock_freq_hz / 8,// consider 50MHz default ot freq, 6.25MHz after /8
       .peripheral_clock_freq_hz = peripheral_clock_freq_hz,
       .chip_select = {.idle = 2, .trail = 2, .lead = 2},
       .full_cycle = true,
@@ -134,11 +134,36 @@ void init_spi_host(dif_spi_host_t *spi_host,
   CHECK_DIF_OK(dif_spi_host_configure(spi_host, config));
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/true));
 }
+void flash_info_part_init(void){
+  volatile int * payload_1, * payload_2, * payload_3, * address, * start, * info_init;
+  int info_size = 2560;
+  
+  payload_1   = (int *) 0xff000000;
+  payload_2   = (int *) 0xff000004;
+  payload_3   = (int *) 0xff000008;
+  address     = (int *) 0xff00000C;
+  start       = (int *) 0xff000010;
+  info_init   = (int *) 0xff000020;
 
+  *info_init = 0x1;
+  
+  for(int i = 0; i < info_size; i++) {
+     if(i + 2 < info_size) {
+        *payload_1 = 0x0;
+        *payload_2 = 0x0;
+        *payload_3 = 0x0;
+        *address = i/3;
+        *start = 0x1;
+     }
+  }
+
+  *info_init = 0x0;
+  return;
+}
 void spi_flash_load_data(void){
 
   volatile int * datapath;
-  volatile int * address, * start, * payload_1, * payload_2, * payload_3; 
+  volatile int * address, * start, * payload_1, * payload_2, * payload_3, * test; 
 
   int num_iter = 154;
   int buf_size = 63;
@@ -148,7 +173,7 @@ void spi_flash_load_data(void){
   uint32_t addr_swap = 0;
   int index = 0;
   uintptr_t base_addr = TOP_EARLGREY_SPI_HOST0_BASE_ADDR;
-  uint64_t clkHz = 200000000;
+  uint64_t clkHz = 50000000;
   
   payload_1  = (int *) 0xff000000;
   payload_2  = (int *) 0xff000004;
@@ -210,6 +235,11 @@ void spi_flash_load_data(void){
   }
 
   *datapath = 0;
+  test = (int *) 0xf0000000;
+
+  if(*test == 0x01010101)
+    *test= 0x0;
+  
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, false));
 }
   
@@ -258,6 +288,7 @@ static rom_error_t rom_init(void) {
   // Initialize the shutdown policy.
   HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
 
+  flash_info_part_init();
   flash_ctrl_init();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
 
