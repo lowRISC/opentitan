@@ -272,7 +272,7 @@ class dma_seq_item extends uvm_sequence_item;
     super.post_randomize();
     // Check if randomization leads to valid configuration
     is_valid_config = check_config();
-    `uvm_info(`gfn, $sformatf("[DMA] dma_seq_item:%s", convert2string()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("[DMA] dma_seq_item:%s", this.convert2string()), UVM_MEDIUM)
   endfunction : post_randomize
 
   // Function to check if provided address and size is in DMA memory region
@@ -286,14 +286,10 @@ class dma_seq_item extends uvm_sequence_item;
   function bit check_config();
     bit valid_config = 1;
     // Check if operation is valid
-    case (opcode)
-      OpcCopy: begin  // Do nothing as this is valid OP code
-      end
-      default: begin
-        `uvm_info(`gfn, $sformatf("Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
-        valid_config = 0;
-      end
-    endcase
+    if (!(opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
+      `uvm_info(`gfn, $sformatf("Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
+      valid_config = 0;
+    end
     // Check if operation is performed between valid source and destination combinations
     // For all valid configurations, either source or destination address space Id must point
     // to OT internal address space
