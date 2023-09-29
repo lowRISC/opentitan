@@ -140,7 +140,7 @@ The second ROM partition with patching capability is added to the architecture d
 
 - **The patch table** includes:
 
-  - Contents for 32 [*patch match register pairs*](#patch-match--redirect-logic), each register 1 DWORD in size.
+  - Contents for 32 [*patch match descriptors*](#patch-match--redirect-logic), each descriptor is 2 DWORDs in size.
 
   - Total size of patch table = 2 DWORDS x 32 = 64 DWORDS.
 
@@ -150,7 +150,7 @@ The second ROM partition with patching capability is added to the architecture d
 
   - Variable size - few bytes to few KB.
     A small segment of ROM code (up to 32 bytes) can be overwritten using instructions in the code region.
-    If the replacement is longer than that, the code region can be short and contain just a branch to some other code.
+    To allow a replacement that's longer than that, the code region can be short and contain just a branch to some other code.
     This code must be loaded from the OTP ROM patch partition into [patch SRAM](#patch-sram) together with the replacement code.
 
 - **Signature**:
@@ -175,50 +175,67 @@ In this case, the dedicated SRAM can be locked after being loaded so that the pa
 
 A patch is a short sequence of instructions that replace some from the original code.
 The replacement is performed by re-routing instruction fetches to fetch from alternative addresses.
-This re-routing is handled by a block that sits between the Ibex core and TL-UL crossbar.
-The block is configured by 32 *patch match registers*.
+This re-routing is handled by a logic block that sits between the Ibex core and TL-UL crossbar.
+The block is configured by 32 sets of 4 memory-mapped registers:
+- [`IBUS_ADDR_MATCHING`](../data/rv_core_ibex.hjson#ibus_addr_matching_0)
+- [`IBUS_ADDR_EN`](../data/rv_core_ibex.hjson#ibus_addr_en_0)
+- [`IBUS_REMAP_ADDR`](../data/rv_core_ibex.hjson#ibus_remap_addr_0).
+- [`IBUS_REGWEN`](../data/rv_core_ibex.hjson#ibus_regwen_0).
 
-A patch match register is structured as follows.
-The patch applies to a small region of code (4, 8, 16 or 32 bytes), starting at a given address.
-This region is encoded in a field called `M_BASE`.
-The destination of the redirection is given by its address, encoded in a field called `R_BASE`.
+The patch loader is responsible for configuring those registers for each patch in the patch table.
+Each entry in the OTP ROM patch table is composed of two 32 bit words with the following layout:
 
-- If the source region has address `yyy...yyy`, the `M_BASE` field is:
+![Patch match register layout](patch-match.svg)
 
-| `M_BASE`            | Size /bytes |
-|---------------------|-------------|
-| `yy yyyy yyyy yy01` | 4           |
-| `yy yyyy yyyy y011` | 8           |
-| `yy yyyy yyyy 0111` | 16          |
-| `yy yyyy yyy0 1111` | 32          |
+- The first 32 bits describe the ROM code region to be patched:
+  - `M_BASE` is the base address of the original code in ROM to be patched.
+  - `P_SIZE` is the size, in `DWORD`s, of the code region to be patched.
+    The only valid values for P_SIZE are 1, 2, 4 and 8.
+    Any other value would describe a code region of an unsupported size.
+    This makes the patch invalid and the patch loader will not enable it.
+  - `L` is the the lock bit.
+    When this is set, the system will disallow any writes to the 4 above-described registers that are used to configure the patched code region.
+- The second 32-bit word contains the remapping address base:
+  - `R_BASE` is the remapped address for the patched code region.
+    This is the SRAM address where the patch loader loads the code patch.
+    Once the patch loader enables a patch region, instruction fetches that match an address in the `[M_BASE..(M_BASE + P_SIZE - 1)]` interval will be replaced by the instruction at the same offset within the `[R_BASE..(R_BASE + P_SIZE - 1)]` instead.
 
-- A bitmask can be derived from this pattern as `mask = ~({M_BASE, 1} ^ ({M_BASE, 1} +1));`.
+When applying ROM patches, the patch loader configures the Ibex instruction re-routing logic for each patch region, as follows:
+
+1. `IBUS_ADDR_MATCHING` is set to `(M_BASE & ~(P_SIZE - 1)) | ((P_SIZE - 1) >> 1)` in order for the Ibex remapping logic to form the ROM patch matching mask for that region.
+   See next section for more details.
+1. `IBUS_REMAP_ADDR` is set to `R_BASE`.
+1. `IBUS_ADDR_EN` is set to 1 if the patch loader evaluates the patch to be a valid one.
+1. `IBUS_REGWEN` is set to 0 if `L` is set to 1.
+
+#### Patch Match Logic Details
+
+As described in the previous section, the `IBUS_ADDR_MATCHING` register is configured by the patch loader with a value that aggregates both the ROM patch region base address and the region size.
+
+- If `M_BASE` value for the first entry in the OTP patch table is `yyy...yyy`, then the `IBUS_ADDR_MATCHING` register is configured as follows:
+
+| `IBUS_ADDR_MATCHING`| Code region size (in bytes) | `P_SIZE` |
+|---------------------|-----------------------------| ---------|
+| `yy yyyy yyyy yy01` | 4                           | 1        |
+| `yy yyyy yyyy y011` | 8                           | 2        |
+| `yy yyyy yyyy 0111` | 16                          | 4        |
+| `yy yyyy yyy0 1111` | 32                          | 8        |
+
+
+- A bitmask can be derived from this pattern as `mask = (IBUS_ADDR_MATCHING ^ (IBUS_ADDR_MATCHING + 1));`.
   This mask will be `1` in all the positions with a `y` in the table.
   Then the redirection is defined by saying that it applies to an address `addr` if
 
 ```
-   (addr & mask) == ({M_BASE, 1'b0} & mask)
+   (addr & mask) == (IBUS_ADDR_MATCHING & mask)
 ```
 
-- If a redirection applies, the redirected address can be computed by adding the bottom bits of `addr` to `R_BASE`.
+- If a redirection applies, the redirected address can be computed by adding the bottom bits of `addr` to ``IBUS_REMAP_ADDR``.
   These bits are those that are zero in `mask`, so the redirected address is:
 
 ```
-   raddr = {R_BASE, 2'b00} | (addr & ~mask);
+   raddr = {IBUS_REMAP_ADDR} | (addr & ~mask);
 ```
-
-- The patch is ignored unless the enable bit, `E`, is set.
-  This bit should only be set by the patch loader after the patch has been loaded and authenticated.
-
-- Finally there is a lock bit, `L`.
-  When this is set, the system will disallow any writes to the match registers.
-
-The fields above are arranged into two 32-bit registers with the following layout:
-
-![Patch match register layout](patch-match.svg)
-
-Here, "WPRI" has the same meaning as in the RISC-V privileged ISA specification document: Reserved Writes Preserve Values, Reads Ignore Values.
-Software should ignore the values read from WPRI fields, and should preserve their values when writing values to other fields of the same register.
 
 Using these patches implies the following system-level considerations:
 
@@ -243,22 +260,18 @@ h8944: sub r4, r3, r1
 h8948: add r5, r4, r2
 ```
 
-Let's allocate a SRAM location, say `h0100_0040` and place the patched sequence:
+Let's allocate a SRAM location, say `h01000_0040` and place the patched sequence:
 
 ```
-h100_0040: addi r2, r3, 11 // The patched instruction
+h1000_0040: addi r2, r3, 11 // The patched instruction
 ```
 
 Let's use patch match register 0 for this patch.
 
 ```
-// 4 byte patch; right shifted to drop low bit
-// OR 1 to specify 4 byte size aligned
-pa_mb_r0.m_base = ((h8940>>1)|1) = h44a1
-pa_mb_r0.E = 1
-
-//drop low 2 bits in r_base field
-pa_rb_r0.r_base = (h1000_0040>>2) = h4000010
+IBUS_ADDR_MATCHING_0.VAL = h8940 | h1 = h8941 // 4 bytes patch
+IBUS_REMAP_ADDR_0.VAL = h1000_0040
+IBUS_ADDR_EN_0.EN = 1
 ```
 
 The instruction fetch from `h8940` will now get instruction bytes from `h1000_0040`.
@@ -277,37 +290,37 @@ h8944: sub r4, r3, r1
 h8948: add r5, r4, r2
 ```
 
-The instruction `add r2, r3, x0` needs to be replaced with the sequence `add r2, r3, x0; sub r2, r4`.
+The instruction `add r2, r3, x0` needs to be replaced with the sequence `add r2, r3, x0; sub r2, r4, r6`.
 Because the new sequence is more than one instruction we have to redirect the execution flow.
 Let's allocate a SRAM location, say `h0100_0040` and place the patched sequence:
 
 ```
-h100_0040: add r2, r3, x0     // The patched instruction
-           sub r2, r4         // New instruction patched in
-           sub r4, r3, r1     // Orig instruction at h8944
-           auipc r31, disp_h100004c_to_h8948
-           jalr x0, r31
+h1000_0040: add r2, r3, x0     // The patched instruction
+            sub r2, r4, r6     // New instruction patched in
+            sub r4, r3, r1     // Orig instruction at h8944
+            auipc r31, disp_h1000_004c_to_h8948
+            jalr x0, r31
 ```
 
-Let's allocate a trampoline location at say `h100_0000` for this patch.
+Let's allocate a trampoline location at say `h1000_0000` for this patch.
 
 ```
-h100_0000: auipc r31, disp_from_8940_to_100_0040
-           jalr x0, r31       // Jump to the patch
+h1000_0000: auipc r31, disp_from_8940_to_1000_0040
+            jalr x0, r31       // Jump to the patch
 ```
 
 Let's use patch match register 0 for this patch.
 
 ```
-pa_mb_r0.m_base = h8943       // 8 byte patch
-pa_mb_r0.E = 1
-pa_rb_r0.r_base = h1000_0000
+IBUS_ADDR_MATCHING_0.VAL = h8940 | h3 = h8943 // 8 bytes patch
+IBUS_REMAP_ADDR_0.VAL = h1000_0000
+IBUS_ADDR_EN_0.EN = 1
 ```
 
-Now a fetch from `h8940` will get the code bytes from `h100_000`.
-The AUIPC will execute and compute the address to the patch location `h100_0040`.
-The next fetch from `8944` will get the code bytes from `h100_0004` which is `JALR R31`.
-Now the instructions at `100_0040` execute - the first is the patched instruction and second is the new inserted instruction.
+Now a fetch from `h8940` will get the code bytes from `h1000_0000`.
+The AUIPC will execute and compute the address to the patch location `h1000_0040`.
+The next fetch from `8944` will get the code bytes from `h1000_0004` which is `JALR R31`.
+Now the instructions at `1000_0040` execute - the first is the patched instruction and second is the new inserted instruction.
 Since we had to patch two instructions to create the jump to patch, we brought the instruction at `8944` along for the ride.
 
 Note that here r31 is assumed to be usable as a scratchpad.
@@ -384,13 +397,13 @@ The steps involved are as follows:
 
   - Base ROM stores the selected patch region signature in a secure location for later check.
 
-  - Base ROM reads out the register values from the patch match table and places them in the patch match registers.
+  - Base ROM reads out the descriptor values from the patch match table and then configures the Ibex wrapper patch match registers accordingly.
 
-    - Base ROM stores the `r_base` value from the first redirection register, i.e. `pa_rb_r0`.
+    - Base ROM stores the `R_BASE` value from the from the first patch table entry.
 
   - Base ROM reads out the selected patch region code section, row by row and places it into the patch SRAM region.
 
-    - The patch SRAM region start address is the first redirection register base address (`pa_rb_r0.r_base`), as stored in the previous step.
+    - The patch SRAM region start address is the first patch table redirection base address (`R_BASE`), as stored in the previous step.
     - Bus errors if any during this time are handled by the base ROM appropriately (may be retry).
 
   - Base ROM computes the hash of the patch code in SRAM and the patch match register configuration following the same order as used for digital signature computation.
