@@ -41,7 +41,7 @@ module mbx_fsm #(
 
   prim_flop #(
     .Width($bits(mbx_ctrl_state_e)),
-    .ResetValue(MbxIdle)
+    .ResetValue({MbxIdle})
   ) aff_ctrl_state_q (
     .clk_i ( clk_i            ),
     .rst_ni( rst_ni           ),
