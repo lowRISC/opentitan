@@ -228,18 +228,17 @@ TEST_F(PinmuxTest, SleepModeConfig) {
 
 TEST_F(PinmuxTest, SleepStatus) {
   bool in_sleep_mode;
-  EXPECT_READ32(PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0xfffffff7u);
+  EXPECT_READ32(PINMUX_MIO_PAD_SLEEP_STATUS_3_REG_OFFSET, 0x0);
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_get_state(
       &dif_pinmux_, /*pad=*/3, kDifPinmuxPadKindMio, &in_sleep_mode));
   EXPECT_FALSE(in_sleep_mode);
 
-  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0x00000004u);
+  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_2_REG_OFFSET, 0x1);
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_get_state(
       &dif_pinmux_, /*pad=*/2, kDifPinmuxPadKindDio, &in_sleep_mode));
   EXPECT_TRUE(in_sleep_mode);
 
-  EXPECT_READ32(PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0xffff7777u);
-  EXPECT_WRITE32(PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0xffff7757u);
+  EXPECT_WRITE32(PINMUX_MIO_PAD_SLEEP_STATUS_5_REG_OFFSET, 0x0);
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_clear_state(&dif_pinmux_, /*pad=*/5,
                                                  kDifPinmuxPadKindMio));
 }

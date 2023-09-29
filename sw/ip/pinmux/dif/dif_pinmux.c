@@ -38,33 +38,6 @@ static bool dif_pinmux_get_reg_offset(dif_pinmux_index_t index,
   return true;
 }
 
-static bool dif_pinmux_get_sleep_status_bit(dif_pinmux_pad_kind_t kind,
-                                            dif_pinmux_index_t index,
-                                            ptrdiff_t *reg_offset,
-                                            bitfield_bit32_index_t *bit) {
-  uint32_t num_pads;
-  ptrdiff_t reg_base;
-
-  switch (kind) {
-    case kDifPinmuxPadKindMio:
-      num_pads = PINMUX_PARAM_N_MIO_PADS;
-      reg_base = PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
-      break;
-    case kDifPinmuxPadKindDio:
-      num_pads = PINMUX_PARAM_N_DIO_PADS;
-      reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
-      break;
-    default:
-      return false;
-  }
-  if (index >= num_pads) {
-    return false;
-  }
-  *reg_offset = (ptrdiff_t)index / 32 + reg_base;
-  *bit = index % 32;
-  return true;
-}
-
 static bool dif_pinmux_get_lock_reg_offset(dif_pinmux_index_t index,
                                            dif_pinmux_lock_target_t target,
                                            ptrdiff_t *reg_offset) {
@@ -419,13 +392,14 @@ dif_result_t dif_pinmux_pad_sleep_get_state(const dif_pinmux_t *pinmux,
   }
 
   ptrdiff_t reg_offset;
-  bitfield_bit32_index_t bit;
-  if (!dif_pinmux_get_sleep_status_bit(type, pad, &reg_offset, &bit)) {
+  if (!dif_pinmux_get_reg_offset(
+          pad, type, PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET,
+          PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET, &reg_offset)) {
     return kDifBadArg;
   }
 
   uint32_t reg_value = mmio_region_read32(pinmux->base_addr, reg_offset);
-  *in_sleep_mode = bitfield_bit32_read(reg_value, bit);
+  *in_sleep_mode = bitfield_bit32_read(reg_value, 0);
   return kDifOk;
 }
 
@@ -437,14 +411,13 @@ dif_result_t dif_pinmux_pad_sleep_clear_state(const dif_pinmux_t *pinmux,
   }
 
   ptrdiff_t reg_offset;
-  bitfield_bit32_index_t bit;
-  if (!dif_pinmux_get_sleep_status_bit(type, pad, &reg_offset, &bit)) {
+  if (!dif_pinmux_get_reg_offset(
+          pad, type, PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET,
+          PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET, &reg_offset)) {
     return kDifBadArg;
   }
 
-  uint32_t reg_value = mmio_region_read32(pinmux->base_addr, reg_offset);
-  reg_value = bitfield_bit32_write(reg_value, bit, 0);
-  mmio_region_write32(pinmux->base_addr, reg_offset, reg_value);
+  mmio_region_write32(pinmux->base_addr, reg_offset, 0);
   return kDifOk;
 }
 
