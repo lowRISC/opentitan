@@ -15,7 +15,11 @@
             - Verify that the interrupt triggered only after the timeout elapsed.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WAKEUP.INTERRUPT"]
       tests: ["chip_sw_aon_timer_irq"]
+      bazel: ["//sw/device/tests:aon_timer_irq_test_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_sleep_wakeup
@@ -33,7 +37,11 @@
               not be reset.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST"]
       tests: ["chip_sw_pwrmgr_smoketest"]
+      bazel: ["//sw/device/tests:pwrmgr_smoketest_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_wdog_bark_irq
@@ -44,7 +52,11 @@
             - Service the bark interrupt upon reception.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WATCHDOG.INTERRUPT"]
       tests: ["chip_sw_aon_timer_irq"]
+      bazel: ["//sw/device/tests:aon_timer_irq_test_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_wdog_bite_reset
@@ -58,7 +70,11 @@
               the wdog reset phase.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.BARK"]
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+      bazel: ["//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_sleep_wdog_bite_reset
@@ -72,7 +88,11 @@
               the wdog reset phase.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.BARK"]
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+      bazel: ["//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_sleep_wdog_sleep_pause
@@ -88,7 +108,11 @@
             - Un-pause the wdog and service the bark interrupt.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.PAUSE"]
       tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
+      bazel: ["//sw/device/tests:aon_timer_sleep_wdog_sleep_pause_test_cw310_test_rom"]
     }
     {
       name: chip_sw_aon_timer_wdog_lc_escalate
@@ -105,7 +129,11 @@
               the wdog was disabled.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "RMA"]
+      features: ["AON_TIMER.WATCHDOG.DISABLE_BY_LC_CTRL"]
       tests: ["chip_sw_aon_timer_wdog_lc_escalate"]
+      bazel: ["//sw/device/tests:aon_timer_wdog_lc_escalate_test_cw310_test_rom"]
     }
   ]
 }
