@@ -535,7 +535,7 @@ module dma
         chunk_byte_d       = '0;
         capture_chunk_byte = 1'b1;
         // Wait for go bit to be set to proceed with data movement
-        if (reg2hw.control.go.q) begin
+        if (reg2hw.control.go.q && !cfg_abort_en) begin
           // Clear the transferred bytes only on the very first iteration
           if (reg2hw.control.initial_transfer.q) begin
             transfer_byte_d       = '0;
@@ -554,6 +554,8 @@ module dma
             end
           end
         end
+        // else `go` bit will be cleared automatically by the 'control' update if `cfg_abort_en`
+        // is asserted.
       end
 
       DmaClearIntrSrc: begin
