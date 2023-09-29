@@ -59,10 +59,10 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
           word_buffer_ready         = 1'b1;
           if (hash_process || process_flag) begin // ready to push out word (partial)
             word_valid      = 1'b1;
-            full_word.data  =  {32'b0, fifo_rdata.data};
-            full_word.mask  = {4'h0, fifo_rdata.mask};
+            // add least significant padding
+            full_word.data  =  {fifo_rdata.data, 32'b0};
+            full_word.mask  =  {fifo_rdata.mask, 4'h0};
             sha_process     = 1'b1;
-            word_part_inc   =  1'b0;
             if (sha_ready == 1'b1) begin
               // if word has been absorbed into hash engine
               word_buffer_ready = 1'b1; // word has been pushed out to SHA engine, word buffer ready
@@ -73,7 +73,7 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
           end
         end else begin   // SHA2_256 so pad and push out the word
           word_valid = 1'b1;
-          // store the word with padding
+          // store the word with most significant padding
           word_buffer_d.data = {32'b0, fifo_rdata.data};
           word_buffer_d.mask = {4'hF, fifo_rdata.mask}; // pad with all-1 byte mask
           // pad with all-zero data and all-one byte masking and push word out already for 256
@@ -104,7 +104,7 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
             sha_process = 1'b1;
         end
         if (sha_ready == 1'b1) begin
-          // word has been absorbed
+          // word has been consumed
           word_buffer_ready = 1'b1; // word has been pushed out to SHA engine so word buffer ready
           word_part_reset   = 1'b1;
           word_part_inc     = 1'b0;
@@ -128,13 +128,21 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
     end else if (sha_en) begin // hash engine still enabled
       // no new valid input, provide the last latched input so long as hash is enabled
       full_word = word_buffer_q;
-      if (hash_process || process_flag) begin // wait on hash_process
-        sha_process = 1'b1;
+      if ((hash_process || process_flag) && word_part_count == 2'b00) begin
+        sha_process = 1'b1; // wait on hash_process and hold it till latched word is fed
       end
       if (word_part_count == 2'b01) begin // 384/512: msg ended but missing 32-bit word packing
         full_word.data [31:0] = 32'b0;
         full_word.mask [3:0]  = 4'h0;
         word_valid            = 1'b1;
+        if (sha_ready == 1'b1) begin // word has been consumed
+          word_part_reset = 1'b1; // which will also reset word_valid in the next cycle
+        end
+      end else if (word_part_count == 2'b10) begin // 384/512: msg ended but last word waiting
+        word_valid = 1'b1;
+        if (sha_ready == 1'b1) begin // word has been consumed
+          word_part_reset = 1'b1; // which will also reset word_valid in the next cycle
+        end
       end
     end
   end
