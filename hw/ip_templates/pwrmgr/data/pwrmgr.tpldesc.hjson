@@ -1,0 +1,56 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "top_name"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "NumWkups"
+      desc: "Number of wakeup requests"
+      type: "int"
+      default: "6"
+    }
+    {
+      name: "Wkups"
+      desc: "A list of dictionaries describing each wakeup"
+      type: "object"
+      default: [
+        {
+          name: "wkup_req"
+          width: "1"
+          module: "sysrst_ctrl_aon"
+        }
+      ]
+    }
+    {
+      name: "rst_reqs"
+      desc: '''A dictionary of reset requests indexed by type, as in 'peripheral', 'int',
+            'debug'.
+            '''
+      type: "object"
+      default: {
+        peripheral: [
+          {
+            name: "rst_req"
+            width: "1"
+            module: "sysrst_ctrl_aon"
+            desc: "reset request running on AON clock"
+          }
+        ]
+        int: []
+        debug: []
+      }
+    }
+    {
+      name: "NumRstReqs"
+      desc: "The number of peripheral requests"
+      type: "int"
+      default: "2"
+    }
+  ]
+}
