@@ -51,7 +51,7 @@ module tlul_adapter_host
   output tl_h2d_t                    tl_o,
   input  tl_d2h_t                    tl_i
 );
-  localparam int WordSize = $clog2(top_pkg::TL_DBW);
+  localparam int unsigned WordSize = $clog2(top_pkg::TL_DBW);
 
   logic [top_pkg::TL_AIW-1:0] tl_source;
   logic [top_pkg::TL_DBW-1:0] tl_be;
