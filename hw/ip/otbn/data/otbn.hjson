@@ -201,6 +201,32 @@
       package: "keymgr_pkg"
     },
   ],
+  features: [
+    {
+      name: "OTBN.ISA"
+      desc: '''
+        OTBN implements a custom ISA based on RV32I. It is split into base (32-bit) and bignum
+        (256-bit) parts. There is a separate register file for each.
+      ''',
+      name: "OTBN.RANDOM"
+      desc: '''
+        OTBN has a connection to the EDN allowing it to receive 256-bits of entropy.
+      '''
+      name: "OTBN.KEYMGR"
+      descr: '''
+        OTBN has a connection to the keymgr and it can receive key material from it.
+      '''
+      name: "OTBN.SECUREWIPE"
+      descr: '''
+        OTBN has a secure wipe facility that can target the internal state as well as the
+        instruction and data memories.
+      '''
+      name: "OTBN.MEM_SCRAMBLE"
+      descr: '''
+        OTBN scrambles its instruction and data memories using keys received from OTP.
+      '''
+    }
+  ]
   countermeasures: [
     { name: "MEM.SCRAMBLE",
       desc: "Both the imem and dmem are scrambled by using prim_ram_1p_scr."
