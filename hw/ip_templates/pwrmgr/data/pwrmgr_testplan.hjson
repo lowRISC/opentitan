@@ -1,0 +1,353 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "pwrmgr"
+  // TODO: remove the common testplans if not applicable
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
+                     // TODO: Top-level specific Hjson imported here. This will likely be resolved
+                     // once we move to IPgen flow.
+                     "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr_sec_cm_testplan.hjson"]
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test exercising the pwrmgr state transitions.
+
+            - Brings pwrmgr out of POR.
+            - Enables wakeup.
+            - Triggers SW initiated low power transition with reset settings
+              in `control` CSR.
+            - Triggers wakeup.
+            - Enables and triggers a reset.
+            - Waits for pwrmgr to be out of reset.
+
+            **Stimulus**:
+            - CSR writes to `wakeup_en`, `reset_en`, and `low_power_hint`.
+            - Needs many input pins to line up correctly in order to prevent the
+              pwrmgr from waiting forever. Most of these are set in response
+              to outputs, and are checked by SVA.
+
+            **Checks**:
+            - The fast fsm becomes active when `fetch_en_o` output rises.
+            - The wakeup and reset causes are as expected reading CSRs
+              `wake_status` and `reset_status`.
+            - The output `pwr_rst_req.reset_cause` matches a low power or
+              reset cause.
+            - The output `pwr_rst_req.rstreqs` matches the enabled resets.
+            '''
+      stage: V1
+      tests: ["pwrmgr_smoke"]
+    }
+    {
+      name: wakeup
+      desc: '''
+            Test random wakeup, wakeup_en, wake_info_capture_dis, and
+            interrupt.
+
+            The different wakeup inputs can be disabled via bits in the
+            `wakeup_en` CSR. Update of `wakeup_info` can be disabled
+            via the `wake_info_capture_dis` CSR. Any wakeup causes an
+            interrupt unless interrupts are disabled.
+
+            **Stimulus**:
+            - Sets `wakeup_en` randomly but don't set it to zero, or the
+              test will timeout.
+            - Set `wake_info_capture_dis` randomly on and off.
+            - Bring pwrmgr to low power.
+            - Set `wakeups_i` inputs randomly.
+            - Set `intr_enable` randomly.
+
+            **Checks**:
+            - The fast fsm becomes active when `fetch_en_o` output rises.
+            - Depending on `wakeups_i`:
+              - If all wakeups are disabled, wait some time checking the
+                state remains inactive.
+              - Set `wakeups_i` so at least one is enabled.
+            - Checks `wakeup_status` CSR during transition to active state
+              since the reset involved will clear the wakeups_i input.
+            - Checks the `wake_info` CSR.
+            - Checks the output `pwr_rst_req.reset_cause` is `LowPwrEntry`.
+            - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
+            - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
+            '''
+      stage: V2
+      tests: ["pwrmgr_wakeup"]
+    }
+    {
+      name: control_clks
+      desc: '''
+            Test CSR control of peripheral clocks during low power.
+
+            The peripheral clocks can be configured to remain on or be turned
+            off during low power with bits in the `control` CSR register. The
+            usb clock can also be configured off in active mode.
+
+            **Stimulus**:
+            - Sets these control bits at random.
+            - Cause a low power transition and wakeup.
+
+            **Checks**:
+            - The clock enable outputs to the AST clocks during a low
+              power transition match the control bits.
+            - The usb clock enable is also checked during active mode against
+              the control register.
+            '''
+      stage: V2
+      tests: ["pwrmgr_wakeup"]
+    }
+    {
+      name: aborted_low_power
+      desc: '''
+            Test aborted low power transitions.
+
+            Low power transitions can be aborted in two cases:
+            - The processor gets an interrupt soon after a low power entry is
+              triggered.
+            - OTP, LC, or FLASH are not idle.
+            This test aborts low power transitions, and disables any wakeups,
+            so the test would timeout if low power was entered.
+
+            **Stimulus**:
+            - Bring pwrmgr to low power.
+            - Either disable `pwr_cpu.core_sleeping` or keep some of `lc_idle`,
+              `otp_idle`, or `flash_idle` inputs off.
+            - Disable all wakeup enables.
+            - Randomly set `wakeup_info_capture_dis` CSR.
+
+            **Checks**:
+            - The `ctrl_cfg_regwen` CSR reads as 1 on the first attempt.
+            - Checks the output `pwr_rst_req.reset_cause` doesn't change for
+              a bounded amount of time.
+            - Check that the `wakeup_info` CSR flags either `fall_through` or
+              `abort` events when capture is enabled.
+            '''
+      stage: V2
+      tests: ["pwrmgr_aborted_low_power", "pwrmgr_lowpower_invalid"]
+    }
+    {
+      name: reset
+      desc: '''
+            Test random reset and reset_en.
+
+            Conditional reset inputs can be disabled via bits in the `reset_en`
+            CSR, while escalation and main power are unconditional. Resets can
+            be triggered either in active or low power state.
+
+            **Stimulus**:
+            - Sets `reset_en` randomly.
+            - Randomly choose whether to put the unit in low power mode.
+            - Generate resets randomly in value and time:
+              - Conditionals via rstreqs_i,
+              - Main power glitch via rst_main_ni.
+              - Escalation via `esc_rst_tx_i`.
+              - Sw reset from rstmgr via `sw_rst_req_i`.
+
+            **Checks**:
+            - The fast fsm becomes active when `fetch_en_o` output rises.
+            - Checks the `reset_status` CSRs.
+            - Checks `ip_clk_en` output has a low transition.
+            - SVA that when `pwr_rst_req.reset_cause` is HwReq, and the output
+             `pwr_rst_req.rstreqs` matches the unconditional and enabled
+             conditional resets inputs.
+            '''
+      stage: V2
+      tests: ["pwrmgr_reset", "pwrmgr_reset_invalid"]
+    }
+    {
+      name: main_power_glitch_reset
+      desc: '''
+            Test reset due to a glitch in main power.
+
+            A power glitch causes an unconditional reset.
+
+            **Stimulus**:
+            - Set the rst_main_ni input low indicating a main power glitch.
+
+            **Checks**:
+            - The fast fsm becomes active when `fetch_en_o` output rises.
+            - Checks the `reset_status` CSRs.
+            - Checks `ip_clk_en` output has a low transition.
+            - Checks the output `pwr_rst_req.reset_cause` matches HwReq.
+            - Checks the output `pwr_rst_req.rstreqs` matches power glitch.
+            '''
+      stage: V2
+      tests: ["pwrmgr_reset"]
+    }
+    {
+      name: reset_wakeup_race
+      desc: '''
+            Test wakeup from low power and reset request almost coinciding.
+
+            If a wakeup from low power and a reset occur at nearly the same time
+            the system handles them one at a time.
+
+            **Stimulus**:
+            - Trigger reset and wakeup from low power as described for other
+              testpoints.
+            - Issue reset and wakeup a random number of cycles after the slow
+              state machine is in LowPower state.
+              - This also checks them coinciding.
+
+            **Check**:
+            - Similar tests as for the wakeup and reset testpoints, except
+              making sure they happen per the triggering order.
+              '''
+      stage: V2
+      tests: ["pwrmgr_wakeup_reset"]
+    }
+    {
+      name: lowpower_wakeup_race
+      desc: '''
+            Test wakeups coming close to lowpower entry.
+
+            If low power entry and a wakeup are closely aligned the hardware
+            could get confused. Notice this is very unlikely, since wakeup is
+            only sensed when the slow fsm is in LowPower state.
+
+            **Stimulus**:
+            - Trigger low power entry as described for other testpoints.
+            - Have all wakeups enabled.
+            - Assert wakeups_i in the temporal neighborhood of low power
+              entry.
+
+            **Check**:
+            - No timeout occurs.
+            - Either pwrmgr remains active or a full low power cycle occurs.
+            '''
+      stage: V2
+      tests: ["pwrmgr_lowpower_wakeup_race"]
+    }
+    {
+      name: disable_rom_integrity_check
+      desc: '''
+            Test rom integrity check is disabled under life cycle test states.
+
+            While running a series of reset event, at FastPwrStateRomCheck
+            state,
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to random value
+              excluding {lc_ctrl_pkg::On, lc_ctrl_pkg::On} for both ports.
+            - Set rom_ctrl_i.good = Mubi4False.
+            - Wait for a while to make sure fsm state check is not FastPwrStateActive.
+
+            Then,
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to {lc_ctrl_pkg::On, lc_ctrl_pkg::On}
+            - Check test finish gracefully.
+
+            Try these steps with different lc_ctrl inputs.
+            '''
+      stage: V2
+      tests: ["pwrmgr_disable_rom_integrity_check"]
+    }
+    {
+      name: stress_all
+      desc: '''This runs random sequences in succession.
+
+            Randomly chooses from the following sequences:
+            - pwrmgr_aborted_low_power_vseq
+            - pwrmgr_lowpower_wakeup_race_vseq
+            - pwrmgr_reset_vseq
+            - pwrmgr_smoke_vseq
+            - pwrmgr_wakeup_reset_vseq
+            - pwrmgr_wakeup_vseq
+            '''
+      stage: V2
+      tests: ["pwrmgr_stress_all"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: wakeup_ctrl_cg
+      desc: '''
+            Collects coverage on wakeup enable and capture functionality.
+
+            This is collected per individual wakeup bit. Covergroup contains
+            coverpoints for the `wakeup_en` CSR bit, `wakeup_info_capture_dis`
+            CSR, `wakeups_i` input bit, and `wakeup_status` CSR bit, and their
+            cross.
+            '''
+    }
+    {
+      name: wakeup_intr_cg
+      desc: '''
+            Collects coverage on interrupts for wakeup functionality.
+
+            This is collected per individual wakeup bit. Covergroup contains
+            coverpoints for the `intr_en` CSR, the `wakeup_status` CSR bit,
+            the `intr_status` CSR, the output `intr_wakeup` port, and their
+            cross.
+            '''
+    }
+    {
+      name: control_cg
+      desc: '''
+            Collects coverage on clock and power bits from `control` CSR during
+            a lowpower transition and active state.
+            '''
+    }
+    {
+      name: hw_reset_0_cg
+      desc: '''
+            Collects coverage related to external reset `0`.
+
+            Covergroup contains coverpoints for the `rstreqs_i[0]` external
+            reset input, its corresponding bit in `reset_en` CSR, and whether
+            this reset is asserted during low power state, and suitable crosses.
+            '''
+    }
+    {
+      name: hw_reset_1_cg
+      desc: '''
+            Collects coverage related to external reset `1`.
+
+            Covergroup contains coverpoints for the `rstreqs_i[1]` external
+            reset input, its corresponding bit in `reset_en` CSR, and whether
+            this reset is asserted during low power state, and suitable crosses.
+            '''
+    }
+    {
+      name: rstmgr_sw_reset_cg
+      desc: '''
+            Collects coverage on the software reset from rstmgr.
+
+            Covergroup contains a coverpoint for the input `sw_rst_req_i` from
+            rstmgr.
+            '''
+    }
+    {
+      name: main_power_reset_cg
+      desc: '''
+            Collects coverage on resets due to a main power glitch.
+
+            Covergroup contains a coverpoint for the input `rst_main_i` that
+            triggers a power glitch reset, and whether this reset is asserted
+            during low power state.
+            '''
+    }
+    {
+      name: esc_reset_cg
+      desc: '''
+            Collects coverage on resets due to escalation.
+
+            Covergroup contains a coverpoint for the input `esc_rst_tx_i` that
+            triggers an escalation reset, and whether this reset is asserted
+            during low power state.
+            '''
+    }
+    {
+      name: reset_wakeup_distance_cg
+      desc: '''
+            Covergroup contains a coverpoint for the difference between the
+            cycles when the reset and the wakeup were received in the inputs.
+            The difference is positive when reset happened after wakeup, and
+            zero when the two happened at the same clock cycle.
+            '''
+    }
+  ]
+}
