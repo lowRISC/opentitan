@@ -111,13 +111,9 @@ static uint32_t pad_attr_mask_get(void) {
  * - If the OTP BOOTSTRAP_EN option is set, then pinmux should be configured
  *   with the following peripheral/pad mapping, with pull-down enabled for all
  *   pads:
- *     * GPIO22 -> IOC0
- *     * GPIO23 -> IOC1
- *     * GPIO24 -> IOC2
- * - Regardless of the OTP values, the pinmux should be configured with the
- *   following mapping for UART0:
- *     * UART RX -> IOC3
- *     * IOC4 -> UART TX (output)
+ *     * GPIO22 -> GPIO22 (DIO32)
+ *     * GPIO23 -> GPIO23 (DIO33)
+ *     * GPIO24 -> GPIO24 (DIO34)
  */
 static void pinmux_init_test(void) {
   uint32_t bootstrap_dis =
@@ -125,69 +121,39 @@ static void pinmux_init_test(void) {
   if (bootstrap_dis != kHardenedBoolTrue) {
     uint32_t attr_mask = pad_attr_mask_get();
 
-    // GPIO 22 (input 22) -> IOC0 (MIO pad 22)
-    uint32_t insel_gpio22 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_22_REG_OFFSET);
-    CHECK_EQ(insel_gpio22, kTopDarjeelingPinmuxInselIoc0,
-             "GPIO 22 input selector");
-
-    // Pad 22 attributes: pull-down selected and enabled (if legal).
+    // GPIO 22 attributes (DIO32): pull-down selected and enabled (if legal).
     uint32_t attr22 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_22_REG_OFFSET);
+        abs_mmio_read32(kPinmuxBase + PINMUX_DIO_PAD_ATTR_32_REG_OFFSET);
     CHECK_EQ(
-        bitfield_bit32_read(attr22, PINMUX_MIO_PAD_ATTR_22_PULL_EN_22_BIT),
-        bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_22_PULL_EN_22_BIT),
+        bitfield_bit32_read(attr22, PINMUX_DIO_PAD_ATTR_32_PULL_EN_32_BIT),
+        bitfield_bit32_read(attr_mask, PINMUX_DIO_PAD_ATTR_32_PULL_EN_32_BIT),
         "GPIO 22 pull enable");
     CHECK_EQ(
-        bitfield_bit32_read(attr22, PINMUX_MIO_PAD_ATTR_22_PULL_SELECT_22_BIT),
+        bitfield_bit32_read(attr22, PINMUX_DIO_PAD_ATTR_32_PULL_SELECT_32_BIT),
         false, "GPIO 22 pull select");
 
-    // GPIO 23 (input 23) -> IOC1 (MIO pad 23)
-    uint32_t insel_gpio23 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_23_REG_OFFSET);
-    CHECK_EQ(insel_gpio23, kTopDarjeelingPinmuxInselIoc1,
-             "GPIO 23 input selector");
-
-    // Pad 23 attributes: pull-down selected and enabled (if legal).
+    // GPIO 23 attributes (DIO33): pull-down selected and enabled (if legal).
     uint32_t attr23 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_23_REG_OFFSET);
+        abs_mmio_read32(kPinmuxBase + PINMUX_DIO_PAD_ATTR_33_REG_OFFSET);
     CHECK_EQ(
-        bitfield_bit32_read(attr23, PINMUX_MIO_PAD_ATTR_23_PULL_EN_23_BIT),
-        bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_23_PULL_EN_23_BIT),
+        bitfield_bit32_read(attr23, PINMUX_DIO_PAD_ATTR_33_PULL_EN_33_BIT),
+        bitfield_bit32_read(attr_mask, PINMUX_DIO_PAD_ATTR_33_PULL_EN_33_BIT),
         "GPIO 23 pull enable");
     CHECK_EQ(
-        bitfield_bit32_read(attr23, PINMUX_MIO_PAD_ATTR_23_PULL_SELECT_23_BIT),
+        bitfield_bit32_read(attr23, PINMUX_DIO_PAD_ATTR_33_PULL_SELECT_33_BIT),
         false, "GPIO 23 pull select");
 
-    // GPIO 24 (input 24) -> IOC2 (MIO pad 24)
-    uint32_t insel_gpio24 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_24_REG_OFFSET);
-    CHECK_EQ(insel_gpio24, kTopDarjeelingPinmuxInselIoc2,
-             "GPIO 24 input selector");
-
-    // Pad 24 attributes: pull-down selected and enabled (if legal).
+    // GPIO 24 attributes (DIO34): pull-down selected and enabled (if legal).
     uint32_t attr24 =
-        abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PAD_ATTR_24_REG_OFFSET);
+        abs_mmio_read32(kPinmuxBase + PINMUX_DIO_PAD_ATTR_34_REG_OFFSET);
     CHECK_EQ(
-        bitfield_bit32_read(attr24, PINMUX_MIO_PAD_ATTR_24_PULL_EN_24_BIT),
-        bitfield_bit32_read(attr_mask, PINMUX_MIO_PAD_ATTR_24_PULL_EN_24_BIT),
+        bitfield_bit32_read(attr24, PINMUX_DIO_PAD_ATTR_34_PULL_EN_34_BIT),
+        bitfield_bit32_read(attr_mask, PINMUX_DIO_PAD_ATTR_34_PULL_EN_34_BIT),
         "GPIO 24 pull enable");
     CHECK_EQ(
-        bitfield_bit32_read(attr24, PINMUX_MIO_PAD_ATTR_24_PULL_SELECT_24_BIT),
+        bitfield_bit32_read(attr24, PINMUX_DIO_PAD_ATTR_34_PULL_SELECT_34_BIT),
         false, "GPIO 24 pull select");
   }
-
-  // UART RX (input 34) -> IOC3 (MIO pad 25)
-  uint32_t insel_uartrx =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_34_REG_OFFSET);
-  CHECK_EQ(insel_uartrx, kTopDarjeelingPinmuxInselIoc3,
-           "UART Rx input selector");
-
-  // IOC4 (MIO pad 26) -> UART TX (output 42)
-  uint32_t outsel_ioc4 =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_OUTSEL_26_REG_OFFSET);
-  CHECK_EQ(outsel_ioc4, kTopDarjeelingPinmuxOutselUart0Tx,
-           "UART Tx output selector");
 }
 
 /**

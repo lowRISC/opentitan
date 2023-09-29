@@ -41,71 +41,6 @@ typedef struct pinmux_output {
 } pinmux_output_t;
 
 /**
- * UART RX pin.
- */
-static const pinmux_input_t kInputUart0 = {
-    .periph = kTopDarjeelingPinmuxPeripheralInUart0Rx,
-    .insel = kTopDarjeelingPinmuxInselIoc3,
-    .pad = kTopDarjeelingMuxedPadsIoc3,
-};
-
-/**
- * UART TX pin.
- */
-static const pinmux_output_t kOutputUart0 = {
-    .mio = kTopDarjeelingPinmuxMioOutIoc4,
-    .outsel = kTopDarjeelingPinmuxOutselUart0Tx,
-    .pad = kTopDarjeelingMuxedPadsIoc4,
-};
-
-/**
- * SW strap pins.
- */
-#define PINMUX_ASSERT_EQ_(a, b) \
-  static_assert((a) == (b), "Unexpected software strap configuration.")
-
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH,
-                  kTopDarjeelingPinmuxPeripheralInGpioGpio22);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopDarjeelingPinmuxInselIoc0);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopDarjeelingMuxedPadsIoc0);
-static const pinmux_input_t kInputSwStrap0 = {
-    .periph = SW_STRAP_0_PERIPH,
-    .insel = SW_STRAP_0_INSEL,
-    .pad = SW_STRAP_0_PAD,
-};
-
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH,
-                  kTopDarjeelingPinmuxPeripheralInGpioGpio23);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopDarjeelingPinmuxInselIoc1);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopDarjeelingMuxedPadsIoc1);
-static const pinmux_input_t kInputSwStrap1 = {
-    .periph = SW_STRAP_1_PERIPH,
-    .insel = SW_STRAP_1_INSEL,
-    .pad = SW_STRAP_1_PAD,
-};
-
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH,
-                  kTopDarjeelingPinmuxPeripheralInGpioGpio24);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopDarjeelingPinmuxInselIoc2);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopDarjeelingMuxedPadsIoc2);
-static const pinmux_input_t kInputSwStrap2 = {
-    .periph = SW_STRAP_2_PERIPH,
-    .insel = SW_STRAP_2_INSEL,
-    .pad = SW_STRAP_2_PAD,
-};
-
-/**
- * Sets the input pad for the specified peripheral input.
- *
- * @param input A peripheral input and MIO pad to link it to.
- */
-static void configure_input(pinmux_input_t input) {
-  abs_mmio_write32(kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
-                       input.periph * sizeof(uint32_t),
-                   input.insel);
-}
-
-/**
  * Enables pull-down for the specified pad.
  *
  * @param pad A MIO pad.
@@ -117,17 +52,6 @@ static void enable_pull_down(top_darjeeling_muxed_pads_t pad) {
       kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
 }
 
-/**
- * Sets the peripheral output for each specified output pad.
- *
- * @param output An MIO pad and a peripheral output to link it to.
- */
-static void configure_output(pinmux_output_t output) {
-  abs_mmio_write32(
-      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
-      output.outsel);
-}
-
 void pinmux_init(void) {
   uint32_t bootstrap_dis =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
@@ -135,20 +59,14 @@ void pinmux_init(void) {
     HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
     // Note: attributes should be configured before the pinmux matrix to avoid
     // "undesired electrical behavior and/or contention at the pads".
-    enable_pull_down(kInputSwStrap0.pad);
-    enable_pull_down(kInputSwStrap1.pad);
-    enable_pull_down(kInputSwStrap2.pad);
+    enable_pull_down(SW_STRAP_0_PAD);
+    enable_pull_down(SW_STRAP_1_PAD);
+    enable_pull_down(SW_STRAP_2_PAD);
     // Wait for pull downs to propagate to the physical pads.
     CSR_WRITE(CSR_REG_MCYCLE, 0);
     uint32_t mcycle;
     do {
       CSR_READ(CSR_REG_MCYCLE, &mcycle);
     } while (mcycle < PINMUX_PAD_ATTR_PROP_CYCLES);
-    configure_input(kInputSwStrap0);
-    configure_input(kInputSwStrap1);
-    configure_input(kInputSwStrap2);
   }
-
-  configure_input(kInputUart0);
-  configure_output(kOutputUart0);
 }

@@ -273,12 +273,6 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   sw   t0, (SW_STRAP_2_PAD * 4)(a0)
   li   a0, (TOP_DARJEELING_PINMUX_AON_BASE_ADDR + \
             PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
-  li   t0, SW_STRAP_0_INSEL
-  sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
-  li   t0, SW_STRAP_1_INSEL
-  sw   t0, (SW_STRAP_1_PERIPH * 4)(a0)
-  li   t0, SW_STRAP_2_INSEL
-  sw   t0, (SW_STRAP_2_PERIPH * 4)(a0)
 
   // Spin for a minimum of 5us worth of cycles (assuming 100MHz clock), while we
   // wait for the RMA strap pull enables to propagate to the physical pads.
