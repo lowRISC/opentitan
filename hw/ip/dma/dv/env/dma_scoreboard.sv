@@ -52,6 +52,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // since ref argument can not be used in fork-join_none
   bit[31:0] clear_int_src;
   bit handshake; // Bit to indicate if handshake mode is enabled
+  bit [TL_DW-1:0] exp_digest[16];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -525,6 +526,25 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.clear_int_src = `gmv(ral.clear_int_src.source);
         clear_int_src = dma_config.clear_int_src;
       end
+      "sha2_digest_0",
+      "sha2_digest_1",
+      "sha2_digest_2",
+      "sha2_digest_3",
+      "sha2_digest_4",
+      "sha2_digest_5",
+      "sha2_digest_6",
+      "sha2_digest_7",
+      "sha2_digest_8",
+      "sha2_digest_9",
+      "sha2_digest_10",
+      "sha2_digest_11",
+      "sha2_digest_12",
+      "sha2_digest_13",
+      "sha2_digest_14",
+      "sha2_digest_15": begin
+        `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
+                                       csr.get_full_name()))
+      end
       "int_source_addr_0",
       "int_source_addr_1",
       "int_source_addr_2",
@@ -627,7 +647,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1;
       end
       "status": begin
-        bit busy, done, aborted, error;
+        bit busy, done, aborted, error, sha2_digest_valid;
         bit [6:0] error_code;
         bit exp_aborted = src_tl_error_detected || abort_via_reg_write;
         do_read_check = 1'b0;
@@ -636,6 +656,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
         aborted = get_field_val(ral.status.aborted, item.d_data);
         error = get_field_val(ral.status.error, item.d_data);
         error_code = get_field_val(ral.status.error_code, item.d_data);
+        sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
+
         if (done || aborted || error) begin
           operation_in_progress = 1'b0;
           `uvm_info(`gfn, "Detected end of DMA operation", UVM_MEDIUM)
@@ -664,13 +686,50 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .clear (clear_via_reg_write));
         end
         // Check data and addresses in source and destination mem models
-        if (done && dma_config.is_valid_config && !dma_config.handshake) begin
-          check_data(dma_config);
+        if (done && dma_config.is_valid_config) begin
+          predict_digest(dma_config);
+
+          // When using inline hashing, sha2_digest_valid must be raised at the end
+          if (dma_config.handshake &&
+              (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512})) begin
+            `DV_CHECK_EQ(sha2_digest_valid, 1, "Digest valid bit not set when done")
+          end
+
+          // Check data only works for memory models now
+          if (!dma_config.handshake) begin
+            check_data(dma_config);
+          end
         end
       end
       // Register read check for lock register
       "range_regwen": begin
         do_read_check = 1'b0;
+      end
+      "sha2_digest_0",
+      "sha2_digest_1",
+      "sha2_digest_2",
+      "sha2_digest_3",
+      "sha2_digest_4",
+      "sha2_digest_5",
+      "sha2_digest_6",
+      "sha2_digest_7",
+      "sha2_digest_8",
+      "sha2_digest_9",
+      "sha2_digest_10",
+      "sha2_digest_11",
+      "sha2_digest_12",
+      "sha2_digest_13",
+      "sha2_digest_14",
+      "sha2_digest_15": begin
+        int digest_idx = get_digest_index(csr.get_name());
+        // By default, the hardware outputs little-endian data for each digest (32 bits). But DPI
+        // functions expect output to be big-endian. Thus we should flip the expected value if
+        // digest_swap is zero.
+        bit [TL_DW-1:0] real_digest_val;
+
+        do_read_check = 1'b0;
+        real_digest_val = {<<8{item.d_data}};
+        `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
       end
       default: do_read_check = 1'b0;
     endcase
@@ -708,5 +767,61 @@ class dma_scoreboard extends cip_base_scoreboard #(
       process_reg_read(item,csr);
     end  // data_phase_read
   endtask : process_tl_access
+
+  // query the SHA model to get expected digest
+  // update predicted digest to ral mirrored value
+  virtual function void predict_digest(ref dma_seq_item dma_config);
+    bit [63:0] addr;
+    asid_encoding_e asid;
+    bit [7:0] msg_q[];
+    int j;
+
+    msg_q = new[dma_config.total_transfer_size];
+
+    addr = dma_config.src_addr;
+    asid = dma_config.src_asid;
+    // We cannot read from the FIFO. So depending direction, we need to read from the other
+    // side, which is the memory. In non-hardware handshake mode, we read from the source
+    if (dma_config.handshake) begin
+      if (dma_config.direction == DmaSendData) begin
+        addr = dma_config.src_addr;
+        asid = dma_config.src_asid;
+      end else begin
+        addr = dma_config.dst_addr;
+        asid = dma_config.dst_asid;
+      end
+    end
+
+    j = 3;
+    for (int i = 0; i < dma_config.total_transfer_size; i++) begin
+      msg_q[j] = get_model_data(asid, addr);
+
+      // Convert endianness on 32-bit word from little endian to big endian
+      if ((j % 4) == 0) begin
+        j = i + 4;
+      end else begin
+        j--;
+      end
+      addr++;
+    end
+
+    case (dma_config.opcode)
+      OpcSha256: begin
+        cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest[0:7]);
+        exp_digest[8:15] = '{default:0};
+      end
+      OpcSha384: begin
+        cryptoc_dpi_pkg::sv_dpi_get_sha384_digest(msg_q, exp_digest[0:11]);
+        exp_digest[12:15] = '{default:0};
+      end
+      OpcSha512: begin
+        cryptoc_dpi_pkg::sv_dpi_get_sha512_digest(msg_q, exp_digest[0:15]);
+      end
+      default: begin
+        // When not using inline hashing mode
+        exp_digest = '{default:0};
+      end
+    endcase
+  endfunction
 
 endclass

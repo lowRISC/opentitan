@@ -14,8 +14,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
 
   // Function : Randomise dma_seq_item with valid and random asid combination
   function void randomise_item(ref dma_seq_item dma_config);
-    int num_valid_combinations = valid_combinations.size();
-    int index = $urandom_range(0, num_valid_combinations - 1);
+    int index = $urandom_range(0, valid_combinations.size() - 1);
     addr_space_id_t valid_combination = valid_combinations[index];
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
@@ -29,25 +28,14 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; //disable hardware handhake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
-      clear_int_src == 0; // disable clearing of FIFO interrupt
-      opcode == OpcCopy;)
+      clear_int_src == 0;) // disable clearing of FIFO interrupt
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
   endfunction
 
-  // Monitors busy bit in STATUS register
-  task wait_for_idle();
-    forever begin
-      uvm_reg_data_t data;
-      csr_rd(ral.status, data);
-      if (!get_field_val(ral.status.busy, data)) begin
-        `uvm_info(`gfn, "DMA in Idle state", UVM_MEDIUM)
-        break;
-      end
-    end
-  endtask
-
   virtual task body();
+    logic [511:0] digest;
+
     `uvm_info(`gfn, "DMA: Starting handshake smoke Sequence", UVM_LOW)
     super.body();
 
@@ -84,15 +72,14 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
           release_hardware_handshake_intr();
         end
       join
-      delay(20); // wait to allow for transmission of last data
-      // Clear GO bit
-      `uvm_info(`gfn, "Clear GO bit", UVM_MEDIUM)
-      ral.control.go.set(1'b0);
-      csr_update(ral.control);
-      // Clear DMA state
+
+      poll_status();
+      if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
+        read_sha2_digest(dma_config.opcode, digest);
+      end
+
       clear();
       delay(10);
-      // Stop dma_pull_seq
       stop_device();
       delay(10);
       apply_resets_concurrently();
@@ -101,7 +88,6 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       dma_config.reset_config();
       clear_memory();
       enable_interrupt();
-      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
     `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_LOW)

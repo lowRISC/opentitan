@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:cryptoc_dpi:0.1
     files:
       - dma_env_pkg.sv
       - dma_if.sv
