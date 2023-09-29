@@ -97,6 +97,19 @@
     }
   ]
 
+  features: [
+    {
+      name: "RV_PLIC.INTERRUPT_PRIORITY"
+      desc: ''' The block can be configured to set a priority for each interrupt source'''
+    }
+    {
+      name: "RV_PLIC.INTERRUPT_ENABLE"
+      desc: ''' Each target of RV_PLIC has a set of Interrupt Enable registers. Each bit in the IE registers controls the corresponding interrupt source.
+                If an interrupt source is disabled for a target, then interrupt events from that source won't trigger an interrupt at the target.
+            '''
+    }
+  ]
+
   regwidth: "32",
   registers: [
 % for i in range(src):
