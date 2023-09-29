@@ -139,8 +139,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 #### Hash data structures
 
 {{#header-snippet sw/device/lib/crypto/include/hash.h hash_mode }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h xof_cshake_mode }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h xof_shake_mode }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h hash_digest }}
 
 #### Key derivation data structures
 

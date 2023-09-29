@@ -59,11 +59,12 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[384 / 32];
-  crypto_word32_buf_t actual_digest = {
+  hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
+      .mode = kHashModeSha384,
   };
-  TRY(otcrypto_hash(input_message, kHashModeSha384, &actual_digest));
+  TRY(otcrypto_hash(input_message, &actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
@@ -95,9 +96,10 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[384 / 32];
-  crypto_word32_buf_t actual_digest = {
+  hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
+      .mode = kHashModeSha384,
   };
   TRY(otcrypto_hash_final(&ctx, &actual_digest));
 
