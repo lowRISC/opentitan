@@ -404,6 +404,70 @@
       default: "8"
     },
   ],
+  features: [
+    {
+      name: "RV_CORE_IBEX.CPU.ISA",
+      desc: '''
+        Implements a RISC-V core capable of executing RV32ICMB instructions (a subset of bitmanip is
+        implemented, see the Ibex core documentation for details).
+      '''
+    },
+    {
+      name: "RV_CORE_IBEX.CPU.EPMP",
+      desc: '''
+        The RISC-V core implements the ePMP scheme specified in the RISC-V privileged architecture
+        specification, 16 regions are available for use.
+      '''
+    },
+    {
+      name: "RV_CORE_IBEX.CPU.ICACHE"
+      desc: '''
+        The RISC-V core implements an instruction caches that utilizes scrambling. The scrambling
+        key is rotated on a FENCE.I instruction being executed.
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CPU.MEMORY"
+      descr: '''
+        The RISC-V core can send transactions on the TL-UL interconnect and access all of the
+        address space that is available
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CPU.INTERRUPTS"
+      descr: '''
+        The RISC-V core has a number of interrupt sources:
+          - Software interrupt, controlled by a memory mapped PLIC register
+          - External interrupt, from interrupts prioritise by the PLIC
+          - Timer interrupt, from rv_timer module
+          - Non-maskable interrupt, triggered by watchdog or alert handler
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.RND"
+      descr: '''
+        The core wrapper has a connection to the EDN that provides 32-bit random numbers via a
+        memory mapped register.
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.ADDRESS_TRANSLATION"
+      descr: '''
+        The core wrapper implements address translation. RISC-V core memory accesses that match a
+        given range will have an offset applied before being sent to the memory system
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.CRASH_DUMP"
+      descr: '''
+        The core wrapper provides a 'crash dump' to rstmgr providing information on what was being
+        executed and most recent exception taken on a reset event. Where the RISC-V core has
+        detected a double fault a crash dump will be stored for when the double fault was detect as
+        well as the crash dump at reset.
+      '''
+    }
+  ],
+
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

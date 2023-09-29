@@ -1,0 +1,231 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: rv_core_ibex
+  testpoints: [
+    {
+      name: chip_sw_nmi_irq
+      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
+
+            Randomly use these two methods (simultaneously or choose one of them) to trigger the
+            NMI interrupt:
+            - Trigger the alert_handler escalation pair that maps to NMI.
+            - Trigger a watchdog bark.
+
+            Check rv_core_ibex's NMI interrupt register and clear the interrupt.
+            If the NMI interrupt is triggered by alert_handle and the `class_clr_regwen` register
+            is not locked, check that alert_handler can clear this NMI escalation stage. Then make
+            sure that the alert_handler won't move forward to the next escalation stage.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_rv_core_ibex_nmi_irq"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "RV_CORE_IBEX.CPU.INTERRUPTS"
+      ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_rnd
+      desc: '''Verify the functionality of the random number generation CSRs.
+
+               - Enable entropy complex so `RND_DATA` can get entropy.
+               - Perform multiple reads from `RND_DATA` polling `RND_STATUS` in
+                 between to only read valid data. Check different random bits
+                 are provided each time and that the random data is never zero or all ones.
+               - Ensure `RND_STATUS` indicate invalid data immediately after
+                 `RND_DATA` read.
+               - Perform repeated reads from `RND_DATA` without `RND_STATUS`
+                 polling to check read when invalid doesn't block.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_rv_core_ibex_rnd"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "RV_CORE_IBEX.RND"
+      ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_address_translation
+      desc: '''Verify the simple address translation functionality.
+
+               - Setup address translation for both slots on the I and D
+                 side and check correct translation for I and D accesses.
+               - Switch address translation to use different regions that
+                 overlap for both slots and check translation again. Ensure some
+                 test accesses match both regions, where the lowest indexed one
+                 takes priority.
+               - Turn off address translation and confirm regions are no longer
+                 being remapped.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_rv_core_ibex_address_translation"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "RV_CORE_IBEX.ADDRESS_TRANSLATION"
+      ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_icache_scrambled_access
+      desc: '''Verify scrambled memory accesses to CPU icache.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Execute the `fence` instruction to invalidate the icache.
+            - In simultation: verify using probes, that this resulted in a new scrambling key
+              fetched from the OTP ctrl.
+            - In SiVal: loop reading the value of the Ibex CSR cpustrlsts.ic_scr_key_valid until it
+              indciates a valid scrambling key, then continue executing some code to demonstrate
+              continued functioning of the instruction cache.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "RV_CORE_IBEX.CPU.ICACHE"
+      ]
+    }
+    {
+       name: chip_sw_rv_core_ibex_fault_dump
+       desc: '''Verify the functionality of the ibex fault dump.
+
+                - Purposely create an ibex exception during execution through reads to an ummapped
+                  address.
+                - Ensure the rstmgr fault dump correctly captures the related addresses to the
+                  exception.
+             '''
+       stage: V2
+       si_stage: SV1
+       tests: ["chip_sw_rstmgr_cpu_info"]
+       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       features: [
+         "RV_CORE_IBEX.CRASH_DUMP"
+       ]
+    }
+    {
+       name: chip_sw_rv_core_ibex_double_fault
+       desc: '''Verify the functionality of the ibex double fault dump.
+
+                - Purposely create an ibex double exception during execution, by performing an
+                  unmapped read and in the exception handler perform another unmapped read.
+                - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates
+                  the previous dump is valid.
+             '''
+       stage: V2
+       si_stage: SV1
+       tests: ["chip_sw_rstmgr_cpu_info"]
+       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       features: [
+         "RV_CORE_IBEX.CRASH_DUMP"
+       ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_smoke
+      descr: '''Execute each instruction implemented by Ibex at least once. Then check the register
+                state against expected values.
+
+                The core of this test will be written in assembler and at least partially
+                auto-generated. It should be constructed such that a failure of any of the
+                instructions should (but is not guaranteed) to have some impact on the final
+                register state
+             '''
+       stage: V2
+       si_stage: SV1
+       tests: []
+       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       features: [
+         "RV_CORE_IBEX.CPU.ISA"
+       ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_epmp_smoke
+      descr: '''Setup and test a few epmp regions
+
+                Check a range of ePMP access modes, ensure these include:
+                  - Shared execute, read and write
+                  - U-mode only execute, read and write
+                  - M-mode only execute, read and write
+
+                Also trial usage of the MML, MMWP and RLB bits in mseccfg.
+
+                Note that to fully implement this test it will need to injected into SRAM via JTAG
+                and run before the boot ROM executes in DEV/TEST_UNLOCKED, however a more limited
+                version can run in all lifecycle states using the standard load/execute mechanism
+                for all tests.
+                '''
+       stage: V2
+       si_stage: SV1
+       tests: []
+       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       features: [
+         "RV_CORE_IBEX.CPU.EPMP"
+       ]
+    }
+    {
+      name: chip_sw_rv_core_ibex_mem_smoke
+      descr: '''Check access to each kind of memory from Ibex
+
+                Read a known value from each of the following and check it
+                matches the expected value:
+
+                - ROM
+                - Flash
+
+                Write values to each of the following and then read it back to
+                ensure it's as expected:
+
+                - SRAM
+                - A device register (choose one that can have at least an 8-bit value written to and
+                  you can expect to read it back un-changed). Preferably cover multiple devices
+
+                Execute code from each of the following:
+
+                - ROM
+                - Flash
+                - SRAM
+
+                First with the ICache disabled and then with the ICache enabled.  (Note that SRAM
+                execution may be unavailable in some lifecycle states).
+             '''
+       stage: V2
+       si_stage: SV1
+       tests: []
+       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       features: [
+         "RV_CORE_IBEX.CPU.ICACHE",
+         "RV_CORE_IBEX.CPU.MEMORY"
+       ]
+    }
+    {
+     name: chip_sw_rv_core_ibex_lockstep_glitch
+     desc: '''Verify lockstep checking of the Ibex core.
+
+              Ensure suitable alerts are triggered when:
+              - Outputs from the lockstep or the main core are corrupted.
+              - Inputs into the lockstep core are corrupted.
+           '''
+     stage: V2S
+     si_stage: None
+     tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_alerts
+      desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
+
+             Inject faults in the following areas and verify the alert is fired leading to an
+             escalation.
+
+             - Bus integrity error on the data and instruction TL interface (on the response channel)
+             - PC mismatch fault
+             - ECC error in the register file
+            '''
+      stage: V3
+      si_stage: None
+      tests: []
+    }
+  ]
+}
