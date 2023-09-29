@@ -164,9 +164,9 @@ module dma_reg_top (
   logic enabled_memory_range_limit_we;
   logic [31:0] enabled_memory_range_limit_qs;
   logic [31:0] enabled_memory_range_limit_wd;
-  logic range_unlock_regwen_we;
-  logic [3:0] range_unlock_regwen_qs;
-  logic [3:0] range_unlock_regwen_wd;
+  logic range_regwen_we;
+  logic [3:0] range_regwen_qs;
+  logic [3:0] range_regwen_wd;
   logic total_data_size_we;
   logic [31:0] total_data_size_qs;
   logic [31:0] total_data_size_wd;
@@ -795,7 +795,7 @@ module dma_reg_top (
   logic enabled_memory_range_base_gated_we;
   assign enabled_memory_range_base_gated_we =
     enabled_memory_range_base_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_unlock_regwen_qs));
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -840,7 +840,7 @@ module dma_reg_top (
   logic enabled_memory_range_limit_gated_we;
   assign enabled_memory_range_limit_gated_we =
     enabled_memory_range_limit_we &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_unlock_regwen_qs));
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -869,19 +869,19 @@ module dma_reg_top (
   assign reg2hw.enabled_memory_range_limit.qe = enabled_memory_range_limit_qe;
 
 
-  // R[range_unlock_regwen]: V(False)
+  // R[range_regwen]: V(False)
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (4'h6),
     .Mubi    (1'b1)
-  ) u_range_unlock_regwen (
+  ) u_range_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (range_unlock_regwen_we),
-    .wd     (range_unlock_regwen_wd),
+    .we     (range_regwen_we),
+    .wd     (range_regwen_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -889,11 +889,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.range_unlock_regwen.q),
+    .q      (reg2hw.range_regwen.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (range_unlock_regwen_qs)
+    .qs     (range_regwen_qs)
   );
 
 
@@ -3096,7 +3096,7 @@ module dma_reg_top (
     addr_hit[ 8] = (reg_addr == DMA_ADDRESS_SPACE_ID_OFFSET);
     addr_hit[ 9] = (reg_addr == DMA_ENABLED_MEMORY_RANGE_BASE_OFFSET);
     addr_hit[10] = (reg_addr == DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET);
-    addr_hit[11] = (reg_addr == DMA_RANGE_UNLOCK_REGWEN_OFFSET);
+    addr_hit[11] = (reg_addr == DMA_RANGE_REGWEN_OFFSET);
     addr_hit[12] = (reg_addr == DMA_TOTAL_DATA_SIZE_OFFSET);
     addr_hit[13] = (reg_addr == DMA_CHUNK_DATA_SIZE_OFFSET);
     addr_hit[14] = (reg_addr == DMA_TRANSFER_WIDTH_OFFSET);
@@ -3268,9 +3268,9 @@ module dma_reg_top (
   assign enabled_memory_range_limit_we = addr_hit[10] & reg_we & !reg_error;
 
   assign enabled_memory_range_limit_wd = reg_wdata[31:0];
-  assign range_unlock_regwen_we = addr_hit[11] & reg_we & !reg_error;
+  assign range_regwen_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign range_unlock_regwen_wd = reg_wdata[3:0];
+  assign range_regwen_wd = reg_wdata[3:0];
   assign total_data_size_we = addr_hit[12] & reg_we & !reg_error;
 
   assign total_data_size_wd = reg_wdata[31:0];
@@ -3413,7 +3413,7 @@ module dma_reg_top (
     reg_we_check[8] = address_space_id_we;
     reg_we_check[9] = enabled_memory_range_base_gated_we;
     reg_we_check[10] = enabled_memory_range_limit_gated_we;
-    reg_we_check[11] = range_unlock_regwen_we;
+    reg_we_check[11] = range_regwen_we;
     reg_we_check[12] = total_data_size_we;
     reg_we_check[13] = chunk_data_size_we;
     reg_we_check[14] = transfer_width_we;
@@ -3523,7 +3523,7 @@ module dma_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[3:0] = range_unlock_regwen_qs;
+        reg_rdata_next[3:0] = range_regwen_qs;
       end
 
       addr_hit[12]: begin

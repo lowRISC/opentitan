@@ -175,7 +175,7 @@ module dma
 
   logic reg_intg_error;
   // SEC_CM: BUS.INTEGRITY
-  // SEC_CM: RANGE_UNLOCK.CONFIG.REGWEN_MUBI
+  // SEC_CM: RANGE.CONFIG.REGWEN_MUBI
   dma_reg_top u_dma_reg (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
@@ -798,7 +798,7 @@ module dma
           bad_dst_addr = 1'b1;
         end
 
-        if (mubi4_test_true_loose(mubi4_t'(reg2hw.range_unlock_regwen.q))) begin
+        if (mubi4_test_true_loose(mubi4_t'(reg2hw.range_regwen.q))) begin
           bad_go_config = 1'b1;
         end
 
@@ -1645,7 +1645,7 @@ module dma
   // The DMA enabled memory should not be changed after lock
   `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
                 prim_mubi_pkg::mubi4_test_false_loose(
-                  prim_mubi_pkg::mubi4_t'(reg2hw.range_unlock_regwen.q)) &&
+                  prim_mubi_pkg::mubi4_t'(reg2hw.range_regwen.q)) &&
                   (reg2hw.enabled_memory_range_base.qe ||
                    reg2hw.enabled_memory_range_limit.qe))
 endmodule
