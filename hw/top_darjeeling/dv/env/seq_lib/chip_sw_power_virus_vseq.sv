@@ -123,8 +123,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
     wait (cfg.chip_vif.mios[top_darjeeling_pkg::MioPadIob8]);
-    // Wait for 16 clock cycles.
-    cfg.clk_rst_vif.wait_clks(16);
+    // Wait for 10 clock cycles.
+    cfg.clk_rst_vif.wait_clks(10);
 
     `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)
