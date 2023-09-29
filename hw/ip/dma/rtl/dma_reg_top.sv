@@ -551,17 +551,6 @@ module dma_reg_top (
 
 
   // R[source_address_lo]: V(False)
-  logic source_address_lo_qe;
-  logic [0:0] source_address_lo_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_source_address_lo0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&source_address_lo_flds_we),
-    .q_o(source_address_lo_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -580,28 +569,16 @@ module dma_reg_top (
     .d      (hw2reg.source_address_lo.d),
 
     // to internal hardware
-    .qe     (source_address_lo_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.source_address_lo.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (source_address_lo_qs)
   );
-  assign reg2hw.source_address_lo.qe = source_address_lo_qe;
 
 
   // R[source_address_hi]: V(False)
-  logic source_address_hi_qe;
-  logic [0:0] source_address_hi_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_source_address_hi0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&source_address_hi_flds_we),
-    .q_o(source_address_hi_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -620,28 +597,16 @@ module dma_reg_top (
     .d      (hw2reg.source_address_hi.d),
 
     // to internal hardware
-    .qe     (source_address_hi_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.source_address_hi.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (source_address_hi_qs)
   );
-  assign reg2hw.source_address_hi.qe = source_address_hi_qe;
 
 
   // R[destination_address_lo]: V(False)
-  logic destination_address_lo_qe;
-  logic [0:0] destination_address_lo_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_lo0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_lo_flds_we),
-    .q_o(destination_address_lo_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -660,28 +625,16 @@ module dma_reg_top (
     .d      (hw2reg.destination_address_lo.d),
 
     // to internal hardware
-    .qe     (destination_address_lo_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_lo.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_lo_qs)
   );
-  assign reg2hw.destination_address_lo.qe = destination_address_lo_qe;
 
 
   // R[destination_address_hi]: V(False)
-  logic destination_address_hi_qe;
-  logic [0:0] destination_address_hi_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_hi0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_hi_flds_we),
-    .q_o(destination_address_hi_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -700,28 +653,16 @@ module dma_reg_top (
     .d      (hw2reg.destination_address_hi.d),
 
     // to internal hardware
-    .qe     (destination_address_hi_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_hi.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_hi_qs)
   );
-  assign reg2hw.destination_address_hi.qe = destination_address_hi_qe;
 
 
   // R[address_space_id]: V(False)
-  logic address_space_id_qe;
-  logic [1:0] address_space_id_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_address_space_id0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&address_space_id_flds_we),
-    .q_o(address_space_id_qe)
-  );
   //   F[source_asid]: 3:0
   prim_subreg #(
     .DW      (4),
@@ -741,14 +682,13 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (address_space_id_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.address_space_id.source_asid.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (address_space_id_source_asid_qs)
   );
-  assign reg2hw.address_space_id.source_asid.qe = address_space_id_qe;
 
   //   F[destination_asid]: 7:4
   prim_subreg #(
@@ -769,14 +709,13 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (address_space_id_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.address_space_id.destination_asid.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (address_space_id_destination_asid_qs)
   );
-  assign reg2hw.address_space_id.destination_asid.qe = address_space_id_qe;
 
 
   // R[enabled_memory_range_base]: V(False)
@@ -898,17 +837,6 @@ module dma_reg_top (
 
 
   // R[total_data_size]: V(False)
-  logic total_data_size_qe;
-  logic [0:0] total_data_size_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_total_data_size0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&total_data_size_flds_we),
-    .q_o(total_data_size_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -927,28 +855,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (total_data_size_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.total_data_size.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (total_data_size_qs)
   );
-  assign reg2hw.total_data_size.qe = total_data_size_qe;
 
 
   // R[chunk_data_size]: V(False)
-  logic chunk_data_size_qe;
-  logic [0:0] chunk_data_size_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_chunk_data_size0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&chunk_data_size_flds_we),
-    .q_o(chunk_data_size_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -967,28 +883,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (chunk_data_size_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.chunk_data_size.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (chunk_data_size_qs)
   );
-  assign reg2hw.chunk_data_size.qe = chunk_data_size_qe;
 
 
   // R[transfer_width]: V(False)
-  logic transfer_width_qe;
-  logic [0:0] transfer_width_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_transfer_width0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&transfer_width_flds_we),
-    .q_o(transfer_width_qe)
-  );
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1007,28 +911,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (transfer_width_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.transfer_width.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (transfer_width_qs)
   );
-  assign reg2hw.transfer_width.qe = transfer_width_qe;
 
 
   // R[destination_address_limit_lo]: V(False)
-  logic destination_address_limit_lo_qe;
-  logic [0:0] destination_address_limit_lo_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_limit_lo0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_limit_lo_flds_we),
-    .q_o(destination_address_limit_lo_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1047,28 +939,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (destination_address_limit_lo_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_limit_lo.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_limit_lo_qs)
   );
-  assign reg2hw.destination_address_limit_lo.qe = destination_address_limit_lo_qe;
 
 
   // R[destination_address_limit_hi]: V(False)
-  logic destination_address_limit_hi_qe;
-  logic [0:0] destination_address_limit_hi_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_limit_hi0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_limit_hi_flds_we),
-    .q_o(destination_address_limit_hi_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1087,28 +967,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (destination_address_limit_hi_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_limit_hi.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_limit_hi_qs)
   );
-  assign reg2hw.destination_address_limit_hi.qe = destination_address_limit_hi_qe;
 
 
   // R[destination_address_almost_limit_lo]: V(False)
-  logic destination_address_almost_limit_lo_qe;
-  logic [0:0] destination_address_almost_limit_lo_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_almost_limit_lo0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_almost_limit_lo_flds_we),
-    .q_o(destination_address_almost_limit_lo_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1127,28 +995,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (destination_address_almost_limit_lo_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_almost_limit_lo.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_almost_limit_lo_qs)
   );
-  assign reg2hw.destination_address_almost_limit_lo.qe = destination_address_almost_limit_lo_qe;
 
 
   // R[destination_address_almost_limit_hi]: V(False)
-  logic destination_address_almost_limit_hi_qe;
-  logic [0:0] destination_address_almost_limit_hi_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_destination_address_almost_limit_hi0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&destination_address_almost_limit_hi_flds_we),
-    .q_o(destination_address_almost_limit_hi_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1167,14 +1023,13 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (destination_address_almost_limit_hi_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.destination_address_almost_limit_hi.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (destination_address_almost_limit_hi_qs)
   );
-  assign reg2hw.destination_address_almost_limit_hi.qe = destination_address_almost_limit_hi_qe;
 
 
   // R[control]: V(False)
@@ -1215,7 +1070,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_opcode_qs)
   );
-  assign reg2hw.control.opcode.qe = control_qe;
 
   //   F[hardware_handshake_enable]: 6:6
   prim_subreg #(
@@ -1243,7 +1097,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_hardware_handshake_enable_qs)
   );
-  assign reg2hw.control.hardware_handshake_enable.qe = control_qe;
 
   //   F[memory_buffer_auto_increment_enable]: 7:7
   prim_subreg #(
@@ -1271,7 +1124,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_memory_buffer_auto_increment_enable_qs)
   );
-  assign reg2hw.control.memory_buffer_auto_increment_enable.qe = control_qe;
 
   //   F[fifo_auto_increment_enable]: 8:8
   prim_subreg #(
@@ -1299,7 +1151,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_fifo_auto_increment_enable_qs)
   );
-  assign reg2hw.control.fifo_auto_increment_enable.qe = control_qe;
 
   //   F[data_direction]: 9:9
   prim_subreg #(
@@ -1316,8 +1167,8 @@ module dma_reg_top (
     .wd     (control_data_direction_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.data_direction.de),
-    .d      (hw2reg.control.data_direction.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (control_flds_we[4]),
@@ -1327,7 +1178,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_data_direction_qs)
   );
-  assign reg2hw.control.data_direction.qe = control_qe;
 
   //   F[initial_transfer]: 10:10
   prim_subreg #(
@@ -1355,7 +1205,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (control_initial_transfer_qs)
   );
-  assign reg2hw.control.initial_transfer.qe = control_qe;
 
   //   F[abort]: 27:27
   prim_subreg #(
@@ -1383,7 +1232,6 @@ module dma_reg_top (
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.control.abort.qe = control_qe;
 
   //   F[go]: 31:31
   prim_subreg #(
@@ -1415,17 +1263,6 @@ module dma_reg_top (
 
 
   // R[status]: V(False)
-  logic status_qe;
-  logic [4:0] status_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_status0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&status_flds_we),
-    .q_o(status_qe)
-  );
   //   F[busy]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1445,14 +1282,13 @@ module dma_reg_top (
     .d      (hw2reg.status.busy.d),
 
     // to internal hardware
-    .qe     (status_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.status.busy.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_busy_qs)
   );
-  assign reg2hw.status.busy.qe = status_qe;
 
   //   F[done]: 1:1
   prim_subreg #(
@@ -1473,14 +1309,13 @@ module dma_reg_top (
     .d      (hw2reg.status.done.d),
 
     // to internal hardware
-    .qe     (status_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.status.done.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_done_qs)
   );
-  assign reg2hw.status.done.qe = status_qe;
 
   //   F[aborted]: 2:2
   prim_subreg #(
@@ -1501,14 +1336,13 @@ module dma_reg_top (
     .d      (hw2reg.status.aborted.d),
 
     // to internal hardware
-    .qe     (status_flds_we[2]),
-    .q      (reg2hw.status.aborted.q),
+    .qe     (),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_aborted_qs)
   );
-  assign reg2hw.status.aborted.qe = status_qe;
 
   //   F[error]: 3:3
   prim_subreg #(
@@ -1529,14 +1363,13 @@ module dma_reg_top (
     .d      (hw2reg.status.error.d),
 
     // to internal hardware
-    .qe     (status_flds_we[3]),
+    .qe     (),
     .q      (reg2hw.status.error.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_error_qs)
   );
-  assign reg2hw.status.error.qe = status_qe;
 
   //   F[error_code]: 11:4
   prim_subreg #(
@@ -1557,14 +1390,13 @@ module dma_reg_top (
     .d      (hw2reg.status.error_code.d),
 
     // to internal hardware
-    .qe     (status_flds_we[4]),
-    .q      (reg2hw.status.error_code.q),
+    .qe     (),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_error_code_qs)
   );
-  assign reg2hw.status.error_code.qe = status_qe;
 
 
   // R[clear_state]: V(False)
@@ -1628,7 +1460,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[0].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1657,7 +1489,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[1].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1686,7 +1518,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[2].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1715,7 +1547,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[3].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1744,7 +1576,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[4].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1773,7 +1605,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[5].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1802,7 +1634,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[6].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1831,7 +1663,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[7].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1860,7 +1692,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[8].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1889,7 +1721,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[9].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1918,7 +1750,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[10].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1947,7 +1779,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[11].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -1976,7 +1808,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[12].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -2005,7 +1837,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[13].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -2034,7 +1866,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[14].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -2063,7 +1895,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.sha2_digest[15].q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
@@ -2100,17 +1932,6 @@ module dma_reg_top (
 
 
   // R[clear_int_src]: V(False)
-  logic clear_int_src_qe;
-  logic [0:0] clear_int_src_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_clear_int_src0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&clear_int_src_flds_we),
-    .q_o(clear_int_src_qe)
-  );
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2129,28 +1950,16 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (clear_int_src_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.clear_int_src.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (clear_int_src_qs)
   );
-  assign reg2hw.clear_int_src.qe = clear_int_src_qe;
 
 
   // R[clear_int_bus]: V(False)
-  logic clear_int_bus_qe;
-  logic [0:0] clear_int_bus_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_clear_int_bus0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&clear_int_bus_flds_we),
-    .q_o(clear_int_bus_qe)
-  );
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2169,29 +1978,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (clear_int_bus_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.clear_int_bus.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (clear_int_bus_qs)
   );
-  assign reg2hw.clear_int_bus.qe = clear_int_bus_qe;
 
 
   // Subregister 0 of Multireg int_source_addr
   // R[int_source_addr_0]: V(False)
-  logic int_source_addr_0_qe;
-  logic [0:0] int_source_addr_0_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_0_flds_we),
-    .q_o(int_source_addr_0_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2210,29 +2007,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_0_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_0_qs)
   );
-  assign reg2hw.int_source_addr[0].qe = int_source_addr_0_qe;
 
 
   // Subregister 1 of Multireg int_source_addr
   // R[int_source_addr_1]: V(False)
-  logic int_source_addr_1_qe;
-  logic [0:0] int_source_addr_1_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr1_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_1_flds_we),
-    .q_o(int_source_addr_1_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2251,29 +2036,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_1_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_1_qs)
   );
-  assign reg2hw.int_source_addr[1].qe = int_source_addr_1_qe;
 
 
   // Subregister 2 of Multireg int_source_addr
   // R[int_source_addr_2]: V(False)
-  logic int_source_addr_2_qe;
-  logic [0:0] int_source_addr_2_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr2_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_2_flds_we),
-    .q_o(int_source_addr_2_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2292,29 +2065,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_2_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[2].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_2_qs)
   );
-  assign reg2hw.int_source_addr[2].qe = int_source_addr_2_qe;
 
 
   // Subregister 3 of Multireg int_source_addr
   // R[int_source_addr_3]: V(False)
-  logic int_source_addr_3_qe;
-  logic [0:0] int_source_addr_3_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr3_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_3_flds_we),
-    .q_o(int_source_addr_3_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2333,29 +2094,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_3_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[3].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_3_qs)
   );
-  assign reg2hw.int_source_addr[3].qe = int_source_addr_3_qe;
 
 
   // Subregister 4 of Multireg int_source_addr
   // R[int_source_addr_4]: V(False)
-  logic int_source_addr_4_qe;
-  logic [0:0] int_source_addr_4_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr4_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_4_flds_we),
-    .q_o(int_source_addr_4_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2374,29 +2123,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_4_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[4].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_4_qs)
   );
-  assign reg2hw.int_source_addr[4].qe = int_source_addr_4_qe;
 
 
   // Subregister 5 of Multireg int_source_addr
   // R[int_source_addr_5]: V(False)
-  logic int_source_addr_5_qe;
-  logic [0:0] int_source_addr_5_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr5_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_5_flds_we),
-    .q_o(int_source_addr_5_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2415,29 +2152,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_5_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[5].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_5_qs)
   );
-  assign reg2hw.int_source_addr[5].qe = int_source_addr_5_qe;
 
 
   // Subregister 6 of Multireg int_source_addr
   // R[int_source_addr_6]: V(False)
-  logic int_source_addr_6_qe;
-  logic [0:0] int_source_addr_6_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr6_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_6_flds_we),
-    .q_o(int_source_addr_6_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2456,29 +2181,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_6_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[6].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_6_qs)
   );
-  assign reg2hw.int_source_addr[6].qe = int_source_addr_6_qe;
 
 
   // Subregister 7 of Multireg int_source_addr
   // R[int_source_addr_7]: V(False)
-  logic int_source_addr_7_qe;
-  logic [0:0] int_source_addr_7_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr7_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_7_flds_we),
-    .q_o(int_source_addr_7_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2497,29 +2210,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_7_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[7].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_7_qs)
   );
-  assign reg2hw.int_source_addr[7].qe = int_source_addr_7_qe;
 
 
   // Subregister 8 of Multireg int_source_addr
   // R[int_source_addr_8]: V(False)
-  logic int_source_addr_8_qe;
-  logic [0:0] int_source_addr_8_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr8_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_8_flds_we),
-    .q_o(int_source_addr_8_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2538,29 +2239,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_8_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[8].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_8_qs)
   );
-  assign reg2hw.int_source_addr[8].qe = int_source_addr_8_qe;
 
 
   // Subregister 9 of Multireg int_source_addr
   // R[int_source_addr_9]: V(False)
-  logic int_source_addr_9_qe;
-  logic [0:0] int_source_addr_9_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr9_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_9_flds_we),
-    .q_o(int_source_addr_9_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2579,29 +2268,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_9_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[9].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_9_qs)
   );
-  assign reg2hw.int_source_addr[9].qe = int_source_addr_9_qe;
 
 
   // Subregister 10 of Multireg int_source_addr
   // R[int_source_addr_10]: V(False)
-  logic int_source_addr_10_qe;
-  logic [0:0] int_source_addr_10_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_addr10_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_addr_10_flds_we),
-    .q_o(int_source_addr_10_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2620,29 +2297,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_addr_10_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_addr[10].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_addr_10_qs)
   );
-  assign reg2hw.int_source_addr[10].qe = int_source_addr_10_qe;
 
 
   // Subregister 0 of Multireg int_source_wr_val
   // R[int_source_wr_val_0]: V(False)
-  logic int_source_wr_val_0_qe;
-  logic [0:0] int_source_wr_val_0_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_0_flds_we),
-    .q_o(int_source_wr_val_0_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2661,29 +2326,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_0_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_0_qs)
   );
-  assign reg2hw.int_source_wr_val[0].qe = int_source_wr_val_0_qe;
 
 
   // Subregister 1 of Multireg int_source_wr_val
   // R[int_source_wr_val_1]: V(False)
-  logic int_source_wr_val_1_qe;
-  logic [0:0] int_source_wr_val_1_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val1_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_1_flds_we),
-    .q_o(int_source_wr_val_1_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2702,29 +2355,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_1_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_1_qs)
   );
-  assign reg2hw.int_source_wr_val[1].qe = int_source_wr_val_1_qe;
 
 
   // Subregister 2 of Multireg int_source_wr_val
   // R[int_source_wr_val_2]: V(False)
-  logic int_source_wr_val_2_qe;
-  logic [0:0] int_source_wr_val_2_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val2_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_2_flds_we),
-    .q_o(int_source_wr_val_2_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2743,29 +2384,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_2_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[2].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_2_qs)
   );
-  assign reg2hw.int_source_wr_val[2].qe = int_source_wr_val_2_qe;
 
 
   // Subregister 3 of Multireg int_source_wr_val
   // R[int_source_wr_val_3]: V(False)
-  logic int_source_wr_val_3_qe;
-  logic [0:0] int_source_wr_val_3_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val3_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_3_flds_we),
-    .q_o(int_source_wr_val_3_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2784,29 +2413,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_3_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[3].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_3_qs)
   );
-  assign reg2hw.int_source_wr_val[3].qe = int_source_wr_val_3_qe;
 
 
   // Subregister 4 of Multireg int_source_wr_val
   // R[int_source_wr_val_4]: V(False)
-  logic int_source_wr_val_4_qe;
-  logic [0:0] int_source_wr_val_4_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val4_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_4_flds_we),
-    .q_o(int_source_wr_val_4_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2825,29 +2442,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_4_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[4].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_4_qs)
   );
-  assign reg2hw.int_source_wr_val[4].qe = int_source_wr_val_4_qe;
 
 
   // Subregister 5 of Multireg int_source_wr_val
   // R[int_source_wr_val_5]: V(False)
-  logic int_source_wr_val_5_qe;
-  logic [0:0] int_source_wr_val_5_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val5_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_5_flds_we),
-    .q_o(int_source_wr_val_5_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2866,29 +2471,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_5_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[5].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_5_qs)
   );
-  assign reg2hw.int_source_wr_val[5].qe = int_source_wr_val_5_qe;
 
 
   // Subregister 6 of Multireg int_source_wr_val
   // R[int_source_wr_val_6]: V(False)
-  logic int_source_wr_val_6_qe;
-  logic [0:0] int_source_wr_val_6_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val6_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_6_flds_we),
-    .q_o(int_source_wr_val_6_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2907,29 +2500,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_6_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[6].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_6_qs)
   );
-  assign reg2hw.int_source_wr_val[6].qe = int_source_wr_val_6_qe;
 
 
   // Subregister 7 of Multireg int_source_wr_val
   // R[int_source_wr_val_7]: V(False)
-  logic int_source_wr_val_7_qe;
-  logic [0:0] int_source_wr_val_7_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val7_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_7_flds_we),
-    .q_o(int_source_wr_val_7_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2948,29 +2529,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_7_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[7].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_7_qs)
   );
-  assign reg2hw.int_source_wr_val[7].qe = int_source_wr_val_7_qe;
 
 
   // Subregister 8 of Multireg int_source_wr_val
   // R[int_source_wr_val_8]: V(False)
-  logic int_source_wr_val_8_qe;
-  logic [0:0] int_source_wr_val_8_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val8_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_8_flds_we),
-    .q_o(int_source_wr_val_8_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2989,29 +2558,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_8_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[8].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_8_qs)
   );
-  assign reg2hw.int_source_wr_val[8].qe = int_source_wr_val_8_qe;
 
 
   // Subregister 9 of Multireg int_source_wr_val
   // R[int_source_wr_val_9]: V(False)
-  logic int_source_wr_val_9_qe;
-  logic [0:0] int_source_wr_val_9_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val9_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_9_flds_we),
-    .q_o(int_source_wr_val_9_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3030,29 +2587,17 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_9_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[9].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_9_qs)
   );
-  assign reg2hw.int_source_wr_val[9].qe = int_source_wr_val_9_qe;
 
 
   // Subregister 10 of Multireg int_source_wr_val
   // R[int_source_wr_val_10]: V(False)
-  logic int_source_wr_val_10_qe;
-  logic [0:0] int_source_wr_val_10_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_source_wr_val10_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_source_wr_val_10_flds_we),
-    .q_o(int_source_wr_val_10_qe)
-  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3071,14 +2616,13 @@ module dma_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (int_source_wr_val_10_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.int_source_wr_val[10].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (int_source_wr_val_10_qs)
   );
-  assign reg2hw.int_source_wr_val[10].qe = int_source_wr_val_10_qe;
 
 
 

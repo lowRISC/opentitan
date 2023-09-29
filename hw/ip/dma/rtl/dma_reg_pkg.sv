@@ -63,32 +63,26 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_source_address_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_source_address_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_hi_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } destination_asid;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } source_asid;
   } dma_reg2hw_address_space_id_reg_t;
 
@@ -108,37 +102,30 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_total_data_size_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_chunk_data_size_reg_t;
 
   typedef struct packed {
     logic [1:0]  q;
-    logic        qe;
   } dma_reg2hw_transfer_width_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_limit_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_limit_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_almost_limit_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_destination_address_almost_limit_hi_reg_t;
 
   typedef struct packed {
@@ -148,54 +135,36 @@ package dma_reg_pkg;
     } go;
     struct packed {
       logic        q;
-      logic        qe;
-    } initial_transfer;
-    struct packed {
-      logic        q;
-      logic        qe;
     } abort;
     struct packed {
       logic        q;
-      logic        qe;
+    } initial_transfer;
+    struct packed {
+      logic        q;
     } data_direction;
     struct packed {
       logic        q;
-      logic        qe;
     } fifo_auto_increment_enable;
     struct packed {
       logic        q;
-      logic        qe;
     } memory_buffer_auto_increment_enable;
     struct packed {
       logic        q;
-      logic        qe;
     } hardware_handshake_enable;
     struct packed {
       logic [3:0]  q;
-      logic        qe;
     } opcode;
   } dma_reg2hw_control_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } error_code;
-    struct packed {
       logic        q;
-      logic        qe;
     } error;
     struct packed {
       logic        q;
-      logic        qe;
-    } aborted;
-    struct packed {
-      logic        q;
-      logic        qe;
     } done;
     struct packed {
       logic        q;
-      logic        qe;
     } busy;
   } dma_reg2hw_status_reg_t;
 
@@ -206,30 +175,22 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_sha2_digest_mreg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
   } dma_reg2hw_handshake_interrupt_enable_reg_t;
 
   typedef struct packed {
     logic [10:0] q;
-    logic        qe;
   } dma_reg2hw_clear_int_src_reg_t;
 
   typedef struct packed {
     logic [10:0] q;
-    logic        qe;
   } dma_reg2hw_clear_int_bus_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_int_source_addr_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
-    logic        qe;
   } dma_reg2hw_int_source_wr_val_mreg_t;
 
   typedef struct packed {
@@ -271,10 +232,6 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } data_direction;
-    struct packed {
-      logic        d;
-      logic        de;
     } initial_transfer;
     struct packed {
       logic        d;
@@ -312,46 +269,45 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [1758:1756]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [1755:1753]
-    dma_reg2hw_intr_test_reg_t intr_test; // [1752:1747]
-    dma_reg2hw_alert_test_reg_t alert_test; // [1746:1745]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1744:1712]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1711:1679]
-    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1678:1646]
-    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1645:1613]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [1612:1603]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1602:1570]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [1569:1537]
-    dma_reg2hw_range_regwen_reg_t range_regwen; // [1536:1533]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [1532:1500]
-    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [1499:1467]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [1466:1464]
-    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [1463:1431]
-    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [1430:1398]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1188:1186]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1185:1183]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1182:1177]
+    dma_reg2hw_alert_test_reg_t alert_test; // [1176:1175]
+    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1174:1143]
+    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1142:1111]
+    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1110:1079]
+    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1078:1047]
+    dma_reg2hw_address_space_id_reg_t address_space_id; // [1046:1039]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1038:1006]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [1005:973]
+    dma_reg2hw_range_regwen_reg_t range_regwen; // [972:969]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [968:937]
+    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [936:905]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [904:903]
+    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [902:871]
+    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [870:839]
     dma_reg2hw_destination_address_almost_limit_lo_reg_t
-        destination_address_almost_limit_lo; // [1397:1365]
+        destination_address_almost_limit_lo; // [838:807]
     dma_reg2hw_destination_address_almost_limit_hi_reg_t
-        destination_address_almost_limit_hi; // [1364:1332]
-    dma_reg2hw_control_reg_t control; // [1331:1313]
-    dma_reg2hw_status_reg_t status; // [1312:1296]
-    dma_reg2hw_clear_state_reg_t clear_state; // [1295:1294]
-    dma_reg2hw_sha2_digest_mreg_t [15:0] sha2_digest; // [1293:782]
-    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [781:750]
-    dma_reg2hw_clear_int_src_reg_t clear_int_src; // [749:738]
-    dma_reg2hw_clear_int_bus_reg_t clear_int_bus; // [737:726]
-    dma_reg2hw_int_source_addr_mreg_t [10:0] int_source_addr; // [725:363]
-    dma_reg2hw_int_source_wr_val_mreg_t [10:0] int_source_wr_val; // [362:0]
+        destination_address_almost_limit_hi; // [806:775]
+    dma_reg2hw_control_reg_t control; // [774:763]
+    dma_reg2hw_status_reg_t status; // [762:760]
+    dma_reg2hw_clear_state_reg_t clear_state; // [759:758]
+    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [757:726]
+    dma_reg2hw_clear_int_src_reg_t clear_int_src; // [725:715]
+    dma_reg2hw_clear_int_bus_reg_t clear_int_bus; // [714:704]
+    dma_reg2hw_int_source_addr_mreg_t [10:0] int_source_addr; // [703:352]
+    dma_reg2hw_int_source_wr_val_mreg_t [10:0] int_source_wr_val; // [351:0]
   } dma_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [688:683]
-    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [682:650]
-    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [649:617]
-    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [616:584]
-    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [583:551]
-    dma_hw2reg_control_reg_t control; // [550:545]
+    dma_hw2reg_intr_state_reg_t intr_state; // [686:681]
+    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [680:648]
+    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [647:615]
+    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [614:582]
+    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [581:549]
+    dma_hw2reg_control_reg_t control; // [548:545]
     dma_hw2reg_status_reg_t status; // [544:528]
     dma_hw2reg_sha2_digest_mreg_t [15:0] sha2_digest; // [527:0]
   } dma_hw2reg_t;
