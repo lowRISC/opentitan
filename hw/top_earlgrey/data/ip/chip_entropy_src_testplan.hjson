@@ -1,0 +1,69 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_entropy_src
+  testpoints: [
+    // ENTROPY_SRC (pre-verified IP) integration tests:
+    {
+      name: chip_sw_entropy_src_ast_rng_req
+      //TODO(#13460): A dv enginner should add an assertion to check the connectivity for this test.
+      desc: '''Verify the RNG req to ast.
+
+            - Program the entropy src in normal RNG mode.
+            - Route the entropy data received from RNG to the FIFO.
+            - Verify that the FIFO depth is non-zero via SW - indicating the reception of data over
+              the AST RNG interface.
+            - Verify the correctness of the received data with assertion based connectivity checks.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_ast_rng_req"]
+    },
+    {
+      name: chip_sw_entropy_src_csrng
+      desc: '''Verify the transfer of entropy bits to CSRNG.
+
+            Verify the entropy valid interrupt.
+            At the CSRNG, validate the reception of entropy req interrupt.
+
+            - Disable edn0, edn1, csrng and entropy_src, as these are enabled by the test ROM.
+            - Enable entropy_src in fips mode routing data to csrng.
+            - Enable csrng and enable the entropy request interrupt.
+            - Issue csrng instantiate and reseed commands. Check that for each csrng command,
+              there is a corresponding entropy request interrupt.
+            - Generate output and ensure the data output is valid, and that csrng is not reporting
+              any errors.
+            - Issue instantiate and reseed commands from edn0 and edn1. Check that for each
+              command, there is a corresponding entropy request interrupt.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_csrng"]
+    },
+    {
+      name: chip_sw_entropy_src_fuse_en_fw_read
+      desc: '''Verify the fuse input entropy_src.
+
+            - Initialize the OTP with the fuse that controls whether the SW can read the entropy src
+              enabled.
+            - Read the OTP and verify that the fuse is enabled.
+            - Read the entropy_data_fifo via SW and verify that it reads valid values.
+            - Reset the chip, but this time, initialize the OTP with the fuse disabled.
+            - Read the OTP and verify that fuse is disabled.
+            - Read the internal state via SW and verify that the entropy valid bit is zero.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
+    },
+    {
+      name: chip_sw_entropy_src_known_answer_tests
+      desc: '''Verify our ability to run known-answer tests in SW.
+
+            - Configure the device in firmware-bypass mode.
+            - Feed NIST test-defined entropy sequences into the conditioner
+            - Read the entropy_data_fifo via SW; verify that it reads the expected values.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_kat_test"]
+    },
+  ]
+}
