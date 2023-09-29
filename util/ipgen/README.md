@@ -2,8 +2,8 @@
 
 Ipgen is a tool to produce IP blocks from IP templates.
 
-IP templates are highly customizable IP blocks which need to be pre-processed before they can be used in a hardware design.
-In the pre-processing ("rendering"), which is performed by the ipgen tool, templates of source files, written in the Mako templating language, are converted into "real" source files.
+IP templates are highly customizable IP blocks which are pre-processed to render blocks that can be used in a hardware design.
+The templates of the source files are written in the Mako templating language, and are rendered by the ipgen tool to become the actual source files.
 The templates can be customized through template parameters, which are available within the templates.
 
 Ipgen is a command-line tool and a library.
@@ -20,7 +20,7 @@ An IP template directory has a well-defined structure:
 * The IP template name (`<templatename>`) equals the directory name.
 * The directory contains a file `data/<templatename>.tpldesc.hjson` containing all configuration information related to the template.
 * The directory also contains zero or more files ending in `.tpl`.
-  These files are Mako templates and rendered into an file in the same location without the `.tpl` file extension.
+  These files are Mako templates and rendered into a file in the same relative location without the `.tpl` file extension.
 
 ### The template description file
 
@@ -37,7 +37,7 @@ Keys within `template_param_list`:
 * `name` (string): Name of the template parameter.
 * `desc` (string): Human-readable description of the template parameter.
 * `type` (string): Data type of the parameter. Valid values: `int`, `str`
-* `default` (string|int): The default value of the parameter. The data type should match the `type` argument. As convenience, strings are converted into integers on demand (if possible).
+* `default` (string|int|object): The default value of the parameter. The data type should match the `type` argument. As convenience, strings are converted into integers on demand (if possible).
 
 #### Example template description file
 
@@ -46,20 +46,20 @@ An exemplary template description file with two parameters, `src` and `target` i
 ```hjson
 // data/<templatename>.tpldesc.hjson
 {
-  "template_param_list": [
+  template_param_list: [
     {
-      "name": "src",
-      "desc": "Number of Interrupt Source",
-      "type": "int",
-      "default": "32"
-    },
+      name: "src"
+      desc: "Number of Interrupt Source"
+      type: "int"
+      default: "32"
+    }
     {
-      "name": "target",
-      "desc": "Number of Interrupt Targets",
-      "type": "int",
-      "default": "32"
-    },
-  ],
+      name: "target"
+      desc: "Number of Interrupt Targets"
+      type: "int"
+      default: "32"
+    }
+  ]
 }
 ```
 
@@ -67,7 +67,7 @@ An exemplary template description file with two parameters, `src` and `target` i
 
 Templates are written in the [Mako templating language](https://www.makotemplates.org/).
 All template parameters are available in the rendering context.
-For example, a template parameter `src` can be used in the template as `{{ src }}`.
+For example, a template parameter `src` can be used in the template as `${src}`.
 
 Furthermore, the following functions are available:
 
@@ -100,7 +100,7 @@ The following rules should be applied when creating IP templates:
 
 FuseSoC core files should be written in a way that upholds the principle "same name, same public interface", i.e. if a FuseSoC core has the same name as another one, it must also provide the same public interface.
 
-Since SystemVerilog does not provide no strong control over which symbols become part of the public API developers must be carefully evaluate their source code.
+Since SystemVerilog does not provide strong control over which symbols become part of the public API, developers must carefully evaluate their source code.
 At least, the public interface is comprised of
 - module header(s), e.g. parameter names, ports (names, data types),
 - package names, and all identifiers within it, including enum values (but not the values assigned to them),

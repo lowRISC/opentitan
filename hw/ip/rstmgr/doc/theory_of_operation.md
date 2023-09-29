@@ -1,7 +1,7 @@
 # Theory of Operation
 
 The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
-The reset controller is closely related to the [power controller](../../pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
+The reset controller is closely related to the [power controller](../../../top_earlgrey/ip_autogen/pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
 
 ![Reset Topology](../doc/reset_topology.svg)
 

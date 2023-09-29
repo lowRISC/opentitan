@@ -2,7 +2,7 @@
 
 Clock management in OpenTitan is divided into groups.
 Each group has specific attributes and controls whether software is allowed to influence individual clocks during the active power state.
-For low power states, please see [power manager](../../pwrmgr/README.md).
+For low power states, please see [power manager](../../../top_earlgrey/ip_autogen/pwrmgr/README.md).
 
 The grouping is derived from the chip partition and related security properties.
 For illustrative purposes, this document uses the following assumed chip partition
@@ -142,7 +142,7 @@ The following is a high level block diagram of the clock manager.
 ### Reset Domains
 
 Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
-To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
+To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../../top_earlgrey/ip_autogen/pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
 This ensures that the root clocks are freely running after power-up and its status can be communicated to the `pwrmgr` regardless of any other activity in the device.
 
 The other functions inside the clock manager operate on the `life cycle reset` domain.

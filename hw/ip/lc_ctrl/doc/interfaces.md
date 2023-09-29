@@ -145,7 +145,7 @@ The power manager uses that indication to determine whether a power down request
 Since the power manager may run in a different clock domain, the `pwr_lc_i.lc_init` signal is synchronized within the life cycle controller.
 The power manager is responsible for synchronizing the `pwr_lc_o.lc_done` and `pwr_lc_o.lc_idle` signals.
 
-See also [power manager documentation](../../pwrmgr/README.md).
+See also [power manager documentation](../../../top_earlgrey/ip_autogen/pwrmgr/README.md).
 
 #### OTP Interfaces
 

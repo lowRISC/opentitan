@@ -98,7 +98,7 @@ It is assumed that the flash device, when powered, will be able to correctly han
 
 #### Reset due to Low Power Entry
 
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../../ip/pwrmgr/README.md#abort-handling)) is responsible for ensuring the entry request is aborted.
+When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling)) is responsible for ensuring the entry request is aborted.
 
 
 ### Main processor (`core_ibex`)
