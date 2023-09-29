@@ -4,21 +4,29 @@
 #
 # waiver file for dma
 
-# TODO: Remove waivers when logic in dma is implemented
-waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'reg2hw.*' is not read from} \
-      -comment "Registers are not used in empty skeleton implementation"
-waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'reg2hw.*' is not read from} \
-      -comment "Registers are not used in empty skeleton implementation"
-waive -rules INPUT_NOT_READ -location {dma.sv} -regexp {Input port} \
-      -comment "Inputs are not used in empty skeleton implementation"
-waive -rules NOT_DRIVEN -location {dma.sv} -regexp {Signal 'hw2reg' has no driver} \
-      -comment "Registers are not used in empty skeleton implementation"
-waive -rules HIER_NET_NOT_DRIVEN -location {dma.sv} -regexp {Net 'hw2reg.*' is not driven} \
-      -comment "Registers are not used in empty skeleton implementation"
-waive -rules OUTPUT_NOT_DRIVEN -location {dma.sv} -regexp {Output port} \
-      -comment "Outputs are not used in empty skeleton implementation"
-waive -rules PARAM_NOT_USED -location {dma.sv} -regexp {Parameter} \
-      -comment "Parameters are not used in empty skeleton implementation"
-waive -rules PARAM_ENUM_VAL -location {dma.sv}
-      -regexp {Parameter 'ResetValue' is assigned an enum value 'DmaIdle' but is not declared explicitly as the same enum type}
-      -comment "State value is allowed to be assigned to prim flop logic"
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'reg2hw.clear_state.q' is not read from in module 'dma'} \
+      -comment "We only listen reg2hw.clear_state.qe, the value is don't care"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'reg2hw.clear_state.q' is not read from in module 'dma'} \
+      -comment "We only listen reg2hw.clear_state.qe, the value is don't care"
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'reg2hw.(enabled_memory_range_base|enabled_memory_range_limit).qe' is not read from in module 'dma'} \
+      -comment "This value is only used during assertions"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'reg2hw.(enabled_memory_range_base|enabled_memory_range_limit).qe' is not read from in module 'dma'} \
+      -comment "This value is only used during assertions"
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'reg2hw.status.busy.q' is not read from in module 'dma'} \
+      -comment "This value is only used during assertions"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'reg2hw.status.busy' is not read from in module 'dma'} \
+      -comment "This value is only used during assertions"
+
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'sys_resp_q.error_vec\[0\]' is not read from in module 'dma'} \
+      -comment "The systems interface does not generate write errors, thus not consuming it"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'sys_resp_q.error_vec\[0\]' is not read from in module 'dma'} \
+      -comment "The systems interface does not generate write errors, thus not consuming it"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'sys_resp_q.error_vec' is not read from in module 'dma'} \
+      -comment "Error is already read via the error_valid signal. We don't differentiate between error types"
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'sys_resp_q.read_metadata' is not read from in module 'dma'} \
+      -comment "The DMA does not use consume any bus metadata for their operation"
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'sys_resp_q.read_metadata' is not read from in module 'dma'} \
+      -comment "The DMA does not use consume any bus metadata for their operation"
+
+waive -rules {ARITH_CONTEXT} -location {dma.sv} -regexp {.*Bitlength of arithmetic operation.*is self-determined in this context.*} \
+      -comment "Carry issue when determining the bit length."

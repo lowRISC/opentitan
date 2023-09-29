@@ -669,9 +669,9 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "31:0"
+        { bits: "NumIntClearSources-1:0"
           name: "mask"
-          resval: 0xFFFF
+          resval: "0x7FF"
           desc: "Enable bits for incoming handshake interrupt wires."
         }
       ]
