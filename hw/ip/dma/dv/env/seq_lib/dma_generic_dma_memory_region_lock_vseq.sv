@@ -26,7 +26,7 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
   // Check that memory region registers are locked
   virtual task check_dma_memory_registers(ref dma_seq_item dma_config);
     uvm_reg_data_t data;
-    mubi4_t unlock_reg_value;
+    mubi4_t lock_reg_value;
     csr_rd(ral.enabled_memory_range_base, data);
     `DV_CHECK_EQ(dma_config.mem_range_base, data,
                  $sformatf("DMA enabled memory region base: 0x%0x register doesnt match: 0x%0x",
@@ -35,9 +35,9 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
     `DV_CHECK_EQ(dma_config.mem_range_limit, data,
                  $sformatf("DMA enabled memory region limit: 0x%0x doesnt match: 0x%0x",
                  data, dma_config.mem_range_limit))
-    csr_rd(cfg.ral.range_unlock_regwen, data);
-    unlock_reg_value = mubi4_t'(get_field_val(ral.range_unlock_regwen.unlock, data));
-    `DV_CHECK_EQ(unlock_reg_value, MuBi4False)
+    csr_rd(cfg.ral.range_regwen, data);
+    lock_reg_value = mubi4_t'(get_field_val(ral.range_regwen.regwen, data));
+    `DV_CHECK_EQ(lock_reg_value, MuBi4False)
   endtask
 
   // Randomize DMA enabled memory region registers
@@ -48,7 +48,7 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(dma_memory_limit)
     set_dma_enabled_memory_range(.base(dma_memory_base),
                                  .limit(dma_memory_limit),
-                                 .unlock(MuBi4True));
+                                 .lock(MuBi4True));
  endtask
 
  virtual task update_and_check_register(ref dma_seq_item dma_config);
