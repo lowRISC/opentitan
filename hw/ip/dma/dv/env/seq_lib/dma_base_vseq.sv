@@ -39,6 +39,7 @@ class dma_base_vseq extends cip_base_vseq #(
   event e_complete;
   event e_aborted;
   event e_errored;
+  event e_sha2_digest_valid;
 
   function new (string name = "");
     super.new(name);
@@ -501,6 +502,11 @@ class dma_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, "DMA: Error Seen", UVM_HIGH)
         end
       end
+      begin
+        wait(e_sha2_digest_valid.triggered);
+        status = 0;
+        `uvm_info(`gfn, "DMA: SHA2 digest valid seen", UVM_HIGH)
+      end
     join_any
     disable fork;
   endtask: wait_for_completion
@@ -516,9 +522,22 @@ class dma_base_vseq extends cip_base_vseq #(
       if (v[1]) begin ->e_complete; break; end
       if (v[2]) begin ->e_aborted;  break; end
       if (v[3]) begin ->e_errored;  break; end
+      if (v[12]) begin ->e_sha2_digest_valid;  break; end
       delay(pollrate);
     end
   endtask: poll_status
+
+  // Monitors busy bit in STATUS register
+  task wait_for_idle();
+    forever begin
+      uvm_reg_data_t data;
+      csr_rd(ral.status, data);
+      if (!get_field_val(ral.status.busy, data)) begin
+        `uvm_info(`gfn, "DMA in Idle state", UVM_MEDIUM)
+        break;
+      end
+    end
+  endtask
 
   // Task: Simulate a clock delay
   virtual task delay(int num = 1);
@@ -537,6 +556,35 @@ class dma_base_vseq extends cip_base_vseq #(
      end
    endtask
 
+   // Task to read out the SHA digest
+  task read_sha2_digest(input opcode_e op, output logic [511:0] digest);
+    int sha_digest_size; // in 32-bit words
+    string sha_mode;
+    digest = '0;
+    `uvm_info(`gfn, "DMA: Read SHA2 digest", UVM_MEDIUM)
+    case (op)
+      OpcSha256: begin
+        sha_digest_size = 8;
+        sha_mode = "SHA2-256";
+      end
+      OpcSha384: begin
+        sha_digest_size = 12;
+        sha_mode = "SHA2-384";
+      end
+      OpcSha512: begin
+        sha_digest_size = 16;
+        sha_mode = "SHA2-512";
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported SHA2 opcode %d", op))
+      end
+    endcase
+
+    for(int i = 0; i < sha_digest_size; ++i) begin
+      csr_rd(ral.sha2_digest[i],  digest[i*32 +: 32]);
+    end
+    `uvm_info(`gfn, $sformatf("DMA: %s digest: %x", sha_mode, digest), UVM_MEDIUM)
+  endtask
 
   // Return number of bytes transferred from interface corresponding to source ASID
   virtual function uint get_bytes_sent(ref dma_seq_item dma_config);
