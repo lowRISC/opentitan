@@ -18,7 +18,11 @@ _FIELDS = {
     "test_cmd": ("attr.test_cmd", False),
     "param": ("attr.param", False),
     "data": ("attr.data", False),
-    #"extract_sw_logs": ("executable.extract_sw_logs", False),
+    "extract_sw_logs": ("attr.extract_sw_logs", False),
+    "otp_mmap": ("file.otp_mmap", False),
+    "otp_seed": ("attr.otp_seed", False),
+    "otp_data_perm": ("attr.otp_data_perm", False),
+    "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "_opentitantool": ("executable._opentitantool", True),
 }
 
@@ -150,19 +154,29 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "Additonal dependencies for this environment or test",
         ),
-        # FIXME(cfrantz): This should work, but when we try to use this executable
-        # in the opentitan_{binary,test} rules, the runfiles aren't present.
-        # Somehow, bazel ends up building only the py_binary launcher script but
-        # doesn't construct the runfiles directory.  If we place this label in the
-        # opentitan_{binary,test} attrs, then the runfiles get created.
-        #
-        # Talk to the bazel team and determine whether or not this is a bazel bug.
-        #"extract_sw_logs": attr.label(
-        #    #default = kwargs.get("extract_sw_logs"),
-        #    default = "//util/device_sw_utils:extract_sw_logs_db",
-        #    executable = True,
-        #    cfg = "exec",
-        #),
+        "extract_sw_logs": attr.label(
+            default = kwargs.get("extract_sw_logs"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "otp_mmap": attr.label(
+            allow_single_file = True,
+            default = kwargs.get("otp_mmap"),
+            doc = "OTP memory map configuration HJSON file.",
+        ),
+        "otp_seed": attr.label(
+            default = kwargs.get("otp_seed"),
+            doc = "Configuration override seed used to randomize OTP netlist constants.",
+        ),
+        "otp_data_perm": attr.label(
+            default = kwargs.get("otp_data_perm"),
+            doc = "Option to indicate OTP VMEM file bit layout.",
+        ),
+        "flash_scramble_tool": attr.label(
+            default = kwargs.get("flash_scramble_tool"),
+            executable = True,
+            cfg = "exec",
+        ),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             executable = True,

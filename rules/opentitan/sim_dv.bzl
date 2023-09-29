@@ -14,6 +14,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_vmem",
     "extract_software_logs",
+    "scramble_flash",
 )
 
 _TEST_SCRIPT = """#!/bin/bash
@@ -40,17 +41,31 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     default = signed_bin if signed_bin else binary
+
+    # First convert to VMEM, then scramble according to flash
+    # scrambling settings.
     vmem = convert_to_vmem(
         ctx,
         name = name,
         src = default,
         word_size = 64,
     )
+    vmem = scramble_flash(
+        ctx,
+        name = name,
+        suffix = "64.scr.vmem",
+        src = vmem,
+        otp = get_fallback(ctx, "file.otp", exec_env),
+        otp_mmap = exec_env.otp_mmap,
+        otp_seed = exec_env.otp_seed,
+        otp_data_perm = exec_env.otp_data_perm,
+        _tool = exec_env.flash_scramble_tool.files_to_run,
+    )
     logs = extract_software_logs(
         ctx,
         name = name,
         src = elf,
-        _tool = ctx.executable.extract_sw_logs,
+        _tool = exec_env.extract_sw_logs.files_to_run,
     )
     return {
         "elf": elf,
@@ -137,6 +152,7 @@ def _test_dispatch(ctx, exec_env, provider):
             test_harness = test_harness.short_path,
             args = args,
             test_cmd = test_cmd,
+            data_files = " ".join([f.path for f in data_files]),
         ),
         is_executable = True,
     )

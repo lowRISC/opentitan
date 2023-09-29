@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
@@ -136,6 +137,68 @@ def convert_to_vmem(ctx, **kwargs):
     )
     return output
 
+def scramble_flash(ctx, **kwargs):
+    """Scramble a VMEM file according to a flash scrambling configuration.
+
+    Args:
+      ctx: The context object for this rule.
+      kwargs: Overrides of values normally retrived from the context object.
+        output: The name of the output file.  Constructed from `name` and `suffix`
+                 if not specified.
+        suffix: The suffix to give the file if the ouput isn't specified.
+        src: The src File object.
+        otp: The OTP settings.
+        otp_mmap: The OTP memory mapping file.
+        otp_seed: The OTP seed.
+        otp_data_perm: The OTP data permutation configuration.
+        _tool: The flash scrambling script.
+
+    Returns:
+      The transformed File.
+    """
+    output = kwargs.get("output")
+    if not output:
+        name = get_override(ctx, "attr.name", kwargs)
+        suffix = get_override(ctx, "attr.suffix", kwargs)
+        output = "{}.{}".format(name, suffix)
+
+    output = ctx.actions.declare_file(output)
+    src = get_override(ctx, "attr.src", kwargs)
+    otp = get_override(ctx, "file.otp", kwargs)
+
+    inputs = [src]
+    arguments = [
+        "--in-flash-vmem",
+        src.path,
+        "--out-flash-vmem",
+        output.path,
+    ]
+    if otp:
+        otp_mmap = get_override(ctx, "file.otp_mmap", kwargs)
+        otp_seed = get_override(ctx, "attr.otp_seed", kwargs)
+        arguments.extend([
+            "--in-otp-vmem",
+            otp.path,
+            "--in-otp-mmap",
+            otp_mmap.path,
+            "--otp-seed",
+            str(otp_seed[BuildSettingInfo].value),
+        ])
+        inputs.extend([otp, otp_mmap])
+
+        otp_data_perm = get_override(ctx, "attr.otp_data_perm", kwargs)
+        if otp_data_perm:
+            arguments.extend(["--otp-data-perm", str(otp_data_perm[BuildSettingInfo].value)])
+
+    tool = get_override(ctx, "executable._tool", kwargs)
+    ctx.actions.run(
+        outputs = [output],
+        inputs = inputs,
+        arguments = arguments,
+        executable = tool,
+    )
+    return output
+
 def extract_software_logs(ctx, **kwargs):
     """Extract the software logs database from an ELF file.
 
@@ -156,7 +219,7 @@ def extract_software_logs(ctx, **kwargs):
     tool = get_override(ctx, "executable._tool", kwargs)
     ctx.actions.run(
         outputs = [output_logs, output_rodata],
-        inputs = [src, tool],
+        inputs = [src],
         arguments = [
             "--elf-file",
             src.path,
