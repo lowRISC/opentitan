@@ -118,6 +118,8 @@
             - Ensure that the low power entry does not happen due to the ongoing flash operation.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_idle_low_power"]
     }
     {
@@ -241,6 +243,7 @@
             - Verify that this region can be read / written to by the SW in any LC state.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_prim_tl_access"]
     }
     {
@@ -252,6 +255,7 @@
             - This sets the test for closed source where the flash access timing matters.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
     }
     {
@@ -264,6 +268,7 @@
             the internal status should be clean and should not send out more alerts.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_flash_crash_alert"]
     }
   ]
