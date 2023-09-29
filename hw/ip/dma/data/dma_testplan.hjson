@@ -89,8 +89,8 @@
               Checking:
               - Check that DMA operation is completed successfully
                 * Check for assertion of interrupt if INTR_ENABLE.int_enable else check for DMAC.DONE after every iteration
-              - Check if writes to DMA memory region and base values are ignored until range_register_lock_register.unlock is cleared
-              - Check if the range_register_lock_register.unlock is set to MuBi4True after deassertion of reset
+              - Check if writes to DMA memory region and base values are ignored until range_regwen.regwen is cleared
+              - Check if the range_regwen.regwen is set to MuBi4True after deassertion of reset
               '''
         stage: V2
         tests: ["dma_generic_dma_memory_region_lock"]

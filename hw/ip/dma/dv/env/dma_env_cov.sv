@@ -89,7 +89,7 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
                                 binsof(cp_mem_buffer_auto_inc.fixed_addr);
   }
   // DMA enabled memory region register lock
-  cp_range_unlock: coverpoint dma_config.mem_range_unlock{
+  cp_range_lock: coverpoint dma_config.mem_range_lock{
     bins unlocked = {MuBi4True};
     bins locked = {MuBi4False};
     bins reserved = {[0:$]} with (!(item inside {MuBi4True, MuBi4False}));
@@ -109,8 +109,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_dst_addr_x_dst_asid_x_dma_op: cross cp_dst_addr, cp_dst_asid, cp_opcode;
   cp_dma_mem_base_x_dma_mem_limit_x_dma_op: cross cp_dma_mem_base, cp_dma_mem_range_limit,
                                                   cp_opcode;
-  cp_range_unlock_x_write_to_dma_mem_region_x_dma_op: cross cp_range_unlock,
-                                                            write_to_dma_mem_register, cp_opcode;
+  cp_range_lock_x_write_to_dma_mem_region_x_dma_op: cross cp_range_lock,
+                                                          write_to_dma_mem_register, cp_opcode;
   // Coverpoint for TL error on source interface
   cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err){
     bins internal = {OtInternalAddr};

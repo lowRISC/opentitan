@@ -36,8 +36,8 @@
       tests: []
     }
     {
-      name: sec_cm_range_unlock_config_regwen_mubi
-      desc: "Verify the countermeasure(s) RANGE_UNLOCK.CONFIG.REGWEN_MUBI."
+      name: sec_cm_range_config_regwen_mubi
+      desc: "Verify the countermeasure(s) RANGE.CONFIG.REGWEN_MUBI."
       stage: V2S
       tests: []
     }

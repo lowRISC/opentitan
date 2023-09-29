@@ -113,7 +113,7 @@
     { name: "ASID.INTERSIG.MUBI",
       desc: "Destination and source ASID signals are multibit encoded."
     }
-    { name: "RANGE_UNLOCK.CONFIG.REGWEN_MUBI",
+    { name: "RANGE.CONFIG.REGWEN_MUBI",
       desc: "DMA enabled memory range is software multibit lockable."
     }
   ]
@@ -260,7 +260,7 @@
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
-      regwen: "RANGE_UNLOCK_REGWEN"
+      regwen: "RANGE_REGWEN"
       fields: [
         { bits: "31:0"
           name: "base"
@@ -274,7 +274,7 @@
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
-      regwen: "RANGE_UNLOCK_REGWEN"
+      regwen: "RANGE_REGWEN"
       fields: [
         { bits: "31:0"
           name: "limit"
@@ -283,14 +283,14 @@
         }
       ]
     }
-    { name: "RANGE_UNLOCK_REGWEN"
+    { name: "RANGE_REGWEN"
       desc: "Used to lock the DMA enabled memory range configuration registers."
       swaccess: "rw0c"
       hwaccess: "hro"
       fields: [
         { bits: "3:0"
           mubi: "true"
-          name: "unlock"
+          name: "regwen"
           resval: true
           desc: '''
                 Used by firmware to lock the DMA enabled memory range configuration registers from further modification.

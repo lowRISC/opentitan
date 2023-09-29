@@ -104,7 +104,7 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [3:0]  q;
-  } dma_reg2hw_range_unlock_regwen_reg_t;
+  } dma_reg2hw_range_regwen_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -323,7 +323,7 @@ package dma_reg_pkg;
     dma_reg2hw_address_space_id_reg_t address_space_id; // [1612:1603]
     dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1602:1570]
     dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [1569:1537]
-    dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [1536:1533]
+    dma_reg2hw_range_regwen_reg_t range_regwen; // [1536:1533]
     dma_reg2hw_total_data_size_reg_t total_data_size; // [1532:1500]
     dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [1499:1467]
     dma_reg2hw_transfer_width_reg_t transfer_width; // [1466:1464]
@@ -368,7 +368,7 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_ADDRESS_SPACE_ID_OFFSET = 8'h 20;
   parameter logic [BlockAw-1:0] DMA_ENABLED_MEMORY_RANGE_BASE_OFFSET = 8'h 24;
   parameter logic [BlockAw-1:0] DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET = 8'h 28;
-  parameter logic [BlockAw-1:0] DMA_RANGE_UNLOCK_REGWEN_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] DMA_RANGE_REGWEN_OFFSET = 8'h 2c;
   parameter logic [BlockAw-1:0] DMA_TOTAL_DATA_SIZE_OFFSET = 8'h 30;
   parameter logic [BlockAw-1:0] DMA_CHUNK_DATA_SIZE_OFFSET = 8'h 34;
   parameter logic [BlockAw-1:0] DMA_TRANSFER_WIDTH_OFFSET = 8'h 38;
@@ -442,7 +442,7 @@ package dma_reg_pkg;
     DMA_ADDRESS_SPACE_ID,
     DMA_ENABLED_MEMORY_RANGE_BASE,
     DMA_ENABLED_MEMORY_RANGE_LIMIT,
-    DMA_RANGE_UNLOCK_REGWEN,
+    DMA_RANGE_REGWEN,
     DMA_TOTAL_DATA_SIZE,
     DMA_CHUNK_DATA_SIZE,
     DMA_TRANSFER_WIDTH,
@@ -509,7 +509,7 @@ package dma_reg_pkg;
     4'b 0001, // index[ 8] DMA_ADDRESS_SPACE_ID
     4'b 1111, // index[ 9] DMA_ENABLED_MEMORY_RANGE_BASE
     4'b 1111, // index[10] DMA_ENABLED_MEMORY_RANGE_LIMIT
-    4'b 0001, // index[11] DMA_RANGE_UNLOCK_REGWEN
+    4'b 0001, // index[11] DMA_RANGE_REGWEN
     4'b 1111, // index[12] DMA_TOTAL_DATA_SIZE
     4'b 1111, // index[13] DMA_CHUNK_DATA_SIZE
     4'b 0001, // index[14] DMA_TRANSFER_WIDTH
