@@ -173,13 +173,6 @@ Padding schemes are defined in the **aes\_padding\_t** structure from [this sect
 
 Because the crypto library uses the hardware AES block, it does not expose an init/update/final interface for AES, since this would risk locking up the block if an operation is not finalized.
 
-### Key generation
-
-Given a key configuration, generate an AES key.
-The key may be either randomly generated or derived using the key manager, depending on the configuration.
-
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_keygen }}
-
 ### Block Cipher
 
 A one-shot API initializes the required block cipher mode of operation (ECB, CBC, CFB, OFB or CTR) and performs the required encryption/decryption.
@@ -261,13 +254,6 @@ OpenTitan supports two kinds of message authentication codes (MACs):
 
 OpenTitan's [HMAC block][hmac] supports HMAC-SHA256 with a key length of 256 bits.
 The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 192, 256, 384, or 512 bits.
-
-### Key Generation
-
-Given a key configuration, generate an HMAC or KMAC key.
-The key may be either randomly generated or derived using the key manager, depending on the configuration.
-
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_mac_keygen }}
 
 ### One-shot mode
 
@@ -506,6 +492,14 @@ The crypto library provides four functions for this purpose:
 
 To import a private key generated elsewhere, for example, the user can call `otcrypto_build_blinded_key`.
 To export a blinded key, the user can convert it to an unblinded key, at which point the plain data is accessible.
+
+### Generate random keys
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_symmetric_keygen }}
+
+### Package hardware-backed keys
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
 
 ### Build Keys
 
