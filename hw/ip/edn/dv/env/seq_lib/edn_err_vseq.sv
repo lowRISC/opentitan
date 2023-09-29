@@ -187,7 +187,7 @@ class edn_err_vseq extends edn_base_vseq;
     // Insert the selected error.
     `uvm_info(`gfn, $sformatf("which_err_code = %s", cfg.which_err_code.name()), UVM_HIGH)
     case (cfg.which_err_code) inside
-      sfifo_rescmd_err, sfifo_gencmd_err: begin
+      sfifo_rescmd_err, sfifo_gencmd_err, sfifo_output_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_base_path = fld_name.substr(0, last_index-1);
 
@@ -250,8 +250,9 @@ class edn_err_vseq extends edn_base_vseq;
           cov_vif.cg_error_sample(.err_code(backdoor_err_code_val));
         end
       end
-      sfifo_rescmd_err_test, sfifo_gencmd_err_test, edn_ack_sm_err_test, edn_main_sm_err_test,
-      edn_cntr_err_test, fifo_write_err_test, fifo_read_err_test, fifo_state_err_test: begin
+      sfifo_rescmd_err_test, sfifo_gencmd_err_test, sfifo_output_err_test, edn_ack_sm_err_test,
+      edn_main_sm_err_test, edn_cntr_err_test, fifo_write_err_test, fifo_read_err_test,
+      fifo_state_err_test: begin
         fld = csr.get_field_by_name(fld_name.substr(0, last_index-1));
         err_code_test_bit = fld.get_lsb_pos();
         csr_wr(.ptr(ral.err_code_test.err_code_test), .value(err_code_test_bit));
