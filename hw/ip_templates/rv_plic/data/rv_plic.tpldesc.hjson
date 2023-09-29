@@ -2,30 +2,30 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  "template_param_list": [
+  template_param_list: [
     {
-      "name": "src",
-      "desc": "Number of interrupt sources",
-      "type": "int",
-      "default": 32
-    },
+      name: "src"
+      desc: "Number of interrupt sources"
+      type: "int"
+      default: "32"
+    }
     {
-      "name": "target",
-      "desc": "Number of interrupt targets",
-      "type": "int",
-      "default": 1
-    },
+      name: "target"
+      desc: "Number of interrupt targets"
+      type: "int"
+      default: "1"
+    }
     {
-      "name": "prio",
-      "desc": "Max value of interrupt priorities"
-      "type": "int"
-      "default": 7
-    },
+      name: "prio"
+      desc: "Max value of interrupt priorities"
+      type: "int"
+      default: "7"
+    }
     {
-      "name": "module_instance_name",
-      "desc": instance name in case there are multiple rv_plic instances",
-      "type": "string",
-      "default": "rv_plic"
-    },
-  ],
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple rv_plic instances"
+      type: "string"
+      default: "rv_plic"
+    }
+  ]
 }
