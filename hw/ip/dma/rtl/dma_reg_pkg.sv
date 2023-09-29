@@ -174,7 +174,7 @@ package dma_reg_pkg;
   } dma_reg2hw_clear_state_reg_t;
 
   typedef struct packed {
-    logic [31:0] q;
+    logic [10:0] q;
   } dma_reg2hw_handshake_interrupt_enable_reg_t;
 
   typedef struct packed {
@@ -273,31 +273,31 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [1188:1186]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [1185:1183]
-    dma_reg2hw_intr_test_reg_t intr_test; // [1182:1177]
-    dma_reg2hw_alert_test_reg_t alert_test; // [1176:1175]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1174:1143]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1142:1111]
-    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1110:1079]
-    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1078:1047]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [1046:1039]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1038:1006]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [1005:973]
-    dma_reg2hw_range_regwen_reg_t range_regwen; // [972:969]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [968:937]
-    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [936:905]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [904:903]
-    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [902:871]
-    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [870:839]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1167:1165]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1164:1162]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1161:1156]
+    dma_reg2hw_alert_test_reg_t alert_test; // [1155:1154]
+    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1153:1122]
+    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1121:1090]
+    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1089:1058]
+    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1057:1026]
+    dma_reg2hw_address_space_id_reg_t address_space_id; // [1025:1018]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1017:985]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [984:952]
+    dma_reg2hw_range_regwen_reg_t range_regwen; // [951:948]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [947:916]
+    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [915:884]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [883:882]
+    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [881:850]
+    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [849:818]
     dma_reg2hw_destination_address_almost_limit_lo_reg_t
-        destination_address_almost_limit_lo; // [838:807]
+        destination_address_almost_limit_lo; // [817:786]
     dma_reg2hw_destination_address_almost_limit_hi_reg_t
-        destination_address_almost_limit_hi; // [806:775]
-    dma_reg2hw_control_reg_t control; // [774:763]
-    dma_reg2hw_status_reg_t status; // [762:760]
-    dma_reg2hw_clear_state_reg_t clear_state; // [759:758]
-    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [757:726]
+        destination_address_almost_limit_hi; // [785:754]
+    dma_reg2hw_control_reg_t control; // [753:742]
+    dma_reg2hw_status_reg_t status; // [741:739]
+    dma_reg2hw_clear_state_reg_t clear_state; // [738:737]
+    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [736:726]
     dma_reg2hw_clear_int_src_reg_t clear_int_src; // [725:715]
     dma_reg2hw_clear_int_bus_reg_t clear_int_bus; // [714:704]
     dma_reg2hw_int_source_addr_mreg_t [10:0] int_source_addr; // [703:352]
@@ -496,7 +496,7 @@ package dma_reg_pkg;
     4'b 1111, // index[35] DMA_SHA2_DIGEST_13
     4'b 1111, // index[36] DMA_SHA2_DIGEST_14
     4'b 1111, // index[37] DMA_SHA2_DIGEST_15
-    4'b 1111, // index[38] DMA_HANDSHAKE_INTERRUPT_ENABLE
+    4'b 0011, // index[38] DMA_HANDSHAKE_INTERRUPT_ENABLE
     4'b 0011, // index[39] DMA_CLEAR_INT_SRC
     4'b 0011, // index[40] DMA_CLEAR_INT_BUS
     4'b 1111, // index[41] DMA_INT_SOURCE_ADDR_0

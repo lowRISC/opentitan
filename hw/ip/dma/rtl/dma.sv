@@ -263,7 +263,7 @@ module dma
 
   prim_flop #(
     .Width($bits(dma_ctrl_state_e)),
-    .ResetValue(DmaIdle)
+    .ResetValue({DmaIdle})
   ) aff_ctrl_state_q (
     .clk_i ( gated_clk        ),
     .rst_ni( rst_ni           ),
