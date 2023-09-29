@@ -19,6 +19,8 @@ def get_override(obj, item, overrides):
         obj = getattr(obj, i)
     return obj
 
+_unbound = struct(unbound = True)
+
 def get_fallback(obj, item, fallback):
     """Get an item from obj and fall back to `fallback` if falsy.
 
@@ -31,8 +33,8 @@ def get_fallback(obj, item, fallback):
     items = item.split(".")
     item = items[-1]
     for i in items:
-        obj = getattr(obj, i)
-    if obj:
+        obj = getattr(obj, i, _unbound)
+    if obj and obj != _unbound:
         return obj
     return getattr(fallback, item)
 

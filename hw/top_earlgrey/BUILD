@@ -113,12 +113,16 @@ sim_dv(
     ],
     design = "earlgrey",
     exec_env = "sim_dv",
+    extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
+    flash_scramble_tool = "//util/design:gen-flash-img",
     lib = "//sw/device/lib/arch:sim_dv",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
+    otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+    otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
     param = {
         "dvsim_config": "$(location //hw/top_earlgrey/dv:chip_sim_cfg.hjson)",
     },
     rom = "//sw/device/lib/testing/test_rom:test_rom_sim_dv_scr_vmem",
-    #extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
 )
