@@ -108,7 +108,7 @@
     {
       name: chip_sw_uart_smoketest
       uvm_test_seq: chip_sw_uart_smoke_vseq
-      sw_images: ["//sw/device/tests:uart_smoketest:1"]
+      sw_images: ["//sw/device/tests:uart_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
   ]
