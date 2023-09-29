@@ -1,0 +1,148 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: otbn
+  testpoints: [
+    {
+      name: chip_sw_otbn_isa
+      descr: '''Run every OTBN instruction and check final state.
+
+                Utilizing the existing OTBN smoke test which uses every instruction
+                (hw/ip/otbn/dv/smoke/smoke_test.s). Check the final register state matches the
+                expected values (in hw/ip/otbn/dv/smoke/smoke_expected.txt). Check OTBN completed
+                successfully without errors. This will require a modified version of the smoke test
+                which dumps register state to memory.
+
+                Following the smoke test run a new program just to dump out the register state to
+                dmem, check the values do not match the previous values from the smoke test run to
+                ensure the internal state secure wipe has worked.
+             '''
+      stage: V2
+      si_stage: SV1
+      tests: []
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.ISA",
+        "OTBN.SECUREWIPE
+      ]
+    }
+    {
+      name: chip_sw_otbn_op
+      desc: '''Verify an OTBN operation.
+
+            - SW test directs the OTBN engine to perform an ECDSA operation.
+            - SW validates the reception of the otbn done interrupt once the operation is complete.
+            - SW verifies the correctness of the result with the expected value which is
+              pre-computed using a reference model.
+            '''
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_sw_otbn_ecdsa_op_irq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.ISA"
+      ]
+    }
+    {
+      name: chip_sw_otbn_rnd_entropy
+      desc: '''Verify OTBN can fetch RND numbers from the entropy src.
+
+            - SW initializes the entropy subsystem to generate randomness.
+            - SW loads an OTBN app that executes instructions to read the RND bits.
+            - The OTBN app ensures that the values when read consecutively do not match, and that no
+              value is all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is
+              returning some data.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_otbn_randomness"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.RANDOM"
+      ]
+    }
+    {
+      name: chip_sw_otbn_urnd_entropy
+      desc: '''Verify OTBN can fetch URND numbers from the entropy src.
+
+            - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
+            '''
+      stage: V2
+      si_stage: SV1
+      tests:  ["chip_sw_otbn_randomness"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.RANDOM"
+      ]
+    }
+    {
+      name: chip_sw_otbn_idle
+      desc: '''Verify the OTBN idle signal to clkmgr.
+
+            - Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be gated
+              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is disabled).
+            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
+              Verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled).
+            - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
+              the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled) before the
+              OTBN operation is complete.
+            - After the OTBN operation is complete, verify that the OTBN clk hint status within
+              clkmgr now reads 0 again (OTBN is disabled).
+            - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_otbn_randomness"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: []
+    }
+    {
+      name: chip_sw_otbn_mem_scramble
+      desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Extract random address offsets from RV_CORE_IBEX_RND_DATA.
+            - Wait for OTBN to be idle.
+            - Write random address offsets in OTBN imem and dmem.
+            - Read back the written address offsets and compare against expected values. All values
+              must match, no integrity errors must be triggered.
+            - Have OTBN fetch new keys and nonces from the OTP_CTRL.
+            - Wait for OTBN to be idle.
+            - Read back the written address offsets. Most reads should trigger integrity errors. It
+              is possible that after re-scrambling the integrity bits are still valid. But this is
+              expected to happen rarely. If the number of observed integrity errors is below a
+              chosen threshold, the test fails.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
+            '''
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_otbn_mem_scramble"]
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.MEM_SCRAMBLE",
+        "OTBN.SECUREWIPE"
+      ]
+    }
+    {
+      name: chip_sw_otbn_keymgr
+      desc: '''Check the OTBN keymgr connection is functional.
+
+            Setup the keymgr and any other blocks required to provide OTBN with a valid sideload
+            key. Run an OTBN program to read the key via the KEY_S[0|1]_[H|L] WSRs and write it to
+            dmem. Sanity check the returned value (e.g. != 0) and check OTBN completed successfully
+            with no errors.
+      '''
+      stage: V2
+      si_stage: SV1
+      tests: []
+      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      features: [
+        "OTBN.KEYMGR",
+      ]
+    }
+  ]
+}
