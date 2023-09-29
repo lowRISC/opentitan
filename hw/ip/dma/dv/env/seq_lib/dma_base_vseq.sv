@@ -214,14 +214,14 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask: set_destination_address_range
 
   // Task: Set DMA Enabled Memory base and limit
-  task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, mubi4_t unlock);
+  task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, mubi4_t lock);
     csr_wr(ral.enabled_memory_range_base, base);
     `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory base = %0x08h", base), UVM_HIGH)
     csr_wr(ral.enabled_memory_range_limit, limit);
     `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory limit = %0x08h", limit), UVM_HIGH)
-    if (unlock != MuBi4True) begin
-      csr_wr(ral.range_unlock_regwen, int'(unlock));
-      `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory unlock = %s", unlock.name()), UVM_HIGH)
+    if (lock != MuBi4True) begin
+      csr_wr(ral.range_regwen, int'(lock));
+      `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory lock = %s", lock.name()), UVM_HIGH)
     end
   endtask: set_dma_enabled_memory_range
 
@@ -281,7 +281,7 @@ class dma_base_vseq extends cip_base_vseq #(
     set_handshake_int_regs(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
-                                 dma_config.mem_range_unlock);
+                                 dma_config.mem_range_lock);
   endtask: run_common_config
 
   // Task: Enable Interrupt

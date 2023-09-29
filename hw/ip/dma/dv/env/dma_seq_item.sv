@@ -35,7 +35,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
   rand bit [31:0] total_transfer_size;
-  rand mubi4_t mem_range_unlock;
+  rand mubi4_t mem_range_lock;
   rand opcode_e opcode;
   rand dma_transfer_width_e per_transfer_width;
   rand asid_encoding_e src_asid;
@@ -76,7 +76,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_enum(dma_control_data_direction_e, direction, UVM_DEFAULT)
     `uvm_field_int(mem_range_base, UVM_DEFAULT)
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
-    `uvm_field_enum(mubi4_t, mem_range_unlock, UVM_DEFAULT)
+    `uvm_field_enum(mubi4_t, mem_range_lock, UVM_DEFAULT)
     `uvm_field_int(total_transfer_size, UVM_DEFAULT)
     `uvm_field_enum(dma_transfer_width_e, per_transfer_width, UVM_DEFAULT)
     `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
@@ -225,10 +225,10 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  constraint mem_range_unlock_c {
+  constraint mem_range_lock_c {
     // For valid DMA configurations, memory range register must be locked
     if (valid_dma_config) {
-      mem_range_unlock == MuBi4False;
+      mem_range_lock == MuBi4False;
     }
   }
 
@@ -255,8 +255,8 @@ class dma_seq_item extends uvm_sequence_item;
   function void lock_memory_range();
     mem_range_base.rand_mode(0);
     mem_range_limit.rand_mode(0);
-    mem_range_unlock.rand_mode(0);
-    mem_range_unlock_c.constraint_mode(0);
+    mem_range_lock.rand_mode(0);
+    mem_range_lock_c.constraint_mode(0);
     `uvm_info(`gfn, $sformatf("Disable randomisation of mem_range_base and mem_range_limit"),
               UVM_HIGH)
   endfunction
@@ -328,8 +328,8 @@ class dma_seq_item extends uvm_sequence_item;
       valid_config = 0;
     end
     // Check if memory range is locked
-    if (mem_range_unlock == MuBi4True) begin
-      `uvm_info(`gfn, "Memory range registers unlocked", UVM_MEDIUM)
+    if (mem_range_lock == MuBi4True) begin
+      `uvm_info(`gfn, "Memory range registers locked", UVM_MEDIUM)
       valid_config = 0;
     end
     return valid_config;
@@ -373,7 +373,7 @@ class dma_seq_item extends uvm_sequence_item;
     // reset non random variables
     valid_dma_config = 0;
     align_address = 0;
-    mem_range_unlock = MuBi4True;
+    mem_range_lock = MuBi4True;
   endfunction
 
   // Disable randomization of all variables
@@ -391,7 +391,7 @@ class dma_seq_item extends uvm_sequence_item;
     auto_inc_buffer.rand_mode(0);
     auto_inc_fifo.rand_mode(0);
     handshake.rand_mode(0);
-    mem_range_unlock.rand_mode(0);
+    mem_range_lock.rand_mode(0);
   endfunction
 
   // Return if Read address increment is disabled
