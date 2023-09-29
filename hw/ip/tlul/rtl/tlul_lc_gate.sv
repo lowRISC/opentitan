@@ -10,7 +10,6 @@
 // an instance of prim_lc_sync.
 
 `include "prim_assert.sv"
-`include "prim_flop_macros.sv"
 
 module tlul_lc_gate
   import tlul_pkg::*;
