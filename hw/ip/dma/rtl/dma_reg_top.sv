@@ -237,8 +237,8 @@ module dma_reg_top (
   logic [31:0] sha2_digest_14_qs;
   logic [31:0] sha2_digest_15_qs;
   logic handshake_interrupt_enable_we;
-  logic [31:0] handshake_interrupt_enable_qs;
-  logic [31:0] handshake_interrupt_enable_wd;
+  logic [10:0] handshake_interrupt_enable_qs;
+  logic [10:0] handshake_interrupt_enable_wd;
   logic clear_int_src_we;
   logic [10:0] clear_int_src_qs;
   logic [10:0] clear_int_src_wd;
@@ -1934,9 +1934,9 @@ module dma_reg_top (
 
   // R[handshake_interrupt_enable]: V(False)
   prim_subreg #(
-    .DW      (32),
+    .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hffff),
+    .RESVAL  (11'h7ff),
     .Mubi    (1'b0)
   ) u_handshake_interrupt_enable (
     .clk_i   (clk_i),
@@ -2900,7 +2900,7 @@ module dma_reg_top (
   assign clear_state_wd = reg_wdata[0];
   assign handshake_interrupt_enable_we = addr_hit[38] & reg_we & !reg_error;
 
-  assign handshake_interrupt_enable_wd = reg_wdata[31:0];
+  assign handshake_interrupt_enable_wd = reg_wdata[10:0];
   assign clear_int_src_we = addr_hit[39] & reg_we & !reg_error;
 
   assign clear_int_src_wd = reg_wdata[10:0];
@@ -3218,7 +3218,7 @@ module dma_reg_top (
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[31:0] = handshake_interrupt_enable_qs;
+        reg_rdata_next[10:0] = handshake_interrupt_enable_qs;
       end
 
       addr_hit[39]: begin
