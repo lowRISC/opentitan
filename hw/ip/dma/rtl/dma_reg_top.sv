@@ -218,12 +218,6 @@ module dma_reg_top (
   logic clear_state_we;
   logic clear_state_qs;
   logic clear_state_wd;
-  logic handshake_interrupt_enable_we;
-  logic [31:0] handshake_interrupt_enable_qs;
-  logic [31:0] handshake_interrupt_enable_wd;
-  logic clear_int_src_we;
-  logic [10:0] clear_int_src_qs;
-  logic [10:0] clear_int_src_wd;
   logic [31:0] sha2_digest_0_qs;
   logic [31:0] sha2_digest_1_qs;
   logic [31:0] sha2_digest_2_qs;
@@ -240,6 +234,12 @@ module dma_reg_top (
   logic [31:0] sha2_digest_13_qs;
   logic [31:0] sha2_digest_14_qs;
   logic [31:0] sha2_digest_15_qs;
+  logic handshake_interrupt_enable_we;
+  logic [31:0] handshake_interrupt_enable_qs;
+  logic [31:0] handshake_interrupt_enable_wd;
+  logic clear_int_src_we;
+  logic [10:0] clear_int_src_qs;
+  logic [10:0] clear_int_src_wd;
   logic clear_int_bus_we;
   logic [10:0] clear_int_bus_qs;
   logic [10:0] clear_int_bus_wd;
@@ -1607,74 +1607,6 @@ module dma_reg_top (
   assign reg2hw.clear_state.qe = clear_state_qe;
 
 
-  // R[handshake_interrupt_enable]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hffff),
-    .Mubi    (1'b0)
-  ) u_handshake_interrupt_enable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (handshake_interrupt_enable_we),
-    .wd     (handshake_interrupt_enable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.handshake_interrupt_enable.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (handshake_interrupt_enable_qs)
-  );
-
-
-  // R[clear_int_src]: V(False)
-  logic clear_int_src_qe;
-  logic [0:0] clear_int_src_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_clear_int_src0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&clear_int_src_flds_we),
-    .q_o(clear_int_src_qe)
-  );
-  prim_subreg #(
-    .DW      (11),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0),
-    .Mubi    (1'b0)
-  ) u_clear_int_src (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clear_int_src_we),
-    .wd     (clear_int_src_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (clear_int_src_flds_we[0]),
-    .q      (reg2hw.clear_int_src.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clear_int_src_qs)
-  );
-  assign reg2hw.clear_int_src.qe = clear_int_src_qe;
-
-
   // Subregister 0 of Multireg sha2_digest
   // R[sha2_digest_0]: V(False)
   prim_subreg #(
@@ -2137,6 +2069,74 @@ module dma_reg_top (
     // to register interface (read)
     .qs     (sha2_digest_15_qs)
   );
+
+
+  // R[handshake_interrupt_enable]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'hffff),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_we),
+    .wd     (handshake_interrupt_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_qs)
+  );
+
+
+  // R[clear_int_src]: V(False)
+  logic clear_int_src_qe;
+  logic [0:0] clear_int_src_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_clear_int_src0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&clear_int_src_flds_we),
+    .q_o(clear_int_src_qe)
+  );
+  prim_subreg #(
+    .DW      (11),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (11'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_we),
+    .wd     (clear_int_src_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (clear_int_src_flds_we[0]),
+    .q      (reg2hw.clear_int_src.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_qs)
+  );
+  assign reg2hw.clear_int_src.qe = clear_int_src_qe;
 
 
   // R[clear_int_bus]: V(False)
@@ -3107,24 +3107,24 @@ module dma_reg_top (
     addr_hit[19] = (reg_addr == DMA_CONTROL_OFFSET);
     addr_hit[20] = (reg_addr == DMA_STATUS_OFFSET);
     addr_hit[21] = (reg_addr == DMA_CLEAR_STATE_OFFSET);
-    addr_hit[22] = (reg_addr == DMA_HANDSHAKE_INTERRUPT_ENABLE_OFFSET);
-    addr_hit[23] = (reg_addr == DMA_CLEAR_INT_SRC_OFFSET);
-    addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
-    addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
-    addr_hit[26] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
-    addr_hit[27] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
-    addr_hit[28] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
-    addr_hit[29] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
-    addr_hit[30] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
-    addr_hit[31] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
-    addr_hit[32] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
-    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
-    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
-    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
-    addr_hit[36] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
-    addr_hit[37] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
-    addr_hit[38] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
-    addr_hit[39] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
+    addr_hit[22] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
+    addr_hit[23] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
+    addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
+    addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
+    addr_hit[26] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
+    addr_hit[27] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
+    addr_hit[28] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
+    addr_hit[29] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
+    addr_hit[30] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
+    addr_hit[31] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
+    addr_hit[32] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
+    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
+    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
+    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
+    addr_hit[36] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
+    addr_hit[37] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
+    addr_hit[38] = (reg_addr == DMA_HANDSHAKE_INTERRUPT_ENABLE_OFFSET);
+    addr_hit[39] = (reg_addr == DMA_CLEAR_INT_SRC_OFFSET);
     addr_hit[40] = (reg_addr == DMA_CLEAR_INT_BUS_OFFSET);
     addr_hit[41] = (reg_addr == DMA_INT_SOURCE_ADDR_0_OFFSET);
     addr_hit[42] = (reg_addr == DMA_INT_SOURCE_ADDR_1_OFFSET);
@@ -3323,10 +3323,10 @@ module dma_reg_top (
   assign clear_state_we = addr_hit[21] & reg_we & !reg_error;
 
   assign clear_state_wd = reg_wdata[0];
-  assign handshake_interrupt_enable_we = addr_hit[22] & reg_we & !reg_error;
+  assign handshake_interrupt_enable_we = addr_hit[38] & reg_we & !reg_error;
 
   assign handshake_interrupt_enable_wd = reg_wdata[31:0];
-  assign clear_int_src_we = addr_hit[23] & reg_we & !reg_error;
+  assign clear_int_src_we = addr_hit[39] & reg_we & !reg_error;
 
   assign clear_int_src_wd = reg_wdata[10:0];
   assign clear_int_bus_we = addr_hit[40] & reg_we & !reg_error;
@@ -3424,8 +3424,8 @@ module dma_reg_top (
     reg_we_check[19] = control_we;
     reg_we_check[20] = status_we;
     reg_we_check[21] = clear_state_we;
-    reg_we_check[22] = handshake_interrupt_enable_we;
-    reg_we_check[23] = clear_int_src_we;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
     reg_we_check[24] = 1'b0;
     reg_we_check[25] = 1'b0;
     reg_we_check[26] = 1'b0;
@@ -3440,8 +3440,8 @@ module dma_reg_top (
     reg_we_check[35] = 1'b0;
     reg_we_check[36] = 1'b0;
     reg_we_check[37] = 1'b0;
-    reg_we_check[38] = 1'b0;
-    reg_we_check[39] = 1'b0;
+    reg_we_check[38] = handshake_interrupt_enable_we;
+    reg_we_check[39] = clear_int_src_we;
     reg_we_check[40] = clear_int_bus_we;
     reg_we_check[41] = int_source_addr_0_we;
     reg_we_check[42] = int_source_addr_1_we;
@@ -3578,75 +3578,75 @@ module dma_reg_top (
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = handshake_interrupt_enable_qs;
-      end
-
-      addr_hit[23]: begin
-        reg_rdata_next[10:0] = clear_int_src_qs;
-      end
-
-      addr_hit[24]: begin
         reg_rdata_next[31:0] = sha2_digest_0_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[23]: begin
         reg_rdata_next[31:0] = sha2_digest_1_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[24]: begin
         reg_rdata_next[31:0] = sha2_digest_2_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = sha2_digest_3_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[26]: begin
         reg_rdata_next[31:0] = sha2_digest_4_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[27]: begin
         reg_rdata_next[31:0] = sha2_digest_5_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[28]: begin
         reg_rdata_next[31:0] = sha2_digest_6_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = sha2_digest_7_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[30]: begin
         reg_rdata_next[31:0] = sha2_digest_8_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[31]: begin
         reg_rdata_next[31:0] = sha2_digest_9_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[32]: begin
         reg_rdata_next[31:0] = sha2_digest_10_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[33]: begin
         reg_rdata_next[31:0] = sha2_digest_11_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[34]: begin
         reg_rdata_next[31:0] = sha2_digest_12_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[35]: begin
         reg_rdata_next[31:0] = sha2_digest_13_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[36]: begin
         reg_rdata_next[31:0] = sha2_digest_14_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[37]: begin
         reg_rdata_next[31:0] = sha2_digest_15_qs;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[31:0] = handshake_interrupt_enable_qs;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[10:0] = clear_int_src_qs;
       end
 
       addr_hit[40]: begin
