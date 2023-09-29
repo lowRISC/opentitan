@@ -26,12 +26,7 @@ module sensor_ctrl
   input ast_pkg::ast_alert_req_t ast_alert_i,
   output ast_pkg::ast_alert_rsp_t ast_alert_o,
   input ast_pkg::ast_status_t ast_status_i,
-  input [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux_i,
   input prim_mubi_pkg::mubi4_t ast_init_done_i,
-
-  // Interface to pinmux
-  output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_o,
-  output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_en_o,
 
   // Interrutps
   output logic intr_io_status_change_o,
@@ -321,13 +316,6 @@ module sensor_ctrl
       wkup_req_o <= &wake_req_filter;
     end
   end
-
-  ///////////////////////////
-  // pinmux feedthrough to ast
-  ///////////////////////////
-
-  assign cio_ast_debug_out_o = ast2pinmux_i;
-  assign cio_ast_debug_out_en_o = '1;
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[FatalAlert])

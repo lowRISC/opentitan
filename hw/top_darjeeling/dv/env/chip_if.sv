@@ -92,10 +92,6 @@ interface chip_if;
   pins_if#(.Width(top_darjeeling_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_darjeeling_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
-  // Functional (dedicated) interface (input): AST misc.
-  wire ast_misc;
-  pins_if #(.Width(1), .PullStrength("Weak")) ast_misc_if(.pins(ast_misc));
-
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -393,23 +389,6 @@ interface chip_if;
       flash_ctrl_jtag_if.tdi : 1'bz;
   assign mios[top_darjeeling_pkg::MioPadIob3] = flash_ctrl_jtag_enabled ?
       flash_ctrl_jtag_if.tck : 1'bz;
-
-  // Functional (muxed) interface: AST2PAD.
-  pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
-    .pins({mios[top_darjeeling_pkg::MioPadIoa0], mios[top_darjeeling_pkg::MioPadIoa1],
-           mios[top_darjeeling_pkg::MioPadIob3], mios[top_darjeeling_pkg::MioPadIob4],
-           mios[top_darjeeling_pkg::MioPadIob5], mios[top_darjeeling_pkg::MioPadIoc0],
-           mios[top_darjeeling_pkg::MioPadIoc4], mios[top_darjeeling_pkg::MioPadIoc7],
-           mios[top_darjeeling_pkg::MioPadIoc9]})
-  );
-
-  // Functional (muxed) interface: PAD2AST.
-  pins_if #(.Width(8), .PullStrength("Weak")) pad2ast_if(
-    .pins({mios[top_darjeeling_pkg::MioPadIoa4], mios[top_darjeeling_pkg::MioPadIoa5],
-           mios[top_darjeeling_pkg::MioPadIob0], mios[top_darjeeling_pkg::MioPadIob1],
-           mios[top_darjeeling_pkg::MioPadIob2], mios[top_darjeeling_pkg::MioPadIoc1],
-           mios[top_darjeeling_pkg::MioPadIoc2], mios[top_darjeeling_pkg::MioPadIoc3]})
-  );
 
   // Functional (muxed) interface: Pin wake up signal.
   // TODO: For these tests, use chip_pins_if instead, so that any pin can be configured to wakeup.
@@ -769,14 +748,11 @@ interface chip_if;
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
     otp_ext_volt_if.disconnect();
-    ast_misc_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
     enable_flash_ctrl_jtag = 0;
-    ast2pad_if.disconnect();
-    pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
     enable_spi_host = 1'b 0;
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));

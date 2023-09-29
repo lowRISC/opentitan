@@ -27,12 +27,6 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
-  available_output_list: [
-    { name: "ast_debug_out",
-      desc: "ast debug outputs to pinmux",
-      width: "9"
-    }
-  ],
   interrupt_list: [
     { name: "io_status_change",
       desc: "io power status has changed",
@@ -107,14 +101,6 @@
       act:     "rcv",
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4True"
-    },
-
-    { struct:  "logic",
-      type:    "uni",
-      name:    "ast2pinmux",
-      act:     "rcv",
-      width:   9,
-      package: ""
     },
 
     { struct:  "logic",
