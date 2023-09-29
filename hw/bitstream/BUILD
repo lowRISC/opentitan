@@ -148,7 +148,7 @@ bitstream_fragment_from_manifest(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_cached_archive",
+    name = "chip_earlgrey_cw310_cached_archive",
     testonly = True,
     srcs = [":chip_earlgrey_cw310_cached_fragment"],
     mode = "0444",
@@ -170,7 +170,7 @@ bitstream_fragment_from_manifest(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_hyperdebug_cached_archive",
+    name = "chip_earlgrey_cw310_hyperdebug_cached_archive",
     testonly = True,
     srcs = [":chip_earlgrey_cw310_hyperdebug_cached_fragment"],
     mode = "0444",
@@ -192,7 +192,7 @@ bitstream_fragment_from_manifest(
 )
 
 pkg_tar(
-    name = "earlgrey_cw340_cached_archive",
+    name = "chip_earlgrey_cw340_cached_archive",
     testonly = True,
     srcs = [":chip_earlgrey_cw340_cached_fragment"],
     mode = "0444",
