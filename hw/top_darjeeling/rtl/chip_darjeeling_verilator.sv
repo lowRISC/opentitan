@@ -36,16 +36,38 @@ module chip_darjeeling_verilator (
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
+  prim_pad_wrapper_pkg::pad_attr_t[pinmux_reg_pkg::NDioPads-1:0] dio_attr;
 
   always_comb begin : assign_dio_in
     dio_in = '0;
+    // SPI Device
     dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d_i;
     dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d_i;
     dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d_i;
+    // 14 generic GPIOs
+    dio_in[DioGpioGpio13:DioGpioGpio0] = cio_gpio_p2d_i[13:0];
+    // SW straps
+    dio_in[DioGpioGpio24:DioGpioGpio22] = cio_gpio_p2d_i[24:22];
+    // UART RX
+    dio_in[DioUart0Rx] = cio_uart_rx_p2d_i;
   end
 
+  // SPI Device
   assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
   assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
+  // 14 generic GPIOs
+  assign cio_gpio_d2p_o[13:0]        = dio_out[DioGpioGpio13:DioGpioGpio0];
+  assign cio_gpio_en_d2p_o[13:0]     = dio_oe[DioGpioGpio13:DioGpioGpio0];
+  assign cio_gpio_d2p_o[21:14]      = '0;
+  assign cio_gpio_en_d2p_o[21:14]   = '0;
+  // SW straps
+  assign cio_gpio_d2p_o[24:22]      = dio_out[DioGpioGpio24:DioGpioGpio22];
+  assign cio_gpio_en_d2p_o[24:22]   = dio_oe[DioGpioGpio24:DioGpioGpio22];
+  assign cio_gpio_d2p_o[26:25]      = '0;
+  assign cio_gpio_en_d2p_o[26:25]   = '0;
+  // UART TX
+  assign cio_uart_tx_d2p_o    = dio_out[DioUart0Tx];
+  assign cio_uart_tx_en_d2p_o = dio_oe[DioUart0Tx];
 
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
@@ -54,43 +76,20 @@ module chip_darjeeling_verilator (
 
   always_comb begin : assign_mio_in
     mio_in = '0;
-    // 14 generic GPIOs
-    mio_in[MioPadIob12:MioPadIob6] = cio_gpio_p2d_i[6:0];
-    mio_in[MioPadIor13:MioPadIor5] = cio_gpio_p2d_i[13:7];
-    // SW straps
-    mio_in[MioPadIoc2:MioPadIoc0] = cio_gpio_p2d_i[24:22];
     // TAP straps
-    mio_in[MioPadIoc5] = cio_gpio_p2d_i[27];
-    mio_in[MioPadIoc8] = cio_gpio_p2d_i[30];
-    // UART RX
-    mio_in[MioPadIoc3] = cio_uart_rx_p2d_i;
+    mio_in[MioPadMio1] = cio_gpio_p2d_i[27];
+    mio_in[MioPadMio0] = cio_gpio_p2d_i[30];
   end
 
-
-  // 14 generic GPIOs
-  assign cio_gpio_d2p_o[6:0]        = mio_out[MioPadIob12:MioPadIob6];
-  assign cio_gpio_en_d2p_o[6:0]     = mio_oe[MioPadIob12:MioPadIob6];
-  assign cio_gpio_d2p_o[13:7]       = mio_out[MioPadIor13:MioPadIor5];
-  assign cio_gpio_en_d2p_o[13:7]    = mio_oe[MioPadIor13:MioPadIor5];
-  assign cio_gpio_d2p_o[21:14]      = '0;
-  assign cio_gpio_en_d2p_o[21:14]   = '0;
-  // SW straps
-  assign cio_gpio_d2p_o[24:22]      = mio_out[MioPadIoc2:MioPadIoc0];
-  assign cio_gpio_en_d2p_o[24:22]   = mio_oe[MioPadIoc2:MioPadIoc0];
-  assign cio_gpio_d2p_o[26:25]      = '0;
-  assign cio_gpio_en_d2p_o[26:25]   = '0;
   // TAP straps
-  assign cio_gpio_d2p_o[27]         = mio_out[MioPadIoc5];
-  assign cio_gpio_en_d2p_o[27]      = mio_oe[MioPadIoc5];
+  assign cio_gpio_d2p_o[27]         = mio_out[MioPadMio1];
+  assign cio_gpio_en_d2p_o[27]      = mio_oe[MioPadMio1];
   assign cio_gpio_d2p_o[29:28]      = '0;
   assign cio_gpio_en_d2p_o[29:28]   = '0;
-  assign cio_gpio_d2p_o[30]         = mio_out[MioPadIoc8];
-  assign cio_gpio_en_d2p_o[30]      = mio_oe[MioPadIoc8];
+  assign cio_gpio_d2p_o[30]         = mio_out[MioPadMio0];
+  assign cio_gpio_en_d2p_o[30]      = mio_oe[MioPadMio0];
   assign cio_gpio_d2p_o[31]         = '0;
   assign cio_gpio_en_d2p_o[31]      = '0;
-
-  assign cio_uart_tx_d2p_o    = mio_out[MioPadIoc4];
-  assign cio_uart_tx_en_d2p_o = mio_oe[MioPadIoc4];
 
   // Note: we're collecting the `pull_en` and `pull_select` signals together
   // so that the GPIO DPI functions can simulate weak and strong GPIO
@@ -99,61 +98,61 @@ module chip_darjeeling_verilator (
   // See gpiodpi.c to see how weak/strong inputs work.
   //
   // Pull enable for 14 generic GPIOs
-  assign cio_gpio_pull_en_o[0] = mio_attr[MioPadIob6].pull_en;
-  assign cio_gpio_pull_en_o[1] = mio_attr[MioPadIob7].pull_en;
-  assign cio_gpio_pull_en_o[2] = mio_attr[MioPadIob8].pull_en;
-  assign cio_gpio_pull_en_o[3] = mio_attr[MioPadIob9].pull_en;
-  assign cio_gpio_pull_en_o[4] = mio_attr[MioPadIob10].pull_en;
-  assign cio_gpio_pull_en_o[5] = mio_attr[MioPadIob11].pull_en;
-  assign cio_gpio_pull_en_o[6] = mio_attr[MioPadIob12].pull_en;
-  assign cio_gpio_pull_en_o[7] = mio_attr[MioPadIor5].pull_en;
-  assign cio_gpio_pull_en_o[8] = mio_attr[MioPadIor6].pull_en;
-  assign cio_gpio_pull_en_o[9] = mio_attr[MioPadIor7].pull_en;
-  assign cio_gpio_pull_en_o[10] = mio_attr[MioPadIor10].pull_en;
-  assign cio_gpio_pull_en_o[11] = mio_attr[MioPadIor11].pull_en;
-  assign cio_gpio_pull_en_o[12] = mio_attr[MioPadIor12].pull_en;
-  assign cio_gpio_pull_en_o[13] = mio_attr[MioPadIor13].pull_en;
+  assign cio_gpio_pull_en_o[0] = dio_attr[DioGpioGpio0].pull_en;
+  assign cio_gpio_pull_en_o[1] = dio_attr[DioGpioGpio1].pull_en;
+  assign cio_gpio_pull_en_o[2] = dio_attr[DioGpioGpio2].pull_en;
+  assign cio_gpio_pull_en_o[3] = dio_attr[DioGpioGpio3].pull_en;
+  assign cio_gpio_pull_en_o[4] = dio_attr[DioGpioGpio4].pull_en;
+  assign cio_gpio_pull_en_o[5] = dio_attr[DioGpioGpio5].pull_en;
+  assign cio_gpio_pull_en_o[6] = dio_attr[DioGpioGpio6].pull_en;
+  assign cio_gpio_pull_en_o[7] = dio_attr[DioGpioGpio7].pull_en;
+  assign cio_gpio_pull_en_o[8] = dio_attr[DioGpioGpio8].pull_en;
+  assign cio_gpio_pull_en_o[9] = dio_attr[DioGpioGpio9].pull_en;
+  assign cio_gpio_pull_en_o[10] = dio_attr[DioGpioGpio10].pull_en;
+  assign cio_gpio_pull_en_o[11] = dio_attr[DioGpioGpio11].pull_en;
+  assign cio_gpio_pull_en_o[12] = dio_attr[DioGpioGpio12].pull_en;
+  assign cio_gpio_pull_en_o[13] = dio_attr[DioGpioGpio13].pull_en;
   assign cio_gpio_pull_en_o[21:14] = '0;
 
   // Pull enable for SW STRAPs
-  assign cio_gpio_pull_en_o[22] = mio_attr[MioPadIoc0].pull_en;
-  assign cio_gpio_pull_en_o[23] = mio_attr[MioPadIoc1].pull_en;
-  assign cio_gpio_pull_en_o[24] = mio_attr[MioPadIoc2].pull_en;
+  assign cio_gpio_pull_en_o[22] = dio_attr[DioGpioGpio22].pull_en;
+  assign cio_gpio_pull_en_o[23] = dio_attr[DioGpioGpio23].pull_en;
+  assign cio_gpio_pull_en_o[24] = dio_attr[DioGpioGpio24].pull_en;
 
   // Pull enable for TAP STRAPs
   assign cio_gpio_pull_en_o[26:25] = '0;
-  assign cio_gpio_pull_en_o[27] = mio_attr[MioPadIoc5].pull_en;
+  assign cio_gpio_pull_en_o[27] = mio_attr[MioPadMio1].pull_en;
   assign cio_gpio_pull_en_o[29:28] = '0;
-  assign cio_gpio_pull_en_o[30] = mio_attr[MioPadIoc8].pull_en;
+  assign cio_gpio_pull_en_o[30] = mio_attr[MioPadMio0].pull_en;
   assign cio_gpio_pull_en_o[31] = '0;
 
   // Pull select for 14 generic GPIOs
-  assign cio_gpio_pull_select_o[0] = mio_attr[MioPadIob6].pull_select;
-  assign cio_gpio_pull_select_o[1] = mio_attr[MioPadIob7].pull_select;
-  assign cio_gpio_pull_select_o[2] = mio_attr[MioPadIob8].pull_select;
-  assign cio_gpio_pull_select_o[3] = mio_attr[MioPadIob9].pull_select;
-  assign cio_gpio_pull_select_o[4] = mio_attr[MioPadIob10].pull_select;
-  assign cio_gpio_pull_select_o[5] = mio_attr[MioPadIob11].pull_select;
-  assign cio_gpio_pull_select_o[6] = mio_attr[MioPadIob12].pull_select;
-  assign cio_gpio_pull_select_o[7] = mio_attr[MioPadIor5].pull_select;
-  assign cio_gpio_pull_select_o[8] = mio_attr[MioPadIor6].pull_select;
-  assign cio_gpio_pull_select_o[9] = mio_attr[MioPadIor7].pull_select;
-  assign cio_gpio_pull_select_o[10] = mio_attr[MioPadIor10].pull_select;
-  assign cio_gpio_pull_select_o[11] = mio_attr[MioPadIor11].pull_select;
-  assign cio_gpio_pull_select_o[12] = mio_attr[MioPadIor12].pull_select;
-  assign cio_gpio_pull_select_o[13] = mio_attr[MioPadIor13].pull_select;
+  assign cio_gpio_pull_select_o[0] = dio_attr[DioGpioGpio0].pull_select;
+  assign cio_gpio_pull_select_o[1] = dio_attr[DioGpioGpio1].pull_select;
+  assign cio_gpio_pull_select_o[2] = dio_attr[DioGpioGpio2].pull_select;
+  assign cio_gpio_pull_select_o[3] = dio_attr[DioGpioGpio3].pull_select;
+  assign cio_gpio_pull_select_o[4] = dio_attr[DioGpioGpio4].pull_select;
+  assign cio_gpio_pull_select_o[5] = dio_attr[DioGpioGpio5].pull_select;
+  assign cio_gpio_pull_select_o[6] = dio_attr[DioGpioGpio6].pull_select;
+  assign cio_gpio_pull_select_o[7] = dio_attr[DioGpioGpio7].pull_select;
+  assign cio_gpio_pull_select_o[8] = dio_attr[DioGpioGpio8].pull_select;
+  assign cio_gpio_pull_select_o[9] = dio_attr[DioGpioGpio9].pull_select;
+  assign cio_gpio_pull_select_o[10] = dio_attr[DioGpioGpio10].pull_select;
+  assign cio_gpio_pull_select_o[11] = dio_attr[DioGpioGpio11].pull_select;
+  assign cio_gpio_pull_select_o[12] = dio_attr[DioGpioGpio12].pull_select;
+  assign cio_gpio_pull_select_o[13] = dio_attr[DioGpioGpio13].pull_select;
   assign cio_gpio_pull_select_o[21:14] = '0;
 
   // Pull select for SW STRAPs
-  assign cio_gpio_pull_select_o[22] = mio_attr[MioPadIoc0].pull_select;
-  assign cio_gpio_pull_select_o[23] = mio_attr[MioPadIoc1].pull_select;
-  assign cio_gpio_pull_select_o[24] = mio_attr[MioPadIoc2].pull_select;
+  assign cio_gpio_pull_select_o[22] = dio_attr[DioGpioGpio22].pull_select;
+  assign cio_gpio_pull_select_o[23] = dio_attr[DioGpioGpio23].pull_select;
+  assign cio_gpio_pull_select_o[24] = dio_attr[DioGpioGpio24].pull_select;
 
   // Pull select for TAP STRAPs
   assign cio_gpio_pull_select_o[26:25] = '0;
-  assign cio_gpio_pull_select_o[27] = mio_attr[MioPadIoc5].pull_select;
+  assign cio_gpio_pull_select_o[27] = mio_attr[MioPadMio1].pull_select;
   assign cio_gpio_pull_select_o[29:28] = '0;
-  assign cio_gpio_pull_select_o[30] = mio_attr[MioPadIoc8].pull_select;
+  assign cio_gpio_pull_select_o[30] = mio_attr[MioPadMio0].pull_select;
   assign cio_gpio_pull_select_o[31] = '0;
 
   ////////////////////////////////
@@ -171,9 +170,6 @@ module chip_darjeeling_verilator (
   // external clock comes in at a fixed position
   logic ext_clk;
   assign ext_clk = '0;
-
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
-  assign pad2ast = '0;
 
   logic clk_aon;
   // reset is not used below becuase verilator uses only sync resets
@@ -498,8 +494,8 @@ module chip_darjeeling_verilator (
     .usb_obs_i             ( '0 ),
     .obs_ctrl_o            (  ),
     // pinmux related
-    .padmux2ast_i          ( pad2ast    ),
-    .ast2padmux_o          ( ast2pinmux ),
+    .padmux2ast_i          ( '0 ),
+    .ast2padmux_o          ( ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( ast_clk_byp_req ),
     .all_clk_byp_ack_o     ( ast_clk_byp_ack ),
@@ -518,15 +514,15 @@ module chip_darjeeling_verilator (
   // to be split into a Verilator TB and a Verilator chiplevel.
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:        MioPadIor3,
-    tms_idx:        MioPadIor0,
-    trst_idx:       MioPadIor4,
-    tdi_idx:        MioPadIor2,
-    tdo_idx:        MioPadIor1,
-    tap_strap0_idx: MioPadIoc8,
-    tap_strap1_idx: MioPadIoc5,
-    dft_strap0_idx: MioPadIoc3,
-    dft_strap1_idx: MioPadIoc4,
+    tck_idx:        MioPadMio4,
+    tms_idx:        MioPadMio5,
+    trst_idx:       MioPadMio6,
+    tdi_idx:        MioPadMio7,
+    tdo_idx:        MioPadMio8,
+    tap_strap0_idx: MioPadMio0,
+    tap_strap1_idx: MioPadMio1,
+    dft_strap0_idx: MioPadMio2,
+    dft_strap1_idx: MioPadMio3,
     // TODO: check whether there is a better way to pass these USB-specific params
     usb_dp_idx:     0,
     usb_dn_idx:     0,
@@ -580,7 +576,6 @@ module chip_darjeeling_verilator (
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
     .hi_speed_sel_o               ( hi_speed_sel               ),
     .div_step_down_req_i          ( div_step_down_req          ),
-    .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
@@ -622,7 +617,7 @@ module chip_darjeeling_verilator (
 
     // Pad attributes
     .mio_attr_o                   (mio_attr),
-    .dio_attr_o                   ( ),
+    .dio_attr_o                   (dio_attr),
 
     // Memory attributes
     // This is different between verilator and the rest of the platforms right now
