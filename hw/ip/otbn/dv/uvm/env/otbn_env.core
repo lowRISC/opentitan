@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:dv_lib
+      - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:tl_agent
       - lowrisc:dv:alert_esc_agent
       - lowrisc:dv:otbn_model_agent
