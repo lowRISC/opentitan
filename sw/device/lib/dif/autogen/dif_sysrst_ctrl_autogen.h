@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sysrst_ctrl/doc/">SYSRST_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/sysrst_ctrl/">SYSRST_CTRL</a> Device Interface
  * Functions
  */
 

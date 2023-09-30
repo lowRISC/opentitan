@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/keymgr/doc/">KEYMGR</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/keymgr/">KEYMGR</a> Device Interface Functions
  */
 
 #include <stdbool.h>

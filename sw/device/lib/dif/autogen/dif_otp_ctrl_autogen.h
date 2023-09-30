@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/otp_ctrl/doc/">OTP_CTRL</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/otp_ctrl/">OTP_CTRL</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>

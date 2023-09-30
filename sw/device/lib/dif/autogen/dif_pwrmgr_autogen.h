@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pwrmgr/doc/">PWRMGR</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pwrmgr/">PWRMGR</a> Device Interface Functions
  */
 
 #include <stdbool.h>

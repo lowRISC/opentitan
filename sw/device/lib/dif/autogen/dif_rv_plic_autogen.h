@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_plic/doc/">RV_PLIC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/rv_plic/">RV_PLIC</a> Device Interface Functions
  */
 
 #include <stdbool.h>

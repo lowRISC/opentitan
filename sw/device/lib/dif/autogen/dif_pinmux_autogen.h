@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pinmux/doc/">PINMUX</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pinmux/">PINMUX</a> Device Interface Functions
  */
 
 #include <stdbool.h>

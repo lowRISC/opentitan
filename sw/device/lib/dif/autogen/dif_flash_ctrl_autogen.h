@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/flash_ctrl/doc/">FLASH_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/flash_ctrl/">FLASH_CTRL</a> Device Interface
  * Functions
  */
 
