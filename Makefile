@@ -61,7 +61,6 @@ bazel-compile-test:
 	$(shell $(bazel) --define DISABLE_VERILATOR_BUILD=true //$(bazel_tests):all)
 
 .PHONY: compile-bazel-flash
->>>>>>> 01a67b2fc (Major updates: secure boot, repo organization, automation.)
 compile-bazel-flash: bazel-compile-test clean-flash
 	$(shell mkdir -p  $(destination))
 	$(shell cp -r $(flash_bazel_output_vmem) $(destination)/$(test_name)_signed.vmem)
