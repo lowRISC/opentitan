@@ -4,10 +4,10 @@
 
 <%doc>
     This file is the "DIF library header template", which provides a base for
-    manually-implmenting portions of a DIF for a new peripheral, defining all of
+    manually-implmenting portions of a DIF for a new peripheral, defining all
     the declarations that would be expected of a DIF library as described in the
     README.md. This header includes the auto-generated DIF library header, whose
-    template is defined in util/make_new_dif/dif_autogen.inc.tpl.
+    template is defined in util/make_new_dif/dif_autogen.h.tpl.
 
     This file should be instantiated with the `util/make_new_dif.py` script.
 
@@ -30,7 +30,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/${ip.name_snake}/doc/">${ip.name_long_upper}</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/${ip.name_snake}/">${ip.name_long_upper}</a> Device Interface Functions
  */
 
 #include <stdint.h>

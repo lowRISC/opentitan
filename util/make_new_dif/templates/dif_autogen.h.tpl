@@ -24,7 +24,7 @@ ${autogen_banner}
 
 /**
  * @file
- * @brief <a href="/hw/ip/${ip.name_snake}/doc/">${ip.name_upper}</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/${ip.name_snake}/">${ip.name_upper}</a> Device Interface Functions
  */
 
 #include <stdbool.h>
