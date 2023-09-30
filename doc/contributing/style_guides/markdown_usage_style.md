@@ -82,7 +82,7 @@ Reaching for HTML may suggest that:
 The [GFM autolinks extention][] is not used so links should be flanked by `<` and `>` characters.
 
 One must not use [shortcut reference link][]s, but instead use [collapsed reference link][]s.
-This is because it can be ambiguious whether [shortcut reference link][] are meant to be links or not.
+This is because it can be ambiguous whether [shortcut reference link][] are meant to be links or not.
 Consequently, linters and other tool, such as [marksman](https://github.com/artempyanykh/marksman), cannot warn you of referencing errors.
 *Note: [link labels are case insensitive](https://spec.commonmark.org/0.30/#example-554).*
 
