@@ -140,7 +140,9 @@ def main():
     template_path = REPO_TOP / "util/make_new_dif/templates"
     for ip in ips:
         if "header" in args.only:
-            header_template_file = template_path / "dif_template.h.tpl"
+            header_template_file = (
+                REPO_TOP /
+                "doc/project_governance/checklist/sw_checklist.md.tpl")
             header_out_file = dif_dir / "dif_{}.h".format(ip.name_snake)
             if header_out_file.is_file():
                 raise FileExistsError(
