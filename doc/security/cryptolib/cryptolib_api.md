@@ -490,13 +490,10 @@ However, in some cases, a user might want to import a key generated elsewhere in
 ### Supported Modes
 
 The crypto library provides four functions for this purpose:
-- Build unblinded key from user-provided key data and mode
-- Build blinded key from user-provided key data and configuration
-- Convert blinded key to unblinded key
-- Convert unblinded key to blinded key
-
-To import a private key generated elsewhere, for example, the user can call `otcrypto_build_blinded_key`.
-To export a blinded key, the user can convert it to an unblinded key, at which point the plain data is accessible.
+- Build an unblinded key from user-provided key data and mode
+- Build a blinded key from user-provided key data and configuration
+- Export an unblinded key to the user-provided key data
+- Export a blinded key to the user-provided key data in shares
 
 ### Generate random keys
 
@@ -506,15 +503,15 @@ To export a blinded key, the user can convert it to an unblinded key, at which p
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
 
-### Build Keys
+### Import Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_build_unblinded_key }}
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_build_blinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_unblinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_blinded_key }}
 
-### Blinding and Unblinding Keys
+### Export Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_blinded_to_unblinded_key }}
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_unblinded_to_blinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_unblinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_blinded_key }}
 
 ## Asynchronous operations
 

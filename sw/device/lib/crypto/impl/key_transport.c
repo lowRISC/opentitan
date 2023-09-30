@@ -80,29 +80,31 @@ crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_build_unblinded_key(
-    crypto_const_byte_buf_t plain_key, key_mode_t key_mode,
-    crypto_unblinded_key_t unblinded_key) {
+crypto_status_t otcrypto_import_unblinded_key(
+    const crypto_const_word32_buf_t plain_key,
+    crypto_unblinded_key_t *unblinded_key) {
   // TODO: implement key transport functions.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-crypto_status_t otcrypto_build_blinded_key(crypto_const_byte_buf_t plain_key,
-                                           crypto_blinded_key_t blinded_key) {
+crypto_status_t otcrypto_import_blinded_key(
+    const crypto_const_word32_buf_t key_share0,
+    const crypto_const_word32_buf_t key_share1,
+    crypto_blinded_key_t *blinded_key) {
   // TODO: implement key transport functions.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-crypto_status_t otcrypto_blinded_to_unblinded_key(
-    const crypto_blinded_key_t blinded_key,
-    crypto_unblinded_key_t unblinded_key) {
-  // TODO: implement key transport functions.
-  return OTCRYPTO_NOT_IMPLEMENTED;
-}
-
-crypto_status_t otcrypto_unblinded_to_blinded_key(
+crypto_status_t otcrypto_export_unblinded_key(
     const crypto_unblinded_key_t unblinded_key,
-    crypto_blinded_key_t blinded_key) {
+    crypto_word32_buf_t *plain_key) {
+  // TODO: implement key transport functions.
+  return OTCRYPTO_NOT_IMPLEMENTED;
+}
+
+crypto_status_t otcrypto_export_blinded_key(
+    const crypto_blinded_key_t blinded_key, crypto_word32_buf_t *key_share0,
+    crypto_word32_buf_t *key_share1) {
   // TODO: implement key transport functions.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
