@@ -13,7 +13,7 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
     // Note that we can't disable them more specifically because there is at least one assertion for
     // each register and you can't use a "for" loop because $assertoff() expects a hierarchical
     // identifier for the assertion to control, rather than just an expression.
-    $assertoff(0, tb.dut);
+    $assertoff(0, "tb.dut");
 
     do_end_addr_check = 0;
     fork
