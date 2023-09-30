@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/aes/doc/">AES</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/aes/">AES</a> Device Interface Functions
  */
 
 #include <stdbool.h>

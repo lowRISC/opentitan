@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/kmac/doc/">KMAC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/kmac/">KMAC</a> Device Interface Functions
  */
 
 #include <stdbool.h>

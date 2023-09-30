@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/edn/doc/">EDN</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/edn/">EDN</a> Device Interface Functions
  */
 
 #include <stdbool.h>

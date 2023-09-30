@@ -10,8 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/alert_handler/doc/">ALERT_HANDLER</a> Device Interface
- * Functions
+ * @brief <a href="/book/hw/ip/alert_handler/">ALERT_HANDLER</a> Device
+ * Interface Functions
  */
 
 #include <stdbool.h>

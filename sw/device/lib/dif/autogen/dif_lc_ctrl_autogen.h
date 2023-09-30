@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/lc_ctrl/doc/">LC_CTRL</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/lc_ctrl/">LC_CTRL</a> Device Interface Functions
  */
 
 #include <stdbool.h>

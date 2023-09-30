@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pwm/doc/">PWM</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pwm/">PWM</a> Device Interface Functions
  */
 
 #include <stdbool.h>

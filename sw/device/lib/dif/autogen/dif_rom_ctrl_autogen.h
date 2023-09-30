@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rom_ctrl/doc/">ROM_CTRL</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/rom_ctrl/">ROM_CTRL</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>

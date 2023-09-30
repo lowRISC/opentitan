@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_timer/doc/">RV_TIMER</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/rv_timer/">RV_TIMER</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>

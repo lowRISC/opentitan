@@ -10,7 +10,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/spi_host/doc/">SPI_HOST</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/spi_host/">SPI_HOST</a> Device Interface
+ * Functions
  */
 
 #include <stdbool.h>

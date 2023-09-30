@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/i2c/doc/">I2C</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/i2c/">I2C</a> Device Interface Functions
  */
 
 #include <stdbool.h>

@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/aon_timer/doc/">AON_TIMER</a> Device Interface
+ * @brief <a href="/book/hw/ip/aon_timer/">AON_TIMER</a> Device Interface
  * Functions
  */
 

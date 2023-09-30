@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/usbdev/doc/">USBDEV</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/usbdev/">USBDEV</a> Device Interface Functions
  */
 
 #include <stdbool.h>

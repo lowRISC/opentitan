@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_core_ibex/doc/">RV_CORE_IBEX</a> Device Interface
+ * @brief <a href="/book/hw/ip/rv_core_ibex/">RV_CORE_IBEX</a> Device Interface
  * Functions
  */
 

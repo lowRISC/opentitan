@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sensor_ctrl/doc/">SENSOR_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/sensor_ctrl/">SENSOR_CTRL</a> Device Interface
  * Functions
  */
 

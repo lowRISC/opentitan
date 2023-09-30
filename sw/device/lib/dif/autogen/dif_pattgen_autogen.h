@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pattgen/doc/">PATTGEN</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pattgen/">PATTGEN</a> Device Interface Functions
  */
 
 #include <stdbool.h>

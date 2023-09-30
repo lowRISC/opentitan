@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sram_ctrl/doc/">SRAM_CTRL</a> Device Interface
+ * @brief <a href="/book/hw/ip/sram_ctrl/">SRAM_CTRL</a> Device Interface
  * Functions
  */
 

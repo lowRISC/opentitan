@@ -10,7 +10,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/clkmgr/doc/">CLKMGR</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/clkmgr/">CLKMGR</a> Device Interface Functions
  */
 
 #include <stdbool.h>
