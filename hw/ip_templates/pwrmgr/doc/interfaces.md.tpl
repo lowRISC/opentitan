@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${top_name}/ip_autogen/pwrmgr/data/pwrmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pwrmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_slow_i`**, **`clk_lc_i`**, **`clk_esc_i`**
@@ -8,7 +8,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+${"##"} [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
 | Port Name      | Package::Struct           | Type    | Act   |   Width | Description   |
 |:---------------|:--------------------------|:--------|:------|--------:|:--------------|
@@ -33,19 +33,19 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | sw_rst_req     | prim_mubi_pkg::mubi4      | uni     | rcv   |       1 |               |
 | tl             | tlul_pkg::tl              | req_rsp | rsp   |       1 |               |
 
-## Interrupts
+${"##"} Interrupts
 
 | Interrupt Name   | Type   | Description                                               |
 |:-----------------|:-------|:----------------------------------------------------------|
 | wakeup           | Event  | Wake from low power state. See wake info for more details |
 
-## Security Alerts
+${"##"} Security Alerts
 
 | Alert Name   | Description                                                                       |
 |:-------------|:----------------------------------------------------------------------------------|
 | fatal_fault  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected. |
 
-## Security Countermeasures
+${"##"} Security Countermeasures
 
 | Countermeasure ID             | Description                                                                                                              |
 |:------------------------------|:-------------------------------------------------------------------------------------------------------------------------|

@@ -27,7 +27,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   // transition to active state.
   // ICEBOX(lowrisc/opentitan#18236) Consider adding checks to monitor fast state transitions are
   // compliant with "ROM Integrity Checks" at
-  // https://opentitan.org/book/hw/ip/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
+  // https://opentitan.org/book/hw/top_${top_name}/ip_autogen/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
   virtual task twirl_rom_response();
     cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
     cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;

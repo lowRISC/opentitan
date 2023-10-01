@@ -1,6 +1,6 @@
 # Power Manager HWIP Technical Specification
 
-[`pwrmgr`](https://reports.opentitan.org/hw/ip/pwrmgr/dv/latest/report.html):
+[`pwrmgr`](https://reports.opentitan.org/hw/top_${top_name}/ip_autogen/pwrmgr/dv/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)
@@ -10,7 +10,7 @@
 
 This document specifies the functionality of the OpenTitan power manager.
 
-## Features
+${"##"} Features
 
 - Cold boot, low power entry / exit and reset support.
 - 2 different low power modes.
@@ -20,7 +20,7 @@ This document specifies the functionality of the OpenTitan power manager.
 - ROM integrity check at power-up.
 - Local checks for escalator and power stability.
 
-## Description
+${"##"} Description
 
 The power manager sequences power, clocks, and reset resources of the design through cold boot, low power entry/exit and reset scenarios.
 
