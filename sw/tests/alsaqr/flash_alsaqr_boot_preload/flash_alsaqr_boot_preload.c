@@ -9,7 +9,7 @@
 // specific language governing permissions and limitations under the License.
 //
 //
-#include "../alsaqr_boot_flash/bazel-out/alsaqr_boot_flash_signed32.h"
+#include "../flash_alsaqr_boot/bazel-out/flash_alsaqr_boot_signed32.h"
 #include "../common/utils.h"
 #include <stdbool.h>
 
@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
   
   for(int i = 0; i < buffer_size; i += 3) {
      if(i + 2 < buffer_size) {
-        *payload_1 = ALSAQR_BOOT_FLASH_SIGNED[i];
-        *payload_2 = ALSAQR_BOOT_FLASH_SIGNED[i+1];
-        *payload_3 = ALSAQR_BOOT_FLASH_SIGNED[i+2];
+        *payload_1 = FLASH_ALSAQR_BOOT_SIGNED[i];
+        *payload_2 = FLASH_ALSAQR_BOOT_SIGNED[i+1];
+        *payload_3 = FLASH_ALSAQR_BOOT_SIGNED[i+2];
         *address = i/3;
         *start = 0x1;
      }
