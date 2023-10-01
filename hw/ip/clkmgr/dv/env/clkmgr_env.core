@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:systems:clkmgr_pkg
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv
