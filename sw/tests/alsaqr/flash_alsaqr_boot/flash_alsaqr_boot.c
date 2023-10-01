@@ -12,20 +12,21 @@
 
 #include <stdbool.h>
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/rom/uart.h"
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/rom/string_lib.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  #ifdef TARGET_SYNTHESIS                
+
+  sec_mmio_init();
+  pinmux_init();
+
+  #ifdef TARGET_SYNTHESIS
   int baud_rate = 115200;
   int test_freq = 50000000;
   #else
@@ -48,26 +49,25 @@ bool test_main(void) {
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
   // Init CVA6 Plic
-  pointer = (int *) PLIC_BASE+mbox_id;
+  pointer = (int *) PLIC_BASE+mbox_id*4;
   *pointer = 0x1;
 
-  pointer = (int *) 0x0C002090;
+  pointer = (int *) PLIC_EN_BITS+((int)(mbox_id/32))*4;
   *pointer =  1<<(mbox_id%32);
 
   printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
-  uart_wait_tx_done();
-  // Write CVA6 boot PC to mbox 
+  // Write CVA6 boot PC to mbox
   pointer = (int *) 0x10404000;
   *pointer = 0x80000000;
 
   printf("[SECD] Booting CVA6\r\n");
-  uart_wait_tx_done();
+
   // Send IRQ and boot
   pointer = (int *) 0x10404024;
   *pointer = 0x1;
-  
+
   while(1)
-    asm volatile ("wfi"); 
+    asm volatile ("wfi");
 
   return true;
 

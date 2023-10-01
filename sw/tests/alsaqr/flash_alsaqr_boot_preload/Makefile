@@ -11,7 +11,7 @@
 #
 
 # Name of the program $(PROGRAM).c will be added as a source file
-PROGRAM = alsaqr_boot_flash_preload
+PROGRAM = flash_alsaqr_boot_preload
 PROGRAM_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 # Any extra source files to include in the build. Use the upper case .S
 # extension for assembly files
