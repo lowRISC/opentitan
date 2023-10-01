@@ -24321,7 +24321,7 @@ d000898a:                    0fc00913           li      s2,252
 d000898e:                    6541                       lui     a0,0x10
 d0008990:                    f0050a13           addi    s4,a0,-256 # ff00 <_rom_ext_virtual_size+0x7f00>
 d0008994:                    03c00993           li      s3,60
-d0008998:                    09a00d93           li      s11,154
+d0008998:                    0c300d93           li      s11,195
 d000899c:                    00006517           auipc   a0,0x6
 d00089a0:                    de050513           addi    a0,a0,-544 # d000e77c <_text_end+0x1e4>
 d00089a4:                    c22a                       sw      a0,4(sp)
