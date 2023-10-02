@@ -19,6 +19,7 @@ filesets:
       - rtl/keymgr_data_en_state.sv
       - rtl/keymgr_kmac_if.sv
       - rtl/keymgr_input_checks.sv
+      - rtl/keymgr_err.sv
     file_type: systemVerilogSource
 
 targets:
