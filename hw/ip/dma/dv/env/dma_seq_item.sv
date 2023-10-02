@@ -65,6 +65,8 @@ class dma_seq_item extends uvm_sequence_item;
   bit align_address;
   // Bit used to indicate if the configuration is valid
   bit is_valid_config;
+  // LSIO trigger input value to be driven from testbench
+  rand bit [dma_reg_pkg::NumIntClearSources - 1:0] lsio_trigger_i;
 
   // Use field macros
   `uvm_object_utils_begin(dma_seq_item)
@@ -93,6 +95,11 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_array_int(int_src_wr_val, UVM_DEFAULT)
     `uvm_field_array_int(sha2_digest, UVM_DEFAULT)
   `uvm_object_utils_end
+
+  constraint lsio_trigger_i_c {
+    solve handshake_intr_en before lsio_trigger_i;
+    soft lsio_trigger_i & handshake_intr_en != 0;
+  }
 
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
   constraint sha2_digest_c {
