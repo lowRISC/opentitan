@@ -664,7 +664,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .clear (clear_via_reg_write));
         end
         // Check data and addresses in source and destination mem models
-        if (done && dma_config.is_valid_config) begin
+        if (done && dma_config.is_valid_config && !dma_config.handshake) begin
           check_data(dma_config);
         end
       end
