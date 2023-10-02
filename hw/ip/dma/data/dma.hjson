@@ -128,7 +128,6 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "source_address_lo"
@@ -146,7 +145,6 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "source_address_hi"
@@ -169,7 +167,6 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "destination_address_lo"
@@ -188,7 +185,6 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "destination_address_hi"
@@ -205,7 +201,6 @@
       desc: "Address space that source and destination pointers refer to."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "3:0"
           name: "source_asid"
@@ -308,7 +303,6 @@
       desc: "Total size of the data blob involved in DMA movement."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "data_size"
@@ -327,7 +321,6 @@
       desc: "Total size of the data blob involved in DMA movement."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "data_size"
@@ -348,7 +341,6 @@
       desc: "Denotes the width of each transaction that the DMA shall issue."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "1:0"
           name: "transaction_width"
@@ -385,7 +377,6 @@
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "address_limit_lo"
@@ -405,7 +396,6 @@
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "address_limit_hi"
@@ -425,7 +415,6 @@
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "address_limit_lo"
@@ -445,7 +434,6 @@
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "address_limit_hi"
@@ -464,13 +452,11 @@
     { name: "CONTROL"
       desc: "Control register for DMA data movement."
       swaccess: "rw"
-      hwaccess: "hrw"
-      hwqe: "true"
+      hwaccess: "hro"
       fields: [
         { bits: "5:2"
           name: "opcode"
           resval: 0x0
-          hwaccess: "hro"
           desc: '''
                 Defines the type of DMA operations.
                 '''
@@ -496,7 +482,6 @@
         { bits: "6"
           name: "hardware_handshake_enable"
           resval: 0x0
-          hwaccess: "hro"
           desc: '''
                 Enable hardware handshake mode.
                 Used to clear FIFOs from low speed IO peripherals receiving data, e.g., I3C receive buffer.
@@ -511,7 +496,6 @@
         { bits: "7"
           name: "memory_buffer_auto_increment_enable"
           resval: 0x0
-          hwaccess: "hro"
           desc: '''
                 Used in conjunction with the hardware handshake mode of operation.
                 Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
@@ -522,7 +506,6 @@
         { bits: "8"
           name: "fifo_auto_increment_enable"
           resval: 0x0
-          hwaccess: "hro"
           desc: '''
                 Used in conjunction with the hardware handshake mode of operation.
                 If set, reads/writes from/to incremental addresses for FIFO data register addresses.
@@ -543,7 +526,7 @@
           resval: 0x0
           hwaccess: "hrw"
           desc: '''
-                Marks the initial transfer to initialize the DMA and SHA engine for one tranfer that can span over multiple single DMA transfers.
+                Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
                 Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
                 Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
                 '''
@@ -563,6 +546,7 @@
           name: "go"
           resval: 0x0
           hwaccess: "hrw"
+          hwqe: "true"
           desc: '''
                 Trigger the DMA operation when the Go bit is set.
                 For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
@@ -579,12 +563,12 @@
     { name: "STATUS"
       desc: "Status indication for DMA data movement."
       swaccess: "rw1c"
-      hwaccess: "hrw"
-      hwqe: "true"
+      hwaccess: "hwo"
       fields: [
         { bits: "0"
           name: "busy"
           resval: 0x0
+          hwaccess: "hrw"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
@@ -594,6 +578,7 @@
         { bits: "1"
           name: "done"
           resval: 0x0
+          hwaccess: "hrw"
           desc: "Configured DMA operation is complete."
         }
         { bits: "2"
@@ -604,6 +589,7 @@
         { bits: "3"
           name: "error"
           resval: 0x0
+          hwaccess: "hrw"
           desc: '''
                 Error occurred during the operation.
                 error_code denotes the source of the error.
@@ -659,7 +645,7 @@
               '''
         count: "16"
         swaccess: "ro",
-        hwaccess: "hrw",
+        hwaccess: "hwo",
         fields: [
           { name: "data"
             desc: "SHA2 digest data"
@@ -690,7 +676,6 @@
             '''
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { name: "source"
           desc: "Source N needs interrupt cleared"
@@ -701,12 +686,11 @@
     }
     { name: "CLEAR_INT_BUS"
       desc: '''Bus selection bit where the clearing command should be performed."
-            0: CTN/System faric
+            0: CTN/System fabric
             1: OT-internal crossbar
             '''
       swaccess: "rw"
       hwaccess: "hro"
-      hwqe: "true"
       fields: [
         { name: "bus"
           desc: "Bus selection bit for source N."
@@ -722,7 +706,6 @@
         cname: "ADDR"
         swaccess: "rw"
         hwaccess: "hro"
-        hwqe: "true"
         fields: [
           { name: "addr"
             desc: "Destination address for interrupt source clearing write."
@@ -739,7 +722,6 @@
         cname: "WRVAL"
         swaccess: "rw"
         hwaccess: "hro"
-        hwqe: "true"
         fields: [
           { name: "wr_val"
             desc: "Write value for interrupt clearing write."
