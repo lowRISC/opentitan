@@ -12,8 +12,9 @@ module prim_clock_buf #(
   output logic clk_o
 );
 
-  logic inv;
-  assign inv = ~clk_i;
-  assign clk_o = ~inv;
+  tc_clk_buffer clk_buf(
+     .clk_i,
+     .clk_o
+  );
 
 endmodule // prim_clock_buf
