@@ -100,44 +100,8 @@ module dma
   logic scanmode;
   assign scanmode = mubi4_test_true_strict(scanmode_i);
 
-  // Combine the writes of multiregs to a single signal for clock gating control
-  logic sw_int_source_wr;
-  always_comb begin
-    sw_int_source_wr = 1'b0;
-    for (int i = 0; i < NumIntClearSources; ++i) begin
-      sw_int_source_wr = sw_int_source_wr             ||
-                         reg2hw.int_source_addr[i].qe ||
-                         reg2hw.int_source_wr_val[i].qe;
-    end
-  end
-
   logic sw_reg_wr, sw_reg_wr1, sw_reg_wr2;
-  assign sw_reg_wr = reg2hw.source_address_lo.qe                           ||
-                     reg2hw.source_address_hi.qe                           ||
-                     reg2hw.destination_address_lo.qe                      ||
-                     reg2hw.destination_address_hi.qe                      ||
-                     reg2hw.address_space_id.source_asid.qe                ||
-                     reg2hw.address_space_id.destination_asid.qe           ||
-                     reg2hw.total_data_size.qe                             ||
-                     reg2hw.transfer_width.qe                              ||
-                     reg2hw.destination_address_limit_lo.qe                ||
-                     reg2hw.destination_address_limit_hi.qe                ||
-                     reg2hw.destination_address_almost_limit_lo.qe         ||
-                     reg2hw.destination_address_almost_limit_hi.qe         ||
-                     reg2hw.control.opcode.qe                              ||
-                     reg2hw.control.hardware_handshake_enable.qe           ||
-                     reg2hw.control.memory_buffer_auto_increment_enable.qe ||
-                     reg2hw.control.fifo_auto_increment_enable.qe          ||
-                     reg2hw.control.data_direction.qe                      ||
-                     reg2hw.control.go.qe                                  ||
-                     reg2hw.status.busy.qe                                 ||
-                     reg2hw.status.done.qe                                 ||
-                     reg2hw.status.aborted.qe                              ||
-                     reg2hw.clear_int_src.qe                               ||
-                     reg2hw.clear_int_bus.qe                               ||
-                     sw_int_source_wr                                      ||
-                     reg2hw.status.error.qe                                ||
-                     reg2hw.status.error_code.qe;
+  assign sw_reg_wr = reg2hw.control.go.qe;
   prim_flop #(
     .Width(1)
   ) aff_reg_wr1 (
@@ -155,7 +119,7 @@ module dma
     .q_o   ( sw_reg_wr2 )
   );
 
-  // Stretch out CR writes to make sure new value can propogate through logic
+  // Stretch out CR writes to make sure new value can propagate through logic
   logic sw_reg_wr_extended;
   assign sw_reg_wr_extended = sw_reg_wr || sw_reg_wr1 || sw_reg_wr2;
 
