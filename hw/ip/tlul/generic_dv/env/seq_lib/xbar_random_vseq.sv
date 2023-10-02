@@ -8,6 +8,16 @@ class xbar_random_vseq extends xbar_base_vseq;
   `uvm_object_utils(xbar_random_vseq)
   `uvm_object_new
 
+  function void pre_randomize();
+    int plusarg_max_num_trans;
+    super.pre_randomize();
+    if ($value$plusargs("max_num_trans=%0d", plusarg_max_num_trans)) begin
+      `uvm_info(`gfn, $sformatf("+max_num_trans=%0d specified", plusarg_max_num_trans), UVM_MEDIUM)
+      // Override upper bound for number of runs.
+      max_num_trans = plusarg_max_num_trans;
+    end
+  endfunction
+
   // override it to control host seq in extended classes
   virtual function void update_host_seq();
   endfunction
