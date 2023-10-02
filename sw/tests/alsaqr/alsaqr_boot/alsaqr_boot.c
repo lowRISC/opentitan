@@ -18,7 +18,7 @@
 int main(int argc, char **argv) {
 
 
-  #ifdef TARGET_SYNTHESIS                
+  #ifdef TARGET_SYNTHESIS
   int baud_rate = 115200;
   int test_freq = 50000000;
   #else
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   #define PLIC_EN_BITS  PLIC_BASE + 0x2090
 
   int * pointer;
-  int mbox_id = 143;
+  int mbox_id = 10;
 
   // Initialazing the uart
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
@@ -48,20 +48,19 @@ int main(int argc, char **argv) {
   *pointer =  1<<(mbox_id%32);
 
   printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
-  uart_wait_tx_done();
-  // Write CVA6 boot PC to mbox 
+  // Write CVA6 boot PC to mbox
   pointer = (int *) 0x10404000;
   *pointer = 0x80000000;
 
   printf("[SECD] Booting CVA6\r\n");
-  uart_wait_tx_done();
+
   // Send IRQ and boot
   pointer = (int *) 0x10404024;
   *pointer = 0x1;
-  
+
   while(1)
-    asm volatile ("wfi"); 
+    asm volatile ("wfi");
 
   return 0;
-  
+
 }
