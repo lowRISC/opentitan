@@ -346,7 +346,7 @@ module dma
 
   logic use_inline_hashing;
   logic sha2_hash_start, sha2_hash_process;
-  logic sha2_valid, sha2_ready, sha2_digest_we;
+  logic sha2_valid, sha2_ready, sha2_digest_set, sha2_digest_clear;
   sha_fifo32_t sha2_data;
   digest_mode_e sha2_mode;
   sha_word64_t [7:0] sha2_digest;
@@ -483,7 +483,8 @@ module dma
 
     sha2_hash_start      = 1'b0;
     sha2_valid           = 1'b0;
-    sha2_digest_we       = 1'b0;
+    sha2_digest_set      = 1'b0;
+    sha2_digest_clear    = 1'b0;
     sha2_consumed_d      = sha2_consumed_q;
 
     // Make SHA2 Done sticky to not miss a single done event during any outstanding writes
@@ -503,6 +504,7 @@ module dma
           if (reg2hw.control.initial_transfer.q) begin
             transfer_byte_d       = '0;
             capture_transfer_byte = 1'b1;
+            sha2_digest_clear     = 1'b1;
           end
           // if not handshake start transfer
           if (!cfg_handshake_en) begin
@@ -1108,7 +1110,7 @@ module dma
       DmaShaFinalize: begin
         if (sha2_hash_done_q || sha2_hash_done_sticky_q) begin
           // Digest is ready, capture it to the CSRs
-          sha2_digest_we = 1'b1;
+          sha2_digest_set = 1'b1;
           ctrl_state_d   = DmaIdle;
           clear_go       = 1'b1;
         end else if (cfg_abort_en) begin
@@ -1298,11 +1300,14 @@ module dma
     // Write digest to CSRs when needed. The digest is a 64-bit datatype, which leads to assign
     // two 32-bit CSRs per iteration
     for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i += 2) begin
-      hw2reg.sha2_digest[i].de   = sha2_digest_we;
-      hw2reg.sha2_digest[i+1].de = sha2_digest_we;
-      hw2reg.sha2_digest[i].d    = sha2_digest[i/2][0  +: 32];
-      hw2reg.sha2_digest[i+1].d  = sha2_digest[i/2][32 +: 32];
+      hw2reg.sha2_digest[i].de   = sha2_digest_set | sha2_digest_clear;
+      hw2reg.sha2_digest[i+1].de = sha2_digest_set | sha2_digest_clear;
+      hw2reg.sha2_digest[i].d    = sha2_digest_clear? '0 : sha2_digest[i/2][0  +: 32];
+      hw2reg.sha2_digest[i+1].d  = sha2_digest_clear? '0 : sha2_digest[i/2][32 +: 32];
     end
+
+    hw2reg.status.sha2_digest_valid.de = sha2_digest_set | sha2_digest_clear;
+    hw2reg.status.sha2_digest_valid.d  = sha2_digest_set;
 
     hw2reg.destination_address_hi.de = update_destination_addr_reg;
     hw2reg.destination_address_hi.d  = new_destination_addr[63:32];
@@ -1369,6 +1374,14 @@ module dma
 
       hw2reg.status.aborted.de = 1'b1;
       hw2reg.status.aborted.d  = 1'b0;
+
+      hw2reg.status.sha2_digest_valid.de = 1'b1;
+      hw2reg.status.sha2_digest_valid.d  = 1'b0;
+
+      for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i++) begin
+        hw2reg.sha2_digest[i].de = 1'b0;
+        hw2reg.sha2_digest[i].d  = '0;
+      end
 
       hw2reg.intr_state.dma_done.de = 1'b1;
       hw2reg.intr_state.dma_done.d  = 1'b0;
