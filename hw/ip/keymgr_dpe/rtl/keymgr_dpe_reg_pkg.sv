@@ -80,6 +80,9 @@ package keymgr_dpe_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } retain_parent;
+    struct packed {
+      logic        q;
     } allow_child;
     struct packed {
       logic        q;
@@ -301,16 +304,16 @@ package keymgr_dpe_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [632:632]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [631:631]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [630:629]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [628:625]
-    keymgr_dpe_reg2hw_start_reg_t start; // [624:624]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [623:615]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [614:612]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [611:596]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [595:594]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [593:592]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [633:633]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [632:632]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [631:630]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [629:626]
+    keymgr_dpe_reg2hw_start_reg_t start; // [625:625]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [624:616]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [615:613]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [612:597]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [596:595]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [594:592]
     keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [591:590]
     keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [589:334]
     keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [333:78]
