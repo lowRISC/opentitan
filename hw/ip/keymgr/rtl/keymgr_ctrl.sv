@@ -828,18 +828,6 @@ module keymgr_ctrl
     .fault_o
   );
 
-  ///////////////////////////////
-  // Functions
-  ///////////////////////////////
-
-  // unclear what this is supposed to be yet
-  // right now just check to see if it not all 0's and not all 1's
- function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
-
-    return |value & ~&value;
-
-  endfunction // byte_mask
-
   /////////////////////////////////
   // Assertions
   /////////////////////////////////
