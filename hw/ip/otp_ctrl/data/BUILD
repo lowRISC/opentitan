@@ -82,8 +82,8 @@ otp_json(
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.HARDENED_TRUE),
-                # Mark the first three keys as valid and remaining as invalid
-                # since we currently have only three keys. See the definition of
+                # Mark the first 7 keys as valid and remaining as invalid since
+                # we currently have only 7 keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
                     CONST.HARDENED_BYTE_TRUE,  # key0
