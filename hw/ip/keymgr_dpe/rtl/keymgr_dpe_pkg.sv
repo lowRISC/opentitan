@@ -71,6 +71,7 @@ package keymgr_dpe_pkg;
   typedef struct packed {
     logic allow_child;
     logic exportable;
+    logic retain_parent;
   } keymgr_dpe_policy_t;
 
   // An internal secret key slot
