@@ -269,4 +269,9 @@ package keymgr_pkg;
 
   endfunction
 
+  // checks for all 0's or all 1's of value
+  function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
+    return |value & ~&value;
+  endfunction
+
 endpackage : keymgr_pkg
