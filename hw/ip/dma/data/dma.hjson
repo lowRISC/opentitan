@@ -611,6 +611,13 @@
                 Bit 7: Invalid ASID error.
                 '''
         }
+        { bits: "12"
+          name: "sha2_digest_valid"
+          resval: 0x0
+          desc: '''Indicates whether the SHA2_DIGEST register contains a valid digest.
+                This value is cleared on the initial transfer and set when the digest is written.
+                '''
+        }
       ]
     }
     { name: "CLEAR_STATE"
@@ -627,6 +634,8 @@
 
                 Done Status
                 Error Status
+                SHA2 Digest valid status
+                SHA2 Digest
                 Error Code
                 Done Interrupt
                 '''
