@@ -101,21 +101,15 @@ crypto_status_t otcrypto_import_unblinded_key(
  * Imports a user provided masked key in shares, to a blinded key struct.
  *
  * This API takes as input a masked key from the user in two shares, and masks
- * it using an implantation specific masking with ‘n’ shares writing the output
- * to the `blinded_key.keyblob`.
+ * it using an implementation specific masking with `n` shares writing the
+ * output to the `blinded_key.keyblob`.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
  * keyblob. For non-hardware-backed keys, the keyblob should be twice the
- * length of the user key. For hardware-backed keys, the keyblob length
- * should always be 256 bits and the caller should populate the key blob with
- * their desired key version and salt value. The first 32 bits of the key blob
- * are interpreted in little-endian form as the version, and the remaining
- * 224 bits are concatenated with the one-word key mode to become the salt.
- * This function will return an error if the keyblob length does not match
- * expectations based on the key mode and configuration. The value in the
- * `checksum` field of the blinded key struct will be populated by the key
- * generation function.
+ * length of the user key. For hardware-backed keys, the user should call the
+ * `otcrypto_hw_backed_key` function instead. The value in the `checksum` field
+ * of the blinded key struct will be populated by the key generation function.
  *
  * @param key_share0 Pointer to the 1st share of the user provided key.
  * @param key_share1 Pointer to the 2nd share of the user provided key.
