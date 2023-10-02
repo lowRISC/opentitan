@@ -215,6 +215,8 @@ module dma_reg_top (
   logic status_error_wd;
   logic [7:0] status_error_code_qs;
   logic [7:0] status_error_code_wd;
+  logic status_sha2_digest_valid_qs;
+  logic status_sha2_digest_valid_wd;
   logic clear_state_we;
   logic clear_state_qs;
   logic clear_state_wd;
@@ -1396,6 +1398,33 @@ module dma_reg_top (
 
     // to register interface (read)
     .qs     (status_error_code_qs)
+  );
+
+  //   F[sha2_digest_valid]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_sha2_digest_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_sha2_digest_valid_wd),
+
+    // from internal hardware
+    .de     (hw2reg.status.sha2_digest_valid.de),
+    .d      (hw2reg.status.sha2_digest_valid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_sha2_digest_valid_qs)
   );
 
 
@@ -2864,6 +2893,8 @@ module dma_reg_top (
   assign status_error_wd = reg_wdata[3];
 
   assign status_error_code_wd = reg_wdata[11:4];
+
+  assign status_sha2_digest_valid_wd = reg_wdata[12];
   assign clear_state_we = addr_hit[21] & reg_we & !reg_error;
 
   assign clear_state_wd = reg_wdata[0];
@@ -3115,6 +3146,7 @@ module dma_reg_top (
         reg_rdata_next[2] = status_aborted_qs;
         reg_rdata_next[3] = status_error_qs;
         reg_rdata_next[11:4] = status_error_code_qs;
+        reg_rdata_next[12] = status_sha2_digest_valid_qs;
       end
 
       addr_hit[21]: begin
