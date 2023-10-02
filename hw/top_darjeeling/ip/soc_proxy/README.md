@@ -13,18 +13,17 @@ SoC Proxy is a simple comportable IP module that facilitates the breakout of sig
 - 2 Wakeup requests
   - Internal wakeup request, should be asserted whenever an external alert or IRQ is seen
   - External wakeup request
-- 4 Interrupts
+- 32 Interrupts
   - External interrupt requests
 
 ## SoC-facing interfaces
 
 - Synchronous interfaces:
   - 1 TL-UL Host port for egress into CTN
-  - 8 Differential alert input signals with
+  - 8 fatal alert and 8 recoverable alert differential input signals
     - Status of each alert can be read and acknowledged via CSRs
-    - Severity (fatal or recoverable is programmable in the same way as in Sensor Control)
     - Optional acknowledgment signals (as in Sensor Control)
     - The main difference with respect to Sensor Control is that each alert is sent out via its own alert channel instead of aggregating, since that way the alert crash dump latched in Reset Manager provides more info than if the alerts were aggregated.
 - Asynchronous interfaces:
   - 1 Wakeup request, asynchronous and level-encoded
-  - 4 Interrupts, asynchronous and level-encoded
+  - 32 Interrupts, asynchronous and level-encoded
