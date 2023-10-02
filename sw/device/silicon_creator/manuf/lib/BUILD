@@ -149,10 +149,10 @@ cc_library(
 # As more SKUs are created with different OTP software configuration partitions,
 # libraries can be added accordingly.
 cc_library(
-    name = "individualize_sw_cfg_earlgrey_a0_sku_test",
+    name = "individualize_sw_cfg_earlgrey_a0_sku_generic",
     deps = [
         ":individualize_sw_cfg",
-        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus:test_otp_sw_cfg",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus:generic_otp_sw_cfg",
     ],
 )
 
@@ -167,7 +167,7 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
     deps = [
-        ":individualize_sw_cfg_earlgrey_a0_sku_test",
+        ":individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
