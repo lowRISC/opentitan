@@ -10,9 +10,6 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_handshake_smoke_vseq)
   `uvm_object_new
 
-  // Handshake interrupt value
-  rand bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_value;
-
   constraint transactions_c {num_txns == valid_combinations.size();}
 
   // Function : Randomise dma_seq_item with valid and random asid combination
@@ -60,11 +57,6 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
       randomise_item(dma_config);
       run_common_config(dma_config);
-      // Toggle random bit in hardware handshake input interrupt
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(handshake_value,
-                                         handshake_value &
-                                         dma_config.handshake_intr_en != 0;)
-      `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", handshake_value), UVM_HIGH)
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
                            1'b1,              // Initial transfer
@@ -73,7 +65,8 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                            dma_config.auto_inc_fifo, // Auto-increment FIFO Address
                            dma_config.direction, // Direction
                            1'b1); // Go
-      set_hardware_handshake_intr(handshake_value);
+      `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", dma_config.lsio_trigger_i), UVM_HIGH)
+      set_hardware_handshake_intr(dma_config.lsio_trigger_i);
       delay(5); // wait for DMA state change
       fork
         begin
