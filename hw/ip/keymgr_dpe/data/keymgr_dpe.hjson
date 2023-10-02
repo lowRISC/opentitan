@@ -669,6 +669,13 @@ countermeasures: [
             Set whether this context allows derivation of further children.
           '''
         },
+        { bits: "2",
+          name: "RETAIN_PARENT",
+          resval: "0"
+          desc: '''
+            Set whether further advance operations force erasure of the slot.
+          '''
+        },
       ]
     },
 
