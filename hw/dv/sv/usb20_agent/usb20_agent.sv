@@ -21,6 +21,10 @@ class usb20_agent extends dv_base_agent #(
     if (!uvm_config_db#(virtual usb20_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get usb20_if handle from uvm_config_db")
     end
+    // get usb20_block_if handle
+    if (!uvm_config_db#(virtual usb20_block_if)::get(this, "", "bif", cfg.bif)) begin
+      `uvm_fatal(`gfn, "failed to get usb20_block_if handle from uvm_config_db")
+    end
   endfunction
 
 endclass

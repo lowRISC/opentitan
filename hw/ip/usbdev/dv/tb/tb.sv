@@ -12,6 +12,7 @@ module tb;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "cip_macros.svh"
 
   wire aon_clk, aon_rst_n;
   wire usb_clk, usb_rst_n;
@@ -43,6 +44,8 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
   usb20_if usb20_if();
+  usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
+  .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
 
  `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
 
@@ -61,21 +64,21 @@ module tb;
 
     // USB Interface
     // TOOD: need to hook up an interface
-    .cio_usb_dp_i           (1'b1),
-    .cio_usb_dn_i           (1'b0),
-    .usb_rx_d_i             (1'b0),
-    .cio_usb_dp_o           (),
-    .cio_usb_dp_en_o        (),
-    .cio_usb_dn_o           (),
-    .cio_usb_dn_en_o        (),
-    .usb_tx_d_o             (),
-    .usb_tx_se0_o           (),
+    .cio_usb_dp_i           (usb20_block_if.usb_dp_i     ),
+    .cio_usb_dn_i           (usb20_block_if.usb_dn_i     ),
+    .usb_rx_d_i             (usb20_block_if.usb_rx_d_i   ),
+    .cio_usb_dp_o           (usb20_block_if.usb_dp_o     ),
+    .cio_usb_dp_en_o        (usb20_block_if.usb_dp_en_o  ),
+    .cio_usb_dn_o           (usb20_block_if.usb_dn_o     ),
+    .cio_usb_dn_en_o        (usb20_block_if.usb_dn_en_o  ),
+    .usb_tx_d_o             (usb20_block_if.usb_tx_d_o   ),
+    .usb_tx_se0_o           (usb20_block_if.usb_tx_se0_o ),
 
-    .cio_sense_i            (1'b0),
-    .usb_dp_pullup_o        (),
-    .usb_dn_pullup_o        (),
-    .usb_rx_enable_o        (),
-    .usb_tx_use_d_se0_o     (),
+    .cio_sense_i            (usb20_block_if.usb_sense_i        ),
+    .usb_dp_pullup_o        (usb20_block_if.usb_dp_pullup_o    ),
+    .usb_dn_pullup_o        (usb20_block_if.usb_dn_pullup_o    ),
+    .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
+    .usb_tx_use_d_se0_o     (usb20_block_if.usb_tx_use_d_se0_o ),
 
     // Direct pinmux aon detect connections
     .usb_aon_suspend_req_o  (),
@@ -142,6 +145,8 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual usb20_if)::set(null, "*.env.m_usb20_agent*", "vif", usb20_if);
+    uvm_config_db#(virtual usb20_block_if)::set
+    (null, "*.env.m_usb20_agent*", "bif", usb20_block_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

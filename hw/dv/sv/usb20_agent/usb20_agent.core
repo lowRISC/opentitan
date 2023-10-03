@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:dv_lib
     files:
       - usb20_if.sv
+      - usb20_block_if.sv
       - usb20_agent_pkg.sv
       - usb20_agent_cfg.sv: {is_include_file: true}
       - usb20_agent_cov.sv: {is_include_file: true}
