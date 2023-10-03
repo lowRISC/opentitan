@@ -92,4 +92,10 @@ package keymgr_dpe_pkg;
     SlotQuickWipeAll
   } keymgr_dpe_key_update_e;
 
+  localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
+    allow_child   : 1'b1,
+    exportable    : 1'b0,
+    retain_parent : 1'b0
+  };
+
 endpackage : keymgr_dpe_pkg

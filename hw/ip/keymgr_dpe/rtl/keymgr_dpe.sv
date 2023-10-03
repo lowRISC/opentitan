@@ -254,6 +254,8 @@ module keymgr_dpe
   logic sw_binding_unlock;
   logic sideload_fsm_err;
   logic sideload_sel_err;
+  logic key_version_vld;
+
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
@@ -288,7 +290,10 @@ module keymgr_dpe
     // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q)),
     .slot_dst_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q)),
-    .max_key_version_i(reg2hw.max_key_ver_shadowed.q),
+    .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
+    .max_key_version_i(reg2hw.max_key_ver_shadowed),
+    .key_version_i(reg2hw.key_version),
+    .key_version_vld_o(key_version_vld),
     .op_start_i(op_start),
     .op_done_o(op_done),
     .init_o(init),
@@ -381,7 +386,6 @@ module keymgr_dpe
   logic owner_seed_vld;
   logic devid_vld;
   logic health_state_vld;
-  logic key_version_vld;
 
   // software binding
   logic [SwBindingWidth-1:0] sw_binding;
@@ -470,8 +474,9 @@ module keymgr_dpe
     .KmacEnMasking(KmacEnMasking)
   ) u_checks (
     .rom_digest_i,
-    .cur_max_key_version_i(active_key_slot.max_key_version),
-    .key_version_i(reg2hw.key_version),
+    // In keymgr_dpe, key version comparison is handled by the ctrl logic.
+    .cur_max_key_version_i('0),
+    .key_version_i('0),
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
     .key_i(curr_active_key),
@@ -481,7 +486,8 @@ module keymgr_dpe
     .owner_seed_vld_o(owner_seed_vld),
     .devid_vld_o(devid_vld),
     .health_state_vld_o(health_state_vld),
-    .key_version_vld_o(key_version_vld),
+    // In keymgr_dpe, key version comparison is handled by the ctrl logic.
+    .key_version_vld_o(),
     .key_vld_o(key_vld),
     .rom_digest_vld_o(rom_digest_vld)
   );
@@ -747,11 +753,11 @@ module keymgr_dpe
 
   // TODO(#384): Implement slot policy assignments and checks
   // temporarily assigned to unused variables to satisfy lint requirements
-  keymgr_dpe_reg2hw_slot_policy_reg_t unused_slot_policy;
   logic unused_slot_policy_regwen;
-  assign unused_slot_policy = reg2hw.slot_policy;
   assign unused_slot_policy_regwen = reg2hw.slot_policy_regwen.q;
   assign hw2reg.slot_policy_regwen = 1'b1;
+  // We are passing `active_key_slot` from ctrl to main module in its original struct for simplicity
+  // so `key_policy` field is not really used
   keymgr_dpe_policy_t unused_active_policy;
   assign unused_active_policy = active_key_slot.key_policy;
 
