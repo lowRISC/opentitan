@@ -198,6 +198,11 @@ impl OtpDai {
 
     /// Lock the partition starting at offset `byte_addr`.
     pub fn lock(jtag: &dyn Jtag, byte_addr: u32) -> OtpDaiResult<()> {
+        if byte_addr == Partition::CREATOR_SW_CFG.byte_addr
+            || byte_addr == Partition::OWNER_SW_CFG.byte_addr
+        {
+            return Err(OtpDaiError::NotSupported);
+        }
         Self::wait_for_idle(jtag)?;
 
         // Set the DAI address to the start of the partition.
@@ -245,6 +250,9 @@ pub type OtpDaiResult<T> = Result<T, OtpDaiError>;
 pub enum OtpDaiError {
     #[error("provided buffer has invalid size {buf_size} for parameter of size {param_size}")]
     BufSize { buf_size: usize, param_size: u32 },
+
+    #[error("feature not supported for current partition")]
+    NotSupported,
 
     #[error("failed to communicate over JTAG")]
     Jtag { source: anyhow::Error },
