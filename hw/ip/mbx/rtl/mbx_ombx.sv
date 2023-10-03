@@ -20,11 +20,11 @@ module mbx_ombx #(
   input  logic [CfgSramAddrWidth-1:0]   hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_limit_i,
   output logic                          sys_read_all_o,
-  // Control signals from the host and system interface
+  // Control and status signals from the host and system interface
   // Writing a 1 to control.abort register clears the abort condition
+  input  logic                          sysif_status_ready_i,
   input  logic                          hostif_control_abort_clear_i,
   input  logic                          hostif_control_error_set_i,
-  input  logic                          sysif_status_ready_i,
   input  logic                          sysif_control_abort_set_i,
   input  logic                          sysif_read_data_read_valid_i,
   input  logic                          sysif_read_data_write_valid_i,

@@ -54,7 +54,7 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
 
   logic hostif_event_intr_ready, hostif_event_intr_abort;
-  logic hostif_address_range_valid;
+  logic hostif_address_range_valid, hostif_address_range_valid_write;
   logic sysif_control_abort_set;
 
   // Status signal inputs from the sysif to the hostif
@@ -115,6 +115,7 @@ module mbx
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
     .hostif_ombx_read_ptr_i              ( ombx_sram_read_ptr                 ),
     // Access to the memory region registers
+    .hostif_address_range_valid_write_o  ( hostif_address_range_valid_write   ),
     .hostif_address_range_valid_o        ( hostif_address_range_valid         ),
     .hostif_imbx_base_o                  ( hostif_imbx_base                   ),
     .hostif_imbx_limit_o                 ( hostif_imbx_limit                  ),
@@ -210,31 +211,32 @@ module mbx
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
   ) u_imbx (
-    .clk_i                      ( clk_i                         ),
-    .rst_ni                     ( rst_ni                        ),
+    .clk_i                      ( clk_i                             ),
+    .rst_ni                     ( rst_ni                            ),
     // Interface to the host port
-    .imbx_state_error_o          ( imbx_state_error             ),
-    .imbx_pending_o              ( imbx_pending                 ),
-    .imbx_irq_ready_o            ( hostif_event_intr_ready      ),
-    .imbx_irq_abort_o            ( hostif_event_intr_abort      ),
-    .imbx_status_busy_update_o   ( imbx_status_busy_valid       ),
-    .imbx_status_busy_o          ( imbx_status_busy             ),
-    .hostif_control_abort_clear_i( hostif_control_abort_clear   ),
-    .hostif_control_error_set_i  ( hostif_control_error_set     ),
-    .sys_read_all_i              ( sys_read_all                 ),
+    .imbx_state_error_o          ( imbx_state_error                 ),
+    .imbx_pending_o              ( imbx_pending                     ),
+    .imbx_irq_ready_o            ( hostif_event_intr_ready          ),
+    .imbx_irq_abort_o            ( hostif_event_intr_abort          ),
+    .imbx_status_busy_update_o   ( imbx_status_busy_valid           ),
+    .imbx_status_busy_o          ( imbx_status_busy                 ),
+    .hostif_control_abort_clear_i( hostif_control_abort_clear       ),
+    .hostif_control_error_set_i  ( hostif_control_error_set         ),
+    .sys_read_all_i              ( sys_read_all                     ),
     // SRAM range configuration
-    .hostif_range_valid_i        ( hostif_address_range_valid   ),
-    .hostif_base_i               ( hostif_imbx_base             ),
-    .hostif_limit_i              ( hostif_imbx_limit            ),
+    .hostif_range_valid_write_i  ( hostif_address_range_valid_write ),
+    .hostif_range_valid_i        ( hostif_address_range_valid       ),
+    .hostif_base_i               ( hostif_imbx_base                 ),
+    .hostif_limit_i              ( hostif_imbx_limit                ),
     // Interface to the system port
-    .sysif_status_busy_i         ( sysif_status_busy            ),
-    .sysif_control_go_set_i      ( sysif_control_go_set         ),
-    .sysif_control_abort_set_i   ( sysif_control_abort_set      ),
-    .sysif_data_write_valid_i    ( sysif_write_data_write_valid ),
+    .sysif_status_busy_i         ( sysif_status_busy                ),
+    .sysif_control_go_set_i      ( sysif_control_go_set             ),
+    .sysif_control_abort_set_i   ( sysif_control_abort_set          ),
+    .sysif_data_write_valid_i    ( sysif_write_data_write_valid     ),
     // Host interface to access private SRAM
-    .hostif_sram_write_req_o     ( imbx_sram_write_req          ),
-    .hostif_sram_write_gnt_i     ( imbx_sram_write_gnt          ),
-    .hostif_sram_write_ptr_o     ( imbx_sram_write_ptr          )
+    .hostif_sram_write_req_o     ( imbx_sram_write_req              ),
+    .hostif_sram_write_gnt_i     ( imbx_sram_write_gnt              ),
+    .hostif_sram_write_ptr_o     ( imbx_sram_write_ptr              )
   );
 
 
@@ -256,7 +258,8 @@ module mbx
     .hostif_base_i                   ( hostif_ombx_base               ),
     .hostif_limit_i                  ( hostif_ombx_limit              ),
     .sys_read_all_o                  ( sys_read_all                   ),
-    // Control signals from the host and system interface
+    // Control and signals from the host and system interface
+    .sysif_status_ready_i            ( ombx_status_ready              ),
     // Writing a 1 to control.abort register clears the abort condition
     .hostif_control_abort_clear_i    ( hostif_control_abort_clear     ),
     .hostif_control_error_set_i      ( hostif_control_error_set       ),

@@ -21,6 +21,7 @@ module mbx_imbx #(
   input  logic                        hostif_control_abort_clear_i,
   input  logic                        hostif_control_error_set_i,
   // Range configuration for the private SRAM
+  input  logic                        hostif_range_valid_write_i,
   input  logic                        hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
@@ -121,9 +122,12 @@ module mbx_imbx #(
                           ~hostif_range_valid_i;
 
   // Clear the busy signal if
+  // - the private SRAM range becomes valid
   // - all data has been been read from the outbound mailbox
   // - the host acknowledges an abort request from the sys
-  assign imbx_clear_busy = sys_read_all_i | hostif_control_abort_clear_i;
+  assign imbx_clear_busy = (hostif_range_valid_write_i & hostif_range_valid_i) |
+                           sys_read_all_i                                      |
+                           hostif_control_abort_clear_i;
 
   // External busy update interface
   assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
