@@ -33,7 +33,12 @@ module keymgr_dpe_ctrl
   input keymgr_dpe_ops_e op_i,
   input [DpeNumSlotsWidth-1:0] slot_src_sel_i,
   input [DpeNumSlotsWidth-1:0] slot_dst_sel_i,
-  input [KeyVersionWidth-1:0] max_key_version_i,  // for the current stage
+  input keymgr_dpe_policy_t slot_policy_i,
+   // `max_key_version_i` is stored during advance to be compared with `key_version_i` during
+   // generate calls
+  input [KeyVersionWidth-1:0] max_key_version_i,
+  input [KeyVersionWidth-1:0] key_version_i,
+  output key_version_vld_o,
 
   output logic op_done_o,
   output keymgr_op_status_e status_o,
@@ -96,6 +101,7 @@ module keymgr_dpe_ctrl
 
   // error conditions
   logic invalid_kmac_out;
+  logic invalid_op;
   logic cnt_err;
   // states fall out of sparsely encoded range
   logic state_intg_err_q, state_intg_err_d;
@@ -124,7 +130,8 @@ module keymgr_dpe_ctrl
   logic op_ack;
   logic op_update;
   logic op_busy;
-  logic disabled;
+  logic fsm_at_disabled;
+  logic fsm_at_invalid;
 
   logic adv_req, dis_req, gen_req, erase_req;
   assign adv_req   = op_req & (op_i == OpDpeAdvance);
@@ -149,8 +156,9 @@ module keymgr_dpe_ctrl
   // error definition
   // check incoming kmac data validity
   // Only check during the periods when there is actual kmac output
-  // TODO(#384): fix invalidity check
-  assign invalid_kmac_out = 0;
+  assign invalid_kmac_out = (op_update | op_ack) &
+                            (~valid_data_chk(kmac_data_i[0]) |
+                            ~valid_data_chk(kmac_data_i[1]));
 
   // async errors have nothing to do with the operation and thus should not
   // impact operation results.
@@ -179,16 +187,17 @@ module keymgr_dpe_ctrl
   // when in invalid state, always update.
   // when in disabled state, always update unless a fault is encountered.
   // op_update marks the clock cycle where KMAC returns the digest. It is the time to latch the key.
-  assign op_update_sel = op_update & op_fault_err         ? SlotQuickWipeAll :
-                         op_update & (op_err || disabled) ? SlotUpdateIdle   :
-                         op_update & adv_req              ? SlotLoadFromKmac :
-                         op_update & erase_req            ? SlotErase        : SlotUpdateIdle;
+  assign op_update_sel = op_update & op_fault_err               ? SlotQuickWipeAll :
+                         op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle   :
+                         op_update & adv_req                    ? SlotLoadFromKmac :
+                         op_update & erase_req                  ? SlotErase        :
+                         SlotUpdateIdle;
 
   ///////////////////////////
   //  interaction between main fsm and prng
   ///////////////////////////
 
-  assign prng_en_o = random_req | disabled | wipe_req;
+  assign prng_en_o = random_req | fsm_at_disabled | fsm_at_invalid | wipe_req;
 
   //////////////////////////
   // Main Control FSM
@@ -239,13 +248,16 @@ module keymgr_dpe_ctrl
   );
 
   logic [DpeNumBootStagesWidth-1:0] active_slot_boot_stage;
-  logic active_slot_valid;
-  assign active_key_slot_o     = key_slots_q[slot_src_sel_i];
+  keymgr_dpe_policy_t active_slot_policy;
+  assign active_key_slot_o      = key_slots_q[slot_src_sel_i];
   assign active_slot_boot_stage = active_key_slot_o.boot_stage;
-  assign active_slot_valid     = active_key_slot_o.valid;
+  assign active_slot_policy     = active_key_slot_o.key_policy;
 
   assign data_valid_o = op_ack & gen_key_op;
   assign wipe_key_o = update_sel == SlotQuickWipeAll;
+
+  keymgr_dpe_slot_t destination_slot;
+  assign destination_slot = key_slots_q[slot_dst_sel_i];
 
   /////////////////////////
   // Keymgr slots MUX
@@ -275,9 +287,7 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].boot_stage = 0;
         key_slots_d[slot_dst_sel_i].key[0] ^= root_key_i.key[0];
         key_slots_d[slot_dst_sel_i].key[1] ^= root_key_i.key[1];
-        // TODO(#384): Revisit the default policy value for UDS latching
-        // when further policy bits are added.
-        key_slots_d[slot_dst_sel_i].key_policy.allow_child = 1;
+        key_slots_d[slot_dst_sel_i].key_policy = DEFAULT_UDS_POLICY;
       end
 
       // `SlotLoadFromKmac` is used at the end of a successful advance operation, so that the
@@ -288,7 +298,7 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].key = kmac_data_i;
         key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
         key_slots_d[slot_dst_sel_i].boot_stage = active_slot_boot_stage + 1;
-        // TODO(#384): set policy
+        key_slots_d[slot_dst_sel_i].key_policy = slot_policy_i;
       end
 
       // `SlotErase` is used for erasing the slot selected by destination slot CSR. Erasing is a
@@ -310,6 +320,7 @@ module keymgr_dpe_ctrl
       // next reboot. This is triggered by detection of a fault attack.
       SlotQuickWipeAll: begin
         for (int i = 0; i < DpeNumSlots; i++) begin
+          // Note that '0 for `key_policy` is a safe default, as it is the most restrictive policy
           key_slots_d[i] = '0;
           for (int j = 0; j < Shares; j++) begin
             key_slots_d[i].key[j] = {EntropyRounds{entropy_i[j]}};
@@ -349,18 +360,23 @@ module keymgr_dpe_ctrl
 
   // op_req: up when both: 1) FSM is in a state to handle SW commands 2) the SW command comes
   // op_ack: comes back from the inner FSM (op_state) to confirm that the current operation is acked
-  assign op_done_o = op_req ? op_ack : init_o;
+  assign op_done_o = op_req ? op_ack : (init_o | invalid_op);
 
   // SEC_CM: CTRL.FSM.LOCAL_ESC
   // begin invalidation when faults are observed.
   // sync faults only invalidate on transaction boudaries
   // async faults begin invalidating immediately
 
+  logic invalid_advance;
+  logic invalid_erase;
+  logic invalid_gen;
   // TODO(#384): Make sure that:
   // 1) inv_state is correctly computed
   // 2) inv_state is correctly consumed by FSM
   logic inv_state;
   assign inv_state = |fault_o;
+
+  logic initialized;
 
   // SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_working_state_e, StCtrlDpeReset)
@@ -374,8 +390,9 @@ module keymgr_dpe_ctrl
 
     // `op_req` is used to gate incoming SW requests from the actual computation logic (i.e. KMAC
     // invocation, slot updates etc). Hence, when `op_req = 0`, SW requests are only used for FSM
-    // transitions. In other words, `op_req = 1` only when FSM reaches to the state to process
-    // incoming requests.
+    // transitions. In other words, `op_req = 1` only when 1) FSM reaches to the state to process
+    // incoming requests, 2) incoming requests are valid and hence they are granted access to this
+    // KMAC invocation/slot-update logic.
     op_req = 1'b0;
 
     // lfsr interaction
@@ -385,14 +402,17 @@ module keymgr_dpe_ctrl
     // request to key updates
     wipe_req = 1'b0;
 
-    // indication that state is disabled
-    disabled = 1'b0;
+    // invalid operation issued
+    invalid_op = 1'b0;
 
     // enable prng toggling
     prng_reseed_req_o = 1'b0;
 
     // initialization complete
     init_o = 1'b0;
+
+    // Indicates whether UDS is loaded (i.e. the first advance call is already made)
+    initialized = 1'b0;
 
     // if state is ever faulted, hold on to this indication
     // until reset.
@@ -401,6 +421,8 @@ module keymgr_dpe_ctrl
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlDpeReset: begin
+        // only advance operation is valid
+        invalid_op = op_start_i & (op_i != OpDpeAdvance) & en_i;
 
         // if there was a structural fault before anything began, wipe immediately
         if (inv_state) begin
@@ -435,6 +457,7 @@ module keymgr_dpe_ctrl
       // load the root key.
       StCtrlDpeRootKey: begin
         init_o  = 1'b1;
+        initialized = 1'b1;
         if (!en_i || inv_state) begin
           state_d = StCtrlDpeWipe;
         end else if (!root_key_valid_q) begin
@@ -447,7 +470,11 @@ module keymgr_dpe_ctrl
       // In Available state, advance/generate/erase/disable operations are accepted.
       // Except for disable command or unexpected faults, FSM should linger on this state.
       StCtrlDpeAvailable: begin
+        initialized = 1'b1;
         op_req = op_start_i;
+
+        // This is the operational state, most operations are valid (modulo policy violations).
+        invalid_op = invalid_advance | invalid_erase | invalid_gen;
 
         if (!en_i || inv_state) begin
           state_d = StCtrlDpeWipe;
@@ -464,6 +491,9 @@ module keymgr_dpe_ctrl
       StCtrlDpeWipe: begin
         wipe_req = 1'b1;
 
+        // During wipe, any incoming operation is rejected.
+        invalid_op = op_start_i;
+
         state_d = StCtrlDpeInvalid;
       end
 
@@ -472,12 +502,17 @@ module keymgr_dpe_ctrl
       // operations (even though technically that should not happen). This causes keymgr to issue
       // further KMAC transactions. Need to decide if we want to keep this behavior.
       StCtrlDpeDisabled: begin
-        disabled = 1'b1;
+        // During disabled, any incoming operation is rejected.
+        invalid_op = 1'b1;
+
         state_d = StCtrlDpeDisabled;
       end
 
       // Terminal state.
       StCtrlDpeInvalid: begin
+        // During invalid, any incoming operation is rejected.
+        invalid_op = 1'b1;
+
         state_d = StCtrlDpeInvalid;
       end
 
@@ -489,6 +524,9 @@ module keymgr_dpe_ctrl
 
     endcase // unique case (state_q)
   end // always_comb
+
+  assign fsm_at_disabled = state_q == StCtrlDpeDisabled;
+  assign fsm_at_invalid  = state_q == StCtrlDpeInvalid;
 
   /////////////////////////
   // Last requested operation status
@@ -550,14 +588,76 @@ module keymgr_dpe_ctrl
   // Cross-checks, errors and faults
   /////////////////////////
 
+  // key version must be smaller than or equal to max version
+  assign key_version_vld_o = key_version_i <= active_key_slot_o.max_key_version;
 
-  // TODO(#384): Bring back counter-measure to check if state transitions are valid
-  // and then remove these placeholder assignments
-  assign sync_fault = '0;
-  assign async_fault = '0;
-  assign error_o = '0;
-  assign fault_o = '0;
-  assign sync_err = '0;
+  // All `err_*` signals below are gated with `adv_req` before they are used, since they are deemed
+  // errors only during advance calls.
+  logic invalid_allow_child;
+  assign invalid_allow_child = ~active_slot_policy.allow_child;
+
+  logic invalid_max_boot_stage;
+  assign invalid_max_boot_stage = active_slot_boot_stage == DpeNumBootStages - 1;
+
+  // Check source validity
+  logic invalid_src_slot;
+  assign invalid_src_slot = ~active_key_slot_o.valid;
+
+  // If `retain_parent` is set, it means we intend to keep the parent context around. Therefore,
+  // the destination must be 1) a different slot than src, 2) not occuppied.
+  // If `retain_parent` is unset, then we need to erase the parent context. This is done by
+  // in-place update. Therefore, src and dst must be the same.
+  logic invalid_retain_parent;
+  assign invalid_retain_parent = active_slot_policy.retain_parent ?
+                           (slot_src_sel_i == slot_dst_sel_i | destination_slot.valid) :
+                           (slot_src_sel_i != slot_dst_sel_i);
+
+  assign invalid_advance = adv_req & (invalid_allow_child | invalid_max_boot_stage |
+                                      invalid_src_slot | invalid_retain_parent);
+
+  assign invalid_erase = erase_req & ~destination_slot.valid;
+
+  assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
+
+  keymgr_err u_err (
+    .clk_i,
+    .rst_ni,
+    .invalid_op_i(invalid_op),
+    .disabled_i(fsm_at_disabled | (initialized & ~en_i)),
+    .invalid_i(fsm_at_invalid),
+    .kmac_input_invalid_i,
+    .shadowed_update_err_i,
+    .kmac_op_err_i,
+    .invalid_kmac_out_i(invalid_kmac_out),
+    .sideload_sel_err_i,
+    .kmac_cmd_err_i,
+    .kmac_fsm_err_i,
+    .kmac_done_err_i,
+    .regfile_intg_err_i,
+    .shadowed_storage_err_i,
+    .ctrl_fsm_err_i(state_intg_err_q | state_intg_err_d),
+    .data_fsm_err_i(data_fsm_err),
+    .op_fsm_err_i(op_fsm_err),
+    // TODO(#384): Implement ECC protection for key slot, and connect the error signal here
+    .ecc_err_i(1'b0),
+    // TODO(#384): Implement redundant check for state change
+    .state_change_err_i(1'b0),
+    // TODO(#384): Implement redundant check for (state, operation) pair
+    .op_state_cmd_err_i(1'b0),
+    .cnt_err_i(cnt_err),
+    .reseed_cnt_err_i,
+    .sideload_fsm_err_i,
+
+    .op_update_i(op_update),
+    .op_done_i(op_done_o),
+
+    .sync_err_o(sync_err),
+    .async_err_o(),
+    .sync_fault_o(sync_fault),
+    .async_fault_o(async_fault),
+    .error_o,
+    .fault_o
+  );
 
   /////////////////////////////////
   // Assertions
