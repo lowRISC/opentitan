@@ -2,18 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import os
 import shutil
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-import logging
 
 import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
 from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
-from reggen.ip_block import IpBlock
 from reggen.countermeasure import CounterMeasure
+from reggen.ip_block import IpBlock
 
 from .lib import IpConfig, IpTemplate, TemplateParameter
 
@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 
 class TemplateRenderError(Exception):
+
     def __init__(self, message, template_vars: Any = None) -> None:
         self.message = message
         self.template_vars = template_vars
@@ -35,8 +36,7 @@ class TemplateRenderError(Exception):
 
         from pprint import PrettyPrinter
         if self.template_vars is not None:
-            return (self.message + "\n" +
-                    "Template variables:\n" +
+            return (self.message + "\n" + "Template variables:\n" +
                     PrettyPrinter().pformat(self.template_vars))
         return self.message
 
@@ -61,7 +61,8 @@ class IpTemplateRendererBase:
             if name not in self.ip_template.params:
                 raise KeyError("No parameter named {!r} exists.".format(name))
 
-    def get_template_parameter_values(self) -> Dict[str, Union[str, int, object]]:
+    def get_template_parameter_values(
+            self) -> Dict[str, Union[str, int, object]]:
         """ Get a typed mapping of all template parameters and their values.
         """
         ret = {}
@@ -128,7 +129,8 @@ class IpTemplateRendererBase:
             idx = len(self.ip_config.param_values["module_instance_name"])
             template_core_name = template_core_name[idx:]
         elif template_core_name.startswith(self.ip_template.name):
-            template_core_name = template_core_name[len(self.ip_template.name):]
+            template_core_name = template_core_name[len(self.ip_template.name
+                                                        ):]
 
         instance_core_name = self.ip_config.instance_name + template_core_name
         instance_vlnv = ['lowrisc', 'opentitan', instance_core_name]
@@ -197,6 +199,7 @@ class IpDescriptionOnlyRenderer(IpTemplateRendererBase):
     The IP description is the content of what is typically stored
     data/ip_name.hjson.
     """
+
     def render(self) -> str:
         template_path = self.ip_template.template_path
 
@@ -229,6 +232,7 @@ class IpBlockRenderer(IpTemplateRendererBase):
       directory.
     - Run reggen to generate the register interface.
     """
+
     def render(self, output_dir: Path, overwrite_output_dir: bool) -> None:
         """ Render the IP template into output_dir. """
 
