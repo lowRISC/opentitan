@@ -16,9 +16,80 @@
             - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
 
             Verify all SPI host instances in the chip.
+
+            Notes for silicon targets:
+            - The testbench that mimics a physical SPI device should measure the clock to verify that the frequencies for each speed mode is correct.
+              This can be done by checking timing of the beginning and the end of the packet.
             '''
+      features: [
+        "SPIHOST.RATE.STANDARD",
+        "SPIHOST.RATE.DUAL",
+        "SPIHOST.RATE.QUAD",
+      ]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_spi_host_tx_rx"]
+    }
+    {
+      name: chip_sw_spi_host_pass_through
+      desc: '''Verify that the SPI host can be configured in pass through mode.
+            Essentially the configuration is as follows: (real) host -> OT -> flash device
+
+            - Connect one of the OpenTitan SPI hosts to a SPI device on a serial NOR flash.
+            - Configure an OpenTitan SPI device and the above mentioned OpenTitan SPI host in pass through mode.
+            - Use the testbench's (external) SPI host to write a word to the flash through the passthrough SPI host and device in OpenTitan.
+            - Let the testbench read that word back, again through the pass through of the SPI host and device on OpenTitan.
+            - The testbench should check that the word read back is the same as the one written.
+            '''
+      features: [
+        "SPIHOST.USECASE.SERIALNORFLASH",
+        "SPIHOST.USECASE.PASSTHROUGH",
+      ]
+      stage: V3
+      si_stage: SV3
+      tests: []
+    }
+    {
+      name: chip_sw_spi_host_configuration
+      desc: ''' Verifiy that the polarity and clock divider configurations work appropriately.
+
+            1. Send a packet with no clock division and no polarity switch.
+            2. Send a packet with no clock division and a polarity switch.
+            3. Send a packet with clock divided by two and a polarity switch.
+
+            The testbench should compare the three packets that are received; the second packet should be inverted from the first and the third should be send half as fast as the second.
+            '''
+      features: [
+        "SPIHOST.CONFIG.CPOL",
+        "SPIHOST.CONFIG.CLOCKDIV",
+      ]
+      stage: V3
+      si_stage: SV3
+      tests: []
+    }
+    {
+      name: chip_sw_spi_host_events
+      desc: ''' Verify that various events are correctly triggered by the SPI host.
+
+            - For the transmit empty and watermark events:
+              - Fill the transmit queue on the Ibex side.
+              - Clear and enable the respective interrupt.
+              - Testbench should check that it receives the same data as Ibex has sent.
+              - Ibex should check whether it has received the transmit empty or watermark interrupt within a reasonable amount of time.
+            - For the receive full and watermark events:
+              - Empty the receive queue.
+              - Clear and enable the respective interrupt.
+              - Testbench sends as much data as the receive queue can hold for the full interrupt or the amount necessary to hit the watermark.
+              - Ibex checks that the receive full or watermark interrupt is raised.
+            '''
+      features: [
+        "SPIHOST.EVENT.WATERMARK",
+        "SPIHOST.EVENT.FULL",
+        "SPIHOST.EVENT.EMPTY",
+      ]
+      stage: V3
+      si_stage: SV3
+      tests: []
     }
   ]
 }
