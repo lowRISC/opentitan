@@ -14,6 +14,9 @@ def openocd_repos(local = None):
         build_file = "//third_party/openocd:BUILD.openocd.bazel",
         sha256 = "bb367fd19ab96a65ee5b269b60326d9f36bca1c64d9865cc36985d3651aba563",
         # See Issue(#18087)
-        patches = [Label("//third_party/openocd:reset_on_dmi_op_error.patch")],
+        patches = [
+            Label("//third_party/openocd:reset_on_dmi_op_error.patch"),
+            Label("//third_party/openocd:string_truncate_build_error.patch"),
+        ],
         patch_args = ["-p1"],
     )

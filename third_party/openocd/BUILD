@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:private"])
-
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:private"])
 
 # Extract the `openocd` binary from :build_openocd. Although the binary itself
 # is executable, Bazel does not believe it is runnable. If you want to run
