@@ -376,8 +376,6 @@ module keymgr_dpe_ctrl
   logic inv_state;
   assign inv_state = |fault_o;
 
-  logic initialized;
-
   // SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_working_state_e, StCtrlDpeReset)
 
@@ -411,9 +409,6 @@ module keymgr_dpe_ctrl
     // initialization complete
     init_o = 1'b0;
 
-    // Indicates whether UDS is loaded (i.e. the first advance call is already made)
-    initialized = 1'b0;
-
     // if state is ever faulted, hold on to this indication
     // until reset.
     state_intg_err_d = state_intg_err_q;
@@ -421,12 +416,13 @@ module keymgr_dpe_ctrl
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlDpeReset: begin
-        // only advance operation is valid
-        invalid_op = op_start_i & (op_i != OpDpeAdvance) & en_i;
+        // if ~en_i, then any operation request is invalid
+        // if en_i, then only advance operation is valid
+        invalid_op = op_start_i & (~en_i | en_i & (op_i != OpDpeAdvance));
 
-        // if there was a structural fault before anything began, wipe immediately
+        // if there was a structural fault before anything then move to invalid directly
         if (inv_state) begin
-          state_d = StCtrlDpeWipe;
+          state_d = StCtrlDpeInvalid;
         end else if (advance_cmd) begin
           state_d = StCtrlDpeEntropyReseed;
         end
@@ -436,7 +432,12 @@ module keymgr_dpe_ctrl
       StCtrlDpeEntropyReseed: begin
         prng_reseed_req_o = 1'b1;
 
-        if (prng_reseed_ack_i) begin
+        // If keymgr is disabled, drop the ongoing advance request and move to disabled.
+        // Also mark the operation as invalid, so that done_o can be asserted.
+        invalid_op = ~en_i;
+        if (~en_i) begin
+          state_d = StCtrlDpeInvalid;
+        end else if (prng_reseed_ack_i) begin
           state_d = StCtrlDpeRandom;
         end
       end
@@ -448,7 +449,12 @@ module keymgr_dpe_ctrl
       StCtrlDpeRandom: begin
         random_req = 1'b1;
 
-        if (int'(cnt) == EntropyRounds - 1) begin
+        // If keymgr is disabled, drop the ongoing advance and move to disabled.
+        // also mark the operation as invalid, so that done_o can be asserted.
+        invalid_op = ~en_i;
+        if (~en_i) begin
+          state_d = StCtrlDpeInvalid;
+        end else if (int'(cnt) == EntropyRounds - 1) begin
           random_ack = 1'b1;
           state_d = StCtrlDpeRootKey;
         end
@@ -456,11 +462,14 @@ module keymgr_dpe_ctrl
 
       // load the root key.
       StCtrlDpeRootKey: begin
-        init_o  = 1'b1;
-        initialized = 1'b1;
-        if (!en_i || inv_state) begin
-          state_d = StCtrlDpeWipe;
-        end else if (!root_key_valid_q) begin
+        // If en_i goes low at this cycle, then mark the ongoing advance operation as invalid
+        invalid_op = ~en_i;
+
+        // Latching the root key requires both: 1) en_i is up, 2) root_key is valid
+        // otherwise do not latch the key
+        init_o = en_i & root_key_valid_q;
+        // Since we did not store the root key, we do not have to wipe it.
+        if (~en_i | inv_state | ~root_key_valid_q) begin
           state_d = StCtrlDpeInvalid;
         end else begin
           state_d = StCtrlDpeAvailable;
@@ -470,13 +479,14 @@ module keymgr_dpe_ctrl
       // In Available state, advance/generate/erase/disable operations are accepted.
       // Except for disable command or unexpected faults, FSM should linger on this state.
       StCtrlDpeAvailable: begin
-        initialized = 1'b1;
         op_req = op_start_i;
 
         // This is the operational state, most operations are valid (modulo policy violations).
-        invalid_op = invalid_advance | invalid_erase | invalid_gen;
+        invalid_op = invalid_advance | invalid_erase | invalid_gen | (~en_i & op_start_i);
 
-        if (!en_i || inv_state) begin
+        // Given that the root key was latched by an earlier FSM state, we need to take care of
+        // clearing the sensitive root key.
+        if (~en_i | inv_state) begin
           state_d = StCtrlDpeWipe;
         end else if (disable_cmd) begin
           state_d = StCtrlDpeDisabled;
@@ -503,17 +513,17 @@ module keymgr_dpe_ctrl
       // further KMAC transactions. Need to decide if we want to keep this behavior.
       StCtrlDpeDisabled: begin
         // During disabled, any incoming operation is rejected.
-        invalid_op = 1'b1;
+        invalid_op = op_start_i;
 
-        state_d = StCtrlDpeDisabled;
+        if (~en_i) begin
+          state_d = StCtrlDpeWipe;
+        end
       end
 
       // Terminal state.
       StCtrlDpeInvalid: begin
         // During invalid, any incoming operation is rejected.
-        invalid_op = 1'b1;
-
-        state_d = StCtrlDpeInvalid;
+        invalid_op = op_start_i;
       end
 
       // latch the fault indication and start to wipe the key manager
@@ -623,7 +633,9 @@ module keymgr_dpe_ctrl
     .clk_i,
     .rst_ni,
     .invalid_op_i(invalid_op),
-    .disabled_i(fsm_at_disabled | (initialized & ~en_i)),
+    // In comparison to `keymgr`, `initialized & ~en_i` predicate is dropped here,
+    // because this case is handled through `invalid_op` variable.
+    .disabled_i(fsm_at_disabled),
     .invalid_i(fsm_at_invalid),
     .kmac_input_invalid_i,
     .shadowed_update_err_i,
