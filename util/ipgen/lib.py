@@ -14,6 +14,22 @@ class TemplateParseError(Exception):
     pass
 
 
+class TemplateRenderError(Exception):
+
+    def __init__(self, message, template_vars: Any = None) -> None:
+        self.message = message
+        self.template_vars = template_vars
+
+    def verbose_str(self) -> str:
+        """ Get a verbose human-readable representation of the error. """
+
+        from pprint import PrettyPrinter
+        if self.template_vars is not None:
+            return (self.message + "\n" + "Template variables:\n" +
+                    PrettyPrinter().pformat(self.template_vars))
+        return self.message
+
+
 class TemplateParameter(BaseParam):
     """ A template parameter. """
     VALID_PARAM_TYPES = (
@@ -50,16 +66,14 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     r_type = rd.get('type')
     param_type = check_str(r_type, 'type field of ' + where)
     if param_type not in TemplateParameter.VALID_PARAM_TYPES:
-        raise ValueError('At {}, the {} param has an invalid type field {!r}. '
-                         'Allowed values are: {}.'.format(
-                             where, name, param_type,
-                             ', '.join(TemplateParameter.VALID_PARAM_TYPES)))
+        raise ValueError(f'At {where}, the {name} param has an invalid type '
+                         f'field {param_type!r}. Allowed values are: '
+                         f'{", ".join(TemplateParameter.VALID_PARAM_TYPES)}.')
 
     r_default = rd.get('default')
     if param_type == 'int':
         default = check_int(
-            r_default,
-            'default field of {}, (an integer parameter)'.format(name))
+            r_default, f'default field of {name}, (an integer parameter)')
     elif param_type == 'string':
         default = check_str(r_default, 'default field of ' + where)
     elif param_type == 'object':
@@ -81,11 +95,12 @@ class TemplateParams(Params):
         ret = cls()
         rl = check_list(raw, where)
         for idx, r_param in enumerate(rl):
-            entry_where = 'entry {} in {}'.format(idx + 1, where)
+            entry_where = f'entry {idx + 1} in {where}'
             param = _parse_template_parameter(entry_where, r_param)
             if param.name in ret:
-                raise ValueError('At {}, found a duplicate parameter with '
-                                 'name {}.'.format(entry_where, param.name))
+                raise ValueError(
+                    f'At {entry_where}, found a duplicate parameter with '
+                    f'name {param.name}.')
             ret.add(param)
         return ret
 
@@ -124,33 +139,31 @@ class IpTemplate:
         # Check if the directory structure matches expectations.
         if not template_path.is_dir():
             raise TemplateParseError(
-                "Template path {!r} is not a directory.".format(
-                    str(template_path)))
+                f"Template path {template_path!s} is not a directory.")
         if not (template_path / 'data').is_dir():
             raise TemplateParseError(
-                "Template path {!r} does not contain the required 'data' directory."
-                .format(str(template_path)))
+                f"Template path {template_path!s} does not contain 'data' "
+                "sub-directory.")
 
         # The template name equals the name of the template directory.
         template_name = template_path.stem
 
         # Find the template description file.
-        tpldesc_file = template_path / 'data/{}.tpldesc.hjson'.format(
-            template_name)
+        tpldesc_file = template_path / 'data' / f'{template_name}.tpldesc.hjson'
 
         # Read the template description from file.
         try:
             tpldesc_obj = hjson.load(open(tpldesc_file, 'r'), use_decimal=True)
         except (OSError, FileNotFoundError) as e:
             raise TemplateParseError(
-                "Unable to read template description file {!r}: {}".format(
-                    str(tpldesc_file), str(e)))
+                f"Unable to read template description file {tpldesc_file!s}: "
+                f"{e!s}")
 
         # Parse the template description file.
         where = 'template description file {!r}'.format(str(tpldesc_file))
         if 'template_param_list' not in tpldesc_obj:
             raise TemplateParseError(
-                f"Required key 'variables' not found in {where}")
+                f"Required key 'template_param_list' not found in {where}")
 
         try:
             params = TemplateParams.from_raw(
@@ -192,8 +205,8 @@ class IpConfig:
                                encoding='UTF-8')
             obj_checked = hjson.loads(json, use_decimal=True, encoding='UTF-8')
         except TypeError as e:
-            raise ValueError('{} cannot be serialized as Hjson: {}'.format(
-                what, str(e))) from None
+            raise ValueError(
+                f'{what} cannot be serialized as Hjson: {e!s}') from None
         return obj_checked
 
     @staticmethod
@@ -272,14 +285,17 @@ class IpConfig:
         obj['instance_name'] = self.instance_name
         obj['param_values'] = self.param_values
 
-        with open(file_path, 'w') as fp:
-            if header:
-                fp.write(header)
-            hjson.dump(obj,
-                       fp,
-                       ensure_ascii=False,
-                       use_decimal=True,
-                       for_json=True,
-                       encoding='UTF-8',
-                       indent=2)
-            fp.write("\n")
+        try:
+            with open(file_path, 'w') as fp:
+                if header:
+                    fp.write(header)
+                hjson.dump(obj,
+                           fp,
+                           ensure_ascii=False,
+                           use_decimal=True,
+                           for_json=True,
+                           encoding='UTF-8',
+                           indent=2)
+                fp.write("\n")
+        except OSError as e:
+            raise TemplateRenderError(f"Cannot write to {file_path!s}: {e!s}")
