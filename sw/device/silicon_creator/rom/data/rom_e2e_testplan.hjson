@@ -88,7 +88,7 @@
             - Verify that the chip does not reset in TEST and RMA.
             - For DEV, PROD, and PROD_END:
               - Verify that the chip resets when the `WATCHDOG_BITE_THRESHOLD_CYCLES` OTP item is
-               `0x00061a80` (2 s).
+               `0x00030d40` (1 s).
               - Verify that watchdog is disabled when `WATCHDOG_BITE_THRESHOLD_CYCLES` is `0`.
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]

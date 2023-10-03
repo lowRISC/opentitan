@@ -1945,7 +1945,7 @@ test_suite(
 )
 
 SHUTDOWN_WATCHDOG_BITE_THRESHOLDS = [
-    400000,  # 2 seconds at 200 kHz
+    200000,  # 1 seconds at 200 kHz
     0,  # Watchdog disabled
 ]
 
@@ -1953,7 +1953,8 @@ SHUTDOWN_WATCHDOG_CASES = [
     {
         "lc_state": lc_state[0],
         "lc_state_val": lc_state[1],
-        "exit_success": "Returning after 1 seconds",
+        # Make sure that the watchdog was not enabled so the count stayed 0.
+        "exit_success": "Returning after 2 seconds\r\n[^\r\n]*Watchdog count: 0",
         "bite_threshold": bite_threshold,
     }
     for lc_state in get_lc_items(
@@ -1965,7 +1966,7 @@ SHUTDOWN_WATCHDOG_CASES = [
     {
         "lc_state": lc_state[0],
         "lc_state_val": lc_state[1],
-        "exit_success": "Returning after 1 seconds" if bite_threshold == 0 else "I00000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
+        "exit_success": "Returning after 2 seconds\r\n[^\r\n]*Watchdog count: 0" if bite_threshold == 0 else "I00000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
         "bite_threshold": bite_threshold,
     }
     for lc_state in get_lc_items(
@@ -2050,10 +2051,12 @@ SHUTDOWN_WATCHDOG_CASES = [
             spx = None,
         )[0],
         local_defines = [
-            "HANG_SECS=1",
+            "HANG_SECS=2",
         ],
         targets = ["cw310_rom_with_fake_keys"],
         deps = [
+            "//sw/device/lib/base:memory",
+            "//sw/device/lib/dif:aon_timer",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
