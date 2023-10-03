@@ -69,10 +69,13 @@ module mbx_imbx #(
   assign sys_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
   // Rewind the write pointer to the base
-  assign load_write_ptr = mbx_empty | sys_clear_abort | (mbx_read & sys_read_all_i);
+  // Note: `mbx_empty` and `advance_write_ptr` can both be asserted if bus access is granted
+  // immediately on the initial word write of a message, and we must advance the write pointer.
+  assign load_write_ptr = (mbx_empty & ~advance_write_ptr) | sys_clear_abort |
+                          (mbx_read & sys_read_all_i);
 
-  // Advance the write pointer when the valid write command is granted by the tlul_adaptor_host
-  assign  advance_write_ptr = hostif_sram_write_req_o & hostif_sram_write_gnt_i;
+  // Advance the write pointer when the valid write command is granted by the tlul_adapter_host
+  assign advance_write_ptr = hostif_sram_write_req_o & hostif_sram_write_gnt_i;
 
   always_comb begin
     sram_write_ptr_d = sram_write_ptr_q;
