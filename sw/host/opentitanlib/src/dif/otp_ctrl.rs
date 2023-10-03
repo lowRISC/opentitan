@@ -114,6 +114,23 @@ pub struct Partition {
 
 impl Partition {
     // TODO: Take granularities from the `.hjson` instead of hardcoding.
+    pub const CREATOR_SW_CFG: Self = Self {
+        access_granule: Granularity::B32,
+        byte_addr: dif::OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+        digest: OtpParamMmap {
+            byte_addr: dif::OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET,
+            size: dif::OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
+        },
+    };
+
+    pub const OWNER_SW_CFG: Self = Self {
+        access_granule: Granularity::B32,
+        byte_addr: dif::OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+        digest: OtpParamMmap {
+            byte_addr: dif::OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET,
+            size: dif::OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
+        },
+    };
 
     pub const HW_CFG: Self = Self {
         access_granule: Granularity::B32,
