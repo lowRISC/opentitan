@@ -7,7 +7,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Union
 
 import reggen.gen_rtl
 from mako import exceptions as mako_exceptions  # type: ignore
@@ -15,7 +15,7 @@ from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 
-from .lib import IpConfig, IpTemplate, TemplateParameter
+from .lib import IpConfig, IpTemplate, TemplateParameter, TemplateRenderError
 
 _HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -23,22 +23,6 @@ _HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
 """)
 
 log = logging.getLogger(__name__)
-
-
-class TemplateRenderError(Exception):
-
-    def __init__(self, message, template_vars: Any = None) -> None:
-        self.message = message
-        self.template_vars = template_vars
-
-    def verbose_str(self) -> str:
-        """ Get a verbose human-readable representation of the error. """
-
-        from pprint import PrettyPrinter
-        if self.template_vars is not None:
-            return (self.message + "\n" + "Template variables:\n" +
-                    PrettyPrinter().pformat(self.template_vars))
-        return self.message
 
 
 class IpTemplateRendererBase:
@@ -59,7 +43,7 @@ class IpTemplateRendererBase:
 
         for name in self.ip_config.param_values:
             if name not in self.ip_template.params:
-                raise KeyError("No parameter named {!r} exists.".format(name))
+                raise KeyError(f"No parameter named {name!r} exists.")
 
     def get_template_parameter_values(
             self) -> Dict[str, Union[str, int, object]]:
@@ -87,9 +71,8 @@ class IpTemplateRendererBase:
                     val_typed = val
             except (ValueError, TypeError):
                 raise TemplateRenderError(
-                    "For parameter {} cannot convert value {!r} "
-                    "to {}.".format(name, val,
-                                    template_param.param_type)) from None
+                    f"For parameter {name} cannot convert value {val!r} "
+                    f"to {template_param.param_type}.") from None
 
             ret[name] = val_typed
 
@@ -180,8 +163,13 @@ class IpTemplateRendererBase:
 
         outfile_name = self._filename_without_tpl_suffix(template_filepath)
 
-        with open(outdir_path / outfile_name, 'w') as f:
-            f.write(self._render_mako_template_to_str(template_filepath))
+        rendered_str = self._render_mako_template_to_str(template_filepath)
+        try:
+            with open(outdir_path / outfile_name, 'w') as f:
+                f.write(rendered_str)
+        except OSError as e:
+            raise TemplateRenderError(
+                f'Cannot write to {outdir_path / outfile_name!s}: {e!s}')
 
     def _filename_without_tpl_suffix(self, filepath: Path) -> str:
         """ Get the name of the file without a '.tpl' suffix. """
@@ -217,9 +205,8 @@ class IpDescriptionOnlyRenderer(IpTemplateRendererBase):
                 return f.read()
         except FileNotFoundError:
             raise TemplateRenderError(
-                "Neither a IP description template at {}, "
-                "nor an IP description at {} exist!".format(
-                    hjson_tpl_path, hjson_path))
+                f"Neither a IP description template at {hjson_tpl_path}, "
+                f"nor an IP description at {hjson_path} exist!")
 
 
 class IpBlockRenderer(IpTemplateRendererBase):
@@ -249,8 +236,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
         output_dir_staging = output_dir.parent / f".~{output_dir.stem}.staging"
         if output_dir_staging.is_dir():
             raise TemplateRenderError(
-                "Output staging directory '{}' already exists. Remove it and "
-                "try again.".format(output_dir_staging))
+                f"Output staging directory '{output_dir_staging}' already "
+                "exists. Remove it and try again.")
 
         template_path = self.ip_template.template_path
 
@@ -278,8 +265,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
             if "module_instance_name" in self.ip_config.param_values:
                 hjson_path = (
                     output_dir_staging / 'data' /
-                    (self.ip_config.param_values["module_instance_name"] +
-                     '.hjson'))
+                    self.ip_config.param_values["module_instance_name"] +
+                    '.hjson')
             if not hjson_path.exists():
                 raise TemplateRenderError(
                     "Invalid template: The IP description file "
@@ -304,8 +291,8 @@ class IpBlockRenderer(IpTemplateRendererBase):
             # TODO: Should the ipconfig file be written to the instance name,
             # or the template name?
             self.ip_config.to_file(
-                output_dir_staging /
-                'data/{}.ipconfig.hjson'.format(self.ip_config.instance_name),
+                output_dir_staging / 'data' /
+                f'{self.ip_config.instance_name}.ipconfig.hjson',
                 header=_HJSON_LICENSE_HEADER)
 
             # Safely overwrite the existing directory if necessary:
@@ -337,6 +324,10 @@ class IpBlockRenderer(IpTemplateRendererBase):
                         'Please remove it manually.')
                     raise TemplateRenderError(msg).with_traceback(
                         e.__traceback__)
+
+        except TemplateRenderError as e:
+            log.error(f'{e!s}')
+            raise
 
         finally:
             # Ensure that the staging directory is removed at the end. Ignore
