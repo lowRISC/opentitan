@@ -467,7 +467,7 @@ otp_image(
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
     src = "//hw/bitstream:rom_with_fake_keys",
-    data = "otp_img_otp_ctrl_functest",
+    data = ":otp_img_otp_ctrl_functest",
     meminfo = "//hw/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
