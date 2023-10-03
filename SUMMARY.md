@@ -398,6 +398,7 @@
 - [Build Software](./sw/doc/build_software.md)
 
 - [Device Software](./sw/device/README.md)
+  - [Build & Test Rules](./rules/opentitan/README.md)
   - [Device Libraries](./sw/device/lib/README.md)
     - [DIF Library](./sw/device/lib/dif/README.md)
       - [ADC Checklist](sw/device/lib/dif/dif_adc_ctrl.md)
