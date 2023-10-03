@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use bitflags::bitflags;
+use std::collections::HashSet;
 
 use bindgen::dif;
+use bitflags::bitflags;
+use once_cell::sync::Lazy;
+
+use crate::collection;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(u32)]
@@ -98,6 +102,7 @@ bitflags! {
     }
 }
 
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub struct Partition {
     /// Granularity of accesses at this address.
     pub access_granule: Granularity,
@@ -169,8 +174,17 @@ impl Partition {
     };
 }
 
+/// Set of partitions that are secret.
+///
+/// A secret partition is scrambled and not readable after it is locked.
+pub static SECRET_PARTITIONS: Lazy<HashSet<Partition>> = Lazy::new(|| {
+    collection! {
+        Partition::SECRET0, Partition::SECRET1, Partition::SECRET2,
+    }
+});
+
 /// Granularities of memory accesses.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Granularity {
     /// 32-bit.
     B32,
@@ -179,7 +193,7 @@ pub enum Granularity {
 }
 
 /// Represents an OTP parameter's mapping in the "direct access memory".
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OtpParamMmap {
     /// Byte address of this OTP parameter.
     pub byte_addr: u32,
@@ -190,7 +204,7 @@ pub struct OtpParamMmap {
 
 /// Parameters accessible via Direct Access Interface (DAI).
 ///
-/// The `CREATOR_SW_CFG` and `OWNER_SW_CFG` partitions are omitted for brevity.
+/// Some fields in the `CREATOR_SW_CFG` and `OWNER_SW_CFG` partitions are omitted for brevity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DaiParam {
     // CREATOR_SW_CFG

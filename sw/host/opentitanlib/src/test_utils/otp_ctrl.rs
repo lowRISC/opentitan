@@ -18,6 +18,7 @@ use top_earlgrey::top_earlgrey;
 
 use crate::dif::otp_ctrl::{
     DaiParam, DirectAccessCmd, Granularity, OtpCtrlReg, OtpCtrlStatus, OtpParamMmap, Partition,
+    SECRET_PARTITIONS,
 };
 use crate::io::jtag::Jtag;
 use crate::test_utils::poll;
@@ -65,6 +66,19 @@ impl OtpParam {
     /// Write a value from a buffer to an OTP parameter.
     pub fn write_param(jtag: &dyn Jtag, param: DaiParam, data: &[u32]) -> OtpDaiResult<()> {
         let OtpParamMmap { byte_addr, size } = param.mmap();
+
+        // Check if the word has been written already.
+        // Note: we can only check non-secret partitions, since secret partitions are scrambled,
+        // when they are backdoor loaded with 0s they will be garbage when read out.
+        if !SECRET_PARTITIONS.contains(&param.partition()) {
+            let mut curr_value = [0u32].repeat((size / 4).try_into().unwrap());
+            Self::read_param(jtag, param, curr_value.as_mut_slice())?;
+            for word in curr_value.iter() {
+                if *word != 0u32 {
+                    return Err(OtpDaiError::WriteErrorAlreadyWritten { value: *word });
+                }
+            }
+        }
 
         if mem::size_of_val(data) > size as usize {
             let err = OtpDaiError::BufSize {
@@ -262,4 +276,9 @@ pub enum OtpDaiError {
 
     #[error("writing to otp_ctrl direct access registers is disabled")]
     WriteDisabled,
+
+    #[error(
+        "writing to OTP failed since field has already been written (with value: 0x{value:08X})"
+    )]
+    WriteErrorAlreadyWritten { value: u32 },
 }
