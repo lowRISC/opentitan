@@ -150,6 +150,7 @@
         desc: "Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration."
         swaccess: "rw"
         hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "range_valid"
             desc: "Once set the mailbox inbound/outbound base/limit registers are valid."

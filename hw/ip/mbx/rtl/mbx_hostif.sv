@@ -39,6 +39,7 @@ module mbx_hostif
   input  logic [CfgSramAddrWidth-1:0]   hostif_imbx_write_ptr_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_ombx_read_ptr_i,
   // Base/Limit for in/outbound mailbox
+  output logic                          hostif_address_range_valid_write_o,
   output logic                          hostif_address_range_valid_o,
   output logic [CfgSramAddrWidth-1:0]   hostif_imbx_base_o,
   output logic [CfgSramAddrWidth-1:0]   hostif_imbx_limit_o,
@@ -169,7 +170,8 @@ module mbx_hostif
   assign hw2reg.status.sys_intr_state.d  = hostif_status_sys_intr_state_i;
 
   // Address config valid
-  assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;
+  assign hostif_address_range_valid_write_o = reg2hw.address_range_valid.qe;
+  assign hostif_address_range_valid_o       = reg2hw.address_range_valid.q;
 
   // Inbound Mailbox Base/Limit Register
   assign  hostif_imbx_base_o  = { reg2hw.inbound_base_address.q, {2{1'b0}} };

@@ -477,6 +477,17 @@ module mbx_core_reg_top (
 
 
   // R[address_range_valid]: V(False)
+  logic address_range_valid_qe;
+  logic [0:0] address_range_valid_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_address_range_valid0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&address_range_valid_flds_we),
+    .q_o(address_range_valid_qe)
+  );
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -495,13 +506,14 @@ module mbx_core_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (address_range_valid_flds_we[0]),
     .q      (reg2hw.address_range_valid.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (address_range_valid_qs)
   );
+  assign reg2hw.address_range_valid.qe = address_range_valid_qe;
 
 
   // R[inbound_base_address]: V(False)
