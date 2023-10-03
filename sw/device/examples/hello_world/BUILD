@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:exclude_files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
@@ -30,7 +29,6 @@ opentitan_binary(
 
 cc_library(
     name = "hello_world_lib",
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
