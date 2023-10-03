@@ -63,7 +63,8 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     elif param_type == 'string':
         default = check_str(r_default, 'default field of ' + where)
     elif param_type == 'object':
-        default = IpConfig._check_object(r_default, 'default field of ' + where)
+        default = IpConfig._check_object(r_default,
+                                         'default field of ' + where)
     else:
         assert False, f"Unknown parameter type found: {param_type!r}"
 
@@ -71,7 +72,8 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
 
 
 class TemplateParams(Params):
-    """ A group of template parameters. """
+    """ A group of template parameters."""
+
     @classmethod
     def from_raw(cls, where: str, raw: object) -> 'TemplateParams':
         """ Produce a TemplateParams instance from an object as it is in Hjson.
@@ -161,6 +163,7 @@ class IpTemplate:
 
 
 class IpConfig:
+
     def __init__(self,
                  template_params: TemplateParams,
                  instance_name: str,
@@ -187,12 +190,10 @@ class IpConfig:
                                use_decimal=True,
                                for_json=True,
                                encoding='UTF-8')
-            obj_checked = hjson.loads(json,
-                                      use_decimal=True,
-                                      encoding='UTF-8')
+            obj_checked = hjson.loads(json, use_decimal=True, encoding='UTF-8')
         except TypeError as e:
-            raise ValueError('{} cannot be serialized as Hjson: {}'
-                             .format(what, str(e))) from None
+            raise ValueError('{} cannot be serialized as Hjson: {}'.format(
+                what, str(e))) from None
         return obj_checked
 
     @staticmethod
@@ -260,7 +261,8 @@ class IpConfig:
         return cls(template_params, instance_name, param_values)
 
     @classmethod
-    def from_text(cls, template_params: TemplateParams, txt: str, where: str) -> 'IpConfig':
+    def from_text(cls, template_params: TemplateParams, txt: str,
+                  where: str) -> 'IpConfig':
         """Load an IpConfig from an Hjson description in txt"""
         raw = hjson.loads(txt, use_decimal=True, encoding="UTF-8")
         return cls.from_raw(template_params, raw, where)
