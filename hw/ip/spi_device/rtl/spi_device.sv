@@ -1847,6 +1847,7 @@ module spi_device
     .SramAw      (SramAw),
     .SramDw      (SramDw),
     .Outstanding (1),
+    .ErrOnRead   (1), // write-only memory window
     .ByteAccess  (0)
   ) u_tlul2sram_egress (
     .clk_i,
@@ -1872,6 +1873,7 @@ module spi_device
     .SramAw      (SramAw),
     .SramDw      (SramDw),
     .Outstanding (1),
+    .ErrOnWrite  (1), // read-only memory window
     .ByteAccess  (0)
   ) u_tlul2sram_ingress (
     .clk_i,
