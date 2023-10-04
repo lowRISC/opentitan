@@ -118,7 +118,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         // requests between reseeds to 1 (to maximize coverage over time).
         super.edn_init();
         cfg.clk_rst_vif.wait_clks(1);
-        instantiate_csrng();
+        instantiate_csrng(.mode("auto_mode"));
         csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
       ,
         // Exit thread: Wait for a signal from the thread that randomly disables EDN.

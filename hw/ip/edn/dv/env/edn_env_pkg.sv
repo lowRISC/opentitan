@@ -36,8 +36,17 @@ package edn_env_pkg;
 
   typedef enum int {
     AutoReqMode = 1,
-    BootReqMode = 2
+    BootReqMode = 2,
+    SwMode      = 3
   } hw_req_mode_e;
+
+  typedef enum int {
+    BootIns = 1,
+    BootGen = 2,
+    AutoGen = 3,
+    AutoRes = 4,
+    Sw      = 5
+  } cmd_type_e;
 
   typedef enum int {
     invalid_edn_enable    = 0,

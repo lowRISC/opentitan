@@ -17,10 +17,12 @@ class edn_intr_vseq extends edn_base_vseq;
 
   task test_edn_cmd_req_done();
     // Send INS cmd
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
+    wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False),
+           .glen(0), .mode(edn_env_pkg::SwMode));
 
     // Send GEN cmd w/ GLEN 1 (request single genbits)
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+    wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False),
+           .glen(1), .mode(edn_env_pkg::SwMode));
 
     // Load expected genbits data
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
