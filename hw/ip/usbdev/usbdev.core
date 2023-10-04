@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:tlul:socket_1n
       - lowrisc:prim:edge_detector
-      - lowrisc:prim:ram_2p_adv
+      - lowrisc:prim:ram_1p_adv
       - lowrisc:ip:usb_fs_nb_pe
       - lowrisc:ip:usbdev_pkg
     files:

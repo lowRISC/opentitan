@@ -854,10 +854,10 @@
           act:     "rcv"
         },
 
-        { struct:  "ram_2p_cfg",
-          package: "prim_ram_2p_pkg",
+        { struct:  "ram_1p_cfg",
+          package: "prim_ram_1p_pkg",
           type:    "uni",
-          name:    "usb_ram_2p_cfg",
+          name:    "usb_ram_1p_cfg",
           // The activity direction for a port inter-signal is "opposite" of
           // what the external module actually needs.
           act:     "rcv"
@@ -899,7 +899,7 @@
                                    'sram_ctrl_ret_aon.cfg',
                                    'rv_core_ibex.ram_cfg'],
       'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
-      'ast.usb_ram_2p_cfg'      : ['usbdev.ram_cfg'],
+      'ast.usb_ram_1p_cfg'      : ['usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
@@ -1103,7 +1103,7 @@
         'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
-        'ast.usb_ram_2p_cfg'              : 'usb_ram_2p_cfg',
+        'ast.usb_ram_1p_cfg'              : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',

@@ -510,10 +510,10 @@
           act:     "rcv"
         },
 
-        { struct:  "ram_2p_cfg",
-          package: "prim_ram_2p_pkg",
+        { struct:  "ram_1p_cfg",
+          package: "prim_ram_1p_pkg",
           type:    "uni",
-          name:    "usb_ram_2p_cfg",
+          name:    "usb_ram_1p_cfg",
           // The activity direction for a port inter-signal is "opposite" of
           // what the external module actually needs.
           act:     "rcv"
@@ -623,7 +623,7 @@
         'ast.lc_dft_en'                : '',
         'ast.ram_1p_cfg'               : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'           : 'spi_ram_2p_cfg',
-        'ast.usb_ram_2p_cfg'           : 'usb_ram_2p_cfg',
+        'ast.usb_ram_1p_cfg'           : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                  : 'rom_cfg',
         'clkmgr_aon.jitter_en'         : 'clk_main_jitter_en',
         'clkmgr_aon.hi_speed_sel'      : 'hi_speed_sel',

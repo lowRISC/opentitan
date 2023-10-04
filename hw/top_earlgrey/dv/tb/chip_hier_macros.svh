@@ -60,4 +60,4 @@
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
-`define USBDEV_BUF_HIER       `USBDEV_HIER.gen_no_stubbed_memory.u_memory_2p.i_prim_ram_2p_async_adv.u_mem.`MEM_ARRAY_SUB
+`define USBDEV_BUF_HIER       `USBDEV_HIER.gen_no_stubbed_memory.u_memory_1p.u_mem.`MEM_ARRAY_SUB

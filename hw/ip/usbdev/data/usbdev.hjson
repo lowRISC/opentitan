@@ -145,8 +145,8 @@
       struct:  "logic",
       width:   "1"
     },
-    { struct:  "ram_2p_cfg",
-      package: "prim_ram_2p_pkg",
+    { struct:  "ram_1p_cfg",
+      package: "prim_ram_1p_pkg",
       type:    "uni",
       name:    "ram_cfg",
       act:     "rcv"

@@ -2607,14 +2607,14 @@
         }
         {
           name: ram_cfg
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: usbdev
           default: ""
-          top_signame: ast_usb_ram_2p_cfg
+          top_signame: ast_usb_ram_1p_cfg
           index: -1
         }
         {
@@ -7994,17 +7994,17 @@
           conn_type: true
         }
         {
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
           type: uni
-          name: usb_ram_2p_cfg
+          name: usb_ram_1p_cfg
           act: rcv
           inst_name: ast
           width: 1
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: ast_usb_ram_2p_cfg
+          top_signame: ast_usb_ram_1p_cfg
           index: -1
           external: true
           conn_type: true
@@ -8064,7 +8064,7 @@
       [
         spi_device.ram_cfg
       ]
-      ast.usb_ram_2p_cfg:
+      ast.usb_ram_1p_cfg:
       [
         usbdev.ram_cfg
       ]
@@ -8651,7 +8651,7 @@
       ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
       ast.spi_ram_2p_cfg: spi_ram_2p_cfg
-      ast.usb_ram_2p_cfg: usb_ram_2p_cfg
+      ast.usb_ram_1p_cfg: usb_ram_1p_cfg
       ast.rom_cfg: rom_cfg
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.io_clk_byp_req: io_clk_byp_req
@@ -16645,14 +16645,14 @@
       }
       {
         name: ram_cfg
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: usbdev
         default: ""
-        top_signame: ast_usb_ram_2p_cfg
+        top_signame: ast_usb_ram_1p_cfg
         index: -1
       }
       {
@@ -20344,17 +20344,17 @@
         conn_type: true
       }
       {
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
         type: uni
-        name: usb_ram_2p_cfg
+        name: usb_ram_1p_cfg
         act: rcv
         inst_name: ast
         width: 1
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: ast_usb_ram_2p_cfg
+        top_signame: ast_usb_ram_1p_cfg
         index: -1
         external: true
         conn_type: true
@@ -20491,16 +20491,16 @@
         netname: ast_spi_ram_2p_cfg
       }
       {
-        package: prim_ram_2p_pkg
-        struct: ram_2p_cfg
-        signame: usb_ram_2p_cfg_i
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: usb_ram_1p_cfg_i
         width: 1
         type: uni
         default: ""
         direction: in
         conn_type: true
         index: -1
-        netname: ast_usb_ram_2p_cfg
+        netname: ast_usb_ram_1p_cfg
       }
       {
         package: prim_rom_pkg
@@ -21079,15 +21079,15 @@
         default: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
       }
       {
-        package: prim_ram_2p_pkg
-        struct: ram_2p_cfg
-        signame: ast_usb_ram_2p_cfg
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: ast_usb_ram_1p_cfg
         width: 1
         type: uni
         end_idx: -1
         act: rcv
         suffix: ""
-        default: prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT
+        default: prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT
       }
       {
         package: prim_rom_pkg

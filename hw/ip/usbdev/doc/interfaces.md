@@ -33,7 +33,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | usb_aon_bus_reset          | logic                       | uni     | rcv   |       1 |                                                                                                    |
 | usb_aon_sense_lost         | logic                       | uni     | rcv   |       1 |                                                                                                    |
 | usb_aon_wake_detect_active | logic                       | uni     | rcv   |       1 |                                                                                                    |
-| ram_cfg                    | prim_ram_2p_pkg::ram_2p_cfg | uni     | rcv   |       1 |                                                                                                    |
+| ram_cfg                    | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |                                                                                                    |
 | tl                         | tlul_pkg::tl                | req_rsp | rsp   |       1 |                                                                                                    |
 
 ## Interrupts
