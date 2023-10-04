@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:ip:pwrmgr
+      - lowrisc:ip:pwrmgr_pkg
       - lowrisc:dv:clkmgr_pwrmgr_sva_if
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
     files:
@@ -27,7 +27,7 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../../../top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson
+      spec: ../../data/pwrmgr.hjson
 
 targets:
   default: &default_target

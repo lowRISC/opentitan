@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:pwrmgr_pkg
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}
@@ -43,7 +44,7 @@ generate:
     generator: ralgen
     parameters:
       name: pwrmgr
-      ip_hjson: ../../../../top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson
+      ip_hjson: ../../data/pwrmgr.hjson
 
 targets:
   default:

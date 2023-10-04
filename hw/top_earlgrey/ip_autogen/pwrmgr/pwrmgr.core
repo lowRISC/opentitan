@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:pwrmgr:0.1"
-description: "Power manager component without the generated portions"
+description: "Power manager RTL"
 
 filesets:
   files_rtl:
@@ -15,18 +15,19 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:pwrmgr_pkg
       - lowrisc:prim:sparse_fsm
       - lowrisc:prim:mubi
       - lowrisc:prim:clock_buf
       - lowrisc:prim:measure
       - lowrisc:ip_interfaces:alert_handler_reg
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip:pwrmgr_reg
     files:
-      - rtl/pwrmgr.sv
       - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv
       - rtl/pwrmgr_fsm.sv
       - rtl/pwrmgr_wake_info.sv
+      - rtl/pwrmgr.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
