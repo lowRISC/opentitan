@@ -27,3 +27,5 @@ SoC Proxy is a simple comportable IP module that facilitates the breakout of sig
 - Asynchronous interfaces:
   - 1 Wakeup request, asynchronous and level-encoded
   - 32 Interrupts, asynchronous and level-encoded
+  - 16 general-purpose inputs
+  - 16 general-purpose outputs
