@@ -784,7 +784,7 @@ module dma
         // and does not start the DMA transfer
         if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
             (reg2hw.total_data_size.q == '0) ||         // No empty transactions
-            (reg2hw.transfer_width.q == 2'b10))  begin  // No 3-byte transfer width
+            (reg2hw.transfer_width.q == 2'b11))  begin  // Invalid transfer_width
           bad_size = 1'b1;
         end
 
@@ -794,7 +794,7 @@ module dma
 
         // Inline hashing is only allowed for 32-bit transfer width
         if (use_inline_hashing) begin
-          if (reg2hw.transfer_width.q != 2'b11) begin
+          if (reg2hw.transfer_width.q != 2'b10) begin
             bad_size = 1'b1;
           end
         end

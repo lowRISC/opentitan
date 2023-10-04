@@ -898,7 +898,7 @@ module dma_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h3),
+    .RESVAL  (2'h2),
     .Mubi    (1'b0)
   ) u_transfer_width (
     .clk_i   (clk_i),
