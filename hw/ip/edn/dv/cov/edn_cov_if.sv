@@ -63,15 +63,18 @@ interface edn_cov_if (
     }
   endgroup : edn_endpoints_cg
 
-  covergroup edn_cs_cmds_cg with function sample(csrng_pkg::acmd_e acmd,
-                                                 bit[3:0]  clen,
-                                                 bit[3:0]  flags,
-                                                 bit[18:0] glen
+  covergroup edn_cs_cmds_cg with function sample(bit[3:0]                   clen,
+                                                 bit[3:0]                   flags,
+                                                 bit[18:0]                  glen,
+                                                 csrng_pkg::acmd_e          acmd,
+                                                 edn_env_pkg::cmd_type_e    cmd_src,
+                                                 edn_env_pkg::hw_req_mode_e mode
                                                 );
     option.name         = "edn_cs_cmds_cg";
     option.per_instance = 1;
 
     cp_acmd: coverpoint acmd {
+      // ignore unused/invalid commands
       ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV };
     }
 
@@ -91,23 +94,126 @@ interface edn_cov_if (
       ignore_bins zero = { 0 };
     }
 
-    // for generate cmds, clen & glen matter
-    cr_acmd_clen_glen: cross cp_acmd, cp_clen, cp_glen {
-      ignore_bins glen_not_used_cross = ! binsof(cp_acmd) intersect { csrng_pkg::GEN };
+    cp_mode: coverpoint mode {
+      bins auto_mode = { edn_env_pkg::AutoReqMode };
+      bins boot_mode = { edn_env_pkg::BootReqMode };
+      bins sw_mode   = { edn_env_pkg::SwMode };
     }
 
-    // for instantiate and reseed cmds, clen & flag0 matter
-    cr_acmd_clen_flags: cross cp_acmd, cp_clen, cp_flags {
-      ignore_bins flag0_not_used_cross =
-          ! binsof(cp_acmd) intersect { csrng_pkg::INS, csrng_pkg::RES };
+    cp_cmd_src: coverpoint cmd_src {
+      bins boot_ins_cmd = { edn_env_pkg::BootIns };
+      bins boot_gen_cmd = { edn_env_pkg::BootGen };
+      bins generate_cmd = { edn_env_pkg::AutoGen };
+      bins reseed_cmd   = { edn_env_pkg::AutoRes };
+      bins sw_cmd_req   = { edn_env_pkg::Sw };
     }
 
-    // for update cmds, only clen matters
-    cr_acmd_clen: cross cp_acmd, cp_clen {
-      ignore_bins non_upd_cross = ! binsof(cp_acmd) intersect { csrng_pkg::UPD };
+    // We want to see generate commands with every type of cp clen and glen
+    // in every intended mode and register
+    cr_generate_intended: cross cp_acmd, cp_clen, cp_glen, cp_mode, cp_cmd_src {
+      // Ignore non generate commands
+      ignore_bins not_gen = ! binsof(cp_acmd) intersect { csrng_pkg::GEN };
+      // Generate commands in auto mode that aren't from the generate register aren't intended
+      ignore_bins gen_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::AutoGen };
+      // Generate commands in boot mode that aren't from the bootgen or sw register aren't intended
+      ignore_bins gen_boot_wrong_src =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          ! binsof(cp_cmd_src) intersect { edn_env_pkg::BootGen, edn_env_pkg::Sw };
+      // Generate commands in boot mode that have a clen > 0 aren't intended
+      ignore_bins gen_boot_seq_wrong_clen =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          binsof(cp_cmd_src) intersect { edn_env_pkg::BootGen } &&
+          ! binsof(cp_clen) intersect { 0 };
+      // Generate commands in boot mode that have a glen of multiple words aren't intended
+      ignore_bins gen_boot_seq_wrong_glen =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          binsof(cp_cmd_src) intersect { edn_env_pkg::BootGen } &&
+          ! binsof(cp_glen) intersect { [2:$] };
+      // Generate commands in sw mode that aren't from the sw register aren't intended
+      ignore_bins gen_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
+                                     ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
     }
 
-    // for uninstantiate cmds, nothing else matters
+    // We want to see instantiate commands with every type of cp clen and flag0
+    // in every intended mode and register
+    cr_instantiate_intended: cross cp_acmd, cp_clen, cp_flags, cp_mode, cp_cmd_src {
+      // Ignore non instantiate commands
+      ignore_bins not_ins = ! binsof(cp_acmd) intersect { csrng_pkg::INS };
+      // Instantiate commands in auto mode that aren't from the Sw register aren't intended
+      ignore_bins ins_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Instantiate commands in boot mode that aren't from the BootIns register aren't intended
+      ignore_bins ins_boot_wrong_src =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw, edn_env_pkg::BootIns };
+      // Instantiate commands in boot mode that have a clen > 0 aren't intended
+      ignore_bins ins_boot_seq_wrong_clen =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          binsof(cp_cmd_src) intersect { edn_env_pkg::BootIns } &&
+          ! binsof(cp_clen) intersect { 0 };
+      // Instantiate commands in boot mode that have a flag0 = MuBi4True aren't intended
+      ignore_bins ins_boot_seq_wrong_flag0 =
+          binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+          binsof(cp_cmd_src) intersect { edn_env_pkg::BootIns } &&
+          ! binsof(cp_flags) intersect { MuBi4False };
+      // Instantiate commands in sw mode that aren't from the sw register aren't intended
+      ignore_bins ins_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
+                                     ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+    }
+
+    // We want to see reseed commands with every type of cp clen and flag0
+    // in every intended mode and register
+    cr_reseed_intended: cross cp_acmd, cp_clen, cp_flags, cp_mode, cp_cmd_src {
+      // Ignore non reseed commands
+      ignore_bins not_res = ! binsof(cp_acmd) intersect { csrng_pkg::RES };
+      // Reseed commands in auto mode that aren't from the autoRes register aren't intended
+      ignore_bins res_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::AutoRes };
+      // Reseed commands in boot mode that aren't from the sw register aren't intended
+      ignore_bins res_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Reseed commands in sw mode that aren't from the sw register aren't intended
+      ignore_bins res_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
+                                     ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+    }
+
+    // We want to see update commands with every type of cp clen
+    // in every intended mode and register
+    cr_update_intended: cross cp_acmd, cp_clen, cp_mode, cp_cmd_src {
+      // Ignore non update commands
+      ignore_bins not_upd = ! binsof(cp_acmd) intersect { csrng_pkg::UPD };
+      // Update commands in auto mode aren't intended
+      ignore_bins upd_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode };
+      // Update commands in boot mode that aren't from the sw register aren't intended
+      ignore_bins upd_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Update commands in sw mode that aren't from the sw register aren't intended
+      ignore_bins upd_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
+                                     ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+    }
+
+    // We want to see uninstantiate commands in every intended mode and register
+    cr_uninstantiate_intended: cross cp_acmd, cp_mode, cp_cmd_src {
+      // Ignore non uninstantiate commands
+      ignore_bins not_uni = ! binsof(cp_acmd) intersect { csrng_pkg::UNI };
+      // Uninstantiate commands in auto mode aren't intended
+      ignore_bins uni_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode };
+      // Uninstantiate commands in boot mode that aren't from the sw register aren't intended
+      ignore_bins uni_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
+                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Uninstantiate commands in sw mode that aren't from the sw register aren't intended
+      ignore_bins uni_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
+                                     ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+    }
+
+    // We want to see some unintended commands in every mode
+    cr_acmd_mode_cmd_src_unintended: cross cp_acmd, cp_mode, cp_cmd_src {
+      // Sw commands in auto mode aren't intended
+      // Except for the initial instantiate at the start of auto mode
+      ignore_bins not_sw_cmd = ! binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode };
+      ignore_bins not_auto_mode = ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+    }
   endgroup : edn_cs_cmds_cg
 
   covergroup edn_error_cg with function sample(err_code_test_e err_test);
@@ -138,8 +244,10 @@ interface edn_cov_if (
                            cfg.auto_req_mode);
   endfunction
 
-  function automatic void cg_cs_cmds_sample(csrng_pkg::acmd_e acmd, bit[3:0] clen, bit[3:0] flags, bit[18:0] glen);
-    edn_cs_cmds_cg_inst.sample(acmd, clen, flags, glen);
+  function automatic void cg_cs_cmds_sample(csrng_pkg::acmd_e acmd, bit[3:0] clen, bit[3:0] flags,
+                                            bit[18:0] glen, edn_env_pkg::hw_req_mode_e mode,
+                                            edn_env_pkg::cmd_type_e cmd_src);
+    edn_cs_cmds_cg_inst.sample(clen, flags, glen, acmd, cmd_src, mode);
   endfunction
 
   function automatic void cg_error_sample(bit[31:0] err_code);
