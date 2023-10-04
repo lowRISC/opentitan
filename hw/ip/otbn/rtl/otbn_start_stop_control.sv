@@ -193,8 +193,8 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateHalt: begin
-        // Continue to reset state when halted. This is done to ease timing, so the state_reset_o
-        // output is an early signal (just based on the state_q flop here).
+        // Keep start_reset_o asserted whilst in this state. We want to keep this signal early so do
+        // not want to factor further logic into it.
         state_reset_o = 1'b1;
 
         if (stop && !rma_request) begin
