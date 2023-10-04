@@ -3694,7 +3694,7 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
