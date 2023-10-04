@@ -13,6 +13,7 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",
         "//sw/host/provisioning/ujson_lib",
+        "//sw/host/provisioning/util_lib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",

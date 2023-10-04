@@ -8,12 +8,13 @@ use anyhow::Result;
 use clap::Parser;
 
 use cp_lib::{
-    hex_string_to_u32_arrayvec, reset_and_lock, run_sram_cp_provision, unlock_raw,
-    ManufCpProvisioningActions, ManufCpProvisioningDataInput,
+    reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningActions,
+    ManufCpProvisioningDataInput,
 };
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
+use util_lib::hex_string_to_u32_arrayvec;
 
 #[derive(Debug, Parser)]
 struct Opts {

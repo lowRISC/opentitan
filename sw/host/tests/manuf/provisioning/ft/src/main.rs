@@ -7,10 +7,10 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::{Args, Parser};
 
-use cp_lib::hex_string_to_u32_arrayvec;
 use ft_lib::{run_sram_ft_provision, test_unlock};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use util_lib::hex_string_to_u32_arrayvec;
 
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
