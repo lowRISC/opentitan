@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:exclude_files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 

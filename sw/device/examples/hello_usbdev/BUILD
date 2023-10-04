@@ -2,10 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
+load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "hello_usbdev",
+    testonly = True,
     srcs = [
         "hello_usbdev.c",
     ],
@@ -14,6 +16,11 @@ opentitan_flash_binary(
         "-ffreestanding",
         # Disable the date-time warning only for the hello world program.
         "-Wno-date-time",
+    ],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv",
+        "//hw/top_earlgrey:sim_verilator",
     ],
     deps = [
         ":hello_usbdev_lib",
