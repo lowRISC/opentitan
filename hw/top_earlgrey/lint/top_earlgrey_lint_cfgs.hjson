@@ -177,7 +177,7 @@
              {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  rel_path: "hw/ip/pwrmgr/lint/{tool}",
+                  rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/lint/{tool}",
                   overrides: [
                     {
                       name: design_level

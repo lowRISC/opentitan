@@ -133,7 +133,7 @@
              {    name: pwrmgr
                   fusesoc_core: lowrisc:dv:pwrmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pwrmgr/dv/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/dv/lint/{tool}"
              },
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:dv:rom_ctrl_sim
