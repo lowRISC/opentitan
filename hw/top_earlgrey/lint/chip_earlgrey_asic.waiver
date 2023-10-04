@@ -44,6 +44,10 @@ waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
+      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_i' at prim_generic_flop} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
       -comment "This is a valid clock signal."
 
