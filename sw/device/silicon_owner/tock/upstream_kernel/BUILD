@@ -35,6 +35,7 @@ rust_binary(
     srcs = [
         "@tock//boards/opentitan/earlgrey-cw310:kernel_srcs",
     ],
+    crate_features = ["fpga_cw310"],
     rustc_flags = [
         "-g",
         # TODO(opentitan#19491): determine the appropriate set of linker flags.
