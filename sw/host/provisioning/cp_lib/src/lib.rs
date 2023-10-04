@@ -43,7 +43,7 @@ pub struct ManufCpProvisioningDataInput {
     )]
     pub manuf_state: String,
 
-    /// Wafer Authentication Secrete to provision.
+    /// Wafer Authentication Secret to provision.
     #[arg(
         long,
         default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
@@ -243,8 +243,6 @@ pub fn run_sram_cp_provision(
         Status::recv(&*uart, timeout, false)?;
     }
 
-    // Once the SRAM program has sent a response, we can continue with an LC transition to
-    // mission mode, initiated on the host side.
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
 
