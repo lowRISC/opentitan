@@ -159,7 +159,8 @@ class edn_base_vseq extends cip_base_vseq #(
                       edn_env_pkg::hw_req_mode_e mode);
 
     if (!additional_data) begin
-      cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags), .glen(glen));
+      cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags),
+                          .glen(glen), .mode(mode), .cmd_src(cmd_type));
     end
 
     case (cmd_type)
