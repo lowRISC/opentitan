@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-1a111a3e748815117b0ef939ab730b31d77a409d",
-        url = "https://github.com/tock/tock/archive/1a111a3e748815117b0ef939ab730b31d77a409d.tar.gz",
-        sha256 = "9b146f28dea14e51e77736e781745dfd140f71afb963e35b52795edf7e72b0d3",
+        strip_prefix = "tock-3a0527d586702b8ae8cb242391fa72eb3a412f49",
+        url = "https://github.com/tock/tock/archive/3a0527d586702b8ae8cb242391fa72eb3a412f49.tar.gz",
+        sha256 = "8108d5b2bf8bc5c6b8c1ca09940c96b0b8c2541a8215293234f32803464cd748",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
