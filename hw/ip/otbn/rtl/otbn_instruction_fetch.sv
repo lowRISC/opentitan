@@ -319,7 +319,7 @@ module otbn_instruction_fetch
   always_comb begin
     // By default prefetch the next instruction
     imem_addr_o = insn_prefetch_addr + 'd4;
-    // The kill is flopped and applied to imem_rvalid the following cycle. It used for branching.
+    // The kill is flopped and applied to imem_rvalid the following cycle. It's used for branching.
     imem_rvalid_kill_d = 1'b0;
     // Only prefetch if controller tells us to
     insn_prefetch = prefetch_en_i;
@@ -338,7 +338,7 @@ module otbn_instruction_fetch
       // timing consistent regardless of taken/not-taken. This also applies to jumps, this avoids
       // the need to calculate the jump address here.
       //
-      // For x-prop reasons we do not suppress the imem_req_o here. Where OTBN executes an
+      // For x-prop reasons we do not suppress the imem_req_o here. When OTBN executes an
       // instruction that produces a software error it comes to an immediate halt. However only the
       // raw fetch request is considered here for timing reasons. So if the instruction following
       // the error causing instruction is X in simulation the `insn_is_branch` sees an X here
