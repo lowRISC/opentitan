@@ -33,7 +33,7 @@ typedef struct perf_test {
   void (*func)(uint8_t *buf1, uint8_t *buf2, size_t num_runs);
 
   // The expected number of CPU cycles that `func` will take to run.
-  size_t expected_num_cycles;
+  size_t expected_max_num_cycles;
 } perf_test_t;
 
 // Run the given `perf_test_t` and return the number of cycles it took.
@@ -122,7 +122,7 @@ OT_NOINLINE void test_memrchr(uint8_t *buf1, uint8_t *buf2, size_t len) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// Each value of `expected_num_cycles` was determined experimentally by
+// Each value of `expected_max_num_cycles` was determined experimentally by
 // testing on a CW310 FPGA with the following command:
 //
 //   $ ./bazelisk.sh test --copt -O2 --test_output=all \
@@ -141,77 +141,77 @@ OTTF_DEFINE_TEST_CONFIG();
 //   (5) The icache gets turned on prior to test execution.
 //
 // If you observe the cycle count is smaller the hardcoded expectation, that's
-// probably a good thing; please update the expectation!
+// probably a good thing; consider updating the expectation!
 static const perf_test_t kPerfTests[] = {
     {
         .label = "memcpy",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memcpy,
-        .expected_num_cycles = 33270,
+        .expected_max_num_cycles = 33270,
     },
     {
         .label = "memcpy_zeroes",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcpy,
-        .expected_num_cycles = 33270,
+        .expected_max_num_cycles = 33270,
     },
     {
         .label = "memset",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memset,
-        .expected_num_cycles = 23200,
+        .expected_max_num_cycles = 23200,
     },
     {
         .label = "memset_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memset,
-        .expected_num_cycles = 23200,
+        .expected_max_num_cycles = 23200,
     },
     {
         .label = "memcmp_pathological",
         .setup_buf1 = &fill_buf_zeroes_then_one,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcmp,
-        .expected_num_cycles = 110740,
+        .expected_max_num_cycles = 110740,
     },
     {
         .label = "memcmp_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memcmp,
-        .expected_num_cycles = 110740,
+        .expected_max_num_cycles = 110740,
     },
     {
         .label = "memrcmp_pathological",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_one_then_zeroes,
         .func = &test_memrcmp,
-        .expected_num_cycles = 50740,
+        .expected_max_num_cycles = 50740,
     },
     {
         .label = "memrcmp_zeroes",
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memrcmp,
-        .expected_num_cycles = 50850,
+        .expected_max_num_cycles = 50850,
     },
     {
         .label = "memchr_pathological",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memchr,
-        .expected_num_cycles = 7250,
+        .expected_max_num_cycles = 7250,
     },
     {
         .label = "memrchr_pathological",
         .setup_buf1 = &fill_buf_deterministic_values,
         .setup_buf2 = &fill_buf_deterministic_values,
         .func = &test_memrchr,
-        .expected_num_cycles = 23850,
+        .expected_max_num_cycles = 23850,
     },
 };
 
@@ -224,26 +224,27 @@ bool test_main(void) {
     const perf_test_t *test = &kPerfTests[i];
 
     const uint64_t num_cycles = perf_test_run(test, buf1, buf2, kNumRuns);
-    if (num_cycles != test->expected_num_cycles) {
+    if (num_cycles > test->expected_max_num_cycles) {
       all_expectations_match = false;
       // Cast cycle counts to `uint32_t` before printing because `base_printf()`
       // cannot print `uint64_t`.
-      CHECK(test->expected_num_cycles < UINT32_MAX);
+      CHECK(test->expected_max_num_cycles < UINT32_MAX);
       CHECK(num_cycles < UINT32_MAX);
-      const uint32_t expected_num_cycles_u32 =
-          (uint32_t)test->expected_num_cycles;
+      const uint32_t expected_max_num_cycles_u32 =
+          (uint32_t)test->expected_max_num_cycles;
       const uint32_t num_cycles_u32 = (uint32_t)num_cycles;
 
       CHECK(num_cycles < UINT32_MAX / 100);
       const uint32_t percent_change =
-          (100 * num_cycles_u32) / expected_num_cycles_u32;
+          (100 * num_cycles_u32) / expected_max_num_cycles_u32;
 
       LOG_WARNING(
           "%s:\n"
           "  Expected:        %10d cycles\n"
           "  Actual:          %10d cycles\n"
           "  Actual/Expected: %10d%%\n",
-          test->label, expected_num_cycles_u32, num_cycles_u32, percent_change);
+          test->label, expected_max_num_cycles_u32, num_cycles_u32,
+          percent_change);
     }
   }
   return all_expectations_match;
