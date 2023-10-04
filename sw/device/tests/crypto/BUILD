@@ -2,15 +2,22 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "opentitan_test",
+    "verilator_params",
+)
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_functest(
+opentitan_test(
     name = "aes_functest",
     srcs = ["aes_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -21,9 +28,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -47,9 +55,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -83,7 +92,7 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
     cw310 = cw310_params(
@@ -91,6 +100,7 @@ opentitan_functest(
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
         # [test-triage] test not constant time with icache enabled
     ),
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
@@ -106,9 +116,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -121,9 +132,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -136,9 +148,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -166,9 +179,10 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:kmac_set_testvectors",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_functest_hardcoded",
     srcs = ["kmac_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -183,9 +197,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ecdsa_p256_verify_functest_hardcoded",
     srcs = ["ecdsa_p256_verify_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -199,12 +214,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
     ),
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         tags = ["broken"],  # This test is too slow to run on verilator.
     ),
@@ -216,9 +232,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_2048_signature_functest",
     srcs = ["rsa_2048_signature_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -237,12 +254,18 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
     cw310 = cw310_params(
         timeout = "moderate",
     ),
+    # The test vectors don't fit in the flash allocated for ROM_EXT stage, so
+    # we have to restrict the environments to run with the test_rom.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     targets = [
         "cw310_test_rom",
         "verilator",
@@ -269,9 +292,10 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_3072_verify_functest_hardcoded",
     srcs = ["rsa_3072_verify_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -286,9 +310,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sha384_functest",
     srcs = ["sha384_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -299,9 +324,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sha512_functest",
     srcs = ["sha512_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -313,9 +339,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "symmetric_keygen_functest",
     srcs = ["symmetric_keygen_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
@@ -339,7 +366,7 @@ py_binary(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     verilator = verilator_params(
@@ -353,9 +380,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_sha384_functest",
     srcs = ["hmac_sha384_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -366,9 +394,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_sha512_functest",
     srcs = ["hmac_sha512_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -401,9 +430,10 @@ py_binary(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sha256_functest",
     srcs = ["sha256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
