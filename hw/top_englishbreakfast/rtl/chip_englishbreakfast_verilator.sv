@@ -214,7 +214,7 @@ module chip_englishbreakfast_verilator (
     // Memory attributes
     .ram_1p_cfg_i                 ('0),
     .spi_ram_2p_cfg_i             ('0),
-    .usb_ram_2p_cfg_i             ('0),
+    .usb_ram_1p_cfg_i             ('0),
     .rom_cfg_i                    ('0),
 
     // DFT signals

@@ -67,7 +67,7 @@ module usbdev
   output logic       usb_ref_pulse_o,
 
   // memory configuration
-  input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
+  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
@@ -121,8 +121,9 @@ module usbdev
   tlul_pkg::tl_h2d_t tl_sram_h2d;
   tlul_pkg::tl_d2h_t tl_sram_d2h;
 
-  // Dual-port SRAM Interface: Refer prim_ram_2p_adv.sv
+  // Software access to the Packet Buffer RAM
   logic              sw_mem_a_req;
+  logic              sw_mem_a_gnt;
   logic              sw_mem_a_write;
   logic [SramAw-1:0] sw_mem_a_addr;
   logic [SramDw-1:0] sw_mem_a_wdata;
@@ -130,6 +131,7 @@ module usbdev
   logic [SramDw-1:0] sw_mem_a_rdata;
   logic [1:0]        sw_mem_a_rerror;
 
+  // usbdev hardware access to the Packet Buffer RAM
   logic              usb_mem_b_req;
   logic              usb_mem_b_write;
   logic [SramAw-1:0] usb_mem_b_addr;
@@ -426,7 +428,8 @@ module usbdev
   ////////////////////////////////////////////////////////
   // USB interface -- everything is in USB clock domain //
   ////////////////////////////////////////////////////////
-  wire cfg_pinflip = reg2hw.phy_config.pinflip.q;
+  logic cfg_pinflip;
+  assign cfg_pinflip = reg2hw.phy_config.pinflip.q;
   assign usb_dp_pullup_en = cfg_pinflip ? 1'b0 : usb_pullup_en;
   assign usb_dn_pullup_en = !cfg_pinflip ? 1'b0 : usb_pullup_en;
 
@@ -582,6 +585,7 @@ module usbdev
 
     // Tie off unused signals
     assign sw_mem_a_req    = '0;
+    assign sw_mem_a_gnt    = '0;
     assign sw_mem_a_write  = '0;
     assign sw_mem_a_addr   = '0;
     assign sw_mem_a_wdata  = '0;
@@ -614,7 +618,7 @@ module usbdev
       .en_ifetch_i (prim_mubi_pkg::MuBi4False),
       .req_o       (sw_mem_a_req),
       .req_type_o  (),
-      .gnt_i       (sw_mem_a_req),  //Always grant when request
+      .gnt_i       (sw_mem_a_gnt),
       .we_o        (sw_mem_a_write),
       .addr_o      (sw_mem_a_addr),
       .wdata_o     (sw_mem_a_wdata),
@@ -625,8 +629,61 @@ module usbdev
       .rerror_i    (sw_mem_a_rerror)
     );
 
+    // Single Port RAM implementation, which will award the `usb` port absolute priority and
+    // delay `sw` access by in the event of a collision.
+    //
+    // In practice the `usb` access to memory is sporadic (4x oversampling of bits, and read/write
+    // operations transfer 32 bits so on average the probability of collision is just 1/128 even
+    // during active USB traffic, if the TL-UL interface were active on every cycle).
+
+    // usb access has absolute priority, followed by any deferred write, and then any sw access.
+    logic               mem_req;
+    logic               mem_write;
+    logic  [SramAw-1:0] mem_addr;
+    logic  [SramDw-1:0] mem_wdata;
+    assign mem_req   = usb_mem_b_req | sw_mem_a_req;
+    assign mem_write = usb_mem_b_req ? usb_mem_b_write : sw_mem_a_write;
+    assign mem_addr  = usb_mem_b_req ? usb_mem_b_addr  : sw_mem_a_addr;
+    assign mem_wdata = usb_mem_b_req ? usb_mem_b_wdata : sw_mem_a_wdata;
+
+    logic              mem_rvalid;
+    logic [SramDw-1:0] mem_rdata;
+    logic [1:0]        mem_rerror;
+    logic              mem_rsteering;
+
+    // Always grant when no `usb` request.
+    assign sw_mem_a_gnt = !usb_mem_b_req;
+
+    // `usb` relies upon its read data remaining static after read.
+    logic              mem_b_read_q;
+    logic [SramDw-1:0] mem_b_rdata_q;
+
+    // Remember granted read accesses.
+    // NOTE: No pipelining within the RAM model.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        mem_rsteering <= 1'b0;
+        mem_b_read_q  <= 1'b0;
+        mem_b_rdata_q <= {SramDw{1'b0}};
+      end else begin
+        mem_rsteering <= usb_mem_b_req;
+        mem_b_read_q  <= usb_mem_b_req & !usb_mem_b_write;
+        // Capture the `usb` read data.
+        if (mem_b_read_q)
+          mem_b_rdata_q <= mem_rdata;
+      end
+    end
+
+    // Read responses.
+    assign sw_mem_a_rvalid  = mem_rvalid & !mem_rsteering;
+    assign sw_mem_a_rerror  = {2{sw_mem_a_rvalid}} & mem_rerror;
+    // We may safely return the read data to both (no security implications), but `usb` rdata
+    // must be held static after the read, and be unaffected by `sw` reads.
+    assign sw_mem_a_rdata  = mem_rdata;
+    assign usb_mem_b_rdata = mem_b_read_q ? mem_rdata : mem_b_rdata_q;
+
     // SRAM Wrapper
-    prim_ram_2p_adv #(
+    prim_ram_1p_adv #(
       .Depth (SramDepth),
       .Width (SramDw),    // 32 x 512 --> 2kB
       .DataBitsPerMask(8),
@@ -635,29 +692,21 @@ module usbdev
       .EnableParity        (0),
       .EnableInputPipeline (0),
       .EnableOutputPipeline(0)
-    ) u_memory_2p (
+    ) u_memory_1p (
       .clk_i,
       .rst_ni,
-      .a_req_i    (sw_mem_a_req),
-      .a_write_i  (sw_mem_a_write),
-      .a_addr_i   (sw_mem_a_addr),
-      .a_wdata_i  (sw_mem_a_wdata),
-      .a_wmask_i  ({SramDw{1'b1}}),
-      .a_rvalid_o (sw_mem_a_rvalid),
-      .a_rdata_o  (sw_mem_a_rdata),
-      .a_rerror_o (sw_mem_a_rerror),
 
-      .b_req_i    (usb_mem_b_req),
-      .b_write_i  (usb_mem_b_write),
-      .b_addr_i   (usb_mem_b_addr),
-      .b_wdata_i  (usb_mem_b_wdata),
-      .b_wmask_i  ({SramDw{1'b1}}),
-      .b_rvalid_o (),
-      .b_rdata_o  (usb_mem_b_rdata),
-      .b_rerror_o (),
+      .req_i      (mem_req),
+      .write_i    (mem_write),
+      .addr_i     (mem_addr),
+      .wdata_i    (mem_wdata),
+      .wmask_i    ({SramDw{1'b1}}),
+      .rdata_o    (mem_rdata),
+      .rvalid_o   (mem_rvalid),
+      .rerror_o   (mem_rerror),
       .cfg_i      (ram_cfg_i)
     );
-  end
+  end : gen_no_stubbed_memory
 
   logic [NumAlerts-1:0] alert_test, alerts;
 

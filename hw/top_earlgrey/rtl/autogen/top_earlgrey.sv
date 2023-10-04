@@ -141,7 +141,7 @@ module top_earlgrey #(
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
-  input  prim_ram_2p_pkg::ram_2p_cfg_t       usb_ram_2p_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       usb_ram_1p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
@@ -530,7 +530,7 @@ module top_earlgrey #(
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_spi_ram_2p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t       ast_usb_ram_2p_cfg;
+  prim_ram_1p_pkg::ram_1p_cfg_t       ast_usb_ram_1p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
@@ -754,7 +754,7 @@ module top_earlgrey #(
   assign ast_obs_ctrl = obs_ctrl_i;
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
-  assign ast_usb_ram_2p_cfg = usb_ram_2p_cfg_i;
+  assign ast_usb_ram_1p_cfg = usb_ram_1p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
 
   // define partial inter-module tie-off
@@ -1666,7 +1666,7 @@ module top_earlgrey #(
       .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
       .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
       .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
-      .ram_cfg_i(ast_usb_ram_2p_cfg),
+      .ram_cfg_i(ast_usb_ram_1p_cfg),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
 
