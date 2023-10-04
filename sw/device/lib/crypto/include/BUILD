@@ -4,9 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
-
 # Export all headers.
 exports_files(glob(["*.h"]))
 
