@@ -21,7 +21,7 @@ module dma_reg_top (
 
   import dma_reg_pkg::* ;
 
-  localparam int AW = 8;
+  localparam int AW = 9;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
