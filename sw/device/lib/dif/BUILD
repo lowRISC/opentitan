@@ -736,7 +736,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

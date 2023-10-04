@@ -30,7 +30,6 @@ filegroup(
         "//hw/ip/prim_xilinx:all_files",
         "//hw/ip/prim_xilinx_ultrascale:all_files",
         "//hw/ip/pwm:all_files",
-        "//hw/ip/pwrmgr:all_files",
         "//hw/ip/rom_ctrl:all_files",
         "//hw/ip/rstmgr:all_files",
         "//hw/ip/rv_core_ibex:all_files",

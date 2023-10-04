@@ -954,7 +954,7 @@ cc_library(
     hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
@@ -979,7 +979,7 @@ opentitan_functest(
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
     targets = ["dv"],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -998,7 +998,7 @@ opentitan_functest(
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
     targets = ["dv"],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -1020,7 +1020,7 @@ opentitan_functest(
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     targets = ["dv"],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
