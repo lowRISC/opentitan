@@ -1,0 +1,232 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_otp_ctrl
+  testpoints: [
+    // OTP (pre-verified IP) integration tests:
+    {
+      name: chip_otp_ctrl_init
+      desc: '''Verify the OTP ctrl initialization on chip power up.
+
+            Verify that the chip powers up correctly on POR.
+            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
+              FSM states. Ensure that the whole power up sequence does not hang.
+            - Verify with connectivity assertion checks, the handshake signals are connected.
+            - Ensure that no interrupts or alerts are triggered.
+            '''
+      features: ["OTP_CTRL.INIT"]
+      stage: V2
+      si_stage: None
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_otp_ctrl_keys
+      desc: '''Verify the proliferation of keys to security peripherals.
+
+            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
+              (note that keymgr does not have handshake).
+            - Ensure that the test requests a new key and verifies the previously written
+              data to an address now returns a garbage value.
+
+            X-ref'ed with the following IP tests that consume these signals:
+            - chip_sw_sram_scrambled_access
+            - chip_sw_flash_scramble
+            - chip_sw_keymgr_key_derivation
+            - chip_sw_otbn_mem_scramble
+            '''
+      features: ["OTP_CTRL.KEY_DERIVATION", "OTP_CTRL.PARTITION.SECRET1"]
+      stage: V2
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: [// Verifies both, main and retention SRAM scrambling.
+              "chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
+    }
+    {
+      name: chip_sw_otp_ctrl_entropy
+      desc: '''Verify the entropy interface from OTP ctrl to EDN.
+
+            This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
+            to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
+            '''
+      features: ["OTP_CTRL.ENTROPY_READ"]
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
+    }
+    {
+      name: chip_sw_otp_ctrl_program
+      desc: '''Verify the program request from lc_ctrl.
+
+            - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
+              program request.
+            - Verify that the OTP ctrl generates the LC data output correctly and is sent to the LC
+              ctrl before it is reset.
+            - Verify that the `lc_check_byp_en_i` from LC ctrl is set.
+            - Ensure that the whole operation does not raise any interrupts or alerts or errors.
+            - After reset, verify that the LC state transition completed successfully by reading the
+              LC state and LC count CSRs.
+            '''
+      features: ["OTP_CTRL.PROGRAM", "OTP_CTRL.PARTITION.SECRET0",
+                 "OTP_CTRL.PARTITION.LIFE_CYCLE", "OTP_CTRL.PARTITION.SECRET2"]
+      stage: V2
+      si_stage: None
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_otp_ctrl_program_error
+      desc: '''Verify the otp program error.
+
+            - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
+              `lc_otp_program_i`.
+            - Verify that the LC ctrl triggers an alert and escalation when the OTP ctrl responds back with the correct
+              fatal program error as expected.
+            - Allow escalation to go through reset.
+            - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
+            - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
+              for kTopEarlgreyAlertIdLcCtrlFatalProgError.
+            - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
+            - Verify after the escalation reset that the alert info captured the correct alert.
+            '''
+      features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
+      stage: V2
+      si_stage: None
+      tests: ["chip_sw_lc_ctrl_program_error"]
+    }
+    {
+      name: chip_sw_otp_ctrl_hw_cfg
+      desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
+
+            Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
+            consumers of the hardware configuration bits are receiving the correct values.
+
+            Xref'ed with corresponding IP tests that receive these bits.
+            '''
+      features: ["OTP_CTRL.ENTROPY_READ"]
+      stage: V2
+      si_stage: SV1
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals
+      desc: '''Verify the broadcast signals from LC ctrl.
+
+            - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
+            - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
+            - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
+            - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
+              programming passes when enabled.
+
+            Note that `lc_escalate_en_i` is verified via a connectivity test.
+
+            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr advance operation
+            into the CreatorRootKey state, which should fail since the root key will be tied off to
+            all-zero when the SECRET2 partition is not locked in OTP.
+
+            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            decoded outputs to other IPs.
+            '''
+      features: ["OTP_CTRL.PARTITION.SECRET2"]
+      stage: V2
+      si_stage: None
+      tests: [
+        // lc_dft_en_i
+        "chip_prim_tl_access",
+        // lc_check_byp_en_i
+        "chip_sw_lc_ctrl_transition",
+        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses
+        // the keymgr.
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
+        "chip_sw_otp_ctrl_lc_signals_dev",
+        "chip_sw_otp_ctrl_lc_signals_prod",
+        "chip_sw_otp_ctrl_lc_signals_rma",
+        ]
+    }
+    {
+      name: chip_sw_otp_prim_tl_access
+      desc: '''Verify that the SW can read / write the prim tlul interface.
+
+            - The prim tlul interface is a open source placeholder for the closed source CSRs that
+              will be implemented in a translation 'shim'.
+            - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
+              When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "RMA"]
+      tests: ["chip_prim_tl_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      desc: '''
+            Verify the vendor test control access in raw, test_*, dev, prod, and rma LC states.
+
+            - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
+            - Verify that the SW is able to access the vendor test control and status registers in
+              raw, test_* and rma LC states.
+              In open source environment, this check is implemented by probing the OTP_CTRL's
+              `lc_otp_vendor_test_i` port.
+            - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
+              of what is programmed into the vendor test control register.
+            - Once VENDOR_TEST_READ_LOCK is 0, Try to read / write to see it triggered access error.
+            - For sival, real vendor test will be done by a silicon vendor and nothing need to be done
+              in the open source side.
+            '''
+      features: ["OTP_CTRL.PARTITION.VENDOR_TEST",
+                 "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
+                 "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"]
+      stage: V3
+      si_stage: None
+      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_escalation
+      desc: '''Verify escalation from otp_ctrl macro fatal error.
+
+            - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
+              via DAI interface.
+            - Because this fatal error will immediately turn off CPU, so the DV sequence will probe
+              the alert interface to make sure alert and escalation is triggered.
+
+            X'ref with chip_sw_all_escalation_resets.
+            '''
+      features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
+      stage: V3
+      si_stage: None
+      tests: ["chip_sw_otp_ctrl_escalation"]
+    }
+    {
+      name: otp_ctrl_calibration
+      desc: "Verify all calibrated parameters are programmed during manufacturing stage calibration test phase."
+      features: ["OTP_CTRL.PARTITION.CREATOR_SW_CFG"]
+      stage: V3
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED"]
+      tests: []
+    }
+    {
+      name: otp_ctrl_partition_access_locked
+      desc: '''Verify accessibily of all partition except life_cycle partition.
+
+            - Without locking state, try random write and read back test over all sw accessible partitions.
+            - Per each partition, enable write lock and try to do subsequent write then readback.
+            - Dut should generate recoverable error (access error) and 2nd write won't go through.
+            - Per each partition, enable read lock and try to read.
+            - Dut should generate recoverable error (access error).
+      '''
+      features: ["OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK", "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
+                 "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"]
+      stage: V3
+      si_stage: None
+      tests: []
+    }
+  ]
+}
