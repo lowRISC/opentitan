@@ -2,7 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "Cw310BinaryInfo", "Cw340BinaryInfo", "get_one_binary_file")
+load(
+    "@lowrisc_opentitan//rules/opentitan:providers.bzl",
+    "Cw305BinaryInfo",
+    "Cw310BinaryInfo",
+    "Cw340BinaryInfo",
+    "get_one_binary_file",
+)
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -13,6 +19,7 @@ load(
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
+    "convert_to_vmem",
 )
 
 _TEST_SCRIPT = """#!/bin/bash
@@ -47,10 +54,20 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             rom_scramble_config = exec_env.rom_scramble_config,
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
         )
+
+        # The englishbreakfast verilator model does not understand ROM
+        # scrambling, so we also create a non-scrambled VMEM file.
+        rom32 = convert_to_vmem(
+            ctx,
+            name = name,
+            src = binary,
+            word_size = 32,
+        )
         default = rom
     elif ctx.attr.kind == "flash":
         default = signed_bin if signed_bin else binary
         rom = None
+        rom32 = None
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
@@ -59,6 +76,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "binary": binary,
         "default": default,
         "rom": rom,
+        "rom32": rom32,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
@@ -147,6 +165,20 @@ def _fpga_cw310(ctx):
 
 fpga_cw310 = rule(
     implementation = _fpga_cw310,
+    attrs = exec_env_common_attrs(),
+)
+
+def _fpga_cw305(ctx):
+    fields = exec_env_as_dict(ctx)
+    return ExecEnvInfo(
+        provider = Cw305BinaryInfo,
+        test_dispatch = _test_dispatch,
+        transform = _transform,
+        **fields
+    )
+
+fpga_cw305 = rule(
+    implementation = _fpga_cw305,
     attrs = exec_env_common_attrs(),
 )
 

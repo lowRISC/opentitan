@@ -8,6 +8,10 @@ Cw310BinaryInfo = provider(
     doc = "CW310 Binary Info",
 )
 
+Cw305BinaryInfo = provider(
+    doc = "CW305 Binary Info",
+)
+
 Cw340BinaryInfo = provider(
     doc = "CW340 Binary Info",
 )

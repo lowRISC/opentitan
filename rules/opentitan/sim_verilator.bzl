@@ -47,6 +47,15 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             rom_scramble_config = exec_env.rom_scramble_config,
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
         )
+
+        # The englishbreakfast verilator model does not understand ROM
+        # scrambling, so we also create a non-scrambled VMEM file.
+        rom32 = convert_to_vmem(
+            ctx,
+            name = name,
+            src = binary,
+            word_size = 32,
+        )
         default = rom
         vmem = rom
     elif ctx.attr.kind == "flash":
@@ -58,6 +67,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = vmem
         rom = None
+        rom32 = None
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
@@ -70,6 +80,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "disassembly": disassembly,
         "mapfile": mapfile,
         "vmem": vmem,
+        "rom32": rom32,
     }
 
 def _test_dispatch(ctx, exec_env, provider):

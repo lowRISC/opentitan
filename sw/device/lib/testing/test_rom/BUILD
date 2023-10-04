@@ -30,6 +30,7 @@ opentitan_binary(
     name = "test_rom",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -46,6 +47,7 @@ opentitan_binary(
 legacy_rom_targets(
     suffixes = [
         "fpga_cw310",
+        "fpga_cw305",
         "fpga_cw340",
         "sim_dv",
         "sim_verilator",

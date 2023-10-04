@@ -16,7 +16,10 @@ def legacy_rom_targets(target, suffixes):
         native.filegroup(
             name = "{}_{}".format(target, suffix),
             srcs = [":{}".format(target)],
-            output_group = "{}_rom".format(suffix),
+            output_group = select({
+                "//sw/device:is_english_breakfast": "{}_rom32".format(suffix),
+                "//conditions:default": "{}_rom".format(suffix),
+            }),
         )
         native.alias(
             name = "{}_{}_scr_vmem".format(target, suffix),

@@ -351,9 +351,12 @@ jobs:
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw305_vmem) \
+      cp $(ci/scripts/target-location.sh \
+          //sw/device/lib/testing/test_rom:test_rom_fpga_cw305 \
+          --features=-rv32_bitmanip \
+          --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_) \
         "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_cw305_vmem to $BIN_DIR
+    displayName: Copy test_rom_fpga_cw305 to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
