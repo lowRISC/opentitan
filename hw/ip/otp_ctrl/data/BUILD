@@ -278,6 +278,25 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_fixed_secret0",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                # These match their cSHAKE-128 (w/ "LC_CTRL" customization string)
+                # preimage counterpart of: 0x1111_1111_1111_1111_1111_1111_1111_1111,
+                # which is hardcoded into the test that use this overlay.
+                # The script that generated this token is:
+                # //sw/host/tests/manuf/manuf_cp_device_info_flash_wr:gen_test_exit_token
+                "TEST_UNLOCK_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
+                "TEST_EXIT_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
     name = "otp_json_secret1",
     partitions = [
         otp_partition(
