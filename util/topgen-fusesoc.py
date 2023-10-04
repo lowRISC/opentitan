@@ -75,12 +75,11 @@ def main():
         'clkmgr': '',
         'flash_ctrl': '_core',
         'pinmux': '',
-        'pwrmgr': '',
         'rstmgr': '',
     }
 
     # reg-only
-    for ip in ['clkmgr', 'flash_ctrl', 'pinmux', 'pwrmgr', 'rstmgr']:
+    for ip in ['clkmgr', 'flash_ctrl', 'pinmux', 'rstmgr']:
         core_filepath = os.path.abspath(os.path.join(files_out, 'generated-%s.core' % ip))
         name = 'lowrisc:ip:%s_reggen' % ip,
         files = ['ip/%s/rtl/autogen/%s_reg_pkg.sv' % (ip, ip),

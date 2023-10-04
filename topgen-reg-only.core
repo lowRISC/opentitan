@@ -11,7 +11,6 @@ filesets:
       - lowrisc:ip:clkmgr_reggen
       - lowrisc:ip:flash_ctrl_reggen
       - lowrisc:ip:pinmux_reggen
-      - lowrisc:ip:pwrmgr_reggen
       - lowrisc:ip:rstmgr_reggen
 
 targets:
