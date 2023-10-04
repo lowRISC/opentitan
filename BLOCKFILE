@@ -33,7 +33,7 @@ hw/vendor/pulp_riscv_dbg/debug_rom/*
 
 # Individual HJSON files that effect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
-hw/ip/pwrmgr/data/pwrmgr.hjson
+hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/ip/lc_ctrl/data/lc_ctrl.hjson
 hw/ip/rv_timer/data/rv_timer.hjson
 hw/ip/clkmgr/data/clkmgr.hjson

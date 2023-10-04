@@ -27,7 +27,7 @@ const block_level_urls = {
   "prim_present": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_present/latest/"],
   "prim_prince": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/"],
   "pwm": ["https://reports.opentitan.org/hw/ip/pwm/dv/latest/"],
-  "pwrmgr": ["https://reports.opentitan.org/hw/ip/pwrmgr/dv/latest/"],
+  "pwrmgr": ["https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/pwrmgr/dv/latest/"],
   "rom_ctrl": ["https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/"],
   "rstmgr": ["https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/"],
   "rstmgr_cnsty_chk": ["https://reports.opentitan.org/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/latest/"],
