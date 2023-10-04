@@ -5,7 +5,12 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
+    "verilator_params",
+)
 
 cc_library(
     name = "aes",
@@ -22,9 +27,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -56,9 +62,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_test",
     srcs = ["keymgr_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -126,9 +133,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # TODO #16672 test broken by icache
