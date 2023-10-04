@@ -23,7 +23,7 @@ load(
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
-load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "otp_image")
 load("//rules:splice.bzl", "bitstream_splice")
 
 _TEST_UNLOCKED_LC_ITEMS = get_lc_items(
@@ -139,33 +139,13 @@ opentitan_functest(
     ],
 )
 
-otp_json(
-    name = "otp_json_fixed_secret0",
-    partitions = [
-        otp_partition(
-            name = "SECRET0",
-            items = {
-                # These match their cSHAKE-128 (w/ "LC_CTRL" customization string)
-                # preimage counterpart of: 0x1111_1111_1111_1111_1111_1111_1111_1111,
-                # which is hardcoded into the test that use this overlay.
-                # The script that generated this token is:
-                # //sw/host/tests/manuf/manuf_cp_device_info_flash_wr:gen_test_exit_token
-                "TEST_UNLOCK_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
-                "TEST_EXIT_TOKEN": "0xde0a1f1e0d6a649fd35fadb75ec82674",
-            },
-            lock = True,
-        ),
-    ],
-    visibility = ["//visibility:private"],
-)
-
 # This is the same as rom_with_fake_keys_otp_test_unlocked* but with ROM execution disabled.
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
         src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
         overlays = [
-            ":otp_json_fixed_secret0",
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
             "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
         ],
         visibility = ["//visibility:private"],
@@ -179,7 +159,7 @@ otp_json(
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
         src = "//hw/bitstream:rom_with_fake_keys",
-        data = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
+        data = ":otp_img_rom_exec_disabled_test_unlocked{}".format(i),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
