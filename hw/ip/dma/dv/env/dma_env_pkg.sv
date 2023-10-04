@@ -48,7 +48,7 @@ package dma_env_pkg;
   typedef enum {
     DmaXfer1BperTxn = 0,
     DmaXfer2BperTxn = 1,
-    DmaXfer4BperTxn = 3
+    DmaXfer4BperTxn = 2
   } dma_transfer_width_e;
 
   // DMAC data direction in hardware handshake mode

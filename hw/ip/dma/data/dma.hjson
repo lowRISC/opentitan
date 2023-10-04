@@ -344,14 +344,14 @@
       fields: [
         { bits: "1:0"
           name: "transaction_width"
-          resval: 0x3
+          resval: 0x2
           desc: '''
                 Denotes the width of each transaction that the DMA shall issue during the data movement.
 
-                Multiple transactions of transfer width each will be issued until total size number of bytes are reached.
+                Multiple transactions of this width will be issued until total size number of bytes are reached.
                 Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
                 This does not affect the wrap-around mechanism.
-                Note that the value 2 for this register represents an invalid configuration that leads to an error.
+                Note that the value 3 for this register represents an invalid configuration that leads to an error.
                 '''
           enum: [
             { value: "0",
@@ -362,7 +362,7 @@
               name: TWO_BYTE",
               desc: "Two bytes per transaction."
             }
-            { value: "3",
+            { value: "2",
               name: "FOUR_BYTE",
               desc: '''
                     Four bytes per transaction.
