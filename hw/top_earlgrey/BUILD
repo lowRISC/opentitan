@@ -9,6 +9,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
+    "fpga_cw305",
     "fpga_cw310",
     "fpga_cw340",
     "sim_dv",
@@ -88,6 +89,23 @@ fpga_cw310(
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+)
+
+###########################################################################
+# FPGA CW305 Environments
+#
+# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# should become a more generic `fpga_chipwhisperer` infrastruture able to
+# handle multiple CW-type boards.
+###########################################################################
+fpga_cw305(
+    name = "fpga_cw305",
+    design = "earlgrey",
+    exec_env = "fpga_cw305",
+    lib = "//sw/device/lib/arch:fpga_cw305",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    test_cmd = "testing-not-supported",
 )
 
 ###########################################################################

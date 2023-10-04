@@ -228,6 +228,12 @@ def _opentitan_binary(ctx):
         # the DefaultInfo provider.
         if "logs" in provides:
             default_info.extend(provides["logs"])
+
+        # FIXME(cfrantz): Special case: The englishbreakfast verilator model
+        # requires a non-scrambled ROM image.
+        if provides.get("rom32"):
+            default_info.append(provides["rom32"])
+
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
 
