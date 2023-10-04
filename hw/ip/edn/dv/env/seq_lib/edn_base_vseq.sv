@@ -93,7 +93,6 @@ class edn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
-      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags), .glen(glen));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
@@ -102,7 +101,6 @@ class edn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       glen = 1;
-      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("generate"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
@@ -142,7 +140,6 @@ class edn_base_vseq extends cip_base_vseq #(
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
     `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
-    cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
     wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags), .glen(glen));
     for (int i = 0; i < clen; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
@@ -153,6 +150,8 @@ class edn_base_vseq extends cip_base_vseq #(
   virtual task wr_cmd(string cmd_type = "", csrng_pkg::acmd_e acmd = csrng_pkg::INV,
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
                       bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0);
+
+    cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
 
     case (cmd_type)
       "boot_ins": csr_wr(.ptr(ral.boot_ins_cmd), .value({glen, flags, clen, 1'b0, acmd}));
