@@ -151,8 +151,8 @@
     },
     "power-manager": {
         "name": "Power Manager",
-        "data_file": "hw/ip/pwrmgr/data/pwrmgr.hjson",
-        "report": "/hw/ip/pwrmgr/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",
+        "report": "/hw/top_earlgrey/ip_autogen/pwrmgr/dv"
     },
     "sysrst-controller": {
         "name": "SYSRST Controller",
