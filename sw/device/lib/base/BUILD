@@ -4,9 +4,10 @@
 
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -112,17 +113,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
-    cw310 = cw310_params(
-        tags = [
-            "flaky",
-            "manual",
-        ],
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    targets = ["cw310_test_rom"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":macros",
         ":memory",
