@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pwrmgr/doc/">Power Manager</a> Device Interface
- * Functions
+ * @brief <a href="/book/hw/top_earlgrey/ip_autogen/pwrmgr/">Power Manager</a>
+ * Device Interface Functions
  */
 
 #include <stdint.h>
