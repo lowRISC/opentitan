@@ -18,10 +18,7 @@
   fusesoc_core: lowrisc:dv:pwrmgr_sim:0.1
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/pwrmgr/data/pwrmgr_testplan.hjson"
-
-  // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson"
+  testplan: "{self_dir}/../data/pwrmgr_testplan.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -42,7 +39,7 @@
   ]
 
   // Exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/pwrmgr/dv/cov/pwrmgr_cov_manual_excl.el"]
+  vcs_cov_excl_files: ["{self_dir}/cov/pwrmgr_cov_manual_excl.el"]
 
   // Add additional tops for simulation.
   sim_tops: ["pwrmgr_bind",

@@ -44,7 +44,6 @@
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
              "{proj_root}/hw/ip/pwm/dv/pwm_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson",
@@ -59,6 +58,7 @@
              "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
              // Top level IPs.
              "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // Top level.

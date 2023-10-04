@@ -12,7 +12,7 @@
                      "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
                      // TODO: Top-level specific Hjson imported here. This will likely be resolved
                      // once we move to IPgen flow.
-                     "hw/top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr_sec_cm_testplan.hjson"]
+                     "pwrmgr_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke

@@ -153,7 +153,7 @@
                dut: pwrmgr
                fusesoc_core: lowrisc:dv:pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/{sub_flow}/{tool}"
                overrides: [
                  {
                    name:  design_level
@@ -281,7 +281,7 @@
                dut: pwrmgr
                fusesoc_core: lowrisc:dv:pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/{sub_flow}/{tool}"
                overrides: [
                  {
                    name:  design_level
