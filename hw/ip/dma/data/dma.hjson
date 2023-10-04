@@ -724,6 +724,7 @@
         ]
       }
     }
+    { skipto: "0x124" }
     { multireg: {
         name: "INT_SOURCE_WR_VAL"
         desc: "Write value for interrupt clearing write."

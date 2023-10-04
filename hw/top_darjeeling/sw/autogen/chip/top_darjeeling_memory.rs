@@ -586,7 +586,7 @@ pub const TOP_DARJEELING_DMA_BASE_ADDR: usize = 0x22010000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_DMA_BASE_ADDR and
 /// `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
-pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x100;
+pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x200;
 /// Peripheral base address for core device on mbx0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

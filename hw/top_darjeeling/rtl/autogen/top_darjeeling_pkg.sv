@@ -419,7 +419,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for dma in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_DMA_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_DMA_SIZE_BYTES = 32'h200;
 
   /**
    * Peripheral base address for core device on mbx0 in top darjeeling.

@@ -764,7 +764,7 @@ extern "C" {
  * address between #TOP_DARJEELING_DMA_BASE_ADDR and
  * `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_DMA_SIZE_BYTES 0x100u
+#define TOP_DARJEELING_DMA_SIZE_BYTES 0x200u
 
 /**
  * Peripheral base address for core device on mbx0 in top darjeeling.

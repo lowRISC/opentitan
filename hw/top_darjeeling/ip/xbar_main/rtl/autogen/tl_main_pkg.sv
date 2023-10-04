@@ -68,7 +68,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__RAM  = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000000ff;
+  localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_MBX0__CORE           = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_MBX1__CORE           = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_MBX2__CORE           = 32'h 0000007f;
