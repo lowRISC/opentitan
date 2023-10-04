@@ -175,7 +175,7 @@ jobs:
 - job: sw_build
   displayName: Earl Grey SW Build & Test
   # Build and test Software for Earl Grey toplevel design
-  timeoutInMinutes: 180
+  timeoutInMinutes: 210
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
