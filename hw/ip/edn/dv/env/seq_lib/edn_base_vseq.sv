@@ -69,15 +69,16 @@ class edn_base_vseq extends cip_base_vseq #(
     if (cfg.boot_req_mode == MuBi4True) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_FATAL(glen)
-      wr_cmd(.cmd_type("boot_ins"), .acmd(csrng_pkg::INS), .clen(0), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type(edn_env_pkg::BootIns), .acmd(csrng_pkg::INS), .clen(0), .flags(flags),
+             .glen(glen), .mode(edn_env_pkg::BootReqMode));
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       if (cfg.force_disable) begin
-        wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
-               .glen(1'b1));
+        wr_cmd(.cmd_type(edn_env_pkg::BootGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
+               .glen(1'b1), .mode(edn_env_pkg::BootReqMode));
       end
       else begin
-        wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
-               .glen(cfg.num_boot_reqs));
+        wr_cmd(.cmd_type(edn_env_pkg::BootGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
+               .glen(cfg.num_boot_reqs), .mode(edn_env_pkg::BootReqMode));
       end
     end
 
@@ -93,18 +94,22 @@ class edn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
-      wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags),
+             .glen(glen), .mode(edn_env_pkg::AutoReqMode));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-        wr_cmd(.cmd_type("reseed"), .cmd_data(cmd_data));
+        wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .cmd_data(cmd_data),
+               .mode(edn_env_pkg::AutoReqMode));
       end
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       glen = 1;
-      wr_cmd(.cmd_type("generate"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
+             .glen(glen), .mode(edn_env_pkg::AutoReqMode));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-        wr_cmd(.cmd_type("generate"), .cmd_data(cmd_data));
+        wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .cmd_data(cmd_data),
+               .mode(edn_env_pkg::AutoReqMode));
       end
     end
 
@@ -136,66 +141,71 @@ class edn_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task instantiate_csrng();
+  virtual task instantiate_csrng(edn_env_pkg::hw_req_mode_e mode);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
     `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags), .glen(glen));
+    wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags),
+           .glen(glen), .mode(mode));
     for (int i = 0; i < clen; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-      wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+      wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
     end
   endtask
 
-  virtual task wr_cmd(string cmd_type = "", csrng_pkg::acmd_e acmd = csrng_pkg::INV,
+  virtual task wr_cmd(edn_env_pkg::cmd_type_e cmd_type, csrng_pkg::acmd_e acmd = csrng_pkg::INV,
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
-                      bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0);
+                      bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0,
+                      edn_env_pkg::hw_req_mode_e mode);
 
-    cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags), .glen(glen));
+    if (!additional_data) begin
+      cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags), .glen(glen));
+    end
 
     case (cmd_type)
-      "boot_ins": csr_wr(.ptr(ral.boot_ins_cmd), .value({glen, flags, clen, 1'b0, acmd}));
-      "boot_gen": csr_wr(.ptr(ral.boot_gen_cmd), .value({glen, flags, clen, 1'b0, acmd}));
-      "generate": begin
-                    if (additional_data) begin
-                      csr_wr(.ptr(ral.generate_cmd), .value(cmd_data));
-                      additional_data -= 1;
-                    end
-                    else begin
-                      csr_wr(.ptr(ral.generate_cmd), .value({glen, flags, clen, 1'b0, acmd}));
-                      additional_data = clen;
-                    end
-                  end
-      "reseed"  : begin
-                    if (additional_data) begin
-                      csr_wr(.ptr(ral.reseed_cmd), .value(cmd_data));
-                      additional_data -= 1;
-                    end
-                    else begin
-                      csr_wr(.ptr(ral.reseed_cmd), .value({glen, flags, clen, 1'b0, acmd}));
-                      additional_data = clen;
-                    end
-                  end
-      "sw"      : begin
-                    if (additional_data) begin
-                      csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
-                      additional_data -= 1;
-                    end
-                    else begin
-                      `DV_SPINWAIT_EXIT(
-                        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));,
-                        wait(cfg.abort_sw_cmd);,
-                        "Aborted SW command"
-                      )
-                      if (!cfg.abort_sw_cmd) begin
-                        csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
-                        additional_data = clen;
-                      end
-                    end
-                    if (!additional_data && !cfg.abort_sw_cmd) begin
-                      wait_cmd_req_done();
-                    end
-                  end
+      edn_env_pkg::BootIns: csr_wr(.ptr(ral.boot_ins_cmd),
+                                   .value({glen, flags, clen, 1'b0, acmd}));
+      edn_env_pkg::BootGen: csr_wr(.ptr(ral.boot_gen_cmd), .value({glen, flags, clen, 1'b0, acmd}));
+      edn_env_pkg::AutoGen: begin
+        if (additional_data) begin
+          csr_wr(.ptr(ral.generate_cmd), .value(cmd_data));
+          additional_data -= 1;
+        end
+        else begin
+          csr_wr(.ptr(ral.generate_cmd), .value({glen, flags, clen, 1'b0, acmd}));
+          additional_data = clen;
+        end
+      end
+      edn_env_pkg::AutoRes: begin
+        if (additional_data) begin
+          csr_wr(.ptr(ral.reseed_cmd), .value(cmd_data));
+          additional_data -= 1;
+        end
+        else begin
+          csr_wr(.ptr(ral.reseed_cmd), .value({glen, flags, clen, 1'b0, acmd}));
+          additional_data = clen;
+        end
+      end
+      edn_env_pkg::Sw: begin
+        if (additional_data) begin
+          csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
+          additional_data -= 1;
+        end
+        else begin
+          `DV_SPINWAIT_EXIT(
+            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));,
+            wait(cfg.abort_sw_cmd);,
+            "Aborted SW command"
+          )
+          if (!cfg.abort_sw_cmd) begin
+            csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
+            additional_data = clen;
+          end
+        end
+        if (!additional_data && !cfg.abort_sw_cmd) begin
+          wait_cmd_req_done();
+        end
+      end
       default   : `uvm_fatal(`gfn, $sformatf("Invalid cmd_type: %0s", cmd_type))
     endcase
   endtask

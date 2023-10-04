@@ -13,6 +13,7 @@ class edn_genbits_vseq extends edn_base_vseq;
          num_ep_reqs, num_cs_reqs, num_reqs_between_reseeds, endpoint_q[$];
   state_e exp_state;
   csrng_pkg::acmd_e acmd;
+  edn_env_pkg::hw_req_mode_e mode = edn_env_pkg::SwMode;
 
   task body();
     super.body();
@@ -65,6 +66,7 @@ class edn_genbits_vseq extends edn_base_vseq;
     end
 
     if (cfg.auto_req_mode == MuBi4True) begin
+      mode = edn_env_pkg::AutoReqMode;
       if (num_cs_reqs <= 2) begin
         num_reqs_between_reseeds = 1;
       end
@@ -81,10 +83,11 @@ class edn_genbits_vseq extends edn_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
-      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags),
+             .glen(glen), .mode(mode));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-        wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+        wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
       end
     end
 
@@ -93,10 +96,11 @@ class edn_genbits_vseq extends edn_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       glen = num_cs_reqs;
-      wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
+      wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
+             .glen(glen), .mode(mode));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-        wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+        wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
       end
     end
 
@@ -126,7 +130,8 @@ class edn_genbits_vseq extends edn_base_vseq;
                                          acmd inside {csrng_pkg::INS, csrng_pkg::GEN,
                                                       csrng_pkg::RES, csrng_pkg::UPD,
                                                       csrng_pkg::UNI};)
-      cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
+      cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags),
+                                .glen(glen), .mode(mode), .cmd_src(edn_env_pkg::Sw));
       csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
@@ -136,6 +141,7 @@ class edn_genbits_vseq extends edn_base_vseq;
       wait (cfg.m_csrng_agent_cfg.reseed_cnt >= 2)
       ral.ctrl.auto_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
+      mode = edn_env_pkg::SwMode;
       // Give the hardware time to quiesce
       cfg.clk_rst_vif.wait_clks(10);
       `DV_CHECK_EQ(cfg.m_csrng_agent_cfg.generate_between_reseeds_cnt, num_reqs_between_reseeds)
@@ -145,11 +151,11 @@ class edn_genbits_vseq extends edn_base_vseq;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
         `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
         glen = num_cs_reqs - cfg.m_csrng_agent_cfg.generate_cnt;
-        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
-               .glen(glen));
+        wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
+               .glen(glen), .mode(mode));
         for (int i = 0; i < clen; i++) begin
           `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-          wr_cmd(.cmd_type("sw"), .cmd_data(cmd_data));
+          wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
         end
       end
       else if (num_cs_reqs < cfg.m_csrng_agent_cfg.generate_cnt) begin
@@ -161,7 +167,8 @@ class edn_genbits_vseq extends edn_base_vseq;
     end
 
     // uninstantiate CSRNG instance
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::UNI));
+    mode = edn_env_pkg::SwMode;
+    wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::UNI), .mode(mode));
 
   endtask
 
