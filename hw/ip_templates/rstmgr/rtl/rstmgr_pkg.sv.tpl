@@ -23,10 +23,10 @@ package rstmgr_pkg;
   // SEC_CM: LEAF.RST.SHADOW
   typedef struct packed {
 % for rst in output_rsts:
-  % if rst.shadowed:
-    logic [PowerDomains-1:0] rst_${rst.name}_shadowed_n;
+  % if rst['shadowed']:
+    logic [PowerDomains-1:0] rst_${rst['name']}_shadowed_n;
   % endif
-    logic [PowerDomains-1:0] rst_${rst.name}_n;
+    logic [PowerDomains-1:0] rst_${rst['name']}_n;
 % endfor
   } rstmgr_out_t;
 
@@ -34,10 +34,10 @@ package rstmgr_pkg;
   typedef struct packed {
 <% n_rst = 0 %>\
 % for rst in output_rsts:
-  % if rst.shadowed:
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst.name}_shadowed;<% n_rst += 1 %>
+  % if rst['shadowed']:
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst['name']}_shadowed;<% n_rst += 1 %>
   % endif
-    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst.name};<% n_rst += 1 %>
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] ${rst['name']};<% n_rst += 1 %>
 % endfor
   } rstmgr_rst_en_t;
 
