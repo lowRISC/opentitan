@@ -550,7 +550,7 @@ module spi_host_fsm_ot
     .q_o(sck_q)
   );
 
-  prim_clock_buf spi_clk_buf (
+  tc_clk_buffer spi_clk_buf (
     .clk_i(sck_q),
     .clk_o(sck_buf_q)
   );
