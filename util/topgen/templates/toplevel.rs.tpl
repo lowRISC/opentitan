@@ -44,8 +44,8 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 /// address between #${base_addr_name} and
 /// `${base_addr_name} + ${size_bytes_name}`.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-% endfor
 
+% endfor
 % for name, region in helper.memories():
 <%
     hex_base_addr = "0x{:X}".format(region.base_addr)
@@ -60,8 +60,8 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 
 /// Memory size for ${name} in top ${top["name"]}.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-% endfor
 
+% endfor
 /// PLIC Interrupt Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
