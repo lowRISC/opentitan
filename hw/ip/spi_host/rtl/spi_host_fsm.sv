@@ -100,6 +100,8 @@ module spi_host_fsm_ot
   logic wr_en_internal, rd_en_internal, sample_en_internal, shift_en_internal;
 
   logic stall;
+  logic sck_buf_q;
+
 
   assign stall = rx_stall_o | tx_stall_o;
 
@@ -538,7 +540,7 @@ module spi_host_fsm_ot
   assign sck_d = cpol ? (state_d != InternalClkHigh) :
                         (state_d == InternalClkHigh);
 
-  assign sck_o = sck_q;
+  assign sck_o = sck_buf_q;
 
   prim_ot_flop_en u_sck_flop (
     .clk_i,
@@ -546,6 +548,11 @@ module spi_host_fsm_ot
     .en_i(~stall),
     .d_i(sck_d),
     .q_o(sck_q)
+  );
+
+  prim_clock_buf spi_clk_buf (
+    .clk_i(sck_q),
+    .clk_o(sck_buf_q)
   );
 
   for (genvar ii = 0; ii < NumCS; ii = ii + 1) begin : gen_csb_gen
