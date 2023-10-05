@@ -19,6 +19,7 @@
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
     // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_aes_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_aon_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
@@ -656,104 +657,6 @@
         "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
         "chip_sw_sysrst_ctrl_ulp_z3_wakeup"
       ]
-    }
-
-    ///////////////////////////////////////////////////////
-    // Security Peripherals                              //
-    // AES                                               //
-    ///////////////////////////////////////////////////////
-
-    // AES (pre-verified IP) integration tests:
-    {
-      name: chip_sw_aes_enc
-      desc: '''Verify the AES operation.
-
-            Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
-            computation to start. Wait for the AES operation to complete by polling the status
-            register. Check the digest registers for correctness against the expected digest value.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_enc",
-              "chip_sw_aes_enc_jitter_en"]
-    }
-    {
-      name: chip_sw_aes_entropy
-      desc: '''Verify the AES entropy input used by the internal PRNGs.
-
-            - Write the initial key share, IV and data in CSRs (known combinations).
-            - Configure the entropy_src to generate entropy in LFSR mode.
-            - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
-            - Poll the status idle bit to ensure reseed operation is complete.
-            - Trigger the AES operation to run and wait for it to complete.
-            - Check the digest against the expected value.
-            - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
-              complete by polling the status idle bit.
-            - Read back the data out CSRs - they should all read garbage values.
-            - Assertion check verifies that the IV are also garbage, i.e. different from the
-              originally written values.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_entropy"]
-    }
-    {
-      name: chip_sw_aes_idle
-      desc: '''Verify AES idle signaling to clkmgr.
-
-            - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
-              verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
-            - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
-            - Initiate an AES operation with a known key, plain text and digest, write AES clk
-              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
-              is enabled), before the AES operation is complete.
-            - After the AES operation is complete verify that the AES clk hint status within
-              clkmgr now reads 0 again (AES is disabled).
-            - Write the AES clk hint to 1, read and check the AES output for correctness.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_idle"]
-    }
-    {
-      name: chip_sw_aes_sideload
-      desc: '''Verify the AES sideload mechanism.
-
-            - Configure the keymgr to generate an aes key.
-            - Configure the AES to use the sideloaded key.
-            - Load the plaintext into the AES.
-            - Trigger the AES encryption and wait for it to complete.
-            - Verify that the ciphertext is different from the plaintext.
-            - Load the ciphertext into the AES.
-            - Trigger the AES decryption and wait for it to complete.
-            - Verify that the output is equal to the plain text.
-            - Clear the key in the keymgr and decrypt the ciphertext again.
-            - Verify that output is not equal to the plain text.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_sideload_aes"]
-    }
-    {
-      name: chip_sw_aes_masking_off
-      desc: '''Verify the AES masking off feature for ES.
-
-            - Perform known-answer test using CSRNG SW application interface.
-            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
-              masking PRNG.
-            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed
-              commands using the maximum amount of additional data and no entropy input in automatic
-              mode.
-            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero
-              output of the AES masking PRNG.
-            - Initialize AES and set the force_masks configuration bit.
-            - Configure an AES key of which the second share is zero.
-            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic
-              seed produced by CSRNG and distributed by EDN.
-            - Verify that the masking PRNG outputs an all-zero vector.
-            - Encrypt a message of multiple blocks using AES.
-            - Verify that the second share of the initial, intermediate and output state is zero.
-            - Verify that the second share of the SubBytes input and output is zero.
-            - Verify that the produced cipher text is correct.
-            '''
-      stage: V2S
-      tests: ["chip_sw_aes_masking_off"]
     }
 
     /////////////////////////////////////////////////////
