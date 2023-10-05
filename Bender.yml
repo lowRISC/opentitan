@@ -730,6 +730,7 @@ sources:
       - hw/ip/spi_host/rtl/spi_host_reg_pkg.sv
       - hw/ip/spi_host/rtl/spi_host_reg_top.sv
       - hw/ip/spi_host/rtl/spi_host_cmd_pkg.sv
+      - hw/ip/spi_host/rtl/spi_host_empty.sv
       - hw/ip/spi_host/rtl/spi_host_byte_merge.sv
       - hw/ip/spi_host/rtl/spi_host_byte_select.sv
       - hw/ip/spi_host/rtl/spi_host_command_queue.sv

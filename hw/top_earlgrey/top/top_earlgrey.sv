@@ -1595,7 +1595,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_io_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
-  spi_host_ot #(
+  spi_host_ot_empty #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[20:20])
   ) u_spi_host1 (
 
