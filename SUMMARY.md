@@ -70,6 +70,7 @@
     - [Checklist](./hw/ip/rv_core_ibex/doc/checklist.md)
   - [OTBN](./hw/ip/otbn/README.md)
     - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
+    - [Introduction to OTBN](./hw/ip/otbn/doc/otbn_intro.md)
     - [Developing OTBN](./hw/ip/otbn/doc/developing_otbn.md)
     - [ISA Guide](./hw/ip/otbn/doc/isa.md)
     - [Design Verification](./hw/ip/otbn/dv/README.md)
