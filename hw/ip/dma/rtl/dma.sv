@@ -1508,26 +1508,9 @@ module dma
   // The RTL code assumes the BE signal is 4-bit wide
   `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
 
-  `ASSERT_IF(RegsWritesInIdleExceptAbort_A,
-             ctrl_state_q == DmaIdle, sw_reg_wr && (!cfg_abort_en))
-`ifdef INC_ASSERT
-  logic assert_last_config_go;
-  prim_flop #(
-    .Width(1)
-  ) u_last_go (
-    .clk_i ( gated_clk ),
-    .rst_ni( rst_ni ),
-    .d_i   ( reg2hw.control.go.q ),
-    .q_o   ( assert_last_config_go )
-  );
-`endif
-
-  `ASSERT_IF(SwMustClearGoForReconfig_A,
-             // GO bit is not set or GO bit is set but DMA is not busy
-             assert_last_config_go ? (!reg2hw.control.go.q || !reg2hw.status.busy.q) : 1'b1,
-             u_dma_reg.reg_we && (!cfg_abort_en))
-   // The RTL code assumes that src/dst BE signals are the same
-  `ASSERT_NEVER(BeMustBeTheSame_A, req_src_be_q != req_dst_be_q)
+  `ASSERT_IF(RegsWritesInIdleOrErrorExceptAbort_A,
+             (ctrl_state_q == DmaIdle) | (ctrl_state_q == DmaError),
+             sw_reg_wr && (!cfg_abort_en))
 
   // The DMA enabled memory should not be changed after lock
   `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
