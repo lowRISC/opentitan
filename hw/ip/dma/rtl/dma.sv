@@ -952,7 +952,7 @@ module dma
 
       DmaSendWrite,
       DmaWaitWriteResponse: begin
-        // If using inline hashing and data is not yet comsumed, apply it
+        // If using inline hashing and data is not yet consumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
           sha2_valid = 1'b1;
           sha2_consumed_d = sha2_ready;
@@ -975,11 +975,7 @@ module dma
             // Will there still be more to do _after_ this advance?
             if (transfer_byte_d >= reg2hw.total_data_size.q) begin
               if (use_inline_hashing) begin
-                if (!(sha2_ready || sha2_consumed_q)) begin
-                  ctrl_state_d = DmaShaWait;
-                end else begin
-                  ctrl_state_d = DmaShaFinalize;
-                end
+                ctrl_state_d = DmaShaFinalize;
               end else begin
                 clear_go     = 1'b1;
                 ctrl_state_d = DmaIdle;
@@ -988,6 +984,14 @@ module dma
               ctrl_state_d = DmaIdle;
             end else begin
               ctrl_state_d = DmaAddrSetup;
+            end
+
+            // In all cases from above, if we are doing inline hashing and the data was not consumed
+            // yet, wait until it consumed by the SHA engine and then continue
+            if (use_inline_hashing) begin
+              if (!(sha2_ready || sha2_consumed_q)) begin
+                ctrl_state_d = DmaShaWait;
+              end
             end
           end
         end else if (write_gnt) begin
