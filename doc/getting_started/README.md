@@ -218,6 +218,7 @@ If you are interested in these, check out the additional resources below.
 * [GitHub Notes](../contributing/github_notes.md)
 * [Building Documentation](./build_docs.md)
 * [Design Methodology within OpenTitan](../contributing/hw/methodology.md)
+* [Introduction to OTBN](../../hw/ip/otbn/doc/otbn_intro.md)
 
 ### Hardware
 * [Designing Hardware](../contributing/hw/design.md)
