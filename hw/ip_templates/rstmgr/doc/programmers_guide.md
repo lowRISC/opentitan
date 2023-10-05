@@ -2,4 +2,4 @@
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_rstmgr.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_rstmgr.h)

@@ -18,15 +18,15 @@
   fusesoc_core: lowrisc:dv:rstmgr_cnsty_chk_sim:0.1
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/data/rstmgr_cnsty_chk_testplan.hjson"
+  testplan: "{self_dir}/data/rstmgr_cnsty_chk_testplan.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
 
   // Specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/cov_manual_excl.el",
-                       "{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/cov_unr_excl.el"]
+  vcs_cov_excl_files: ["{self_dir}/cov_manual_excl.el",
+                       "{self_dir}/cov_unr_excl.el"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 10
