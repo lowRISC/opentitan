@@ -91,6 +91,24 @@ fpga_cw310(
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
 )
 
+fpga_cw310(
+    name = "fpga_cw310_rom_ext",
+    testonly = True,
+    base = ":fpga_cw310_test_rom",
+    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    exec_env = "fpga_cw310_rom_ext",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
+    param = {
+        "interface": "cw310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_fpga_cw310_bin_signed_fake_rsa_test_key_0",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
 ###########################################################################
 # FPGA CW305 Environments
 #

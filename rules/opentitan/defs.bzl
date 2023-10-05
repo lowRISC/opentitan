@@ -173,6 +173,7 @@ def opentitan_test(
             test_harness = tparam.test_harness,
             binaries = tparam.binaries,
             rom = tparam.rom,
+            rom_ext = tparam.rom_ext,
             otp = tparam.otp,
             bitstream = tparam.bitstream,
             test_cmd = tparam.test_cmd,
