@@ -193,6 +193,8 @@ bool test_main(void) {
     case kDeviceSimDV:
       transfer_bytes = TRANSFER_BYTES_DVSIM;
       break;
+    case kDeviceFpgaCw340:
+      break;
     default:
       CHECK(kDeviceType == kDeviceFpgaCw310);
       break;

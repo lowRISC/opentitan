@@ -125,12 +125,6 @@ static status_t delay(bool prompt, uint32_t timeout_micros) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK(kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator ||
-            kDeviceType == kDeviceFpgaCw310,
-        "This test is not expected to run on platforms other than the "
-        "Verilator/DV simulation or CW310 FPGA. It needs either the DPI model "
-        "or a physical host, OS and drivers.");
-
   // In simulation the DPI model connects VBUS shortly after reset and
   // prolonged delays when asserting or deasserting pull ups are wasteful.
   uint32_t timeout_micros = 1000u;

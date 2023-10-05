@@ -2330,6 +2330,7 @@ opentitan_functest(
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     verilator = verilator_params(
@@ -2354,6 +2355,7 @@ opentitan_functest(
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     deps = [
@@ -2373,6 +2375,7 @@ opentitan_functest(
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     deps = [
@@ -2392,6 +2395,7 @@ opentitan_functest(
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     deps = [
@@ -2411,9 +2415,13 @@ opentitan_functest(
     cw310 = cw310_params(
         tags = ["manual"],
     ),
+    cw340 = cw340_params(
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     verilator = verilator_params(
@@ -2439,9 +2447,14 @@ opentitan_functest(
         timeout = "eternal",
         tags = ["manual"],
     ),
+    cw340 = cw340_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     verilator = verilator_params(
@@ -2466,9 +2479,14 @@ opentitan_functest(
         timeout = "eternal",
         tags = ["manual"],
     ),
+    cw340 = cw340_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     verilator = verilator_params(
@@ -2493,9 +2511,14 @@ opentitan_functest(
         timeout = "eternal",
         tags = ["manual"],
     ),
+    cw340 = cw340_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
         "cw310_test_rom",
+        "cw340_test_rom",
         "dv",
     ],
     verilator = verilator_params(
