@@ -9,7 +9,12 @@ load(
     "Cw340BinaryInfo",
     "get_one_binary_file",
 )
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+load(
+    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "assemble_for_test",
+    "get_fallback",
+    "get_files",
+)
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
@@ -114,6 +119,7 @@ def _test_dispatch(ctx, exec_env, provider):
     bitstream = get_fallback(ctx, "file.bitstream", exec_env)
     otp = get_fallback(ctx, "file.otp", exec_env)
     rom = get_fallback(ctx, "attr.rom", exec_env)
+    rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
     if bitstream:
@@ -121,6 +127,9 @@ def _test_dispatch(ctx, exec_env, provider):
     if rom:
         rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
         data_files.append(rom)
+    if rom_ext:
+        rom_ext = get_one_binary_file(rom_ext, field = "signed_bin", providers = [exec_env.provider])
+        data_files.append(rom_ext)
     if otp:
         data_files.append(otp)
     data_files.append(test_harness)
@@ -129,6 +138,7 @@ def _test_dispatch(ctx, exec_env, provider):
     # param and and some extra file references.
     param = dict(exec_env.param)
     param.update(ctx.attr.param)
+    action_param = dict(param)
 
     for attr, name in ctx.attr.binaries.items():
         file = get_one_binary_file(attr, field = "default", providers = [exec_env.provider])
@@ -136,19 +146,44 @@ def _test_dispatch(ctx, exec_env, provider):
         if name in param:
             fail("The binaries substitution name", name, "already exists")
         param[name] = file.short_path
+        action_param[name] = file.path
 
     if bitstream and "bitstream" not in param:
         param["bitstream"] = bitstream.short_path
+        action_param["bitstream"] = bitstream.path
     if rom and "rom" not in param:
         param["rom"] = rom.short_path
+        action_param["rom"] = rom.path
+    if rom_ext and "rom_ext" not in param:
+        param["rom_ext"] = rom_ext.short_path
+        action_param["rom_ext"] = rom_ext.path
     if otp and "otp" not in param:
         param["otp"] = otp.short_path
+        action_param["otp"] = otp.path
     if provider:
         data_files.append(provider.default)
         if "firmware" not in param:
             param["firmware"] = provider.default.short_path
+            action_param["firmware"] = provider.default.path
         else:
             fail("This test builds firmware, but the firmware param has already been provided")
+
+    # If the test requested an assembled image, then use opentitantool to
+    # assemble the image.  Replace the firmware param with the newly assembled
+    # image.
+    if "assemble" in param:
+        assemble = param["assemble"].format(**action_param)
+        assemble = ctx.expand_location(assemble, data_labels)
+        image = assemble_for_test(
+            ctx,
+            name = ctx.attr.name,
+            spec = assemble.split(" "),
+            data_files = data_files,
+            opentitantool = exec_env._opentitantool,
+        )
+        param["firmware"] = image.short_path
+        action_param["firmware"] = image.path
+        data_files.append(image)
 
     # FIXME: maybe splice a bitstream here
 
@@ -224,6 +259,7 @@ def cw310_params(
         test_harness = None,
         binaries = {},
         rom = None,
+        rom_ext = None,
         otp = None,
         bitstream = None,
         test_cmd = "",
@@ -238,6 +274,7 @@ def cw310_params(
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binary labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
+      rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
       test_cmd: Use an alternate test_cmd for this test.
@@ -253,6 +290,7 @@ def cw310_params(
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
+        rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
         test_cmd = test_cmd,
@@ -267,6 +305,7 @@ def cw310_jtag_params(
         test_harness = None,
         binaries = {},
         rom = None,
+        rom_ext = None,
         otp = None,
         bitstream = None,
         test_cmd = OPENTITANTOOL_OPENOCD_TEST_CMD,
@@ -284,6 +323,7 @@ def cw310_jtag_params(
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binary labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
+      rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
       test_cmd: Use an alternate test_cmd for this test.
@@ -299,6 +339,7 @@ def cw310_jtag_params(
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
+        rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
         test_cmd = test_cmd,

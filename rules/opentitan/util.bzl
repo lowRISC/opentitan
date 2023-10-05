@@ -53,3 +53,31 @@ def get_files(attrs):
         else:
             print("No DefaultInfo in ", attr)
     return files
+
+def assemble_for_test(ctx, name, spec, data_files, opentitantool):
+    """Assemble a set of images into a flash binary for testing.
+
+    Args:
+      ctx: A context object.
+      name: The base name of the output image.
+      spec: A list of strings specifying the assembly parameters.
+            e.g.: ["rom_ext_path@0x0", "test_path@0x10000"].
+      data_files: A list of files needed by the spec.
+      opentitantool: The opentitantool executable.
+    Returns:
+      File: the assembled image.
+    """
+    image = ctx.actions.declare_file(name + ".img")
+    ctx.actions.run(
+        outputs = [image],
+        inputs = data_files,
+        arguments = [
+            "--rcfile=",
+            "image",
+            "assemble",
+            "--mirror=false",
+            "--output={}".format(image.path),
+        ] + spec,
+        executable = opentitantool,
+    )
+    return image

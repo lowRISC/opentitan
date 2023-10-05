@@ -12,6 +12,7 @@ _FIELDS = {
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
+    "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
     "bitstream": ("file.bitstream", False),
     "args": ("attr.args", False),
@@ -127,6 +128,11 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("rom"),
             allow_files = True,
             doc = "ROM image to use in this environment",
+        ),
+        "rom_ext": attr.label(
+            default = kwargs.get("rom_ext"),
+            allow_files = True,
+            doc = "ROM_EXT image to use in this environment",
         ),
         "otp": attr.label(
             default = kwargs.get("otp"),

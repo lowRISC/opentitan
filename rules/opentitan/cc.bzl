@@ -349,6 +349,10 @@ opentitan_test = rv_rule(
             allow_files = True,
             doc = "ROM image override for this test",
         ),
+        "rom_ext": attr.label(
+            allow_files = True,
+            doc = "ROM_EXT image override for this test",
+        ),
         "otp": attr.label(
             allow_single_file = True,
             doc = "OTP image override for this test",

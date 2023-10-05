@@ -198,6 +198,7 @@ def dv_params(
         test_harness = None,
         binaries = None,
         rom = None,
+        rom_ext = None,
         otp = None,
         test_cmd = "",
         data = [],
@@ -211,6 +212,7 @@ def dv_params(
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binaries labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
+      rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
@@ -225,6 +227,7 @@ def dv_params(
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
+        rom_ext = rom_ext,
         otp = otp,
         bitstream = None,
         test_cmd = test_cmd,
