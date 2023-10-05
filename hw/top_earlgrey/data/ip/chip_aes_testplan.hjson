@@ -8,13 +8,102 @@
       name: chip_sw_aes_enc
       desc: '''Verify the AES operation.
 
-            Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
-            computation to start. Wait for the AES operation to complete by polling the status
-            register. Check the digest registers for correctness against the expected digest value.
+            Procedure:
+            -Set up the desired operation, ECB mode, 256b key length, and set the engine to
+            manual operation. Set mask_reseeding to 1 per block.
+            -Trigger the encryption by loading the plaintext.
+            -Wait for the AES operation to complete by polling the status register and read the
+            result.
+
+            -The above procedure should be performed twice. First for encryption. Second for
+            decryption of the result using the same key.
+            -Check that the decryption result matches the original plaintext.
             '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.KEY_LEN.256",
+        "AES.MANUAL_OPERATION",
+      ]
       stage: V2
+      si_stage: SV1
+      lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en"]
+    }
+    {
+      name: chip_sw_aes_multi_block
+      desc: '''Verify the AES operations on multi-block messages.
+            This test should be performed for all supported modes (ECB, CBC, CFB-128, OFB and CTR)
+            and all supported key lengths (128/192/256).
+
+            Note: The number of message blocks has to be at least 4.
+
+            Note: AES should start this test using the automatic (default) operation. This means
+                  that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
+
+            Procedure:
+            -Configure the desired operation, mode, key length, and set the engine to automatic
+             operation. Configure the IV for modes that require it.
+            -Using dif_aes_start()  and dif_aes_process_data(), encrypt the message.
+            -Check the output for correctness against the expected value.
+
+            -The above procedure should be performed twice. First for encryption. Second for
+            decryption of the result using the same key (and same IV if needed).
+            -Check that the decryption result matches the original plaintext.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.MODE.CBC",
+        "AES.MODE.CFB-128",
+        "AES.MODE.OFB",
+        "AES.MODE.CTR",
+        "AES.KEY_LEN.128",
+        "AES.KEY_LEN.192",
+        "AES.KEY_LEN.256",
+      ]
+      stage: V2
+      si_stage: SV1
+      lc_states: ["PROD"]
+      tests: []
+    }
+    {
+      name: chip_sw_aes_interrupt_encryption
+      desc: '''Verify that a multi-block encryption can be interrupted and continued.
+
+            This test should:
+              - start the encryption of a four-block message.
+              - interrupt it after two blocks by reading back the IV register.
+              - perform an encryption of a different message using a different key.
+              - re-store and complete the original encryption
+
+            Note: AES should start this test using the automatic (default) operation. This means
+                  that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
+
+            Procedure:
+            -Configure encryption using the desired mode, key length, IV, and set the engine to
+            automatic operation.
+            -Using dif_aes_process_data, encrypt the first two blocks.
+            -Using dif_aes_read_iv read the IV. Note that AES has automatically updated the content
+             of this register. This IV will be needed later to continue this encryption.
+            -De-initialize automatic operation. This step is necessary to clear all registers.
+            -Perform an encryption using a different data and key. Message size, key size and mode
+             can be chosen arbitrarily.
+            -Continue the original encryption:
+                -Configure the operation using the previously read IV
+                -Process the remaining plaintext blocks using dif_aes_process_data
+            -Decrypt the result (using the original key and IV)
+            -Check that the decryption result matches the original plaintext.
+            '''
+      features: [
+        "AES.MODE.CBC",
+        "AES.MODE.CFB-128",
+        "AES.MODE.OFB",
+        "AES.MODE.CTR",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
     }
     {
       name: chip_sw_aes_entropy
@@ -32,8 +121,88 @@
             - Assertion check verifies that the IV are also garbage, i.e. different from the
               originally written values.
             '''
+      features: [
+        "AES.MODE.CBC",
+        "AES.CLEAR.DATA_OUT",
+        "AES.CLEAR.KEY_IV_DATA_IN",
+      ]
       stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_aes_entropy"]
+    }
+    {
+      name: chip_sw_aes_prng_reseed
+      desc: '''Verify that PRNG reseeding is triggered
+
+            This test should start encryption, disable the EDN, and verify that the
+            encryption stalls when reseed is required. Afterwards it should verify that AES
+            finishes encryption after EDN is re-enabled.
+
+            Procedure:
+            -Configure encryption using the ECB mode, desired key length, and set the engine to
+            automatic operation.
+                -Set the mask_reseeding to once per 64 blocks (kDifAesReseedPer64Block)
+            -Using dif_aes_process_data() encrypt some number of blocks (fewer than 64).
+            -Disable the EDN using dif_edn_stop().
+            -Encrypt more blocks and verify that encryption stalls after 64 blocks.
+                -Once the first 64 blocks are encrypted, a reseed request will be sent to EDN.
+                Since the EDN should be disabled at this point, this should cause encryption
+                to stall.
+            -Re-enable EDN. In order to do this it is required to first disable and re-enable the
+             CSRNG. In order to re-enable CSRNG, it is required to first disable and re-enable
+             the entropy source. The following sequence of steps should be used:
+                -Disable CSRNG
+                -Disable Entropy Source
+                -Enable Entropy Source
+                -Enable CSRNG
+                -Enable EDN
+            -Verify that the AES completes encryption of the remaining blocks.
+
+            -Repeat the test for a reseed rate kDifAesReseedPer8kBlock and a message longer than 8K
+            blocks.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.PRNG.RESEED_RATE",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_aes_prng_reseed"]
+    }
+    {
+      name: chip_sw_aes_force_prng_reseed
+      desc: '''Verify that when KEY_TOUCH_FORCES_RESEED is set, the PRNG reseed is
+               triggered every time a key changes
+
+            Procedure:
+            -Configures the auxiliary options for AES to enable KEY_TOUCH_FORCES_RESEED
+            -Disable the EDN using dif_edn_stop()
+            -Configure the encryption operation, mode, key length, and set the engine to manual
+             operation.
+            -Set up encryption using aes_testutils_setup_encryption()
+              -At this point dif_aes_start() will write the key register which will trigger reseed
+               request. This request will stall the encryption until EDN is re-enabled.
+            -Verify that the encryption stalls.
+            -Re-enable EDN. In order to do this it is required to first disable and re-enable the
+             CSRNG. In order to re-enable CSRNG, it is required to first disable and re-enable
+             the entropy source. The following sequence of steps should be used:
+                -Disable CSRNG
+                -Disable Entropy Source
+                -Enable Entropy Source
+                -Enable CSRNG
+                -Enable EDN
+            -Verify that the AES completes encryption.
+            '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.PRNG.KEY_TOUCH_FORCES_RESEED",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: ["chip_sw_aes_force_prng_reseed"]
     }
     {
       name: chip_sw_aes_idle
@@ -49,7 +218,12 @@
               clkmgr now reads 0 again (AES is disabled).
             - Write the AES clk hint to 1, read and check the AES output for correctness.
             '''
+      features: [
+        "AES.MODE.ECB",
+      ]
       stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_aes_idle"]
     }
     {
@@ -67,7 +241,13 @@
             - Clear the key in the keymgr and decrypt the ciphertext again.
             - Verify that output is not equal to the plain text.
             '''
+      features: [
+        "AES.MODE.ECB",
+        "AES.KEY.SIDELOAD",
+      ]
       stage: V2
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_keymgr_sideload_aes"]
     }
     {
@@ -97,6 +277,7 @@
               second share of intermediate and output state is not zero.
             '''
       stage: V2S
+      si_stage: None
       tests: ["chip_sw_aes_masking_off"]
      }
   ]
