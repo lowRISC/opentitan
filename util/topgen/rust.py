@@ -49,7 +49,8 @@ class MemoryRegion(object):
 
 
 class RustEnum(object):
-    def __init__(self, top_name, name, repr_type=None, derive_list=["Copy", "Clone"]):
+    def __init__(self, top_name, name, repr_type=None,
+                 derive_list=["Copy", "Clone", "PartialEq", "Eq"]):
         self.name = top_name + name
         self.short_name = name
         self.enum_counter = 0
