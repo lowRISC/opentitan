@@ -438,7 +438,7 @@ module keymgr_dpe
   always_comb begin : gen_adv_matrix_all
     adv_matrix = {(2**DpeNumBootStagesWidth){AdvDataWidth'(sw_binding)}};
     adv_dvalid = {(2**DpeNumBootStagesWidth){1'b1}};
-    // 0 = Creator is a special case
+    // For (0 = Creator) and (1 = OwnerInt), check seed validity
     adv_matrix[Creator] = AdvDataWidth'({sw_binding,
                                         revision_seed,
                                         otp_device_id_i,
@@ -533,15 +533,15 @@ module keymgr_dpe
   //  KMAC Control
   /////////////////////////////////////
 
-  // TODO(#384): Fix these unconnected invalid_data checks to kmac_if
+  // `invalid_data` only checks key and message data that goes into KMAC interface is valid.
+  // It does not check the validity of the requested operation, with respect to other inputs
+  // such as policy violation etc.
   logic [3:0] invalid_data;
-  // teporary place holder assignment (to be removed with TODO above):
-  assign invalid_data = '0;
-  // assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[active_key_slot.boot_stage];
-  // assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
-  // assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[active_key_slot.boot_stage];
+  assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
+  assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
 
-  // TODO(#384): invalid_data should be connected here
+  // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
   keymgr_kmac_if u_kmac_if (
     .clk_i,
@@ -778,10 +778,6 @@ module keymgr_dpe
   // so `key_policy` field is not really used
   keymgr_dpe_policy_t unused_active_policy;
   assign unused_active_policy = active_key_slot.key_policy;
-
-  // TODO(#384): Remove this lint unused assignment once adv_dvalid is connected.
-  logic [2 ** DpeNumBootStagesWidth-1:0] unused_adv_dvalid;
-  assign unused_adv_dvalid = adv_dvalid;
 
   `ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
 
