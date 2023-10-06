@@ -247,13 +247,8 @@ jobs:
       # copy the rom to a specific location
       ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
       mkdir -p "${ROM_TARGET}"
-      # To make the correct query to get the ELF output file, we have to start
-      # from a node that is built for our usual target platform (the host) and
-      # follow the edges in the graph across the configuration transition (to
-      # riscv32). The deps 2 levels down from the opentitan_rom_binary include
-      # all the important files.
-      ROM_REAL_TARGETS="deps(//sw/device/silicon_creator/rom:rom_with_real_keys_from_src_fpga_cw310, 2)"
-      ROM_FAKE_TARGETS="deps(//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310, 2)"
+      ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
+      ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
       QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
       ROM_REAL_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
       ROM_FAKE_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
