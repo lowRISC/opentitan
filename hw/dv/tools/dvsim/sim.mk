@@ -122,8 +122,9 @@ ifneq (${sw_images},)
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=label_kind | cut -f1 -d' '); \
-			if [[ $${kind} == "opentitan_test" || \
-					$${bazel_label} == "//sw/device/lib/testing/test_rom:test_rom_sim_dv" ]]; then \
+			if [[ $${kind} == "opentitan_test" \
+					|| $${bazel_label} == "//sw/device/lib/testing/test_rom:test_rom_sim_dv" \
+					|| $${bazel_label} == "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_dv" ]]; then \
 				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
 					$${bazel_label} \
 					--ui_event_filters=-info \

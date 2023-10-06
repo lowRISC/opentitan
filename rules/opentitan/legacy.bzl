@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-def legacy_rom_targets(target, suffixes):
+def legacy_rom_targets(target, suffixes, testonly = False):
     """Create filegroups for legacy ROM rule target names.
 
     Creates the `<name>_rom` and `<name>_scr_vmem` targets required by the
@@ -20,8 +20,10 @@ def legacy_rom_targets(target, suffixes):
                 "//sw/device:is_english_breakfast": "{}_rom32".format(suffix),
                 "//conditions:default": "{}_rom".format(suffix),
             }),
+            testonly = testonly,
         )
         native.alias(
             name = "{}_{}_scr_vmem".format(target, suffix),
             actual = ":{}_{}".format(target, suffix),
+            testonly = testonly,
         )

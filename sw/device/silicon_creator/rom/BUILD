@@ -3,17 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary", "opentitan_test")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM", "elf_to_scrambled_rom_vmem", "opentitan_rom_binary")
-load("//rules:exclude_files.bzl", "exclude_files")
+load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
-load(
-    "//rules:opentitan_test.bzl",
-    "manual_test",
-    "opentitan_functest",
-)
+load("//rules:opentitan_test.bzl", "manual_test")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@crt//rules:transition.bzl", "platform_target")
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -159,9 +154,24 @@ cc_library(
     ],
 )
 
-opentitan_rom_binary(
+_ROM_DEVICES = [
+    "sim_dv",
+    "sim_verilator",
+    "fpga_cw310",
+    "fpga_cw340",
+]
+
+opentitan_binary(
     name = "rom_with_fake_keys",
     testonly = True,
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = ":linker_script",
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
@@ -169,15 +179,31 @@ opentitan_rom_binary(
     ],
 )
 
-platform_target(
-    name = "rom_with_fake_keys_fpga_cw310_elf",
+# Create the legacy ROM target names so that existing opentitan_functest and
+# splicing rules can find the rom VMEM files.
+legacy_rom_targets(
     testonly = True,
-    platform = OPENTITAN_PLATFORM,
-    target = ":rom_with_fake_keys_fpga_cw310.elf",
+    suffixes = _ROM_DEVICES,
+    target = "rom_with_fake_keys",
 )
 
-opentitan_rom_binary(
-    name = "rom_with_real_keys_from_src",
+filegroup(
+    name = "rom_with_fake_keys_fpga_cw310_elf",
+    testonly = True,
+    srcs = [":rom_with_fake_keys"],
+    output_group = "fpga_cw310_elf",
+)
+
+opentitan_binary(
+    name = "rom_with_real_keys",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = ":linker_script",
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
@@ -185,39 +211,11 @@ opentitan_rom_binary(
     ],
 )
 
-_ROM_DEVICES = [
-    "sim_dv",
-    "sim_verilator",
-    "fpga_cw310",
-]
-
-[
-    elf_to_scrambled_rom_vmem(
-        name = "rom_with_real_keys_{}_scr_vmem".format(dev),
-        srcs = ["//sw/device/silicon_creator/rom/binaries:rom_with_real_keys_{}.elf".format(dev)],
-        platform = OPENTITAN_PLATFORM,
-    )
-    for dev in _ROM_DEVICES
-]
-
-# We use a filegroup here that points to the scrambled ROM VMEM file because
-# dvsim invokes a `bazel cquery ...` command to locate the ROM VMEM file it
-# built using the device-specific label name.
-[
-    filegroup(
-        name = "rom_with_real_keys_{}".format(dev),
-        srcs = [":rom_with_real_keys_{}_scr_vmem".format(dev)],
-    )
-    for dev in _ROM_DEVICES
-]
-
-filegroup(
-    name = "rom_with_real_keys",
-    srcs = [
-        ":rom_with_real_keys_fpga_cw310_scr_vmem",
-        ":rom_with_real_keys_sim_dv_scr_vmem",
-        ":rom_with_real_keys_sim_verilator_scr_vmem",
-    ],
+# Create the legacy ROM target names so that existing opentitan_functest and
+# splicing rules can find the rom VMEM files.
+legacy_rom_targets(
+    suffixes = _ROM_DEVICES,
+    target = "rom_with_real_keys",
 )
 
 cc_library(
@@ -417,14 +415,26 @@ cc_test(
     ],
 )
 
-[exclude_files(
+[output_groups(
     name = "pre_package_{}".format(authenticity),
     testonly = testonly,
     srcs = [":rom_with_{}_keys".format(authenticity)],
-    exclude_suffix = [
-        ".ll",
-        ".i",
-        ".s",
+    groups = [
+        "fpga_cw310_binary",
+        "fpga_cw310_elf",
+        "fpga_cw310_rom",
+        "fpga_cw310_mapfile",
+        "fpga_cw340_binary",
+        "fpga_cw340_elf",
+        "fpga_cw340_rom",
+        "fpga_cw340_mapfile",
+        "sim_dv_elf",
+        "sim_dv_rom",
+        "sim_dv_logs",
+        "sim_dv_mapfile",
+        "sim_verilator_elf",
+        "sim_verilator_rom",
+        "sim_verilator_mapfile",
     ],
 ) for authenticity, testonly in (
     ("fake", True),
@@ -435,6 +445,7 @@ cc_test(
 [pkg_files(
     name = "package_{}".format(authenticity),
     testonly = testonly,
+    #srcs = [":pre_package_{}".format(authenticity)],
     srcs = [":pre_package_{}".format(authenticity)],
     prefix = "earlgrey/rom",
 ) for authenticity, testonly in (
@@ -452,16 +463,27 @@ manual_test(
     testplan = "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
 )
 
+output_groups(
+    name = "rom_with_real_keys_binaries",
+    srcs = [":rom_with_real_keys"],
+    groups = [
+        "fpga_cw310_binary",
+        "fpga_cw340_binary",
+        "sim_dv_binary",
+        "sim_verilator_binary",
+    ],
+)
+
 genrule(
     name = "rom_hashes",
     testonly = True,
     srcs = [
-        ":rom_with_real_keys_from_src",
+        ":rom_with_real_keys_binaries",
     ],
     outs = ["rom_hashes.txt"],
     cmd = """
         echo "SHA256 of rom with real keys" > $@
-	for f in $(locations :rom_with_real_keys_from_src); do
+	for f in $(locations :rom_with_real_keys_binaries); do
 	    if [[ "$$f" == *bin ]]; then
 	        name=$$(basename $$f)
 		echo $$f >> $@
