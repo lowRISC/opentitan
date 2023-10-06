@@ -953,6 +953,7 @@ cc_library(
     srcs = ["pwrmgr_sleep_all_wake_ups_impl.c"],
     hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
+    visibility = ["//sw/device/tests:__pkg__"],
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1009,27 +1010,6 @@ opentitan_test(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:nv_counter_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
-    ],
-)
-
-opentitan_test(
-    name = "pwrmgr_random_sleep_all_wake_ups",
-    srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
