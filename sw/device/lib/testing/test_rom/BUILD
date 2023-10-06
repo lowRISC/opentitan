@@ -10,7 +10,7 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
-load("//rules:exclude_files.bzl", "exclude_files")
+load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
@@ -194,14 +194,22 @@ opentitan_test(
     ],
 )
 
-exclude_files(
+output_groups(
     name = "pre_package",
     testonly = True,
     srcs = [":test_rom"],
-    exclude_suffix = [
-        ".ll",
-        ".i",
-        ".s",
+    groups = [
+        "fpga_cw305_rom32",
+        "fpga_cw305_mapfile",
+        "fpga_cw310_rom",
+        "fpga_cw310_mapfile",
+        "fpga_cw340_rom",
+        "fpga_cw340_mapfile",
+        "sim_dv_rom",
+        "sim_dv_logs",
+        "sim_dv_mapfile",
+        "sim_verilator_rom",
+        "sim_verilator_mapfile",
     ],
 )
 

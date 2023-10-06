@@ -27,3 +27,27 @@ exclude_files = rule(
         ),
     },
 )
+
+def _output_groups(ctx):
+    out = []
+    for src in ctx.attr.srcs:
+        src = src[OutputGroupInfo]
+        for group in ctx.attr.groups:
+            out.append(src[group])
+    return DefaultInfo(
+        files = depset(transitive = out),
+    )
+
+output_groups = rule(
+    implementation = _output_groups,
+    attrs = {
+        "srcs": attr.label_list(
+            mandatory = True,
+            providers = [OutputGroupInfo],
+            doc = "Targets producing file outputs",
+        ),
+        "groups": attr.string_list(
+            doc = "Output groups to collect from the srcs",
+        ),
+    },
+)
