@@ -124,20 +124,33 @@ def _test_dispatch(ctx, exec_env, provider):
         data_files.append(rom)
     if otp:
         data_files.append(otp)
-    data_files.append(provider.default)
-    data_files.extend(provider.logs)
     data_files.append(test_harness)
 
     # Construct a param dictionary by combining the exec_env.param, the rule's
     # param and and some extra file references.
     param = dict(exec_env.param)
     param.update(ctx.attr.param)
+
+    for attr, name in ctx.attr.binaries.items():
+        file = get_one_binary_file(attr, field = "default", providers = [exec_env.provider])
+        data_files.append(file)
+        if name in param:
+            fail("The binaries substitution name", name, "already exists")
+        param[name] = file.short_path
+
     if rom and "rom" not in param:
         param["rom"] = rom.short_path
     if otp and "otp" not in param:
         param["otp"] = otp.short_path
-    if "firmware" not in param:
-        param["firmware"] = provider.default.short_path
+    if provider:
+        data_files.append(provider.default)
+
+        # Collect the DV logs databases if they're provided.
+        data_files.extend(getattr(provider, "logs", []))
+        if "firmware" not in param:
+            param["firmware"] = provider.default.short_path
+        else:
+            fail("This test builds firmware, but the firmware param has already been provided")
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
@@ -182,6 +195,7 @@ def dv_params(
         timeout = "short",
         local = False,
         test_harness = None,
+        binaries = None,
         rom = None,
         otp = None,
         test_cmd = "",
@@ -194,6 +208,7 @@ def dv_params(
       timeout: The timeout to apply to the test rule.
       local: Whether to set the `local` flag on this test.
       test_harness: Use an alternative test harness for this test.
+      binaries: Dict of binaries labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
       otp: Use an alternate OTP configuration for this test.
       test_cmd: Use an alternate test_cmd for this test.
@@ -207,6 +222,7 @@ def dv_params(
         timeout = timeout,
         local = local,
         test_harness = test_harness,
+        binaries = binaries,
         rom = rom,
         otp = otp,
         bitstream = None,

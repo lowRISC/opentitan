@@ -315,16 +315,13 @@ opentitan_binary = rv_rule(
 def _opentitan_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
 
-    # If the test is supplied exactly one file and no deps _and_ that file
-    # is a provider for the current exec_env, then we assume that it's a
-    # pre-built binary.
-    if len(ctx.attr.srcs) == 1 and len(ctx.attr.deps) == 0 and exec_env.provider in ctx.attr.srcs[0]:
-        p = ctx.attr.srcs[0][exec_env.provider]
-    else:
+    if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + [exec_env.lib]
         provides, signed = _build_binary(ctx, exec_env, name, deps)
         p = exec_env.provider(**provides)
+    else:
+        p = None
 
     executable, runfiles = exec_env.test_dispatch(ctx, exec_env, p)
     return DefaultInfo(
@@ -343,6 +340,10 @@ opentitan_test = rv_rule(
             default = "//sw/host/opentitantool:opentitantool",
             executable = True,
             cfg = "exec",
+        ),
+        "binaries": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = "Opentitan binaries to use with this test (keys are labels, values are the string to use as a subsitution parameter in test_cmd)",
         ),
         "rom": attr.label(
             allow_files = True,

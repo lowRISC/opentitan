@@ -100,7 +100,7 @@ def _hacky_tags(env):
 
 def opentitan_test(
         name,
-        srcs,
+        srcs = [],
         kind = "flash",
         deps = [],
         copts = [],
@@ -119,7 +119,7 @@ def opentitan_test(
     Args:
       name: The base name of the test.  The name will be extended with the name
             of the execution environment.
-      srcs: The source files (or a binary image) for this test.
+      srcs: The source files for this test.
       kind: The kind of test (flash, ram, rom).
       deps: Dependecies for this test.
       copts: Compiler options for this test.
@@ -171,6 +171,7 @@ def opentitan_test(
             local = tparam.local,
             # Override parameters in the test rule.
             test_harness = tparam.test_harness,
+            binaries = tparam.binaries,
             rom = tparam.rom,
             otp = tparam.otp,
             bitstream = tparam.bitstream,
