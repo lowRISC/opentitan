@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "opentitan_flash_binary")
+load("//rules/opentitan:defs.bzl", "opentitan_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,9 +15,14 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "aes_serial",
+    testonly = True,
     srcs = ["aes_serial.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -33,9 +38,14 @@ opentitan_flash_binary(
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "kmac_serial",
+    testonly = True,
     srcs = ["kmac_serial.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -49,9 +59,14 @@ opentitan_flash_binary(
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "sha3_serial",
+    testonly = True,
     srcs = ["sha3_serial.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -65,9 +80,14 @@ opentitan_flash_binary(
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "ecc384_serial",
+    testonly = True,
     srcs = ["ecc384_serial.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -84,9 +104,14 @@ opentitan_flash_binary(
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "ecc256_sign_serial",
+    testonly = True,
     srcs = ["ecc256_sign_serial.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw305",
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
