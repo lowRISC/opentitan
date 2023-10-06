@@ -22,8 +22,9 @@ _TEST_SCRIPT = """#!/bin/bash
 set -e
 
 readonly DVSIM="util/dvsim/dvsim.py"
+TEST_CMD=({test_cmd})
 echo "At this time, dvsim.py must be run manually (after building SW) via:
-${{DVSIM}} {args} {test_cmd}"
+${{DVSIM}} {args} ${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
@@ -154,7 +155,7 @@ def _test_dispatch(ctx, exec_env, provider):
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
-    test_cmd = test_cmd.replace("\n", " ").format(**param)
+    test_cmd = test_cmd.format(**param)
     test_cmd = ctx.expand_location(test_cmd, data_labels)
 
     # Get the pre-test_cmd args.
