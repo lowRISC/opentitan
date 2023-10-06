@@ -13,7 +13,12 @@
             - Program the alert_test CSR in each block to trigger each alert one by one.
             - Ensure that all alerts are properly connected to the alert handler and cause the
               escalation paths to trigger.
+
+            Note for silicon validation:
+            - Ensure this test makes no alterations to OTP (use NMI escalation path).
             '''
+      features: ["ALERT_HANDLER.ALERT.OBSERVE",
+                 "ALERT_HANDLER.ALERT.ESCALATE"]
       stage: V2
       si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
@@ -28,9 +33,57 @@
             - Verify the second results in device being put in scrap state, via the LC JTAG TAP.
             - Verify the third results in chip reset.
             - Ensure that all escalation handshakes complete without errors.
+              - This cannot be checked in sival as the handshake signals cannot
+                be directly observed.
             '''
+      features: ["ALERT_HANDLER.ALERT.ESCALATE",
+                 "ALERT_HANDLER.ESCALATION.PHASES"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_escalation"]
+      otp_mutate: true
+      host_support: true
+    }
+    {
+      name: chip_sw_alert_handler_escalation_nmi_reset
+      desc: '''Verify NMI and reset alert escalation paths.
+
+            - Program the alert classes to only use escalation signals 0 and 3 (NMI interrupt and
+              chip reset)
+            - Verify the first escalation of an alert results in NMI interrupt serviced by the CPU.
+            - Verify the second escalation of an alert results in a chip reset.
+            - It is critical this test does not trigger escalation signals 1 and 2 as these result
+              in an OTP mutate that puts the chips in an unrecoverable SCRAP state.
+            - Verify any timer interrupts are disabled by escalation.
+            - Verify after the escalation reset all faults are cleared, and that the alert
+              info captured the correct alert.
+            - Check that no additional resets occur.
+            '''
+      features: ["ALERT_HANDLER.ALERT.ESCALATE",
+                 "ALERT_HANDLER.ESCALATION.PHASES"]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      otp_mutate: false
+    }
+    {
+      name: chip_sw_alert_handler_escalation_methods
+      desc: '''Verify the different escalation trigger methods
+
+            For each escalation class, verify the escalation occurs (just the first stage, NMI
+            escalation) with all of the possible trigger methods.
+            - Escalation triggered when the number of alerts seen in the class is greater than the
+              threshold
+            - Escalation triggered when initial interrupt isn't acknowledged within the timeout
+            '''
+      features: ["ALERT_HANDLER.ESCALATION.COUNT",
+                 "ALERT_HANDLER.ESCALATION.TIMEOUT"]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
     }
     {
       name: chip_sw_all_escalation_resets
@@ -52,6 +105,7 @@
             - Check that no additional resets occur.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_all_escalation_resets"]
     }
     {
@@ -60,7 +114,10 @@
 
             X-ref'ed with the automated PLIC test.
             '''
+      features: ["ALERT_HANDLER.ALERT.INTERRUPT"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_plic_all_irqs"]
     }
     {
@@ -74,6 +131,7 @@
               complete without errors.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_alert_handler_entropy"]
     }
     {
@@ -85,8 +143,12 @@
 
             Xref'ed with chip_sw_rstmgr_alert_info.
             '''
+      features: ["ALERT_HANDLER.CRASH_DUMP"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_rstmgr_alert_info"]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_alert_handler_ping_timeout
@@ -96,8 +158,12 @@
             alert_handler detects the ping timeout and reflects it on the `loc_alert_cause`
             register.
             '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_ping_timeout"]
+      bazel: ["//sw/device/tests:alert_handler_ping_timeout_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
@@ -113,7 +179,10 @@
             - Fatal alerts from flash_ctrl, otp_ctrl, sram_ctrl, and lc_ctrl are omitted because
               they disable the CPU and require a reset for the system to continue to function.
             '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
     }
     {
@@ -134,8 +203,12 @@
               This scenario ensures the ping mechanism will continue to send out pings after waking
               up from sleep modes.
             '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_pings"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_sleep_mode_pings_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_alert_handler_lpg_clock_off
@@ -144,8 +217,12 @@
             - Configure clkmgr to randomly turn off one of the IP's clock and check alert_handler
               won't trigger a ping timeout error on that block.
             '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_alert_handler_lpg_reset_toggle
@@ -154,8 +231,12 @@
             - Configure rstmgr to randomly toggle one IP block's SW reset and check alert_handler
               won't trigger a ping timeout error on that block.
            '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_test_rom"]
    }
    {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
@@ -208,8 +289,12 @@
               - Disable AON timer.
               - Check there are no flagged local alerts.
             '''
+      features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
+      bazel: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test_fpga_cw310_test_rom"]
     }
   ]
 }
