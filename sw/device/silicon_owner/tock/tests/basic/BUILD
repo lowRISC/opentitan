@@ -4,9 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
-load("//sw/device/silicon_owner/tock/tests:defs.bzl", "tock_functest_setup")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "cw310_params", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -37,25 +35,15 @@ tock_image(
     kernel = "//sw/device/silicon_owner/tock/tests:test_kernel",
 )
 
-# This macro creates aliases to meet the naming conventions assumed by opentitan_functest.
-tock_functest_setup(
-    name = "image",
-)
-
-opentitan_functest(
+opentitan_test(
     name = "basic_test",
     # TODO(tock#3639, opentitan#19479): Tock needs to update the earlgrey chip
     # config to use the new fpga_cw310 clock frequencies.
     cw310 = cw310_params(
+        binaries = {":image": "firmware"},
         tags = ["broken"],
     ),
-    ot_flash_binary = ":image",
-    signed = False,
-    targets = [
-        # For now, this only runs on the FPGA.  The verilator target requires
-        # a vmem file, which is currently expected to be created by the rule
-        # supplying the binary.  Since we don't do that yet, the verilator
-        # target is not supported.
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
 )
