@@ -288,6 +288,9 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } ready;
+    struct packed {
+      logic        q;
     } error;
     struct packed {
       logic        q;
@@ -330,10 +333,10 @@ package mbx_reg_pkg;
 
   // Register -> HW type for soc interface
   typedef struct packed {
-    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [72:41]
-    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [40:9]
-    mbx_reg2hw_soc_control_reg_t soc_control; // [8:3]
-    mbx_reg2hw_soc_status_reg_t soc_status; // [2:0]
+    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [73:42]
+    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [41:10]
+    mbx_reg2hw_soc_control_reg_t soc_control; // [9:4]
+    mbx_reg2hw_soc_status_reg_t soc_status; // [3:0]
   } mbx_soc_reg2hw_t;
 
   // HW -> register type for soc interface

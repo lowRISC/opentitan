@@ -158,6 +158,7 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
   logic ombx_pending;
   logic ombx_status_ready_valid, ombx_status_ready;
+  logic sysif_status_ready;
   logic ombx_doe_intr_state_set;
 
   // Interface signals for SRAM host access to read the memory and serve it to the outbox
@@ -192,6 +193,7 @@ module mbx
     .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
+    .sysif_status_ready_o                ( sysif_status_ready                 ),
     // Alias of the interrupt address and data registers to the host interface
     .sysif_intr_msg_addr_o               ( sysif_intr_msg_addr                ),
     .sysif_intr_msg_data_o               ( sysif_intr_msg_data                ),
@@ -259,7 +261,7 @@ module mbx
     .hostif_limit_i                  ( hostif_ombx_limit              ),
     .sys_read_all_o                  ( sys_read_all                   ),
     // Control and signals from the host and system interface
-    .sysif_status_ready_i            ( ombx_status_ready              ),
+    .sysif_status_ready_i            ( sysif_status_ready             ),
     // Writing a 1 to control.abort register clears the abort condition
     .hostif_control_abort_clear_i    ( hostif_control_abort_clear     ),
     .hostif_control_error_set_i      ( hostif_control_error_set       ),
