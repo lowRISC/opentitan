@@ -32,6 +32,7 @@ module mbx_sysif
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
+  output logic                        sysif_status_ready_o,
   // Alias of the interrupt address and data registers to the host interface
   output logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr_o,
   output logic [CfgSramDataWidth-1:0] sysif_intr_msg_data_o,
@@ -123,6 +124,8 @@ module mbx_sysif
   // Cleared by SoC firmware (w1c)
   assign hw2reg.soc_status.ready.de            = sysif_status_ready_valid_i;
   assign hw2reg.soc_status.ready.d             = sysif_status_ready_i;
+  // Ready bit indication into hardware
+  assign sysif_status_ready_o = reg2hw.soc_status.ready.q;
 
   // Dedicated TLUL adapter for implementing the write data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
