@@ -98,4 +98,13 @@ package keymgr_dpe_pkg;
     retain_parent : 1'b0
   };
 
+  // Keymgr_dpe requires more lc_en copies than keymgr
+  typedef enum logic [2:0] {
+    KeymgrDpeEnCtrl,
+    KeymgrDpeEnCfg,
+    KeymgrDpeEnBinding,
+    KeymgrDpeEnDebug,
+    KeymgrDpeEnLast
+  } keymgr_lc_en_usage_e;
+
 endpackage : keymgr_dpe_pkg
