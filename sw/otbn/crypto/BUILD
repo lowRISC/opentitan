@@ -6,6 +6,19 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 
 package(default_visibility = ["//visibility:public"])
 
+otbn_binary(
+    name = "boot",
+    srcs = [
+        "boot.s",
+    ],
+    deps = [
+        ":p256_base",
+        ":p256_sign",
+        ":rsa_verify_3072",
+        ":rsa_verify_3072_rr",
+    ],
+)
+
 otbn_library(
     name = "ed25519",
     srcs = [
