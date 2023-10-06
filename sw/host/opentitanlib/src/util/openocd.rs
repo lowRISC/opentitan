@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::borrow::BorrowMut;
 use std::cell::{Cell, RefCell};
 use std::io::{self, ErrorKind, Read, Write};
@@ -77,22 +79,34 @@ impl OpenOcdServer {
     }
 
     /// Wait until we see a particular message on the output.
-    fn wait_until_message(stdout: &mut impl Read, msg: &str, timeout: Duration) -> Result<()> {
-        let mut s: Vec<u8> = Vec::new();
+    fn wait_until_regex_match<'a>(
+        stderr: &mut impl Read,
+        regex: &Regex,
+        timeout: Duration,
+        s: &'a mut Vec<u8>,
+    ) -> Result<regex::Captures<'a>> {
         let start = Instant::now();
         loop {
             let mut byte = 0u8;
             // NOTE the read could block indefinitely, a proper solution would involved spawning
             // a thread or using async.
-            let n = stdout.read(std::slice::from_mut(&mut byte))?;
+            let n = stderr.read(std::slice::from_mut(&mut byte))?;
             if n != 1 {
                 bail!("OpenOCD stopped before being ready?");
             }
             if byte == b'\n' {
-                let string = String::from_utf8_lossy(&s[..]);
+                let string = std::str::from_utf8(&s[..])?;
                 log::info!(target: concat!(module_path!(), "::stderr"), "{}", string);
-                if string == msg {
-                    return Ok(());
+                if regex.is_match(string) {
+                    // I would have wanted to return here, but doing so causes the Rust compiler
+                    // to complain that returning a value, which needs to immutably borrow for 'a
+                    // lifetime somehow conflicts with the mutable borrowing in other branches
+                    // further down this loop.  Moving the return statement outside the loop
+                    // eliminates the error, but requires duplicate invocation of the regex
+                    // method.  Jonathan Van Why has found that the "Polonius" borrow checker
+                    // would allow returning from this if statement, so once that becomes part of
+                    // the mainstream Rust compiler, we can improve this code.
+                    break;
                 }
                 s.clear();
             } else {
@@ -102,6 +116,8 @@ impl OpenOcdServer {
                 bail!("OpenOCD did not become ready to accept a TCL connection");
             }
         }
+        // Perform same regex match as inside the loop above.
+        return Ok(regex.captures(std::str::from_utf8(&s[..])?).unwrap());
     }
 
     /// Spawn the OpenOCD server and connect to it.
@@ -143,9 +159,9 @@ impl OpenOcdServer {
         self.jtag_tap.set(Some(tap));
         cmd.arg("-c").arg(target);
 
-        // Use the default port explicity to avoid relying on it not changing.
-        let port_cmd = format!("tcl_port {}", self.opts.openocd_port);
-        cmd.arg("-c").arg(port_cmd.as_str());
+        // Let OpenOCD choose which port to bind to, in order to never unnecesarily run into
+        // issues due to a particular port already being in use.
+        cmd.arg("-c").arg("tcl_port 0; telnet_port 0; gdb_port 0;");
         cmd.arg("-c").arg("init;");
 
         log::info!("CWD: {:?}", std::env::current_dir());
@@ -159,17 +175,21 @@ impl OpenOcdServer {
             .with_context(|| format!("failed to spawn openocd: {cmd:?}",))?;
         let stdout = child.stdout.take().unwrap();
         let mut stderr = child.stderr.take().unwrap();
-        // Wait until we see 'Info : Listening on port XXX for tcl connections' before actually connecting
+        // Wait until we see 'Info : Listening on port XXX for tcl connections' before knowing
+        // which port to connect to.
         log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
-        Self::wait_until_message(
+        static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
+            Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
+        });
+        let mut buf = Vec::new();
+        let regex_captures = Self::wait_until_regex_match(
             &mut stderr,
-            &format!(
-                "Info : Listening on port {} for tcl connections",
-                self.opts.openocd_port
-            ),
+            &READY_REGEX,
             Self::OPENOCD_TCL_READY_TMO,
+            &mut buf,
         )
         .context("OpenOCD was not ready in time to accept a connection")?;
+        let openocd_port: u16 = regex_captures.get(1).unwrap().as_str().parse()?;
         // Printer stdout and stderr
         let a = self.openocd_accumulated_stdout.clone();
         let b = self.openocd_accumulated_stderr.clone();
@@ -184,7 +204,7 @@ impl OpenOcdServer {
 
         log::info!("Connecting to OpenOCD tcl interface...");
 
-        let addr = format!("localhost:{}", self.opts.openocd_port);
+        let addr = format!("localhost:{}", openocd_port);
         let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
             .context("failed to connect to OpenOCD socket")?;
 
