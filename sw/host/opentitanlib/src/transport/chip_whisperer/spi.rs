@@ -6,6 +6,7 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::io::gpio;
 use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
 use crate::transport::chip_whisperer::usb::Backend;
 use crate::transport::TransportError;
@@ -20,14 +21,6 @@ impl<B: Board> Spi<B> {
     pub fn open(device: Rc<RefCell<Backend<B>>>) -> Result<Self> {
         {
             let usb = device.borrow();
-            usb.spi1_setpins(
-                // For some reason, SDI/SDO are reversed in the python implementation
-                // and this seems to be required to make the transport work.
-                B::PIN_SDI,
-                B::PIN_SDO,
-                B::PIN_CLK,
-                B::PIN_CS,
-            )?;
             usb.spi1_enable(true)?;
         }
 
@@ -84,6 +77,40 @@ impl<B: Board> Target for Spi<B> {
 
     fn supports_bidirectional_transfer(&self) -> Result<bool> {
         Ok(true)
+    }
+
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
+        host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
+        host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
+        chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+    ) -> Result<()> {
+        match (
+            serial_clock,
+            host_out_device_in,
+            host_in_device_out,
+            chip_select,
+        ) {
+            (Some(clk), Some(sdo), Some(sdi), Some(cs)) => {
+                let usb = self.device.borrow();
+                usb.spi1_enable(false)?;
+                usb.spi1_setpins(
+                    sdo.get_internal_pin_name().unwrap(),
+                    sdi.get_internal_pin_name().unwrap(),
+                    clk.get_internal_pin_name().unwrap(),
+                    cs.get_internal_pin_name().unwrap(),
+                )?;
+                usb.spi1_enable(true)?;
+                Ok(())
+            }
+            (None, None, None, None) => Ok(()),
+            _ => {
+                // Explicitly choosing pins for some of the SPI signals, while leaving others at
+                // their default, is not supported.
+                Err(TransportError::UnsupportedOperation.into())
+            }
+        }
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {

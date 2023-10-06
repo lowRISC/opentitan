@@ -40,6 +40,10 @@
   "spi": [
     {
       "name": "BOOTSTRAP",
+      "serial_clock": "USB_SPI_SCK",
+      "host_out_device_in": "USB_SPI_COPI",
+      "host_in_device_out": "USB_SPI_CIPO",
+      "chip_select": "USB_SPI_CS",
       "alias_of": "0"
     }
   ],
