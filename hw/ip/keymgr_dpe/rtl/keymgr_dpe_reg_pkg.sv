@@ -300,6 +300,14 @@ package keymgr_dpe_reg_pkg;
       logic        d;
       logic        de;
     } invalid_digest;
+    struct packed {
+      logic        d;
+      logic        de;
+    } invalid_root_key;
+    struct packed {
+      logic        d;
+      logic        de;
+    } inactive_lc_en;
   } keymgr_dpe_hw2reg_debug_reg_t;
 
   // Register -> HW type
@@ -324,18 +332,18 @@ package keymgr_dpe_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [588:587]
-    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [586:586]
-    keymgr_dpe_hw2reg_start_reg_t start; // [585:584]
-    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [583:583]
-    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [582:582]
-    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [581:318]
-    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [317:54]
-    keymgr_dpe_hw2reg_working_state_reg_t working_state; // [53:51]
-    keymgr_dpe_hw2reg_op_status_reg_t op_status; // [50:48]
-    keymgr_dpe_hw2reg_err_code_reg_t err_code; // [47:42]
-    keymgr_dpe_hw2reg_fault_status_reg_t fault_status; // [41:14]
-    keymgr_dpe_hw2reg_debug_reg_t debug; // [13:0]
+    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [592:591]
+    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [590:590]
+    keymgr_dpe_hw2reg_start_reg_t start; // [589:588]
+    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [587:587]
+    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [586:586]
+    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [585:322]
+    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [321:58]
+    keymgr_dpe_hw2reg_working_state_reg_t working_state; // [57:55]
+    keymgr_dpe_hw2reg_op_status_reg_t op_status; // [54:52]
+    keymgr_dpe_hw2reg_err_code_reg_t err_code; // [51:46]
+    keymgr_dpe_hw2reg_fault_status_reg_t fault_status; // [45:18]
+    keymgr_dpe_hw2reg_debug_reg_t debug; // [17:0]
   } keymgr_dpe_hw2reg_t;
 
   // Register offsets
@@ -517,7 +525,7 @@ package keymgr_dpe_reg_pkg;
     4'b 0001, // index[49] KEYMGR_DPE_OP_STATUS
     4'b 0001, // index[50] KEYMGR_DPE_ERR_CODE
     4'b 0011, // index[51] KEYMGR_DPE_FAULT_STATUS
-    4'b 0001  // index[52] KEYMGR_DPE_DEBUG
+    4'b 0011  // index[52] KEYMGR_DPE_DEBUG
   };
 
 endpackage
