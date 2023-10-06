@@ -33,7 +33,7 @@
  * @param[in] x10: t, number of Miller-Rabin rounds (security parameter)
  * @param[in] x14: dptr_b, pointer to temporary working buffer in dmem (n*32 bytes)
  * @param[in] x15: dptr_z, pointer to temporary working buffer in dmem (n*32 bytes)
- * @param[in] x16: dptr_w, pointer to candidate prime w in dmem
+ * @param[in] x16: dptr_w, pointer to candidate prime w in dmem, w mod 4 = 3
  * @param[in] x17: dptr_m0inv, pointer to Montgomery constant m0' (for w) in dmem
  * @param[in] x18: dptr_rr, pointer to Montgomery constant RR = R^2 mod w in dmem
  * @param[in] x30: n, number of limbs for all bignums (wlen / 256; n <= 16)
@@ -95,7 +95,7 @@ miller_rabin:
  *
  * @param[in] x14: dptr_b, pointer to temporary working buffer in dmem (n*32 bytes)
  * @param[in] x15: dptr_z, pointer to temporary working buffer in dmem (n*32 bytes)
- * @param[in] x16: dptr_w, pointer to candidate prime w in dmem
+ * @param[in] x16: dptr_w, pointer to candidate prime w in dmem, w mod 4 = 3
  * @param[in] x17: dptr_m0inv, pointer to Montgomery constant m0' (for w) in dmem
  * @param[in] x18: dptr_rr, pointer to Montgomery constant RR = R^2 mod w in dmem
  * @param[in] x30: n, number of limbs for all bignums (wlen / 256; n <= 16)
@@ -218,7 +218,7 @@ miller_rabin_round:
  *
  * @param[in] x14: dptr_b, pointer to randomly-generated witness to use for testing
  * @param[in] x15: dptr_z, pointer to temporary working buffer in dmem (n*32 bytes)
- * @param[in] x16: dptr_w, pointer to candidate prime w in dmem
+ * @param[in] x16: dptr_w, pointer to candidate prime w in dmem, w mod 4 = 3
  * @param[in] x17: dptr_m0inv, pointer to Montgomery constant m0' (for w) in dmem
  * @param[in] x18: dptr_rr, pointer to Montgomery constant RR = R^2 mod w in dmem
  * @param[in] x30: n, number of limbs for all bignums (wlen / 256; n <= 16)
@@ -250,6 +250,14 @@ test_witness:
   /* Initialize wide-register pointers. */
   li        x23, 23
   li        x25, 25
+
+  /* Ensure the last 3 bits of the candidate prime are set so that w mod 4 = 3.
+     This is a precondition of the subroutine, but re-setting the bits here
+     provides further protection from e.g. fault injection attacks. */
+  bn.lid    x25, 0(x16)
+  bn.addi   w23, w31, 3
+  bn.or    w25, w25, w23
+  bn.sid    x25, 0(x16)
 
   /* Clear carry flag.
        FG0.C <= 0 */
