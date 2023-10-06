@@ -21,10 +21,6 @@ pub struct JtagParams {
     #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
 
-    /// Port used to start and connect to OpenOCD over.
-    #[arg(long, default_value = "6666")]
-    pub openocd_port: u16,
-
     /// Timeout when waiting for OpenOCD to start.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "3s")]
     pub openocd_timeout: Duration,
