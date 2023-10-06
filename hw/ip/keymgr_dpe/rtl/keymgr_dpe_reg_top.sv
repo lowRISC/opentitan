@@ -334,6 +334,10 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_key_wd;
   logic debug_invalid_digest_qs;
   logic debug_invalid_digest_wd;
+  logic debug_invalid_root_key_qs;
+  logic debug_invalid_root_key_wd;
+  logic debug_inactive_lc_en_qs;
+  logic debug_inactive_lc_en_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2656,6 +2660,60 @@ module keymgr_dpe_reg_top (
     .qs     (debug_invalid_digest_qs)
   );
 
+  //   F[invalid_root_key]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_debug_invalid_root_key (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_invalid_root_key_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_root_key.de),
+    .d      (hw2reg.debug.invalid_root_key.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_root_key_qs)
+  );
+
+  //   F[inactive_lc_en]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_debug_inactive_lc_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (debug_we),
+    .wd     (debug_inactive_lc_en_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.inactive_lc_en.de),
+    .d      (hw2reg.debug.inactive_lc_en.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (debug_inactive_lc_en_qs)
+  );
+
 
 
   logic [52:0] addr_hit;
@@ -2962,6 +3020,10 @@ module keymgr_dpe_reg_top (
 
   assign debug_invalid_digest_wd = reg_wdata[6];
 
+  assign debug_invalid_root_key_wd = reg_wdata[7];
+
+  assign debug_inactive_lc_en_wd = reg_wdata[8];
+
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
@@ -3261,6 +3323,8 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[4] = debug_invalid_key_version_qs;
         reg_rdata_next[5] = debug_invalid_key_qs;
         reg_rdata_next[6] = debug_invalid_digest_qs;
+        reg_rdata_next[7] = debug_invalid_root_key_qs;
+        reg_rdata_next[8] = debug_inactive_lc_en_qs;
       end
 
       default: begin
