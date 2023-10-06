@@ -179,9 +179,9 @@ module keymgr_dpe_ctrl
   logic random_ack;
 
   // wipe and initialize take precedence
-  assign update_sel = wipe_req                       ? SlotQuickWipeAll   :
-                      (state_q == StCtrlDpeRandom)   ? SlotDestRandomize  :
-                      init_o                         ? SlotLoadRoot       : op_update_sel;
+  assign update_sel = wipe_req                         ? SlotQuickWipeAll   :
+                      (state_q == StCtrlDpeRandom)     ? SlotDestRandomize  :
+                      init_o & en_i & root_key_i.valid ? SlotLoadRoot       : op_update_sel;
 
   // operations fsm update precedence
   // when in invalid state, always update.
@@ -234,18 +234,6 @@ module keymgr_dpe_ctrl
       key_slots_q <= key_slots_d;
     end
   end
-
-  // root key valid sync
-  logic root_key_valid_q;
-
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_key_valid_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(root_key_i.valid),
-    .q_o(root_key_valid_q)
-  );
 
   logic [DpeNumBootStagesWidth-1:0] active_slot_boot_stage;
   keymgr_dpe_policy_t active_slot_policy;
@@ -406,7 +394,7 @@ module keymgr_dpe_ctrl
     // enable prng toggling
     prng_reseed_req_o = 1'b0;
 
-    // initialization complete
+    // signal the cycle that loads UDS
     init_o = 1'b0;
 
     // if state is ever faulted, hold on to this indication
@@ -435,7 +423,7 @@ module keymgr_dpe_ctrl
         // If keymgr is disabled, drop the ongoing advance request and move to disabled.
         // Also mark the operation as invalid, so that done_o can be asserted.
         invalid_op = ~en_i;
-        if (~en_i) begin
+        if (!en_i) begin
           state_d = StCtrlDpeInvalid;
         end else if (prng_reseed_ack_i) begin
           state_d = StCtrlDpeRandom;
@@ -452,7 +440,7 @@ module keymgr_dpe_ctrl
         // If keymgr is disabled, drop the ongoing advance and move to disabled.
         // also mark the operation as invalid, so that done_o can be asserted.
         invalid_op = ~en_i;
-        if (~en_i) begin
+        if (!en_i) begin
           state_d = StCtrlDpeInvalid;
         end else if (int'(cnt) == EntropyRounds - 1) begin
           random_ack = 1'b1;
@@ -467,9 +455,9 @@ module keymgr_dpe_ctrl
 
         // Latching the root key requires both: 1) en_i is up, 2) root_key is valid
         // otherwise do not latch the key
-        init_o = en_i & root_key_valid_q;
+        init_o = 1'b1;
         // Since we did not store the root key, we do not have to wipe it.
-        if (~en_i | inv_state | ~root_key_valid_q) begin
+        if (!en_i | inv_state | ~root_key_i.valid) begin
           state_d = StCtrlDpeInvalid;
         end else begin
           state_d = StCtrlDpeAvailable;
@@ -486,7 +474,7 @@ module keymgr_dpe_ctrl
 
         // Given that the root key was latched by an earlier FSM state, we need to take care of
         // clearing the sensitive root key.
-        if (~en_i | inv_state) begin
+        if (!en_i | inv_state) begin
           state_d = StCtrlDpeWipe;
         end else if (disable_cmd) begin
           state_d = StCtrlDpeDisabled;
@@ -515,7 +503,7 @@ module keymgr_dpe_ctrl
         // During disabled, any incoming operation is rejected.
         invalid_op = op_start_i;
 
-        if (~en_i) begin
+        if (!en_i) begin
           state_d = StCtrlDpeWipe;
         end
       end

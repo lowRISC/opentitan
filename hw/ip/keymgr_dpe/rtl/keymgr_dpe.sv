@@ -81,6 +81,7 @@ module keymgr_dpe
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
+  import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
 
   /////////////////////////////////////
@@ -146,10 +147,10 @@ module keymgr_dpe
   //  Synchronize lc_ctrl control inputs
   //  Data inputs are not synchronized and assumed quasi-static
   /////////////////////////////////////
-  lc_tx_t [KeyMgrEnLast-1:0] lc_keymgr_en;
+  lc_tx_t [KeymgrDpeEnLast-1:0] lc_keymgr_en;
 
   prim_lc_sync #(
-    .NumCopies(int'(KeyMgrEnLast))
+    .NumCopies(int'(KeymgrDpeEnLast))
   ) u_lc_keymgr_en_sync (
     .clk_i,
     .rst_ni,
@@ -261,12 +262,19 @@ module keymgr_dpe
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
   end
 
-  // CDC of `root_key` is handled in ctrl logic
   hw_key_req_t root_key;
-  assign root_key = '{valid: otp_key_i.creator_root_key_share0_valid &&
-                             otp_key_i.creator_root_key_share1_valid,
-                      key: '{otp_key_i.creator_root_key_share0,
-                             otp_key_i.creator_root_key_share1}};
+  assign root_key.key = '{otp_key_i.creator_root_key_share0,
+                          otp_key_i.creator_root_key_share1};
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_key_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(otp_key_i.creator_root_key_share0_valid &
+         otp_key_i.creator_root_key_share1_valid),
+    .q_o(root_key.valid)
+  );
 
   keymgr_dpe_slot_t active_key_slot;
   logic op_start;
@@ -274,7 +282,7 @@ module keymgr_dpe
   keymgr_dpe_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnCtrl])),
+    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnCtrl])),
     .regfile_intg_err_i(regfile_intg_err),
     .shadowed_update_err_i(shadowed_update_err),
     .shadowed_storage_err_i(shadowed_storage_err),
@@ -336,7 +344,7 @@ module keymgr_dpe
     .clk_i,
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnCfgEn])),
+    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnCfg])),
     .set_i(op_start & op_done),
     .clr_i(op_start),
     .out_o(cfg_regwen)
@@ -360,7 +368,7 @@ module keymgr_dpe
     .rst_ni,
     // `init` is raised only for 1 clock cycle, when FSM is at StCtrlRootKey (loading Root Key/UDS)
     .init_i(init),
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnSwBindingEn])),
+    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnBinding])),
     .set_i(sw_binding_unlock),
     .clr_i(sw_binding_clr),
     .out_o(sw_binding_regwen)
@@ -492,24 +500,34 @@ module keymgr_dpe
     .rom_digest_vld_o(rom_digest_vld)
   );
 
-  assign hw2reg.debug.invalid_creator_seed.d = 1'b1;
-  assign hw2reg.debug.invalid_owner_seed.d = 1'b1;
-  assign hw2reg.debug.invalid_dev_id.d = 1'b1;
-  assign hw2reg.debug.invalid_health_state.d = 1'b1;
-  assign hw2reg.debug.invalid_key_version.d = 1'b1;
-  assign hw2reg.debug.invalid_key.d = 1'b1;
-  assign hw2reg.debug.invalid_digest.d = 1'b1;
+  assign hw2reg.debug.invalid_creator_seed.d  = ~creator_seed_vld;
+  assign hw2reg.debug.invalid_owner_seed.d    = ~owner_seed_vld;
+  assign hw2reg.debug.invalid_dev_id.d        = ~devid_vld;
+  assign hw2reg.debug.invalid_health_state.d  = ~health_state_vld;
+  assign hw2reg.debug.invalid_key_version.d   = ~key_version_vld;
+  assign hw2reg.debug.invalid_key.d           = ~key_vld;
+  assign hw2reg.debug.invalid_digest.d        = ~rom_digest_vld;
+  assign hw2reg.debug.invalid_root_key.d      = ~root_key.valid;
+  assign hw2reg.debug.inactive_lc_en.d        = lc_tx_test_false_loose(
+                                                  lc_keymgr_en[KeymgrDpeEnDebug]);
 
-  logic valid_op;
-  assign valid_op = adv_en | gen_en;
-  // TODO(#384): Revisit and fix debug connections
-  assign hw2reg.debug.invalid_creator_seed.de = '0;
-  assign hw2reg.debug.invalid_owner_seed.de = '0;
-  assign hw2reg.debug.invalid_dev_id.de = '0;
-  assign hw2reg.debug.invalid_health_state.de = '0;
-  assign hw2reg.debug.invalid_key_version.de = '0;
-  assign hw2reg.debug.invalid_key.de = '0;
-  assign hw2reg.debug.invalid_digest.de = '0;
+  // creator_seed, dev_id, health_state and rom digest are used when boot_stage is incremented from
+  // 0 (= Creator) to 1 (= OwnerInt), so only latch them during consumption.
+  assign hw2reg.debug.invalid_creator_seed.de  = adv_en & active_key_slot.boot_stage == Creator;
+  assign hw2reg.debug.invalid_dev_id.de        = adv_en & active_key_slot.boot_stage == Creator;
+  assign hw2reg.debug.invalid_health_state.de  = adv_en & active_key_slot.boot_stage == Creator;
+  assign hw2reg.debug.invalid_digest.de        = adv_en & active_key_slot.boot_stage == Creator;
+
+  // owner_seed is used when boot_stage is incremented from 1 (= OwnerInt) to 2 (= Owner).
+  assign hw2reg.debug.invalid_owner_seed.de    = adv_en & active_key_slot.boot_stage == OwnerInt;
+
+  // key validity and versions are checked regardless of the boot stage, when there is an ongoing
+  // operation.
+  assign hw2reg.debug.invalid_key_version.de   = gen_en;
+  assign hw2reg.debug.invalid_key.de           = adv_en | gen_en;
+
+  assign hw2reg.debug.invalid_root_key.de      = init;
+  assign hw2reg.debug.inactive_lc_en.de        = 1'b1;
 
   /////////////////////////////////////
   //  KMAC Control

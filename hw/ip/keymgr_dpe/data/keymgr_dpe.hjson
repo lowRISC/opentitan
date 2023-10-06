@@ -1119,7 +1119,16 @@ countermeasures: [
           resval: "0x0"
           desc: "ROM digest failed input checks during operation",
         },
-
+        { bits: "7",
+          name: "INVALID_ROOT_KEY",
+          resval: "0x0"
+          desc: "OTP root key was invalid during the first advance",
+        },
+        { bits: "8",
+          name: "INACTIVE_LC_EN",
+          resval: "0x0"
+          desc: "Enable signal from LC ctrl is deactivated",
+        },
       ]
     },
 
