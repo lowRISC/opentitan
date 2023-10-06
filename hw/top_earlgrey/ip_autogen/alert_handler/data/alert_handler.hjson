@@ -346,6 +346,67 @@
     },
   ]
 
+  features: [
+    { name: "ALERT_HANDLER.ALERT.OBSERVE",
+      desc: '''
+                All incoming alerts can be observed by the alert handler.
+            '''
+    }
+    { name: "ALERT_HANDLER.ALERT.INTERRUPT",
+      desc: '''
+                All alert classes can raise an interrupt when an alert that is
+                allocated to them is raised.
+            '''
+    }
+    { name: "ALERT_HANDLER.ALERT.ESCALATE",
+      desc: '''
+               All incoming alerts can trigger the alert escalation mechanisms
+               of the classes they are allocated to
+            '''
+    }
+    {
+      name: "ALERT_HANDLER.PING_TIMER",
+      descr: '''
+                The alert handler periodically pings all alert receivers and
+                will raise an alert if the ping isn't responded to in good time
+             '''
+    }
+    { name: "ALERT_HANDLER.ESCALATION.COUNT",
+      descr:
+            '''
+                An escalation can be triggered when the number of alerts seen in
+                a particular class exceeds a software programmable threshold
+            '''
+    }
+    { name: "ALERT_HANDLER.ESCALATION.TIMEOUT",
+      descr:
+            '''
+                An escalation can be triggered when an interrupt from a class
+                isn't acknowledged after a software programmable timeout
+            '''
+    }
+    { name: "ALERT_HANDLER.ESCALATION.PHASES",
+      descr:
+            '''
+               Each alert class can trigger the same 4 escalation phases. A
+               programmable timer specifies the delay between each of the
+               escalation phases. The actions taken on each of the escalation
+               signals are specific to the top-level integration.
+            '''
+    }
+    {
+      name: "ALERT_HANDLER.CRASH_DUMP",
+      descr:
+            '''
+               A crashdump with the state of CSRs and alert handler state bits
+               is made available. When a programmable latching trigger condition
+               is met the crashdump is held constant at its value on that
+               trigger condition so it can be recorded and made available for
+               later analysis
+            '''
+    }
+  ]
+
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
