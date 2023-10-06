@@ -9,6 +9,7 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
@@ -40,6 +41,7 @@ struct Inner {
 pub struct ChipWhisperer<B: Board> {
     pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
     uart_override: Vec<String>,
+    openocd_adapter_config: Option<PathBuf>,
     inner: RefCell<Inner>,
 }
 
@@ -49,12 +51,14 @@ impl<B: Board> ChipWhisperer<B> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
         uart_override: &[&str],
+        openocd_adapter_config: Option<PathBuf>,
     ) -> anyhow::Result<Self> {
         let board = ChipWhisperer {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
             )?)),
             uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
+            openocd_adapter_config,
             inner: RefCell::default(),
         };
         Ok(board)
@@ -193,7 +197,11 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut inner = self.inner.borrow_mut();
         if inner.jtag.is_none() {
-            inner.jtag = Some(Rc::new(OpenOcdServer::new(opts)?));
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(
+                self.openocd_adapter_config.clone(),
+                None,
+                opts,
+            )?));
         }
         Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
     }

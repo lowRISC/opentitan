@@ -213,6 +213,8 @@ rust_library(
         ":pinmux_config",
         ":spi_passthru",
         "@hyperdebug_firmware//:hyperdebug/ec.bin",
+        "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
     ],
     crate_features = [
         "include_hyperdebug_firmware",
@@ -231,6 +233,8 @@ rust_library(
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
+        "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
+        "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
