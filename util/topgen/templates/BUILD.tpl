@@ -7,17 +7,21 @@ ${gencmd.replace("//", "#")}
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
 alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
+    "verilator_params",
+)
 
 # IP Integration Tests
-opentitan_functest(
+opentitan_test(
     name = "plic_all_irqs_test",
     srcs = ["plic_all_irqs_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -36,9 +40,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_test",
     srcs = ["alert_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",

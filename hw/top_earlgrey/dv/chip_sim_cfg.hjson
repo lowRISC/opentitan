@@ -1206,7 +1206,7 @@
     {
       name: chip_sw_alert_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:alert_test:1"]
+      sw_images: ["//sw/device/tests/autogen:alert_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1565,7 +1565,7 @@
     {
       name: chip_plic_all_irqs
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test:1"]
+      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
