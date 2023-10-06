@@ -404,7 +404,7 @@ module mbx_soc_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.soc_status.ready.q),
     .ds     (),
 
     // to register interface (read)
