@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -70,22 +68,9 @@ bool test_main(void) {
 
   // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
-
-  // Enable access to flash for storing info across resets.
-  LOG_INFO("Setting default region accesses");
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
   uint32_t wakeup_count = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
-  uint32_t wakeup_unit = get_wakeup_unit(wakeup_count);
-  bool deep_sleep = get_deep_sleep(wakeup_count);
+  uint32_t wakeup_unit = 0;
+  bool deep_sleep = false;
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
@@ -93,13 +78,17 @@ bool test_main(void) {
     check_wakeup_reason(wakeup_unit);
     LOG_INFO("Woke up by source %d", wakeup_unit);
     cleanup(wakeup_unit);
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
     wakeup_unit = get_wakeup_unit(wakeup_count);
     deep_sleep = get_deep_sleep(wakeup_count);
     delay_n_clear(4);
     execute_test(wakeup_unit, deep_sleep);
   } else {
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
+    wakeup_unit = get_wakeup_unit(wakeup_count);
+    deep_sleep = get_deep_sleep(wakeup_count);
     for (int i = 0; i < 2; ++i) {
       check_wakeup_reason(wakeup_unit);
       LOG_INFO("Woke up by source %d", wakeup_unit);
@@ -108,8 +97,8 @@ bool test_main(void) {
           deep_sleep) {
         return true;
       }
-      CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
-      CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &wakeup_count));
+      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+      CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
       wakeup_unit = get_wakeup_unit(wakeup_count);
       deep_sleep = get_deep_sleep(wakeup_count);
       delay_n_clear(4);
