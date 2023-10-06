@@ -628,7 +628,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut jtag = self.inner.jtag.borrow_mut();
         if jtag.is_none() {
-            jtag.replace(Rc::new(OpenOcdServer::new(opts)?));
+            jtag.replace(Rc::new(OpenOcdServer::new(None, None, opts)?));
         }
         Ok(Rc::clone(jtag.as_ref().unwrap()))
     }
@@ -734,7 +734,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
 
         // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[], None)?;
 
         // The transport does not provide name resolution for the IO interface
         // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
@@ -754,7 +754,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[], None)?;
         let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.clear_bitstream()?;

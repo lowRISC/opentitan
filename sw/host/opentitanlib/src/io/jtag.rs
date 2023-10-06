@@ -21,18 +21,6 @@ pub struct JtagParams {
     #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
 
-    /// Path to OpenOCD JTAG adapter config file.
-    #[arg(long)]
-    pub openocd_adapter_config: Option<String>,
-
-    /// Path to OpenOCD JTAG target config file for the RISC-V TAP.
-    #[arg(long)]
-    pub openocd_riscv_target_config: Option<String>,
-
-    /// Path to OpenOCD JTAG target config file for the LC TAP.
-    #[arg(long)]
-    pub openocd_lc_target_config: Option<String>,
-
     /// Port used to start and connect to OpenOCD over.
     #[arg(long, default_value = "6666")]
     pub openocd_port: u16,

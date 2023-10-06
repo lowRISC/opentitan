@@ -7,6 +7,7 @@ use std::cell::{Cell, RefCell};
 use std::io::{self, ErrorKind, Read, Write};
 use std::mem::size_of;
 use std::net::{TcpStream, ToSocketAddrs};
+use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -24,6 +25,10 @@ use crate::util::printer;
 
 /// Represents an OpenOCD server that we can interact with.
 pub struct OpenOcdServer {
+    /// Configuration file for the particular adapter used.
+    adapter_config: Option<PathBuf>,
+    /// Additional connection command for the particular adapter. (USB serial number, etc.)
+    adapter_command: Option<String>,
     /// JTAG parameters.
     opts: JtagParams,
     /// OpenOCD child process.
@@ -54,8 +59,14 @@ impl OpenOcdServer {
     const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(30);
 
     /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
-    pub fn new(opts: &JtagParams) -> Result<OpenOcdServer> {
+    pub fn new(
+        adapter_config: Option<PathBuf>,
+        adapter_command: Option<String>,
+        opts: &JtagParams,
+    ) -> Result<OpenOcdServer> {
         Ok(OpenOcdServer {
+            adapter_config,
+            adapter_command,
             opts: opts.clone(),
             openocd_server_process: Default::default(),
             openocd_socket_stream: Default::default(),
@@ -107,8 +118,13 @@ impl OpenOcdServer {
         let mut cmd = Command::new(&self.opts.openocd);
 
         // Pass the path to the adapter config file if given.
-        if let Some(cfg) = &self.opts.openocd_adapter_config {
+        if let Some(cfg) = self.adapter_config.as_ref() {
             cmd.arg("-f").arg(cfg);
+        }
+
+        // Pass any additional connection command, if given.
+        if let Some(command) = self.adapter_command.as_ref() {
+            cmd.arg("-c").arg(command);
         }
 
         // Because these commands are command-line args, they *must* end with
@@ -121,13 +137,11 @@ impl OpenOcdServer {
 
         // Pass through the config for the chosen TAP.
         let target = match tap {
-            JtagTap::RiscvTap => &self.opts.openocd_riscv_target_config,
-            JtagTap::LcTap => &self.opts.openocd_lc_target_config,
+            JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
+            JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
         };
         self.jtag_tap.set(Some(tap));
-        if let Some(cfg) = &target {
-            cmd.arg("-f").arg(cfg);
-        }
+        cmd.arg("-c").arg(target);
 
         // Use the default port explicity to avoid relying on it not changing.
         let port_cmd = format!("tcl_port {}", self.opts.openocd_port);
