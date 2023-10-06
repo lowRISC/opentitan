@@ -1205,13 +1205,32 @@ module dma
       hw2reg.control.initial_transfer.de = 1'b1;
     end
 
-    // Write digest to CSRs when needed. The digest is a 64-bit datatype, which leads to assign
-    // two 32-bit CSRs per iteration
-    for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i += 2) begin
-      hw2reg.sha2_digest[i].de   = sha2_digest_set | sha2_digest_clear;
-      hw2reg.sha2_digest[i+1].de = sha2_digest_set | sha2_digest_clear;
-      hw2reg.sha2_digest[i].d    = sha2_digest_clear? '0 : sha2_digest[i/2][0  +: 32];
-      hw2reg.sha2_digest[i+1].d  = sha2_digest_clear? '0 : sha2_digest[i/2][32 +: 32];
+    // Write digest to CSRs when needed. The digest is an 8-element  64-bit datatype. Depending on
+    // the selected hashing algorithm, the digest is stored differently in the digest datatype:
+    // SHA2-256: digest[0-7][31:0] store the 256-bit digest. The upper 32-bits of all digest
+    //           elements are zero
+    // SHA2-384: digest[0-5][63:0] store the 384-bit digest.
+    // SHA2-512: digest[0-7][63:0] store the 512-bit digest.
+    for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i++) begin
+      hw2reg.sha2_digest[i].de = sha2_digest_set | sha2_digest_clear;
+    end
+
+    for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
+      unique case (reg2hw.control.opcode.q)
+        OpcSha256: begin
+          hw2reg.sha2_digest[i].d = sha2_digest_clear? '0 : sha2_digest[i][0 +: 32];
+        end
+        OpcSha384: begin
+          if (i < 6) begin
+            hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
+            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+          end
+        end
+        default: begin // SHA2-512
+          hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
+          hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+        end
+      endcase
     end
 
     hw2reg.status.sha2_digest_valid.de = sha2_digest_set | sha2_digest_clear;
