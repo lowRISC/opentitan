@@ -5,9 +5,9 @@
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
     "verilator_params",
 )
 load("//rules:linker.bzl", "ld_library")
@@ -299,35 +299,37 @@ _FLOW_CONTROL_MESSAGE = (
     "Everywhere that Mary went the lamb was sure to go."
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
     cw310 = cw310_params(
-        test_cmds = [
-            "--exec=\"fpga load-bitstream $(location {bitstream})\"",
-            "--exec=\"transport init\"",
-            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
-            "console",
-            "--flow-control",
-            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-success=\"RESULT:{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-failure=\"PASS|FAIL\"",
-        ],
+        flow_control_message = _FLOW_CONTROL_MESSAGE,
+        test_cmd = """
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="transport init"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            console
+            --flow-control
+            --send="{flow_control_message}\n"
+            --exit-success="RESULT:{flow_control_message}"
+            --exit-failure="PASS|FAIL"
+        """,
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = verilator_params(
-        test_cmds = [
-            "--exec \"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
-            "console",
-            "--flow-control",
-            "--send=\"{}\n\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-failure=\"PASS|FAIL\"",
-        ],
+        flow_control_message = _FLOW_CONTROL_MESSAGE,
+        test_cmd = """
+            --exec "console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            console
+            --flow-control
+            --send="{flow_control_message}\n"
+            --exit-success="{flow_control_message}"
+            --exit-failure="PASS|FAIL"
+        """,
     ),
     deps = [
         ":check",

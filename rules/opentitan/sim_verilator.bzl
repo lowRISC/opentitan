@@ -15,8 +15,9 @@ load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "convert_to_vmem")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
-echo Invoking test: {test_harness} {args} {test_cmd}
-RUST_BACKTRACE=1 {test_harness} {args} {test_cmd}
+TEST_CMD=({test_cmd})
+echo Invoking test: {test_harness} {args} "${{TEST_CMD[@]}}"
+RUST_BACKTRACE=1 {test_harness} {args} "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
@@ -108,7 +109,7 @@ def _test_dispatch(ctx, exec_env, provider):
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
-    test_cmd = test_cmd.replace("\n", " ").format(**param)
+    test_cmd = test_cmd.format(**param)
     test_cmd = ctx.expand_location(test_cmd, data_labels)
 
     # Get the pre-test_cmd args.
