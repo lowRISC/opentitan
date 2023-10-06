@@ -480,6 +480,15 @@ impl TransportWrapperBuilder {
                 }
             };
             // Apply configuration from this level
+            if let Some(serial_clock) = entry.serial_clock.as_ref() {
+                conf.serial_clock = Some(map_name(pin_alias_map, serial_clock));
+            }
+            if let Some(host_out_device_in) = entry.host_out_device_in.as_ref() {
+                conf.host_out_device_in = Some(map_name(pin_alias_map, host_out_device_in));
+            }
+            if let Some(host_in_device_out) = entry.host_in_device_out.as_ref() {
+                conf.host_in_device_out = Some(map_name(pin_alias_map, host_in_device_out));
+            }
             if let Some(chip_select) = entry.chip_select.as_ref() {
                 conf.chip_select = Some(map_name(pin_alias_map, chip_select));
             }

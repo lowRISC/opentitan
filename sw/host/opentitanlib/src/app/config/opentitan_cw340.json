@@ -40,6 +40,10 @@
   "spi": [
     {
       "name": "BOOTSTRAP",
+      "serial_clock": "PA27",
+      "host_out_device_in": "PA26",
+      "host_in_device_out": "PA25",
+      "chip_select": "PA28",
       "alias_of": "0"
     }
   ],

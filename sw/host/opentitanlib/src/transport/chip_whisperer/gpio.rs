@@ -53,4 +53,8 @@ impl<B: Board> GpioPin for Pin<B> {
             _ => Err(GpioError::UnsupportedPullMode(mode).into()),
         }
     }
+
+    fn get_internal_pin_name(&self) -> Option<&str> {
+        Some(&self.pinname)
+    }
 }
