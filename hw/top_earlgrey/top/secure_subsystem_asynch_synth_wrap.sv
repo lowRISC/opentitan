@@ -147,6 +147,10 @@ module secure_subsystem_synth_wrap
    wire [1:0] flash_testmode_tieoff;
    wire otp_ext_tieoff, flash_testvolt_tieoff;
 
+   assign flash_testmode_tieoff = '0;
+   assign otp_ext_tieoff = '0;
+   assign flash_testvolt_tieoff = '0;
+
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
 
