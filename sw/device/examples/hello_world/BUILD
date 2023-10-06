@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
-load("//rules:exclude_files.bzl", "exclude_files")
+load("//rules:files.bzl", "exclude_files")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
@@ -49,20 +49,9 @@ cc_library(
     ],
 )
 
-exclude_files(
-    name = "pre_package",
-    testonly = True,
-    srcs = [":hello_world"],
-    exclude_suffix = [
-        ".ll",
-        ".i",
-        ".s",
-    ],
-)
-
 pkg_files(
     name = "package",
     testonly = True,
-    srcs = [":pre_package"],
+    srcs = [":hello_world"],
     prefix = "earlgrey/examples",
 )
