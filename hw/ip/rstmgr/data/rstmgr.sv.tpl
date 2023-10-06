@@ -23,7 +23,7 @@ module rstmgr
   // Primary module clocks
   input clk_i,
   input rst_ni,
-% for clk in reset_obj.get_clocks():
+% for clk in clks:
   input clk_${clk}_i,
 % endfor
   input clk_por_i,
