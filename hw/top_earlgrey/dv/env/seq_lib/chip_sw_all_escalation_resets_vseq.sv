@@ -49,8 +49,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*rstmgr*prim_reg_we_check*", TopEarlgreyAlertIdRstmgrAonFatalFault},
     // TopEarlgreyAlertIdRstmgrAonFatalCnstyFault cannot use this test.
     //
-    // TODO: The case below fails due to bug lowrisc/opentitan#19774
-    //'{"*rv_core_ibex*sw_fatal_err*", TopEarlgreyAlertIdRvCoreIbexFatalSwErr},
+    '{"*rv_core_ibex*sw_fatal_err*", TopEarlgreyAlertIdRvCoreIbexFatalSwErr},
     '{"*rv_core_ibex*prim_reg_we_check*", TopEarlgreyAlertIdRvCoreIbexFatalHwErr},
     '{"*rv_dm*prim_reg_we_check*", TopEarlgreyAlertIdRvDmFatalFault},
     '{"*rv_plic*prim_reg_we_check*", TopEarlgreyAlertIdRvPlicFatalFault},
