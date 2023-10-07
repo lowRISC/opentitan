@@ -40,8 +40,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*rstmgr*prim_reg_we_check*", TopDarjeelingAlertIdRstmgrAonFatalFault},
     // TopDarjeelingAlertIdRstmgrAonFatalCnstyFault cannot use this test.
     //
-    // TODO: Enable case below when lowrisc/opentitan-integrated#516 is fixed.
-    //'{"*rv_core_ibex*sw_fatal_err*", TopDarjeelingAlertIdRvCoreIbexFatalSwErr},
+    '{"*rv_core_ibex*sw_fatal_err*", TopDarjeelingAlertIdRvCoreIbexFatalSwErr},
     '{"*rv_core_ibex*prim_reg_we_check*", TopDarjeelingAlertIdRvCoreIbexFatalHwErr},
     '{"*rv_dm*prim_reg_we_check*", TopDarjeelingAlertIdRvDmFatalFault},
     '{"*rv_plic*prim_reg_we_check*", TopDarjeelingAlertIdRvPlicFatalFault},
