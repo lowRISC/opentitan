@@ -80,13 +80,13 @@ Software fatal error
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                              |
 |:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:4  |        |         |        | Reserved                                                                                                                                                                                 |
-|  3:0   |  rw0c  |   0x9   | VAL    | Software fatal alert. When set to any value other than kMultiBitBool4False, a fatal alert is sent. Note, this field once cleared cannot be set and will continuously cause alert events. |
+|  3:0   |  rw1s  |   0x9   | VAL    | Software fatal alert. When set to any value other than kMultiBitBool4False, a fatal alert is sent. Note, this field once cleared cannot be set and will continuously cause alert events. |
 
 ## IBUS_REGWEN
 Ibus address control regwen.

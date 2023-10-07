@@ -360,7 +360,7 @@ module rv_core_ibex_cfg_reg_top (
   // R[sw_fatal_err]: V(False)
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (4'h9),
     .Mubi    (1'b1)
   ) u_sw_fatal_err (
