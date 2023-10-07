@@ -104,7 +104,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (req.reset_tap_fsm) begin
       drive_jtag_test_logic_reset();
     end
-    if (exit_to_rti_dr_past) begin
+    if (exit_to_rti_dr_past & ~cfg.min_rti) begin
       @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
     end else begin
       `uvm_info(`gfn, "Skip wait cycles because of past exit to RTI in drive_dr", UVM_MEDIUM)
