@@ -60,6 +60,7 @@ The configuration can then not be altered anymore until the next system reset.
 
 The sleep behavior of each individual MIO or DIO can be defined via the (registers.md#mio_pad_sleep_en), [`DIO_PAD_SLEEP_EN_0`](registers.md#dio_pad_sleep_en), [`MIO_PAD_SLEEP_MODE_0`](registers.md#mio_pad_sleep_mode) and [`DIO_PAD_SLEEP_MODE_0`](registers.md#dio_pad_sleep_mode)) registers.
 Available sleep behaviors are:
+
 `dio/mio_pad_sleep_en` Value  | `dio/mio_pad_sleep_mode` Value | Sleep Behavior
 ------------------------------|--------------------------------|-----------------------
 0                             | -                              | Drive (default)
