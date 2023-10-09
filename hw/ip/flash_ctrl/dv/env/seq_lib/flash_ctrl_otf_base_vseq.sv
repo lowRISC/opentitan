@@ -622,12 +622,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                           bank, page, flash_op.otf_addr,
                           flash_op.partition.name, num, wd, start_addr, end_addr, overrd),
                 UVM_MEDIUM)
-
       exp_item.cmd = flash_op;
       // per bank address is used for decryption in sbx
       exp_item.start_addr = flash_op.otf_addr;
       exp_item.addr_key = otp_addr_key;
-      exp_item.data_key=  otp_data_key;
+      exp_item.data_key = otp_data_key;
 
       rd_entry.addr = flash_op.otf_addr;
       // Address has to be 8byte aligned
@@ -784,7 +783,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.region = my_region;
       exp_item.start_addr = tl_addr;
       exp_item.addr_key = otp_addr_key;
-      exp_item.data_key=  otp_data_key;
+      exp_item.data_key = otp_data_key;
 
       // Address should be per bank addr
       rd_entry.addr = tl_addr;
@@ -920,6 +919,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       // Per Qword loop
       `uvm_create_obj(flash_otf_item, exp_item)
+      exp_item.addr_key = otp_addr_key;
+      exp_item.data_key = otp_data_key;
+
       for (int i = 0; i < size; i++) begin
         if (flash_op.partition == FlashPartData) begin
           page = cfg.addr2page(flash_op.addr);
@@ -930,6 +932,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           drop |= check_info_part(flash_op, "readback_flash");
         end
         drop |= validate_flash_op(flash_op, my_region);
+        exp_item.ctrl_rd_region_q.push_back(my_region);
 
          rd_entry.addr = flash_op.otf_addr;
          // Address has to be 8byte aligned
@@ -946,7 +949,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
         flash_op.addr += 8;
         flash_op.otf_addr += 8;
-        exp_item.ctrl_rd_region_q.push_back(my_region);
       end // for (int i = 0; i < size; i++)
       if (tail) begin
         if (flash_op.partition == FlashPartData) begin
@@ -959,17 +961,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         end
         drop |= validate_flash_op(flash_op, my_region);
         exp_item.ctrl_rd_region_q.push_back(my_region);
-         rd_entry.addr = flash_op.otf_addr;
-         // Address has to be 8byte aligned
-         rd_entry.addr[2:0] = 'h0;
-         rd_entry.part = flash_op.partition;
-         if (drop == 0 &&
-             my_region.ecc_en == MuBi4True &&
-             cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
-           `uvm_info("readback_flash", $sformatf("read corrupted entry 0x%x",
-                                                  {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
-            derr_is_set |= 1;
-         end
+
+        rd_entry.addr = flash_op.otf_addr;
+        // Address has to be 8byte aligned
+        rd_entry.addr[2:0] = 'h0;
+        rd_entry.part = flash_op.partition;
+        if (drop == 0 &&
+            my_region.ecc_en == MuBi4True &&
+            cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
+          `uvm_info("readback_flash", $sformatf("read corrupted entry 0x%x",
+                                                {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
+          derr_is_set |= 1;
+        end
       end
       flash_op.addr = tmp_addr;
       // Bank id truncaded by otf_addr size
@@ -999,8 +1002,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.cmd = flash_op;
       // per bank address is used for decryption in sbx
       exp_item.start_addr = flash_op.otf_addr;
-      exp_item.addr_key = otp_addr_key;
-      exp_item.data_key=  otp_data_key;
 
       rd_entry.addr = flash_op.otf_addr;
       // Address has to be 8byte aligned
@@ -1109,7 +1110,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       exp_item.region = my_region;
       exp_item.start_addr = tl_addr;
       exp_item.addr_key = otp_addr_key;
-      exp_item.data_key=  otp_data_key;
+      exp_item.data_key = otp_data_key;
 
       rd_entry.addr = tl_addr;
       rd_entry.addr[OTFBankId] = 0;
@@ -1118,44 +1119,52 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       rd_entry.part = FlashPartData;
 
         if (cfg.ecc_mode > FlashEccEnabled) begin
-        if (exp_item.region.ecc_en == MuBi4True) begin
-          flash_op.addr = tl_addr;
-          // host can only access data partitions.
-          flash_op.partition = FlashPartData;
-          flash_op.num_words = 1;
-          if (cfg.ecc_mode == FlashSerrTestMode || tl_addr[2] == 0) begin
-            cfg.add_bit_err(flash_op, ReadTaskHost, exp_item);
-          end
-          if (cfg.derr_once) begin
-            derr_is_set = cfg.derr_created[1] & ~global_derr_is_set;
-          end else begin
-            derr_is_set = (cfg.derr_created[1] | cfg.ierr_created[1]);
-          end
+          if (exp_item.region.ecc_en == MuBi4True) begin
+            flash_op.addr = tl_addr;
+            // host can only access data partitions.
+            flash_op.partition = FlashPartData;
+            flash_op.num_words = 1;
+            if (cfg.ecc_mode == FlashSerrTestMode || tl_addr[2] == 0) begin
+              cfg.add_bit_err(flash_op, ReadTaskHost, exp_item);
+            end
+            if (cfg.derr_once) begin
+              derr_is_set = cfg.derr_created[1] & ~global_derr_is_set;
+            end else begin
+              derr_is_set = (cfg.derr_created[1] | cfg.ierr_created[1]);
+            end
 
-          if (derr_is_set) begin
-            `uvm_info("direct_readback", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
-            cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
-            global_derr_is_set = 1;
+            if (derr_is_set) begin
+              `uvm_info("direct_readback", $sformatf("assert_derr 0x%x", tl_addr), UVM_MEDIUM)
+              cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+              global_derr_is_set = 1;
+            end
+            if (cfg.derr_once == 0) cfg.derr_created[1] = 0;
+            `uvm_info("direct_readback",
+                      $sformatf("ierr_created[1]:%0d  derr_is_set:%0d exists:%0d",
+                                cfg.ierr_created[1], derr_is_set,
+                                cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
+                      UVM_MEDIUM)
+            cfg.ierr_created[1] = 0;
           end
-          if (cfg.derr_once == 0) cfg.derr_created[1] = 0;
-          `uvm_info("direct_readback", $sformatf("ierr_created[1]:%0d  derr_is_set:%0d exists:%0d",
-                                   cfg.ierr_created[1], derr_is_set,
-                                   cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0})),
-                                   UVM_MEDIUM)
-          cfg.ierr_created[1] = 0;
-        end
-        if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
-        end
-      cfg.otf_read_entry.insert(rd_entry, flash_op);
-      if (my_region.ecc_en == MuBi4True && cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
-        exp_item.derr = 1;
-        derr = 1;
-         cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
-        if (derr & cfg.scb_h.do_alert_check) begin
-          cfg.scb_h.expected_alert["fatal_err"].expected = 1;
-          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
-          cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
-        end
+          if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) begin
+            derr = 1;
+          end
+        end // if (cfg.ecc_mode > FlashEccEnabled)
+
+       cfg.otf_read_entry.insert(rd_entry, flash_op);
+       if (my_region.ecc_en == MuBi4True && cfg.otf_scb_h.corrupt_entry.exists(rd_entry) == 1) begin
+         bit local_derr = 0;
+         check_mem_intg(exp_item, bank, local_derr);
+         if (local_derr) begin
+           exp_item.derr = 1;
+           derr = 1;
+           cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
+           if (derr & cfg.scb_h.do_alert_check) begin
+             cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+             cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
+             cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
+           end
+         end
       end
 
       `uvm_info("direct_readback", $sformatf("idx:%0d: bank:%0d exec: 0x%x page:%0d derr:%0d",
@@ -1468,4 +1477,28 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
   endfunction
 
+  // Do backdoor read and check if double error exists.
+  task check_mem_intg(flash_otf_item exp, int bank, ref bit err);
+    flash_otf_item obs;
+    `uvm_create_obj(flash_otf_item, obs)
+
+    obs.cmd.partition = FlashPartData;
+    obs.cmd.op = FlashOpRead;
+    obs.cmd.addr = exp.start_addr; // tl_addr
+    // for debug print
+    obs.start_addr = exp.start_addr;
+    obs.cmd.num_words = 1;
+    obs.mem_addr = exp.start_addr >> 3;
+
+    cfg.flash_mem_otf_read(obs.cmd, obs.fq);
+
+    obs.print("chk_mem_intg: before");
+    obs.region = exp.region;
+    obs.skip_err_chk = 1;
+    // descramble needs 2 buswords
+    obs.cmd.num_words = 2;
+    obs.descramble(exp.addr_key, exp.data_key);
+    obs.print("chk_mem_intg: after");
+    err = obs.derr;
+  endtask
 endclass // flash_ctrl_otf_base_vseq
