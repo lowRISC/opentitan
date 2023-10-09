@@ -105,7 +105,7 @@ fpga_cw310(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_fpga_cw310_bin_signed_fake_rsa_test_key_0",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
 

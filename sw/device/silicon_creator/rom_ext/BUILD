@@ -4,10 +4,9 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -248,36 +247,51 @@ manifest({
     "identifier": hex(CONST.ROM_EXT),
 })
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "rom_ext_slot_a",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_a",
     manifest = ":manifest_standard",
-    signed = True,
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
-        ":ld_slot_a",
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "rom_ext_slot_b",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_b",
     manifest = ":manifest_standard",
-    signed = True,
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
-        ":ld_slot_b",
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "rom_ext_slot_virtual",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_virtual",
     manifest = ":manifest_virtual",
-    signed = True,
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
-        ":ld_slot_virtual",
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -290,12 +304,17 @@ manifest({
     "identifier": hex(CONST.ROM_EXT),
 })
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "rom_ext_slot_a_bad_address_translation",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
-    signed = True,
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
-        ":ld_slot_a",
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",

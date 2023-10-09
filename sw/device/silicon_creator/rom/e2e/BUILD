@@ -3,6 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
+    new_cw310_params = "cw310_params",
+)
+load(
     "//rules:opentitan_test.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
@@ -601,122 +606,116 @@ test_suite(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_ext_a_flash_a",
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+        },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["a"],
     ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_multislot_flash_binary(
-    name = "rom_ext_b_flash_b_image",
-    testonly = True,
-    srcs = {
-        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": RSA_ONLY_KEY_STRUCTS[0],
-            "offset": SLOTS["b"],
-        },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_ext_b_flash_b",
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+        },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["b"],
     ),
-    key_struct = "multislot",
-    ot_flash_binary = ":rom_ext_b_flash_b_image",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_multislot_flash_binary(
-    name = "rom_ext_a_flash_b_image",
-    testonly = True,
-    srcs = {
-        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
-            "key": RSA_ONLY_KEY_STRUCTS[0],
-            "offset": SLOTS["b"],
-        },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_ext_a_flash_b",
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+        },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        offset = SLOTS["b"],
     ),
-    key_struct = "multislot",
-    ot_flash_binary = ":rom_ext_a_flash_b_image",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_multislot_flash_binary(
-    name = "rom_ext_b_flash_a_image",
-    testonly = True,
-    srcs = {
-        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": RSA_ONLY_KEY_STRUCTS[0],
-            "offset": SLOTS["a"],
-        },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_ext_b_flash_a",
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+        },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        offset = SLOTS["a"],
     ),
-    key_struct = "multislot",
-    ot_flash_binary = ":rom_ext_b_flash_a_image",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_functest(
-    name = "rom_ext_v_flash_a",
-    cw310 = cw310_params(
-        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
-        exit_success = MSG_STARTING_ROM_EXT,
-    ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
-    targets = ["cw310_rom_with_fake_keys"],
-)
-
-opentitan_multislot_flash_binary(
-    name = "rom_ext_v_flash_b_image",
-    testonly = True,
-    srcs = {
-        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": RSA_ONLY_KEY_STRUCTS[0],
-            "offset": SLOTS["b"],
-        },
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
 )
 
-opentitan_functest(
-    name = "rom_ext_v_flash_b",
-    cw310 = cw310_params(
+opentitan_test(
+    name = "rom_ext_v_flash_a",
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+        },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["a"],
     ),
-    key_struct = "multislot",
-    ot_flash_binary = ":rom_ext_v_flash_b_image",
-    targets = ["cw310_rom_with_fake_keys"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
 
-opentitan_functest(
+opentitan_test(
+    name = "rom_ext_v_flash_b",
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+        },
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["b"],
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+)
+
+opentitan_test(
     name = "rom_ext_a_flash_a_bad_addr_trans",
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation": "firmware",
+        },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        offset = SLOTS["a"],
     ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation",
-    targets = ["cw310_rom_with_fake_keys"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
 
 test_suite(
