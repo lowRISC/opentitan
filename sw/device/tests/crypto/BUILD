@@ -357,11 +357,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "eternal",
     ),
