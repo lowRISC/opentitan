@@ -74,6 +74,9 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
     ROM_BOOT_FAILURE_MSG,
 )
 
+# Use to clear the default `test_cmd` from any execution environment.
+CLEAR_TEST_CMD = " "
+
 def _parameter_name(env, pname):
     if not pname:
         (_, suffix) = env.split(":")
