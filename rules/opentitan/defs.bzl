@@ -109,6 +109,9 @@ def opentitan_test(
         includes = [],
         linkopts = [],
         linker_script = None,
+        rsa_key = None,
+        spx_key = None,
+        manifest = None,
         exec_env = {},
         cw310 = _cw310_params(),
         dv = _dv_params(),
@@ -127,6 +130,9 @@ def opentitan_test(
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
       linker_script: Linker script for this test.
+      rsa_key: RSA key to sign the binary for this test.
+      spx_key: SPX key to sign the binary for this test.
+      manifest: manifest used during signing for this test.
       linkopts: Linker options for this test.
       exec_env: A dictionary of execution environments.  The keys are labels to
                 execution environments.  The values are the kwargs parameter names
@@ -135,7 +141,7 @@ def opentitan_test(
       cw310: Execution overrides for a CW310-based test.
       dv: Execution overrides for a DV-based test.
       verilator: Execution overrides for a verilator-based test.
-      kwargs: Additional exeuction overrides identified by the `exec_env` dict.
+      kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
         "cw310": cw310,
@@ -179,6 +185,9 @@ def opentitan_test(
             test_cmd = tparam.test_cmd,
             param = tparam.param,
             data = tparam.data,
+            rsa_key = rsa_key,
+            spx_key = spx_key,
+            manifest = manifest,
         )
     native.test_suite(
         name = name,
