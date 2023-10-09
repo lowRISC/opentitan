@@ -981,6 +981,10 @@ module dma
                 ctrl_state_d = DmaIdle;
               end
             end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
+              // Conditionally clear the go bit when not being in hardware handshake mode.
+              // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
+              // and done bit, and release the go bit for the next FW-controlled chunk.
+              clear_go     = !cfg_handshake_en;
               ctrl_state_d = DmaIdle;
             end else begin
               ctrl_state_d = DmaAddrSetup;
@@ -1011,6 +1015,10 @@ module dma
           if (transfer_byte_q >= reg2hw.total_data_size.q) begin
             ctrl_state_d = DmaShaFinalize;
           end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
+            // Conditionally clear the go bit when not being in hardware handshake mode.
+            // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
+            // and done bit, and release the go bit for the next FW-controlled chunk.
+            clear_go     = !cfg_handshake_en;
             ctrl_state_d = DmaIdle;
           end else begin
             ctrl_state_d = DmaAddrSetup;
@@ -1164,7 +1172,8 @@ module dma
 
   assign data_move_state = (ctrl_state_q == DmaSendWrite)         ||
                            (ctrl_state_q == DmaWaitWriteResponse) ||
-                           (ctrl_state_d == DmaShaFinalize);
+                           (ctrl_state_q == DmaShaWait)           ||
+                           (ctrl_state_q == DmaShaFinalize);
 
   assign new_destination_addr = cfg_data_direction ?
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
