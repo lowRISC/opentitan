@@ -148,6 +148,12 @@ def _test_dispatch(ctx, exec_env, provider):
 
         # Collect the DV logs databases if they're provided.
         data_files.extend(getattr(provider, "logs", []))
+
+        # Collect the elf output file if provided.
+        elf_file = getattr(provider, "elf", None)
+        if elf_file:
+            data_files.append(elf_file)
+
         if "firmware" not in param:
             param["firmware"] = provider.default.short_path
         else:

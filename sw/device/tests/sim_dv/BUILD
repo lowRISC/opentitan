@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "opentitan_functest")
+load("//rules/opentitan:defs.bzl", "opentitan_test")
 
-opentitan_functest(
+opentitan_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
@@ -27,10 +27,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_tx_rx_test",
     srcs = ["i2c_host_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
@@ -49,10 +49,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_device_tx_rx_test",
     srcs = ["i2c_device_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
@@ -71,10 +71,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_ctrl_lc_rw_en_test",
     srcs = ["flash_ctrl_lc_rw_en_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -90,15 +90,16 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_rma_unlocked_test",
     srcs = ["flash_rma_unlocked_test.c"],
     # This test doesn't use the OTTF.
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
+    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM.
-    test_in_rom = True,
+    kind = "rom",
+    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -114,21 +115,21 @@ opentitan_functest(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_init_test",
     srcs = ["flash_init_test.c"],
     # This test doesn't use the OTTF.
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
+    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified).
-    test_in_rom = True,
+    kind = "rom",
+    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -142,15 +143,14 @@ opentitan_functest(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "gpio_test",
     srcs = ["gpio_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -166,10 +166,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_inputs_test",
     srcs = ["sysrst_ctrl_inputs_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -181,10 +181,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_in_irq_test",
     srcs = ["sysrst_ctrl_in_irq_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -198,10 +198,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_ulp_z3_wakeup_test",
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -219,10 +219,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_reset_test",
     srcs = ["sysrst_ctrl_reset_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -237,10 +237,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_outputs_test",
     srcs = ["sysrst_ctrl_outputs_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -253,10 +253,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -272,10 +272,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_ctrl_scrap_test",
     srcs = ["lc_ctrl_scrap_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -289,10 +289,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otp_ctrl_vendor_test_csr_access_test",
     srcs = ["otp_ctrl_vendor_test_csr_access_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -323,20 +323,20 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_ctrl_transition_test",
     srcs = ["lc_ctrl_transition_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         ":lc_ctrl_transition_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_ctrl_volatile_raw_unlock_test",
     srcs = ["lc_ctrl_volatile_raw_unlock_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -350,10 +350,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_walkthrough_test",
     srcs = ["lc_walkthrough_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -370,10 +370,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_walkthrough_testunlocks_test",
     srcs = ["lc_walkthrough_testunlocks_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -389,10 +389,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "all_escalation_resets_test",
     srcs = ["all_escalation_resets_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -425,10 +425,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "data_integrity_escalation_reset_test",
     srcs = ["data_integrity_escalation_reset_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:alert_handler",
@@ -451,20 +451,20 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_external_clk_src_for_lc_test",
     srcs = ["clkmgr_external_clk_src_for_lc_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         ":lc_ctrl_transition_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
@@ -474,10 +474,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_sleep_power_glitch_test",
     srcs = ["pwrmgr_sleep_power_glitch_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -491,10 +491,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_deep_sleep_power_glitch_test",
     srcs = ["pwrmgr_deep_sleep_power_glitch_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -508,10 +508,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_sysrst_ctrl_test",
     srcs = ["pwrmgr_sysrst_ctrl_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -534,10 +534,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -565,10 +565,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_deep_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -596,10 +596,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -627,10 +627,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_random_sleep_power_glitch_reset_test",
     srcs = ["pwrmgr_random_sleep_power_glitch_reset_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -658,10 +658,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pwrmgr",
@@ -673,10 +673,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_dm_access_after_wakeup",
     srcs = ["rv_dm_access_after_wakeup.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -704,10 +704,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -720,10 +720,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sleep_pin_mio_dio_val_test",
     srcs = ["sleep_pin_mio_dio_val_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -740,10 +740,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sleep_pin_wake_test",
     srcs = ["sleep_pin_wake_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -762,10 +762,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sleep_pin_retention_test",
     srcs = ["sleep_pin_retention_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -783,10 +783,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_tx_rx_test",
     srcs = ["spi_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -802,10 +802,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_device_tpm_tx_rx_test",
     srcs = ["spi_device_tpm_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -822,10 +822,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_tx_rx_test",
     srcs = ["spi_host_tx_rx_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -840,10 +840,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_passthrough_test",
     srcs = ["spi_passthrough_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -863,10 +863,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_dm_ndm_reset_req",
     srcs = ["rv_dm_ndm_reset_req.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -891,10 +891,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_dm_ndm_reset_req_when_cpu_halted",
     srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:rstmgr",
@@ -906,10 +906,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sram_ctrl_execution_main_test",
     srcs = ["sram_ctrl_execution_main_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -927,10 +927,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sram_ctrl_scrambled_access_test",
     srcs = ["sram_ctrl_scrambled_access_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
@@ -974,10 +974,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -993,10 +993,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1015,10 +1015,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1037,10 +1037,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "adc_ctrl_sleep_debug_cable_wakeup_test",
     srcs = ["adc_ctrl_sleep_debug_cable_wakeup_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1059,10 +1059,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_b2b_sleep_reset_test",
     srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1083,10 +1083,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sensor_ctrl_status_test",
     srcs = ["sensor_ctrl_status.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1106,10 +1106,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_escalation_test",
     srcs = ["alert_handler_escalation.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1131,10 +1131,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_entropy_test",
     srcs = ["alert_handler_entropy_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1149,7 +1149,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
     srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
     targets = [
@@ -1182,10 +1182,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1214,10 +1214,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_fuse_en_fw_read_test",
     srcs = ["entropy_src_fuse_en_fw_read_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -1232,10 +1232,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ast_usb_clk_calib",
     srcs = ["ast_usb_clk_calib.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1251,10 +1251,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "csrng_fuse_en_sw_app_read",
     srcs = ["csrng_fuse_en_sw_app_read.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -1270,10 +1270,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "csrng_lc_hw_debug_en_test",
     srcs = ["csrng_lc_hw_debug_en_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -1295,10 +1295,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "inject_scramble_seed",
     srcs = ["inject_scramble_seed.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
@@ -1319,10 +1319,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "exit_test_unlocked_bootstrap",
     srcs = ["exit_test_unlocked_bootstrap.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1335,10 +1335,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -1354,10 +1354,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otp_ctrl_lc_signals_test",
     srcs = ["otp_ctrl_lc_signals_test.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -1382,10 +1382,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ast_clk_rst_inputs",
     srcs = ["ast_clk_rst_inputs.c"],
-    targets = ["dv"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
