@@ -181,13 +181,18 @@ def _build_binary(ctx, exec_env, name, deps):
         src = elf,
     )
 
-    if exec_env.manifest:
+    manifest = get_fallback(ctx, "file.manifest", exec_env)
+    rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
+    spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
+    if manifest:
+        if not rsa_key:
+            fail("Signing requires a manifest and an rsa_key, and optionally an spx_key")
         signed = sign_binary(
             ctx,
             bin = binary,
-            rsa_key = exec_env.rsa_key,
-            spx_key = exec_env.spx_key,
-            manifest = exec_env.manifest,
+            rsa_key = rsa_key,
+            spx_key = spx_key,
+            manifest = manifest,
             # FIXME: will need to supply hsmtool when we add NitroKey signing.
             _tool = exec_env._opentitantool,
         )
@@ -253,6 +258,18 @@ common_binary_attrs = {
     "linker_script": attr.label(
         providers = [CcInfo],
         doc = "Linker script for linking this binary",
+    ),
+    "rsa_key": attr.label_keyed_string_dict(
+        allow_files = True,
+        doc = "RSA key to sign images",
+    ),
+    "spx_key": attr.label_keyed_string_dict(
+        allow_files = True,
+        doc = "SPX key to sign images",
+    ),
+    "manifest": attr.label(
+        allow_single_file = True,
+        doc = "Manifest used when signing images",
     ),
     "copts": attr.string_list(
         doc = "Add these options to the C++ compilation command.",
