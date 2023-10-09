@@ -149,12 +149,15 @@ def opentitan_test(
         "verilator": verilator,
     }
     test_parameters.update(kwargs)
+    kwargs_unused = kwargs.keys()
 
     all_tests = []
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
         extra_tags = _hacky_tags(env)
         tparam = test_parameters[pname]
+        if pname in kwargs_unused:
+            kwargs_unused.remove(pname)
         (_, suffix) = env.split(":")
         test_name = "{}_{}".format(name, suffix)
         all_tests.append(":" + test_name)
@@ -189,6 +192,11 @@ def opentitan_test(
             spx_key = spx_key,
             manifest = manifest,
         )
+
+    # Make sure that we used all elements in kwargs
+    if len(kwargs_unused) > 0:
+        fail("the following arguments passed to opentitan_test were not used: {}".format(", ".join(kwargs_unused)))
+
     native.test_suite(
         name = name,
         tests = all_tests,
