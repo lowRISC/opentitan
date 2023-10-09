@@ -308,7 +308,7 @@ def cw310_jtag_params(
         rom_ext = None,
         otp = None,
         bitstream = None,
-        test_cmd = OPENTITANTOOL_OPENOCD_TEST_CMD,
+        test_cmd = "",
         data = [],
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan JTAG tests.
@@ -342,7 +342,7 @@ def cw310_jtag_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        test_cmd = test_cmd,
+        test_cmd = OPENTITANTOOL_OPENOCD_TEST_CMD + test_cmd,
         data = OPENTITANTOOL_OPENOCD_DATA_DEPS + data,
         param = kwargs,
     )

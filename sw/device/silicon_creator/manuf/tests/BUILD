@@ -238,6 +238,7 @@ cc_library(
         srcs = ["sram_empty_functest.c"],
         cw310 = cw310_jtag_params(
             bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
         exec_env = {

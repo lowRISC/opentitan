@@ -12,5 +12,4 @@ OPENTITANTOOL_OPENOCD_TEST_CMD = """
     --openocd-adapter-config="$(rootpath //third_party/openocd:jtag_olimex_cfg)"
     --clear-bitstream
     --bitstream={bitstream}
-    --elf={firmware}
 """
