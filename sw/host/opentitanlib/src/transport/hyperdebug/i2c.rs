@@ -59,7 +59,7 @@ struct RspTransfer {
     encapsulation_header: [u8; 2],
     status_code: u16,
     reserved: u16,
-    data: [u8; USB_MAX_SIZE - 4],
+    data: [u8; USB_MAX_SIZE],
 }
 impl RspTransfer {
     fn new() -> Self {
@@ -67,7 +67,7 @@ impl RspTransfer {
             encapsulation_header: [0u8; 2],
             status_code: 0,
             reserved: 0,
-            data: [0; USB_MAX_SIZE - 4],
+            data: [0; USB_MAX_SIZE],
         }
     }
 }
@@ -155,10 +155,17 @@ impl HyperdebugI2cBus {
         }
 
         let mut resp = RspTransfer::new();
-        let bytecount = self.usb_read_bulk(
-            &mut resp.as_bytes_mut()
-                [2 - encapsulation_header_size..2 - encapsulation_header_size + 64],
-        )?;
+        let mut bytecount = 0;
+        while bytecount < 4 + encapsulation_header_size {
+            let read_count = self.usb_read_bulk(
+                &mut resp.as_bytes_mut()[2 - encapsulation_header_size + bytecount..][..64],
+            )?;
+            ensure!(
+                read_count > 0,
+                TransportError::CommunicationError("Truncated I2C response".to_string())
+            );
+            bytecount += read_count;
+        }
         if encapsulation_header_size == 1 {
             ensure!(
                 resp.encapsulation_header[1] == Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
@@ -167,10 +174,6 @@ impl HyperdebugI2cBus {
                 )
             );
         }
-        ensure!(
-            bytecount >= 4 + encapsulation_header_size,
-            TransportError::CommunicationError("Unrecognized response to I2C request".to_string())
-        );
         match resp.status_code {
             0 => (),
             1 => bail!(I2cError::Timeout),
