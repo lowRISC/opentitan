@@ -1262,9 +1262,12 @@ module dma
     hw2reg.control.go.de = clear_go || (cfg_abort_en && (ctrl_state_d == DmaIdle));
     hw2reg.control.go.d  = 1'b0;
 
-    // Assert wr wen on transitions from and to IDLE
+    // Assert busy write enable on
+    // - transitions from IDLE out
+    // - clearing the go bit (going back to idle)
+    // - abort               (going back to idle)
     hw2reg.status.busy.de = ((ctrl_state_q  == DmaIdle) && (ctrl_state_d != DmaIdle)) ||
-                            ((ctrl_state_q  != DmaIdle) && (ctrl_state_d == DmaIdle));
+                            hw2reg.control.go.de;
     // If transitioning from IDLE, set busy, otherwise clear it
     hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) &&
                             (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
