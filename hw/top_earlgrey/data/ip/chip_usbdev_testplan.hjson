@@ -6,6 +6,22 @@
   testpoints: [
     // USBDEV integration tests
     {
+      name: chip_sw_usbdev_mem
+      desc: '''Verify that the USB device packet memory works reliably from the CPU side.
+
+            - With the USB device powered but not connected (pull up not enabled),
+              check that the packet buffer memory works reliably from the CPU side.
+            - Exercise and check 32-bit reads/writes to all addresses within the packet
+              buffer RAM.
+            '''
+      features: ["USBDEV.BUFFER.MEMORY"]
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
       name: chip_sw_usbdev_vbus
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
@@ -43,6 +59,31 @@
       si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_pullup"]
+      bazel: []
+    }
+    {
+      name: chip_sw_usbdev_aon_pullup
+      desc: '''Verify that the AON Wake module can assume control of the pull ups.
+
+            - This test extends from `chip_sw_usbdev_pullup` by additionally exercising the
+              ability of the 'usbdev_aon_wake' module to assume control of the DP/DN pull up
+              resistors and maintain the state of the USB during suspend.
+            - Drive the DP signal into a known state, enable the AON Wake module and attempt
+              to change the DP pull up from the usbdev.
+            - Check that the DP line is unaffected and that it retains the state at the point of
+              `usbdev_aon_wake` taking control.
+            - Repeat the above test with the DP line in the opposite state.
+            - For those targets which support pinflipping, repeat the above for the DN line too.
+            '''
+      features: [
+        "USBDEV.CONN.VBUS",
+        "USBDEV.CONN.PULLUP",
+        "USBDEV.POWER.AON",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
       bazel: []
     }
     {
@@ -91,11 +132,10 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_setuprx"]
       bazel: []
@@ -116,12 +156,11 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
       bazel: []
@@ -142,14 +181,13 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
         "USBDEV.CONN.PIN_CONFIG",
         "USBDEV.CONN.RESET",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_pincfg"]
       bazel: []
@@ -171,14 +209,13 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
         "USBDEV.TRANSFER.ENDPOINTS",
         "USBDEV.TRANSFER.BULK",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_dpi"]
       bazel: []
@@ -200,7 +237,6 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
         "USBDEV.TRANSFER.ENDPOINTS",
@@ -230,7 +266,6 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
         "USBDEV.TRANSFER.ENDPOINTS",
@@ -257,7 +292,6 @@
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
         "USBDEV.TRANSFER.CONTROL_RX",
         "USBDEV.TRANSFER.CONTROL_TX",
         "USBDEV.TRANSFER.ENDPOINTS",
@@ -271,7 +305,117 @@
       tests: []
       bazel: []
     }
-    // This test list does not yet cover Suspend, Resume, Sleep and Wake
-    // functionality.
+    {
+      name: chip_sw_usbdev_suspend_resume
+      desc: '''Verify that the USB device can detect Suspend and Resume Signaling
+            from the host.
+
+            - Host configures the USB device as normal.
+            - Host requests that the USB device enter a Suspended state, by ceasing activity
+              and leaving the USB Idle for more than 3.0ms.
+            - Check that the usbdev link state becomes `Suspended.`
+            - Host performs Resume Signaling.
+            - Check that SOF has resumed and usbdev enters the Resuming state and subsequently
+              the Active state.
+            - With a physical host this requires the `usbdev/suspend_test` host-side test
+              application to perform Suspend/Resume Signaling.
+            - Note: this test does not engage the AON Wake module or enter a low power state.
+      features: [
+        "USBDEV.CONN.VBUS",
+        "USBDEV.CONN.PULLUP",
+        "USBDEV.TRANSFER.CONTROL_RX",
+        "USBDEV.TRANSFER.CONTROL_TX",
+        "USBDEV.POWER.SUSPEND",
+        "USBDEV.POWER.RESUME",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_usbdev_aon_wake_reset
+      desc: '''Verify that the USB AON Wake module can detect Bus Resets from the host.
+
+            - Host configures the USB device as normal and subsequently performs
+              Suspend signaling.
+            - Device software requests that the AON Wake module take control of the USB.
+            - Host issues a Bus Reset to the USB device.
+            - Check that the AON Wake module reports a Bus Reset.
+            - Check that, in response to software request, the AON Wake module returns control of
+              the USB pull ups to usbdev.
+            - With a physical host this requires the `usbdev/suspend_test` host-side test
+              application to perform Suspend Signaling and to issue a Bus Reset to the USB device.
+            - Note: this test does not exercise power manager-related functionality and does
+              not enter any low power mode.
+            '''
+      features: [
+        "USBDEV.CONN.VBUS",
+        "USBDEV.CONN.PULLUP",
+        "USBDEV.TRANSFER.CONTROL_RX",
+        "USBDEV.TRANSFER.CONTROL_TX",
+        "USBDEV.POWER.SUSPEND",
+        "USBDEV.POWER.AON",
+        "USBDEV.POWER.WAKE_BUS_RESET",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_usbdev_aon_wake_disconnect
+      desc: '''Verify that the USB AON Wake module can detect USB Disconnects.
+
+            - Host configures the USB device as normal and subsequently performs
+              Suspend signaling.
+            - Device software requests that the AON Wake module take control of the USB.
+            - Host or HyperDebug Disconnects the USB device from the USB.
+            - Check that the AON Wake module reports a Disconnect.
+            - Check that, in response to software request, the AON Wake module returns control of
+              the USB pull ups to usbdev.
+            - With a physical host this requires the `usbdev/suspend_test` host-side test
+              application to perform Suspend Signaling.
+            - This test requires either HyperDebug-based control of the VBUS connection on the
+              SiVal test board or host-side code and a hub that is capable of power control.
+            - Note: this test does not exercise power manager-related functionality and does
+              not enter any low power mode.
+            '''
+      features: [
+        "USBDEV.CONN.VBUS",
+        "USBDEV.CONN.PULLUP",
+        "USBDEV.TRANSFER.CONTROL_RX",
+        "USBDEV.TRANSFER.CONTROL_TX",
+        "USBDEV.POWER.SUSPEND",
+        "USBDEV.POWER.AON",
+        "USBDEV.POWER.WAKE_DISCONNECT",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_usbdev_toggle_restore
+      desc: '''Verify that the USB device is able to save and restore arbitrary permutations
+            of the Data Toggle flags on both the IN and OUT sides.
+
+            - With the USB device powered but not connected (pull up not enabled),
+              set the IN and OUT Data Toggle flags for all endpoints to known state.
+            - Verify that the IN and OUT Data Toggle flags may be read back correctly.
+            - This functionality is required when Resuming from Deep Sleep.
+            - Note that this test does not exercise any low power states or Suspend/Resume.
+            - NOTE: This test should be SV4 and requires prod-only RTL changes.
+            '''
+      features: ["USBDEV.POWER.TOGGLE_RESTORE"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
   ]
 }
