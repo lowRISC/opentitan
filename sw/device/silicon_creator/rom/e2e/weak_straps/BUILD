@@ -1,34 +1,32 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
-package(default_visibility = ["//visibility:public"])
-
 load(
-    "//rules:opentitan_test.bzl",
-    "opentitan_functest",
+    "//rules/opentitan:defs.bzl",
+    "CLEAR_TEST_CMD",
+    "opentitan_test",
     "verilator_params",
 )
 load(":gpio.bzl", "strap_combinations_test")
 
+package(default_visibility = ["//visibility:public"])
+
 strap_combinations_test(
     name = "e2e_weak_straps",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_verilator_scr_vmem",
     tags = [
         "verilator",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sw_strap_value",
     srcs = ["sw_straps_test.c"],
-    targets = [
-        "verilator",
-    ],
-    test_harness = "//sw/host/tests/rom/sw_strap_value",
+    exec_env = {"//hw/top_earlgrey:sim_verilator": None},
     verilator = verilator_params(
         timeout = "long",
-        test_cmds = [],
+        test_cmd = CLEAR_TEST_CMD,
+        test_harness = "//sw/host/tests/rom/sw_strap_value",
     ),
     deps = [
         "//sw/device/lib/base:status",

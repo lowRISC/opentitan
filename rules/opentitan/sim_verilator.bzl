@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo", "get_one_binary_file")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files", "get_override")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
