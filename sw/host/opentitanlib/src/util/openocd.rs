@@ -4,7 +4,6 @@
 
 use std::borrow::BorrowMut;
 use std::cell::{Cell, RefCell};
-use std::ffi::OsStr;
 use std::io::{self, ErrorKind, Read, Write};
 use std::mem::size_of;
 use std::net::{TcpStream, ToSocketAddrs};
@@ -105,20 +104,20 @@ impl OpenOcdServer {
             }
         }
 
-        let mut args = Vec::new();
+        let mut cmd = Command::new(&self.opts.openocd);
 
         // Pass the path to the adapter config file if given.
         if let Some(cfg) = &self.opts.openocd_adapter_config {
-            args.extend(["-f", cfg]);
+            cmd.arg("-f").arg(cfg);
         }
 
         // Because these commands are command-line args, they *must* end with
         // semicolons to satisfy the TCL lexer. When a TCL program is read from
         // a file, newlines are sufficient to separate statements.
         let adapter_speed_cmd = format!("adapter speed {}", self.opts.adapter_speed_khz);
-        args.extend(["-c", adapter_speed_cmd.as_str()]);
-        args.extend(["-c", "transport select jtag;"]);
-        args.extend(["-c", "scan_chain;"]);
+        cmd.arg("-c").arg(adapter_speed_cmd.as_str());
+        cmd.arg("-c").arg("transport select jtag;");
+        cmd.arg("-c").arg("scan_chain;");
 
         // Pass through the config for the chosen TAP.
         let target = match tap {
@@ -127,31 +126,23 @@ impl OpenOcdServer {
         };
         self.jtag_tap.set(Some(tap));
         if let Some(cfg) = &target {
-            args.extend(["-f", cfg]);
+            cmd.arg("-f").arg(cfg);
         }
 
         // Use the default port explicity to avoid relying on it not changing.
         let port_cmd = format!("tcl_port {}", self.opts.openocd_port);
-        args.extend(["-c", port_cmd.as_str()]);
-        args.extend(["-c", "init;"]);
+        cmd.arg("-c").arg(port_cmd.as_str());
+        cmd.arg("-c").arg("init;");
 
         log::info!("CWD: {:?}", std::env::current_dir());
-        log::info!(
-            "Spawning OpenOCD: {:?} {:?}",
-            self.opts.openocd,
-            args.join(" ")
-        );
+        log::info!("Spawning OpenOCD: {cmd:?}");
 
-        let mut cmd = Command::new(&self.opts.openocd);
-        cmd.args(args)
-            .stdin(Stdio::null())
+        cmd.stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
-        let mut child = cmd.spawn().with_context(|| {
-            let program = cmd.get_program();
-            let args = cmd.get_args().collect::<Vec<_>>().join(OsStr::new(" "));
-            format!("failed to spawn openocd: {program:?} {args:?}",)
-        })?;
+        let mut child = cmd
+            .spawn()
+            .with_context(|| format!("failed to spawn openocd: {cmd:?}",))?;
         let stdout = child.stdout.take().unwrap();
         let mut stderr = child.stderr.take().unwrap();
         // Wait until we see 'Info : Listening on port XXX for tcl connections' before actually connecting
