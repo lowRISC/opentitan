@@ -16,5 +16,4 @@ OPENTITANTOOL_OPENOCD_TEST_CMD = """
     --openocd-lc-target-config="$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)"
     --clear-bitstream
     --bitstream={bitstream}
-    --elf={firmware}
 """
