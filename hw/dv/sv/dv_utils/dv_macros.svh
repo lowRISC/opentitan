@@ -642,6 +642,6 @@
 // Do not leave this macro in other source files in the remote repo.
 `ifndef OTDBG
   `define OTDBG(x) \
-  $write($sformatf("%t:OTDBG:",$time));\
+  $write($sformatf("%t:OTDBG:%s:%d:",$time,`__FILE__, `__LINE__));\
   $display($sformatf x);
 `endif
