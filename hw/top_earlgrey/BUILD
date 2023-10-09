@@ -60,10 +60,7 @@ fpga_cw310(
         "--rcfile=",
         "--logging=info",
         "--interface={interface}",
-    ] + select({
-        "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
-        "//conditions:default": [],
-    }),
+    ],
     base = ":fpga_cw310",
     bitstream = "//hw/bitstream:test_rom",
     exec_env = "fpga_cw310_test_rom",

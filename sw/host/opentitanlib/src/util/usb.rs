@@ -4,6 +4,8 @@
 
 use anyhow::{ensure, Context, Result};
 use rusb;
+use std::fs;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::transport::TransportError;
@@ -152,6 +154,65 @@ impl UsbBackend {
         self.handle
             .read_string_descriptor_ascii(idx)
             .context("USB error")
+    }
+
+    /// Locates the /dev/tty{USB|ACM}n node corresponding to a given interface.
+    pub fn find_tty(
+        &self,
+        config_desc: &rusb::ConfigDescriptor,
+        interface: &rusb::Interface,
+    ) -> Result<PathBuf> {
+        let root_path = PathBuf::from("/sys/bus/usb/devices");
+
+        let ports = self
+            .port_numbers()?
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<String>>()
+            .join(".");
+        let path = root_path
+            .join(format!("{}-{}", self.bus_number(), ports))
+            .join(format!(
+                "{}-{}:{}.{}",
+                self.bus_number(),
+                ports,
+                config_desc.number(),
+                interface.number()
+            ));
+        log::warn!("Looking for TTY in {:?}", &path);
+        for entry in fs::read_dir(&path).context(format!("find TTY: read_dir({:?})", &path))? {
+            let entry = entry.context(format!("find TTY: entity {:?}", &path))?;
+            if let Ok(filename) = entry.file_name().into_string() {
+                log::warn!("Found {}", filename);
+                if filename == "tty" && entry.metadata()?.is_dir() {
+                    let next_path = path.join(entry.file_name());
+                    for lvl_entry in fs::read_dir(&next_path)
+                        .context(format!("find TTY: read_dir({:?})", &next_path))?
+                    {
+                        let lvl_entry =
+                            lvl_entry.context(format!("find TTY: entity {:?}", &next_path))?;
+                        if let Ok(filename) = lvl_entry.file_name().into_string() {
+                            log::warn!("Found {} in {:?}", filename, &next_path);
+                            if filename.starts_with("tty") {
+                                log::warn!(
+                                    "found {:?}",
+                                    PathBuf::from("/dev").join(lvl_entry.file_name())
+                                );
+                                return Ok(PathBuf::from("/dev").join(lvl_entry.file_name()));
+                            }
+                        }
+                    }
+                } else if filename.starts_with("tty") {
+                    log::warn!("found {:?}", PathBuf::from("/dev").join(entry.file_name()));
+                    return Ok(PathBuf::from("/dev").join(entry.file_name()));
+                }
+            }
+        }
+        log::warn!("found nothing");
+        Err(
+            TransportError::CommunicationError("Did not find tty{USB|ACM}n device".to_string())
+                .into(),
+        )
     }
 
     //

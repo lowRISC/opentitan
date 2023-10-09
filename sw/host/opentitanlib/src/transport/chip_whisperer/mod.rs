@@ -4,7 +4,6 @@
 
 use anyhow::{ensure, Result};
 use serde_annotate::Annotate;
-use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -15,7 +14,7 @@ use std::rc::Rc;
 use crate::io::gpio::GpioPin;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
-use crate::io::uart::{Uart, UartError};
+use crate::io::uart::Uart;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
@@ -40,7 +39,7 @@ struct Inner {
 
 pub struct ChipWhisperer<B: Board> {
     pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
-    uart_override: Vec<String>,
+    uarts: Vec<String>,
     openocd_adapter_config: Option<PathBuf>,
     inner: RefCell<Inner>,
 }
@@ -53,11 +52,50 @@ impl<B: Board> ChipWhisperer<B> {
         uart_override: &[&str],
         openocd_adapter_config: Option<PathBuf>,
     ) -> anyhow::Result<Self> {
+        let device = usb::Backend::new(usb_vid, usb_pid, usb_serial)?;
+        let mut detected_uarts: Vec<String> = Vec::new();
+        let config_desc = device.usb().active_config_descriptor()?;
+        // Iterate through each USB interface, discovering e.g. supported UARTs.
+        for interface in config_desc.interfaces() {
+            for interface_desc in interface.descriptors() {
+                // Check the class/subclass/protocol of this USB interface.
+                if interface_desc.class_code() == 2
+                    && interface_desc.sub_class_code() == 2
+                    && interface_desc.protocol_code() == 0
+                {
+                    // We found an UART forwarding USB interface.
+                    detected_uarts.push(
+                        device
+                            .usb()
+                            .find_tty(&config_desc, &interface)?
+                            .to_str()
+                            .ok_or(TransportError::UnicodePathError)?
+                            .to_string(),
+                    );
+                    continue;
+                }
+            }
+        }
+        log::warn!("Detected UARTs: {:?}", &detected_uarts);
+        let mut cmd = std::process::Command::new("/bin/ls");
+        cmd.arg("-l");
+        for uart in &detected_uarts {
+            cmd.arg(uart);
+        }
+        for uart in uart_override {
+            cmd.arg(uart);
+        }
+        let mut child = cmd.spawn()?;
+        child.wait()?;
+        let uarts = if !uart_override.is_empty() {
+            uart_override.iter().map(|s| s.to_string()).collect()
+        } else {
+            detected_uarts.into_iter().rev().collect()
+        };
+        log::warn!("Working UARTs: {:?}", &uarts);
         let board = ChipWhisperer {
-            device: Rc::new(RefCell::new(usb::Backend::new(
-                usb_vid, usb_pid, usb_serial,
-            )?)),
-            uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
+            device: Rc::new(RefCell::new(device)),
+            uarts,
             openocd_adapter_config,
             inner: RefCell::default(),
         };
@@ -65,36 +103,12 @@ impl<B: Board> ChipWhisperer<B> {
     }
 
     fn open_uart(&self, instance: u32) -> Result<SerialPortUart> {
-        if self.uart_override.is_empty() {
-            let usb = self.device.borrow();
-            let serial_number = usb.get_serial_number();
-
-            let mut ports = serialport::available_ports()
-                .map_err(|e| UartError::EnumerationError(e.to_string()))?;
-            ports.retain(|port| {
-                if let SerialPortType::UsbPort(info) = &port.port_type {
-                    if info.serial_number.as_deref() == Some(serial_number) {
-                        return true;
-                    }
-                }
-                false
-            });
-            // The CW board seems to have the last port connected as OpenTitan UART 0.
-            // Reverse the sort order so the last port will be instance 0.
-            ports.sort_by(|a, b| b.port_name.cmp(&a.port_name));
-
-            let port = ports.get(instance as usize).ok_or_else(|| {
-                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-            })?;
-            SerialPortUart::open(&port.port_name)
-        } else {
-            let instance = instance as usize;
-            ensure!(
-                instance < self.uart_override.len(),
-                TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
-            );
-            SerialPortUart::open(&self.uart_override[instance])
-        }
+        let instance = instance as usize;
+        ensure!(
+            instance < self.uarts.len(),
+            TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
+        );
+        SerialPortUart::open(&self.uarts[instance])
     }
 }
 

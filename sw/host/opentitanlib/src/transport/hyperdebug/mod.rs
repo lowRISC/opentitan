@@ -12,11 +12,10 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::fs;
 use std::io::Read;
 use std::io::Write;
 use std::marker::PhantomData;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioMonitoring, GpioPin};
@@ -121,8 +120,6 @@ impl<T: Flavor> Hyperdebug<T> {
             usb_serial,
         )?;
 
-        let path = PathBuf::from("/sys/bus/usb/devices");
-
         let mut console_tty: Option<PathBuf> = None;
         let mut spi_interface: Option<BulkInterface> = None;
         let mut i2c_interface: Option<BulkInterface> = None;
@@ -153,21 +150,6 @@ impl<T: Flavor> Hyperdebug<T> {
         // Iterate through each USB interface, discovering e.g. supported UARTs.
         for interface in config_desc.interfaces() {
             for interface_desc in interface.descriptors() {
-                let ports = device
-                    .port_numbers()?
-                    .iter()
-                    .map(|id| id.to_string())
-                    .collect::<Vec<String>>()
-                    .join(".");
-                let interface_path = path
-                    .join(format!("{}-{}", device.bus_number(), ports))
-                    .join(format!(
-                        "{}-{}:{}.{}",
-                        device.bus_number(),
-                        ports,
-                        config_desc.number(),
-                        interface.number()
-                    ));
                 // Check the class/subclass/protocol of this USB interface.
                 if interface_desc.class_code() == Self::USB_CLASS_VENDOR
                     && interface_desc.sub_class_code() == Self::USB_SUBCLASS_UART
@@ -186,11 +168,13 @@ impl<T: Flavor> Hyperdebug<T> {
                     if interface_name.ends_with("Shell") {
                         // We found the "main" control interface of HyperDebug, allowing textual
                         // commands to be sent, to e.g. manipulate GPIOs.
-                        console_tty = Some(Self::find_tty(&interface_path)?);
+                        console_tty = Some(device.find_tty(&config_desc, &interface)?);
                     } else {
                         // We found an UART forwarding USB interface.
-                        uart_ttys
-                            .insert(interface_name.to_string(), Self::find_tty(&interface_path)?);
+                        uart_ttys.insert(
+                            interface_name.to_string(),
+                            device.find_tty(&config_desc, &interface)?,
+                        );
                     }
                     continue;
                 }
@@ -267,20 +251,6 @@ impl<T: Flavor> Hyperdebug<T> {
             phantom: PhantomData,
         };
         Ok(result)
-    }
-
-    /// Locates the /dev/ttyUSBn node corresponding to a given interface in the sys directory
-    /// tree, e.g. /sys/bus/usb/devices/1-4/1-4:1.0 .
-    fn find_tty(path: &Path) -> Result<PathBuf> {
-        for entry in fs::read_dir(path).context(format!("find TTY: read_dir({:?})", path))? {
-            let entry = entry.context(format!("find TTY: entity {:?}", path))?;
-            if let Ok(filename) = entry.file_name().into_string() {
-                if filename.starts_with("tty") {
-                    return Ok(PathBuf::from("/dev").join(entry.file_name()));
-                }
-            }
-        }
-        Err(TransportError::CommunicationError("Did not find ttyUSBn device".to_string()).into())
     }
 
     fn find_endpoints_for_interface(
