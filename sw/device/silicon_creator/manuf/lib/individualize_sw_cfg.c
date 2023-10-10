@@ -46,6 +46,20 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
   return OK_STATUS();
 }
 
+status_t manuf_individualize_device_creator_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                    kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_owner_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
+                    kOtpKvOwnerSwCfgSize));
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                     kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
