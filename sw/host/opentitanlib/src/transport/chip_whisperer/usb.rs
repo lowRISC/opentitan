@@ -137,6 +137,16 @@ impl<B: Board> Backend<B> {
         self.usb.get_serial_number()
     }
 
+    /// Get the USB bus number.
+    pub fn bus_number(&self) -> u8 {
+        self.usb.bus_number()
+    }
+
+    /// Get the USB port numbers to the root hub.
+    pub fn port_numbers(&self) -> Result<Vec<u8>> {
+        self.usb.port_numbers()
+    }
+
     /// Get the firmware build date as a string.
     pub fn get_firmware_build_date(&self) -> Result<String> {
         let mut buf = [0u8; 100];
