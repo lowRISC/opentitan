@@ -75,6 +75,42 @@
       '''
     }
   ],
+  features: [
+    { name: "UART.PARITY",
+      desc: '''
+        The UART can be configured to so that it sends (or expects) a parity bit after each 8 data bits.
+        In receive mode, the UART sends the rx_parity_err interrupt if it receives a parity bit of the wrong polarity.
+        The parity mode is configurable (ensuring words are even or odd).
+      '''
+    },
+    { name: "UART.LINE_LOOPBACK",
+      desc: '''
+        The UART can be configured so that incoming bits are sent on the TX side.
+      '''
+    },
+    { name: "UART.SYSTEM_LOOPBACK",
+      desc: '''
+        The UART can be configured so that outgoing bits are registered as having been received on the RX side.
+      '''
+    },
+    { name: "UART.BAUD_RATE_CONTROL",
+      desc: '''
+        The UART baud rate can be configured.
+      '''
+    },
+    { name: "UART.LINE_BREAK",
+      desc: '''
+        The UART can detect line breaks (defined as the RX pin being continuously low for several bit-times).
+        The threshold for number of low bits to signal a line break is configurable.
+      '''
+    },
+    { name: "UART.FIFO_INTERRUPTS",
+      desc: '''
+        The UART can be configured to send an "watermark" interrupt when RX or TX FIFO is nearly full/empty, respectively.
+        It sends an rx_overflow interrupt if it sees an extra character when the RX FIFO is full.
+      '''
+    },
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
