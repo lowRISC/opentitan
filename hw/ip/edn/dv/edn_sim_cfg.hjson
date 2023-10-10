@@ -71,6 +71,7 @@
       name: edn_genbits
       uvm_test: edn_genbits_test
       uvm_test_seq: edn_genbits_vseq
+      reseed: 300
     }
 
     {
