@@ -30,14 +30,26 @@ package soc_proxy_pkg;
     FatalAlertExternal5,
     FatalAlertExternal6,
     FatalAlertExternal7,
+    FatalAlertExternal8,
+    FatalAlertExternal9,
+    FatalAlertExternal10,
+    FatalAlertExternal11,
+    FatalAlertExternal12,
+    FatalAlertExternal13,
+    FatalAlertExternal14,
+    FatalAlertExternal15,
+    FatalAlertExternal16,
+    FatalAlertExternal17,
+    FatalAlertExternal18,
+    FatalAlertExternal19,
+    FatalAlertExternal20,
+    FatalAlertExternal21,
+    FatalAlertExternal22,
+    FatalAlertExternal23,
     RecovAlertExternal0,
     RecovAlertExternal1,
     RecovAlertExternal2,
     RecovAlertExternal3,
-    RecovAlertExternal4,
-    RecovAlertExternal5,
-    RecovAlertExternal6,
-    RecovAlertExternal7,
     NumAlertSources
   } soc_proxy_alert_e;
 
@@ -45,8 +57,8 @@ package soc_proxy_pkg;
   // Assertions on these constants are part of the `soc_proxy` module (since they can't be put into
   // this package).
   localparam int unsigned NumInternalAlerts = FatalAlertIntg - FatalAlertIntg + 1;
-  localparam int unsigned NumFatalExternalAlerts = FatalAlertExternal7 - FatalAlertExternal0 + 1;
-  localparam int unsigned NumRecovExternalAlerts = RecovAlertExternal7 - RecovAlertExternal0 + 1;
+  parameter  int unsigned NumFatalExternalAlerts = FatalAlertExternal23 - FatalAlertExternal0 + 1;
+  parameter  int unsigned NumRecovExternalAlerts = RecovAlertExternal3 - RecovAlertExternal0 + 1;
   localparam int unsigned NumExternalAlerts = NumFatalExternalAlerts + NumRecovExternalAlerts;
 
 endpackage

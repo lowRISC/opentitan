@@ -8,8 +8,8 @@ SoC Proxy is a simple comportable IP module that facilitates the breakout of sig
 - 1 TL-UL Device port for comportable CSR node
 - 1 TL-UL Device port with an address range to egress into CTN
 - 1 Fatal alert for bus integrity
-- 8 Fatal external alert channels
-- 8 Recoverable external alert channels
+- 24 Fatal external alert channels
+- 4 Recoverable external alert channels
 - 2 Wakeup requests
   - Internal wakeup request, should be asserted whenever an external alert or IRQ is seen
   - External wakeup request
@@ -20,7 +20,7 @@ SoC Proxy is a simple comportable IP module that facilitates the breakout of sig
 
 - Synchronous interfaces:
   - 1 TL-UL Host port for egress into CTN
-  - 8 fatal alert and 8 recoverable alert differential input signals
+  - 24 fatal alert and 4 recoverable alert differential input signals
     - Status of each alert can be read and acknowledged via CSRs
     - Optional acknowledgment signals (as in Sensor Control)
     - The main difference with respect to Sensor Control is that each alert is sent out via its own alert channel instead of aggregating, since that way the alert crash dump latched in Reset Manager provides more info than if the alerts were aggregated.
