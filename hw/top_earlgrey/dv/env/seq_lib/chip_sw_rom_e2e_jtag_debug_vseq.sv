@@ -22,9 +22,9 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
     super.body();
     cfg.sw_test_status_vif.can_pass_only_in_test = 0;
 
-    // The steps in this test closely follow the gdb steps, which is embedded directly into the
-    // `opentitan_gdb_fpga_cw310_test` target `rom_e2e_debug_test_otp__<lc_state>` in the bazel
-    // BUILD file located at sw/device/silicon_creator/rom/e2e/BUILD.
+    // The steps in this test closely follow the gdb steps, which are encoded
+    // in a host-side (Rust) test harness located at
+    // sw/host/tests/rom/e2e_openocd_debug_test/src/main.rs
 
     // Halt the CPU before the first instruction is executed. The chip just came out of POR - so
     // there is no need to issue an NDM reset again. Just wait for lc_ready signal and immediately
