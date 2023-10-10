@@ -22,6 +22,13 @@ extern "C" {
     value(_, Done)
 UJSON_SERDE_ENUM(CpProvisioningCommand, cp_provisioning_command_t, ENUM_CP_PROVISIONING_COMMAND);
 
+#define ENUM_FT_SRAM_PROVISIONING_COMMAND(_, value) \
+    value(_, OtpCreatorSwCfgWrite) \
+    value(_, OtpOwnerSwCfgWrite) \
+    value(_, WriteAll) \
+    value(_, Done)
+UJSON_SERDE_ENUM(FtSramProvisioningCommand, ft_sram_provisioning_command_t, ENUM_FT_SRAM_PROVISIONING_COMMAND);
+
 // clang-format on
 #ifdef __cplusplus
 }
