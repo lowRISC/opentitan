@@ -26,6 +26,7 @@ covergroup device_cmd_cg with function sample(csrng_item item, bit sts);
     bins res = {RES};
     bins gen = {GEN};
     bins uni = {UNI};
+    bins upd = {UPD};
     illegal_bins il = default;
   }
   csrng_clen_cp: coverpoint item.clen {
