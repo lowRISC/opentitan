@@ -17,6 +17,8 @@
             on all UART ports across the instances.
             '''
       stage: V1
+      si_stage: SV2
+      features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx"]
       tags: ["gls"]
     }
@@ -31,6 +33,8 @@
             on all UART ports across the instances.
             '''
       stage: V1
+      si_stage: SV3
+      features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
               "chip_sw_uart_tx_rx_idx3"]
     }
@@ -43,6 +47,8 @@
 
             '''
       stage: V1
+      si_stage: SV3
+      features: ["UART.BAUD_RATE_CONTROL"]
       tests: ["chip_sw_uart_rand_baudrate"]
     }
     {
@@ -54,8 +60,18 @@
             - Configure clkmgr to select external clock.
             - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
               ext_clk_freq / 4 or ext_clk_freq / 2.
+
+            Notes for silicon targets:
+
+            - This testpoint currently has an empty list of associated features, because the choice
+              of clock is really a clkmgr/chip-level feature, rather than a feature of the UART
+              block.
+
             '''
       stage: V1
+      si_stage: SV3
+      features: []
+      lc_states: ["RMA"]
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
   ]
