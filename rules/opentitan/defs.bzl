@@ -31,6 +31,10 @@ load(
     _dv_params = "dv_params",
     _sim_dv = "sim_dv",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    _rsa_key_for_lc_state = "rsa_key_for_lc_state",
+)
 
 """Rules to build OpenTitan for the RISC-V target"""
 
@@ -52,6 +56,8 @@ verilator_params = _verilator_params
 
 sim_dv = _sim_dv
 dv_params = _dv_params
+
+rsa_key_for_lc_state = _rsa_key_for_lc_state
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
