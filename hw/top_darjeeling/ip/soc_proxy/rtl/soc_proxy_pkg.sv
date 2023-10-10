@@ -38,6 +38,18 @@ package soc_proxy_pkg;
     RecovAlertExternal5,
     RecovAlertExternal6,
     RecovAlertExternal7,
+    RecovAlertExternal8,
+    RecovAlertExternal9,
+    RecovAlertExternal10,
+    RecovAlertExternal11,
+    RecovAlertExternal12,
+    RecovAlertExternal13,
+    RecovAlertExternal14,
+    RecovAlertExternal15,
+    RecovAlertExternal16,
+    RecovAlertExternal17,
+    RecovAlertExternal18,
+    RecovAlertExternal19,
     NumAlertSources
   } soc_proxy_alert_e;
 
@@ -46,7 +58,7 @@ package soc_proxy_pkg;
   // this package).
   localparam int unsigned NumInternalAlerts = FatalAlertIntg - FatalAlertIntg + 1;
   localparam int unsigned NumFatalExternalAlerts = FatalAlertExternal7 - FatalAlertExternal0 + 1;
-  localparam int unsigned NumRecovExternalAlerts = RecovAlertExternal7 - RecovAlertExternal0 + 1;
+  localparam int unsigned NumRecovExternalAlerts = RecovAlertExternal19 - RecovAlertExternal0 + 1;
   localparam int unsigned NumExternalAlerts = NumFatalExternalAlerts + NumRecovExternalAlerts;
 
 endpackage

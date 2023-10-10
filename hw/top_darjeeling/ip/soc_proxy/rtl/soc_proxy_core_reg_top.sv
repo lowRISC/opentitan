@@ -150,6 +150,18 @@ module soc_proxy_core_reg_top (
   logic alert_test_recov_alert_external_5_wd;
   logic alert_test_recov_alert_external_6_wd;
   logic alert_test_recov_alert_external_7_wd;
+  logic alert_test_recov_alert_external_8_wd;
+  logic alert_test_recov_alert_external_9_wd;
+  logic alert_test_recov_alert_external_10_wd;
+  logic alert_test_recov_alert_external_11_wd;
+  logic alert_test_recov_alert_external_12_wd;
+  logic alert_test_recov_alert_external_13_wd;
+  logic alert_test_recov_alert_external_14_wd;
+  logic alert_test_recov_alert_external_15_wd;
+  logic alert_test_recov_alert_external_16_wd;
+  logic alert_test_recov_alert_external_17_wd;
+  logic alert_test_recov_alert_external_18_wd;
+  logic alert_test_recov_alert_external_19_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -230,7 +242,7 @@ module soc_proxy_core_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [16:0] alert_test_flds_we;
+  logic [28:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_alert_intg]: 0:0
   prim_subreg_ext #(
@@ -504,6 +516,198 @@ module soc_proxy_core_reg_top (
   );
   assign reg2hw.alert_test.recov_alert_external_7.qe = alert_test_qe;
 
+  //   F[recov_alert_external_8]: 17:17
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_8 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_8_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[17]),
+    .q      (reg2hw.alert_test.recov_alert_external_8.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_8.qe = alert_test_qe;
+
+  //   F[recov_alert_external_9]: 18:18
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_9 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_9_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[18]),
+    .q      (reg2hw.alert_test.recov_alert_external_9.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_9.qe = alert_test_qe;
+
+  //   F[recov_alert_external_10]: 19:19
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_10 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_10_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[19]),
+    .q      (reg2hw.alert_test.recov_alert_external_10.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_10.qe = alert_test_qe;
+
+  //   F[recov_alert_external_11]: 20:20
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_11 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_11_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[20]),
+    .q      (reg2hw.alert_test.recov_alert_external_11.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_11.qe = alert_test_qe;
+
+  //   F[recov_alert_external_12]: 21:21
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_12 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_12_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[21]),
+    .q      (reg2hw.alert_test.recov_alert_external_12.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_12.qe = alert_test_qe;
+
+  //   F[recov_alert_external_13]: 22:22
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_13 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_13_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[22]),
+    .q      (reg2hw.alert_test.recov_alert_external_13.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_13.qe = alert_test_qe;
+
+  //   F[recov_alert_external_14]: 23:23
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_14 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_14_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[23]),
+    .q      (reg2hw.alert_test.recov_alert_external_14.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_14.qe = alert_test_qe;
+
+  //   F[recov_alert_external_15]: 24:24
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_15 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_15_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[24]),
+    .q      (reg2hw.alert_test.recov_alert_external_15.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_15.qe = alert_test_qe;
+
+  //   F[recov_alert_external_16]: 25:25
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_16 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_16_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[25]),
+    .q      (reg2hw.alert_test.recov_alert_external_16.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_16.qe = alert_test_qe;
+
+  //   F[recov_alert_external_17]: 26:26
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_17 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_17_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[26]),
+    .q      (reg2hw.alert_test.recov_alert_external_17.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_17.qe = alert_test_qe;
+
+  //   F[recov_alert_external_18]: 27:27
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_18 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_18_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[27]),
+    .q      (reg2hw.alert_test.recov_alert_external_18.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_18.qe = alert_test_qe;
+
+  //   F[recov_alert_external_19]: 28:28
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_alert_external_19 (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_alert_external_19_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[28]),
+    .q      (reg2hw.alert_test.recov_alert_external_19.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_alert_external_19.qe = alert_test_qe;
+
 
 
   logic [3:0] addr_hit;
@@ -572,6 +776,30 @@ module soc_proxy_core_reg_top (
 
   assign alert_test_recov_alert_external_7_wd = reg_wdata[16];
 
+  assign alert_test_recov_alert_external_8_wd = reg_wdata[17];
+
+  assign alert_test_recov_alert_external_9_wd = reg_wdata[18];
+
+  assign alert_test_recov_alert_external_10_wd = reg_wdata[19];
+
+  assign alert_test_recov_alert_external_11_wd = reg_wdata[20];
+
+  assign alert_test_recov_alert_external_12_wd = reg_wdata[21];
+
+  assign alert_test_recov_alert_external_13_wd = reg_wdata[22];
+
+  assign alert_test_recov_alert_external_14_wd = reg_wdata[23];
+
+  assign alert_test_recov_alert_external_15_wd = reg_wdata[24];
+
+  assign alert_test_recov_alert_external_16_wd = reg_wdata[25];
+
+  assign alert_test_recov_alert_external_17_wd = reg_wdata[26];
+
+  assign alert_test_recov_alert_external_18_wd = reg_wdata[27];
+
+  assign alert_test_recov_alert_external_19_wd = reg_wdata[28];
+
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
@@ -615,6 +843,18 @@ module soc_proxy_core_reg_top (
         reg_rdata_next[14] = '0;
         reg_rdata_next[15] = '0;
         reg_rdata_next[16] = '0;
+        reg_rdata_next[17] = '0;
+        reg_rdata_next[18] = '0;
+        reg_rdata_next[19] = '0;
+        reg_rdata_next[20] = '0;
+        reg_rdata_next[21] = '0;
+        reg_rdata_next[22] = '0;
+        reg_rdata_next[23] = '0;
+        reg_rdata_next[24] = '0;
+        reg_rdata_next[25] = '0;
+        reg_rdata_next[26] = '0;
+        reg_rdata_next[27] = '0;
+        reg_rdata_next[28] = '0;
       end
 
       default: begin

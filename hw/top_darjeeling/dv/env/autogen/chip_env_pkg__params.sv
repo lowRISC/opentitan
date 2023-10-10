@@ -45,6 +45,18 @@ parameter string LIST_OF_ALERTS[] = {
   "soc_proxy_recov_alert_external_5",
   "soc_proxy_recov_alert_external_6",
   "soc_proxy_recov_alert_external_7",
+  "soc_proxy_recov_alert_external_8",
+  "soc_proxy_recov_alert_external_9",
+  "soc_proxy_recov_alert_external_10",
+  "soc_proxy_recov_alert_external_11",
+  "soc_proxy_recov_alert_external_12",
+  "soc_proxy_recov_alert_external_13",
+  "soc_proxy_recov_alert_external_14",
+  "soc_proxy_recov_alert_external_15",
+  "soc_proxy_recov_alert_external_16",
+  "soc_proxy_recov_alert_external_17",
+  "soc_proxy_recov_alert_external_18",
+  "soc_proxy_recov_alert_external_19",
   "sram_ctrl_ret_aon_fatal_error",
   "rv_dm_fatal_fault",
   "rv_plic_fatal_fault",
@@ -94,4 +106,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 87;
+parameter uint NUM_ALERTS = 99;
