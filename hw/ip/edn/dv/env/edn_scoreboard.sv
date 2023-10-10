@@ -360,12 +360,16 @@ class edn_scoreboard extends cip_base_scoreboard #(
         end
 
         // If the EDN is in sw mode, the additional data must come from sw_cmd_req
-        if (!auto_mode && !boot_mode) begin
+        if ((!auto_mode && !boot_mode) || (boot_mode && boot_gen_cmd_sent)) begin
           sw_cmd_req_comp = sw_cmd_req_q.pop_front();
           `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
-                          $sformatf({"Additional data 0x%h in sw mode has to match",
+                          $sformatf({"Additional data 0x%h has to match",
                                      " the value from sw fifo 0x%h."},
                                     cs_cmd, sw_cmd_req_comp))
+        end
+
+        if (boot_mode && !boot_gen_cmd_sent) begin
+          `uvm_fatal(`gfn, $sformatf("No additional data allowed in boot mode."));
         end
 
       // Else cs_cmd contains a command header
@@ -388,7 +392,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
             end
 
             // If EDN is in boot_req_mode and boot sequence is not done
-            if (boot_mode && (boot_gen_cmd_sent == 1'b0)) begin
+            if (boot_mode && !boot_gen_cmd_sent) begin
               `DV_CHECK_FATAL(cs_cmd == boot_ins_cmd_comp,
                               $sformatf({"Instantiate command 0x%h in boot_req_mode",
                                          " has to match the value in boot_ins_cmd register 0x%h."},
@@ -520,11 +524,15 @@ class edn_scoreboard extends cip_base_scoreboard #(
                             $sformatf("clen must be 0 for uninstantiate command. cmd: 0x%h",
                                       cs_cmd))
 
-            if (!auto_mode && !boot_mode) begin
+            `DV_CHECK_FATAL(!auto_mode || (boot_mode -> boot_gen_cmd_sent),
+                            $sformatf({"Uninstantiate command not allowed in auto mode or",
+                                       " before boot gen command has been sent."}))
+
+            if ((!auto_mode && !boot_mode) || (boot_mode && boot_gen_cmd_sent)) begin
               sw_cmd_req_comp = sw_cmd_req_q.pop_front();
               `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
-                              $sformatf({"Uninstantiate command 0x%h in sw mode has to match",
-                                          " the value from sw_cmd_req register 0x%h."},
+                              $sformatf({"Uninstantiate command 0x%h has to match",
+                                         " the value from sw_cmd_req register 0x%h."},
                                         cs_cmd, sw_cmd_req_comp))
             end
             instantiated = 1'b0;
