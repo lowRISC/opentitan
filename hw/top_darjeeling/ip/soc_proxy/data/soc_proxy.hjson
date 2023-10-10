@@ -76,6 +76,54 @@
     { name: "fatal_alert_external_7"
       desc: "Fatal external alert channel 7"
     }
+    { name: "fatal_alert_external_8"
+      desc: "Fatal external alert channel 8"
+    }
+    { name: "fatal_alert_external_9"
+      desc: "Fatal external alert channel 9"
+    }
+    { name: "fatal_alert_external_10"
+      desc: "Fatal external alert channel 10"
+    }
+    { name: "fatal_alert_external_11"
+      desc: "Fatal external alert channel 11"
+    }
+    { name: "fatal_alert_external_12"
+      desc: "Fatal external alert channel 12"
+    }
+    { name: "fatal_alert_external_13"
+      desc: "Fatal external alert channel 13"
+    }
+    { name: "fatal_alert_external_14"
+      desc: "Fatal external alert channel 14"
+    }
+    { name: "fatal_alert_external_15"
+      desc: "Fatal external alert channel 15"
+    }
+    { name: "fatal_alert_external_16"
+      desc: "Fatal external alert channel 16"
+    }
+    { name: "fatal_alert_external_17"
+      desc: "Fatal external alert channel 17"
+    }
+    { name: "fatal_alert_external_18"
+      desc: "Fatal external alert channel 18"
+    }
+    { name: "fatal_alert_external_19"
+      desc: "Fatal external alert channel 19"
+    }
+    { name: "fatal_alert_external_20"
+      desc: "Fatal external alert channel 20"
+    }
+    { name: "fatal_alert_external_21"
+      desc: "Fatal external alert channel 21"
+    }
+    { name: "fatal_alert_external_22"
+      desc: "Fatal external alert channel 22"
+    }
+    { name: "fatal_alert_external_23"
+      desc: "Fatal external alert channel 23"
+    }
     { name: "recov_alert_external_0"
       desc: "Recoverable external alert channel 0"
     }
@@ -87,18 +135,6 @@
     }
     { name: "recov_alert_external_3"
       desc: "Recoverable external alert channel 3"
-    }
-    { name: "recov_alert_external_4"
-      desc: "Recoverable external alert channel 4"
-    }
-    { name: "recov_alert_external_5"
-      desc: "Recoverable external alert channel 5"
-    }
-    { name: "recov_alert_external_6"
-      desc: "Recoverable external alert channel 6"
-    }
-    { name: "recov_alert_external_7"
-      desc: "Recoverable external alert channel 7"
     }
   ]
 
@@ -192,7 +228,7 @@
       name:    "soc_fatal_alert"
       act:     "rsp"
       desc:    "Differential fatal alert from SoC, synchronous"
-      width:   8
+      width:   24
     }
     { struct:  "soc_alert"
       package: "soc_proxy_pkg"
@@ -200,7 +236,7 @@
       name:    "soc_recov_alert"
       act:     "rsp"
       desc:    "Differential recoverable alert from SoC, synchronous"
-      width:   8
+      width:   4
     }
     { struct:  "logic"
       type:    "uni"
