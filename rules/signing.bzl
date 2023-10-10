@@ -14,6 +14,8 @@ def key_from_dict(key, attr_name):
     if len(key) != 1:
         fail("Expected exactly one key/value pair for attribute", attr_name)
     key, name = key.items()[0]
+    if "/" in name or "." in name or ":" in name:
+        fail("Invalid key nickname for ", str(key), ".  Nickname ", name, " is invalid.")
     if DefaultInfo in key:
         key_file = key[DefaultInfo].files.to_list()
         if len(key_file) != 1:
