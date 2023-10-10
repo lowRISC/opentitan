@@ -63,35 +63,23 @@ load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:structs.bzl", "structs")
+load(
+    "//sw/device/silicon_creator/rom/e2e:defs.bzl",
+    "MSG_PASS",
+    "MSG_STARTING_ROM_EXT",
+    "MSG_TEMPLATE_BFV",
+    "MSG_TEMPLATE_BFV_LCV",
+    "SIGVERIFY_LC_KEYS",
+    "SLOTS",
+)
 
 package(default_visibility = ["//visibility:public"])
+#group: header
 
-MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
-    CONST.SHUTDOWN.PREFIX.BFV,
-    "{0}",
-    CONST.SHUTDOWN.PREFIX.BFV,
-    "{0}",
+filegroup(
+    name = "empty_test",
+    srcs = ["empty_test.c"],
 )
-
-MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
-    CONST.SHUTDOWN.PREFIX.BFV,
-    "{0}",
-    CONST.SHUTDOWN.PREFIX.LCV,
-    "{1}",
-    CONST.SHUTDOWN.PREFIX.BFV,
-    "{0}",
-    CONST.SHUTDOWN.PREFIX.LCV,
-    "{1}",
-)
-
-MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
-
-MSG_PASS = "PASS!"
-
-SLOTS = {
-    "a": "0x0",
-    "b": "0x80000",
-}
 
 # Default OTP in TEST_UNLOCKED state
 otp_json(
@@ -129,7 +117,7 @@ bitstream_splice(
 
 opentitan_functest(
     name = "rom_e2e_default_otp_bootup",
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     cw310 = cw310_params(
         bitstream = ":bitstream_default_otp",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
@@ -148,7 +136,7 @@ opentitan_functest(
 [opentitan_flash_binary(
     name = "empty_test_slot_{}".format(slot),
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = [
         "fpga_cw310",
         "sim_dv",
@@ -254,6 +242,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
+#group: basic
 
 opentitan_flash_binary(
     name = "rom_e2e_keymgr_init_test",
@@ -351,6 +340,7 @@ test_suite(
         config["name"],
     ) for config in rom_e2e_keymgr_init_configs],
 )
+#group: keymgr
 
 opentitan_functest(
     name = "rom_e2e_c_init",
@@ -392,6 +382,7 @@ opentitan_functest(
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom_with_fake_keys"],
 )
+#group: basic
 
 [otp_image(
     name = "otp_img_e2e_bootstrap_entry_{}".format(lc_state),
@@ -443,6 +434,7 @@ test_suite(
         for lc_state, _ in get_lc_items()
     ],
 )
+#group: rom_e2e_bootstrap_entry
 
 otp_json(
     name = "otp_json_bootstrap_rma",
@@ -539,6 +531,7 @@ opentitan_functest(
     targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
 )
+#group: bootstrap
 
 [
     bitstream_splice(
@@ -605,6 +598,7 @@ test_suite(
         for lc_state, _ in get_lc_items()
     ],
 )
+#group: chip_specific_startup
 
 opentitan_test(
     name = "rom_ext_a_flash_a",
@@ -731,6 +725,7 @@ test_suite(
         "rom_ext_v_flash_b",
     ],
 )
+#group: address_translation
 
 opentitan_functest(
     name = "sigverify_key_auth",
@@ -742,6 +737,7 @@ opentitan_functest(
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom_with_fake_keys"],
 )
+#group: basic
 
 [otp_image(
     name = "otp_img_shutdown_output_{}".format(lc_state),
@@ -797,6 +793,7 @@ test_suite(
     tags = ["manual"],
     tests = ["shutdown_output_{}".format(lc_state) for lc_state, _ in get_lc_items()],
 )
+#group: shutdown_output
 
 SEC_VERS = [
     0,
@@ -814,7 +811,7 @@ SEC_VERS = [
 [opentitan_flash_binary(
     name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = ["fpga_cw310"],
     local_defines = [
         shell.quote("EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()"),
@@ -924,6 +921,7 @@ test_suite(
         for t in BOOT_POLICY_NEWER_CASES
     ],
 )
+#group: boot_policy_newer
 
 BOOT_POLICY_ROLLBACK_CASES = [
     {
@@ -1016,6 +1014,7 @@ test_suite(
         for t in BOOT_POLICY_ROLLBACK_CASES
     ],
 )
+#group: boot_policy_rollback
 
 # Watchdog configuration test cases.
 #
@@ -1163,6 +1162,7 @@ test_suite(
         for lc_state, _ in get_lc_items()
     ],
 )
+#group: watchdog
 
 # Alert Handler configuration test cases.
 #
@@ -1373,6 +1373,7 @@ test_suite(
         for lc_state, _ in ALERT_LC_STATES
     ],
 )
+#group: shutdown_alert
 
 SIGVERIFY_MOD_EXP_CASES = [
     {
@@ -1395,7 +1396,7 @@ SIGVERIFY_MOD_EXP_CASES = [
 opentitan_flash_binary(
     name = "empty_test_sigverify_mod_exp",
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = [
         "fpga_cw310",
         "sim_dv",
@@ -1498,6 +1499,7 @@ test_suite(
         for t in SIGVERIFY_MOD_EXP_CASES
     ],
 )
+#group: sigverify_mod_exp
 
 BOOT_POLICY_BAD_MANIFEST_CASES = [
     {
@@ -1623,7 +1625,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         slot,
     ),
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = [
         "fpga_cw310",
         "sim_dv",
@@ -1776,6 +1778,7 @@ test_suite(
         for slot in SLOTS
     ],
 )
+#group: boot_policy_bad_manifest
 
 BOOT_DATA_RECOVERY_CASES = [
     {
@@ -1878,7 +1881,7 @@ BOOT_DATA_RECOVERY_CASES = [
         case["default_boot_data"],
     ),
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = [
         "fpga_cw310",
     ],
@@ -1942,6 +1945,7 @@ test_suite(
         for case in BOOT_DATA_RECOVERY_CASES
     ],
 )
+#group: boot_data_recovery
 
 SHUTDOWN_WATCHDOG_BITE_THRESHOLDS = [
     200000,  # 1 seconds at 200 kHz
@@ -2073,15 +2077,7 @@ test_suite(
         for t in SHUTDOWN_WATCHDOG_CASES
     ],
 )
-
-# list of keys that will be used to build various flash images
-# it must contain at least one key of each type and contains all
-# the keys used in SIGVERIFY_LCS_2_VALID_KEY
-SIGVERIFY_LC_KEYS = [
-    SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0].name,
-    SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0].name,
-    SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0].name,
-]
+#group: shutdown_watchdog
 
 [
     genrule(
@@ -2233,6 +2229,7 @@ test_suite(
         for b in BOOT_POLICY_VALID_CASES
     ],
 )
+#group: boot_policy_valid
 
 # Apply an overlay that disables ROM execution on top of the base OTP configs.
 [
@@ -2268,7 +2265,7 @@ test_suite(
     # to make sure that the test does not try to bootstrap
     opentitan_test(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
-        srcs = ["empty_test.c"],
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_jtag_params(
             binaries = {
                 "//sw/device/examples/sram_program:sram_program": "sram_program",
@@ -2310,6 +2307,7 @@ test_suite(
         )
     ],
 )
+#group: jtag_inject
 
 [
     opentitan_functest(
@@ -2356,6 +2354,7 @@ test_suite(
     tags = ["manual"],
     tests = ["epmp_init_otp_" + lc_state for lc_state, _ in get_lc_items()],
 )
+#group: epmp_init
 
 LC_STATES_DEBUG_DISALLOWED = [
     CONST.LCV.PROD,
@@ -2365,7 +2364,7 @@ LC_STATES_DEBUG_DISALLOWED = [
 [
     opentitan_functest(
         name = "openocd_debug_test_otp_" + lc_state,
-        srcs = ["empty_test.c"],
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
             timeout = "moderate",
             bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
@@ -2411,6 +2410,7 @@ test_suite(
         )
     ],
 )
+#group: openocd_debug
 
 # Shutdown Redact Test
 
@@ -2473,7 +2473,7 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        srcs = ["empty_test.c"],
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
             bitstream = "bitstream_{}_{}".format(
                 lc_state,
@@ -2513,6 +2513,7 @@ test_suite(
         for redact in REDACT
     ],
 )
+#group: shutdown_redact
 
 [
     opentitan_multislot_flash_binary(
@@ -2690,6 +2691,7 @@ test_suite(
         for lc_state, _ in get_lc_items()
     ],
 )
+#group: sigverify_always
 
 [
     otp_image(
@@ -2763,6 +2765,7 @@ test_suite(
         for key_name in [key.rsa.name for key in RSA_ONLY_KEY_STRUCTS]
     ],
 )
+#group: sigverify_key_type
 
 otp_json(
     name = "otp_json_sigverify_key_validity",
@@ -2851,6 +2854,7 @@ test_suite(
         for key in filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)
     ],
 )
+#group: sigverify_key_validity
 
 # Sigverify usage constraint tests
 _test_device_id = [
@@ -3086,7 +3090,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
 
 [opentitan_functest(
     name = "sigverify_usage_constraint_{}".format(t["name"]),
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     cw310 = cw310_params(
         bitstream = t["bitstream"],
         exit_failure = t["exit_failure"],
@@ -3119,6 +3123,7 @@ test_suite(
     tags = ["manual"],
     tests = ["sigverify_usage_constraint_{}".format(t["name"]) for t in test_cases],
 )
+#group: sigverify_usage_constraints
 
 opentitan_flash_binary(
     name = "rom_ext_upgrade_test",
@@ -3159,6 +3164,7 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
 )
+#group: basic
 
 otp_json(
     name = "otp_json_reset_ret_ram_overlay",
@@ -3235,6 +3241,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+#group: retention_ram
 
 manifest({
     "name": "manifest_rom_ext_upgrade_interrupt",
@@ -3317,6 +3324,7 @@ test_suite(
     tags = ["manual"],
     tests = ["rom_ext_upgrade_interrupt_{}".format(lc_state) for lc_state, _ in get_lc_items()],
 )
+#group: rom_ext_upgrade_interrupt
 
 # We check the OTP item in these lifecycle states.
 SPX_OTP_LC_STATES = [
@@ -3381,7 +3389,7 @@ SIGVERIFY_SPX_CASES = [
 opentitan_flash_binary(
     name = "empty_test_sigverify_spx",
     testonly = True,
-    srcs = ["empty_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     devices = [
         "fpga_cw310",
         "sim_dv",
@@ -3498,6 +3506,7 @@ test_suite(
         for t in SIGVERIFY_SPX_CASES
     ],
 )
+#group: sigverify_spx
 
 otp_image(
     name = "otp_img_sigverify_spx_rma",
@@ -3578,3 +3587,4 @@ bitstream_splice(
 #         "dv",
 #     ],
 # )
+#group: release
