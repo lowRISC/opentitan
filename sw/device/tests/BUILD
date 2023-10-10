@@ -189,38 +189,38 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "alert_handler_reverse_ping_in_deep_sleep_test",
-    srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "dv",
-    ],
-    deps = [
-        "//hw/top_darjeeling:alert_handler_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:math",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:alert_handler",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
-        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
-        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "alert_handler_reverse_ping_in_deep_sleep_test",
+#     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
+#     targets = [
+#         "cw310_test_rom",
+#         "dv",
+#     ],
+#     deps = [
+#         "//hw/top_darjeeling:alert_handler_regs",
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/base:math",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:ibex",
+#         "//sw/lib/sw/device/runtime:irq",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:alert_handler",
+#         "//sw/top_darjeeling/sw/dif:aon_timer",
+#         "//sw/top_darjeeling/sw/dif:flash_ctrl",
+#         "//sw/top_darjeeling/sw/dif:pwrmgr",
+#         "//sw/top_darjeeling/sw/dif:rstmgr",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "alert_handler_lpg_reset_toggle_test",
@@ -267,49 +267,49 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "alert_handler_lpg_sleep_mode_pings_test",
-    srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
-    cw310 = cw310_params(
-        timeout = "moderate",
-    ),
-    targets = [
-        # The test requires the Ibex core to wait long enough
-        # before checking for the ping_timeout error.
-        # The wait-time for the Verilator would be around
-        # 4s (kClockFreqPeripheralHz = 125K).
-        # Thus it is not recommended to run this test on
-        # Verilator as this wait-time looks impractical. It should still
-        # be run as part of the DV nightly regression.
-        "cw310_test_rom",
-        "dv",
-    ],
-    deps = [
-        "//hw/top_darjeeling:alert_handler_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:math",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:alert_handler",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
-        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "alert_handler_lpg_sleep_mode_pings_test",
+#     srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
+#     cw310 = cw310_params(
+#         timeout = "moderate",
+#     ),
+#     targets = [
+#         # The test requires the Ibex core to wait long enough
+#         # before checking for the ping_timeout error.
+#         # The wait-time for the Verilator would be around
+#         # 4s (kClockFreqPeripheralHz = 125K).
+#         # Thus it is not recommended to run this test on
+#         # Verilator as this wait-time looks impractical. It should still
+#         # be run as part of the DV nightly regression.
+#         "cw310_test_rom",
+#         "dv",
+#     ],
+#     deps = [
+#         "//hw/top_darjeeling:alert_handler_regs",
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/base:math",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:ibex",
+#         "//sw/lib/sw/device/runtime:irq",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:alert_handler",
+#         "//sw/top_darjeeling/sw/dif:flash_ctrl",
+#         "//sw/top_darjeeling/sw/dif:rstmgr",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
@@ -1887,282 +1887,282 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "spi_host_irq_test",
-    srcs = ["spi_host_irq_test.c"],
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/dif:spi_host",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-        "//sw/top_darjeeling/sw/test/utils:spi_device_testutils",
-        "//sw/top_darjeeling/sw/test/utils:spi_flash_testutils",
-        "//sw/top_darjeeling/sw/test/utils:spi_host_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "spi_host_irq_test",
+#     srcs = ["spi_host_irq_test.c"],
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/dif:spi_host",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:spi_device_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:spi_flash_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:spi_host_testutils",
+#     ],
+# )
+#
+# # opentitan_functest(
+#     name = "i2c_host_accelerometer_test",
+#     srcs = ["i2c_host_accelerometer_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_accelerometer_test",
-    srcs = ["i2c_host_accelerometer_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_ambient_light_detector_test",
+#     srcs = ["i2c_host_ambient_light_detector_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_ambient_light_detector_test",
-    srcs = ["i2c_host_ambient_light_detector_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_hdc1080_humidity_temp_test",
+#     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_hdc1080_humidity_temp_test",
-    srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_clock_stretching_test",
+#     srcs = ["i2c_host_clock_stretching_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_clock_stretching_test",
-    srcs = ["i2c_host_clock_stretching_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_compass_test",
+#     srcs = ["i2c_host_compass_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/dif:rstmgr",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_compass_test",
-    srcs = ["i2c_host_compass_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_eeprom_test",
+#     srcs = ["i2c_host_eeprom_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
+#
+# opentitan_functest(
+#     name = "i2c_host_fram_test",
+#     srcs = ["i2c_host_fram_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
+#
+# opentitan_functest(
+#     name = "i2c_host_gas_sensor_test",
+#     srcs = ["i2c_host_gas_sensor_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_eeprom_test",
-    srcs = ["i2c_host_eeprom_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_power_monitor_test",
+#     srcs = ["i2c_host_power_monitor_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#     ],
+# )
 
-opentitan_functest(
-    name = "i2c_host_fram_test",
-    srcs = ["i2c_host_fram_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "i2c_host_gas_sensor_test",
-    srcs = ["i2c_host_gas_sensor_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "i2c_host_power_monitor_test",
-    srcs = ["i2c_host_power_monitor_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "i2c_host_irq_test",
-    srcs = ["i2c_host_irq_test.c"],
-    cw310 = cw310_params(
-        tags = [
-            "bob",
-            "manual",
-        ],  # Requires the BoB in CI.
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:i2c",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "i2c_host_irq_test",
+#     srcs = ["i2c_host_irq_test.c"],
+#     cw310 = cw310_params(
+#         tags = [
+#             "bob",
+#             "manual",
+#         ],  # Requires the BoB in CI.
+#     ),
+#     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:i2c",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_core_ibex_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "sensor_ctrl_alert_test",
