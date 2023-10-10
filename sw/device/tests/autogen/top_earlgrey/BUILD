@@ -13,6 +13,7 @@ load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 opentitan_functest(
     name = "plic_all_irqs_test",
     srcs = ["plic_all_irqs_test.c"],
+    tags = ["earlgrey"],
     targets = [
         "cw310_test_rom",
         "verilator",
@@ -61,6 +62,7 @@ opentitan_functest(
 opentitan_functest(
     name = "alert_test",
     srcs = ["alert_test.c"],
+    tags = ["earlgrey"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
