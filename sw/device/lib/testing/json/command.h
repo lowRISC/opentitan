@@ -35,7 +35,8 @@ extern "C" {
     value(_, SpiMailboxUnmap) \
     value(_, SpiMailboxWrite) \
     value(_, SpiPassthruSetAddressMap) \
-    value(_, SwStrapRead)
+    value(_, SwStrapRead) \
+    value(_, SysrstCtrlCommand)
 UJSON_SERDE_ENUM(TestCommand, test_command_t, ENUM_TEST_COMMAND);
 
 // clang-format on

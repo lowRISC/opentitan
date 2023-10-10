@@ -37,6 +37,12 @@ ujson_rust(
     defines = ["opentitanlib=crate"],
 )
 
+ujson_rust(
+    name = "sysrst_ctrl",
+    srcs = ["//sw/device/lib/testing/json:sysrst_ctrl"],
+    defines = ["opentitanlib=crate"],
+)
+
 filegroup(
     name = "config",
     srcs = glob(["src/app/config/*.json"]),
@@ -129,6 +135,7 @@ rust_library(
         "src/test_utils/rpc.rs",
         "src/test_utils/spi_passthru.rs",
         "src/test_utils/status.rs",
+        "src/test_utils/sysrst_ctrl.rs",
         "src/tpm/access.rs",
         "src/tpm/driver.rs",
         "src/tpm/mod.rs",
@@ -212,6 +219,7 @@ rust_library(
         ":e2e_command",
         ":pinmux_config",
         ":spi_passthru",
+        ":sysrst_ctrl",
         "@hyperdebug_firmware//:hyperdebug/ec.bin",
     ],
     crate_features = [
@@ -230,6 +238,7 @@ rust_library(
         "i2c_target": "$(location :i2c_target)",
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
+        "sysrst_ctrl": "$(location :sysrst_ctrl)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
     },
     deps = [

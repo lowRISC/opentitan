@@ -62,6 +62,21 @@ cc_library(
 )
 
 cc_library(
+    name = "sysrst_ctrl",
+    srcs = ["sysrst_ctrl.c"],
+    hdrs = ["sysrst_ctrl.h"],
+    deps = [
+        ":pinmux",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
     name = "spi_passthru",
     srcs = ["spi_passthru.c"],
     hdrs = ["spi_passthru.h"],

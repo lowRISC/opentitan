@@ -2945,3 +2945,30 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "sysrst_ctrl_test",
+    srcs = ["sysrst_ctrl_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+        test_cmds = [
+            "--bitstream=\"$(location {bitstream})\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
+    targets = [
+        "cw310_rom_with_fake_keys",
+    ],
+    test_harness = "//sw/host/tests/chip/sysrst_ctrl",
+    verilator = verilator_params(
+        timeout = "eternal",
+        test_cmds = [],
+    ),
+    deps = [
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:pinmux_config",
+        "//sw/device/lib/testing/json:sysrst_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)

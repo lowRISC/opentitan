@@ -22,6 +22,7 @@ pub mod poll;
 pub mod rpc;
 pub mod spi_passthru;
 pub mod status;
+pub mod sysrst_ctrl;
 
 /// The `execute_test` macro should be used in end-to-end tests to
 /// invoke each test from the `main` function.
