@@ -182,11 +182,11 @@ void spi_flash_load_data(void){
   start      = (int *) 0xff000010;
   datapath   = (int *) 0xff00001C;
 
-  alsaqr_periph_padframe_periphs_ot_qspi_00_mux_set( 1 );
-  alsaqr_periph_padframe_periphs_ot_qspi_01_mux_set( 1 );
-  alsaqr_periph_padframe_periphs_ot_qspi_02_mux_set( 1 );
-  alsaqr_periph_padframe_periphs_ot_qspi_03_mux_set( 1 );
-  
+  alsaqr_periph_padframe_periphs_ot_spi_00_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_spi_01_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_spi_02_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_spi_03_mux_set( 1 );
+
   CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
   init_spi_host(&spi_host, (uint32_t)clkHz);
 
