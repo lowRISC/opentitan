@@ -22,17 +22,51 @@ extern const size_t kOtpKvOwnerSwCfgSize;
 extern const otp_kv_t kOtpKvOwnerSwCfg[];
 
 /**
- * Configures the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.
+ * Configures the CREATOR_SW_CFG OTP partition.
  *
- * The CREATOR_SW_CFG and OWNER_SW_CFG partitions contain various settings for
- * the ROM, for example:
+ * The CREATOR_SW_CFG partition contains various settings for the ROM, e.g.,:
+ * - ROM execution enablement
  * - ROM key enable/disable flags
- * - Alert handler configuration
  * - AST and entropy complex configuration
  * - Various ROM feature knobs
  *
  * Note: The operation will fail if there are any pre-programmed words not equal
  * to the expected test values.
+ *
+ * This partition must be configured, and the chip reset, before the ROM can be
+ * booted, thus enabling bootstrap.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the HW_CFG partition is locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_creator_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures the OWNER_SW_CFG OTP partition.
+ *
+ * The OWNER_SW_CFG partition contains additional settings for the ROM and
+ * ROM_EXT, for example:
+ * - Alert handler configuration
+ * - ROM bootstrap disablement
+ * - ROM_EXT bootstrap enablement
+ *
+ * Note: The operation will fail if there are any pre-programmed words not equal
+ * to the expected test values.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the HW_CFG partition is locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_owner_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.
+ *
+ * This can be called in place of calling both of the above functions
+ * individually.
  *
  * The caller should reset the device after calling this function to verify that
  * the ROM is able to boot with the new configuration.
