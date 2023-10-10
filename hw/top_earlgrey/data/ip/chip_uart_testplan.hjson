@@ -74,5 +74,81 @@
       lc_states: ["RMA"]
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
+    {
+      name: chip_sw_uart_parity
+      desc: '''Verify transmission of data in both directions with parity enabled.
+
+            This is very similar to chip_sw_uart_tx_rx except that parity (generation and checking)
+            should be enabled. Control expected word parity by configuring CTRL.PARITY_ODD register.
+
+            Test the rx_parity_err interrupt by sending a word with incorrect parity.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      features: ["UART.PARITY"]
+      tests: []
+    }
+    {
+      name: chip_sw_uart_line_loopback
+      desc: '''Verify UART line loopback feature.
+
+            Configure the UART to enable RX, TX and line loopback. Send it some data and check that
+            the bits appear on its TX side.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      features: ["UART.LINE_LOOPBACK"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_system_loopback
+      desc: '''Verify UART system loopback feature.
+
+            Configure the UART to enable RX, TX and system loopback. Transmit some data and check
+            that the data that was transmitted also appears on the RX side.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      features: ["UART.SYSTEM_LOOPBACK"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_line_break
+      desc: '''Check that the UART can detect line breaks.
+
+            Enable RX and configure the line break threshold. On the host side, send data but hold
+            the signal low for enough characters that this should be detected as a line break. Check
+            that the rx_break_err interrupt was asserted.
+
+            Repeat with parity enabled and with different line break thresholds (controlled by
+            CTRL.RXBLVL).
+
+            '''
+      stage: V3
+      si_stage: SV3
+      features: ["UART.LINE_BREAK"]
+      tests: []
+    },
+    {
+      name: chip_sw_uart_watermarks
+      desc: '''Observe UART watermark interrupts.
+
+            Transmit data from the host and receive it on the OT side by servicing the rx_watermark
+            interrupt. Check that the data matches the sequence that the host was expected to send.
+
+            Send the data back from OT to the host, refilling the TX FIFO on reception of the
+            tx_watermark interrupt. On the host side, check that the data that came back matches the
+            sequence that was sent in the first place.
+
+            '''
+      stage: V3
+      si_stage: SV3
+      features: ["UART.FIFO_INTERRUPTS"]
+      tests: []
+    },
+
   ]
 }
