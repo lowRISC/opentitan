@@ -3,23 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
-    "cw310_params",
-    "opentitan_functest",
-)
-load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
-    "filter_key_structs_for_lc_state",
-    "opentitan_ram_binary",
 )
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
+    "cw310_params",
     "opentitan_binary",
     "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
@@ -65,37 +58,31 @@ _ALL_LC_ITEMS = (
     _MISSION_MODE_LC_ITEMS
 )
 
-_MANUF_LC_TRANSITION_TEST_CMDS = [
-    "--bitstream=\"$(rootpath {bitstream})\"",
-    "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
-    "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_olimex_cfg)\"",
-]
-
-_MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
-    "--bootstrap=\"$(rootpath {flash})\"",
-]
+# When running a test in TEST_LOCKED state, we will not actually run any code but
+# we still need to sign it with a key. This will use the default key.
+_MANUF_TEST_LOCKED_KEY = None
 
 # We bootstrap code into flash in LC states where CPU execution is enabled. In
 # other LC states, we do not perform bootstrap, as it will not succeed.
 [
-    opentitan_functest(
+    opentitan_test(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
             bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            lc_state = lc_state,  # will be expanded in test_cmd
             tags = ["manuf"],
-            test_cmds = (
-                _MANUF_LC_TRANSITION_TEST_CMDS if (
+            test_cmd = (
+                "" if (
                     (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS
-                ) else _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP
-            ) + [
-                "--initial-lc-state=\"{}\"".format(lc_state),
-            ],
+                ) else "--bootstrap={firmware}"
+            ) + " --initial-lc-state={lc_state}",
+            test_harness = "//sw/host/tests/manuf/manuf_scrap",
         ),
-        data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        key_struct = RSA_ONLY_KEY_STRUCTS[0] if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_val)[0],
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/manuf/manuf_scrap",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else rsa_key_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_val),
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -117,17 +104,17 @@ lc_raw_unlock_token(
     name = "lc_raw_unlock_token",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
-        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+        test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -166,19 +153,19 @@ opentitan_functest(
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
             bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            lc_state = lc_state,  # will be expanded in test_cmd
             tags = ["manuf"],
-            test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS + [
-                "--initial-lc-state=\"{}\"".format(lc_state),
-            ],
+            test_cmd = "--initial-lc-state={lc_state}",
+            test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
         ),
-        data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -196,26 +183,6 @@ test_suite(
     tests = [
         ":manuf_cp_yield_test_functest_{}".format(lc_state.lower())
         for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
-    ],
-)
-
-opentitan_ram_binary(
-    name = "sram_empty_functest",
-    srcs = ["sram_empty_functest.c"],
-    hdrs = ["sram_empty_functest.h"],
-    archive_symbol_prefix = "sram_empty_functest",
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
-        "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
 
@@ -242,7 +209,7 @@ cc_library(
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -271,11 +238,15 @@ test_suite(
     ],
 )
 
-opentitan_ram_binary(
+opentitan_binary(
     name = "sram_device_info_flash_wr_functest",
+    testonly = True,
     srcs = ["sram_device_info_flash_wr_functest.c"],
-    hdrs = ["sram_device_info_flash_wr_functest.h"],
-    archive_symbol_prefix = "sram_device_info_flash_wr_functest",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":test_wafer_auth_secret",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -296,39 +267,39 @@ opentitan_ram_binary(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
             init_lc_state.lower(),
             target_lc_state.lower(),
         ),
         srcs = ["flash_device_info_flash_wr_functest.c"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
+            binaries = {
+                ":sram_device_info_flash_wr_functest": "sram_program",
+            },
             bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),
             tags = ["manuf"],
-            test_cmds = [
-                "--clear-bitstream",
-                "--bitstream=\"$(rootpath {bitstream})\"",
-                "--bootstrap=\"$(location {flash})\"",
-                "--target-lc-state=\"{}\"".format(target_lc_state),
-                "--elf=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_elf_transition)\"",
-            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+            target_lc_state = target_lc_state,  # will be expanded in test_cmd
+            test_cmd = """
+                --bootstrap={firmware}
+                --target-lc-state={target_lc_state}
+                --elf={sram_program}
+            """,
+            test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
         ),
-        data = [
-            ":sram_device_info_flash_wr_functest_fpga_cw310_elf_transition",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
-        key_struct = filter_key_structs_for_lc_state(
+        rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,
             CONST.LCV.PROD,
-        )[0],
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
+        ),
         deps = [
             ":test_wafer_auth_secret",
             "//sw/device/lib/dif:flash_ctrl",
@@ -356,11 +327,15 @@ test_suite(
     ],
 )
 
-opentitan_ram_binary(
+opentitan_binary(
     name = "sram_exec_test",
+    testonly = True,
     srcs = ["sram_exec_test.c"],
-    hdrs = ["sram_exec_test.h"],
-    archive_symbol_prefix = "sram_exec_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -373,7 +348,6 @@ opentitan_ram_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -383,21 +357,23 @@ opentitan_ram_binary(
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
-    opentitan_functest(
+    opentitan_test(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
+            binaries = {
+                ":sram_exec_test": "sram_program",
+            },
             bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
             tags = ["manuf"],
-            test_cmds = [
-                "--clear-bitstream",
-                "--bitstream=\"$(rootpath {bitstream})\"",
-                "--elf=\"$(rootpath :sram_exec_test_fpga_cw310_elf_transition)\"",
-            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+            test_cmd = """
+                --elf={sram_program}
+            """,
+            test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         ),
-        data = [":sram_exec_test_fpga_cw310_elf_transition"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -417,17 +393,17 @@ test_suite(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = ":bitstream_otp_ctrl_functest",
         tags = ["manuf"],
-        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+        test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -452,17 +428,17 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = ":bitstream_otp_ctrl_functest",
         tags = ["manuf"],
-        test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
+        test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
