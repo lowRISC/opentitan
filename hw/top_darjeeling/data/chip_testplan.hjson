@@ -2507,7 +2507,7 @@
                - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
            '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_soc_proxy_smoketest"]
     }
     {
       name: chip_sw_soc_proxy_external_irqs

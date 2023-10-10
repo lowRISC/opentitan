@@ -72,6 +72,7 @@ filesets:
       - seq_lib/chip_sw_sleep_pin_mio_dio_val_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_retention_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_soc_proxy_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}

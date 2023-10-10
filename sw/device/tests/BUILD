@@ -1643,6 +1643,21 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "soc_proxy_smoketest",
+    srcs = ["soc_proxy_smoketest.c"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:pwrmgr",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],

@@ -45,6 +45,7 @@
 `include "chip_sw_sleep_pin_mio_dio_val_vseq.sv"
 `include "chip_sw_sleep_pin_wake_vseq.sv"
 `include "chip_sw_sleep_pin_retention_vseq.sv"
+`include "chip_sw_soc_proxy_smoke_vseq.sv"
 // TODO(#462): Adapt keymgr tests to keymgr_dpe
 // `include "chip_sw_keymgr_key_derivation_vseq.sv"
 // `include "chip_sw_keymgr_sideload_kmac_vseq.sv"
