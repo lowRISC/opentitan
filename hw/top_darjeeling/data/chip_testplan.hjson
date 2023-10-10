@@ -2497,6 +2497,77 @@
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
 
+    // soc_proxy tests:
+    {
+      name: chip_sw_soc_proxy_external_reset_requests
+      desc: '''Verify that external reset requests reset (parts of) OT.
+
+               - In DV env, trigger the external reset request.
+               - In DV env, ensure that the desired parts of OT get reset and the others don't.
+               - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
+           '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: chip_sw_soc_proxy_external_irqs
+      desc: '''Verify that external IRQs are forwarded to the PLIC.
+
+               For each of the external IRQs:
+               - In DV env, trigger the external IRQ.
+               - In DV env, ensure that an internal wakeup is requested.
+               - In SW, ensure that the IRQ shows up in the respective *Interrupt Pending* register of the PLIC.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: chip_sw_soc_proxy_external_alerts
+      desc: '''Verify that external alerts are forwarded to Alert Handler.
+
+               For each of the external alerts (fatal and recoverable):
+               - In DV env, trigger the external alert.
+               - In DV env, ensure that an internal wakeup is requested.
+               Then:
+               - For recoverable alerts:
+                 - In SW, ensure that the alert shows up in Alert Handler's registers.
+               - For fatal alerts:
+                 - In DV env, ensure that Alert Handler escalates so that Power Manager triggers a reset.
+                 - In SW, ensure that the reset cause is an escalation by Alert Handler.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: chip_sw_soc_proxy_external_wakeup_requests
+      desc: '''Verify that external wakeup requests are forwarded to Power Manager.
+
+               For each of the external wakeup requests:
+               - In SW, enable the wakeup in Power Manager.
+               - In DV env, trigger the wakeup request.
+               - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: chip_sw_soc_proxy_gpios
+      desc: '''Verify that GPI/Os of the SoC into/from OT are correctly connected to multiplexed I/Os.
+
+               For each of the general-purpose outputs of the SoC into OT
+               - In SW, configure Pinmux MIO such that the pin is externally observable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the configured pin.
+
+               For each of the general-purpose inputs of the SoC from OT
+               - In SW, configure Pinmux MIO such that the pin is externally controllable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the SoC input.
+            '''
+      stage: V2
+      tests: []
+    }
+
     //////////////////
     // CPU          //
     // RV_CORE_IBEX //
