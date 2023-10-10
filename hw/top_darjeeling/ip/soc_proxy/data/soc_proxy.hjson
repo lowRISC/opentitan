@@ -100,6 +100,42 @@
     { name: "recov_alert_external_7"
       desc: "Recoverable external alert channel 7"
     }
+    { name: "recov_alert_external_8"
+      desc: "Recoverable external alert channel 8"
+    }
+    { name: "recov_alert_external_9"
+      desc: "Recoverable external alert channel 9"
+    }
+    { name: "recov_alert_external_10"
+      desc: "Recoverable external alert channel 10"
+    }
+    { name: "recov_alert_external_11"
+      desc: "Recoverable external alert channel 11"
+    }
+    { name: "recov_alert_external_12"
+      desc: "Recoverable external alert channel 12"
+    }
+    { name: "recov_alert_external_13"
+      desc: "Recoverable external alert channel 13"
+    }
+    { name: "recov_alert_external_14"
+      desc: "Recoverable external alert channel 14"
+    }
+    { name: "recov_alert_external_15"
+      desc: "Recoverable external alert channel 15"
+    }
+    { name: "recov_alert_external_16"
+      desc: "Recoverable external alert channel 16"
+    }
+    { name: "recov_alert_external_17"
+      desc: "Recoverable external alert channel 17"
+    }
+    { name: "recov_alert_external_18"
+      desc: "Recoverable external alert channel 18"
+    }
+    { name: "recov_alert_external_19"
+      desc: "Recoverable external alert channel 19"
+    }
   ]
 
   wakeup_list: [
@@ -200,7 +236,7 @@
       name:    "soc_recov_alert"
       act:     "rsp"
       desc:    "Differential recoverable alert from SoC, synchronous"
-      width:   8
+      width:   20
     }
     { struct:  "logic"
       type:    "uni"

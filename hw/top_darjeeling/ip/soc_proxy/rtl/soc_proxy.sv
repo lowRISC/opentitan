@@ -121,7 +121,30 @@ module soc_proxy
                                            reg2hw.alert_test.recov_alert_external_6.q;
   assign alert_test[RecovAlertExternal7] = reg2hw.alert_test.recov_alert_external_7.qe &
                                            reg2hw.alert_test.recov_alert_external_7.q;
-
+  assign alert_test[RecovAlertExternal8] = reg2hw.alert_test.recov_alert_external_8.qe &
+                                           reg2hw.alert_test.recov_alert_external_8.q;
+  assign alert_test[RecovAlertExternal9] = reg2hw.alert_test.recov_alert_external_9.qe &
+                                           reg2hw.alert_test.recov_alert_external_9.q;
+  assign alert_test[RecovAlertExternal10] = reg2hw.alert_test.recov_alert_external_10.qe &
+                                            reg2hw.alert_test.recov_alert_external_10.q;
+  assign alert_test[RecovAlertExternal11] = reg2hw.alert_test.recov_alert_external_11.qe &
+                                            reg2hw.alert_test.recov_alert_external_11.q;
+  assign alert_test[RecovAlertExternal12] = reg2hw.alert_test.recov_alert_external_12.qe &
+                                            reg2hw.alert_test.recov_alert_external_12.q;
+  assign alert_test[RecovAlertExternal13] = reg2hw.alert_test.recov_alert_external_13.qe &
+                                            reg2hw.alert_test.recov_alert_external_13.q;
+  assign alert_test[RecovAlertExternal14] = reg2hw.alert_test.recov_alert_external_14.qe &
+                                            reg2hw.alert_test.recov_alert_external_14.q;
+  assign alert_test[RecovAlertExternal15] = reg2hw.alert_test.recov_alert_external_15.qe &
+                                            reg2hw.alert_test.recov_alert_external_15.q;
+  assign alert_test[RecovAlertExternal16] = reg2hw.alert_test.recov_alert_external_16.qe &
+                                            reg2hw.alert_test.recov_alert_external_16.q;
+  assign alert_test[RecovAlertExternal17] = reg2hw.alert_test.recov_alert_external_17.qe &
+                                            reg2hw.alert_test.recov_alert_external_17.q;
+  assign alert_test[RecovAlertExternal18] = reg2hw.alert_test.recov_alert_external_18.qe &
+                                            reg2hw.alert_test.recov_alert_external_18.q;
+  assign alert_test[RecovAlertExternal19] = reg2hw.alert_test.recov_alert_external_19.qe &
+                                            reg2hw.alert_test.recov_alert_external_19.q;
   // Handle fatal external alert requests
   logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_p, soc_fatal_alert_n, fatal_alert_external;
   for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_handling
