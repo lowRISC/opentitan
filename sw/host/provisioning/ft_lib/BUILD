@@ -11,8 +11,10 @@ rust_library(
     srcs = ["src/lib.rs"],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/provisioning/ujson_lib",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
+        "@crate_index//:clap",
         "@crate_index//:log",
         "@crate_index//:serde",
         "@crate_index//:serde_json",

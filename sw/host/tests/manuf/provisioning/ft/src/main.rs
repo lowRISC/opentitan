@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::{Args, Parser};
 
-use ft_lib::{run_sram_ft_provision, test_unlock};
+use ft_lib::{run_sram_ft_provision, test_unlock, ManufFtProvisioningActions};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use util_lib::hex_string_to_u32_arrayvec;
@@ -15,11 +15,11 @@ use util_lib::hex_string_to_u32_arrayvec;
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
-    /// TestUnlock token to provision.
+    /// TestUnlock token.
     #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
     pub test_unlock_token: String,
 
-    /// TestExit token to provision.
+    /// TestExit token.
     #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
     pub test_exit_token: String,
 }
@@ -35,6 +35,9 @@ struct Opts {
     #[command(flatten)]
     provisioning_data: ManufFtProvisioningDataInput,
 
+    #[command(flatten)]
+    provisioning_actions: ManufFtProvisioningActions,
+
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
@@ -48,19 +51,27 @@ fn main() -> Result<()> {
     let test_unlock_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
 
-    test_unlock(
-        &transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-        &test_unlock_token,
-    )?;
-    run_sram_ft_provision(
-        &transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-        &opts.sram_program,
-        opts.timeout,
-    )?;
+    if opts.provisioning_actions.all_steps || opts.provisioning_actions.test_unlock {
+        test_unlock(
+            &transport,
+            &opts.init.jtag_params,
+            opts.init.bootstrap.options.reset_delay,
+            &test_unlock_token,
+        )?;
+    }
+    if opts.provisioning_actions.all_steps
+        || opts.provisioning_actions.otp_creator_sw_cfg
+        || opts.provisioning_actions.otp_owner_sw_cfg
+    {
+        run_sram_ft_provision(
+            &transport,
+            &opts.init.jtag_params,
+            opts.init.bootstrap.options.reset_delay,
+            &opts.sram_program,
+            &opts.provisioning_actions,
+            opts.timeout,
+        )?;
+    }
 
     Ok(())
 }
