@@ -102,6 +102,37 @@ class edn_genbits_vseq extends edn_base_vseq;
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
       end
+
+      // Send additional sw_cmd_req cmd in sw or boot mode
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(acmd,
+                                         acmd inside {csrng_pkg::UNI, csrng_pkg::RES,
+                                                      csrng_pkg::UPD};)
+      if (acmd == csrng_pkg::UNI) begin
+        clen = 0;
+      end else begin
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+      end
+      glen = 0;
+
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
+      wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(acmd), .clen(clen), .flags(flags),
+             .glen(glen), .mode(mode));
+      for (int i = 0; i < clen; i++) begin
+        `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+        wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
+      end
+
+      // If we've sent an uninstantiate command, reinstantiate
+      if (acmd == csrng_pkg::UNI) begin
+        acmd = csrng_pkg::INS;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+        wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(acmd), .clen(clen), .flags(flags),
+               .glen(glen), .mode(mode));
+        for (int i = 0; i < clen; i++) begin
+          `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+          wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
+        end
+      end
     end
 
     if (cfg.auto_req_mode == MuBi4True) begin
@@ -143,7 +174,7 @@ class edn_genbits_vseq extends edn_base_vseq;
       csr_update(.csr(ral.ctrl));
       mode = edn_env_pkg::SwMode;
       // Give the hardware time to quiesce
-      cfg.clk_rst_vif.wait_clks(10);
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
       `DV_CHECK_EQ(cfg.m_csrng_agent_cfg.generate_between_reseeds_cnt, num_reqs_between_reseeds)
       // End test gracefully
       if (num_cs_reqs > cfg.m_csrng_agent_cfg.generate_cnt) begin
