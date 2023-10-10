@@ -103,9 +103,8 @@ class edn_base_vseq extends cip_base_vseq #(
       end
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      glen = 1;
       wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
-             .glen(glen), .mode(edn_env_pkg::AutoReqMode));
+             .glen(cfg.glen_auto_mode), .mode(edn_env_pkg::AutoReqMode));
       for (int i = 0; i < clen; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .cmd_data(cmd_data),
