@@ -36,7 +36,7 @@ the manifest is 896 bytes.
 | `version_major`       | 4            | 4                 | 828            | `uint32_t`     |
 | `version_minor`       | 4            | 4                 | 832            | `uint32_t`     |
 | `security_version`    | 4            | 4                 | 836            | `uint32_t`     |
-| `timestamp`           | 8            | 8                 | 840            | `uint64_t`     |
+| `timestamp`           | 8            | 4                 | 840            | `uint32_t[2]`  |
 | `binding_value`       | 32           | 4                 | 848            | `uint32_t[8]`  |
 | `max_key_version`     | 4            | 4                 | 880            | `uint32_t`     |
 | `code_start`          | 4            | 4                 | 884            | `uint32_t`     |
@@ -97,8 +97,8 @@ the manifest is 896 bytes.
 *   `security_version`: Security version of the image used for anti-rollback
     protection. Must be a monotonically increasing integer.
 
-*   `timestamp`: Unix timestamp that gives the creation time of the image,
-    seconds since 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
+*   `timestamp`: Unix timestamp of the creation time of the image. 64 bits with
+    32-bit alignment.
 
 *   `binding_value`: Binding value used by the [key manager][key_manager] to
     derive secret values. A change in this value changes the secret value of
