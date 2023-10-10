@@ -28,6 +28,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   bit abort_sw_cmd = 0;
   bit backdoor_disable = 1'b0;
 
+  int min_auto_reseeds = 2;
+
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct, cmd_fifo_rst_pct,
          force_disable_pct,
@@ -37,6 +39,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   bit    use_invalid_mubi;
 
+  rand int       glen_auto_mode;
   rand mubi4_t   enable, boot_req_mode, auto_req_mode, cmd_fifo_rst;
   rand uint      num_endpoints, num_boot_reqs;
   rand bit       force_disable;
@@ -49,6 +52,10 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand invalid_mubi_e   which_invalid_mubi;
 
   // Constraints
+  constraint glen_auto_mode_c {glen_auto_mode dist {
+    1 :/ 50,
+    [2:100] :/ 49,
+    4095 :/ 1 };}
   constraint force_disable_c {force_disable dist {
     1 :/ force_disable_pct,
     0 :/ (100 - force_disable_pct) };}
