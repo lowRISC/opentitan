@@ -10,6 +10,10 @@ package cryptoc_dpi_pkg;
   `include "uvm_macros.svh"
 
   // DPI-C imports
+  //
+  // Note: alas we must supply the array lengths as additional parameters to appease xcelium
+  //       which would otherwise raise E,MEMALC when the DPI-C code even tries to invoke
+  //       svSize(msg, 1) on an empty one-dimensional array.
   import "DPI-C" context function void c_dpi_SHA_hash(input bit[7:0] msg[],
                                                       input longint unsigned len,
                                                       output int unsigned hash[8]);
