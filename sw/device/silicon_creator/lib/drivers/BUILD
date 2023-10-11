@@ -251,6 +251,7 @@ cc_library(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/silicon_creator:keymgr_binding",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",

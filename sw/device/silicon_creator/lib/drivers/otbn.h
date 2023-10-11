@@ -210,7 +210,7 @@ typedef struct otbn_app {
   ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 
 /**
- * (Re-)loads the RSA application into OTBN.
+ * (Re-)loads an application into OTBN.
  *
  * Load the application image with both instruction and data segments into
  * OTBN.
