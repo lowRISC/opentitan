@@ -283,11 +283,8 @@ status_t pkcs1v15_verify_invalid_test(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// Holds the test result.
-static volatile status_t test_result;
-
 bool test_main(void) {
-  test_result = OK_STATUS();
+  status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);
