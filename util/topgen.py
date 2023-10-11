@@ -1328,6 +1328,12 @@ def main():
                             cheader_path,
                             helper=c_helper)
 
+            # "toplevel.dtsi.tpl" -> "sw/autogen/devicetree.dtsi"
+            dts_path = cformat_dir / "devicetree.dtsi"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.dtsi.tpl",
+                            dts_path,
+                            helper=c_helper)
+
             # Save the relative header path into `c_helper`
             rel_header_path = cheader_path.relative_to(root_paths[idx])
             c_helper.header_path = str(rel_header_path)

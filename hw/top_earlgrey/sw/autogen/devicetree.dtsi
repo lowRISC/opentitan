@@ -1,0 +1,869 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/dts-v1/;
+
+/**
+ * Pinmux peripheral input mux IDs.
+ */
+/** Peripheral Input 0 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_0 0
+/** Peripheral Input 1 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_1 1
+/** Peripheral Input 2 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_2 2
+/** Peripheral Input 3 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_3 3
+/** Peripheral Input 4 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_4 4
+/** Peripheral Input 5 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_5 5
+/** Peripheral Input 6 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_6 6
+/** Peripheral Input 7 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_7 7
+/** Peripheral Input 8 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_8 8
+/** Peripheral Input 9 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_9 9
+/** Peripheral Input 10 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_10 10
+/** Peripheral Input 11 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_11 11
+/** Peripheral Input 12 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_12 12
+/** Peripheral Input 13 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_13 13
+/** Peripheral Input 14 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_14 14
+/** Peripheral Input 15 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_15 15
+/** Peripheral Input 16 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_16 16
+/** Peripheral Input 17 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_17 17
+/** Peripheral Input 18 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_18 18
+/** Peripheral Input 19 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_19 19
+/** Peripheral Input 20 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_20 20
+/** Peripheral Input 21 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_21 21
+/** Peripheral Input 22 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_22 22
+/** Peripheral Input 23 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_23 23
+/** Peripheral Input 24 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_24 24
+/** Peripheral Input 25 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_25 25
+/** Peripheral Input 26 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_26 26
+/** Peripheral Input 27 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_27 27
+/** Peripheral Input 28 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_28 28
+/** Peripheral Input 29 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_29 29
+/** Peripheral Input 30 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_30 30
+/** Peripheral Input 31 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_GPIO_GPIO_31 31
+/** Peripheral Input 32 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C0_SDA 32
+/** Peripheral Input 33 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C0_SCL 33
+/** Peripheral Input 34 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C1_SDA 34
+/** Peripheral Input 35 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C1_SCL 35
+/** Peripheral Input 36 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C2_SDA 36
+/** Peripheral Input 37 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_I2C2_SCL 37
+/** Peripheral Input 38 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SPI_HOST1_SD_0 38
+/** Peripheral Input 39 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SPI_HOST1_SD_1 39
+/** Peripheral Input 40 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SPI_HOST1_SD_2 40
+/** Peripheral Input 41 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SPI_HOST1_SD_3 41
+/** Peripheral Input 42 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_UART0_RX 42
+/** Peripheral Input 43 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_UART1_RX 43
+/** Peripheral Input 44 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_UART2_RX 44
+/** Peripheral Input 45 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_UART3_RX 45
+/** Peripheral Input 46 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SPI_DEVICE_TPM_CSB 46
+/** Peripheral Input 47 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_FLASH_CTRL_TCK 47
+/** Peripheral Input 48 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_FLASH_CTRL_TMS 48
+/** Peripheral Input 49 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_FLASH_CTRL_TDI 49
+/** Peripheral Input 50 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_AC_PRESENT 50
+/** Peripheral Input 51 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_KEY0_IN 51
+/** Peripheral Input 52 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_KEY1_IN 52
+/** Peripheral Input 53 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_KEY2_IN 53
+/** Peripheral Input 54 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_PWRB_IN 54
+/** Peripheral Input 55 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_SYSRST_CTRL_AON_LID_OPEN 55
+/** Peripheral Input 56 */
+#define TOP_EARLGREY_PINMUX_PERIPHERAL_IN_USBDEV_SENSE 56
+
+/**
+ * Pinmux input selection IDs for pads or tied values.
+ */
+/** Tie constantly to zero */
+#define TOP_EARLGREY_PINMUX_INSEL_CONSTANT_ZERO 0
+/** Tie constantly to one */
+#define TOP_EARLGREY_PINMUX_INSEL_CONSTANT_ONE 1
+/** MIO Pad 0 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA0 2
+/** MIO Pad 1 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA1 3
+/** MIO Pad 2 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA2 4
+/** MIO Pad 3 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA3 5
+/** MIO Pad 4 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA4 6
+/** MIO Pad 5 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA5 7
+/** MIO Pad 6 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA6 8
+/** MIO Pad 7 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA7 9
+/** MIO Pad 8 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOA8 10
+/** MIO Pad 9 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB0 11
+/** MIO Pad 10 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB1 12
+/** MIO Pad 11 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB2 13
+/** MIO Pad 12 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB3 14
+/** MIO Pad 13 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB4 15
+/** MIO Pad 14 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB5 16
+/** MIO Pad 15 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB6 17
+/** MIO Pad 16 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB7 18
+/** MIO Pad 17 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB8 19
+/** MIO Pad 18 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB9 20
+/** MIO Pad 19 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB10 21
+/** MIO Pad 20 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB11 22
+/** MIO Pad 21 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOB12 23
+/** MIO Pad 22 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC0 24
+/** MIO Pad 23 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC1 25
+/** MIO Pad 24 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC2 26
+/** MIO Pad 25 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC3 27
+/** MIO Pad 26 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC4 28
+/** MIO Pad 27 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC5 29
+/** MIO Pad 28 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC6 30
+/** MIO Pad 29 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC7 31
+/** MIO Pad 30 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC8 32
+/** MIO Pad 31 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC9 33
+/** MIO Pad 32 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC10 34
+/** MIO Pad 33 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC11 35
+/** MIO Pad 34 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOC12 36
+/** MIO Pad 35 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR0 37
+/** MIO Pad 36 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR1 38
+/** MIO Pad 37 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR2 39
+/** MIO Pad 38 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR3 40
+/** MIO Pad 39 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR4 41
+/** MIO Pad 40 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR5 42
+/** MIO Pad 41 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR6 43
+/** MIO Pad 42 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR7 44
+/** MIO Pad 43 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR10 45
+/** MIO Pad 44 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR11 46
+/** MIO Pad 45 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR12 47
+/** MIO Pad 46 */
+#define TOP_EARLGREY_PINMUX_INSEL_IOR13 48
+
+/**
+ * Pinmux pad output mux IDs.
+ */
+/** MIO Pad 0 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA0 0
+/** MIO Pad 1 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA1 1
+/** MIO Pad 2 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA2 2
+/** MIO Pad 3 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA3 3
+/** MIO Pad 4 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA4 4
+/** MIO Pad 5 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA5 5
+/** MIO Pad 6 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA6 6
+/** MIO Pad 7 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA7 7
+/** MIO Pad 8 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOA8 8
+/** MIO Pad 9 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB0 9
+/** MIO Pad 10 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB1 10
+/** MIO Pad 11 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB2 11
+/** MIO Pad 12 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB3 12
+/** MIO Pad 13 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB4 13
+/** MIO Pad 14 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB5 14
+/** MIO Pad 15 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB6 15
+/** MIO Pad 16 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB7 16
+/** MIO Pad 17 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB8 17
+/** MIO Pad 18 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB9 18
+/** MIO Pad 19 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB10 19
+/** MIO Pad 20 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB11 20
+/** MIO Pad 21 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOB12 21
+/** MIO Pad 22 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC0 22
+/** MIO Pad 23 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC1 23
+/** MIO Pad 24 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC2 24
+/** MIO Pad 25 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC3 25
+/** MIO Pad 26 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC4 26
+/** MIO Pad 27 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC5 27
+/** MIO Pad 28 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC6 28
+/** MIO Pad 29 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC7 29
+/** MIO Pad 30 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC8 30
+/** MIO Pad 31 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC9 31
+/** MIO Pad 32 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC10 32
+/** MIO Pad 33 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC11 33
+/** MIO Pad 34 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOC12 34
+/** MIO Pad 35 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR0 35
+/** MIO Pad 36 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR1 36
+/** MIO Pad 37 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR2 37
+/** MIO Pad 38 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR3 38
+/** MIO Pad 39 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR4 39
+/** MIO Pad 40 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR5 40
+/** MIO Pad 41 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR6 41
+/** MIO Pad 42 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR7 42
+/** MIO Pad 43 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR10 43
+/** MIO Pad 44 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR11 44
+/** MIO Pad 45 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR12 45
+/** MIO Pad 46 */
+#define TOP_EARLGREY_PINMUX_MIO_OUT_IOR13 46
+
+/**
+ * Pinmux output selection IDs for peripherals or tied values.
+ */
+/** Tie constantly to zero */
+#define TOP_EARLGREY_PINMUX_OUTSEL_CONSTANT_ZERO 0
+/** Tie constantly to one */
+#define TOP_EARLGREY_PINMUX_OUTSEL_CONSTANT_ONE 1
+/** Tie constantly to high-Z */
+#define TOP_EARLGREY_PINMUX_OUTSEL_CONSTANT_HIGH_Z 2
+/** Peripheral Output 0 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_0 3
+/** Peripheral Output 1 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_1 4
+/** Peripheral Output 2 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_2 5
+/** Peripheral Output 3 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_3 6
+/** Peripheral Output 4 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_4 7
+/** Peripheral Output 5 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_5 8
+/** Peripheral Output 6 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_6 9
+/** Peripheral Output 7 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_7 10
+/** Peripheral Output 8 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_8 11
+/** Peripheral Output 9 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_9 12
+/** Peripheral Output 10 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_10 13
+/** Peripheral Output 11 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_11 14
+/** Peripheral Output 12 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_12 15
+/** Peripheral Output 13 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_13 16
+/** Peripheral Output 14 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_14 17
+/** Peripheral Output 15 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_15 18
+/** Peripheral Output 16 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_16 19
+/** Peripheral Output 17 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_17 20
+/** Peripheral Output 18 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_18 21
+/** Peripheral Output 19 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_19 22
+/** Peripheral Output 20 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_20 23
+/** Peripheral Output 21 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_21 24
+/** Peripheral Output 22 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_22 25
+/** Peripheral Output 23 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_23 26
+/** Peripheral Output 24 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_24 27
+/** Peripheral Output 25 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_25 28
+/** Peripheral Output 26 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_26 29
+/** Peripheral Output 27 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_27 30
+/** Peripheral Output 28 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_28 31
+/** Peripheral Output 29 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_29 32
+/** Peripheral Output 30 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_30 33
+/** Peripheral Output 31 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_GPIO_GPIO_31 34
+/** Peripheral Output 32 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C0_SDA 35
+/** Peripheral Output 33 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C0_SCL 36
+/** Peripheral Output 34 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C1_SDA 37
+/** Peripheral Output 35 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C1_SCL 38
+/** Peripheral Output 36 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C2_SDA 39
+/** Peripheral Output 37 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_I2C2_SCL 40
+/** Peripheral Output 38 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_SD_0 41
+/** Peripheral Output 39 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_SD_1 42
+/** Peripheral Output 40 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_SD_2 43
+/** Peripheral Output 41 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_SD_3 44
+/** Peripheral Output 42 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_UART0_TX 45
+/** Peripheral Output 43 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_UART1_TX 46
+/** Peripheral Output 44 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_UART2_TX 47
+/** Peripheral Output 45 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_UART3_TX 48
+/** Peripheral Output 46 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PATTGEN_PDA0_TX 49
+/** Peripheral Output 47 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PATTGEN_PCL0_TX 50
+/** Peripheral Output 48 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PATTGEN_PDA1_TX 51
+/** Peripheral Output 49 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PATTGEN_PCL1_TX 52
+/** Peripheral Output 50 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_SCK 53
+/** Peripheral Output 51 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SPI_HOST1_CSB 54
+/** Peripheral Output 52 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_FLASH_CTRL_TDO 55
+/** Peripheral Output 53 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_0 56
+/** Peripheral Output 54 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_1 57
+/** Peripheral Output 55 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_2 58
+/** Peripheral Output 56 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_3 59
+/** Peripheral Output 57 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_4 60
+/** Peripheral Output 58 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_5 61
+/** Peripheral Output 59 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_6 62
+/** Peripheral Output 60 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_7 63
+/** Peripheral Output 61 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SENSOR_CTRL_AON_AST_DEBUG_OUT_8 64
+/** Peripheral Output 62 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_0 65
+/** Peripheral Output 63 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_1 66
+/** Peripheral Output 64 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_2 67
+/** Peripheral Output 65 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_3 68
+/** Peripheral Output 66 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_4 69
+/** Peripheral Output 67 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_PWM_AON_PWM_5 70
+/** Peripheral Output 68 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_OTP_CTRL_TEST_0 71
+/** Peripheral Output 69 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_BAT_DISABLE 72
+/** Peripheral Output 70 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_KEY0_OUT 73
+/** Peripheral Output 71 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_KEY1_OUT 74
+/** Peripheral Output 72 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_KEY2_OUT 75
+/** Peripheral Output 73 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_PWRB_OUT 76
+/** Peripheral Output 74 */
+#define TOP_EARLGREY_PINMUX_OUTSEL_SYSRST_CTRL_AON_Z3_WAKEUP 77
+
+#define OPENTITAN_PINMUX(mux_id, select_id)     ((mux_id << 16) | (select_id))
+
+/ {
+    #address-cells = <1>;
+    #size-cells = <1>;
+    model = "lowrisc,earlgrey";
+    compatible = "lowrisc,earlgrey";
+
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        hart0: cpu@0 {
+            compatible = "riscv";
+            device_type = "cpu";
+            reg = <0>;
+            status = "okay";
+
+            hlic: interrupt-controller {
+                compatible = "riscv,cpu-intc";
+                #interrupt-cells = <1>;
+                interrupt-controller;
+            };
+        };
+    };
+
+    /**
+     * Memory for ram_ret_aon in top earlgrey.
+     */
+    ram_ret_aon: memory@0x40600000 {
+        device_type = "memory";
+        reg = <0x40600000 0x00001000>;
+    };
+
+    /**
+     * Memory for eflash in top earlgrey.
+     */
+    eflash: memory@0x20000000 {
+        device_type = "memory";
+        reg = <0x20000000 0x00100000>;
+    };
+
+    /**
+     * Memory for ram_main in top earlgrey.
+     */
+    ram_main: memory@0x10000000 {
+        device_type = "memory";
+        reg = <0x10000000 0x00020000>;
+    };
+
+    /**
+     * Memory for rom in top earlgrey.
+     */
+    rom: memory@0x00008000 {
+        device_type = "memory";
+        reg = <0x00008000 0x00008000>;
+    };
+
+
+    bus {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        uart0: uart@0x40000000 {
+            compatible = "lowrisc,uart";
+            reg = <0x40000000 0x00000040>;
+            reg-names = "uart";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <1 0>, <2 0>, <3 0>, <4 0>, <5 0>, <6 0>, <7 0>, <8 0>;
+            interrupt-names = "tx_watermark", "rx_watermark", "tx_empty", "rx_overflow", "rx_frame_err", "rx_break_err", "rx_timeout", "rx_parity_err";
+        };
+        uart1: uart@0x40010000 {
+            compatible = "lowrisc,uart";
+            reg = <0x40010000 0x00000040>;
+            reg-names = "uart";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <9 0>, <10 0>, <11 0>, <12 0>, <13 0>, <14 0>, <15 0>, <16 0>;
+            interrupt-names = "tx_watermark", "rx_watermark", "tx_empty", "rx_overflow", "rx_frame_err", "rx_break_err", "rx_timeout", "rx_parity_err";
+        };
+        uart2: uart@0x40020000 {
+            compatible = "lowrisc,uart";
+            reg = <0x40020000 0x00000040>;
+            reg-names = "uart";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <17 0>, <18 0>, <19 0>, <20 0>, <21 0>, <22 0>, <23 0>, <24 0>;
+            interrupt-names = "tx_watermark", "rx_watermark", "tx_empty", "rx_overflow", "rx_frame_err", "rx_break_err", "rx_timeout", "rx_parity_err";
+        };
+        uart3: uart@0x40030000 {
+            compatible = "lowrisc,uart";
+            reg = <0x40030000 0x00000040>;
+            reg-names = "uart";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <25 0>, <26 0>, <27 0>, <28 0>, <29 0>, <30 0>, <31 0>, <32 0>;
+            interrupt-names = "tx_watermark", "rx_watermark", "tx_empty", "rx_overflow", "rx_frame_err", "rx_break_err", "rx_timeout", "rx_parity_err";
+        };
+        gpio: gpio@0x40040000 {
+            compatible = "lowrisc,gpio";
+            reg = <0x40040000 0x00000040>;
+            reg-names = "gpio";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <33 0>, <34 0>, <35 0>, <36 0>, <37 0>, <38 0>, <39 0>, <40 0>, <41 0>, <42 0>, <43 0>, <44 0>, <45 0>, <46 0>, <47 0>, <48 0>, <49 0>, <50 0>, <51 0>, <52 0>, <53 0>, <54 0>, <55 0>, <56 0>, <57 0>, <58 0>, <59 0>, <60 0>, <61 0>, <62 0>, <63 0>, <64 0>;
+            interrupt-names = "gpio0", "gpio1", "gpio2", "gpio3", "gpio4", "gpio5", "gpio6", "gpio7", "gpio8", "gpio9", "gpio10", "gpio11", "gpio12", "gpio13", "gpio14", "gpio15", "gpio16", "gpio17", "gpio18", "gpio19", "gpio20", "gpio21", "gpio22", "gpio23", "gpio24", "gpio25", "gpio26", "gpio27", "gpio28", "gpio29", "gpio30", "gpio31";
+        };
+        spi_device: spi_device@0x40050000 {
+            compatible = "lowrisc,spi_device";
+            reg = <0x40050000 0x00002000>;
+            reg-names = "spi_device";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <65 0>, <66 0>, <67 0>, <68 0>, <69 0>, <70 0>, <71 0>, <72 0>, <73 0>, <74 0>, <75 0>, <76 0>;
+            interrupt-names = "generic_rx_full", "generic_rx_watermark", "generic_tx_watermark", "generic_rx_error", "generic_rx_overflow", "generic_tx_underflow", "upload_cmdfifo_not_empty", "upload_payload_not_empty", "upload_payload_overflow", "readbuf_watermark", "readbuf_flip", "tpm_header_not_empty";
+        };
+        i2c0: i2c@0x40080000 {
+            compatible = "lowrisc,i2c";
+            reg = <0x40080000 0x00000080>;
+            reg-names = "i2c";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <77 0>, <78 0>, <79 0>, <80 0>, <81 0>, <82 0>, <83 0>, <84 0>, <85 0>, <86 0>, <87 0>, <88 0>, <89 0>, <90 0>, <91 0>;
+            interrupt-names = "fmt_threshold", "rx_threshold", "fmt_overflow", "rx_overflow", "nak", "scl_interference", "sda_interference", "stretch_timeout", "sda_unstable", "cmd_complete", "tx_stretch", "tx_overflow", "acq_full", "unexp_stop", "host_timeout";
+        };
+        i2c1: i2c@0x40090000 {
+            compatible = "lowrisc,i2c";
+            reg = <0x40090000 0x00000080>;
+            reg-names = "i2c";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <92 0>, <93 0>, <94 0>, <95 0>, <96 0>, <97 0>, <98 0>, <99 0>, <100 0>, <101 0>, <102 0>, <103 0>, <104 0>, <105 0>, <106 0>;
+            interrupt-names = "fmt_threshold", "rx_threshold", "fmt_overflow", "rx_overflow", "nak", "scl_interference", "sda_interference", "stretch_timeout", "sda_unstable", "cmd_complete", "tx_stretch", "tx_overflow", "acq_full", "unexp_stop", "host_timeout";
+        };
+        i2c2: i2c@0x400a0000 {
+            compatible = "lowrisc,i2c";
+            reg = <0x400a0000 0x00000080>;
+            reg-names = "i2c";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <107 0>, <108 0>, <109 0>, <110 0>, <111 0>, <112 0>, <113 0>, <114 0>, <115 0>, <116 0>, <117 0>, <118 0>, <119 0>, <120 0>, <121 0>;
+            interrupt-names = "fmt_threshold", "rx_threshold", "fmt_overflow", "rx_overflow", "nak", "scl_interference", "sda_interference", "stretch_timeout", "sda_unstable", "cmd_complete", "tx_stretch", "tx_overflow", "acq_full", "unexp_stop", "host_timeout";
+        };
+        pattgen: pattgen@0x400e0000 {
+            compatible = "lowrisc,pattgen";
+            reg = <0x400e0000 0x00000040>;
+            reg-names = "pattgen";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <122 0>, <123 0>;
+            interrupt-names = "done_ch0", "done_ch1";
+        };
+        rv_timer: rv_timer@0x40100000 {
+            compatible = "lowrisc,rv_timer";
+            reg = <0x40100000 0x00000200>;
+            reg-names = "rv_timer";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <124 0>;
+            interrupt-names = "timer_expired_hart0_timer0";
+        };
+        otp_ctrl: otp_ctrl@0x40130000 {
+            compatible = "lowrisc,otp_ctrl";
+            reg = <0x40130000 0x00002000
+                   0x40132000 0x00000020>;
+            reg-names = "core", "prim";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <125 0>, <126 0>;
+            interrupt-names = "otp_operation_done", "otp_error";
+        };
+        lc_ctrl: lc_ctrl@0x40140000 {
+            compatible = "lowrisc,lc_ctrl";
+            reg = <0x40140000 0x00000100>;
+            reg-names = "lc_ctrl";
+        };
+        alert_handler: alert_handler@0x40150000 {
+            compatible = "lowrisc,alert_handler";
+            reg = <0x40150000 0x00000800>;
+            reg-names = "alert_handler";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <127 0>, <128 0>, <129 0>, <130 0>;
+            interrupt-names = "classa", "classb", "classc", "classd";
+        };
+        spi_host0: spi_host@0x40300000 {
+            compatible = "lowrisc,spi_host";
+            reg = <0x40300000 0x00000040>;
+            reg-names = "spi_host";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <131 0>, <132 0>;
+            interrupt-names = "error", "spi_event";
+        };
+        spi_host1: spi_host@0x40310000 {
+            compatible = "lowrisc,spi_host";
+            reg = <0x40310000 0x00000040>;
+            reg-names = "spi_host";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <133 0>, <134 0>;
+            interrupt-names = "error", "spi_event";
+        };
+        usbdev: usbdev@0x40320000 {
+            compatible = "lowrisc,usbdev";
+            reg = <0x40320000 0x00001000>;
+            reg-names = "usbdev";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <135 0>, <136 0>, <137 0>, <138 0>, <139 0>, <140 0>, <141 0>, <142 0>, <143 0>, <144 0>, <145 0>, <146 0>, <147 0>, <148 0>, <149 0>, <150 0>, <151 0>;
+            interrupt-names = "pkt_received", "pkt_sent", "disconnected", "host_lost", "link_reset", "link_suspend", "link_resume", "av_empty", "rx_full", "av_overflow", "link_in_err", "rx_crc_err", "rx_pid_err", "rx_bitstuff_err", "frame", "powered", "link_out_err";
+        };
+        pwrmgr_aon: pwrmgr@0x40400000 {
+            compatible = "lowrisc,pwrmgr";
+            reg = <0x40400000 0x00000080>;
+            reg-names = "pwrmgr";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <152 0>;
+            interrupt-names = "wakeup";
+        };
+        rstmgr_aon: rstmgr@0x40410000 {
+            compatible = "lowrisc,rstmgr";
+            reg = <0x40410000 0x00000080>;
+            reg-names = "rstmgr";
+        };
+        clkmgr_aon: clkmgr@0x40420000 {
+            compatible = "lowrisc,clkmgr";
+            reg = <0x40420000 0x00000080>;
+            reg-names = "clkmgr";
+        };
+        sysrst_ctrl_aon: sysrst_ctrl@0x40430000 {
+            compatible = "lowrisc,sysrst_ctrl";
+            reg = <0x40430000 0x00000100>;
+            reg-names = "sysrst_ctrl";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <153 0>;
+            interrupt-names = "event_detected";
+        };
+        adc_ctrl_aon: adc_ctrl@0x40440000 {
+            compatible = "lowrisc,adc_ctrl";
+            reg = <0x40440000 0x00000080>;
+            reg-names = "adc_ctrl";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <154 0>;
+            interrupt-names = "match_done";
+        };
+        pwm_aon: pwm@0x40450000 {
+            compatible = "lowrisc,pwm";
+            reg = <0x40450000 0x00000080>;
+            reg-names = "pwm";
+        };
+        pinmux_aon: pinmux@0x40460000 {
+            compatible = "lowrisc,pinmux";
+            reg = <0x40460000 0x00001000>;
+            reg-names = "pinmux";
+        };
+        aon_timer_aon: aon_timer@0x40470000 {
+            compatible = "lowrisc,aon_timer";
+            reg = <0x40470000 0x00000040>;
+            reg-names = "aon_timer";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <155 0>, <156 0>;
+            interrupt-names = "wkup_timer_expired", "wdog_timer_bark";
+        };
+        ast: ast@0x40480000 {
+            compatible = "lowrisc,ast";
+            reg = <0x40480000 0x00000400>;
+            reg-names = "ast";
+        };
+        sensor_ctrl_aon: sensor_ctrl@0x40490000 {
+            compatible = "lowrisc,sensor_ctrl";
+            reg = <0x40490000 0x00000040>;
+            reg-names = "sensor_ctrl";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <157 0>, <158 0>;
+            interrupt-names = "io_status_change", "init_status_change";
+        };
+        sram_ctrl_ret_aon: sram_ctrl@0x40500000 {
+            compatible = "lowrisc,sram_ctrl";
+            reg = <0x40500000 0x00000020
+                   0x40600000 0x00001000>;
+            reg-names = "regs", "ram";
+        };
+        flash_ctrl: flash_ctrl@0x41000000 {
+            compatible = "lowrisc,flash_ctrl";
+            reg = <0x41000000 0x00000200
+                   0x41008000 0x00000080
+                   0x20000000 0x00100000>;
+            reg-names = "core", "prim", "mem";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <159 0>, <160 0>, <161 0>, <162 0>, <163 0>, <164 0>;
+            interrupt-names = "prog_empty", "prog_lvl", "rd_full", "rd_lvl", "op_done", "corr_err";
+        };
+        rv_dm: rv_dm@0x00010000 {
+            compatible = "lowrisc,rv_dm";
+            reg = <0x41200000 0x00000004
+                   0x00010000 0x00001000>;
+            reg-names = "regs", "mem";
+        };
+        rv_plic: rv_plic@0x48000000 {
+            compatible = "lowrisc,rv_plic", "sifive,plic-1.0.0";
+            reg = <0x48000000 0x08000000>;
+            reg-names = "rv_plic";
+            interrupt-controller;
+            #interrupt-cells = <2>;
+            riscv,max-priority = <3>;
+            riscv,ndev = <185>;
+            interrupts-extended = <&hlic 11>;
+            interrupt-names = "hart0_external";
+        };
+        aes: aes@0x41100000 {
+            compatible = "lowrisc,aes";
+            reg = <0x41100000 0x00000100>;
+            reg-names = "aes";
+        };
+        hmac: hmac@0x41110000 {
+            compatible = "lowrisc,hmac";
+            reg = <0x41110000 0x00001000>;
+            reg-names = "hmac";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <165 0>, <166 0>, <167 0>;
+            interrupt-names = "hmac_done", "fifo_empty", "hmac_err";
+        };
+        kmac: kmac@0x41120000 {
+            compatible = "lowrisc,kmac";
+            reg = <0x41120000 0x00001000>;
+            reg-names = "kmac";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <168 0>, <169 0>, <170 0>;
+            interrupt-names = "kmac_done", "fifo_empty", "kmac_err";
+        };
+        otbn: otbn@0x41130000 {
+            compatible = "lowrisc,otbn";
+            reg = <0x41130000 0x00010000>;
+            reg-names = "otbn";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <171 0>;
+            interrupt-names = "done";
+        };
+        keymgr: keymgr@0x41140000 {
+            compatible = "lowrisc,keymgr";
+            reg = <0x41140000 0x00000100>;
+            reg-names = "keymgr";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <172 0>;
+            interrupt-names = "op_done";
+        };
+        csrng: csrng@0x41150000 {
+            compatible = "lowrisc,csrng";
+            reg = <0x41150000 0x00000080>;
+            reg-names = "csrng";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <173 0>, <174 0>, <175 0>, <176 0>;
+            interrupt-names = "cs_cmd_req_done", "cs_entropy_req", "cs_hw_inst_exc", "cs_fatal_err";
+        };
+        entropy_src: entropy_src@0x41160000 {
+            compatible = "lowrisc,entropy_src";
+            reg = <0x41160000 0x00000100>;
+            reg-names = "entropy_src";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <177 0>, <178 0>, <179 0>, <180 0>;
+            interrupt-names = "es_entropy_valid", "es_health_test_failed", "es_observe_fifo_ready", "es_fatal_err";
+        };
+        edn0: edn@0x41170000 {
+            compatible = "lowrisc,edn";
+            reg = <0x41170000 0x00000080>;
+            reg-names = "edn";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <181 0>, <182 0>;
+            interrupt-names = "edn_cmd_req_done", "edn_fatal_err";
+        };
+        edn1: edn@0x41180000 {
+            compatible = "lowrisc,edn";
+            reg = <0x41180000 0x00000080>;
+            reg-names = "edn";
+            interrupt-parent = <&rv_plic>;
+            interrupts = <183 0>, <184 0>;
+            interrupt-names = "edn_cmd_req_done", "edn_fatal_err";
+        };
+        sram_ctrl_main: sram_ctrl@0x10000000 {
+            compatible = "lowrisc,sram_ctrl";
+            reg = <0x411c0000 0x00000020
+                   0x10000000 0x00020000>;
+            reg-names = "regs", "ram";
+        };
+        rom_ctrl: rom_ctrl@0x00008000 {
+            compatible = "lowrisc,rom_ctrl";
+            reg = <0x411e0000 0x00000080
+                   0x00008000 0x00008000>;
+            reg-names = "regs", "rom";
+        };
+        rv_core_ibex: rv_core_ibex@0x411f0000 {
+            compatible = "lowrisc,rv_core_ibex";
+            reg = <0x411f0000 0x00000100>;
+            reg-names = "cfg";
+        };
+    };
+};
