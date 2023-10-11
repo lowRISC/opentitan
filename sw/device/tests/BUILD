@@ -317,7 +317,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -328,7 +328,9 @@ opentitan_test(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_irqs",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "@zephyr//:devicetree_lib",
     ],
 )
 
@@ -2054,12 +2056,13 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "@zephyr//:devicetree_lib",
     ],
 )
 
@@ -2068,12 +2071,13 @@ opentitan_test(
     srcs = ["uart_smoketest.c"],
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "@zephyr//:devicetree_lib",
     ],
 )
 

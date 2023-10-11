@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
+#include <zephyr/devicetree.h>
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
@@ -15,27 +17,40 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void pinmux_testutils_init(dif_pinmux_t *pinmux) {
-  // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio22,
-                                       kTopEarlgreyPinmuxInselIoc0));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio23,
-                                       kTopEarlgreyPinmuxInselIoc1));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio24,
-                                       kTopEarlgreyPinmuxInselIoc2));
+typedef struct pinmux_testutils_entry {
+  dif_pinmux_index_t mux;
+  dif_pinmux_index_t select;
+} pinmux_testutils_entry_t;
 
-  // Configure UART0 RX input to connect to MIO pad IOC3
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart0Rx,
-                                       kTopEarlgreyPinmuxInselIoc3));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc3,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  // Configure UART0 TX output to connect to MIO pad IOC4
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc4,
-                                        kTopEarlgreyPinmuxOutselUart0Tx));
+#define PINMUX_TESTUTILS_PINMUX_ENTRY(pinmux_id) \
+  {.mux = (pinmux_id >> 16), .select = (pinmux_id & 0xffffu)},
+
+#define PINMUX_TESTUTILS_LIST_DEFAULTS(node, prop, idx) \
+  PINMUX_TESTUTILS_PINMUX_ENTRY(DT_PROP_BY_IDX(node, prop, idx))
+
+const pinmux_testutils_entry_t periph_mux_defaults[] = {
+    DT_FOREACH_PROP_ELEM(DT_NODELABEL(ottf_default_pinmap), periphmux,
+                         PINMUX_TESTUTILS_LIST_DEFAULTS)};
+
+const pinmux_testutils_entry_t pad_mux_defaults[] = {DT_FOREACH_PROP_ELEM(
+    DT_NODELABEL(ottf_default_pinmap), padmux, PINMUX_TESTUTILS_LIST_DEFAULTS)};
+
+enum {
+  kPinmuxTestutilsPeriphMuxEntries =
+      sizeof(periph_mux_defaults) / sizeof(periph_mux_defaults[0]),
+  kPinmuxTestutilsPadMuxEntries =
+      sizeof(pad_mux_defaults) / sizeof(pad_mux_defaults[0]),
+};
+
+void pinmux_testutils_init(dif_pinmux_t *pinmux) {
+  for (size_t i = 0; i < kPinmuxTestutilsPeriphMuxEntries; ++i) {
+    CHECK_DIF_OK(dif_pinmux_input_select(pinmux, periph_mux_defaults[i].mux,
+                                         periph_mux_defaults[i].select));
+  }
+  for (size_t i = 0; i < kPinmuxTestutilsPadMuxEntries; ++i) {
+    CHECK_DIF_OK(dif_pinmux_output_select(pinmux, pad_mux_defaults[i].mux,
+                                          pad_mux_defaults[i].select));
+  }
 
 #if !OT_IS_ENGLISH_BREAKFAST
   // Enable pull-ups on UART0 RX
