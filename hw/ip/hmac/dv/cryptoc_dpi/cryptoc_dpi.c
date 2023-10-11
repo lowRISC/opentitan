@@ -11,6 +11,8 @@
 #include "hmac_wrap.h"
 #include "sha.h"
 #include "sha256.h"
+#include "sha384.h"
+#include "sha512.h"
 // SystemVerilog DPI definitions
 #include "svdpi.h"
 
@@ -78,6 +80,38 @@ extern void c_dpi_SHA256_hash(const svOpenArrayHandle msg, uint64_t len,
   } else {
     // compute SHA256 hash when msg is empty
     SHA256_hash(NULL, 0u, (uint8_t *)hash);
+  }
+}
+
+extern void c_dpi_SHA384_hash(const svOpenArrayHandle msg, uint64_t len,
+                              uint32_t hash[12]) {
+  if (len > 0u) {
+    uint8_t *arr = collect_bytes(msg, len);
+    assert(arr);
+
+    // compute SHA384 hash
+    SHA384_hash(arr, len, (uint8_t *)hash);
+
+    free(arr);
+  } else {
+    // compute SHA384 hash when msg is empty
+    SHA384_hash(NULL, 0u, (uint8_t *)hash);
+  }
+}
+
+extern void c_dpi_SHA512_hash(const svOpenArrayHandle msg, uint64_t len,
+                              uint32_t hash[16]) {
+  if (len > 0u) {
+    uint8_t *arr = collect_bytes(msg, len);
+    assert(arr);
+
+    // compute SHA512 hash
+    SHA512_hash(arr, len, (uint8_t *)hash);
+
+    free(arr);
+  } else {
+    // compute SHA512 hash when msg is empty
+    SHA512_hash(NULL, 0u, (uint8_t *)hash);
   }
 }
 

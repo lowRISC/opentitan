@@ -21,6 +21,9 @@
 extern "C" {
 #endif  // __cplusplus
 
+// SHA-384 and SHA-512 are required in some uses of cryptoc_dpi
+#define SHA512_SUPPORT
+
 struct HASH_CTX;  // forward decl
 
 typedef struct HASH_VTAB {
