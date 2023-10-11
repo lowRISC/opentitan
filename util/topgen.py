@@ -1328,9 +1328,9 @@ def main():
                             cheader_path,
                             helper=c_helper)
 
-            # "toplevel.dtsi.tpl" -> "sw/autogen/devicetree.dtsi"
+            # "toplevel.dtsi.h.tpl" -> "sw/autogen/devicetree.dtsi"
             dts_path = cformat_dir / "devicetree.dtsi"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.dtsi.tpl",
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.dtsi.h.tpl",
                             dts_path,
                             helper=c_helper)
 
