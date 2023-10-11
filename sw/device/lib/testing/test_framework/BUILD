@@ -185,6 +185,17 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "ottf_irqs",
+    srcs = ["ottf_irqs.c"],
+    hdrs = ["ottf_irqs.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
+        "@zephyr//:devicetree_lib",
+    ],
+)
+
 # This target provides start files without providing the full OTTF, and can be
 # used to bootstrap post-ROM execution without pulling in the full OTTF. This is
 # useful for programs in `sw/device/examples/` and `sw/device/sca/` that do not
