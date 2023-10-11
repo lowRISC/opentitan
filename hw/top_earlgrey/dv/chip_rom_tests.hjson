@@ -29,7 +29,7 @@
       # Note: this is an unsigned test, as we are verifying a boot failure.
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_shutdown_output_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/shutdown_output:otp_img_shutdown_output_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -44,7 +44,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -60,7 +60,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -76,7 +76,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -92,7 +92,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -108,7 +108,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -123,8 +123,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -139,8 +139,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -155,8 +155,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -171,8 +171,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -187,8 +187,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -202,9 +202,9 @@
       name: rom_e2e_boot_policy_valid_a_bad_b_good_test_unlocked0
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -218,9 +218,9 @@
       name: rom_e2e_boot_policy_valid_a_bad_b_good_dev
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -234,9 +234,9 @@
       name: rom_e2e_boot_policy_valid_a_bad_b_good_prod
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -250,9 +250,9 @@
       name: rom_e2e_boot_policy_valid_a_bad_b_good_prod_end
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -266,9 +266,9 @@
       name: rom_e2e_boot_policy_valid_a_bad_b_good_rma
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_boot_policy_valid_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -282,9 +282,9 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_test_unlocked0
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_test_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_test_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -298,9 +298,9 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_dev
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_dev_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_dev_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -314,9 +314,9 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_prod
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -330,9 +330,9 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_prod_end
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -346,9 +346,9 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_rma
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -363,8 +363,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -379,8 +379,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -395,8 +395,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -411,8 +411,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -427,8 +427,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -443,8 +443,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_test_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -459,8 +459,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_dev_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -475,8 +475,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -491,8 +491,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -507,8 +507,8 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -523,7 +523,7 @@
       uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -537,7 +537,7 @@
       uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_dev:4",
+        "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -551,7 +551,7 @@
       uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_prod:4",
+        "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -565,7 +565,7 @@
       uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_prod_end:4",
+        "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -579,7 +579,7 @@
       uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_rma:4",
+        "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -592,7 +592,7 @@
       name: rom_e2e_jtag_debug_test_unlocked0
       uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_test_unlocked0_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_test_unlocked0_exec_disabled:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -606,7 +606,7 @@
       name: rom_e2e_jtag_debug_dev
       uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -620,7 +620,7 @@
       name: rom_e2e_jtag_debug_rma
       uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_rma_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_rma_exec_disabled:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -634,7 +634,7 @@
       name: rom_e2e_jtag_inject_test_unlocked0
       uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -649,7 +649,7 @@
       name: rom_e2e_jtag_inject_dev
       uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -664,7 +664,7 @@
       name: rom_e2e_jtag_inject_rma
       uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -687,8 +687,8 @@
       name: rom_e2e_keymgr_init_rom_ext_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_rom_ext_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -701,8 +701,8 @@
       name: rom_e2e_keymgr_init_rom_ext_no_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_no_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_rom_ext_no_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -715,8 +715,8 @@
       name: rom_e2e_keymgr_init_rom_ext_invalid_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_invalid_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_rom_ext_invalid_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -729,8 +729,8 @@
       name: rom_e2e_sigverify_mod_exp_test_unlocked0_otbn
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_test_unlocked0_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_test_unlocked0_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -743,8 +743,8 @@
       name: rom_e2e_sigverify_mod_exp_test_unlocked0_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_test_unlocked0_sw:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_test_unlocked0_sw:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -757,8 +757,8 @@
       name: rom_e2e_sigverify_mod_exp_dev_otbn
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_dev_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_dev_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -771,8 +771,8 @@
       name: rom_e2e_sigverify_mod_exp_dev_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_dev_sw:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_dev_sw:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -785,8 +785,8 @@
       name: rom_e2e_sigverify_mod_exp_prod_otbn
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_prod_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -799,8 +799,8 @@
       name: rom_e2e_sigverify_mod_exp_prod_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_prod_sw:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_sw:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -813,8 +813,8 @@
       name: rom_e2e_sigverify_mod_exp_prod_end_otbn
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_prod_end_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_end_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -827,8 +827,8 @@
       name: rom_e2e_sigverify_mod_exp_prod_end_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_prod_end_sw:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_end_sw:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -841,8 +841,8 @@
       name: rom_e2e_sigverify_mod_exp_rma_otbn
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -855,8 +855,8 @@
       name: rom_e2e_sigverify_mod_exp_rma_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_sw:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_sw:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -906,7 +906,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
+        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_real_keys"]
       run_opts: [
@@ -923,7 +923,7 @@
     //   uvm_test_seq: chip_sw_base_vseq
     //   sw_images: [
     //     "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-    //     "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
+    //     "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
     //   ]
     //   // We purposely use the `sw_test_mode_common` run mode here instead of the
     //   // run modes that add either ROM image to the list of sw_images to
