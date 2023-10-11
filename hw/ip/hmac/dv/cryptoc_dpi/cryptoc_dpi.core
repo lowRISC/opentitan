@@ -10,12 +10,16 @@ filesets:
       - hash-internal.h: {file_type: cSource, is_include_file: true}
       - sha.h: {file_type: cSource, is_include_file: true}
       - sha256.h: {file_type: cSource, is_include_file: true}
+      - sha384.h: {file_type: cSource, is_include_file: true}
+      - sha512.h: {file_type: cSource, is_include_file: true}
       - util.h: {file_type: cSource, is_include_file: true}
       - hmac.h: {file_type: cSource, is_include_file: true}
       - hmac_wrap.h: {file_type: cSource, is_include_file: true}
       - util.c: {file_type: cSource}
       - sha.c: {file_type: cSource}
       - sha256.c: {file_type: cSource}
+      - sha384.c: {file_type: cSource}
+      - sha512.c: {file_type: cSource}
       - hmac.c: {file_type: cSource}
       - hmac_wrap.c: {file_type: cSource}
       - cryptoc_dpi.c: {file_type: cSource}
