@@ -577,6 +577,7 @@ module dma
     chunk_byte_d           = chunk_byte_q;
     capture_transfer_width = 1'b0;
     transfer_width_d       = '0;
+    capture_return_data    = 1'b0;
 
     next_error     = '0;
     bad_src_addr   = 1'b0;
@@ -937,6 +938,7 @@ module dma
             next_error[DmaCompletionErr] = 1'b1;
             ctrl_state_d                 = DmaError;
           end else begin
+            capture_return_data = 1'b1;
             // We received data, feed it into the SHA2 engine
             if (use_inline_hashing) begin
               sha2_valid      = 1'b1;
@@ -1064,7 +1066,6 @@ module dma
     end
   end
 
-  assign capture_return_data = read_rsp_valid & !read_rsp_error;
 
   prim_generic_flop_en #(
     .Width(top_pkg::TL_DW)
