@@ -43,6 +43,10 @@ impl CommandDispatch for LoadBitstream {
             rom_timeout: self.rom_timeout,
             progress: Box::new(progress),
         };
+
+        if operation.should_skip(transport)? {
+            return Ok(None);
+        }
         transport.dispatch(&operation)
     }
 }

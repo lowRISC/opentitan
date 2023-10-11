@@ -152,18 +152,6 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            // Open the console UART.  We do this first so we get the receiver
-            // started and the uart buffering data for us.
-            let uart = self.uart("0")?;
-            let reset_pin = self.gpio_pin(B::PIN_POR_N)?;
-            if fpga_program.skip() {
-                log::info!("Skip loading the __skip__ bitstream.");
-                return Ok(None);
-            }
-            if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
-                return Ok(None);
-            }
-
             // Program the FPGA bitstream.
             log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();

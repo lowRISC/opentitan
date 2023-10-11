@@ -5,6 +5,7 @@
 use anyhow::Result;
 use std::time::Duration;
 
+use crate::app::TransportWrapper;
 use crate::io::gpio::GpioPin;
 use crate::io::uart::Uart;
 use crate::transport::ProgressIndicator;
@@ -24,7 +25,7 @@ pub struct FpgaProgram<'a> {
 }
 
 impl FpgaProgram<'_> {
-    pub fn check_correct_version(&self, uart: &dyn Uart, reset_pin: &dyn GpioPin) -> Result<bool> {
+    fn check_correct_version(&self, uart: &dyn Uart, reset_pin: &dyn GpioPin) -> Result<bool> {
         let mut rd = RomDetect::new(&self.bitstream, Some(self.rom_timeout))?;
 
         // Send a reset pulse so the ROM will print the FPGA version.
@@ -45,8 +46,23 @@ impl FpgaProgram<'_> {
         Ok(false)
     }
 
-    pub fn skip(&self) -> bool {
+    fn skip(&self) -> bool {
         self.bitstream.starts_with(b"__skip__")
+    }
+
+    pub fn should_skip(&self, transport: &TransportWrapper) -> Result<bool> {
+        // Open the console UART.  We do this first so we get the receiver
+        // started and the uart buffering data for us.
+        let uart = transport.uart("CONSOLE")?;
+        let reset_pin = transport.gpio_pin("RESET")?;
+        if self.skip() {
+            log::info!("Skip loading the __skip__ bitstream.");
+            return Ok(true);
+        }
+        if self.check_correct_version(&*uart, &*reset_pin)? {
+            return Ok(true);
+        }
+        Ok(false)
     }
 }
 
