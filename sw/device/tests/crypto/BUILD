@@ -220,10 +220,11 @@ opentitan_test(
     cw310 = cw310_params(
         timeout = "long",
     ),
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        tags = ["broken"],  # This test is too slow to run on verilator.
-    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
@@ -249,15 +250,17 @@ opentitan_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
     ),
-    verilator = verilator_params(
-        tags = ["broken"],  # This test is too slow to run on verilator.
-    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
@@ -267,7 +270,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_3072_signature_functest",
     srcs = ["rsa_3072_signature_functest.c"],
     verilator = verilator_params(
@@ -282,15 +285,17 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
     ),
-    verilator = verilator_params(
-        tags = ["broken"],  # This test is too slow to run on verilator.
-    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
@@ -300,7 +305,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_4096_signature_functest",
     srcs = ["rsa_4096_signature_functest.c"],
     verilator = verilator_params(
