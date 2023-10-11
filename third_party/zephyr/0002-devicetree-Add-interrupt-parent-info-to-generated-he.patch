@@ -1,0 +1,150 @@
+From cb224f3b6e9e5b4d0c4bbc5e4155630c5927301b Mon Sep 17 00:00:00 2001
+From: Alexander Williams <awill@opentitan.org>
+Date: Sun, 8 Oct 2023 21:26:11 -0700
+Subject: [PATCH 2/2] [devicetree] Add interrupt parent info to generated
+ headers
+
+Make available phandle references for interrupts in the generated
+headers, so driver code may determine to which device an interrupt goes.
+---
+ include/zephyr/devicetree.h | 92 +++++++++++++++++++++++++++++++++++++
+ scripts/dts/gen_defines.py  | 13 +++++-
+ 2 files changed, 103 insertions(+), 2 deletions(-)
+
+diff --git a/include/zephyr/devicetree.h b/include/zephyr/devicetree.h
+index 082d9a48d9..b4f5cdbfaf 100644
+--- a/include/zephyr/devicetree.h
++++ b/include/zephyr/devicetree.h
+@@ -2390,6 +2390,98 @@
+  */
+ #define DT_IRQN(node_id) DT_IRQ(node_id, irq)
+ 
++/**
++ * @brief Get the phandle of the interrupt parent by IRQ @p name
++ *
++ * The return value is the node identifier for a phandle corresponding to the
++ * interrupt parent, given a name from the array of interrupts.
++ *
++ * Example devicetree fragment:
++ *
++ * @code{.dts}
++ *     intc1: interrupt-controller@abcd1234 {
++ *             foobar = "INTC_1";
++ *             interrupt-controller;
++ *     };
++ *
++ *     intc2: interrupt-controller@1234abcd {
++ *             foobar = "INTC_2";
++ *             interrupt-controller;
++ *     };
++ *
++ *     n: node {
++ *             interrupts-extended = <&intc1 10>, <&intc2 20>;
++ *             interrupt-names = "READY", "ERROR";
++ *     };
++ * @endcode
++ *
++ * Above, "interrupts-extended" has two elements:
++ *
++ * - the element named `"READY"` has phandle `&intc1`
++ * - the element named `"ERROR"` has phandle `&intc2`
++ *
++ * Example usage:
++ *
++ * @code{.c}
++ *     #define NODE DT_NODELABEL(n)
++ *
++ *     DT_PROP(DT_IRQ_PARENT_BY_NAME(NODE, ready), foobar) // "INTC_1"
++ *     DT_PROP(DT_IRQ_PARENT_BY_NAME(NODE, error), foobar) // "INTC_2"
++ * @endcode
++ *
++ * Notice how devicetree properties and names are lowercased, and
++ * non-alphanumeric characters are converted to underscores.
++ *
++ * @param node_id node identifier
++ * @param name lowercase-and-underscores interrupt specifier name
++ * @return a node identifier for the node with that phandle
++ */
++#define DT_IRQ_PARENT_BY_NAME(node_id, name) \
++	DT_CAT4(node_id, _IRQ_NAME_, name, _PH)
++
++/**
++ * @brief Get a node identifier for a phandle of the interrupt parent for an IRQ.
++ *
++ * The return value is the node identifier for a phandle corresponding to the
++ * interrupt parent, given the indexed interrupt specifier.
++ *
++ * @param node_id node identifier
++ * @param idx logical index into the interrupt specifier array
++ * @return node identifier for the node with the phandle at that index
++ */
++#define DT_IRQ_PARENT_BY_IDX(node_id, idx) \
++	DT_CAT4(node_id, _IRQ_IDX_, idx, _PH)
++
++/**
++ * @brief Is @p parent the parent of the interrupt specifier at @p idx index?
++ *
++ * If this returns 1, then DT_IRQ_PARENT_BY_IDX(node_id, idx) returns the same
++ * node as @p parent.
++ * If it returns 0, the interrupt-parent for this interrupt is not @p parent.
++ * @param node_id node identifier
++ * @param idx index to check
++ * @param parent parent to check
++ * @return 1 if the parent matches
++ *         0 otherwise.
++ */
++#define DT_IRQ_HAS_PARENT_BY_IDX(node_id, idx, parent) \
++	IS_ENABLED(DT_CAT6(node_id, _IRQ_IDX_, idx, _PARENT_, parent, _EXISTS))
++
++/**
++ * @brief Is @p parent the parent of the interrupt specifier with @p name?
++ *
++ * If this returns 1, then DT_IRQ_PARENT_BY_NAME(node_id, name) returns the same
++ * node as @p parent.
++ * If it returns 0, the interrupt-parent for this interrupt is not @p parent.
++ * @param node_id node identifier
++ * @param name name to check
++ * @param parent parent to check
++ * @return 1 if the parent matches
++ *         0 otherwise.
++ */
++#define DT_IRQ_HAS_PARENT_BY_NAME(node_id, name, parent) \
++	IS_ENABLED(DT_CAT6(node_id, _IRQ_NAME_, name, _PARENT_, parent, _EXISTS))
++
+ /**
+  * @}
+  */
+diff --git a/scripts/dts/gen_defines.py b/scripts/dts/gen_defines.py
+index 2394e3a7d4..1afdad68d1 100755
+--- a/scripts/dts/gen_defines.py
++++ b/scripts/dts/gen_defines.py
+@@ -476,15 +476,24 @@ def write_interrupts(node):
+         idx_vals.append((f"{path_id}_IRQ_NUM", len(node.interrupts)))
+ 
+     for i, irq in enumerate(node.interrupts):
++        # Add references to the parent interrupt controller.
++        idx_vals.append((f"{path_id}_IRQ_IDX_{i}_EXISTS", 1))
++        idx_vals.append((f"{path_id}_IRQ_IDX_{i}_PH", f"DT_{irq.controller.z_path_id}"))
++        idx_vals.append((f"{path_id}_IRQ_IDX_{i}_PARENT_DT_{irq.controller.z_path_id}_EXISTS", 1))
++        if irq.name:
++            irq_name = str2ident(irq.name)
++            idx_vals.append((f"{path_id}_IRQ_NAME_{irq_name}_EXISTS", 1))
++            idx_vals.append((f"{path_id}_IRQ_NAME_{irq_name}_PH", f"DT_{irq.controller.z_path_id}"))
++            idx_vals.append((f"{path_id}_IRQ_NAME_{irq_name}_PARENT_DT_{irq.controller.z_path_id}_EXISTS", 1))
+         for cell_name, cell_value in irq.data.items():
+             name = str2ident(cell_name)
+ 
+             if cell_name == "irq":
+                 if "arm,gic" in irq.controller.compats:
+                     cell_value = map_arm_gic_irq_type(irq, cell_value)
+-                cell_value = encode_zephyr_multi_level_irq(irq, cell_value)
++                # Don't use Zephyr's multi-level encoding for OpenTitan's numbering.
++                #cell_value = encode_zephyr_multi_level_irq(irq, cell_value)
+ 
+-            idx_vals.append((f"{path_id}_IRQ_IDX_{i}_EXISTS", 1))
+             idx_macro = f"{path_id}_IRQ_IDX_{i}_VAL_{name}"
+             idx_vals.append((idx_macro, cell_value))
+             idx_vals.append((idx_macro + "_EXISTS", 1))
+-- 
+2.34.1
+

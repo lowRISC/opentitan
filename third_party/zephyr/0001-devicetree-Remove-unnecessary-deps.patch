@@ -1,0 +1,25 @@
+From d5a31bf35fbc87ec67661ca86cea7d5b403b4458 Mon Sep 17 00:00:00 2001
+From: Alexander Williams <awill@opentitan.org>
+Date: Tue, 3 Oct 2023 21:05:01 -0700
+Subject: [PATCH 1/2] [devicetree] Remove unnecessary deps
+
+---
+ include/zephyr/devicetree.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/zephyr/devicetree.h b/include/zephyr/devicetree.h
+index ed8db9edfc..082d9a48d9 100644
+--- a/include/zephyr/devicetree.h
++++ b/include/zephyr/devicetree.h
+@@ -18,7 +18,7 @@
+ 
+ #include <devicetree_generated.h>
+ 
+-#include <zephyr/sys/util.h>
++#include <zephyr/sys/util_macro.h>
+ 
+ /**
+  * @brief devicetree.h API
+-- 
+2.34.1
+

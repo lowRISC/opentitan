@@ -1,0 +1,68 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@ot_python_deps//:requirements.bzl", "requirement")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all",
+    srcs = glob(["**"]),
+)
+
+filegroup(
+    name = "dt_bindings",
+    srcs = glob(["dts/bindings/**"]),
+)
+
+filegroup(
+    name = "dt_common_headers",
+    srcs = [
+        "dts/common/freq.h",
+        "dts/common/mem.h",
+    ],
+)
+
+filegroup(
+    name = "dts_skeleton",
+    srcs = [
+        "dts/common/skeleton.dtsi",
+    ],
+)
+
+cc_library(
+    name = "util_macros_lib",
+    hdrs = [
+        "include/zephyr/sys/util_internal.h",
+        "include/zephyr/sys/util_loops.h",
+        "include/zephyr/sys/util_macro.h",
+    ],
+    includes = ["include"],
+)
+
+cc_library(
+    name = "devicetree_lib",
+    hdrs = glob(["include/zephyr/devicetree/*"]) + [
+        "include/zephyr/devicetree.h",
+    ],
+    includes = ["include"],
+    deps = [":util_macros_lib"],
+)
+
+py_binary(
+    name = "gen_defines",
+    srcs = [
+        "scripts/dts/gen_defines.py",
+        "scripts/dts/python-devicetree/src/devicetree/__init__.py",
+        "scripts/dts/python-devicetree/src/devicetree/_private.py",
+        "scripts/dts/python-devicetree/src/devicetree/dtlib.py",
+        "scripts/dts/python-devicetree/src/devicetree/edtlib.py",
+        "scripts/dts/python-devicetree/src/devicetree/grutils.py",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        requirement("pyyaml"),
+    ],
+)

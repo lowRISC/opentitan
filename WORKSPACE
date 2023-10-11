@@ -148,3 +148,7 @@ hyperdebug_repos()
 # Bazel skylib library
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
+
+# Zephyr devicetree library
+load("//third_party/zephyr:repos.bzl", "zephyr_repos")
+zephyr_repos()
