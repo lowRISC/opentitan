@@ -491,3 +491,26 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
+
+cc_library(
+    name = "attestation",
+    hdrs = ["attestation.h"],
+)
+
+cc_library(
+    name = "otbn_boot_services",
+    srcs = ["otbn_boot_services.c"],
+    hdrs = ["otbn_boot_services.h"],
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":attestation",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:otbn",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+    ],
+)
