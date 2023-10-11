@@ -133,13 +133,10 @@ status_t keygen_then_sign_test(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// Holds the test result.
-static volatile status_t test_result;
-
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  test_result = OK_STATUS();
+  status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, keygen_then_sign_test);
   return status_ok(test_result);
 }
