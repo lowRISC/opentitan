@@ -7,13 +7,6 @@ load("//rules:signing.bzl", "sign_bin")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
-    "@lowrisc_opentitan//rules:cc_side_outputs.bzl",
-    "rv_asm",
-    "rv_llvm_ir",
-    "rv_preprocess",
-    "rv_relink_with_linkmap",
-)
-load(
     "@lowrisc_opentitan//rules:rv.bzl",
     "rv_rule",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
@@ -726,10 +719,6 @@ def opentitan_binary(
     Emits rules:
       cc_binary             named: <name>.elf
       cc_binary+transition  named: <name>_elf_transition
-      rv_preprocess         named: <name>_preproc
-      rv_asm                named: <name>_asm
-      rv_llvm_ir            named: <name>_ll
-      rv_relink_with_map    named: <name>_map
       obj_transform         named: <name>_bin
       elf_to_dissassembly   named: <name>_dis
       Optionally:
@@ -748,7 +737,6 @@ def opentitan_binary(
     ]
     deps = kwargs.pop("deps", [])
     targets = []
-    side_targets = []
 
     native_binary_name = "{}.elf".format(name)
     native.cc_binary(
@@ -765,38 +753,6 @@ def opentitan_binary(
     platform_target(
         name = elf_transition_binary_name,
         platform = platform,
-        target = native_binary_name,
-        testonly = testonly,
-    )
-
-    preproc_name = "{}_{}".format(name, "preproc")
-    side_targets.append(preproc_name)
-    rv_preprocess(
-        name = preproc_name,
-        target = native_binary_name,
-        testonly = testonly,
-    )
-
-    asm_name = "{}_{}".format(name, "asm")
-    side_targets.append(asm_name)
-    rv_asm(
-        name = asm_name,
-        target = native_binary_name,
-        testonly = testonly,
-    )
-
-    ll_name = "{}_{}".format(name, "ll")
-    side_targets.append(ll_name)
-    rv_llvm_ir(
-        name = ll_name,
-        target = native_binary_name,
-        testonly = testonly,
-    )
-
-    map_name = "{}_{}".format(name, "map")
-    side_targets.append(map_name)
-    rv_relink_with_linkmap(
-        name = map_name,
         target = native_binary_name,
         testonly = testonly,
     )
@@ -829,13 +785,6 @@ def opentitan_binary(
             platform = platform,
             testonly = testonly,
         )
-
-    # Create a filegroup with just the sides targets.
-    native.filegroup(
-        name = name + "_side_targets",
-        srcs = side_targets,
-        testonly = testonly,
-    )
 
     return targets
 
