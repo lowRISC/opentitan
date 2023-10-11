@@ -18,6 +18,14 @@ package cryptoc_dpi_pkg;
                                                          input longint unsigned len,
                                                          output int unsigned hash[8]);
 
+  import "DPI-C" context function void c_dpi_SHA384_hash(input bit[7:0] msg[],
+                                                         input longint unsigned len,
+                                                         output int unsigned hash[12]);
+
+  import "DPI-C" context function void c_dpi_SHA512_hash(input bit[7:0] msg[],
+                                                         input longint unsigned len,
+                                                         output int unsigned hash[16]);
+
   import "DPI-C" context function void c_dpi_HMAC_SHA(input bit[7:0] key[],
                                                       input longint unsigned key_len,
                                                       input bit[7:0] msg[],
@@ -39,6 +47,16 @@ package cryptoc_dpi_pkg;
   function automatic void sv_dpi_get_sha256_digest(input bit[7:0] msg[],
                                                    output int unsigned hash[8]);
     c_dpi_SHA256_hash(msg, msg.size(), hash);
+  endfunction
+
+  function automatic void sv_dpi_get_sha384_digest(input bit[7:0] msg[],
+                                                   output int unsigned hash[12]);
+    c_dpi_SHA384_hash(msg, msg.size(), hash);
+  endfunction
+
+  function automatic void sv_dpi_get_sha512_digest(input bit[7:0] msg[],
+                                                   output int unsigned hash[16]);
+    c_dpi_SHA512_hash(msg, msg.size(), hash);
   endfunction
 
   function automatic void sv_dpi_get_hmac_sha(input bit[31:0] key[],
