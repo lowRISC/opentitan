@@ -51,7 +51,7 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw310",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -116,6 +116,8 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
@@ -170,6 +172,8 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
@@ -215,6 +219,8 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -236,7 +242,7 @@ fpga_cw305(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw305",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -258,7 +264,7 @@ fpga_cw340(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw340",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -311,7 +317,7 @@ silicon(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:silicon",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -346,6 +352,8 @@ silicon(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:silicon",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
+        "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
@@ -399,7 +407,7 @@ sim_verilator(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_verilator",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -452,7 +460,7 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
-        "//hw/top_earlgrey/sw/autogen/devicetables",
+        "//hw/top_earlgrey/sw/autogen:devicetables",
         "//hw/top_earlgrey/sw/cw310:devicetables",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

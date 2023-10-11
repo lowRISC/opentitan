@@ -399,9 +399,9 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/devicetables",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
@@ -3580,9 +3580,10 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/devicetables",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3600,9 +3601,9 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/devicetables",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",

@@ -14,6 +14,7 @@ cc_library(
         "dt_flash_ctrl.h",
         "dt_pinmux.h",
         "dt_pwrmgr.h",
+        "dt_rstmgr.h",
         "dt_rv_plic.h",
     ],
     includes = ["."],
