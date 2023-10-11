@@ -57,6 +57,27 @@ typedef enum keymgr_state {
   kKeymgrStateNumStates,
 } keymgr_state_t;
 
+enum {
+  /**
+   * Number of 32-bit words for the salt.
+   */
+  kKeymgrSaltNumWords = 8,
+};
+
+/**
+ * Data used to differentiate a generated keymgr key.
+ */
+typedef struct keymgr_diversification {
+  /**
+   * Salt value to use for key generation.
+   */
+  uint32_t salt[kKeymgrSaltNumWords];
+  /**
+   * Version for key generation (anti-rollback protection).
+   */
+  uint32_t version;
+} keymgr_diversification_t;
+
 /**
  * The following constants represent the expected number of sec_mmio register
  * writes performed by functions in provided in this module. See
@@ -152,6 +173,31 @@ void keymgr_advance_state(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t keymgr_state_check(keymgr_state_t expected_state);
+
+/**
+ * Derive a key manager key for the OTBN block.
+ *
+ * Calls the key manager to sideload a key into the OTBN hardware block and
+ * waits until the operation is complete before returning. Always uses the
+ * attestation (not sealing) CDI; call this only for attestation keys.
+ *
+ * @param diversification Diversification input for the key derivation.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t keymgr_generate_attestation_key_otbn(
+    const keymgr_diversification_t diversification);
+
+/**
+ * Clear OTBN's sideloaded key slot.
+ *
+ * The entropy complex needs to be initialized before calling this function, so
+ * that keymgr can use it to clear the slot.
+ *
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t keymgr_sideload_clear_otbn(void);
 
 #ifdef __cplusplus
 }

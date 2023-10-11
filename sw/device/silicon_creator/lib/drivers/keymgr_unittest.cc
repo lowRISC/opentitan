@@ -36,6 +36,39 @@ class KeymgrTest : public rom_test::RomTest {
 
     EXPECT_SEC_READ32(base_ + KEYMGR_WORKING_STATE_REG_OFFSET, km_state);
   }
+  void ExpectIdleCheck(uint32_t op_status) {
+    EXPECT_ABS_READ32(base_ + KEYMGR_OP_STATUS_REG_OFFSET, op_status);
+  }
+  void ExpectDiversificationWrite(keymgr_diversification_t diversification) {
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_KEY_VERSION_REG_OFFSET,
+                       diversification.version);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_0_REG_OFFSET,
+                       diversification.salt[0]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_1_REG_OFFSET,
+                       diversification.salt[1]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_2_REG_OFFSET,
+                       diversification.salt[2]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_3_REG_OFFSET,
+                       diversification.salt[3]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_4_REG_OFFSET,
+                       diversification.salt[4]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_5_REG_OFFSET,
+                       diversification.salt[5]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_6_REG_OFFSET,
+                       diversification.salt[6]);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_7_REG_OFFSET,
+                       diversification.salt[7]);
+  }
+  void ExpectWaitUntilDone(size_t busy_cycles, uint32_t end_status) {
+    for (size_t i = 0; i < busy_cycles; i++) {
+      EXPECT_ABS_READ32(base_ + KEYMGR_OP_STATUS_REG_OFFSET,
+                        KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
+      EXPECT_ABS_WRITE32(base_ + KEYMGR_OP_STATUS_REG_OFFSET,
+                         KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
+    }
+    EXPECT_ABS_READ32(base_ + KEYMGR_OP_STATUS_REG_OFFSET, end_status);
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_OP_STATUS_REG_OFFSET, end_status);
+  }
   uint32_t base_ = TOP_EARLGREY_KEYMGR_BASE_ADDR;
   SwBindingCfg cfg_ = {
       .max_key_ver = 0xA5A5A5A5,
@@ -157,6 +190,133 @@ TEST_F(KeymgrTest, CheckStateInvalidResponse) {
                     /*err_code=*/1u);
   EXPECT_EQ(keymgr_state_check(kKeymgrStateCreatorRootKey),
             kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrTest, GenAttestationKey) {
+  keymgr_diversification_t test_diversification = {
+      .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
+               0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
+      .version = cfg_.max_key_ver - 1,
+  };
+
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
+      {
+          {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+          {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true},
+          {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
+      });
+  ExpectDiversificationWrite(test_diversification);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_START_REG_OFFSET,
+                     {
+                         {KEYMGR_START_EN_BIT, true},
+                     });
+  ExpectWaitUntilDone(/*busy_cycles=*/2,
+                      KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+
+  EXPECT_EQ(keymgr_generate_attestation_key_otbn(test_diversification),
+            kErrorOk);
+}
+
+TEST_F(KeymgrTest, GenAttestationKeyNotIdle) {
+  keymgr_diversification_t test_diversification = {
+      .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
+               0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
+      .version = cfg_.max_key_ver - 1,
+  };
+
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
+  EXPECT_EQ(keymgr_generate_attestation_key_otbn(test_diversification),
+            kErrorKeymgrInternal);
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
+  EXPECT_EQ(keymgr_generate_attestation_key_otbn(test_diversification),
+            kErrorKeymgrInternal);
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  EXPECT_EQ(keymgr_generate_attestation_key_otbn(test_diversification),
+            kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrTest, GenAttestationKeyError) {
+  keymgr_diversification_t test_diversification = {
+      .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
+               0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
+      .version = cfg_.max_key_ver - 1,
+  };
+  uint32_t err_code = 0x1;
+
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
+      {
+          {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+          {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true},
+          {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
+      });
+  ExpectDiversificationWrite(test_diversification);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_START_REG_OFFSET,
+                     {
+                         {KEYMGR_START_EN_BIT, true},
+                     });
+  ExpectWaitUntilDone(/*busy_cycles=*/2,
+                      KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
+  EXPECT_ABS_READ32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
+
+  EXPECT_EQ(keymgr_generate_attestation_key_otbn(test_diversification),
+            kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrTest, SideloadClearOtbn) {
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                     {
+                         {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                     });
+  EXPECT_ABS_READ32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                    {
+                        {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                         KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                    });
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                     {
+                         {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_NONE},
+                     });
+
+  EXPECT_EQ(keymgr_sideload_clear_otbn(), kErrorOk);
+}
+
+TEST_F(KeymgrTest, SideloadClearOtbnNotIdle) {
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
+  EXPECT_EQ(keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  EXPECT_EQ(keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
+  EXPECT_EQ(keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrTest, SideloadClearOtbnReadbackMismatch) {
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                     {
+                         {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                          KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN},
+                     });
+
+  // Readback does not match the value written.
+  EXPECT_ABS_READ32(base_ + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                    {
+                        {KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
+                         KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES},
+                    });
+
+  EXPECT_EQ(keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
 }
 
 }  // namespace

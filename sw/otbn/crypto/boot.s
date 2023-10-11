@@ -7,12 +7,12 @@
  *
  * During the boot process, this program should remain loaded. This binary has
  * the following modes:
- *   1. MODE_SEC_BOOT_SIGVERIFY: RSA-3072 modexp (to verify a code signature).
+ *   1. MODE_SEC_BOOT_MODEXP: RSA-3072 modexp (to verify a code signature).
  *   2. MODE_ATTESTATION_KEYGEN: Derive a new attestation keypair (ECDSA-P256).
  *   3. MODE_ATTESTATION_ENDORSE: Sign with a saved attestation signing key.
  *   4. MODE_ATTESTATION_KEY_SAVE: Save an attestation signing key.
  *
- * Ibex will run `MODE_SEC_BOOT_SIGVERIFY` as part of checking the code
+ * Ibex will run `MODE_SEC_BOOT_MODEXP` as part of checking the code
  * signature of the next boot stage. This mode doesn't interact or interfere
  * with any other modes, and can be called at any point.
  *
@@ -56,7 +56,7 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_SEC_BOOT_SIGVERIFY, 0x7d3
+.equ MODE_SEC_BOOT_MODEXP, 0x7d3
 .equ MODE_ATTESTATION_KEYGEN, 0x2bf
 .equ MODE_ATTESTATION_ENDORSE, 0x5e8
 .equ MODE_ATTESTATION_KEY_SAVE, 0x64d
@@ -67,8 +67,8 @@ start:
   la    x2, mode
   lw    x2, 0(x2)
 
-  addi  x3, x0, MODE_SEC_BOOT_SIGVERIFY
-  beq   x2, x3, sec_boot_sigverify
+  addi  x3, x0, MODE_SEC_BOOT_MODEXP
+  beq   x2, x3, sec_boot_modexp
 
   addi  x3, x0, MODE_ATTESTATION_KEYGEN
   beq   x2, x3, attestation_keygen
@@ -104,7 +104,7 @@ start:
  * @param[in] dmem[m0inv]: Montgomery constant (-(M^-1)) mod 2^256
  * @param[out] dmem[rsa_inout]: Recovered message digest
  */
-sec_boot_sigverify:
+sec_boot_modexp:
   /* Compute R^2 (same for both exponents): dmem[rr] <= R^2 */
   jal      x1, compute_rr
 
