@@ -289,7 +289,7 @@ impl UartConsole {
         }
     }
 
-    pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<String>
+    pub fn wait_for<T>(device: &T, rx: &str, timeout: Duration) -> Result<Vec<String>>
     where
         T: ConsoleDevice + ?Sized,
     {
@@ -305,9 +305,15 @@ impl UartConsole {
         println!();
         match result {
             ExitStatus::ExitSuccess => {
-                let cap = console.captures(ExitStatus::ExitSuccess).expect("capture");
-                let s = cap.get(0).expect("capture group").as_str().to_owned();
-                Ok(s)
+                let caps = console.captures(ExitStatus::ExitSuccess).expect("capture");
+                let mut vec = Vec::new();
+                for c in caps.iter() {
+                    match c {
+                        None => vec.push(String::new()),
+                        _ => vec.push(c.unwrap().as_str().to_owned()),
+                    }
+                }
+                Ok(vec)
             }
             ExitStatus::Timeout => Err(ConsoleError::GenericError("Timed Out".into()).into()),
             _ => Err(anyhow!("Impossible result: {:?}", result)),
