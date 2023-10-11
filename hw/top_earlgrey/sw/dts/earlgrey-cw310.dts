@@ -1,0 +1,110 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+/dts-v1/;
+
+#include "hw/top_earlgrey/sw/autogen/devicetree.dtsi"
+
+#define MUX_PERIPH(periph) TOP_EARLGREY_PINMUX_PERIPHERAL_IN_##periph
+#define MUX_INSEL(pad) TOP_EARLGREY_PINMUX_INSEL_##pad
+#define MUX_PAD(pad) TOP_EARLGREY_PINMUX_MIO_OUT_##pad
+#define MUX_OUTSEL(periph) TOP_EARLGREY_PINMUX_OUTSEL_##periph
+
+&pinmux_aon {
+    ottf_default_pinmap: OTTF_DEFAULT_PINMAP {
+        /* Software straps + UART0 console + usbdev sense */
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(GPIO_GPIO_22), MUX_INSEL(IOC0))>,
+                    <OPENTITAN_PINMUX(MUX_PERIPH(GPIO_GPIO_23), MUX_INSEL(IOC1))>,
+                    <OPENTITAN_PINMUX(MUX_PERIPH(GPIO_GPIO_24), MUX_INSEL(IOC2))>,
+                    <OPENTITAN_PINMUX(MUX_PERIPH(UART0_RX), MUX_INSEL(IOC3))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOC0), MUX_OUTSEL(GPIO_GPIO_22))>,
+                 <OPENTITAN_PINMUX(MUX_PAD(IOC1), MUX_OUTSEL(GPIO_GPIO_23))>,
+                 <OPENTITAN_PINMUX(MUX_PAD(IOC2), MUX_OUTSEL(GPIO_GPIO_24))>,
+                 <OPENTITAN_PINMUX(MUX_PAD(IOC3), MUX_OUTSEL(CONSTANT_HIGH_Z))>,
+                 <OPENTITAN_PINMUX(MUX_PAD(IOC4), MUX_OUTSEL(UART0_TX))>,
+                 <OPENTITAN_PINMUX(MUX_PAD(IOC7), MUX_OUTSEL(CONSTANT_HIGH_Z))>;
+    };
+    /* UART0 Console */
+    uart0_rx_ioc3: UART0_RX_IOC3 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(UART0_RX), MUX_INSEL(IOC3))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOC3), MUX_OUTSEL(CONSTANT_HIGH_Z))>;
+    };
+    uart0_tx_ioc4: UART0_TX_IOC4 {
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOC4), MUX_OUTSEL(UART0_TX))>;
+    };
+    /* USB VBUS detection */
+    usb_vbus_detect_ioc7: USB_VBUS_DETECT_IOC7 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(USBDEV_SENSE), MUX_INSEL(IOC7))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOC7), MUX_OUTSEL(CONSTANT_HIGH_Z))>;
+    };
+    /* SPI Host 1 to SPI flash */
+    spi_host1_csb_iob0: SPI_HOST1_CSB_IOB0 {
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB0), MUX_OUTSEL(SPI_HOST1_CSB))>;
+    };
+    spi_host1_sck_iob3: SPI_HOST1_SCK_IOB3 {
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB3), MUX_OUTSEL(SPI_HOST1_SCK))>;
+    };
+    spi_host1_io0_iob1: SPI_HOST1_IO0_IOB1 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(SPI_HOST1_SD_0), MUX_INSEL(IOB1))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB1), MUX_OUTSEL(SPI_HOST1_SD_0))>;
+    };
+    spi_host1_io1_iob2: SPI_HOST1_IO1_IOB2 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(SPI_HOST1_SD_1), MUX_INSEL(IOB2))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB2), MUX_OUTSEL(SPI_HOST1_SD_1))>;
+    };
+    /* I2C0 TPM */
+    i2c0_sda_ioa7: I2C0_SDA_IOA7 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(I2C0_SDA), MUX_INSEL(IOA7))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOA7), MUX_OUTSEL(I2C0_SDA))>;
+    };
+    i2c0_scl_ioa8: I2C0_SCL_IOA8 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(I2C0_SCL), MUX_INSEL(IOA8))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOA8), MUX_OUTSEL(I2C0_SCL))>;
+    };
+    /* SPI TPM CSB (shared with I2C0 TPM) */
+    spi_tpm_csb_ioa7: SPI_TPM_CSB_IOA7 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(SPI_DEVICE_TPM_CSB), MUX_INSEL(IOA7))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOA7), MUX_OUTSEL(CONSTANT_HIGH_Z))>;
+    };
+    /* PMOD2 I2C */
+    i2c1_scl_iob11: I2C1_SCL_IOB11 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(I2C1_SCL), MUX_INSEL(IOB11))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB11), MUX_OUTSEL(I2C1_SCL))>;
+    };
+    i2c1_sda_iob12: I2C1_SDA_IOB12 {
+        periphmux = <OPENTITAN_PINMUX(MUX_PERIPH(I2C1_SDA), MUX_INSEL(IOB12))>;
+        padmux = <OPENTITAN_PINMUX(MUX_PAD(IOB12), MUX_OUTSEL(I2C1_SDA))>;
+    };
+};
+
+&uart0 {
+    pinctrl-0 = <&uart0_rx_ioc3 &uart0_tx_ioc4>;
+    pinctrl-names = "default";
+};
+
+&usbdev {
+    pinctrl-0 = <&usb_vbus_detect_ioc7>;
+    pinctrl-names = "default";
+};
+
+&spi_host1 {
+    pinctrl-0 = <&spi_host1_csb_iob0 &spi_host1_sck_iob3
+                 &spi_host1_io0_iob1 &spi_host1_io1_iob2>;
+    pinctrl-names = "default";
+};
+
+&spi_device {
+    pinctrl-0 = <&spi_tpm_csb_ioa7>;
+    pinctrl-names = "default";
+};
+
+&i2c0 {
+    pinctrl-0 = <&i2c0_sda_ioa7 &i2c0_scl_ioa8>;
+    pinctrl-names = "default";
+};
+
+&i2c1 {
+    pinctrl-0 = <&i2c1_scl_iob11 &i2c1_sda_iob12>;
+    pinctrl-names = "default";
+};

@@ -26,3 +26,8 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]),
 )
+
+cc_library(
+    name = "earlgrey_devicetree",
+    hdrs = ["devicetree.dtsi"],
+)
