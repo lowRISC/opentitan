@@ -1,0 +1,39 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  OpenTitan's pinmux binding
+
+  OpenTitan's pinmux has independent pad output muxes and peripheral input
+  muxes.
+
+  Device mux configurations should be placed in child nodes of the pinmux device
+  node. Inside the child node, the 'padmux' and 'periphmux' properties define
+  selections for pad output muxes and peripheral input muxes, respectively. For
+  both properties, a single 32-bit unsigned integer represents the combination
+  of 'mux_id' and 'select_id' to configure the mux. The encoding places the
+  'mux_id' in the upper 16 bits and the 'select_id' in the lower 16 bits. For
+  peripheral input muxes, 'select_id' chooses the pad or constant to drive the
+  peripheral input. For pad output muxes, 'select_id' selects the peripheral or
+  constants to drive the pad driver's output and output-enable signals.
+
+compatible: "lowrisc,pinmux"
+
+include: base.yaml
+
+child-binding:
+  description: |
+    The node representing mux selections and pad attributes.
+
+  properties:
+    padmux:
+      required: false
+      type: array
+      description: |
+        OpenTitan's pad output mux configuration
+    periphmux:
+      required: false
+      type: array
+      description: |
+        OpenTitan's peripheral input mux configuration
