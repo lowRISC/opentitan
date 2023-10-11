@@ -1232,13 +1232,13 @@ module dma
         end
         OpcSha384: begin
           if (i < 6) begin
-            hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
-            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+            hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
           end
         end
         default: begin // SHA2-512
-          hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
-          hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+          hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
+          hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
         end
       endcase
     end
