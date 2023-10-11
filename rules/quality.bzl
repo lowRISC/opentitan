@@ -151,8 +151,7 @@ def _cc_aspect_impl(target, ctx, action_callback):
         if hasattr(ctx.rule.attr, "copts"):
             opts += ctx.rule.attr.copts
 
-        # TODO(dmcardle) What if an .h file should be compiled for C++? Perhaps
-        # this should match the behavior in rules/cc_side_outputs.bzl.
+        # TODO(dmcardle) What if an .h file should be compiled for C++?
         if src.extension in ["c", "h"]:
             opts += ctx.fragments.cpp.conlyopts
         else:
