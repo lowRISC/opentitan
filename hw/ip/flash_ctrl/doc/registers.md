@@ -215,22 +215,21 @@ Disable flash functionality
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             |
 |:------:|:------:|:-------:|:-----------------|
 |  31:4  |        |         | Reserved         |
-|  3:0   |  rw0c  |   0x9   | [VAL](#dis--val) |
+|  3:0   |  rw1s  |   0x9   | [VAL](#dis--val) |
 
 ### DIS . VAL
 Disables flash functionality completely.
 This is a shortcut mechanism used by the software to completely
 kill flash in case of emergency.
 
-Since this register is rw0c instead of rw, to disable, write any value in the form of
-0xxx or xxx0, where x could be either 0 or 1.
-
+Since this register is rw1s instead of rw, to disable, write the value kMuBi4True
+to the register to disable the flash.
 
 ## EXEC
 Controls whether flash can be used for code execution fetches
