@@ -2,15 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:linker.bzl", "ld_library")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
     "cw310_jtag_params",
     "cw310_params",
-    "opentitan_binary",
     "opentitan_test",
 )
-load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -71,9 +70,13 @@ cc_library(
     srcs = ["util.c"],
     hdrs = ["util.h"],
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
     ],
 )
 
@@ -135,6 +138,7 @@ cc_library(
     ],
     deps = [
         ":otp_img_types",
+        ":util",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/testing:lc_ctrl_testutils",
