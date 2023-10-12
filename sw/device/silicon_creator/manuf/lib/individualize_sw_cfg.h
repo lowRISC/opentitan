@@ -63,21 +63,6 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Configures both the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.
- *
- * This can be called in place of calling both of the above functions
- * individually.
- *
- * The caller should reset the device after calling this function to verify that
- * the ROM is able to boot with the new configuration.
- *
- * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the HW_CFG partition is locked.
- */
-OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl);
-
-/**
  * Checks the CREATOR_SW_CFG OTP partition end state.
  *
  * @param otp_ctrl OTP controller interface.

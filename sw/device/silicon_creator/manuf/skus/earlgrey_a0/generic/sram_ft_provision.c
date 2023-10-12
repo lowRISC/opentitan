@@ -50,7 +50,8 @@ status_t command_processor(ujson_t *uj) {
     switch (command) {
       case kFtSramProvisioningCommandWriteAll:
         LOG_INFO("Writing both *_SW_CFG OTP partitions ...");
-        CHECK_STATUS_OK(manuf_individualize_device_sw_cfg(&otp_ctrl));
+        CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
+        CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
         break;
       case kFtSramProvisioningCommandOtpCreatorSwCfgWrite:
         LOG_INFO("Writing the CREATOR_SW_CFG OTP partition ...");

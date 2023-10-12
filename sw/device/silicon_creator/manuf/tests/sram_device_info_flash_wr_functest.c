@@ -96,7 +96,8 @@ bool sram_main(void) {
           kDifFlashCtrlPartitionTypeInfo,
           kFlashInfoWaferAuthSecretSizeIn32BitWords));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
-      CHECK_STATUS_OK(manuf_individualize_device_sw_cfg(&otp_ctrl));
+      CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
+      CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
       LOG_INFO("Done. Perform an LC transition and run flash stage.");
       break;
     default:
