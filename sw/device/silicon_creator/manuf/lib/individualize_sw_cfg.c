@@ -4,9 +4,13 @@
 
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
+#include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/impl/sha2/sha256.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
+#include "sw/device/silicon_creator/manuf/lib/util.h"
 
 /**
  * Writes OTP values to target OTP `partition`.
@@ -46,10 +50,47 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
   return OK_STATUS();
 }
 
+/**
+ * Computes a SHA256 digest of an OTP partition and uses the least significant
+ * 64-bits of the digest to additionally lock the partition.
+ *
+ * Note: only {Creator,Owner}SwCfg partitions and the VendorTest partition may
+ * be locked in this manner. All other partitions are locked via hardware.
+ *
+ * @param otp OTP Controller instance.
+ * @param partition Target OTP partition.
+ * @return OT_WARN_UNUSED_RESULT
+ */
+OT_WARN_UNUSED_RESULT
+static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
+                                   dif_otp_ctrl_partition_t partition) {
+  // Compute SHA256 of the OTP partition.
+  uint32_t digest[kSha256DigestWords];
+  crypto_word32_buf_t otp_partition_digest = {
+      .len = ARRAYSIZE(digest),
+      .data = digest,
+  };
+  TRY(manuf_util_hash_otp_partition(otp_ctrl, partition,
+                                    &otp_partition_digest));
+
+  // Get the least significant 64 bits of the digest. We will use this as the
+  // digest to lock the OTP partition. The complete digest will be used in the
+  // attestation key / certificate generation.
+  uint64_t partition_digest_lowest_64bits = digest[1];
+  partition_digest_lowest_64bits =
+      (partition_digest_lowest_64bits << 32) | digest[0];
+
+  TRY(otp_ctrl_testutils_lock_partition(
+      otp_ctrl, partition, /*digest=*/partition_digest_lowest_64bits));
+
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_creator_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                     kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
+  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
   return OK_STATUS();
 }
 
@@ -57,13 +98,12 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
                     kOtpKvOwnerSwCfgSize));
+  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                    kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
-                    kOtpKvOwnerSwCfgSize));
+  TRY(manuf_individualize_device_creator_sw_cfg(otp_ctrl));
+  TRY(manuf_individualize_device_owner_sw_cfg(otp_ctrl));
   return OK_STATUS();
 }
