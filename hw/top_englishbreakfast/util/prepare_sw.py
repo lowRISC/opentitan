@@ -29,8 +29,8 @@ BINARIES = [
 BAZEL_BINARIES = [
     '//sw/device/lib/testing/test_rom',
     '//sw/device/sca:aes_serial',
-    '//sw/device/tests:aes_smoketest_prog',
     '//sw/device/examples/hello_world',
+    '//sw/device/tests:aes_smoketest_prog',
 ]
 
 

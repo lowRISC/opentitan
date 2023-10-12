@@ -14,7 +14,13 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules/opentitan:defs.bzl", "EARLGREY_TEST_ENVS", "opentitan_test")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
+    new_cw310_params = "cw310_params",
+    new_verilator_params = "verilator_params",
+)
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
 
@@ -31,10 +37,11 @@ exports_files(glob([
     "*.h",
 ]))
 
-opentitan_functest(
+opentitan_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -49,9 +56,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -65,14 +73,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
-    targets = [
-        "dv",
-        "verilator",
-        "cw310_test_rom",
-    ],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -97,6 +101,10 @@ alias(
     visibility = ["//visibility:private"],
 )
 
+# TODO(#19926): The `opentitan_test` rule doesn't propagate --copt accross all
+# dependencies, causing issues when compiling targets against
+# --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_.
+# Using `opentitan_functest` as a workaround.
 opentitan_functest(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
@@ -112,15 +120,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
-    cw310 = cw310_params(
-        timeout = "moderate",
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    cw310 = new_cw310_params(timeout = "moderate"),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -139,11 +144,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
-    cw310 = cw310_params(timeout = "moderate"),
-    targets = [
+    cw310 = new_cw310_params(timeout = "moderate"),
+    exec_env = {
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -151,9 +156,9 @@ opentitan_functest(
         # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
-        "cw310_test_rom",
-        "dv",
-    ],
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -182,13 +187,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_reverse_ping_in_deep_sleep_test",
     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -214,13 +219,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_lpg_reset_toggle_test",
     srcs = ["alert_handler_lpg_reset_toggle.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         timeout = "moderate",
     ),
-    targets = [
+    exec_env = {
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -228,9 +233,9 @@ opentitan_functest(
         # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
-        "cw310_test_rom",
-        "dv",
-    ],
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
@@ -259,13 +264,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_handler_lpg_sleep_mode_pings_test",
     srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         timeout = "moderate",
     ),
-    targets = [
+    exec_env = {
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
         # The wait-time for the Verilator would be around
@@ -273,9 +278,9 @@ opentitan_functest(
         # Thus it is not recommended to run this test on
         # Verilator as this wait-time looks impractical. It should still
         # be run as part of the DV nightly regression.
-        "cw310_test_rom",
-        "dv",
-    ],
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -301,14 +306,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
-    targets = [
-        "dv",
-        "verilator",
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -325,14 +330,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aon_timer_smoketest",
     srcs = ["aon_timer_smoketest.c"],
-    targets = [
-        "dv",
-        "verilator",
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -343,14 +348,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aon_timer_wdog_bite_reset_test",
     srcs = ["aon_timer_wdog_bite_reset_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -366,9 +368,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_wdog_reset_reqs_test",
     srcs = ["pwrmgr_wdog_reset_reqs_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -384,12 +387,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -410,9 +412,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "aon_timer_sleep_wdog_sleep_pause_test",
     srcs = ["aon_timer_sleep_wdog_sleep_pause_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -428,12 +431,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "chip_power_idle_load",
     srcs = ["chip_power_idle_load.c"],
-    verilator = verilator_params(
-        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    # TODO(#16374): test doesn't make progress after enabling PWM
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -451,12 +454,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
-    verilator = verilator_params(
-        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    # TODO(#16374): test doesn't make progress after enabling PWM
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
@@ -496,41 +499,34 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_jitter_test",
     srcs = ["clkmgr_jitter_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -540,12 +536,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "eternal"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -591,36 +586,39 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_off_aes_trans_test",
     srcs = ["clkmgr_off_aes_trans_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_off_hmac_trans_test",
     srcs = ["clkmgr_off_hmac_trans_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_off_kmac_trans_test",
     srcs = ["clkmgr_off_kmac_trans_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_off_otbn_trans_test",
     srcs = ["clkmgr_off_otbn_trans_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = ["clkmgr_off_trans_impl"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -636,13 +634,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
-    verilator = verilator_params(
-        # FIXME #13611
-        tags = ["broken"],
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    # TODO(#13611): Splice ast_init in FPGA/Verilator.
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -662,9 +659,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "clkmgr_smoketest",
     srcs = ["clkmgr_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -674,12 +672,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "coverage_test",
     srcs = ["coverage_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -690,9 +687,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "crt_test",
     srcs = ["crt_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -708,12 +706,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "eternal"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -735,9 +732,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -748,9 +746,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -761,18 +760,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -801,9 +795,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_kat_test",
     srcs = ["entropy_src_kat_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":entropy_src_kat_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -814,9 +809,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -829,9 +825,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_ast_rng_req_test",
     srcs = ["entropy_src_ast_rng_req_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -842,10 +839,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -869,12 +867,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -901,9 +898,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "example_concurrency_test",
     srcs = ["example_concurrency_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -911,36 +909,30 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
-    targets = [
-        "dv",
-        "verilator",
-        "cw310_test_rom",
-        "cw310_rom_with_fake_keys",
-        "cw340_test_rom",
-        "cw340_rom_with_fake_keys",
-    ],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "example_test_from_rom",
     srcs = ["example_test_from_rom.c"],
-    targets = [
-        "dv",
-        "verilator",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     # This test is designed to run and complete entirely in the ROM boot stage.
     # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
     # DV or Verilator params).
-    test_in_rom = True,
+    kind = "rom",
+    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -952,24 +944,19 @@ opentitan_functest(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
-    targets = [
-        "dv",
-        "verilator",
-        "cw310_test_rom",
-    ],
-    verilator = verilator_params(
-        tags = [
-            "broken",
-        ],
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -990,13 +977,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
+    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1011,16 +997,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -1033,12 +1016,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -1051,14 +1033,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
-    targets = [
-        #not compatible with the verilated top level
-        "cw310_test_rom",
-        "dv",
-    ],
+    exec_env = {
+        # Not compatible with the verilated top level.
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
@@ -1096,9 +1078,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1111,9 +1094,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_enc_idle_test",
     srcs = ["hmac_enc_idle_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1126,9 +1110,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_smoketest",
     srcs = ["hmac_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1140,12 +1125,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/kmac/data:kmac_regs",
@@ -1162,12 +1146,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/aes/data:aes_regs",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1188,12 +1171,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/kmac/data:kmac_regs",
@@ -1210,12 +1192,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_sideload_otbn_test",
     srcs = ["keymgr_sideload_otbn_test.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//sw/device/lib/arch:device",
@@ -1233,9 +1214,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_app_rom_test",
     srcs = ["kmac_app_rom_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1245,13 +1227,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
-    cw310 = cw310_params(
-        # FIXME #15530: EDN doesn't timeout on FPGA
-        tags = ["broken"],
-    ),
+    # TODO(#15530): EDN doesn't timeout on FPGA
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1262,9 +1243,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_idle_test",
     srcs = ["kmac_idle_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1275,12 +1257,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_mode_cshake_test",
     srcs = ["kmac_mode_cshake_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1292,9 +1273,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_mode_kmac_test",
     srcs = ["kmac_mode_kmac_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1306,9 +1288,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_smoketest",
     srcs = ["kmac_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1319,9 +1302,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "lc_ctrl_otp_hw_cfg_test",
     srcs = ["lc_ctrl_otp_hw_cfg_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -1335,12 +1319,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_ecdsa_op_irq_test",
     srcs = ["otbn_ecdsa_op_irq_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1356,12 +1339,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_irq_test",
     srcs = ["otbn_irq_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1376,16 +1358,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    # TODO(#12486) [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
@@ -1412,12 +1391,11 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_randomness_test",
     srcs = ["otbn_randomness_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1436,12 +1414,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_rsa_test",
     srcs = ["otbn_rsa_test.c"],
-    verilator = verilator_params(
-        timeout = "eternal",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "eternal"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1455,12 +1432,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otbn_smoketest",
     srcs = ["otbn_smoketest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1474,9 +1450,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -1489,9 +1466,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "plic_sw_irq_test",
     srcs = ["plic_sw_irq_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -1505,9 +1483,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -1518,9 +1497,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -1531,12 +1511,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1551,12 +1530,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
-    verilator = verilator_params(
-        tags = ["broken"],
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
@@ -1568,9 +1546,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "pwrmgr_usb_clk_disabled_when_active_test",
     srcs = ["pwrmgr_usb_clk_disabled_when_active_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
@@ -1583,9 +1562,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1595,15 +1575,15 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_cpu_info_test",
     srcs = ["rstmgr_cpu_info_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "dv",
-        "verilator",
-    ],
-    verilator = verilator_params(
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(
         timeout = "long",
         tags = ["broken"],
     ),
@@ -1622,9 +1602,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_sw_req_test",
     srcs = ["rstmgr_sw_req_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1635,12 +1616,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_sw_rst_ctrl_test",
     srcs = ["rstmgr_sw_rst_ctrl_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
@@ -1661,9 +1641,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_plic_smoketest",
     srcs = ["rv_plic_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1677,9 +1658,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_timer_smoketest",
     srcs = ["rv_timer_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:rv_timer",

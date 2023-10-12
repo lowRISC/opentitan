@@ -16,50 +16,50 @@
     {
       name: chip_sw_aon_timer_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:aon_timer_smoketest:1"]
+      sw_images: ["//sw/device/tests:aon_timer_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_clkmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:clkmgr_smoketest:1"]
+      sw_images: ["//sw/device/tests:clkmgr_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
      name: chip_sw_csrng_smoketest
      uvm_test_seq: chip_sw_base_vseq
-     sw_images: ["//sw/device/tests:csrng_smoketest:1"]
+     sw_images: ["//sw/device/tests:csrng_smoketest:1:new_rules"]
      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_entropy_src_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:entropy_src_smoketest:1"]
+      sw_images: ["//sw/device/tests:entropy_src_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+rng_srate_value_min=15", "+rng_srate_value_max=30"]
     }
     {
       name: chip_sw_gpio_smoketest
       uvm_test_seq: chip_sw_gpio_smoke_vseq
-      sw_images: ["//sw/device/tests:gpio_smoketest:1"]
+      sw_images: ["//sw/device/tests:gpio_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_hmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:hmac_smoketest:1"]
+      sw_images: ["//sw/device/tests:hmac_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_kmac_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:kmac_smoketest:1"]
+      sw_images: ["//sw/device/tests:kmac_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_otbn_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:otbn_smoketest:1"]
+      sw_images: ["//sw/device/tests:otbn_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -71,7 +71,7 @@
     {
       name: chip_sw_pwrmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:pwrmgr_smoketest:1"]
+      sw_images: ["//sw/device/tests:pwrmgr_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=10000000"]
     }
@@ -84,19 +84,19 @@
     {
       name: chip_sw_rv_plic_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:rv_plic_smoketest:1"]
+      sw_images: ["//sw/device/tests:rv_plic_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_rv_timer_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:rv_timer_smoketest:1"]
+      sw_images: ["//sw/device/tests:rv_timer_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_rstmgr_smoketest
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:rstmgr_smoketest:1"]
+      sw_images: ["//sw/device/tests:rstmgr_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
