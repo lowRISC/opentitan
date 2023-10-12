@@ -41,6 +41,7 @@ filesets:
       - seq_lib/rv_dm_dataaddr_rw_access_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_halt_resume_whereto_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_ndmreset_req_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_jtag_dtm_idle_hint_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

@@ -230,6 +230,11 @@
       uvm_test_seq: rv_dm_ndmreset_req_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_jtag_dtm_idle_hint
+      uvm_test_seq: rv_dm_jtag_dtm_idle_hint_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.

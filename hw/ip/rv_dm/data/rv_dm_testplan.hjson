@@ -166,7 +166,7 @@
               successfully, without dmistat reflecting an error.
             '''
       stage: V2
-      tests: [] // TODO(#17033)
+      tests: ["rv_dm_jtag_dtm_idle_hint"]
     }
     {
       name: jtag_dmi_failed_op

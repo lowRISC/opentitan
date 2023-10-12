@@ -19,3 +19,4 @@
 `include "rv_dm_dataaddr_rw_access_vseq.sv"
 `include "rv_dm_halt_resume_whereto_vseq.sv"
 `include "rv_dm_ndmreset_req_vseq.sv"
+`include "rv_dm_jtag_dtm_idle_hint_vseq.sv"
