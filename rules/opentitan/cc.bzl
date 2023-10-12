@@ -74,13 +74,20 @@ def ot_binary(ctx, **kwargs):
         compilation_contexts.append(linker_script[CcInfo].compilation_context)
 
     name = get_override(ctx, "attr.name", kwargs)
+    all_srcs = get_override(ctx, "files.srcs", kwargs)
+
+    # cc_common.compile crashes if a header file is passed to srcs, so filter
+    # those out and passed them as private headers instead
+    hdrs = [s for s in all_srcs if s.extension == "h"]
+    srcs = [s for s in all_srcs if s.extension != "h"]
     cctx, cout = cc_common.compile(
         name = name,
         actions = ctx.actions,
         feature_configuration = features,
         cc_toolchain = cc_toolchain,
         compilation_contexts = compilation_contexts,
-        srcs = get_override(ctx, "files.srcs", kwargs),
+        srcs = srcs,
+        private_hdrs = hdrs,
         user_compile_flags = ["-ffreestanding"] + _expand(ctx, "copts", get_override(ctx, "attr.copts", kwargs)),
         defines = _expand(ctx, "defines", get_override(ctx, "attr.defines", kwargs)),
         local_defines = _expand(ctx, "local_defines", get_override(ctx, "attr.local_defines", kwargs)),
