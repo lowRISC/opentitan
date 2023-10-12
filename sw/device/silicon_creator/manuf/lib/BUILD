@@ -139,9 +139,9 @@ cc_library(
     deps = [
         ":otp_img_types",
         ":util",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
     ],
 )
@@ -168,11 +168,12 @@ opentitan_test(
     },
     deps = [
         ":individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

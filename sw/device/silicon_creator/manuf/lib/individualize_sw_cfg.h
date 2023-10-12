@@ -63,7 +63,7 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Configures the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.
+ * Configures both the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.
  *
  * This can be called in place of calling both of the above functions
  * individually.
@@ -76,5 +76,23 @@ status_t manuf_individualize_device_owner_sw_cfg(
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the CREATOR_SW_CFG OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the CREATOR_SW_CFG partition is locked.
+ */
+status_t manuf_individualize_device_creator_sw_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the OWNER_SW_CFG OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the OWNER_SW_CFG partition is locked.
+ */
+status_t manuf_individualize_device_owner_sw_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_
