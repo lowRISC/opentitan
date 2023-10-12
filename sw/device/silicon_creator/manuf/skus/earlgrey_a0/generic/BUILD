@@ -3,30 +3,28 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-    "opentitan_ram_binary",
-)
-load(
-    "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
-    "cw310_params",
-    "opentitan_functest",
+    "//rules/opentitan:defs.bzl",
+    "cw310_jtag_params",
+    "opentitan_binary",
+    "opentitan_test",
 )
 load("//rules:otp.bzl", "otp_image")
 load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_ram_binary(
+opentitan_binary(
     name = "sram_cp_provision",
+    testonly = True,
     srcs = [
         "consts.h",
         "sram_cp_provision.c",
     ],
-    hdrs = ["sram_cp_provision.h"],
-    archive_symbol_prefix = "sram_cp_provision",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -51,19 +49,22 @@ opentitan_ram_binary(
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
 
-opentitan_ram_binary(
+opentitan_binary(
     name = "sram_cp_provision_functest",
+    testonly = True,
     srcs = [
         "consts.h",
         "sram_cp_provision_functest.c",
     ],
-    hdrs = ["sram_cp_provision.h"],
-    archive_symbol_prefix = "sram_cp_provision_functest",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -88,74 +89,59 @@ opentitan_ram_binary(
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "cp_provision",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+        },
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
-        test_cmds = [
-            "--clear-bitstream",
-            "--bitstream=\"$(location {bitstream})\"",
-            "--elf=\"$(rootpath :sram_cp_provision_fpga_cw310_elf_transition)\"",
-            "--all-steps",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --elf={sram_cp_provision}
+            --all-steps
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
-    data = [
-        ":sram_cp_provision_fpga_cw310_elf_transition",
-    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/provisioning/cp",
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
 
-opentitan_functest(
+opentitan_test(
     name = "cp_provision_functest",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+            ":sram_cp_provision_functest": "sram_cp_provision_functest",
+        },
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
-        test_cmds = [
-            "--clear-bitstream",
-            "--bitstream=\"$(location {bitstream})\"",
-            "--provisioning-sram-elf=\"$(rootpath :sram_cp_provision_fpga_cw310_elf_transition)\"",
-            "--test-sram-elf=\"$(rootpath :sram_cp_provision_functest_fpga_cw310_elf_transition)\"",
-            "--all-steps",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --provisioning-sram-elf={sram_cp_provision}
+            --test-sram-elf={sram_cp_provision_functest}
+            --all-steps
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
     ),
-    data = [
-        ":sram_cp_provision_fpga_cw310_elf_transition",
-        ":sram_cp_provision_functest_fpga_cw310_elf_transition",
-    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
 
-opentitan_ram_binary(
+opentitan_binary(
     name = "sram_ft_provision",
+    testonly = True,
     srcs = ["sram_ft_provision.c"],
-    hdrs = ["sram_ft_provision.h"],
-    archive_symbol_prefix = "sram_ft_provision",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -179,7 +165,6 @@ opentitan_ram_binary(
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
-        "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -202,30 +187,21 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ft_provision",
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
+        binaries = {
+            ":sram_ft_provision": "sram_ft_provision",
+        },
         bitstream = ":bitstream_post_cp_test_locked0",
         tags = ["manuf"],
-        test_cmds = [
-            "--clear-bitstream",
-            "--bitstream=\"$(location {bitstream})\"",
-            "--elf=\"$(rootpath :sram_ft_provision_fpga_cw310_elf_transition)\"",
-            "--all-steps",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --elf={sram_ft_provision}
+            --all-steps
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
-    data = [
-        ":sram_ft_provision_fpga_cw310_elf_transition",
-    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/provisioning/ft",
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
 )
