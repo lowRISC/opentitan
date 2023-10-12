@@ -51,9 +51,9 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
 
     opentitan_test(
         name = name,
-        tags = tags,
         exec_env = {"//hw/top_earlgrey:sim_verilator": None},
         verilator = verilator_params(
+            tags = tags,
             rom = rom,
             binaries = {
                 # The test expects an unsigned binary.
