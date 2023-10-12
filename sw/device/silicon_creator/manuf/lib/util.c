@@ -17,8 +17,7 @@
 #include "otp_ctrl_regs.h"  // Generated.
 
 static_assert(
-    OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(OTP_CTRL_PARAM_VENDOR_TEST_SIZE) ==
-        0,
+    OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,
     "OTP Vendor Test partition should be an integer multiple of 32-bit words.");
 
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,

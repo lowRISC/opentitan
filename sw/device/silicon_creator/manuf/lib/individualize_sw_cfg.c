@@ -107,3 +107,19 @@ status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl) {
   TRY(manuf_individualize_device_owner_sw_cfg(otp_ctrl));
   return OK_STATUS();
 }
+
+status_t manuf_individualize_device_creator_sw_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(
+      otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_owner_sw_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
