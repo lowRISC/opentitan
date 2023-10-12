@@ -1152,11 +1152,8 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_lpg_sleep_mode_alerts_test",
     srcs = ["alert_handler_lpg_sleep_mode_alerts.c"],
-    targets = [
-        # The test requires to drive fatal alerts
-        # which is possible only in DV sim.
-        "dv",
-    ],
+    # The test requires to drive fatal alerts which is possible only in DV sim.
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
