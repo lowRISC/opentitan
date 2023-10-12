@@ -417,8 +417,6 @@ def _modid_check_aspect_impl(target, ctx):
     if ctx.rule.kind != "cc_binary":
         return [HasModuleIdInfo()]
 
-    print("MODID-CHECK: {}".format(ctx.label))
-
     # We create a file that will not contain anything: this is just to create a "link"
     # between the run action and the output group info. This way if we ask bazel for this
     # output group, it will automatically run the action. We could use a validation group
