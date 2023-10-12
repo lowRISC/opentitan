@@ -10,12 +10,19 @@ module prim_clock_mux2 #(
   input        sel_i,
   output logic clk_o
 );
-
+`ifndef TARGET_ASIC
   tc_clk_mux2 clk_mux(
     .clk0_i,
     .clk1_i,
     .clk_sel_i(sel_i),
     .clk_o
   );
+`else
+  // We model the mux with logic operations for GTECH runs.
+  assign clk_o = (sel_i & clk1_i) | (~sel_i & clk0_i);
 
+  // make sure sel is never X (including during reset)
+  // need to use ##1 as this could break with inverted clocks that
+  // start with a rising edge at the beginning of the simulation.
+`endif
 endmodule : prim_clock_mux2

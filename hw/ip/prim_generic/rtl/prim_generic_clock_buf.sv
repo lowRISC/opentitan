@@ -11,10 +11,14 @@ module prim_clock_buf #(
   input clk_i,
   output logic clk_o
 );
-
+`ifdef TARGET_ASIC
   tc_clk_buffer clk_buf(
      .clk_i,
      .clk_o
   );
-
+`else
+  logic inv;
+  assign inv = ~clk_i;
+  assign clk_o = ~inv;
+`endif
 endmodule // prim_clock_buf

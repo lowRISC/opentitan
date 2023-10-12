@@ -13,10 +13,25 @@ module prim_clock_inv #(
   input        scanmode_i,
   output logic clk_no      // Inverted
 );
-
+`ifdef TARGET_ASIC
   tc_clk_inverter clk_inv(
    .clk_i,
    .clk_o(clk_no)
   );
-
+`else
+  if (HasScanMode) begin : gen_scan
+    prim_clock_mux2 #(
+      .NoFpgaBufG(NoFpgaBufG)
+    ) i_dft_tck_mux (
+      .clk0_i ( ~clk_i     ),
+      .clk1_i ( clk_i      ), // bypass the inverted clock for testing
+      .sel_i  ( scanmode_i ),
+      .clk_o  ( clk_no     )
+    );
+  end else begin : gen_noscan
+    logic unused_scanmode;
+    assign unused_scanmode = scanmode_i;
+    assign clk_no = ~clk_i;
+  end
+`endif // !`ifndef TARGET_ASIC
 endmodule : prim_clock_inv
