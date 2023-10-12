@@ -103,23 +103,24 @@ class edn_err_vseq extends edn_base_vseq;
   endtask
 
   task body();
-    string        ins_cmd_type, gen_cmd_type;
-    bit [5:0]     err_code_test_bit;
-    string        path, path1, path2;
-    bit           value1, value2;
-    string        fifo_name;
-    int           first_index, last_index;
-    string        fifo_base_path;
-    string        path_exts [4] = {"push", "full", "pop", "not_empty"};
-    string        fifo_forced_paths [4];
-    bit           fifo_forced_values [4] = {1'b1, 1'b1, 1'b1, 1'b0};
-    string        fifo_err_path [2][string];
-    bit           fifo_err_value [2][string];
-    string        path_key;
-    string        reg_name, fld_name;
-    uvm_reg       csr;
-    uvm_reg_field fld;
-    bit [31:0]    backdoor_err_code_val;
+    edn_env_pkg::cmd_type_e    ins_cmd_type, gen_cmd_type;
+    edn_env_pkg::hw_req_mode_e mode;
+    bit [5:0]                  err_code_test_bit;
+    string                     path, path1, path2;
+    bit                        value1, value2;
+    string                     fifo_name;
+    int                        first_index, last_index;
+    string                     fifo_base_path;
+    string                     path_exts [4] = {"push", "full", "pop", "not_empty"};
+    string                     fifo_forced_paths [4];
+    bit                        fifo_forced_values [4] = {1'b1, 1'b1, 1'b1, 1'b0};
+    string                     fifo_err_path [2][string];
+    bit                        fifo_err_value [2][string];
+    string                     path_key;
+    string                     reg_name, fld_name;
+    uvm_reg                    csr;
+    uvm_reg_field              fld;
+    bit [31:0]                 backdoor_err_code_val;
 
     fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
@@ -150,14 +151,17 @@ class edn_err_vseq extends edn_base_vseq;
 
     // Determine into which CSRs the Instantiate and Generate commands need to be written.
     if (cfg.boot_req_mode == MuBi4True) begin
-      ins_cmd_type = "boot_ins";
-      gen_cmd_type = "boot_gen";
+      ins_cmd_type = edn_env_pkg::BootIns;
+      gen_cmd_type = edn_env_pkg::BootGen;
+      mode = edn_env_pkg::BootReqMode;
     end else if (cfg.auto_req_mode == MuBi4True) begin
-      ins_cmd_type = "sw";
-      gen_cmd_type = "generate";
+      ins_cmd_type = edn_env_pkg::Sw;
+      gen_cmd_type = edn_env_pkg::AutoGen;
+      mode = edn_env_pkg::AutoReqMode;
     end else begin // SW mode
-      ins_cmd_type = "sw";
-      gen_cmd_type = "sw";
+      ins_cmd_type = edn_env_pkg::Sw;
+      gen_cmd_type = edn_env_pkg::Sw;
+      mode = edn_env_pkg::SwMode;
     end
 
     // Create background thread that writes the Instantiate and Generate commands to the CSRs.
@@ -166,14 +170,15 @@ class edn_err_vseq extends edn_base_vseq;
         if (cfg.auto_req_mode == MuBi4True) begin
           // In Auto mode, minimize number of requests between reseeds and set the reseed command.
           csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
-          wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(0), .flags(MuBi4False));
+          wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(0),
+                 .flags(MuBi4False), .mode(mode));
         end
         // Send INS cmd.
         wr_cmd(.cmd_type(ins_cmd_type),
-               .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
+               .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0), .mode(mode));
         // Send GEN cmd with GLEN = 1 (request single genbits).
         wr_cmd(.cmd_type(gen_cmd_type),
-               .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+               .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1), .mode(mode));
       end
     join_none
 

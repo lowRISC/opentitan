@@ -10,9 +10,10 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
- .globl p256_verify
+.globl p256_isoncurve
+.globl p256_verify
 
- .text
+.text
 
  /**
  * P-256 ECDSA signature verification
@@ -247,6 +248,239 @@ p256_verify:
   la        x17, x_r
   li        x2, 24
   bn.sid    x2, 0(x17)
+
+  ret
+
+/**
+ * Checks if a point is a valid curve point on curve P-256 (secp256r1)
+ *
+ * Returns r = x^3 + ax + b  mod p
+ *     and s = y^2  mod p
+ *         with x,y being the affine coordinates of the curve point
+ *              a, b and p being the domain parameters of P-256
+ *
+ * This routine checks if a point with given x- and y-coordinate is a valid
+ * curve point on P-256.
+ * The routine checks whether the coordinates are a solution of the
+ * Weierstrass equation y^2 = x^3 + ax + b  mod p.
+ * The routine makes use of the property that the domain parameter 'a' can be
+ * written as a=-3 for the P-256 curve, hence the routine is limited to P-256.
+ * The routine does not return a boolean result but computes the left side
+ * and the right sight of the Weierstrass equation and leaves the final
+ * comparison to the caller.
+ * The routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  dmem[x]: affine x-coordinate of input point
+ * @param[in]  dmem[y]: affine y-coordinate of input point
+ * @param[out] dmem[r]: right side result r
+ * @param[out] dmem[s]: left side result s
+ *
+ * clobbered registers: x2, x3, x19, x20, w0, w19 to w25
+ * clobbered flag groups: FG0
+ */
+p256_isoncurve:
+
+  /* setup all-zero reg */
+  bn.xor    w31, w31, w31
+
+  /* setup modulus p and Barrett constant u
+     MOD <= w29 <= dmem[p256_p] = p; w28 <= dmem[p256_u_p] = u_p */
+  li        x2, 29
+  la        x3, p256_p
+  bn.lid    x2, 0(x3)
+  bn.wsrw   0, w29
+  li        x2, 28
+  la        x3, p256_u_p
+  bn.lid    x2, 0(x3)
+
+  /* load domain parameter b from dmem
+     w27 <= b = dmem[p256_b] */
+  li        x2, 27
+  la        x3, p256_b
+  bn.lid    x2, 0(x3)
+
+  /* load affine y-coordinate of curve point from dmem
+     w26 <= dmem[y] */
+  la        x3, y
+  li        x2, 24
+  bn.lid    x2, 0(x3)
+
+  /* w19 <= y^2 = w24*w24 */
+  bn.mov    w25, w24
+  jal       x1, mod_mul_256x256
+
+  /* store left side result: dmem[s] <= w19 = y^2  mod p */
+  la        x20, s
+  li        x2, 19
+  bn.sid    x2, 0(x20)
+
+  /* load affine x-coordinate of curve point from dmem
+     w26 <= dmem[x] */
+  la        x3, x
+  li        x2, 26
+  bn.lid    x2, 0(x3)
+
+  /* w19 <= x^2 = w26*w26 */
+  bn.mov    w25, w26
+  bn.mov    w24, w26
+  jal       x1, mod_mul_256x256
+
+  /* w19 = x^3 <= x^2 * x = w25*w24 = w26*w19 */
+  bn.mov    w25, w19
+  bn.mov    w24, w26
+  jal       x1, mod_mul_256x256
+
+  /* for curve P-256, 'a' can be written as a = -3, therefore we subtract
+     x three times from x^3.
+     w19 = x^3 + ax <= x^3 - 3x  mod p */
+  bn.subm   w19, w19, w26
+  bn.subm   w19, w19, w26
+  bn.subm   w19, w19, w26
+
+  /* w24 <= x^3 + ax + b mod p = w19 + w27 mod p */
+  bn.addm   w19, w19, w27
+
+  /* store right side result: dmem[r] <= w19 = x^3 + ax + b mod p */
+  la        x19, r
+  li        x2, 19
+  bn.sid    x2, 0(x19)
+
+  ret
+
+/**
+ * Variable time modular multiplicative inverse computation
+ *
+ * Returns c <= a^(-1) mod m
+ *         with a being a bigint of length 256 bit with a < m
+ *              m being the modulus with a length of 256 bit
+ *              c being a 256-bit result
+ *
+ * This routine implements the computation of the modular multiplicative
+ * inverse based on the binary GCD or Stein's algorithm.
+ * The implemented variant is based on the
+ * "right-shift binary extended GCD" as it is described in section 3.1 of [1]
+ * (Algorithm 1).
+ * [1] https://doi.org/10.1155/ES/2006/32192
+ *
+ * Note that this is a variable time implementation. I.e. this routine will
+ * show a data dependent timing and execution profile. Only use in situations
+ * where a full white-box environment is acceptable.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w0: a, operand
+ * @param[in]  MOD: m, modulus
+ * @param[in]  w31: all-zero
+ * @param[out]  w1: result c
+ *
+ * clobbered registers: x2, w2, w3, w4, w7
+ * clobbered flag groups: FG0
+ */
+mod_inv_var:
+
+  /* w2 = r = 0 */
+  bn.mov    w2, w31
+
+  /* w3 = s = 1 */
+  bn.addi   w3, w31, 1
+
+  /* w4 = u = MOD */
+  bn.wsrr   w4, 0
+  bn.wsrr   w7, 0
+
+  /* w5 = v = w0 */
+  bn.mov    w5, w0
+
+  ebgcd_loop:
+  /* test if u is odd */
+  bn.or     w4, w4, w4
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 4
+  bne       x2, x0, ebgcd_u_odd
+
+  /* u is even: */
+  /* w4 = u <= u/2 = w4 >> 1 */
+  bn.rshi   w4, w31, w4 >> 1
+
+  /* test if r is odd */
+  bn.or     w2, w2, w2
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 4
+  bne       x2, x0, ebgcd_r_odd
+
+  /* r is even: */
+  /* w2 = r <= r/2 = w2 >> 1 */
+  bn.rshi   w2, w31, w2 >> 1
+  jal       x0, ebgcd_loop
+
+  ebgcd_r_odd:
+  /* w2 = r <= (r + m)/2 = (w2 + w7) >> 1 */
+  bn.add    w2, w7, w2
+  bn.addc   w6, w31, w31
+  bn.rshi   w2, w6, w2 >> 1
+  jal       x0, ebgcd_loop
+
+  ebgcd_u_odd:
+  /* test if v is odd */
+  bn.or     w5, w5, w5
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 4
+  bne       x2, x0, ebgcd_uv_odd
+
+  /* v is even: */
+  /* w5 = v <= v/2 = w5 >> 1 */
+  bn.rshi   w5, w31, w5 >> 1
+
+  /* test if s is odd */
+  bn.or     w3, w3, w3
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 4
+  bne       x2, x0, ebgcd_s_odd
+
+  /* s is even: */
+  /* w3 = s <= s/2 = w3 >> 1 */
+  bn.rshi   w3, w31, w3 >> 1
+  jal       x0, ebgcd_loop
+
+  ebgcd_s_odd:
+  /* w3 = s <= (s + m)/2 = (w3 + w7) >> 1 */
+  bn.add    w3, w7, w3
+  bn.addc   w6, w31, w31
+  bn.rshi   w3, w6, w3 >> 1
+  jal       x0, ebgcd_loop
+
+  ebgcd_uv_odd:
+  /* test if v >= u */
+  bn.cmp    w5, w4
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  beq       x2, x0, ebgcd_v_gte_u
+
+  /* u > v: */
+  /* w2 = r <= r - s = w2 - w3; if (r < 0): r <= r + m */
+  bn.subm   w2, w2, w3
+
+  /* w4 = u <= u - v = w4 - w5 */
+  bn.sub    w4, w4, w5
+  jal       x0, ebgcd_loop
+
+  ebgcd_v_gte_u:
+  /* w3 = s <= s - r = w3 - w2; if (s < 0) s <= s + m */
+  bn.subm   w3, w3, w2
+
+  /* w5 = v <= v - u = w5 - w4 */
+  bn.sub    w5, w5, w4
+
+  /* if v > 0 go back to start of loop */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  beq       x2, x0, ebgcd_loop
+
+  /* v <= 0: */
+  /* if (r > m): w1 = a = r - m = w2 - MOD else: w1 = a = r = w2 */
+  bn.addm   w1, w2, w31
 
   ret
 

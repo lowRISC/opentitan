@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "opentitan_functest",
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
     "verilator_params",
 )
 
@@ -43,33 +43,29 @@ def strap_combination(strap):
             settings["b{}_value".format(i)] = "true"
     return settings
 
-def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_verilator_args = []):
+def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_verilator_args = ""):
     settings = strap_combination(value)
     if evaluator == None:
-        evaluator = r"console --exit-success=\"{pass}\" --exit-failure=\"{fail}\""
-    evaluator = evaluator.format(**settings)
+        evaluator = "console --exit-success=\"{pass}\" --exit-failure=\"{fail}\""
+    settings["evaluator"] = evaluator.format(**settings)
 
-    opentitan_functest(
+    opentitan_test(
         name = name,
-        srcs = ["sw_straps_test.c"],
-        signed = False,
         tags = tags,
-        targets = [
-            "verilator",
-        ],
-        ot_flash_binary = "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a",
+        exec_env = {"//hw/top_earlgrey:sim_verilator": None},
         verilator = verilator_params(
             rom = rom,
-            test_cmds = extra_verilator_args + [
-                "--exec=\"gpio set IOC0 --mode={b0_mode} --value={b0_value} --pull={b0_pull}\""
-                    .format(**settings),
-                "--exec=\"gpio set IOC1 --mode={b1_mode} --value={b1_value} --pull={b1_pull}\""
-                    .format(**settings),
-                "--exec=\"gpio set IOC2 --mode={b2_mode} --value={b2_value} --pull={b2_pull}\""
-                    .format(**settings),
-                "--exec=\"{}\"".format(evaluator),
-                "no-op",
-            ],
+            binaries = {
+                # The test expects an unsigned binary.
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_sim_verilator_scr_vmem64": "firmware",
+            },
+            test_cmd = extra_verilator_args + """
+                --exec="gpio set IOC0 --mode={b0_mode} --value={b0_value} --pull={b0_pull}"
+                --exec="gpio set IOC1 --mode={b1_mode} --value={b1_value} --pull={b1_pull}"
+                --exec="gpio set IOC2 --mode={b2_mode} --value={b2_value} --pull={b2_pull}"
+                --exec='{evaluator}'
+                "no-op"
+            """.format(**settings),
         ),
     )
 
@@ -92,10 +88,10 @@ def strap_combinations_test(name, rom, tags = [], skip_value = []):
         #   Illegal Instruction fault, which will be visible on verilated
         #   model's stdout.
         if "test_rom" not in rom and value == 60:
-            extra_verilator_args = ["--verilator-args=--term-after-cycles=200000"]
-            evaluator = r"transport verilator-watch --timeout=300s \"Illegal instruction\""
+            extra_verilator_args = "--verilator-args=--term-after-cycles=200000"
+            evaluator = "transport verilator-watch --timeout=300s \"Illegal instruction\""
         else:
-            extra_verilator_args = []
+            extra_verilator_args = ""
             evaluator = None
 
         strap_combination_test(

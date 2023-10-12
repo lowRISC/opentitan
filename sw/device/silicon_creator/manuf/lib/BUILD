@@ -3,16 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
-    "cw310_params",
-    "opentitan_functest",
-)
-load(
-    "//rules:opentitan.bzl",
+    "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
-    "RSA_ONLY_KEY_STRUCTS",
+    "cw310_jtag_params",
+    "cw310_params",
+    "opentitan_binary",
+    "opentitan_test",
 )
 load("//rules:linker.bzl", "ld_library")
 
@@ -103,17 +99,17 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_initial",
         tags = ["manuf"],
     ),
-    key_struct = RSA_ONLY_KEY_STRUCTS[1],
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":individualize",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
@@ -156,16 +152,16 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         tags = ["manuf"],
     ),
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         ":individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -204,27 +200,25 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
+        data = [
+            "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
+        ],
         tags = ["manuf"],
-        test_cmds = [
-            "--clear-bitstream",
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-            "--hsm-ecdh-sk=\"$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --bootstrap={firmware}
+            --hsm-ecdh-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+        """,
+        test_harness = "//sw/host/tests/manuf/personalize",
     ),
-    data = [
-        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
-    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    key_struct = RSA_ONLY_KEY_STRUCTS[1],
-    targets = [
-        "cw310_rom_with_fake_keys",
-    ],
-    test_harness = "//sw/host/tests/manuf/personalize",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":personalize",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",

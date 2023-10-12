@@ -165,6 +165,24 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "ecdsa_p256_sideload_functest",
+    srcs = ["ecdsa_p256_sideload_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 autogen_cryptotest_header(
     name = "ecdsa_p256_verify_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:ecdsa_p256_verify_testvectors_hardcoded",
@@ -220,14 +238,16 @@ opentitan_test(
     cw310 = cw310_params(
         timeout = "long",
     ),
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        tags = ["broken"],  # This test is too slow to run on verilator.
-    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -243,6 +263,77 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_3072_keygen_functest",
+    srcs = ["rsa_3072_keygen_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    deps = [
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_3072_signature_functest",
+    srcs = ["rsa_3072_signature_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_4096_keygen_functest",
+    srcs = ["rsa_4096_keygen_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    deps = [
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_4096_signature_functest",
+    srcs = ["rsa_4096_signature_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -266,11 +357,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "eternal",
     ),

@@ -320,8 +320,11 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
 /**
  * Starts the asynchronous key generation for ECDSA operation.
  *
- * Initializes OTBN and starts the OTBN routine to compute the private
- * key (d) and public key (Q) for ECDSA operation.
+ * Initializes OTBN and begins generating an ECDSA key pair. The caller should
+ * set the `config` field of `private_key` with their desired key configuration
+ * options. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle such as the kind returned by
+ * `otcrypto_hw_backed_key`.
  *
  * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
@@ -332,12 +335,12 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
- * @param config Private key configuration.
+ * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous ECDSA keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
+    const ecc_curve_t *elliptic_curve, const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -444,8 +447,11 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
 /**
  * Starts the asynchronous key generation for ECDH operation.
  *
- * Initializes OTBN and starts the OTBN routine to compute the private
- * key (d) and public key (Q) for ECDH operation.
+ * Initializes OTBN and begins generating an ECDH key pair. The caller should
+ * set the `config` field of `private_key` with their desired key configuration
+ * options. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle such as the kind returned by
+ * `otcrypto_hw_backed_key`.
  *
  * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
@@ -456,12 +462,12 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
- * @param config Private key configuration.
+ * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous ECDH keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const crypto_key_config_t *config);
+    const ecc_curve_t *elliptic_curve, const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -527,17 +533,20 @@ crypto_status_t otcrypto_ecdh_async_finalize(
 /**
  * Starts the asynchronous key generation for Ed25519.
  *
- * Initializes OTBN and starts the OTBN routine to compute the private
- * exponent (d) and public key (Q) based on Curve25519.
+ * Initializes OTBN and begins generating an Ed25519 key pair. The caller
+ * should set the `config` field of `private_key` with their desired key
+ * configuration options. If the key is hardware-backed, the caller should pass
+ * a fully populated private key handle such as the kind returned by
+ * `otcrypto_hw_backed_key`.
  *
  * No `domain_parameter` is needed and is automatically set for X25519.
  *
- * @param config Private key configuration.
+ * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_keygen_async_start(
-    const crypto_key_config_t *config);
+    const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for Ed25519.
@@ -628,17 +637,20 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
 /**
  * Starts the asynchronous key generation for X25519.
  *
- * Initializes OTBN and starts the OTBN routine to compute the private
- * exponent (d) and public key (Q) based on Curve25519.
+ * Initializes OTBN and begins generating an X25519 key pair. The caller
+ * should set the `config` field of `private_key` with their desired key
+ * configuration options. If the key is hardware-backed, the caller should pass
+ * a fully populated private key handle such as the kind returned by
+ * `otcrypto_hw_backed_key`.
  *
  * No `domain_parameter` is needed and is automatically set for X25519.
  *
- * @param config Private key configuration.
+ * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous X25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_x25519_keygen_async_start(
-    const crypto_key_config_t *config);
+    const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for X25519.

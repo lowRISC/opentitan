@@ -173,11 +173,9 @@ crypto_status_t otcrypto_rsa_keygen_async_start(
     case kRsaKeySize2048:
       return rsa_keygen_2048_start();
     case kRsaKeySize3072:
-      // TODO: connect RSA-3K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      return rsa_keygen_3072_start();
     case kRsaKeySize4096:
-      // TODO: connect RSA-4K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      return rsa_keygen_4096_start();
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -226,12 +224,38 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
                       kRsa2048NumWords);
       break;
     }
-    case kRsaKeySize3072:
-      // TODO: connect RSA-3K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    case kRsaKeySize4096:
-      // TODO: connect RSA-4K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+    case kRsaKeySize3072: {
+      // Finalize the keygen operation and retrieve the keys.
+      rsa_3072_public_key_t public_key3k;
+      rsa_3072_private_key_t private_key3k;
+      HARDENED_TRY(rsa_keygen_3072_finalize(&public_key3k, &private_key3k));
+
+      // Copy the keys into the caller-allocated structs.
+      hardened_memcpy(rsa_public_key->n.key, public_key3k.n.data,
+                      kRsa3072NumWords);
+      rsa_public_key->e.key[0] = public_key3k.e;
+      hardened_memcpy(rsa_private_key->n.key, private_key3k.n.data,
+                      kRsa3072NumWords);
+      hardened_memcpy(rsa_private_key->d.keyblob, private_key3k.d.data,
+                      kRsa3072NumWords);
+      break;
+    }
+    case kRsaKeySize4096: {
+      // Finalize the keygen operation and retrieve the keys.
+      rsa_4096_public_key_t public_key4k;
+      rsa_4096_private_key_t private_key4k;
+      HARDENED_TRY(rsa_keygen_4096_finalize(&public_key4k, &private_key4k));
+
+      // Copy the keys into the caller-allocated structs.
+      hardened_memcpy(rsa_public_key->n.key, public_key4k.n.data,
+                      kRsa4096NumWords);
+      rsa_public_key->e.key[0] = public_key4k.e;
+      hardened_memcpy(rsa_private_key->n.key, private_key4k.n.data,
+                      kRsa4096NumWords);
+      hardened_memcpy(rsa_private_key->d.keyblob, private_key4k.d.data,
+                      kRsa4096NumWords);
+      break;
+    }
     default:
       // Invalid key size.
       return OTCRYPTO_BAD_ARGS;
@@ -294,12 +318,34 @@ crypto_status_t otcrypto_rsa_sign_async_start(
           (rsa_signature_padding_t)padding_mode,
           (rsa_signature_hash_t)hash_mode);
     }
-    case kRsaKeySize3072:
-      // TODO: connect RSA-3K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    case kRsaKeySize4096:
-      // TODO: connect RSA-4K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+    case kRsaKeySize3072: {
+      // Construct the private key.
+      rsa_3072_private_key_t private_key3k;
+      hardened_memcpy(private_key3k.n.data, rsa_private_key->n.key,
+                      kRsa3072NumWords);
+      hardened_memcpy(private_key3k.d.data, rsa_private_key->d.keyblob,
+                      kRsa3072NumWords);
+
+      // Start signature generation.
+      return rsa_signature_generate_3072_start(
+          &private_key3k, input_message.data, input_message.len,
+          (rsa_signature_padding_t)padding_mode,
+          (rsa_signature_hash_t)hash_mode);
+    }
+    case kRsaKeySize4096: {
+      // Construct the private key.
+      rsa_4096_private_key_t private_key4k;
+      hardened_memcpy(private_key4k.n.data, rsa_private_key->n.key,
+                      kRsa4096NumWords);
+      hardened_memcpy(private_key4k.d.data, rsa_private_key->d.keyblob,
+                      kRsa4096NumWords);
+
+      // Start signature generation.
+      return rsa_signature_generate_4096_start(
+          &private_key4k, input_message.data, input_message.len,
+          (rsa_signature_padding_t)padding_mode,
+          (rsa_signature_hash_t)hash_mode);
+    }
     default:
       // Invalid key size.
       return OTCRYPTO_BAD_ARGS;
@@ -325,12 +371,18 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(
       hardened_memcpy(signature->data, sig.data, kRsa2048NumWords);
       break;
     }
-    case kRsa3072NumBytes:
-      // TODO: connect RSA-3K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    case kRsa4096NumBytes:
-      // TODO: connect RSA-4K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+    case kRsa3072NumWords: {
+      rsa_3072_int_t sig;
+      HARDENED_TRY(rsa_signature_generate_3072_finalize(&sig));
+      hardened_memcpy(signature->data, sig.data, kRsa3072NumWords);
+      break;
+    }
+    case kRsa4096NumWords: {
+      rsa_4096_int_t sig;
+      HARDENED_TRY(rsa_signature_generate_4096_finalize(&sig));
+      hardened_memcpy(signature->data, sig.data, kRsa4096NumWords);
+      break;
+    }
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -380,12 +432,40 @@ crypto_status_t otcrypto_rsa_verify_async_start(
       // Start signature verification.
       return rsa_signature_verify_2048_start(&public_key2k, &sig2k);
     }
-    case kRsaKeySize3072:
-      // TODO: connect RSA-3K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    case kRsaKeySize4096:
-      // TODO: connect RSA-4K to API.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+    case kRsaKeySize3072: {
+      // Construct the public key.
+      rsa_3072_public_key_t public_key3k;
+      hardened_memcpy(public_key3k.n.data, rsa_public_key->n.key,
+                      kRsa3072NumWords);
+      public_key3k.e = rsa_public_key->e.key[0];
+
+      // Construct the signature buffer.
+      if (signature.len != kRsa3072NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_int_t sig3k;
+      hardened_memcpy(sig3k.data, signature.data, kRsa3072NumWords);
+
+      // Start signature verification.
+      return rsa_signature_verify_3072_start(&public_key3k, &sig3k);
+    }
+    case kRsaKeySize4096: {
+      // Construct the public key.
+      rsa_4096_public_key_t public_key4k;
+      hardened_memcpy(public_key4k.n.data, rsa_public_key->n.key,
+                      kRsa4096NumWords);
+      public_key4k.e = rsa_public_key->e.key[0];
+
+      // Construct the signature buffer.
+      if (signature.len != kRsa4096NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_int_t sig4k;
+      hardened_memcpy(sig4k.data, signature.data, kRsa4096NumWords);
+
+      // Start signature verification.
+      return rsa_signature_verify_4096_start(&public_key4k, &sig4k);
+    }
     default:
       // Invalid key size.
       return OTCRYPTO_BAD_ARGS;

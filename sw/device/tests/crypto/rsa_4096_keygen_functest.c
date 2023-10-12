@@ -15,10 +15,10 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
-  /* Number of bytes for RSA-2048 modulus and private exponent. */
-  kRsa2048NumBytes = 2048 / 8,
-  /* Number of words for RSA-2048 modulus and private exponent. */
-  kRsa2048NumWords = kRsa2048NumBytes / sizeof(uint32_t),
+  /* Number of bytes for RSA-4096 modulus and private exponent. */
+  kRsa4096NumBytes = 4096 / 8,
+  /* Number of words for RSA-4096 modulus and private exponent. */
+  kRsa4096NumWords = kRsa4096NumBytes / sizeof(uint32_t),
 };
 
 // Message data for testing.
@@ -29,20 +29,20 @@ static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
 static const crypto_key_config_t kRsaPrivateKeyConfig = {
     .version = kCryptoLibVersion1,
     .key_mode = kKeyModeRsaSignPkcs,
-    .key_length = kRsa2048NumBytes,
+    .key_length = kRsa4096NumBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
 };
 
 status_t keygen_then_sign_test(void) {
   // Allocate buffers for the public key.
-  uint32_t pub_n[kRsa2048NumWords] = {0};
+  uint32_t pub_n[kRsa4096NumWords] = {0};
   uint32_t pub_e = 0;
   rsa_public_key_t public_key = {
       .n =
           (crypto_unblinded_key_t){
               .key_mode = kRsaPrivateKeyConfig.key_mode,
-              .key_length = kRsa2048NumBytes,
+              .key_length = kRsa4096NumBytes,
               .key = pub_n,
               .checksum = 0,
           },
@@ -56,20 +56,20 @@ status_t keygen_then_sign_test(void) {
   };
 
   // Allocate buffers for the private key.
-  uint32_t priv_n[kRsa2048NumWords] = {0};
-  uint32_t priv_d[kRsa2048NumWords] = {0};
+  uint32_t priv_n[kRsa4096NumWords] = {0};
+  uint32_t priv_d[kRsa4096NumWords] = {0};
   rsa_private_key_t private_key = {
       .n =
           (crypto_unblinded_key_t){
               .key_mode = kRsaPrivateKeyConfig.key_mode,
-              .key_length = kRsa2048NumBytes,
+              .key_length = kRsa4096NumBytes,
               .key = priv_n,
               .checksum = 0,
           },
       .d =
           (crypto_blinded_key_t){
               .config = kRsaPrivateKeyConfig,
-              .keyblob_length = kRsa2048NumBytes,
+              .keyblob_length = kRsa4096NumBytes,
               .keyblob = priv_d,
               .checksum = 0,
           },
@@ -77,7 +77,7 @@ status_t keygen_then_sign_test(void) {
 
   // Generate the key pair.
   LOG_INFO("Starting keypair generation...");
-  TRY(otcrypto_rsa_keygen(kRsaKeySize2048, &public_key, &private_key));
+  TRY(otcrypto_rsa_keygen(kRsaKeySize4096, &public_key, &private_key));
   LOG_INFO("Keypair generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -88,7 +88,7 @@ status_t keygen_then_sign_test(void) {
   // Check that d is at least 2^(len(n) / 2) (this is a FIPS requirement) by
   // ensuring that the most significant half is nonzero.
   bool d_large_enough = false;
-  for (size_t i = kRsa2048NumWords / 2; i < kRsa2048NumWords; i++) {
+  for (size_t i = kRsa4096NumWords / 2; i < kRsa4096NumWords; i++) {
     if (private_key.d.keyblob[i] != 0) {
       d_large_enough = true;
     }
@@ -100,19 +100,19 @@ status_t keygen_then_sign_test(void) {
       .data = kTestMessage,
   };
 
-  uint32_t sig[kRsa2048NumWords];
+  uint32_t sig[kRsa4096NumWords];
   crypto_word32_buf_t sig_buf = {
       .data = sig,
-      .len = kRsa2048NumWords,
+      .len = kRsa4096NumWords,
   };
   crypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
-      .len = kRsa2048NumWords,
+      .len = kRsa4096NumWords,
   };
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha256,
+  TRY(otcrypto_rsa_sign(&private_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha512,
                         &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
@@ -121,7 +121,7 @@ status_t keygen_then_sign_test(void) {
   // p and q, incorrect d), then this is likely to fail.
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
-  TRY(otcrypto_rsa_verify(&public_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha256,
+  TRY(otcrypto_rsa_verify(&public_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha512,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());

@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -145,8 +146,12 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .len = kRsa2048NumWords,
   };
 
-  return otcrypto_rsa_sign(&private_key, msg_buf, padding_mode, hash_mode,
-                           &sig_buf);
+  uint64_t t_start = profile_start();
+  TRY(otcrypto_rsa_sign(&private_key, msg_buf, padding_mode, hash_mode,
+                        &sig_buf));
+  profile_end_and_print(t_start, "RSA signature generation");
+
+  return OK_STATUS();
 }
 
 /**
@@ -204,8 +209,12 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       .len = kRsa2048NumWords,
   };
 
-  return otcrypto_rsa_verify(&public_key, msg_buf, padding_mode, hash_mode,
-                             sig_buf, verification_result);
+  uint64_t t_start = profile_start();
+  TRY(otcrypto_rsa_verify(&public_key, msg_buf, padding_mode, hash_mode,
+                          sig_buf, verification_result));
+  profile_end_and_print(t_start, "RSA verify");
+
+  return OK_STATUS();
 }
 
 status_t pkcs1v15_sign_test(void) {
@@ -247,11 +256,8 @@ status_t pkcs1v15_verify_invalid_test(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// Holds the test result.
-static volatile status_t test_result;
-
 bool test_main(void) {
-  test_result = OK_STATUS();
+  status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);
