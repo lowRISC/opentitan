@@ -1539,7 +1539,7 @@ module flash_ctrl_core_reg_top (
   // R[dis]: V(False)
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (4'h9),
     .Mubi    (1'b1)
   ) u_dis (

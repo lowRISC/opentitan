@@ -639,7 +639,7 @@
     core: [
       { name: "DIS",
         desc: "Disable flash functionality",
-        swaccess: "rw0c",
+        swaccess: "rw1s",
         hwaccess: "hro",
         fields: [
           { bits: "3:0",
@@ -650,9 +650,8 @@
                This is a shortcut mechanism used by the software to completely
                kill flash in case of emergency.
 
-               Since this register is rw0c instead of rw, to disable, write any value in the form of
-               0xxx or xxx0, where x could be either 0 or 1.
-
+               Since this register is rw1s instead of rw, to disable, write the value kMuBi4True
+               to the register to disable the flash.
               '''
             resval: false,
           },
