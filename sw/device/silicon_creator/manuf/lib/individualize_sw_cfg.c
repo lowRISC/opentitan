@@ -102,12 +102,6 @@ status_t manuf_individualize_device_owner_sw_cfg(
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_sw_cfg(const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(manuf_individualize_device_creator_sw_cfg(otp_ctrl));
-  TRY(manuf_individualize_device_owner_sw_cfg(otp_ctrl));
-  return OK_STATUS();
-}
-
 status_t manuf_individualize_device_creator_sw_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
