@@ -194,7 +194,7 @@
             - Read all DMI registers back and verify they reflect POR values.
             '''
       stage: V2
-      tests: [] // TODO(#17035)
+      tests: ["rv_dm_jtag_dmi_dm_inactive"]
     }
 
     {
