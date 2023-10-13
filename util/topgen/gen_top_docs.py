@@ -165,7 +165,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
 
         # create pinout/pinmux tables for this target
         pinout_table = '---\n'
-        pinout_table += 'title: ' + target['name'].upper()
+        pinout_table += target['name'].upper()
         pinout_table += ' Target Pinout and Pinmux Connectivity\n'
         pinout_table += '---\n'
         pinout_table += TABLE_HEADER + gencmd + "-->\n\n"
@@ -183,7 +183,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
         # gather some statistics
         num_banks = len(top['pinout']['banks'])
         # create summary table entry
-        pinout_table_relpath = relpath_prefix + "/pinout_" + target['name'] + "/index.html"
+        pinout_table_relpath = relpath_prefix + "/pinout_" + target['name'] + ".md"
         row = [
             target['name'].upper(),
             num_banks,
