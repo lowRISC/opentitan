@@ -8,6 +8,7 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/json/provisioning_command.h"
@@ -99,6 +100,10 @@ bool sram_main(void) {
 
   // Process provisioning commands.
   CHECK_STATUS_OK(command_processor(&uj));
+
+  // Halt the CPU here to enable JTAG to perform an LC transition to mission
+  // mode, as ROM execution should be active now.
+  abort();
 
   return true;
 }
