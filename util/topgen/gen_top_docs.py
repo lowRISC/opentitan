@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 r"""Top Module Documentation Generator
 """
-import os
 from tabulate import tabulate
 
 TABLE_HEADER = '''<!--
@@ -140,19 +139,27 @@ def create_pinmux_table(top, c_helper):
 
 
 def gen_pinmux_docs(top, c_helper, out_path):
-    """Generate target summary table and linked subtables"""
+    """Generate pinmux/pinout summary table and linked pinout subtables for each target.
 
-    pinmux_path = out_path / '../ip/pinmux/doc'
-    doc_path = out_path / 'ip/pinmux/doc/autogen'
-    doc_path.mkdir(parents=True, exist_ok=True)
+    All files are placed into an 'autogen' dir within the top's ip/pinmux/doc directory.
+    e.g.
+    <out_path>
+    └── ip
+        └── pinmux
+            └── doc
+                └── autogen
+                    ├── pinout_asic.md    # subtable
+                    ├── pinout_cw310.md   # subtable
+                    ├── pinout_cw340.md   # subtable
+                    └── targets.md        # Summary table
+    """
 
-    # this is used to create relative hyperlinks from the summary table to
-    # the individual target tables.
-    relpath_prefix = os.path.relpath(doc_path.resolve(), pinmux_path.resolve())
+    # 'out_path' is the top-level directory for a generated top (e.g. hw/top_earlgrey)
+    pinmux_top_doc_path = out_path / 'ip' / 'pinmux' / 'doc' / 'autogen'
+    pinmux_top_doc_path.mkdir(parents=True, exist_ok=True)
 
-    topname = top['name']
     gencmd = ("util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
+              "-o hw/top_{topname}/\n\n".format(topname=top['name']))
 
     header = [
         "Target Name", "#IO Banks", "#Muxed Pads", "#Direct Pads",
@@ -161,49 +168,46 @@ def gen_pinmux_docs(top, c_helper, out_path):
     table_rows = [header]
     colalign = ("center", ) * len(header)
 
+    # Create subtables for each pinout target, plus a row in the summary table
     for target in top['targets']:
+        name = target['name']
+        pinout_name = f"pinout_{name}.md"
+        table_str, stats = create_pinout_table(top, c_helper, target)
 
-        # create pinout/pinmux tables for this target
+        # create file with pinout+pinmux subtable for this target
         pinout_table = '---\n'
-        pinout_table += target['name'].upper()
+        pinout_table += name.upper()
         pinout_table += ' Target Pinout and Pinmux Connectivity\n'
         pinout_table += '---\n'
         pinout_table += TABLE_HEADER + gencmd + "-->\n\n"
         pinout_table += '## Pinout Table\n\n'
-        table_str, stats = create_pinout_table(top, c_helper, target)
         pinout_table += table_str + '\n'
         pinout_table += '## Pinmux Connectivity\n\n'
         pinout_table += create_pinmux_table(top, c_helper)
         pinout_table += "\n"
+        pinout_table_path = pinmux_top_doc_path / pinout_name
+        pinout_table_path.write_text(pinout_table)
 
-        pinout_table_path = doc_path / ("pinout_" + target['name'] + ".md")
-        with open(pinout_table_path, 'w') as outfile:
-            outfile.write(pinout_table)
-
-        # gather some statistics
-        num_banks = len(top['pinout']['banks'])
-        # create summary table entry
-        pinout_table_relpath = relpath_prefix + "/pinout_" + target['name'] + ".md"
+        # create summary table row
         row = [
-            target['name'].upper(),
-            num_banks,
-            stats['muxed'],
-            stats['direct'],
-            stats['manual'],
-            stats['muxed'] + stats['direct'] + stats['manual'],
-            "[Pinout Table](" + str(pinout_table_relpath) + ")"
+            name.upper(),  # target name
+            len(top['pinout']['banks']),  # io banks
+            stats['muxed'],  # muxed pads
+            stats['direct'],  # direct pads
+            stats['manual'],  # manual pads
+            stats['muxed'] + stats['direct'] + stats['manual'],  # total pads
+            f"[Pinout Table](./{pinout_name})"  # subtable, in same dir as the summary table
         ]
         table_rows.append(row)
 
+    # Now create the summary table
     summary_table = tabulate(table_rows,
                              headers="firstrow",
                              tablefmt="pipe",
                              colalign=colalign)
     summary_table = TABLE_HEADER + gencmd + "-->\n\n" + summary_table + "\n"
-
-    target_table_path = doc_path / "targets.md"
-    with open(target_table_path, 'w') as target_outfile:
-        target_outfile.write(summary_table)
+    summary_table_path = pinmux_top_doc_path / "targets.md"
+    summary_table_path.write_text(summary_table)
 
 
 def gen_top_docs(top, c_helper, out_path):
