@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <assert.h>
 
-#include "spi_host_flash_test_impl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -16,6 +15,7 @@
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/spi_host_flash_test_impl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
