@@ -53,6 +53,14 @@ pub struct ManufFtProvisioningActions {
         help = "Whether or not to write the OTP OWNER_SW_CFG partition."
     )]
     pub otp_owner_sw_cfg: bool,
+
+    #[arg(
+        long,
+        action = ArgAction::SetTrue,
+        conflicts_with = "all_steps",
+        help = "Whether or not to write the OTP HW_CFG partition."
+    )]
+    pub otp_hw_cfg: bool,
 }
 
 pub fn test_unlock(
@@ -139,6 +147,10 @@ pub fn run_sram_ft_provision(
     }
     if provisioning_actions.otp_owner_sw_cfg {
         FtSramProvisioningCommand::OtpOwnerSwCfgWrite.send(&*uart)?;
+        Status::recv(&*uart, timeout, false)?;
+    }
+    if provisioning_actions.otp_hw_cfg {
+        FtSramProvisioningCommand::OtpHwCfgWrite.send(&*uart)?;
         Status::recv(&*uart, timeout, false)?;
     }
     FtSramProvisioningCommand::Done.send(&*uart)?;
