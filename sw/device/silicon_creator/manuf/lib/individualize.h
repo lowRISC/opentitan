@@ -21,7 +21,6 @@
  * - Various digital logic configuration settings.
  *
  * Preconditions:
- * - Device is in DEV, PROD, or PROD_END lifecycle stage.
  * - DeviceId & ManufState are pre-populated in the appropriate flash info page.
  *
  * Note: The test will skip all programming steps and succeed if the HW_CFG
@@ -31,12 +30,10 @@
  * `manuf_individualize_device_hw_cfg_check()` afterwards to confirm that the
  * OTP partition was successfully locked.
  *
- * @param lc_ctrl Lifecycle controller instance.
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS on success.
  */
 status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp_ctrl);
 
 /**

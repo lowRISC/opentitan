@@ -12,10 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 
-#include "flash_ctrl_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "lc_ctrl_regs.h"   // Generated
-#include "otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -58,8 +55,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
   if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(
-        manuf_individualize_device_hw_cfg(&flash_state, &lc_ctrl, &otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(&flash_state, &otp_ctrl));
     sw_reset();
   }
 

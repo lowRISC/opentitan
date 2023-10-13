@@ -115,9 +115,6 @@ opentitan_test(
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":individualize",
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
