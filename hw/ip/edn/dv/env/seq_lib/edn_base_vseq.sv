@@ -159,7 +159,7 @@ class edn_base_vseq extends cip_base_vseq #(
 
     if (!additional_data) begin
       cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags),
-                          .glen(glen), .mode(mode), .cmd_src(cmd_type));
+                                .glen(glen), .mode(mode), .cmd_src(cmd_type));
     end
 
     case (cmd_type)
