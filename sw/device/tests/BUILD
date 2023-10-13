@@ -757,6 +757,7 @@ opentitan_test(
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
+        "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:otbn_testutils",
@@ -790,6 +791,29 @@ opentitan_test(
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "edn_sw_mode",
+    srcs = ["edn_sw_mode.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
