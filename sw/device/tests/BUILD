@@ -1693,13 +1693,13 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
-    cw310 = cw310_params(
-        timeout = "moderate",
-    ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    cw310 = new_cw310_params(timeout = "moderate"),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1717,10 +1717,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_winbond_flash_test",
     srcs = ["spi_host_winbond_flash_test.c"],
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1738,10 +1740,12 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_irq_test",
     srcs = ["spi_host_irq_test.c"],
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1760,9 +1764,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sensor_ctrl_alert_test",
     srcs = ["sensor_ctrl_alerts.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1786,10 +1791,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sensor_ctrl_wakeup_test",
     srcs = ["sensor_ctrl_wakeup.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -1812,10 +1818,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         timeout = "eternal",
         tags = ["broken"],
     ),
@@ -1836,6 +1843,8 @@ opentitan_functest(
     ],
 )
 
+# TODO(#19912): Migrate to open_test rule once the
+# //sw/device/examples/sram_program target has been migrated.
 opentitan_functest(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
@@ -1851,10 +1860,11 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sram_ctrl_sleep_sram_ret_contents_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_test.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -1877,9 +1887,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sram_ctrl_smoketest",
     srcs = ["sram_ctrl_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1940,17 +1951,15 @@ opentitan_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_pincfg_test",
     srcs = ["usbdev_pincfg_test.c"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -1964,14 +1973,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_vbus_test",
     srcs = ["usbdev_vbus_test.c"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -1983,14 +1992,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_pullup_test",
     srcs = ["usbdev_pullup_test.c"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2002,14 +2011,14 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_setuprx_test",
     srcs = ["usbdev_setuprx_test.c"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2021,20 +2030,16 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    cw310 = cw310_params(
-        tags = ["manual"],
-    ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    cw310 = new_cw310_params(tags = ["manual"]),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2048,21 +2053,19 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2075,21 +2078,19 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2102,21 +2103,19 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2129,15 +2128,15 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(
         timeout = "long",
         tags = ["broken"],
     ),
@@ -2172,12 +2171,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_core_ibex_rnd_test",
     srcs = [
         "rv_core_ibex_rnd_test.S",
         "rv_core_ibex_rnd_test.c",
     ],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -2192,12 +2192,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_core_ibex_address_translation_test",
     srcs = [
         "rv_core_ibex_address_translation_test.S",
         "rv_core_ibex_address_translation_test.c",
     ],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -2211,9 +2212,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_core_ibex_nmi_irq_test",
     srcs = ["rv_core_ibex_nmi_irq_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:alert_handler",
@@ -2229,19 +2231,21 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rv_core_ibex_icache_invalidate_test",
     srcs = ["rv_core_ibex_icache_invalidate_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
-    verilator = verilator_params(
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
         # FIXME #13611
         timeout = "eternal",
         tags = ["broken"],
@@ -2549,16 +2553,16 @@ _STATUS_REPORT_TEST_MSG = "\r\n".join([
     ".*status.c:.* FAIL!",
 ])
 
-opentitan_functest(
+opentitan_test(
     name = "status_report_test",
     srcs = ["status_report_test.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         exit_failure = "PASS!",
         exit_success = _STATUS_REPORT_TEST_MSG,
     ),
-    targets = [
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//sw/device/lib/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2574,16 +2578,16 @@ _STATUS_REPORT_OVERFLOW_TEST_MSG = "\r\n".join([
     ".*status.c:.* FAIL!",
 ])
 
-opentitan_functest(
+opentitan_test(
     name = "status_report_overflow_test",
     srcs = ["status_report_overflow_test.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         exit_failure = "PASS!",
         exit_success = _STATUS_REPORT_OVERFLOW_TEST_MSG,
     ),
-    targets = [
-        "cw310_test_rom",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//sw/device/lib/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
