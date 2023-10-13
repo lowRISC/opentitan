@@ -1015,11 +1015,23 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "x25519_test",
+    name = "x25519_test1",
     srcs = [
-        "x25519_test.s",
+        "x25519_test1.s",
     ],
-    exp = "x25519_test.exp",
+    exp = "x25519_test1.exp",
+    deps = [
+        "//sw/otbn/crypto:field25519",
+        "//sw/otbn/crypto:x25519",
+    ],
+)
+
+otbn_sim_test(
+    name = "x25519_test2",
+    srcs = [
+        "x25519_test2.s",
+    ],
+    exp = "x25519_test2.exp",
     deps = [
         "//sw/otbn/crypto:field25519",
         "//sw/otbn/crypto:x25519",
@@ -1030,6 +1042,6 @@ otbn_consttime_test(
     name = "x25519_consttime",
     subroutine = "X25519",
     deps = [
-        ":x25519_test",
+        ":x25519_test1",
     ],
 )
