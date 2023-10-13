@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
@@ -18,6 +19,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
@@ -25,14 +27,18 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
+static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
-static dif_lc_ctrl_t lc_ctrl;
 
 /**
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
+  TRY(dif_flash_ctrl_init_state(
+      &flash_ctrl_state,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
                        &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -49,9 +55,11 @@ status_t command_processor(ujson_t *uj) {
     TRY(ujson_deserialize_ft_sram_provisioning_command_t(uj, &command));
     switch (command) {
       case kFtSramProvisioningCommandWriteAll:
-        LOG_INFO("Writing both *_SW_CFG OTP partitions ...");
+        LOG_INFO("Writing both *_SW_CFG and HW_CFG OTP partitions ...");
         CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
         CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+        CHECK_STATUS_OK(
+            manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
         break;
       case kFtSramProvisioningCommandOtpCreatorSwCfgWrite:
         LOG_INFO("Writing the CREATOR_SW_CFG OTP partition ...");
@@ -60,6 +68,11 @@ status_t command_processor(ujson_t *uj) {
       case kFtSramProvisioningCommandOtpOwnerSwCfgWrite:
         LOG_INFO("Writing the OWNER_SW_CFG OTP partition ...");
         CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+        break;
+      case kFtSramProvisioningCommandOtpHwCfgWrite:
+        LOG_INFO("Writing the HW_CFG OTP partition ...");
+        CHECK_STATUS_OK(
+            manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
         break;
       case kFtSramProvisioningCommandDone:
         LOG_INFO("FT SRAM provisioning done.");

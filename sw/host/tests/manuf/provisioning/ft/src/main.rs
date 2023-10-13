@@ -62,6 +62,7 @@ fn main() -> Result<()> {
     if opts.provisioning_actions.all_steps
         || opts.provisioning_actions.otp_creator_sw_cfg
         || opts.provisioning_actions.otp_owner_sw_cfg
+        || opts.provisioning_actions.otp_hw_cfg
     {
         run_sram_ft_provision(
             &transport,
