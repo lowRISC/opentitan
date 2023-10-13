@@ -2399,6 +2399,27 @@
       stage: V3
       tests: ["chip_sw_otp_ctrl_escalation"]
     }
+    {
+      name: chip_sw_otp_ctrl_nvm_cnt
+      desc: '''Verify the NVM strike counter partition in otp_ctrl.
+
+            - Check that the partition is all-zeroes first.
+            - Increment the strike counter by 1 multiple times around different count offsets, e.g.:
+              - start with offset zero, increment multiple times
+              - set counter to 30 (which is just before the first word boundary) and increment a few times
+              - set counter to a higher count close to a word boundary and increment a few times
+            - Test error cases by
+              - injecting errors that can be recovered by OR'ing the two counter copies.
+              - injecting errors that cannot be recovered by OR'ing the two counter copies.
+            - Set counter to a value close to the maximum and let it saturate. This will overwrite
+              previously corrupt encodings with all-ones, thus resulting in a consistent encoding.
+            - Reset the chip and check that the counter is still maximal.
+            '''
+      stage: V2
+      tests: ["chip_sw_otp_ctrl_nvm_cnt"]
+    }
+
+
 
     ////////////////////////
     // Analog Peripherals //
