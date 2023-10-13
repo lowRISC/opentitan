@@ -178,19 +178,9 @@ class secure_prng():
             sys.exit(1)
         # Check if the provided seed is at least 32 bytes long.
         elif sys.getsizeof(seed) < sys.getsizeof(1 << 255):
-            # Cyclically pad the seed to 256 bits and issue a warning.
-            # TODO(#19434): Change this warning into an error once dvsim is
-            # modified to always use 256 bit seed (At the moment, it uses
-            # 32-bit seed).
-            new_seed = seed
-            seed_bytes = _ceil(_log(seed + 1, 256))
-            while new_seed < (1 << 256):
-                new_seed <<= seed_bytes * 8
-                new_seed += seed
-            new_seed %= (1 << 256)
-            log.warning("Seed smaller than 256 bits. CTR_DRBG seeded with: " +
-                        hex(new_seed))
-            entropy_input = new_seed.to_bytes(32, 'big')
+            # Error out if seed is shorter than 256 bits.
+            log.error("ERROR: Seed shorter than 256 bits.")
+            sys.exit(1)
         # Check if the seed is longer than 256 bits. Trim the excess bits and
         # issue a warning if it is.
         elif seed > (1 << 256):

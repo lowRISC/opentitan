@@ -40,7 +40,7 @@ def _override_seed(args, seed_name, config):
     # Otherwise, we either take it from the .hjson if present, or
     # randomly generate a new seed if not.
     else:
-        new_seed = random.getrandbits(64)
+        new_seed = random.getrandbits(256)
         if config.setdefault('seed', new_seed) == new_seed:
             log.warning('No {} specified, setting to {}.'.format(
                 seed_name, new_seed))

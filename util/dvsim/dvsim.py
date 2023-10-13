@@ -518,11 +518,11 @@ def parse_args():
     seedg.add_argument("--build-seed",
                        nargs="?",
                        type=int,
-                       const=random.getrandbits(32),
+                       const=random.getrandbits(256),
                        metavar="S",
                        help=('Randomize the build. Uses the seed value passed '
                              'an additional argument, else it randomly picks '
-                             'a 32-bit unsigned integer.'))
+                             'a 256-bit unsigned integer.'))
 
     seedg.add_argument("--seeds",
                        "-s",
