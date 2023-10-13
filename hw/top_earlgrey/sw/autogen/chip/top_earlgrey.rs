@@ -399,19 +399,19 @@ pub const AST_BASE_ADDR: usize = 0x40480000;
 /// `AST_BASE_ADDR + AST_SIZE_BYTES`.
 pub const AST_SIZE_BYTES: usize = 0x400;
 
-/// Peripheral base address for sensor_ctrl_aon in top earlgrey.
+/// Peripheral base address for sensor_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
+pub const SENSOR_CTRL_BASE_ADDR: usize = 0x40490000;
 
-/// Peripheral size for sensor_ctrl_aon in top earlgrey.
+/// Peripheral size for sensor_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SENSOR_CTRL_AON_BASE_ADDR and
-/// `SENSOR_CTRL_AON_BASE_ADDR + SENSOR_CTRL_AON_SIZE_BYTES`.
-pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x40;
+/// address between #SENSOR_CTRL_BASE_ADDR and
+/// `SENSOR_CTRL_BASE_ADDR + SENSOR_CTRL_SIZE_BYTES`.
+pub const SENSOR_CTRL_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
 ///
@@ -841,7 +841,7 @@ impl TryFrom<u32> for PlicPeripheral {
             18 => Ok(Self::SysrstCtrlAon),
             19 => Ok(Self::AdcCtrlAon),
             20 => Ok(Self::AonTimerAon),
-            21 => Ok(Self::SensorCtrlAon),
+            21 => Ok(Self::SensorCtrl),
             22 => Ok(Self::FlashCtrl),
             23 => Ok(Self::Hmac),
             24 => Ok(Self::Kmac),
@@ -1177,10 +1177,10 @@ pub enum PlicIrqId {
     AonTimerAonWkupTimerExpired = 155,
     /// aon_timer_aon_wdog_timer_bark
     AonTimerAonWdogTimerBark = 156,
-    /// sensor_ctrl_aon_io_status_change
-    SensorCtrlAonIoStatusChange = 157,
-    /// sensor_ctrl_aon_init_status_change
-    SensorCtrlAonInitStatusChange = 158,
+    /// sensor_ctrl_io_status_change
+    SensorCtrlIoStatusChange = 157,
+    /// sensor_ctrl_init_status_change
+    SensorCtrlInitStatusChange = 158,
     /// flash_ctrl_prog_empty
     FlashCtrlProgEmpty = 159,
     /// flash_ctrl_prog_lvl
@@ -2063,10 +2063,10 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 185] = [
     PlicPeripheral::AonTimerAon,
     // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
     PlicPeripheral::AonTimerAon,
-    // SensorCtrlAonIoStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
-    // SensorCtrlAonInitStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
+    // SensorCtrlIoStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
+    // SensorCtrlInitStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
     // FlashCtrlProgEmpty -> PlicPeripheral::FlashCtrl
     PlicPeripheral::FlashCtrl,
     // FlashCtrlProgLvl -> PlicPeripheral::FlashCtrl
@@ -2190,10 +2190,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 65] = [
     AlertPeripheral::PinmuxAon,
     // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
     AlertPeripheral::AonTimerAon,
-    // SensorCtrlAonRecovAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
-    // SensorCtrlAonFatalAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
+    // SensorCtrlRecovAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
+    // SensorCtrlFatalAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
     // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
     AlertPeripheral::SramCtrlRetAon,
     // FlashCtrlRecovErr -> AlertPeripheral::FlashCtrl
@@ -3184,7 +3184,7 @@ pub enum PowerManagerWakeUps {
     PinmuxAonPinWkupReq = 2,
     PinmuxAonUsbWkupReq = 3,
     AonTimerAonWkupReq = 4,
-    SensorCtrlAonWkupReq = 5,
+    SensorCtrlWkupReq = 5,
 }
 
 /// Reset Manager Software Controlled Resets
