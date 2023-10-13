@@ -27,11 +27,11 @@
 
             - Configure the timer to generate a tick of `T` microseconds long.
             - Enable the timer.
-            - Start a busy loop of 1 second based on the `mcycleh` CSR.
+            - Start a busy loop of 5 milliseconds based on the `mcycleh` CSR.
             - Read the number of ticks `n`.
-            - Verify that `n * T ~= 1 second` within 5% of tolerance.
+            - Verify that `n * T ~= 5 milliseconds` within 3% of tolerance.
             - Repeat for T in:
-                [1, 5, 10, 25, 50, 100, 125, 250, 500, 1000]
+                [1, 5, 25, 100, 125]
             '''
       stage: V3
       si_stage: SV3
