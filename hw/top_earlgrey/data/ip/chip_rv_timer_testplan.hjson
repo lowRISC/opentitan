@@ -37,7 +37,8 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE"]
-      tests: []
+      tests: ["chip_sw_rv_timer_systick_test"]
+      bazel: ["//sw/device/tests:rv_timer_systick_test_fpga_cw310_test_rom"]
     }
     {
       name: riscv_isa_csrs
