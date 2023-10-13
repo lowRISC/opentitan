@@ -103,7 +103,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       bazel: []
-      tests: []
+      tests: ["chip_sw_edn_sw_mode"]
     },
     {
       name: chip_sw_edn_kat
