@@ -141,11 +141,7 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
 }
 
 status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp_ctrl) {
-  // Check life cycle in either PROD, PROD_END, or DEV.
-  TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
-
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                       &is_locked));
