@@ -7,7 +7,7 @@ import random
 import re
 import sys
 import textwrap
-from math import ceil, log2
+from math import ceil, log, log2
 from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
@@ -114,6 +114,19 @@ def blockify(s, size, limit):
         numbits = limit * 4
 
     return (",\n  ".join(s_list))
+
+
+def expand_seed(seed):
+    '''Checks if the input seed is shorter than 256 bits and expands it if
+    it's not.
+    '''
+    new_seed = seed
+    seed_bytes = ceil(log(seed + 1, 256))
+    while new_seed < (1 << 256):
+        new_seed <<= seed_bytes * 8
+        new_seed += seed
+    new_seed %= (1 << 256)
+    return new_seed
 
 
 def get_random_perm_hex_literal(numel):

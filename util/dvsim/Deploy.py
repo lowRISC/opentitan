@@ -567,7 +567,7 @@ class RunTest(Deploy):
             if RunTest.fixed_seed:
                 return RunTest.fixed_seed
             for i in range(1000):
-                seed = random.getrandbits(32)
+                seed = random.getrandbits(256)
                 RunTest.seeds.append(seed)
         return RunTest.seeds.pop(0)
 

@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 import hjson
 import tlgen
+from design.lib.common import expand_seed
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
@@ -1147,7 +1148,7 @@ def main():
     elif "rnd_cnst_seed" not in topcfg:
         log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
         exit(1)
-    secure_prng.reseed(topcfg["rnd_cnst_seed"])
+    secure_prng.reseed(expand_seed(topcfg["rnd_cnst_seed"]))
 
     # TODO, long term, the levels of dependency should be automatically
     # determined instead of hardcoded.  The following are a few examples:

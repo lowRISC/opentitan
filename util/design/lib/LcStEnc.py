@@ -8,10 +8,10 @@ import logging as log
 from collections import OrderedDict
 
 from Crypto.Hash import cSHAKE128
+from lib.common import (check_int, ecc_encode, expand_seed, get_hd,
+                        hd_histogram, is_valid_codeword, random_or_hexvalue,
+                        scatter_bits)
 from topgen import secure_prng as sp
-
-from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
-                        is_valid_codeword, random_or_hexvalue, scatter_bits)
 
 # Seed diversification constant for LcStEnc (this enables to use
 # the same seed for different classes)
@@ -285,7 +285,7 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        sp.reseed(LC_SEED_DIVERSIFIER + int(config['seed']))
+        sp.reseed(expand_seed(LC_SEED_DIVERSIFIER + int(config['seed'])))
 
         log.info('Checking SECDED.')
         _validate_secded(config)
