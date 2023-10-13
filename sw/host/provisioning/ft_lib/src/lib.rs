@@ -94,7 +94,8 @@ pub fn test_unlock(
         jtag.clone(),
         DifLcCtrlState::TestUnlocked1,
         Some(test_unlock_token.clone().into_inner().unwrap()),
-        /*use_external_clk=*/ true,
+        /*use_external_clk=*/
+        false, // AST will be calibrated by now, so no need for ext_clk.
         reset_delay,
         /*reconnect_jtag_tap=*/ Some(JtagTap::LcTap),
     )?;

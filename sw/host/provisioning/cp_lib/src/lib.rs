@@ -154,7 +154,8 @@ pub fn unlock_raw(
         jtag.clone(),
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
-        true,
+        /*use_external_clk=*/
+        true, // AST will NOT be calibrated yet, so we need ext_clk.
         reset_delay,
         Some(JtagTap::LcTap),
     )
@@ -273,7 +274,8 @@ pub fn reset_and_lock(
         jtag.clone(),
         DifLcCtrlState::TestLocked0,
         None,
-        true,
+        /*use_external_clk=*/
+        false, // AST will be calibrated by now, so no need for ext_clk.
         reset_delay,
         Some(JtagTap::LcTap),
     )
