@@ -26,7 +26,7 @@ pub struct ManufFtProvisioningActions {
     #[arg(
         long,
         action = ArgAction::SetTrue,
-        help = "Whether or not to perform all FT provisioning steps."
+        help = "Whether to perform all FT provisioning steps."
     )]
     pub all_steps: bool,
 
@@ -34,7 +34,7 @@ pub struct ManufFtProvisioningActions {
         long,
         action = ArgAction::SetTrue,
         conflicts_with = "all_steps",
-        help = "Whether or not to transition from TEST_LOCKED0 to TEST_UNLOCKED1 LC state."
+        help = "Whether to transition from TEST_LOCKED0 to TEST_UNLOCKED1 LC state."
     )]
     pub test_unlock: bool,
 
@@ -42,7 +42,7 @@ pub struct ManufFtProvisioningActions {
         long,
         action = ArgAction::SetTrue,
         conflicts_with = "all_steps",
-        help = "Whether or not to write the OTP CREATOR_SW_CFG partition."
+        help = "Whether to write the OTP CREATOR_SW_CFG partition."
     )]
     pub otp_creator_sw_cfg: bool,
 
@@ -50,7 +50,7 @@ pub struct ManufFtProvisioningActions {
         long,
         action = ArgAction::SetTrue,
         conflicts_with = "all_steps",
-        help = "Whether or not to write the OTP OWNER_SW_CFG partition."
+        help = "Whether the OTP OWNER_SW_CFG partition."
     )]
     pub otp_owner_sw_cfg: bool,
 
@@ -58,9 +58,17 @@ pub struct ManufFtProvisioningActions {
         long,
         action = ArgAction::SetTrue,
         conflicts_with = "all_steps",
-        help = "Whether or not to write the OTP HW_CFG partition."
+        help = "Whether to write the OTP HW_CFG partition."
     )]
     pub otp_hw_cfg: bool,
+
+    #[arg(
+        long,
+        action = ArgAction::SetTrue,
+        conflicts_with = "all_steps",
+        help = "Whether to transition to a mission mode state (specified by another arg) after provisioning is complete."
+    )]
+    pub test_exit: bool,
 }
 
 pub fn test_unlock(
@@ -158,6 +166,48 @@ pub fn run_sram_ft_provision(
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+
+    Ok(())
+}
+
+pub fn test_exit(
+    transport: &TransportWrapper,
+    jtag_params: &JtagParams,
+    reset_delay: Duration,
+    test_exit_token: &ArrayVec<u32, 4>,
+    target_mission_mode_lc_state: DifLcCtrlState,
+) -> Result<()> {
+    // Connect to LC TAP.
+    //
+    // We purposely DO NOT reset the chip here, as the FT provisioning SRAM progam that was just
+    // executed should have unlocked ROM execution and halted the CPU already. If we reset the
+    // chip, the ROM will attempt to boot the flash image, which we do not want to do until we
+    // transition to a mission mode state. We do not need to reset the chip to switch TAPs because
+    // TAP straps are continuously sampled in TEST_UNLOCKED* LC state.
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    let jtag = jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
+
+    // Check that LC state is currently `TEST_UNLOCKED1`.
+    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
+    assert_eq!(state, DifLcCtrlState::TestUnlocked1.redundant_encoding());
+
+    // ROM execution should now be enabled in OTP so we cannot safely reconnect to the LC TAP after
+    // the transition without risking the chip resetting. Therefore, it is the responsibility of the
+    // flash program that is subsequently bootstrapped / run to check the LC state is as expected.
+    trigger_lc_transition(
+        transport,
+        jtag.clone(),
+        target_mission_mode_lc_state,
+        Some(test_exit_token.clone().into_inner().unwrap()),
+        /*use_external_clk=*/
+        false, // AST will be calibrated by now, so no need for ext_clk.
+        reset_delay,
+        /*reconnect_jtag_tap=*/ None,
+    )?;
+
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
 
     Ok(())
 }
