@@ -1411,28 +1411,16 @@
       default: "1024",
       local: "true"
     },
-    { name: "ExtNvmAntireplayFreshnessCnt0Offset",
-      desc: "Offset of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT0",
+    { name: "ExtNvmAntireplayFreshnessCntOffset",
+      desc: "Offset of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
       type: "int",
       default: "5696",
       local: "true"
     },
-    { name: "ExtNvmAntireplayFreshnessCnt0Size",
-      desc: "Size of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT0",
+    { name: "ExtNvmAntireplayFreshnessCntSize",
+      desc: "Size of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
       type: "int",
-      default: "512",
-      local: "true"
-    },
-    { name: "ExtNvmAntireplayFreshnessCnt1Offset",
-      desc: "Offset of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT1",
-      type: "int",
-      default: "6208",
-      local: "true"
-    },
-    { name: "ExtNvmAntireplayFreshnessCnt1Size",
-      desc: "Size of EXT_NVM_ANTIREPLAY_FRESHNESS_CNT1",
-      type: "int",
-      default: "512",
+      default: "1024",
       local: "true"
     },
     { name: "RomPatchOffset",

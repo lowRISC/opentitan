@@ -93,8 +93,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |   12    | PLAT_OWNER_AUTH_SLOT3 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY                |     0x14F8     |    160     |
 |         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY                |     0x1598     |    160     |
 |         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT3_DIGEST](#Reg_plat_owner_auth_slot3_digest_0) |     0x1638     |     8      |
-|   13    |        EXT_NVM        |    1024    |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT0                  |     0x1640     |    512     |
-|         |                       |            |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT1                  |     0x1840     |    512     |
+|   13    |        EXT_NVM        |    1024    |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT                   |     0x1640     |    1024    |
 |   14    |       ROM_PATCH       |    9200    |      32bit       |                           ROM_PATCH_DATA                            |     0x1A40     |    9192    |
 |         |                       |            |      64bit       |             [ROM_PATCH_DIGEST](#Reg_rom_patch_digest_0)             |     0x3E28     |     8      |
 |   15    |        HW_CFG0        |     72     |      32bit       |                              DEVICE_ID                              |     0x3E30     |     32     |

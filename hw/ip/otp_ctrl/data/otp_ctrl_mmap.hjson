@@ -802,25 +802,13 @@
             bkout_type: false,
             items: [
                 {
-                    name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT0",
-                    size: "512"
+                    name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT",
+                    size: "1024"
                     desc: ''' Fully SW managed patition
                     1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
-                    assuming 10 year product lifecycle, allocating 4096 bits of freshness protection.
+                    assuming 10 year product lifecycle, allocating 8192 bits of freshness protection.
                     Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
-                    software accross both _CNT items in this partition. Cannot be ECC protected since different bits
-                    in a fuse row are programmed at different times.
-                    '''
-                }
-                {
-                    name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT1",
-                    size: "512"
-                    desc: ''' Fully SW managed patition
-                    1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
-                    assuming 10 year product lifecycle, allocating 4096 bits of freshness protection.
-                    Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
-                    software accross both _CNT items in this partition. Cannot be ECC protected since different bits
-                    in a fuse row are programmed at different times.
+                    software. Cannot be ECC protected since different bits in a fuse row are programmed at different times.
                     '''
                 }
             ],
