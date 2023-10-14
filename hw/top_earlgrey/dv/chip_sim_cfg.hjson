@@ -686,12 +686,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_spi_device_tx_rx
-      uvm_test_seq: chip_sw_spi_device_tx_rx_vseq
-      sw_images: ["//sw/device/tests/sim_dv:spi_tx_rx_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
       name: chip_sw_spi_device_tpm
       uvm_test_seq: chip_sw_spi_device_tpm_vseq
       sw_images: ["//sw/device/tests:spi_device_tpm_tx_rx_test:1:new_rules"]
@@ -2165,7 +2159,7 @@
       name: xcelium_ci_1
       tests: ["chip_sw_rv_core_ibex_address_translation",
               "chip_sw_rv_timer_irq",
-              "chip_sw_spi_device_tx_rx",
+              "chip_sw_spi_device_tpm",
               "chip_sw_usb_ast_clk_calib",
               "chip_sw_plic_sw_irq",
               "chip_sw_aes_enc",

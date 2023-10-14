@@ -54,24 +54,6 @@ dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
 static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSpiDeviceIrqGenericRxFull:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_FULL_BIT;
-      break;
-    case kDifSpiDeviceIrqGenericRxWatermark:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_WATERMARK_BIT;
-      break;
-    case kDifSpiDeviceIrqGenericTxWatermark:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_TX_WATERMARK_BIT;
-      break;
-    case kDifSpiDeviceIrqGenericRxError:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_ERROR_BIT;
-      break;
-    case kDifSpiDeviceIrqGenericRxOverflow:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_RX_OVERFLOW_BIT;
-      break;
-    case kDifSpiDeviceIrqGenericTxUnderflow:
-      *index_out = SPI_DEVICE_INTR_COMMON_GENERIC_TX_UNDERFLOW_BIT;
-      break;
     case kDifSpiDeviceIrqUploadCmdfifoNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT;
       break;
@@ -98,9 +80,8 @@ static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeStatus,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT

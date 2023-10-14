@@ -52,7 +52,6 @@ test_suite(
         "//sw/device/tests:rv_dm_ndm_reset_req",
         "//sw/device/tests:rv_plic_smoketest",
         "//sw/device/tests:rv_timer_smoketest",
-        "//sw/device/tests:spi_device_smoketest",
         "//sw/device/tests:spi_host_winbond_flash_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",

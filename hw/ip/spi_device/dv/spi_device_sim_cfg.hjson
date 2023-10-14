@@ -57,60 +57,10 @@
   // List of test specifications.
   tests: [
     {
-      name: spi_device_smoke
-      uvm_test_seq: spi_device_smoke_vseq
-    }
-
-    {
-      name: spi_device_txrx
-      uvm_test_seq: spi_device_txrx_vseq
-    }
-
-    {
-      name: spi_device_fifo_full
-      uvm_test_seq: spi_device_fifo_full_vseq
-    }
-
-    {
-      name: spi_device_fifo_underflow_overflow
-      uvm_test_seq: spi_device_fifo_underflow_overflow_vseq
-    }
-
-    {
-      name: spi_device_extreme_fifo_size
-      uvm_test_seq: spi_device_extreme_fifo_size_vseq
-      run_timeout_mins: 90
-    }
-
-    {
-      name: spi_device_dummy_item_extra_dly
-      uvm_test_seq: spi_device_dummy_item_extra_dly_vseq
-    }
-
-    {
-      name: spi_device_intr
-      uvm_test_seq: spi_device_intr_vseq
-    }
-
-    {
-      name: spi_device_perf
-      uvm_test_seq: spi_device_perf_vseq
-    }
-
-    {
       name: spi_device_csb_read
       uvm_test_seq: spi_device_csb_read_vseq
     }
 
-    {
-      name: spi_device_byte_transfer
-      uvm_test_seq: spi_device_byte_transfer_vseq
-    }
-
-    {
-      name: spi_device_rx_timeout
-      uvm_test_seq: spi_device_rx_timeout_vseq
-    }
     // This test reuses the same structure as tl_intg_err.
     {
       name: "spi_device_mem_parity"
@@ -133,26 +83,6 @@
     {
       name: spi_device_tpm_all
       uvm_test_seq: spi_device_tpm_all_vseq
-    }
-
-    {
-      name: spi_device_bit_transfer
-      uvm_test_seq: spi_device_bit_transfer_vseq
-    }
-
-    {
-      name: spi_device_tx_async_fifo_reset
-      uvm_test_seq: spi_device_tx_async_fifo_reset_vseq
-    }
-
-    {
-      name: spi_device_rx_async_fifo_reset
-      uvm_test_seq: spi_device_rx_async_fifo_reset_vseq
-    }
-
-    {
-      name: spi_device_abort
-      uvm_test_seq: spi_device_abort_vseq
     }
 
     {
@@ -227,7 +157,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["spi_device_smoke"]
+      tests: ["spi_device_flash_mode"]
     }
   ]
 }

@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
 /**
@@ -36,12 +35,6 @@ void demo_gpio_startup(dif_gpio_t *gpio);
  * @return the new GPIO state.
  */
 uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state);
-
-/**
- * Attempts to read at most 32 bytes from SPI, and echo them as printable
- * characters to LOG.
- */
-void demo_spi_to_log_echo(dif_spi_device_handle_t *spi);
 
 /**
  * Attempts to read characters from UART and immediately echo them back,

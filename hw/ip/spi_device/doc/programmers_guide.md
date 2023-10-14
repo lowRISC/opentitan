@@ -2,59 +2,15 @@
 
 ## Initialization
 
-By default, RX SRAM FIFO base and limit address (via [`RXF_ADDR`](registers.md#rxf_addr) register) are
-set to 0x0 and 0x1FC, 512 bytes. And TX SRAM FIFO base and limit addresses (in
-the [`TXF_ADDR`](registers.md#txf_addr) register)  are 0x200 and 0x3FC. If FW wants bigger spaces, it can
-change the values of the above registers [`RXF_ADDR`](registers.md#rxf_addr) and [`TXF_ADDR`](registers.md#txf_addr).
-
-Software can configure the timer value [`CFG.timer_v`](registers.md#cfg) to change the delay between
-partial DATA received from SPI interface being written into the SRAM. The value
-of the field is the number of the core clock cycles that the logic waits for.
-
-## Pointers
-
-RX / TX SRAM FIFO has read and write pointers, [`RXF_PTR`](registers.md#rxf_ptr) and [`TXF_PTR`](registers.md#txf_ptr) . Those
-pointers are used to manage circular FIFOs inside the SRAM. The pointer width in
-the register description is 16 bit but the number of valid bits in the pointers
-depends on the size of the SRAM.
-
-The current SRAM size is 2kB and the pointer width is 12 bits, 11bits
-representing a byte offset and 1 most-significant bit for indicating phase of
-the FIFO. Since they represent bytes, the low 2 bits indicate the offset within
-the 32-bit wide SRAM word. The pointers indicate the offset into the area
-described by the base and limit values, so the lower bits (11 bits in this case)
-of a pointer should not exceed the size in bytes (4 * (limit address - base
-address)) reserved for the region (RXF or TXF) that the pointer is in. For
-instance, if FW sets RXFIFO depth to 128 (default value), it should not update
-the read pointer outside the range 0x000 -  0x1FF (128*4 = 512Bytes ignoring
-the phase bit, bit 11).
-
 ## Dual-port SRAM Layout
 
 The figure below shows the SRAM layout in the Flash and Passthrough modes.
-In generic mode, the whole DPSRAM is used as RX/TX buffers as described in the generic mode section.
 The SRAM begins at `0x1000`, which in the figure is `0x000`.
 
 ![SPI Device Dual-port SRAM Layout](../doc/spid_sram_layout.svg)
 
 The regions starting from `0xF00` to `0xFFF` are assigned to TPM Read/Write FIFOs.
 They are not used in this version of IP.
-
-## SPI Mode Changes
-
-The clock for port B of the dual-port SRAM comes from different sources, depending on which SPI mode is selected.
-For the generic mode, the peripheral clock is used, while for flash and passthrough mode, the SPI clock is used.
-Since the SPI clock is not active when the SPI interface is idle, the design cannot make use of a glitch-free clock mux that would require a continuously running clock.
-Therefore, software has to use the [`CONTROL.sram_clk_en`](registers.md#control) register to gate the clock while switching between modes with different dual-port SRAM clock sources.
-
-For any mode change that involves switching to a different clock source, the following programming sequence must be followed:
-
-1. Software should ensure that the SPI clock is inactive, e.g. by holding the upstream SPI host in reset or signal it to hold off.
-2. Clear [`CONTROL.sram_clk_en`](registers.md#control) to 0.
-3. Change to the new SPI mode
-4. Set [`CONTROL.sram_clk_en`](registers.md#control) to 1.
-
-**Note: This is a limitation of the current `spi_device` that is planned to be removed in a future revision.**
 
 ## TPM over SPI
 

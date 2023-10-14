@@ -282,13 +282,12 @@ package spi_device_pkg;
   } io_mode_e;
 
   typedef enum int unsigned {
-    IoModeFw       = 0,
-    IoModeCmdParse = 1,
-    IoModeReadCmd  = 2,
-    IoModeStatus   = 3,
-    IoModeJedec    = 4,
-    IoModeUpload   = 5,
-    IoModeEnd      = 6 // Indicate of Length
+    IoModeCmdParse = 0,
+    IoModeReadCmd  = 1,
+    IoModeStatus   = 2,
+    IoModeJedec    = 3,
+    IoModeUpload   = 4,
+    IoModeEnd      = 5 // Indicate of Length
   } sub_io_mode_e;
 
   // SPI Line Mode (Mode0 <-> Mode3)
@@ -484,14 +483,10 @@ package spi_device_pkg;
   parameter int unsigned BitCntW   = $clog2(BitLength + 1);
 
   // spi device scanmode usage
-  typedef enum logic [3:0] {
+  typedef enum logic [2:0] {
     ClkInvSel,
     CsbRstMuxSel,
-    TxRstMuxSel,
-    RxRstMuxSel,
     ClkMuxSel,
-    ClkSramSel,
-    RstSramSel,
     TpmRstSel,
     ScanModeUseLast
   } scan_mode_e;

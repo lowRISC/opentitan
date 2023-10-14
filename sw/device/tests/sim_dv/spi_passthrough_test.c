@@ -402,11 +402,10 @@ bool test_main(void) {
   // Enable all spi_device and spi_host interrupts, and check that they do not
   // trigger unless command upload is enabled.
   dif_spi_device_irq_t all_spi_device_irqs[] = {
-      kDifSpiDeviceIrqGenericRxFull,         kDifSpiDeviceIrqGenericRxWatermark,
-      kDifSpiDeviceIrqGenericTxWatermark,    kDifSpiDeviceIrqGenericRxError,
-      kDifSpiDeviceIrqGenericRxOverflow,     kDifSpiDeviceIrqGenericTxUnderflow,
-      kDifSpiDeviceIrqUploadCmdfifoNotEmpty, kDifSpiDeviceIrqReadbufWatermark,
-      kDifSpiDeviceIrqReadbufFlip,           kDifSpiDeviceIrqTpmHeaderNotEmpty,
+      kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
+      kDifSpiDeviceIrqReadbufWatermark,
+      kDifSpiDeviceIrqReadbufFlip,
+      kDifSpiDeviceIrqTpmHeaderNotEmpty,
   };
   for (int i = 0; i < ARRAYSIZE(all_spi_device_irqs); ++i) {
     dif_spi_device_irq_t irq = all_spi_device_irqs[i];
@@ -419,12 +418,6 @@ bool test_main(void) {
                                             kDifToggleEnabled));
 
   dif_rv_plic_irq_id_t spi_irqs[] = {
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow,
       kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
       kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark,
       kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip,

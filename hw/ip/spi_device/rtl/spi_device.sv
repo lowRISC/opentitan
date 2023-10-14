@@ -37,14 +37,6 @@ module spi_device
   input  spi_device_pkg::passthrough_rsp_t passthrough_i,
 
   // Interrupts
-  // INTR: Generic mode
-  output logic intr_generic_rx_full_o,              // RX FIFO Full
-  output logic intr_generic_rx_watermark_o,         // RX FIFO above level
-  output logic intr_generic_tx_watermark_o,         // TX FIFO below level
-  output logic intr_generic_rx_error_o,             // RX Frame error
-  output logic intr_generic_rx_overflow_o,          // RX Async FIFO Overflow
-  output logic intr_generic_tx_underflow_o,         // TX Async FIFO Underflow
-
   // INTR: Flash mode
   output logic intr_upload_cmdfifo_not_empty_o,
   output logic intr_upload_payload_not_empty_o,
@@ -70,12 +62,6 @@ module spi_device
 
   import spi_device_pkg::*;
 
-  localparam int FifoWidth = $bits(spi_byte_t);
-  localparam int FifoDepth = 8; // 2 DWords
-  localparam int SDW = $clog2(SramDw/FifoWidth);
-  localparam int PtrW = SramAw + 1 + SDW;
-  localparam int AsFifoDepthW = $clog2(FifoDepth+1);
-
   localparam int unsigned ReadBufferDepth = spi_device_pkg::SramMsgDepth;
   localparam int unsigned BufferAw        = $clog2(ReadBufferDepth);
 
@@ -99,13 +85,6 @@ module spi_device
   tlul_pkg::tl_d2h_t tl_sram_d2h;
 
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
-  logic              sram_clk;
-  logic              sram_clk_en;
-  logic              sram_clk_ungated;
-  logic              sram_clk_muxed;
-  logic              sram_rst_n;
-  logic              sram_rst_n_noscan;
-
   logic              mem_a_req;
   logic              mem_a_write;
   logic [SramAw-1:0] mem_a_addr;
@@ -138,9 +117,6 @@ module spi_device
   logic [3:0] passthrough_sd, passthrough_sd_en;
 
   // Upload related interfaces (SRAM, FIFOs)
-  // Initially, SysSramEnd was the end of the enum variable. But lint tool
-  // raises errors the value being used in the parameter. So changed to
-  // localparam
   typedef enum int unsigned {
     SysSramFw       = 0,
     SysSramCmdFifo  = 1,
@@ -199,18 +175,9 @@ module spi_device
   logic txorder; // TX bitstream order: 0(bit 7 to 0), 1(bit 0 to 7)
   logic rxorder; // RX bitstream order: 0(bit 7 to 0), 1(bit 0 to 7)
 
-  logic abort;  // Abort current operations (txf only at this time)
-                // Think how FW knows abort is done.
-  //logic abort_done; // ICEBOX(#18357): Not implemented yet
-
   logic sys_csb_syncd;
 
-  logic rst_txfifo_n, rst_rxfifo_n;
-  logic rst_txfifo_reg, rst_rxfifo_reg;
-
-  //spi_addr_size_e addr_size; // Not used in fwmode
   spi_mode_e spi_mode;
-  //spi_byte_t fw_dummy_byte;
   logic cfg_addr_4b_en;
 
   // Address 3B/ 4B tracker related signals
@@ -227,25 +194,6 @@ module spi_device
   // The opcodes of the commands SW may configure via CMD_INFO_EN4B,
   // CMD_INFO_EX4B.
   logic cmd_en4b_pulse, cmd_ex4b_pulse;
-
-  logic intr_sram_rxf_full, intr_fwm_rxerr;
-  logic intr_fwm_rxlvl, rxlvl, rxlvl_d, intr_fwm_txlvl, txlvl, txlvl_d;
-  logic intr_fwm_rxoverflow, intr_fwm_txunderflow;
-
-  logic rxf_overflow, txf_underflow;
-
-  logic        [7:0] timer_v;   // Wait timer inside rxf control
-  logic   [PtrW-1:0] sram_rxf_rptr, sram_rxf_wptr;
-  logic   [PtrW-1:0] sram_txf_rptr, sram_txf_wptr;
-  logic   [PtrW-1:0] sram_rxf_depth, sram_txf_depth;
-
-  logic [SramAw-1:0] sram_rxf_bindex, sram_txf_bindex;
-  logic [SramAw-1:0] sram_rxf_lindex, sram_txf_lindex;
-
-  logic [AsFifoDepthW-1:0] as_txfifo_depth, as_rxfifo_depth;
-
-  logic rxf_empty, rxf_full, txf_empty, txf_full;
-  logic rxf_full_syncd, txf_empty_syncd; // sync signals
 
   // SPI S2P signals
   // io_mode: Determine s2p/p2s behavior.
@@ -402,210 +350,13 @@ module spi_device
   assign txorder = reg2hw.cfg.tx_order.q;
   assign rxorder = reg2hw.cfg.rx_order.q;
 
-  assign rst_txfifo_reg = reg2hw.control.rst_txfifo.q;
-  assign rst_rxfifo_reg = reg2hw.control.rst_rxfifo.q;
-
-  assign sram_clk_en = reg2hw.control.sram_clk_en.q;
-
-  assign timer_v = reg2hw.cfg.timer_v.q;
-
   //assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
-
-  assign sram_rxf_bindex = reg2hw.rxf_addr.base.q[SDW+:SramAw];
-  assign sram_rxf_lindex = reg2hw.rxf_addr.limit.q[SDW+:SramAw];
-  assign sram_txf_bindex = reg2hw.txf_addr.base.q[SDW+:SramAw];
-  assign sram_txf_lindex = reg2hw.txf_addr.limit.q[SDW+:SramAw];
-
-  assign sram_rxf_rptr = reg2hw.rxf_ptr.rptr.q[PtrW-1:0];
-  assign hw2reg.rxf_ptr.wptr.d = {{(16-PtrW){1'b0}}, sram_rxf_wptr};
-  assign hw2reg.rxf_ptr.wptr.de = 1'b1;
-
-  assign sram_txf_wptr = reg2hw.txf_ptr.wptr.q[PtrW-1:0];
-  assign hw2reg.txf_ptr.rptr.d = {{(16-PtrW){1'b0}}, sram_txf_rptr};
-  assign hw2reg.txf_ptr.rptr.de = 1'b1;
-
-  assign abort = reg2hw.control.abort.q;
-  assign hw2reg.status.abort_done.d  = 1'b1;
-
-  assign hw2reg.status.rxf_empty.d = rxf_empty;
-  assign hw2reg.status.txf_full.d  = txf_full;
-
-  // SYNC logic required
-  assign hw2reg.status.rxf_full.d = rxf_full_syncd;
-  assign hw2reg.status.txf_empty.d = txf_empty_syncd;
 
   // CSb : after 2stage synchronizer
   assign hw2reg.status.csb.d     = sys_csb_syncd;
   assign hw2reg.status.tpm_csb.d = sys_tpm_csb_syncd;
 
-  logic rxf_full_q, txf_empty_q;
-  always_ff @(posedge clk_spi_in_buf or negedge rst_ni) begin
-    if (!rst_ni) rxf_full_q <= 1'b0;
-    else         rxf_full_q <= rxf_full;
-  end
-  always_ff @(posedge clk_spi_out_buf or negedge rst_ni) begin
-    if (!rst_ni) txf_empty_q <= 1'b1;
-    else         txf_empty_q <= txf_empty;
-  end
-  prim_flop_2sync #(.Width(1)) u_sync_rxf (
-    .clk_i,
-    .rst_ni,
-    .d_i(rxf_full_q),
-    .q_o(rxf_full_syncd)
-  );
-  prim_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
-    .clk_i,
-    .rst_ni,
-    .d_i(txf_empty_q),
-    .q_o(txf_empty_syncd)
-  );
-
-  assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
-
-  // Async FIFO level
-  //  rx rdepth, tx wdepth to be in main clock domain
-  assign hw2reg.async_fifo_level.txlvl.d  = {{(8-AsFifoDepthW){1'b0}}, as_txfifo_depth};
-  assign hw2reg.async_fifo_level.rxlvl.d  = {{(8-AsFifoDepthW){1'b0}}, as_rxfifo_depth};
-
-  // Interrupt
-
-  // Edge
-  logic sram_rxf_full_q, fwm_rxerr_q;
-  logic sram_rxf_full  , fwm_rxerr  ;
-
-  // ICEBOX(#10058): Check if CE# deasserted in the middle of bit transfer
-  assign fwm_rxerr = 1'b0;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sram_rxf_full_q <= 1'b0;
-      fwm_rxerr_q     <= 1'b0;
-    end else begin
-      sram_rxf_full_q <= sram_rxf_full;
-      fwm_rxerr_q     <= fwm_rxerr;
-    end
-  end
-
-  // Interrupt
-  assign intr_sram_rxf_full = ~sram_rxf_full_q & sram_rxf_full;
-  assign intr_fwm_rxerr     = ~fwm_rxerr_q & fwm_rxerr;
-
-  assign rxlvl_d = (sram_rxf_depth >= reg2hw.fifo_level.rxlvl.q[PtrW-1:0]) ;
-  assign txlvl_d = (sram_txf_depth <  reg2hw.fifo_level.txlvl.q[PtrW-1:0]) ;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rxlvl <= 1'b0;
-      txlvl <= 1'b0;
-    end else begin
-      rxlvl <= rxlvl_d;
-      txlvl <= txlvl_d;
-    end
-  end
-  assign intr_fwm_rxlvl = ~rxlvl && rxlvl_d;
-  assign intr_fwm_txlvl = ~txlvl && txlvl_d;
-
-  // rxf_overflow
-  //    Could trigger lint error for input clock.
-  //    It's unavoidable due to the characteristics of SPI intf
-  prim_pulse_sync u_rxf_overflow (
-    .clk_src_i   (clk_spi_in_buf     ),
-    .rst_src_ni  (rst_ni             ),
-    .src_pulse_i (rxf_overflow       ),
-    .clk_dst_i   (clk_i              ),
-    .rst_dst_ni  (rst_ni             ),
-    .dst_pulse_o (intr_fwm_rxoverflow)
-  );
-
-  // txf_underflow
-  //    Could trigger lint error for input clock.
-  //    It's unavoidable due to the characteristics of SPI intf
-  prim_pulse_sync u_txf_underflow (
-    .clk_src_i   (clk_spi_out_buf     ),
-    .rst_src_ni  (rst_ni              ),
-    .src_pulse_i (txf_underflow       ),
-    .clk_dst_i   (clk_i               ),
-    .rst_dst_ni  (rst_ni              ),
-    .dst_pulse_o (intr_fwm_txunderflow)
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rxf (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_sram_rxf_full                  ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_rx_full.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_rx_full.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_rx_full.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_rx_full.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_rx_full.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_rx_full.d ),
-    .intr_o                 (intr_generic_rx_full_o              )
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rxlvl (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_fwm_rxlvl                           ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_rx_watermark.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_rx_watermark.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_rx_watermark.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_rx_watermark.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_rx_watermark.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_rx_watermark.d ),
-    .intr_o                 (intr_generic_rx_watermark_o              )
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_txlvl (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_fwm_txlvl                           ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_tx_watermark.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_tx_watermark.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_tx_watermark.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_tx_watermark.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_tx_watermark.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_tx_watermark.d ),
-    .intr_o                 (intr_generic_tx_watermark_o              )
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rxerr (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_fwm_rxerr                       ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_rx_error.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_rx_error.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_rx_error.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_rx_error.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_rx_error.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_rx_error.d ),
-    .intr_o                 (intr_generic_rx_error_o              )
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rxoverflow (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_fwm_rxoverflow                     ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_rx_overflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_rx_overflow.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_rx_overflow.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_rx_overflow.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_rx_overflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_rx_overflow.d ),
-    .intr_o                 (intr_generic_rx_overflow_o              )
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_txunderflow (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (intr_fwm_txunderflow                     ),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.generic_tx_underflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.generic_tx_underflow.q  ),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.generic_tx_underflow.qe ),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.generic_tx_underflow.q ),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.generic_tx_underflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.generic_tx_underflow.d ),
-    .intr_o                 (intr_generic_tx_underflow_o              )
-  );
+  assign spi_mode = spi_mode_e'(reg2hw.control.q);
 
   prim_edge_detector #(
     .Width (2),
@@ -813,12 +564,9 @@ module spi_device
 
   end
 
-  //////////////////////////////
-  // // Clock & reset control //
-  //////////////////////////////
-  //  clk_spi cannot use glitch-free clock mux as clock switching in glitch-free
-  //  requires two clocks to propagate clock selection and enable but SPI clock
-  //  doesn't exist until it transmits data through SDI
+  ///////////////////////////
+  // Clock & reset control //
+  ///////////////////////////
   logic sck_n;
   logic rst_spi_n;
   prim_mubi_pkg::mubi4_t [ScanModeUseLast-1:0] scanmode;
@@ -842,15 +590,15 @@ module spi_device
   );
 
   assign sck_monitor_o = cio_sck_i;
-  assign clk_spi_in  = (cpha ^ cpol) ? sck_n    : cio_sck_i   ;
-  assign clk_spi_out = (cpha ^ cpol) ? cio_sck_i    : sck_n   ;
+  assign clk_spi_in    = cio_sck_i;
+  assign clk_spi_out   = sck_n;
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_clk_spi_in_mux (
     .clk0_i(clk_spi_in),
     .clk1_i(scan_clk_i),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel])),
+    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkMuxSel]) | mbist_en_i),
     .clk_o(clk_spi_in_muxed)
   );
 
@@ -903,24 +651,6 @@ module spi_device
     .clk_o(rst_spi_n)
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_tx_rst_scan_mux (
-    .clk0_i(rst_ni & ~rst_txfifo_reg),
-    .clk1_i(scan_rst_ni),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[TxRstMuxSel])),
-    .clk_o(rst_txfifo_n)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_rx_rst_scan_mux (
-    .clk0_i(rst_ni & ~rst_rxfifo_reg),
-    .clk1_i(scan_rst_ni),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[RxRstMuxSel])),
-    .clk_o(rst_rxfifo_n)
-  );
-
   logic tpm_rst_n, sys_tpm_rst_n;
 
   prim_clock_mux2 #(
@@ -950,70 +680,6 @@ module spi_device
 
     .scan_rst_ni,
     .scanmode_i (scanmode[TpmRstSel])
-  );
-
-  // SRAM clock
-  // If FwMode, SRAM clock for B port uses peripheral clock (clk_i)
-  // If FlashMode or PassThrough, SRAM clock for B port uses SPI_CLK
-  // To remove glitch, CG cell is put after clock mux
-  // The enable signal is not synchronized to SRAM_CLK when clock is
-  // switched into SPI_CLK. So, change the clock only when SPI_CLK is
-  // not toggle.
-  //
-  // Programming sequence:
-  // Change to SPI_CLK
-  //  1. Check if SPI line is idle.
-  //  2. Clear sram_clk_en to 0.
-  //  3. Change mode to FlashMode or PassThrough
-  //  4. Set sram_clk_en to 1.
-  // Change to peripheral clk
-  //  1. Check if SPI_CLK is idle
-  //  2. Clear sram_clk_en to 0.
-  //  3. Change mode to FwMode
-  //  4. Set sram_clk_en to 1.
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_sram_clk_sel (
-    .clk0_i (clk_spi_in_buf),
-    .clk1_i (clk_i),
-    .sel_i  (spi_mode == FwMode),
-    .clk_o  (sram_clk_ungated)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_sram_clk_scan (
-    .clk0_i (sram_clk_ungated),
-    .clk1_i (scan_clk_i),
-    .sel_i  ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
-    .clk_o  (sram_clk_muxed)
-  );
-
-  prim_clock_gating #(
-    .FpgaBufGlobal(1'b0)
-  ) u_sram_clk_cg (
-    .clk_i  (sram_clk_muxed),
-    .en_i   (sram_clk_en),
-    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
-    .clk_o  (sram_clk)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG (1'b1)
-  ) u_sram_rst_sel (
-    .clk0_i (rst_spi_n),
-    .clk1_i (rst_ni),
-    .sel_i  (spi_mode == FwMode),
-    .clk_o  (sram_rst_n_noscan)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG (1'b1)
-  ) u_sram_rst_scanmux (
-    .clk0_i (sram_rst_n_noscan),
-    .clk1_i (scan_rst_ni),
-    .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[RstSramSel])),
-    .clk_o  (sram_rst_n)
   );
 
   // CSb edge on the system clock
@@ -1146,8 +812,6 @@ module spi_device
   // SPI_DEVICE mode selector //
   //////////////////////////////
   // This logic chooses appropriate signals based on input SPI_DEVICE mode.
-  // e.g) If FwMode is selected. all data connected to spi_fwmode logic
-
   // Assume spi_mode does not change dynamically
 
   // io_mode to spi_s2p io_mode should be affected at the negedge of SPI_CLK
@@ -1212,12 +876,6 @@ module spi_device
 
     mem_b_l2m = '{ default: '0 };
 
-    sub_sram_m2l[IoModeFw] = '{
-      rvalid: 1'b 0,
-      rdata: '0,
-      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
-    };
-
     flash_sram_m2l = '{
       rvalid: 1'b 0,
       rdata: '0,
@@ -1225,19 +883,6 @@ module spi_device
     };
 
     unique case (spi_mode)
-      FwMode: begin
-        io_mode = sub_iomode[IoModeFw];
-
-        p2s_valid = sub_p2s_valid[IoModeFw];
-        p2s_data  = sub_p2s_data[IoModeFw];
-        sub_p2s_sent[IoModeFw] = p2s_sent;
-
-        // SRAM:: Remember this has glitch
-        // switch should happen only when clock gate is disabled.
-        mem_b_l2m = sub_sram_l2m[IoModeFw];
-        sub_sram_m2l[IoModeFw] = mem_b_m2l;
-      end
-
       FlashMode, PassThrough: begin
         // SRAM comb logic is in SCK clock domain
         mem_b_l2m = flash_sram_l2m;
@@ -1309,7 +954,7 @@ module spi_device
     end else begin : spi_out_flash_passthrough
       // SPI Generic, Flash, Passthrough modes
       unique case (spi_mode)
-        FwMode, FlashMode: begin
+        FlashMode: begin
           cio_sd_o    = internal_sd;
           cio_sd_en_o = internal_sd_en;
         end
@@ -1377,76 +1022,6 @@ module spi_device
     .cpha_i       (cpha),
     .order_i      (txorder),
     .io_mode_i    (io_mode_outclk)
-  );
-
-  /////////////
-  // FW Mode //
-  /////////////
-  spi_fwmode #(
-    .FifoWidth (FifoWidth),
-    .FifoDepth (FifoDepth)
-  ) u_fwmode (
-    .clk_i    (sram_clk),
-    .rst_ni   (sram_rst_n),
-
-    .clk_spi_in_i  (clk_spi_in_buf),
-    .rst_rxfifo_ni (rst_rxfifo_n),
-    .clk_spi_out_i (clk_spi_out_buf),
-    .rst_txfifo_ni (rst_txfifo_n),
-
-    // Mode
-    .spi_mode_i (spi_mode),
-
-    .rxf_overflow_o  (rxf_overflow),
-    .txf_underflow_o (txf_underflow),
-
-    // SRAM interface
-    .fwm_req_o    (sub_sram_l2m[IoModeFw].req    ),
-    .fwm_write_o  (sub_sram_l2m[IoModeFw].we     ),
-    .fwm_addr_o   (sub_sram_l2m[IoModeFw].addr   ),
-    .fwm_wdata_o  (sub_sram_l2m[IoModeFw].wdata  ),
-    .fwm_wstrb_o  (sub_sram_l2m[IoModeFw].wstrb  ),
-    .fwm_rvalid_i (sub_sram_m2l[IoModeFw].rvalid ),
-    .fwm_rdata_i  (sub_sram_m2l[IoModeFw].rdata  ),
-    .fwm_rerror_i (sub_sram_m2l[IoModeFw].rerror ),
-
-    // Input from S2P
-    .rx_data_valid_i (s2p_data_valid),
-    .rx_data_i       (s2p_data),
-
-    // Output to S2P (mode select)
-    .io_mode_o       (sub_iomode[IoModeFw]),
-
-    // P2S
-    .tx_wvalid_o (sub_p2s_valid [IoModeFw]),
-    .tx_data_o   (sub_p2s_data  [IoModeFw]),
-    .tx_wready_i (sub_p2s_sent  [IoModeFw]),
-
-    // CSRs
-    .timer_v_i   (timer_v),
-    .sram_rxf_bindex_i (sram_rxf_bindex),
-    .sram_txf_bindex_i (sram_txf_bindex),
-    .sram_rxf_lindex_i (sram_rxf_lindex),
-    .sram_txf_lindex_i (sram_txf_lindex),
-
-    .abort_i (abort),
-
-    .sram_rxf_rptr_i  (sram_rxf_rptr ),
-    .sram_rxf_wptr_o  (sram_rxf_wptr ),
-    .sram_txf_rptr_o  (sram_txf_rptr ),
-    .sram_txf_wptr_i  (sram_txf_wptr ),
-    .sram_rxf_depth_o (sram_rxf_depth),
-    .sram_txf_depth_o (sram_txf_depth),
-    .sram_rxf_full_o  (sram_rxf_full ),
-
-    .as_txfifo_depth_o (as_txfifo_depth),
-    .as_rxfifo_depth_o (as_rxfifo_depth),
-
-    .rxf_empty_o (rxf_empty),
-    .rxf_full_o  (rxf_full),
-    .txf_empty_o (txf_empty),
-    .txf_full_o  (txf_full)
-
   );
 
   ////////////////////
@@ -2066,8 +1641,8 @@ module spi_device
     .clk_a_i    (clk_i),
     .rst_a_ni   (rst_ni),
 
-    .clk_b_i    (sram_clk),
-    .rst_b_ni   (sram_rst_n),
+    .clk_b_i    (clk_spi_in_buf),
+    .rst_b_ni   (rst_spi_n),
 
     .a_req_i    (mem_a_req),
     .a_write_i  (mem_a_write),
@@ -2135,12 +1710,6 @@ module spi_device
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
   `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
-  `ASSERT_KNOWN(IntrRxfOKnown,         intr_generic_rx_full_o     )
-  `ASSERT_KNOWN(IntrRxlvlOKnown,       intr_generic_rx_watermark_o)
-  `ASSERT_KNOWN(IntrTxlvlOKnown,       intr_generic_tx_watermark_o)
-  `ASSERT_KNOWN(IntrRxerrOKnown,       intr_generic_rx_error_o    )
-  `ASSERT_KNOWN(IntrRxoverflowOKnown,  intr_generic_rx_overflow_o )
-  `ASSERT_KNOWN(IntrTxunderflowOKnown, intr_generic_tx_underflow_o)
   `ASSERT_KNOWN(IntrUploadCmdfifoNotEmptyOKnown,
                 intr_upload_cmdfifo_not_empty_o)
   `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,

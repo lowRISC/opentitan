@@ -2922,48 +2922,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "spi_device_smoketest",
-    srcs = ["spi_device_smoketest.c"],
-    cw310 = new_cw310_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
-        test_cmd = """
-            --bitstream="{bitstream}"
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
-        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
-    ),
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    silicon = silicon_params(
-        test_cmd = """
-            --bootstrap={firmware}
-            "{firmware:elf}"
-        """,
-        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:status",
-    ],
-)
-
-opentitan_test(
     name = "spi_device_tpm_tx_rx_test",
     srcs = ["spi_device_tpm_tx_rx_test.c"],
     cw310 = new_cw310_params(
@@ -4141,41 +4099,6 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
     deps = [
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
-# covers support for cw340_params.
-opentitan_functest(
-    name = "spi_device_ottf_console_test",
-    srcs = ["spi_device_ottf_console_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    cw340 = cw340_params(
-        interface = "hyper340",
-        tags = ["manual"],
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    targets = [
-        "cw310_rom_with_fake_keys",
-        "cw310_test_rom",
-        "cw340_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

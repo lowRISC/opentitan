@@ -36,7 +36,6 @@ cc_library(
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

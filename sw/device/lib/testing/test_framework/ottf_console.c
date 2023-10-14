@@ -106,18 +106,9 @@ void ottf_console_init(void) {
               .data_phase = kDifSpiDeviceEdgeNegative,
               .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
               .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-              .device_mode = kDifSpiDeviceModeGeneric,
-              .mode_cfg =
-                  {
-                      .generic =
-                          {
-                              .rx_fifo_commit_wait = kSpiDeviceRxCommitWait,
-                              .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                              .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                          },
-                  },
+              .device_mode = kDifSpiDeviceModeFlashEmulation,
           }));
-      base_spi_device_stdout(&ottf_console_spi_device);
+      CHECK(false, "spi_device not yet supported as OTTF console.");
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
