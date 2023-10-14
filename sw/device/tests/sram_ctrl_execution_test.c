@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/examples/sram_program/sram_program.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
@@ -69,18 +68,6 @@ static void sram_ret_neg_test(void) {
   OT_ADDRESSABLE_LABEL(kSramRetNegTestReturn);
 }
 
-// See the `bin_to_archive` rule in `opentitan.bzl` for the definition of this
-// symbol.
-extern const char _sram_program_start[];
-static sram_program_entrypoint *sram_main =
-    (sram_program_entrypoint *)_sram_program_start;
-
-static void sram_program_test(void) {
-  LOG_INFO("Jumping to the program in SRAM: %p", sram_main);
-  sram_main();
-  LOG_INFO("Returned from the program in SRAM");
-}
-
 bool test_main(void) {
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
@@ -99,7 +86,6 @@ bool test_main(void) {
   // cycle state.
   sram_ret_neg_test();
   sram_function_test();
-  sram_program_test();
 
   return true;
 }
