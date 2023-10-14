@@ -63,6 +63,14 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         default = elf
         rom = None
         rom32 = None
+
+        # Generate Un-scrambled RAM VMEM (for testing SRAM injection in DV)
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 32,
+        )
     elif ctx.attr.kind == "flash":
         vmem = convert_to_vmem(
             ctx,
