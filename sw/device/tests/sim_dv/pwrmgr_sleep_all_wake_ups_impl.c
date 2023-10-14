@@ -8,7 +8,6 @@
 #include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
 
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -24,7 +23,6 @@ static const uint32_t kPinmuxWkupDetector5 = 5;
 
 dif_adc_ctrl_t adc_ctrl;
 dif_aon_timer_t aon_timer;
-dif_flash_ctrl_state_t flash_ctrl;
 dif_pinmux_t pinmux;
 dif_pwrmgr_t pwrmgr;
 dif_rv_plic_t rv_plic;
@@ -45,7 +43,7 @@ static void prgm_sysrst_ctrl_wakeup(void *dif) {
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(dif, config));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopEarlgreyPinmuxInselIor13));
+      kTopEarlgreyPinmuxInselIoc0));
 }
 
 /**
@@ -82,17 +80,28 @@ static void prgm_adc_ctrl_wakeup(void *dif) {
 
 /**
  * pinmux config for test #3
- * . use IOB7 as an input
+ * . use IOC0 as an input
  * . set posedge detection
  */
 static void prgm_pinmux_wakeup(void *dif) {
+  // Make sure the pin has a pulldown before we enable it for wakeup.
+  // FPGA doesn't implement pullup/down, so just use that attribute for SimDV.
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {
+      .slew_rate = 0,
+      .drive_strength = 0,
+      .flags = kDeviceType == kDeviceSimDV ?
+      kDifPinmuxPadAttrPullResistorEnable : 0};
   dif_pinmux_wakeup_config_t detector_cfg = {
       .signal_filter = kDifToggleDisabled,
       .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopEarlgreyPinmuxInselIob7,
+      .pad_select = kTopEarlgreyPinmuxInselIoc0,
       .mode = kDifPinmuxWakeupModePositiveEdge,
       .counter_threshold = 0 /* Don't need for posedge detection */,
   };
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc0,
+                                          kDifPinmuxPadKindMio, in_attr,
+                                          &out_attr));
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(dif, kPinmuxWkupDetector5,
                                                  detector_cfg));
 }
@@ -178,9 +187,6 @@ void init_units(void) {
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_pwrmgr_init(
@@ -207,7 +213,6 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
                 kDifPwrmgrDomainOptionUsbClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
-
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg));
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);

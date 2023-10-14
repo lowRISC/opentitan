@@ -387,10 +387,18 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
-    targets = ["dv"],
+    cw310 = cw310_params(
+        test_cmds = [],
+    ),
+    targets = [
+        "dv",
+        "cw310_test_rom",
+    ],
+    test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",

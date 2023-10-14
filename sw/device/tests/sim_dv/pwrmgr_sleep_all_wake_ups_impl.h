@@ -26,6 +26,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+
+/**
+ * The non-volatile counter used in this test.
+ */
+enum { kCounterCases };
+
 typedef struct test_wakeup_sources {
   /**
    * Name of the device.
