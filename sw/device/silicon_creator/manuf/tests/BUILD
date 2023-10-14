@@ -9,7 +9,6 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
-    "cw310_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
