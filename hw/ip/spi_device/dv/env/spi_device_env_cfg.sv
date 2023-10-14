@@ -20,9 +20,6 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // This prevents clk from being configured multiple times
   bit                 do_spi_clk_configure = 1;
 
-  // can only configure the FW mem once after reset.
-  bit                 do_spi_device_fw_mem_cfg = 1;
-
   // test may have 2 threads to configure spi_device for flash and TPM mode.
   // both may access the same csr `CFG`, have this to avoid accessing it at the same time.
   semaphore           spi_cfg_sema = new(1);

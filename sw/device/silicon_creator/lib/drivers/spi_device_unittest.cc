@@ -39,7 +39,6 @@ TEST_F(InitTest, Init) {
                          {SPI_DEVICE_CFG_CPHA_BIT, 0},
                          {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                          {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
-                         {SPI_DEVICE_CFG_TIMER_V_OFFSET, 0x7f},
                          {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 0},
                          {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0},
                      });

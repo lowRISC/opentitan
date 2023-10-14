@@ -6,13 +6,6 @@
 
 `verilator_config
 
-// The mode_i input is not currently used: we only support FwMode at the moment.
-lint_off -rule UNUSED -file "*/rtl/spi_fwmode.sv" -match "Signal is not used: 'mode_i'"
-
-// SRAM error protection is not yet implemented
-lint_off -rule UNUSED -file "*/rtl/spi_fwm_rxf_ctrl.sv" -match "Signal is not used: 'sram_error'"
-lint_off -rule UNUSED -file "*/rtl/spi_fwm_txf_ctrl.sv" -match "Signal is not used: 'sram_error'"
-
 // Waive a warning caused by the fact that our "abort" register
 // matches a C++ common word.
 lint_off -rule SYMRSVDWORD -file "*/rtl/spi_device_reg_pkg.sv" -match "Symbol matches C++ common word: 'abort'"

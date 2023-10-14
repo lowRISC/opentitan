@@ -7,41 +7,6 @@
   testpoints: [
     // SPI_DEVICE (pre-verified IP) integration tests:
     {
-      name: chip_sw_spi_device_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI device port in generic mode.
-
-            - The testbench sends a known payload over the chip's SPI device input port.
-            - At the same time, the SW test sends a known payload out over the chip's SPI device
-              output port.
-            - On reception, both payloads are checked for integrity.
-            - SW validates the reception of the following interrupts:
-              - RX fifo full
-              - RX fifo over level
-              - TX fifo under level
-              - RX overflow
-              - TX underflow
-            - Run with min (6MHz), typical (24Mhz) and max(30MHz) SPI clk frequencies.
-            - Ensure that the spi_device does not receive transactions when the csb is high.
-            '''
-      stage: V2
-      // Can function as a smoketest, but also may be useful as part of a bootloader for early bring-up.
-      si_stage: SV2
-      lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
-        "PROD",
-        "PROD_END",
-        "RMA",
-      ]
-      features: [
-        "SPI_DEVICE.MODE.GENERIC",
-        "SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS",
-        "SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF",
-      ]
-      tests: ["chip_sw_spi_device_tx_rx"]
-      bazel: ["//sw/device/tests:spi_device_smoketest"]
-    }
-    {
       name: chip_sw_spi_device_flash_mode
       desc: '''Verify the SPI device in flash mode.
 

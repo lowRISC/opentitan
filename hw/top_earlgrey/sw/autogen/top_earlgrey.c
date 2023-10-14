@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[185] = {
+    top_earlgrey_plic_interrupt_for_peripheral[179] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -77,12 +77,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdGpioGpio29] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio30] = kTopEarlgreyPlicPeripheralGpio,
   [kTopEarlgreyPlicIrqIdGpioGpio31] = kTopEarlgreyPlicPeripheralGpio,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull] = kTopEarlgreyPlicPeripheralSpiDevice,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark] = kTopEarlgreyPlicPeripheralSpiDevice,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark] = kTopEarlgreyPlicPeripheralSpiDevice,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError] = kTopEarlgreyPlicPeripheralSpiDevice,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow] = kTopEarlgreyPlicPeripheralSpiDevice,
-  [kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow] = kTopEarlgreyPlicPeripheralSpiDevice,

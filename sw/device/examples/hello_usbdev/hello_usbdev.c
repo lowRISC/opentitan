@@ -9,7 +9,6 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -74,7 +73,6 @@ static size_t usb_chars_recved_total;
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
-static dif_spi_device_handle_t spi;
 static dif_uart_t uart;
 
 /**
@@ -161,26 +159,6 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi));
-  dif_spi_device_config_t spi_config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
-      .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
-      .device_mode = kDifSpiDeviceModeGeneric,
-      .mode_cfg =
-          {
-              .generic =
-                  {
-                      .rx_fifo_commit_wait = 63,
-                      .rx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                      .tx_fifo_len = kDifSpiDeviceBufferLen / 2,
-                  },
-          },
-  };
-  CHECK_DIF_OK(dif_spi_device_configure(&spi, spi_config));
-
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
@@ -211,7 +189,6 @@ void _ottf_main(void) {
         &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
         kTopEarlgreyPinmuxInselConstantOne));
   }
-  CHECK_DIF_OK(dif_spi_device_send(&spi, "SPI!", 4, /*bytes_sent=*/NULL));
 
   // The TI phy always uses a differential TX interface
   CHECK_STATUS_OK(usb_testutils_init(&usbdev, pinflip, differential_xcvr,
@@ -236,7 +213,6 @@ void _ottf_main(void) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
 
     gpio_state = demo_gpio_to_log_echo(&gpio, gpio_state);
-    demo_spi_to_log_echo(&spi);
 
     while (true) {
       size_t chars_available;

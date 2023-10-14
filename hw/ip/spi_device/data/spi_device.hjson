@@ -6,8 +6,7 @@
   human_name:         "SPI Device",
   one_line_desc:      "Serial peripheral interface supporting different device modes, suitable for bulk-load of data into and out of the chip",
   one_paragraph_desc: '''
-  SPI Device is a configurable, versatile hardware block that implements a generic SPI device mode, plus three additional modes (SPI Flash emulation mode, SPI passthrough mode, and TPM over SPI mode) to support a variety of different applications.
-  For example, generic mode can be used in a raw data transfer protocol termed "Firmware Operation Mode", which is intended to be used to bulk-load data into and out of the chip.
+  SPI Device is a configurable, versatile hardware block that implements three modes (SPI Flash emulation mode, SPI passthrough mode, and TPM over SPI mode) to support a variety of different applications.
   TPM over SPI operates in compliance with TPM PC Client Platform, unloading this protocol from a software solution.
   SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
   '''
@@ -35,6 +34,14 @@
       commit_id:          "",
       notes:              ""
     }
+    { version:            "2.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
+      commit_id:          "",
+      notes:              ""
+    }
   ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
@@ -59,27 +66,6 @@
     }
   ]
   interrupt_list: [
-    { name: "generic_rx_full"
-      desc: "RX SRAM FIFO Full"
-    }
-    { name: "generic_rx_watermark"
-      desc: "RX SRAM FIFO is above the level"
-    }
-    { name: "generic_tx_watermark"
-      desc: "TX SRAM FIFO is under the level"
-    }
-    { name: "generic_rx_error"
-      desc: "SDI in FwMode has error"
-      type: "event"
-    }
-    { name: "generic_rx_overflow"
-      desc: "RX Async FIFO overflow"
-      type: "event"
-    }
-    { name: "generic_tx_underflow"
-      desc: "TX Async FIFO underflow"
-      type: "event"
-    }
     { name: "upload_cmdfifo_not_empty"
       desc: "Upload Command FIFO is not empty"
     }
@@ -192,12 +178,6 @@
   ],
   features: [
     {
-      name: "SPI_DEVICE.MODE.GENERIC",
-      desc: '''Single-lane SPI device interface implementing a raw data transfer protocol for bulk-data loading.
-            AKA. Firmware Operation Mode
-            '''
-    }
-    {
       name: "SPI_DEVICE.MODE.FLASH_EMULATION",
       desc: '''Emulates the behaviour of a Serial Flash device when connected to an upstream SPI Host.
             In this mode, the block recognizes SPI Flash commands and can respond entirely in HW.
@@ -244,35 +224,6 @@
     {
       name: "SPI_DEVICE.HW.CSB_STATUS",
       desc: '''CSR.STATUS fields show the current status of the two CSB signals (.csb/.tpm_csb).
-            '''
-    }
-    {
-      name: "SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS",
-      desc: '''A pair of asynchronous FIFOs (RXFIFO/TXFIFO) interface with the bus in Generic mode.
-
-            - The bus-facing side of the FIFOs is driven by the bus-CLK.
-            - The internal-facing side of the FIFOs is driven by the core-CLK.
-            - Generic-mode logic interfaces the internal-facing sides of the FIFOs with the DPSRAM.
-            - Generic-mode uses the entire DPSRAM space exclusively (See feature SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF).
-            - Writing to "CSR.CONTROL.rst_txfifo" soft-resets the contents of the TXFIFO.
-            - Received data is normally written from the RXFIFO output to the DPSRAM receive buffer on 32b word boundaries.
-            - "CSR.CFG.timer_v" provides configurable control of the delay between the end of unaligned receive data and
-              the construction of an (abnormal) sub-word write to the DPSRAM receive buffer.
-            - "CSR.ASYNC_FIFO_LEVEL.txlvl" and "CSR.ASYNC_FIFO_LEVEL.rxlvl" contain the current levels of each FIFO.
-            '''
-    }
-    {
-      name: "SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF",
-      desc: '''A dual-port SRAM, notionally split into transmit (TXF) and receive (RXF) circular buffers, holds data in Generic Mode.
-
-            - TXF and RXF sections are defined by CSR.RXF_ADDR and CSR.TXF_ADDR, each of which contains a base and limit value.
-            - The boundary between TXF and RXF sections is configurable at runtime by writing to CSR.RXF_ADDR and CSR.TXF_ADDR.
-            - The current contents of TXF and RXF is defined by CSR.TXF_PTR and CSR.RXF_PTR, each of which contain a rptr and wptr.
-            - HW interfaces the buffers with the bus through two async-fifos (See feature SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS).
-            - CSR.TXF_PTR.rptr and CSR.RXF_PTR.wptr are controlled by HW in response to bus operations that consume or provide data.
-            - SW updates the rptr/wptr values to indicate it has written-to or read-from each buffer.
-            - CSR.STATUS contains empty and full flags for each buffer (.txf_empty/.txf_full/.rxf_empty/.rxf_full)
-            -
             '''
     }
     {
@@ -404,30 +355,17 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
-          name: "ABORT",
-          desc: '''Abort pending TX data in Generic mode.
-
-            If TX_FIFO (Asynchronous) is full, the TXF waits indefinitely to
-            push the next byte into the asynchronous FIFO. SW may reset the
-            Async FIFO along with aborting the current task. SW should update
-            the write pointer of the TXF in order not to push the byte to
-            Asynchronous FIFO again by TXF logic.
-            '''
-          resval: "0"
-        },
         { bits: "5:4",
           name: "MODE",
-          desc: "SPI Device operation mode. Currently only FwMode is supported.",
+          desc: "SPI Device flash operation mode.",
           resval: "1"
           enum: [
             { value: "0",
-              name: "fwmode",
-              desc: '''
-                FW operation mode.
+              name: "disabled",
+              desc: '''SPI Flash operations disabled.
 
-                HW just dumps incoming data to SRAM and reads from SRAM and
-                sends to SDO. This mode doesn't support Dual or Quad mode
+                SPI device flash operations are disabled, and all transactions are ignored.
+                Note that SPI TPM operations are controlled by !!TPM_CFG
                 '''
             },
             { value: "1"
@@ -457,51 +395,6 @@
                  // passed between spi_dev/host due to passthrough
                  "excl:CsrNonInitTests:CsrExclWrite"]
         },
-        { bits: "16",
-          name: "rst_txfifo",
-          desc: '''
-            Reset Async TX_FIFO.
-
-            This only resets asynchronous fifo. If firmware wants to reset SRAM
-            FIFO, it should write 0 into read/write pointers.
-
-            _Note_: This value should be controlled only when SPI interface is
-            in Idle state as this reset signal doesn't have reset synchronizer.
-            '''
-          resval: "0",
-        },
-        { bits: "17",
-          name: "rst_rxfifo",
-          desc: '''
-            Reset Async RX_FIFO.
-
-            This only resets asynchronous fifo. If firmware wants to reset SRAM
-            FIFO, it should write 0 into read pointer and write pointer.
-
-            _Note_: This value should be controlled only when SPI interface is
-            in Idle state as this reset signal doesn't have reset synchronizer.
-            '''
-          resval: "0",
-        },
-        { bits: "31"
-          name: "sram_clk_en",
-          desc: '''SRAM Clock Enable.
-
-            This controls the clock gating cell lying on DP SRAM clock. As the
-            nature of absent of SPI_CLK in idle state, the clock mux for SRAM
-            B port cannot be glitch-free MUX. So, it is up to SW to change the
-            clock safely.
-
-            Programming sequence:
-
-              1. Check if SPI line is idle
-              2. Clear sram_clk_en to 0.
-              3. Change mode to FwMode for peri clk, FlashMode or PassThrough
-                 for SPI_CLK.
-              4. Set sram_clk_en to 1.
-          '''
-          resval: "1"
-        }
       ]
     },
     { name: "CFG",
@@ -528,16 +421,6 @@
           name: "rx_order",
           desc: "RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.",
           resval: "0",
-        },
-        { bits: "15:8",
-          name: "timer_v",
-          desc: '''
-            number of clocks for RXF to wait.
-
-            To reduce traffic to SRAM, RXF control module waits given clock cycle
-            if it doesn't fill SRAM data width even if Async RX FIFO is empty.
-            '''
-          resval: "0x7F",
         },
         { bits: "16"
           name: "addr_4b_en"
@@ -568,75 +451,12 @@
         } // f: mailbox_en
       ]
     },
-    { name: "FIFO_LEVEL",
-      desc: "RX/ TX FIFO levels.",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "15:0",
-          name: "rxlvl",
-          resval: "0x80",
-          desc: '''
-            RX FIFO level.
-
-            If RX SRAM FIFO level exceeds this value, it triggers interrupt.
-            '''
-        },
-        { bits: "31:16",
-          name: "txlvl",
-          resval: "0x0",
-          desc: '''
-            TX FIFO level.
-
-            If TX SRAM FIFO level drops below this value, it triggers interrupt.
-            '''
-        },
-      ],
-    },
-    { name: "ASYNC_FIFO_LEVEL",
-      desc: "RX/ TX Async FIFO levels between main clk and spi clock",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      fields: [
-        { bits:  "23:16",
-          name: "txlvl",
-          desc: '''
-            TX Async FIFO level.
-
-            This value shows the number of available entry in TX Async FIFO.
-            If the software writes message into SRAM FIFO and update FIFO write pointer
-            but no clock from the host is given, the data stuck at this async fifo waiting
-            host toggles SCK. This value represents the number of bytes.
-            '''
-        },
-        { bits: "7:0",
-          name: "rxlvl",
-          desc: '''
-            RX Async FIFO level.
-
-            This value shows the number of available entry in RX Async FIFO.
-            '''
-        }
-      ]
-    },
     { name: "STATUS",
       desc: "SPI Device status register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "0", name: "rxf_full",   desc: "RX FIFO full" },
-        { bits: "1", name: "rxf_empty",  desc: "RX FIFO empty", resval: "1"},
-        { bits: "2", name: "txf_full",   desc: "TX FIFO full"},
-        { bits: "3", name: "txf_empty",  desc: "TX FIFO empty", resval: "1"},
-        { bits: "4", name: "abort_done",
-          desc: '''Abort process is completed.
-
-            Current version does not implement abort_done logic. It is tied to
-            1 always.
-            '''
-          resval: "1" },
         { bits: "5", name: "csb",        desc: "Direct input of CSb signal", resval: "1" },
         { bits: "6"
           name: "tpm_csb"
@@ -649,90 +469,6 @@
           ]
         }
       ]
-    },
-    { name: "RXF_PTR",
-      desc: "Receiver FIFO (SRAM) pointers",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      fields: [
-        { bits: "15:0",
-          name: "RPTR",
-          desc: "Read pointer. bit x is for phase bit. check circular fifo description",
-          swaccess: "rw",
-          hwaccess: "hro",
-          resval: "0",
-          tags: [// Updating rptr will cause unexpected interrupts. These interrupts may take a
-                 // while to generate and cip_base_vseq::clear_all_interrupts may not be able to
-                 // clear them in time. Leftover interrupts will cause sim error
-                 "excl:CsrNonInitTests:CsrExclWrite"]
-        },
-        { bits: "31:16",
-          name: "WPTR",
-          desc: "Write pointer. Bit x is phase bit.",
-          swaccess: "ro",
-          hwaccess: "hwo",
-          resval: "0",
-        }
-      ]
-    },
-    { name: "TXF_PTR",
-      desc: "Transmitter FIFO (SRAM) pointers",
-      swaccess: "rw",
-      hwaccess: "hrw",
-      fields: [
-        { bits: "15:0",
-          name: "RPTR",
-          desc: "Read pointer. bit x is for phase bit. check circular fifo description",
-          swaccess: "ro",
-          hwaccess: "hwo",
-          resval: "0",
-        },
-        { bits: "31:16",
-          name: "WPTR",
-          desc: "Write pointer. Bit x is phase bit.",
-          swaccess: "rw",
-          hwaccess: "hro",
-          resval: "0",
-          tags: [// Updating rptr will cause unexpected interrupts. These interrupts may take a
-                 // while to generate and cip_base_vseq::clear_all_interrupts may not be able to
-                 // clear them in time. Leftover interrupts will cause sim error
-                 "excl:CsrNonInitTests:CsrExclWrite"]
-        }
-      ]
-    },
-    { name: "RXF_ADDR",
-      desc: "Receiver FIFO (SRAM) Addresses",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "15:0",
-          name: "base",
-          desc: "Base offset in bytes in the SRAM. Lower 2 bits are ignored.",
-          resval: "0",
-        },
-        { bits: "31:16",
-          name: "limit",
-          desc: "Limit offset in bytes in the SRAM. Lower 2 bits are ignored.",
-          resval: "0x1FC",
-        }
-      ],
-    },
-    { name: "TXF_ADDR",
-      desc: "Transmitter FIFO (SRAM) Addresses",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "15:0",
-          name: "base",
-          desc: "Base offset in bytes in the SRAM. Lower 2 bits are ignored.",
-          resval: "0x200",
-        },
-        { bits: "31:16",
-          name: "limit",
-          desc: "Limit offset in bytes in the SRAM. Lower 2 bits are ignored.",
-          resval: "0x3FC",
-        }
-      ],
     },
     //=========================================================================
     // Flash & Passthrough CSRs
@@ -1590,10 +1326,9 @@
         desc: '''
           SPI internal buffer.
 
-          In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
-          Passthrough mode, lower 2kB is for Read content emulating eFlash.
-          next 1kB is for Mailbox read/write buffer. The rest is 256B SFDP
-          buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
+          The lower 2kB is for Read content emulating eFlash. The next 1 kB is
+          for Mailbox read/write buffer. The rest is 256B SFDP buffer, 32B of
+          CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
           '''
       },
     },

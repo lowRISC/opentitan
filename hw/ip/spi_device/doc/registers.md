@@ -3,172 +3,148 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/spi_device/data/spi_device.hjson -->
 ## Summary
 
-| Name                                                     | Offset   |   Length | Description                                             |
-|:---------------------------------------------------------|:---------|---------:|:--------------------------------------------------------|
-| spi_device.[`INTR_STATE`](#intr_state)                   | 0x0      |        4 | Interrupt State Register                                |
-| spi_device.[`INTR_ENABLE`](#intr_enable)                 | 0x4      |        4 | Interrupt Enable Register                               |
-| spi_device.[`INTR_TEST`](#intr_test)                     | 0x8      |        4 | Interrupt Test Register                                 |
-| spi_device.[`ALERT_TEST`](#alert_test)                   | 0xc      |        4 | Alert Test Register                                     |
-| spi_device.[`CONTROL`](#control)                         | 0x10     |        4 | Control register                                        |
-| spi_device.[`CFG`](#cfg)                                 | 0x14     |        4 | Configuration Register                                  |
-| spi_device.[`FIFO_LEVEL`](#fifo_level)                   | 0x18     |        4 | RX/ TX FIFO levels.                                     |
-| spi_device.[`ASYNC_FIFO_LEVEL`](#async_fifo_level)       | 0x1c     |        4 | RX/ TX Async FIFO levels between main clk and spi clock |
-| spi_device.[`STATUS`](#status)                           | 0x20     |        4 | SPI Device status register                              |
-| spi_device.[`RXF_PTR`](#rxf_ptr)                         | 0x24     |        4 | Receiver FIFO (SRAM) pointers                           |
-| spi_device.[`TXF_PTR`](#txf_ptr)                         | 0x28     |        4 | Transmitter FIFO (SRAM) pointers                        |
-| spi_device.[`RXF_ADDR`](#rxf_addr)                       | 0x2c     |        4 | Receiver FIFO (SRAM) Addresses                          |
-| spi_device.[`TXF_ADDR`](#txf_addr)                       | 0x30     |        4 | Transmitter FIFO (SRAM) Addresses                       |
-| spi_device.[`INTERCEPT_EN`](#intercept_en)               | 0x34     |        4 | Intercept Passthrough datapath.                         |
-| spi_device.[`LAST_READ_ADDR`](#last_read_addr)           | 0x38     |        4 | Last Read Address                                       |
-| spi_device.[`FLASH_STATUS`](#flash_status)               | 0x3c     |        4 | SPI Flash Status register.                              |
-| spi_device.[`JEDEC_CC`](#jedec_cc)                       | 0x40     |        4 | JEDEC Continuation Code configuration register.         |
-| spi_device.[`JEDEC_ID`](#jedec_id)                       | 0x44     |        4 | JEDEC ID register.                                      |
-| spi_device.[`READ_THRESHOLD`](#read_threshold)           | 0x48     |        4 | Read Buffer threshold register.                         |
-| spi_device.[`MAILBOX_ADDR`](#mailbox_addr)               | 0x4c     |        4 | Mailbox Base address register.                          |
-| spi_device.[`UPLOAD_STATUS`](#upload_status)             | 0x50     |        4 | Upload module status register.                          |
-| spi_device.[`UPLOAD_STATUS2`](#upload_status2)           | 0x54     |        4 | Upload module status 2 register.                        |
-| spi_device.[`UPLOAD_CMDFIFO`](#upload_cmdfifo)           | 0x58     |        4 | Command Fifo Read Port.                                 |
-| spi_device.[`UPLOAD_ADDRFIFO`](#upload_addrfifo)         | 0x5c     |        4 | Address Fifo Read Port.                                 |
-| spi_device.[`CMD_FILTER_0`](#CMD_FILTER_0)               | 0x60     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_1`](#CMD_FILTER_1)               | 0x64     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_2`](#CMD_FILTER_2)               | 0x68     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_3`](#CMD_FILTER_3)               | 0x6c     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_4`](#CMD_FILTER_4)               | 0x70     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_5`](#CMD_FILTER_5)               | 0x74     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_6`](#CMD_FILTER_6)               | 0x78     |        4 | Command Filter                                          |
-| spi_device.[`CMD_FILTER_7`](#CMD_FILTER_7)               | 0x7c     |        4 | Command Filter                                          |
-| spi_device.[`ADDR_SWAP_MASK`](#addr_swap_mask)           | 0x80     |        4 | Address Swap Mask register.                             |
-| spi_device.[`ADDR_SWAP_DATA`](#addr_swap_data)           | 0x84     |        4 | The address value for the address swap feature.         |
-| spi_device.[`PAYLOAD_SWAP_MASK`](#payload_swap_mask)     | 0x88     |        4 | Write Data Swap in the passthrough mode.                |
-| spi_device.[`PAYLOAD_SWAP_DATA`](#payload_swap_data)     | 0x8c     |        4 | Write Data Swap in the passthrough mode.                |
-| spi_device.[`CMD_INFO_0`](#cmd_info)                     | 0x90     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_1`](#cmd_info)                     | 0x94     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_2`](#cmd_info)                     | 0x98     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_3`](#cmd_info)                     | 0x9c     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_4`](#cmd_info)                     | 0xa0     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_5`](#cmd_info)                     | 0xa4     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_6`](#cmd_info)                     | 0xa8     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_7`](#cmd_info)                     | 0xac     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_8`](#cmd_info)                     | 0xb0     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_9`](#cmd_info)                     | 0xb4     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_10`](#cmd_info)                    | 0xb8     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_11`](#cmd_info)                    | 0xbc     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_12`](#cmd_info)                    | 0xc0     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_13`](#cmd_info)                    | 0xc4     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_14`](#cmd_info)                    | 0xc8     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_15`](#cmd_info)                    | 0xcc     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_16`](#cmd_info)                    | 0xd0     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_17`](#cmd_info)                    | 0xd4     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_18`](#cmd_info)                    | 0xd8     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_19`](#cmd_info)                    | 0xdc     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_20`](#cmd_info)                    | 0xe0     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_21`](#cmd_info)                    | 0xe4     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_22`](#cmd_info)                    | 0xe8     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_23`](#cmd_info)                    | 0xec     |        4 | Command Info register.                                  |
-| spi_device.[`CMD_INFO_EN4B`](#cmd_info_en4b)             | 0xf0     |        4 | Opcode for EN4B.                                        |
-| spi_device.[`CMD_INFO_EX4B`](#cmd_info_ex4b)             | 0xf4     |        4 | Opcode for EX4B                                         |
-| spi_device.[`CMD_INFO_WREN`](#cmd_info_wren)             | 0xf8     |        4 | Opcode for Write Enable (WREN)                          |
-| spi_device.[`CMD_INFO_WRDI`](#cmd_info_wrdi)             | 0xfc     |        4 | Opcode for Write Disable (WRDI)                         |
-| spi_device.[`TPM_CAP`](#tpm_cap)                         | 0x800    |        4 | TPM HWIP Capability register.                           |
-| spi_device.[`TPM_CFG`](#tpm_cfg)                         | 0x804    |        4 | TPM Configuration register.                             |
-| spi_device.[`TPM_STATUS`](#tpm_status)                   | 0x808    |        4 | TPM submodule state register.                           |
-| spi_device.[`TPM_ACCESS_0`](#TPM_ACCESS_0)               | 0x80c    |        4 | TPM_ACCESS_x register.                                  |
-| spi_device.[`TPM_ACCESS_1`](#TPM_ACCESS_1)               | 0x810    |        4 | TPM_ACCESS_x register.                                  |
-| spi_device.[`TPM_STS`](#tpm_sts)                         | 0x814    |        4 | TPM_STS_x register.                                     |
-| spi_device.[`TPM_INTF_CAPABILITY`](#tpm_intf_capability) | 0x818    |        4 | TPM_INTF_CAPABILITY                                     |
-| spi_device.[`TPM_INT_ENABLE`](#tpm_int_enable)           | 0x81c    |        4 | TPM_INT_ENABLE                                          |
-| spi_device.[`TPM_INT_VECTOR`](#tpm_int_vector)           | 0x820    |        4 | TPM_INT_VECTOR                                          |
-| spi_device.[`TPM_INT_STATUS`](#tpm_int_status)           | 0x824    |        4 | TPM_INT_STATUS                                          |
-| spi_device.[`TPM_DID_VID`](#tpm_did_vid)                 | 0x828    |        4 | TPM_DID/ TPM_VID register                               |
-| spi_device.[`TPM_RID`](#tpm_rid)                         | 0x82c    |        4 | TPM_RID                                                 |
-| spi_device.[`TPM_CMD_ADDR`](#tpm_cmd_addr)               | 0x830    |        4 | TPM Command and Address buffer                          |
-| spi_device.[`TPM_READ_FIFO`](#tpm_read_fifo)             | 0x834    |        4 | TPM Read command return data FIFO.                      |
-| spi_device.[`TPM_WRITE_FIFO`](#tpm_write_fifo)           | 0x838    |        4 | TPM Write command received data FIFO.                   |
-| spi_device.[`buffer`](#buffer)                           | 0x1000   |     4096 | SPI internal buffer.                                    |
+| Name                                                     | Offset   |   Length | Description                                     |
+|:---------------------------------------------------------|:---------|---------:|:------------------------------------------------|
+| spi_device.[`INTR_STATE`](#intr_state)                   | 0x0      |        4 | Interrupt State Register                        |
+| spi_device.[`INTR_ENABLE`](#intr_enable)                 | 0x4      |        4 | Interrupt Enable Register                       |
+| spi_device.[`INTR_TEST`](#intr_test)                     | 0x8      |        4 | Interrupt Test Register                         |
+| spi_device.[`ALERT_TEST`](#alert_test)                   | 0xc      |        4 | Alert Test Register                             |
+| spi_device.[`CONTROL`](#control)                         | 0x10     |        4 | Control register                                |
+| spi_device.[`CFG`](#cfg)                                 | 0x14     |        4 | Configuration Register                          |
+| spi_device.[`STATUS`](#status)                           | 0x18     |        4 | SPI Device status register                      |
+| spi_device.[`INTERCEPT_EN`](#intercept_en)               | 0x1c     |        4 | Intercept Passthrough datapath.                 |
+| spi_device.[`LAST_READ_ADDR`](#last_read_addr)           | 0x20     |        4 | Last Read Address                               |
+| spi_device.[`FLASH_STATUS`](#flash_status)               | 0x24     |        4 | SPI Flash Status register.                      |
+| spi_device.[`JEDEC_CC`](#jedec_cc)                       | 0x28     |        4 | JEDEC Continuation Code configuration register. |
+| spi_device.[`JEDEC_ID`](#jedec_id)                       | 0x2c     |        4 | JEDEC ID register.                              |
+| spi_device.[`READ_THRESHOLD`](#read_threshold)           | 0x30     |        4 | Read Buffer threshold register.                 |
+| spi_device.[`MAILBOX_ADDR`](#mailbox_addr)               | 0x34     |        4 | Mailbox Base address register.                  |
+| spi_device.[`UPLOAD_STATUS`](#upload_status)             | 0x38     |        4 | Upload module status register.                  |
+| spi_device.[`UPLOAD_STATUS2`](#upload_status2)           | 0x3c     |        4 | Upload module status 2 register.                |
+| spi_device.[`UPLOAD_CMDFIFO`](#upload_cmdfifo)           | 0x40     |        4 | Command Fifo Read Port.                         |
+| spi_device.[`UPLOAD_ADDRFIFO`](#upload_addrfifo)         | 0x44     |        4 | Address Fifo Read Port.                         |
+| spi_device.[`CMD_FILTER_0`](#CMD_FILTER_0)               | 0x48     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_1`](#CMD_FILTER_1)               | 0x4c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_2`](#CMD_FILTER_2)               | 0x50     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_3`](#CMD_FILTER_3)               | 0x54     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_4`](#CMD_FILTER_4)               | 0x58     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_5`](#CMD_FILTER_5)               | 0x5c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_6`](#CMD_FILTER_6)               | 0x60     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_7`](#CMD_FILTER_7)               | 0x64     |        4 | Command Filter                                  |
+| spi_device.[`ADDR_SWAP_MASK`](#addr_swap_mask)           | 0x68     |        4 | Address Swap Mask register.                     |
+| spi_device.[`ADDR_SWAP_DATA`](#addr_swap_data)           | 0x6c     |        4 | The address value for the address swap feature. |
+| spi_device.[`PAYLOAD_SWAP_MASK`](#payload_swap_mask)     | 0x70     |        4 | Write Data Swap in the passthrough mode.        |
+| spi_device.[`PAYLOAD_SWAP_DATA`](#payload_swap_data)     | 0x74     |        4 | Write Data Swap in the passthrough mode.        |
+| spi_device.[`CMD_INFO_0`](#cmd_info)                     | 0x78     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_1`](#cmd_info)                     | 0x7c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_2`](#cmd_info)                     | 0x80     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_3`](#cmd_info)                     | 0x84     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_4`](#cmd_info)                     | 0x88     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_5`](#cmd_info)                     | 0x8c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_6`](#cmd_info)                     | 0x90     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_7`](#cmd_info)                     | 0x94     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_8`](#cmd_info)                     | 0x98     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_9`](#cmd_info)                     | 0x9c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_10`](#cmd_info)                    | 0xa0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_11`](#cmd_info)                    | 0xa4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_12`](#cmd_info)                    | 0xa8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_13`](#cmd_info)                    | 0xac     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_14`](#cmd_info)                    | 0xb0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_15`](#cmd_info)                    | 0xb4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_16`](#cmd_info)                    | 0xb8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_17`](#cmd_info)                    | 0xbc     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_18`](#cmd_info)                    | 0xc0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_19`](#cmd_info)                    | 0xc4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_20`](#cmd_info)                    | 0xc8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_21`](#cmd_info)                    | 0xcc     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_22`](#cmd_info)                    | 0xd0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_23`](#cmd_info)                    | 0xd4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_EN4B`](#cmd_info_en4b)             | 0xd8     |        4 | Opcode for EN4B.                                |
+| spi_device.[`CMD_INFO_EX4B`](#cmd_info_ex4b)             | 0xdc     |        4 | Opcode for EX4B                                 |
+| spi_device.[`CMD_INFO_WREN`](#cmd_info_wren)             | 0xe0     |        4 | Opcode for Write Enable (WREN)                  |
+| spi_device.[`CMD_INFO_WRDI`](#cmd_info_wrdi)             | 0xe4     |        4 | Opcode for Write Disable (WRDI)                 |
+| spi_device.[`TPM_CAP`](#tpm_cap)                         | 0x800    |        4 | TPM HWIP Capability register.                   |
+| spi_device.[`TPM_CFG`](#tpm_cfg)                         | 0x804    |        4 | TPM Configuration register.                     |
+| spi_device.[`TPM_STATUS`](#tpm_status)                   | 0x808    |        4 | TPM submodule state register.                   |
+| spi_device.[`TPM_ACCESS_0`](#TPM_ACCESS_0)               | 0x80c    |        4 | TPM_ACCESS_x register.                          |
+| spi_device.[`TPM_ACCESS_1`](#TPM_ACCESS_1)               | 0x810    |        4 | TPM_ACCESS_x register.                          |
+| spi_device.[`TPM_STS`](#tpm_sts)                         | 0x814    |        4 | TPM_STS_x register.                             |
+| spi_device.[`TPM_INTF_CAPABILITY`](#tpm_intf_capability) | 0x818    |        4 | TPM_INTF_CAPABILITY                             |
+| spi_device.[`TPM_INT_ENABLE`](#tpm_int_enable)           | 0x81c    |        4 | TPM_INT_ENABLE                                  |
+| spi_device.[`TPM_INT_VECTOR`](#tpm_int_vector)           | 0x820    |        4 | TPM_INT_VECTOR                                  |
+| spi_device.[`TPM_INT_STATUS`](#tpm_int_status)           | 0x824    |        4 | TPM_INT_STATUS                                  |
+| spi_device.[`TPM_DID_VID`](#tpm_did_vid)                 | 0x828    |        4 | TPM_DID/ TPM_VID register                       |
+| spi_device.[`TPM_RID`](#tpm_rid)                         | 0x82c    |        4 | TPM_RID                                         |
+| spi_device.[`TPM_CMD_ADDR`](#tpm_cmd_addr)               | 0x830    |        4 | TPM Command and Address buffer                  |
+| spi_device.[`TPM_READ_FIFO`](#tpm_read_fifo)             | 0x834    |        4 | TPM Read command return data FIFO.              |
+| spi_device.[`TPM_WRITE_FIFO`](#tpm_write_fifo)           | 0x838    |        4 | TPM Write command received data FIFO.           |
+| spi_device.[`buffer`](#buffer)                           | 0x1000   |     4096 | SPI internal buffer.                            |
 
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0xfff`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "generic_rx_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_tx_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_tx_underflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                                                                                         |
 |:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |                          | Reserved                                                                                                                                                                                                                                            |
-|   11   |   ro   |   0x0   | tpm_header_not_empty     | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
-|   10   |  rw1c  |   0x0   | readbuf_flip             | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
-|   9    |  rw1c  |   0x0   | readbuf_watermark        | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
-|   8    |  rw1c  |   0x0   | upload_payload_overflow  | Upload payload overflow event. When a SPI Host system issues a command with payload more than 256B, this event is reported. When it happens, SW should read the last written payload index CSR to figure out the starting address of the last 256B. |
-|   7    |  rw1c  |   0x0   | upload_payload_not_empty | Upload payload is not empty. The event occurs after SPI transaction completed                                                                                                                                                                       |
-|   6    |  rw1c  |   0x0   | upload_cmdfifo_not_empty | Upload Command FIFO is not empty                                                                                                                                                                                                                    |
-|   5    |  rw1c  |   0x0   | generic_tx_underflow     | TX Async FIFO underflow                                                                                                                                                                                                                             |
-|   4    |  rw1c  |   0x0   | generic_rx_overflow      | RX Async FIFO overflow                                                                                                                                                                                                                              |
-|   3    |  rw1c  |   0x0   | generic_rx_error         | SDI in FwMode has error                                                                                                                                                                                                                             |
-|   2    |  rw1c  |   0x0   | generic_tx_watermark     | TX SRAM FIFO is under the level                                                                                                                                                                                                                     |
-|   1    |  rw1c  |   0x0   | generic_rx_watermark     | RX SRAM FIFO is above the level                                                                                                                                                                                                                     |
-|   0    |  rw1c  |   0x0   | generic_rx_full          | RX SRAM FIFO Full                                                                                                                                                                                                                                   |
+|  31:6  |        |         |                          | Reserved                                                                                                                                                                                                                                            |
+|   5    |   ro   |   0x0   | tpm_header_not_empty     | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
+|   4    |  rw1c  |   0x0   | readbuf_flip             | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
+|   3    |  rw1c  |   0x0   | readbuf_watermark        | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
+|   2    |  rw1c  |   0x0   | upload_payload_overflow  | Upload payload overflow event. When a SPI Host system issues a command with payload more than 256B, this event is reported. When it happens, SW should read the last written payload index CSR to figure out the starting address of the last 256B. |
+|   1    |  rw1c  |   0x0   | upload_payload_not_empty | Upload payload is not empty. The event occurs after SPI transaction completed                                                                                                                                                                       |
+|   0    |  rw1c  |   0x0   | upload_cmdfifo_not_empty | Upload Command FIFO is not empty                                                                                                                                                                                                                    |
 
 ## INTR_ENABLE
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xfff`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "generic_rx_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "generic_rx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "generic_tx_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "generic_rx_error", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "generic_rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "generic_tx_underflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                        |
 |:------:|:------:|:-------:|:-------------------------|:-----------------------------------------------------------------------------------|
-| 31:12  |        |         |                          | Reserved                                                                           |
-|   11   |   rw   |   0x0   | tpm_header_not_empty     | Enable interrupt when [`INTR_STATE.tpm_header_not_empty`](#intr_state) is set.     |
-|   10   |   rw   |   0x0   | readbuf_flip             | Enable interrupt when [`INTR_STATE.readbuf_flip`](#intr_state) is set.             |
-|   9    |   rw   |   0x0   | readbuf_watermark        | Enable interrupt when [`INTR_STATE.readbuf_watermark`](#intr_state) is set.        |
-|   8    |   rw   |   0x0   | upload_payload_overflow  | Enable interrupt when [`INTR_STATE.upload_payload_overflow`](#intr_state) is set.  |
-|   7    |   rw   |   0x0   | upload_payload_not_empty | Enable interrupt when [`INTR_STATE.upload_payload_not_empty`](#intr_state) is set. |
-|   6    |   rw   |   0x0   | upload_cmdfifo_not_empty | Enable interrupt when [`INTR_STATE.upload_cmdfifo_not_empty`](#intr_state) is set. |
-|   5    |   rw   |   0x0   | generic_tx_underflow     | Enable interrupt when [`INTR_STATE.generic_tx_underflow`](#intr_state) is set.     |
-|   4    |   rw   |   0x0   | generic_rx_overflow      | Enable interrupt when [`INTR_STATE.generic_rx_overflow`](#intr_state) is set.      |
-|   3    |   rw   |   0x0   | generic_rx_error         | Enable interrupt when [`INTR_STATE.generic_rx_error`](#intr_state) is set.         |
-|   2    |   rw   |   0x0   | generic_tx_watermark     | Enable interrupt when [`INTR_STATE.generic_tx_watermark`](#intr_state) is set.     |
-|   1    |   rw   |   0x0   | generic_rx_watermark     | Enable interrupt when [`INTR_STATE.generic_rx_watermark`](#intr_state) is set.     |
-|   0    |   rw   |   0x0   | generic_rx_full          | Enable interrupt when [`INTR_STATE.generic_rx_full`](#intr_state) is set.          |
+|  31:6  |        |         |                          | Reserved                                                                           |
+|   5    |   rw   |   0x0   | tpm_header_not_empty     | Enable interrupt when [`INTR_STATE.tpm_header_not_empty`](#intr_state) is set.     |
+|   4    |   rw   |   0x0   | readbuf_flip             | Enable interrupt when [`INTR_STATE.readbuf_flip`](#intr_state) is set.             |
+|   3    |   rw   |   0x0   | readbuf_watermark        | Enable interrupt when [`INTR_STATE.readbuf_watermark`](#intr_state) is set.        |
+|   2    |   rw   |   0x0   | upload_payload_overflow  | Enable interrupt when [`INTR_STATE.upload_payload_overflow`](#intr_state) is set.  |
+|   1    |   rw   |   0x0   | upload_payload_not_empty | Enable interrupt when [`INTR_STATE.upload_payload_not_empty`](#intr_state) is set. |
+|   0    |   rw   |   0x0   | upload_cmdfifo_not_empty | Enable interrupt when [`INTR_STATE.upload_cmdfifo_not_empty`](#intr_state) is set. |
 
 ## INTR_TEST
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0xfff`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "generic_rx_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "generic_rx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "generic_tx_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "generic_rx_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "generic_rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "generic_tx_underflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                 |
 |:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------|
-| 31:12  |        |         |                          | Reserved                                                                    |
-|   11   |   wo   |   0x0   | tpm_header_not_empty     | Write 1 to force [`INTR_STATE.tpm_header_not_empty`](#intr_state) to 1.     |
-|   10   |   wo   |   0x0   | readbuf_flip             | Write 1 to force [`INTR_STATE.readbuf_flip`](#intr_state) to 1.             |
-|   9    |   wo   |   0x0   | readbuf_watermark        | Write 1 to force [`INTR_STATE.readbuf_watermark`](#intr_state) to 1.        |
-|   8    |   wo   |   0x0   | upload_payload_overflow  | Write 1 to force [`INTR_STATE.upload_payload_overflow`](#intr_state) to 1.  |
-|   7    |   wo   |   0x0   | upload_payload_not_empty | Write 1 to force [`INTR_STATE.upload_payload_not_empty`](#intr_state) to 1. |
-|   6    |   wo   |   0x0   | upload_cmdfifo_not_empty | Write 1 to force [`INTR_STATE.upload_cmdfifo_not_empty`](#intr_state) to 1. |
-|   5    |   wo   |   0x0   | generic_tx_underflow     | Write 1 to force [`INTR_STATE.generic_tx_underflow`](#intr_state) to 1.     |
-|   4    |   wo   |   0x0   | generic_rx_overflow      | Write 1 to force [`INTR_STATE.generic_rx_overflow`](#intr_state) to 1.      |
-|   3    |   wo   |   0x0   | generic_rx_error         | Write 1 to force [`INTR_STATE.generic_rx_error`](#intr_state) to 1.         |
-|   2    |   wo   |   0x0   | generic_tx_watermark     | Write 1 to force [`INTR_STATE.generic_tx_watermark`](#intr_state) to 1.     |
-|   1    |   wo   |   0x0   | generic_rx_watermark     | Write 1 to force [`INTR_STATE.generic_rx_watermark`](#intr_state) to 1.     |
-|   0    |   wo   |   0x0   | generic_rx_full          | Write 1 to force [`INTR_STATE.generic_rx_full`](#intr_state) to 1.          |
+|  31:6  |        |         |                          | Reserved                                                                    |
+|   5    |   wo   |   0x0   | tpm_header_not_empty     | Write 1 to force [`INTR_STATE.tpm_header_not_empty`](#intr_state) to 1.     |
+|   4    |   wo   |   0x0   | readbuf_flip             | Write 1 to force [`INTR_STATE.readbuf_flip`](#intr_state) to 1.             |
+|   3    |   wo   |   0x0   | readbuf_watermark        | Write 1 to force [`INTR_STATE.readbuf_watermark`](#intr_state) to 1.        |
+|   2    |   wo   |   0x0   | upload_payload_overflow  | Write 1 to force [`INTR_STATE.upload_payload_overflow`](#intr_state) to 1.  |
+|   1    |   wo   |   0x0   | upload_payload_not_empty | Write 1 to force [`INTR_STATE.upload_payload_not_empty`](#intr_state) to 1. |
+|   0    |   wo   |   0x0   | upload_cmdfifo_not_empty | Write 1 to force [`INTR_STATE.upload_cmdfifo_not_empty`](#intr_state) to 1. |
 
 ## ALERT_TEST
 Alert Test Register
@@ -190,90 +166,42 @@ Alert Test Register
 ## CONTROL
 Control register
 - Offset: `0x10`
-- Reset default: `0x80000010`
-- Reset mask: `0x80030031`
+- Reset default: `0x10`
+- Reset mask: `0x30`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ABORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 10}, {"name": "rst_txfifo", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst_rxfifo", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 13}, {"name": "sram_clk_en", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"bits": 4}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                 |
-|:------:|:------:|:-------:|:-------------------------------------|
-|   31   |   rw   |   0x1   | [sram_clk_en](#control--sram_clk_en) |
-| 30:18  |        |         | Reserved                             |
-|   17   |   rw   |   0x0   | [rst_rxfifo](#control--rst_rxfifo)   |
-|   16   |   rw   |   0x0   | [rst_txfifo](#control--rst_txfifo)   |
-|  15:6  |        |         | Reserved                             |
-|  5:4   |   rw   |   0x1   | [MODE](#control--mode)               |
-|  3:1   |        |         | Reserved                             |
-|   0    |   rw   |   0x0   | [ABORT](#control--abort)             |
-
-### CONTROL . sram_clk_en
-SRAM Clock Enable.
-
-This controls the clock gating cell lying on DP SRAM clock. As the
-nature of absent of SPI_CLK in idle state, the clock mux for SRAM
-B port cannot be glitch-free MUX. So, it is up to SW to change the
-clock safely.
-
-Programming sequence:
-
-1. Check if SPI line is idle
-2. Clear sram_clk_en to 0.
-3. Change mode to FwMode for peri clk, FlashMode or PassThrough
- for SPI_CLK.
-4. Set sram_clk_en to 1.
-
-### CONTROL . rst_rxfifo
-Reset Async RX_FIFO.
-
-This only resets asynchronous fifo. If firmware wants to reset SRAM
-FIFO, it should write 0 into read pointer and write pointer.
-
-_Note_: This value should be controlled only when SPI interface is
-in Idle state as this reset signal doesn't have reset synchronizer.
-
-### CONTROL . rst_txfifo
-Reset Async TX_FIFO.
-
-This only resets asynchronous fifo. If firmware wants to reset SRAM
-FIFO, it should write 0 into read/write pointers.
-
-_Note_: This value should be controlled only when SPI interface is
-in Idle state as this reset signal doesn't have reset synchronizer.
+|  Bits  |  Type  |  Reset  | Name                   |
+|:------:|:------:|:-------:|:-----------------------|
+|  31:6  |        |         | Reserved               |
+|  5:4   |   rw   |   0x1   | [MODE](#control--mode) |
+|  3:0   |        |         | Reserved               |
 
 ### CONTROL . MODE
-SPI Device operation mode. Currently only FwMode is supported.
+SPI Device flash operation mode.
 
 | Value   | Name        | Description                                                                                                                                                                                                                                                                |
 |:--------|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | fwmode      | FW operation mode. HW just dumps incoming data to SRAM and reads from SRAM and sends to SDO. This mode doesn't support Dual or Quad mode                                                                                                                                   |
+| 0x0     | disabled    | SPI Flash operations disabled. SPI device flash operations are disabled, and all transactions are ignored. Note that SPI TPM operations are controlled by !!TPM_CFG                                                                                                        |
 | 0x1     | flashmode   | SPI Flash Emulation mode. In flash mode, SPI Device IP accepts SPI Flash commands and processes internally, then returns data for the read commands. HW processes the Status, JEDEC ID, SFDP commands. The current version does not support Dual/Quad IO and QPI commands. |
 | 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissable commands.                                     |
 
 Other values are reserved.
 
-### CONTROL . ABORT
-Abort pending TX data in Generic mode.
-
-If TX_FIFO (Asynchronous) is full, the TXF waits indefinitely to
-push the next byte into the asynchronous FIFO. SW may reset the
-Async FIFO along with aborting the current task. SW should update
-the write pointer of the TXF in order not to push the byte to
-Asynchronous FIFO again by TXF logic.
-
 ## CFG
 Configuration Register
 - Offset: `0x14`
-- Reset default: `0x7f00`
-- Reset mask: `0x101ff0f`
+- Reset default: `0x0`
+- Reset mask: `0x101000f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CPOL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CPHA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "timer_v", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "addr_4b_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "CPOL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CPHA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 12}, {"name": "addr_4b_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                           |
@@ -282,8 +210,7 @@ Configuration Register
 |   24   |   rw   |   0x0   | [mailbox_en](#cfg--mailbox_en) |
 | 23:17  |        |         | Reserved                       |
 |   16   |   rw   |   0x0   | [addr_4b_en](#cfg--addr_4b_en) |
-|  15:8  |   rw   |  0x7f   | [timer_v](#cfg--timer_v)       |
-|  7:4   |        |         | Reserved                       |
+|  15:4  |        |         | Reserved                       |
 |   3    |   rw   |   0x0   | [rx_order](#cfg--rx_order)     |
 |   2    |   rw   |   0x0   | [tx_order](#cfg--tx_order)     |
 |   1    |   rw   |   0x0   | [CPHA](#cfg--cpha)             |
@@ -310,12 +237,6 @@ Even though Read SFDP command has address fields, the SFDP command
 is not affected by this field. The command always parse 24 bits on
 the SPI line 0 following the SPI command as the address field.
 
-### CFG . timer_v
-number of clocks for RXF to wait.
-
-To reduce traffic to SRAM, RXF control module waits given clock cycle
-if it doesn't fill SRAM data width even if Async RX FIFO is empty.
-
 ### CFG . rx_order
 RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.
 
@@ -328,150 +249,29 @@ Data phase. 0 for negative edge change, 1 for positive edge change
 ### CFG . CPOL
 Clock polarity. 0 for normal SPI, 1 for negative edge latch
 
-## FIFO_LEVEL
-RX/ TX FIFO levels.
-- Offset: `0x18`
-- Reset default: `0x80`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "rxlvl", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "txlvl", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                         |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | txlvl  | TX FIFO level. If TX SRAM FIFO level drops below this value, it triggers interrupt. |
-|  15:0  |   rw   |  0x80   | rxlvl  | RX FIFO level. If RX SRAM FIFO level exceeds this value, it triggers interrupt.     |
-
-## ASYNC_FIFO_LEVEL
-RX/ TX Async FIFO levels between main clk and spi clock
-- Offset: `0x1c`
-- Reset default: `0x0`
-- Reset mask: `0xff00ff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "rxlvl", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 8}, {"name": "txlvl", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                              |
-|:------:|:------:|:-------:|:----------------------------------|
-| 31:24  |        |         | Reserved                          |
-| 23:16  |   ro   |    x    | [txlvl](#async_fifo_level--txlvl) |
-|  15:8  |        |         | Reserved                          |
-|  7:0   |   ro   |    x    | [rxlvl](#async_fifo_level--rxlvl) |
-
-### ASYNC_FIFO_LEVEL . txlvl
-TX Async FIFO level.
-
-This value shows the number of available entry in TX Async FIFO.
-If the software writes message into SRAM FIFO and update FIFO write pointer
-but no clock from the host is given, the data stuck at this async fifo waiting
-host toggles SCK. This value represents the number of bytes.
-
-### ASYNC_FIFO_LEVEL . rxlvl
-RX Async FIFO level.
-
-This value shows the number of available entry in RX Async FIFO.
-
 ## STATUS
 SPI Device status register
-- Offset: `0x20`
-- Reset default: `0x7a`
-- Reset mask: `0x7f`
+- Offset: `0x18`
+- Reset default: `0x60`
+- Reset mask: `0x60`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "rxf_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rxf_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "txf_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "txf_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "abort_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tpm_csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"bits": 5}, {"name": "csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tpm_csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                              |
-|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------|
-|  31:7  |        |         |            | Reserved                                                                                                 |
-|   6    |   ro   |   0x1   | tpm_csb    | Direct input of TPM CSb                                                                                  |
-|   5    |   ro   |   0x1   | csb        | Direct input of CSb signal                                                                               |
-|   4    |   ro   |   0x1   | abort_done | Abort process is completed. Current version does not implement abort_done logic. It is tied to 1 always. |
-|   3    |   ro   |   0x1   | txf_empty  | TX FIFO empty                                                                                            |
-|   2    |   ro   |    x    | txf_full   | TX FIFO full                                                                                             |
-|   1    |   ro   |   0x1   | rxf_empty  | RX FIFO empty                                                                                            |
-|   0    |   ro   |    x    | rxf_full   | RX FIFO full                                                                                             |
-
-## RXF_PTR
-Receiver FIFO (SRAM) pointers
-- Offset: `0x24`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "RPTR", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "WPTR", "bits": 16, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                           |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------|
-| 31:16  |   ro   |   0x0   | WPTR   | Write pointer. Bit x is phase bit.                                    |
-|  15:0  |   rw   |   0x0   | RPTR   | Read pointer. bit x is for phase bit. check circular fifo description |
-
-## TXF_PTR
-Transmitter FIFO (SRAM) pointers
-- Offset: `0x28`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "RPTR", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "WPTR", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                           |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | WPTR   | Write pointer. Bit x is phase bit.                                    |
-|  15:0  |   ro   |   0x0   | RPTR   | Read pointer. bit x is for phase bit. check circular fifo description |
-
-## RXF_ADDR
-Receiver FIFO (SRAM) Addresses
-- Offset: `0x2c`
-- Reset default: `0x1fc0000`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "base", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "limit", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                  |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------|
-| 31:16  |   rw   |  0x1fc  | limit  | Limit offset in bytes in the SRAM. Lower 2 bits are ignored. |
-|  15:0  |   rw   |   0x0   | base   | Base offset in bytes in the SRAM. Lower 2 bits are ignored.  |
-
-## TXF_ADDR
-Transmitter FIFO (SRAM) Addresses
-- Offset: `0x30`
-- Reset default: `0x3fc0200`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "base", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "limit", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                  |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------|
-| 31:16  |   rw   |  0x3fc  | limit  | Limit offset in bytes in the SRAM. Lower 2 bits are ignored. |
-|  15:0  |   rw   |  0x200  | base   | Base offset in bytes in the SRAM. Lower 2 bits are ignored.  |
+|  Bits  |  Type  |  Reset  | Name    | Description                |
+|:------:|:------:|:-------:|:--------|:---------------------------|
+|  31:7  |        |         |         | Reserved                   |
+|   6    |   ro   |   0x1   | tpm_csb | Direct input of TPM CSb    |
+|   5    |   ro   |   0x1   | csb     | Direct input of CSb signal |
+|  4:0   |        |         |         | Reserved                   |
 
 ## INTERCEPT_EN
 Intercept Passthrough datapath.
 
-- Offset: `0x34`
+- Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -494,7 +294,7 @@ Last Read Address
 
 This register shows the last address accessed by the host system.
 It is updated by the HW when CSb is de-asserted.
-- Offset: `0x38`
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -519,7 +319,7 @@ maintain this register value up to date.
 The HW latches the value when SPI Flash transaction begins. Any updates
 during the transaction will be updated after the transaction is
 completed.
-- Offset: `0x3c`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffff`
 
@@ -573,7 +373,7 @@ JEDEC Continuation Code configuration register.
 Read JEDEC ID must return the continuation code if the manufacturer ID
 is not shown in the first page of JEDEC table. This register controls
 the Continuation Code.
-- Offset: `0x40`
+- Offset: `0x28`
 - Reset default: `0x7f`
 - Reset mask: `0xffff`
 
@@ -591,7 +391,7 @@ the Continuation Code.
 
 ## JEDEC_ID
 JEDEC ID register.
-- Offset: `0x44`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffff`
 
@@ -610,7 +410,7 @@ JEDEC ID register.
 ## READ_THRESHOLD
 Read Buffer threshold register.
 
-- Offset: `0x48`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
 
@@ -630,7 +430,7 @@ Mailbox Base address register.
 
 The mailbox size is fixed. In this version of IP, the size is 1kB.
 Lower 10 bits of the Mailbox address is tied to 0.
-- Offset: `0x4c`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -646,7 +446,7 @@ Lower 10 bits of the Mailbox address is tied to 0.
 
 ## UPLOAD_STATUS
 Upload module status register.
-- Offset: `0x50`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x9f9f`
 
@@ -678,7 +478,7 @@ payload in a command, this field may not be 0. For example, if the
 system issues 258B payload, the payload_depth is 256 (as the IP only
 holds 256B of payload), the payload_start_idx is 2. SW should read from
 2 to 255 then 0 and 1.
-- Offset: `0x54`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0xff01ff`
 
@@ -697,7 +497,7 @@ holds 256B of payload), the payload_start_idx is 2. SW should read from
 
 ## UPLOAD_CMDFIFO
 Command Fifo Read Port.
-- Offset: `0x58`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -714,7 +514,7 @@ Command Fifo Read Port.
 
 ## UPLOAD_ADDRFIFO
 Address Fifo Read Port.
-- Offset: `0x5c`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -733,7 +533,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x60`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -783,7 +583,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x64`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -833,7 +633,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x68`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -883,7 +683,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x6c`
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -933,7 +733,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x70`
+- Offset: `0x58`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -983,7 +783,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x74`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1033,7 +833,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x78`
+- Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1083,7 +883,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x7c`
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1136,7 +936,7 @@ this register is set, the corresponding address bit in the SPI Read
 commands is replaced with the data from [`ADDR_SWAP_DATA.`](#addr_swap_data)
 
 If 3B address mode is active, upper 8bit [31:24] is ignored.
-- Offset: `0x80`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1152,7 +952,7 @@ If 3B address mode is active, upper 8bit [31:24] is ignored.
 
 ## ADDR_SWAP_DATA
 The address value for the address swap feature.
-- Offset: `0x84`
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1171,7 +971,7 @@ Write Data Swap in the passthrough mode.
 
 PAYLOAD_SWAP_MASK CSR provides the SW to change certain bits in the
 first 4 bytes of the write payload in the passthrough mode.
-- Offset: `0x88`
+- Offset: `0x70`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1195,7 +995,7 @@ passthrough mode.
 The register should be written in Little-Endian order. [7:0] bits are
 processed in the first received payload byte. [31:24] bits for the 4th
 byte.
-- Offset: `0x8c`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1219,30 +1019,30 @@ Command Info register.
 
 | Name        | Offset   |
 |:------------|:---------|
-| CMD_INFO_0  | 0x90     |
-| CMD_INFO_1  | 0x94     |
-| CMD_INFO_2  | 0x98     |
-| CMD_INFO_3  | 0x9c     |
-| CMD_INFO_4  | 0xa0     |
-| CMD_INFO_5  | 0xa4     |
-| CMD_INFO_6  | 0xa8     |
-| CMD_INFO_7  | 0xac     |
-| CMD_INFO_8  | 0xb0     |
-| CMD_INFO_9  | 0xb4     |
-| CMD_INFO_10 | 0xb8     |
-| CMD_INFO_11 | 0xbc     |
-| CMD_INFO_12 | 0xc0     |
-| CMD_INFO_13 | 0xc4     |
-| CMD_INFO_14 | 0xc8     |
-| CMD_INFO_15 | 0xcc     |
-| CMD_INFO_16 | 0xd0     |
-| CMD_INFO_17 | 0xd4     |
-| CMD_INFO_18 | 0xd8     |
-| CMD_INFO_19 | 0xdc     |
-| CMD_INFO_20 | 0xe0     |
-| CMD_INFO_21 | 0xe4     |
-| CMD_INFO_22 | 0xe8     |
-| CMD_INFO_23 | 0xec     |
+| CMD_INFO_0  | 0x78     |
+| CMD_INFO_1  | 0x7c     |
+| CMD_INFO_2  | 0x80     |
+| CMD_INFO_3  | 0x84     |
+| CMD_INFO_4  | 0x88     |
+| CMD_INFO_5  | 0x8c     |
+| CMD_INFO_6  | 0x90     |
+| CMD_INFO_7  | 0x94     |
+| CMD_INFO_8  | 0x98     |
+| CMD_INFO_9  | 0x9c     |
+| CMD_INFO_10 | 0xa0     |
+| CMD_INFO_11 | 0xa4     |
+| CMD_INFO_12 | 0xa8     |
+| CMD_INFO_13 | 0xac     |
+| CMD_INFO_14 | 0xb0     |
+| CMD_INFO_15 | 0xb4     |
+| CMD_INFO_16 | 0xb8     |
+| CMD_INFO_17 | 0xbc     |
+| CMD_INFO_18 | 0xc0     |
+| CMD_INFO_19 | 0xc4     |
+| CMD_INFO_20 | 0xc8     |
+| CMD_INFO_21 | 0xcc     |
+| CMD_INFO_22 | 0xd0     |
+| CMD_INFO_23 | 0xd4     |
 
 
 ### Fields
@@ -1355,7 +1155,7 @@ Command Opcode
 Opcode for EN4B.
 
 If the register is active, it affects in flash / passthrough modes.
-- Offset: `0xf0`
+- Offset: `0xd8`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1373,7 +1173,7 @@ If the register is active, it affects in flash / passthrough modes.
 
 ## CMD_INFO_EX4B
 Opcode for EX4B
-- Offset: `0xf4`
+- Offset: `0xdc`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1391,7 +1191,7 @@ Opcode for EX4B
 
 ## CMD_INFO_WREN
 Opcode for Write Enable (WREN)
-- Offset: `0xf8`
+- Offset: `0xe0`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1409,7 +1209,7 @@ Opcode for Write Enable (WREN)
 
 ## CMD_INFO_WRDI
 Opcode for Write Disable (WRDI)
-- Offset: `0xfc`
+- Offset: `0xe4`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1777,10 +1577,9 @@ TPM Write command received data FIFO.
 ## buffer
 SPI internal buffer.
 
-In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
-Passthrough mode, lower 2kB is for Read content emulating eFlash.
-next 1kB is for Mailbox read/write buffer. The rest is 256B SFDP
-buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
+The lower 2kB is for Read content emulating eFlash. The next 1 kB is
+for Mailbox read/write buffer. The rest is 256B SFDP buffer, 32B of
+CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
 
 - Word Aligned Offset Range: `0x1000`to`0x1ffc`
 - Size (words): `1024`

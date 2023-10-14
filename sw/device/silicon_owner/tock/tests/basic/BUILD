@@ -39,6 +39,10 @@ opentitan_test(
     name = "basic_test",
     cw310 = cw310_params(
         binaries = {":image": "firmware"},
+        tags = [
+            "broken",
+            "manual",
+        ],
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,

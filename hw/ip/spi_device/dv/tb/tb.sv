@@ -28,12 +28,6 @@ module tb;
   spi_device_pkg::passthrough_req_t pass_out;
   spi_device_pkg::passthrough_rsp_t pass_in;
 
-  wire intr_rxf;
-  wire intr_rxlvl;
-  wire intr_txlvl;
-  wire intr_rxerr;
-  wire intr_rxoverflow;
-  wire intr_txunderflow;
   wire intr_cmdfifo_not_empty;
   wire intr_payload_not_empty;
   wire intr_payload_overflow;
@@ -72,12 +66,6 @@ module tb;
     .passthrough_i  (pass_in   ),
     .passthrough_o  (pass_out  ),
 
-    .intr_generic_rx_full_o             (intr_rxf  ),
-    .intr_generic_rx_watermark_o        (intr_rxlvl),
-    .intr_generic_tx_watermark_o        (intr_txlvl),
-    .intr_generic_rx_error_o            (intr_rxerr),
-    .intr_generic_rx_overflow_o         (intr_rxoverflow),
-    .intr_generic_tx_underflow_o        (intr_txunderflow),
     .intr_upload_cmdfifo_not_empty_o   (intr_cmdfifo_not_empty),
     .intr_upload_payload_not_empty_o   (intr_payload_not_empty),
     .intr_upload_payload_overflow_o    (intr_payload_overflow),
@@ -116,12 +104,6 @@ module tb;
   `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 2)
   `CONNECT_SPI_IO_PASS(spi_if_pass, pass_in.s, pass_out.s, pass_out.s_en, 3)
 
-  assign interrupts[RxFifoFull]      = intr_rxf;
-  assign interrupts[RxFifoGeLevel]   = intr_rxlvl;
-  assign interrupts[TxFifoLtLevel]   = intr_txlvl;
-  assign interrupts[RxFwModeErr]     = intr_rxerr;
-  assign interrupts[RxFifoOverflow]  = intr_rxoverflow;
-  assign interrupts[TxFifoUnderflow] = intr_txunderflow;
   assign interrupts[CmdFifoNotEmpty]   = intr_cmdfifo_not_empty;
   assign interrupts[PayloadNotEmpty]   = intr_payload_not_empty;
   assign interrupts[PayloadOverflow]   = intr_payload_overflow;

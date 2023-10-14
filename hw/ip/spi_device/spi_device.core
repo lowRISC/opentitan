@@ -22,9 +22,6 @@ filesets:
       - lowrisc:ip:spi_device_pkg
     files:
       - rtl/spi_device_reg_top.sv
-      - rtl/spi_fwm_rxf_ctrl.sv
-      - rtl/spi_fwm_txf_ctrl.sv
-      - rtl/spi_fwmode.sv
       - rtl/spi_cmdparse.sv
       - rtl/spid_readsram.sv
       - rtl/spid_readbuffer.sv

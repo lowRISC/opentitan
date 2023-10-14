@@ -502,7 +502,6 @@ void spi_device_init(void) {
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_CPHA_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_TX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_RX_ORDER_BIT, false);
-  reg = bitfield_field32_write(reg, SPI_DEVICE_CFG_TIMER_V_FIELD, 0x7f);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, false);
   abs_mmio_write32(kBase + SPI_DEVICE_CFG_REG_OFFSET, reg);

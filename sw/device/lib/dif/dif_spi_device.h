@@ -29,10 +29,9 @@ extern "C" {
  */
 typedef enum dif_spi_device_mode {
   /**
-   * In the generic firmware mode, the hardware dumps incoming data to SRAM and
-   * outgoing data from the SRAM.
+   * spi_device will ignore all transactions in this mode configuration.
    */
-  kDifSpiDeviceModeGeneric = 0,
+  kDifSpiDeviceModeDisabled = 0,
   /**
    * In flash emulation mode, the hardware behaves like a SPI NOR flash device.
    */
@@ -75,26 +74,6 @@ typedef enum dif_spi_device_bit_order {
   kDifSpiDeviceBitOrderLsbToMsb,
 } dif_spi_device_bit_order_t;
 
-typedef struct dif_spi_device_generic_mode_config {
-  /**
-   * The length, in bytes, that should be reserved for the RX FIFO.
-   *
-   * `kDifSpiDeviceBufferLen / 2` is a good default for this value.
-   */
-  uint16_t rx_fifo_len;
-  /**
-   * The length, in bytes, that should be reserved for the TX FIFO.
-   *
-   * `kDifSpiDeviceBufferLen / 2` is a good default for this value.
-   */
-  uint16_t tx_fifo_len;
-  /**
-   * The number of bus clock cycles that the RX FIFO waits before committing a
-   * sub-word data item to the SRAM. Only used in Generic Mode.
-   */
-  uint8_t rx_fifo_commit_wait;
-} dif_spi_device_generic_mode_config_t;
-
 /**
  * Runtime configuration for SPI.
  *
@@ -107,9 +86,6 @@ typedef struct dif_spi_device_config {
   dif_spi_device_bit_order_t tx_order;
   dif_spi_device_bit_order_t rx_order;
   dif_spi_device_mode_t device_mode;
-  union {
-    dif_spi_device_generic_mode_config_t generic;
-  } mode_cfg;
 } dif_spi_device_config_t;
 
 /**
@@ -173,161 +149,6 @@ dif_result_t dif_spi_device_set_passthrough_mode(dif_spi_device_handle_t *spi,
                                                  dif_toggle_t enable);
 
 /**
- * Resets the asynchronous TX FIFO in generic mode.
- *
- * This function should only be called when the upstream spi host is held in
- * reset or otherwise is inactive.
- *
- * @param spi A SPI handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_reset_generic_tx_fifo(dif_spi_device_handle_t *spi);
-
-/**
- * Resets the asynchronous RX FIFO in generic mode.
- *
- * This function should only be called when the upstream spi host is held in
- * reset or otherwise is inactive.
- *
- * @param spi A SPI handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_reset_generic_rx_fifo(dif_spi_device_handle_t *spi);
-
-/**
- * Enable or disable the clock for the SRAM backing all the various memory and
- * FIFO-related functions.
- *
- * This function should only be called when the upstream spi host is held in
- * reset or otherwise is inactive.
- *
- * @param spi A SPI handle.
- * @param enable Whether to enable or disable the clock.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_set_sram_clock_enable(dif_spi_device_handle_t *spi,
-                                                  dif_toggle_t enable);
-
-/**
- * Get the current enablement state for the clock of the SRAM backing all the
- * various memory and FIFO-related functions.
- *
- * This function should only be called when the upstream spi host is held in
- * reset or otherwise is inactive.
- *
- * @param spi A SPI handle.
- * @param[out] enabled Whether the clock is enabled or disabled.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_get_sram_clock_enable(dif_spi_device_handle_t *spi,
-                                                  dif_toggle_t *enabled);
-
-/**
- * Issues an "abort" to the given SPI device, causing all in-progress IO to
- * halt.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_abort(dif_spi_device_handle_t *spi);
-
-/**
- * Sets up the "FIFO level" (that is, number of bytes present in a particular
- * FIFO) at which the TxLevel and RxLevel IRQs will fire.
- *
- * For the reciept side, when the FIFO overflows `rx_level` (i.e., goes over
- * the set level), an interrupt is fired. This can be used to detect that more
- * data should be read from the RX FIFO. This is the
- * `Spi Buffer -> Main Memory` case.
- *
- * Conversely, for the transmission side, when the FIFO underflows `tx_level`
- * (i.e., goes below the set level), an interrupt is fired. This can be used
- * to detect that there is free space to write more data to the TX FIFO.
- * This is the `Main Memory -> Spi Buffer` case.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI handle.
- * @param rx_level The new RX level, as described above.
- * @param tx_level The new TX level, as described above.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_set_irq_levels(dif_spi_device_handle_t *spi,
-                                           uint16_t rx_level,
-                                           uint16_t tx_level);
-
-/**
- * Returns the number of bytes still pending receipt by software in the RX FIFO.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI handle.
- * @param[out] bytes_pending The number of bytes pending
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_rx_pending(const dif_spi_device_handle_t *spi,
-                                       size_t *bytes_pending);
-
-/**
- * Returns the number of bytes still pending transmission by hardware in the TX
- * FIFO.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI handle.
- * @param[out] bytes_pending The number of bytes pending
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_tx_pending(const dif_spi_device_handle_t *spi,
-                                       size_t *bytes_pending);
-
-/**
- * Get the current async FIFO occupancy levels. Only used in generic mode.
- *
- * @param spi A SPI handle.
- * @param[out] rx_fifo_level The occupancy level of the RX FIFO.
- * @param[out] tx_fifo_level The occupancy level of the TX FIFO.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_get_async_fifo_levels(dif_spi_device_handle_t *spi,
-                                                  uint16_t *rx_fifo_level,
-                                                  uint16_t *tx_fifo_level);
-
-/** Represents the status of the synchronous FIFOs in generic mode. */
-typedef struct dif_spi_device_generic_fifo_status {
-  /** Whether the RX FIFO is full. */
-  bool rx_full;
-  /** Whether the RX FIFO is empty. */
-  bool rx_empty;
-  /** Whether the TX FIFO is full. */
-  bool tx_full;
-  /** Whether the TX FIFO is empty. */
-  bool tx_empty;
-} dif_spi_device_generic_fifo_status_t;
-
-/**
- * Get the current empty/full status for generic mode's synchronous FIFOs.
- *
- * @param spi A SPI handle.
- * @param[out] status The empty/full status for the FIFOs.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_get_generic_fifo_status(
-    dif_spi_device_handle_t *spi, dif_spi_device_generic_fifo_status_t *status);
-
-/**
  * Get the current level of the CSB pin.
  *
  * This is available for the esoteric case where CSB is used like a slow GPIO.
@@ -343,54 +164,6 @@ dif_result_t dif_spi_device_get_generic_fifo_status(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_get_csb_status(dif_spi_device_handle_t *spi,
                                            bool *csb);
-
-/**
- * Reads at most `buf_len` bytes from the RX FIFO; the number of bytes read
- * will be written to `bytes_received`.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI device.
- * @param[out] buf A pointer to valid memory.
- * @param buf_len The length of the buffer `buf` points to.
- * @param[out] bytes_received The number of bytes successfully read; may be
- * null.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_recv(dif_spi_device_handle_t *spi, void *buf,
-                                 size_t buf_len, size_t *bytes_received);
-
-/**
- * Writes at most `buf_len` bytes to the TX FIFO; the number of bytes actually
- * written will be written to `bytes_sent`.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI device.
- * @param buf A pointer to bytes to be written.
- * @param buf_len The length of the buffer `buf` points to.
- * @param[out] bytes_sent The number of bytes successfully written; may be null.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_send(dif_spi_device_handle_t *spi, const void *buf,
-                                 size_t buf_len, size_t *bytes_sent);
-
-/**
- * Writes `buf_len` bytes to the TX FIFO, blocking until all bytes can be
- * written.
- *
- * Applies only to generic mode.
- *
- * @param spi A SPI device.
- * @param buf A pointer to bytes to be written.
- * @param buf_len The length of the buffer `buf` points to.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_send_polled(dif_spi_device_handle_t *spi,
-                                        const void *buf, size_t buf_len);
 
 /**
  * Enable the mailbox region for spi_device flash / passthrough modes.

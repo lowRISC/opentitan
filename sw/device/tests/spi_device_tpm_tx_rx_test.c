@@ -49,12 +49,6 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.
   const top_earlgrey_plic_irq_id_t kIrqs[] = {
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow,
       kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
       kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty,
       kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow,
@@ -77,13 +71,7 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
 }
 
 static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
-  const dif_spi_device_irq_t kIrqs[] = {kDifSpiDeviceIrqGenericRxFull,
-                                        kDifSpiDeviceIrqGenericRxWatermark,
-                                        kDifSpiDeviceIrqGenericTxWatermark,
-                                        kDifSpiDeviceIrqGenericRxError,
-                                        kDifSpiDeviceIrqGenericRxOverflow,
-                                        kDifSpiDeviceIrqGenericTxUnderflow,
-                                        kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
+  const dif_spi_device_irq_t kIrqs[] = {kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
                                         kDifSpiDeviceIrqUploadPayloadNotEmpty,
                                         kDifSpiDeviceIrqUploadPayloadOverflow,
                                         kDifSpiDeviceIrqReadbufWatermark,
@@ -104,7 +92,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   spi_device_isr_ctx_t spi_device_ctx = {
       .spi_device = &spi_device.dev,
       .plic_spi_device_start_irq_id =
-          kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
+          kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
       .expected_irq = kDifSpiDeviceIrqTpmHeaderNotEmpty,
       .is_only_irq = true};
 

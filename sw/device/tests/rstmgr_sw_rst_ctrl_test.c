@@ -69,16 +69,7 @@ static void spi_device_config(void *dif) {
       .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderLsbToMsb,
       .rx_order = kDifSpiDeviceBitOrderLsbToMsb,
-      .device_mode = kDifSpiDeviceModeGeneric,
-      .mode_cfg =
-          {
-              .generic =
-                  {
-                      .rx_fifo_commit_wait = 63,
-                      .rx_fifo_len = 0x800,
-                      .tx_fifo_len = 0x800,
-                  },
-          },
+      .device_mode = kDifSpiDeviceModeDisabled,
   };
   CHECK_DIF_OK(dif_spi_device_configure(handle, cfg));
 }

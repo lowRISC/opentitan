@@ -78,58 +78,34 @@ dif_result_t dif_spi_device_alert_force(const dif_spi_device_t *spi_device,
  */
 typedef enum dif_spi_device_irq {
   /**
-   * RX SRAM FIFO Full
-   */
-  kDifSpiDeviceIrqGenericRxFull = 0,
-  /**
-   * RX SRAM FIFO is above the level
-   */
-  kDifSpiDeviceIrqGenericRxWatermark = 1,
-  /**
-   * TX SRAM FIFO is under the level
-   */
-  kDifSpiDeviceIrqGenericTxWatermark = 2,
-  /**
-   * SDI in FwMode has error
-   */
-  kDifSpiDeviceIrqGenericRxError = 3,
-  /**
-   * RX Async FIFO overflow
-   */
-  kDifSpiDeviceIrqGenericRxOverflow = 4,
-  /**
-   * TX Async FIFO underflow
-   */
-  kDifSpiDeviceIrqGenericTxUnderflow = 5,
-  /**
    * Upload Command FIFO is not empty
    */
-  kDifSpiDeviceIrqUploadCmdfifoNotEmpty = 6,
+  kDifSpiDeviceIrqUploadCmdfifoNotEmpty = 0,
   /**
    * Upload payload is not empty.  The event occurs after SPI transaction
    * completed
    */
-  kDifSpiDeviceIrqUploadPayloadNotEmpty = 7,
+  kDifSpiDeviceIrqUploadPayloadNotEmpty = 1,
   /**
    * Upload payload overflow event.  When a SPI Host system issues a command
    * with payload more than 256B, this event is reported. When it happens, SW
    * should read the last written payload index CSR to figure out the starting
    * address of the last 256B.
    */
-  kDifSpiDeviceIrqUploadPayloadOverflow = 8,
+  kDifSpiDeviceIrqUploadPayloadOverflow = 2,
   /**
    * Read Buffer Threshold event.  The host system accesses greater than or
    * equal to the threshold of a buffer.
    */
-  kDifSpiDeviceIrqReadbufWatermark = 9,
+  kDifSpiDeviceIrqReadbufWatermark = 3,
   /**
    * Read buffer flipped event.  The host system accesses other side of buffer.
    */
-  kDifSpiDeviceIrqReadbufFlip = 10,
+  kDifSpiDeviceIrqReadbufFlip = 4,
   /**
    * TPM Header(Command/Address) buffer available
    */
-  kDifSpiDeviceIrqTpmHeaderNotEmpty = 11,
+  kDifSpiDeviceIrqTpmHeaderNotEmpty = 5,
 } dif_spi_device_irq_t;
 
 /**

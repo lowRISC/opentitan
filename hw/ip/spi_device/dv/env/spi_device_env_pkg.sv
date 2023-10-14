@@ -22,12 +22,6 @@ package spi_device_env_pkg;
 
   // local parameters and types
   typedef enum {
-    RxFifoFull,
-    RxFifoGeLevel,
-    TxFifoLtLevel,
-    RxFwModeErr,
-    RxFifoOverflow,
-    TxFifoUnderflow,
     CmdFifoNotEmpty,
     PayloadNotEmpty,
     PayloadOverflow,
