@@ -71,13 +71,13 @@ static const char *xfr_name[] = {
 //
 // Note: because Isochronous and Interrupt streams are guaranteed the requested
 // amount of bus bandwidth, the number of concurrent streams of these types is
-// limited to six.
+// limited to four if connected through a hub (six without hub(s)).
 static const usb_testutils_transfer_type_t xfr_types[USBUTILS_STREAMS_MAX] = {
-    kUsbTransferTypeIsochronous, kUsbTransferTypeInterrupt,
+    kUsbTransferTypeIsochronous, kUsbTransferTypeBulk,
     kUsbTransferTypeBulk,        kUsbTransferTypeBulk,
 
     kUsbTransferTypeIsochronous, kUsbTransferTypeInterrupt,
-    kUsbTransferTypeBulk,        kUsbTransferTypeIsochronous,
+    kUsbTransferTypeBulk,        kUsbTransferTypeBulk,
 
     kUsbTransferTypeInterrupt,   kUsbTransferTypeBulk,
     kUsbTransferTypeBulk,
