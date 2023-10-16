@@ -25,6 +25,8 @@ size_t keyblob_num_words(const crypto_key_config_t config);
  * Get the word-length of a single key share for a given key length.
  *
  * Essentially, this just rounds `config.key_length` up to the next word.
+ * The results assume that the key is not hardware-backed, since
+ * hardware-backed keys do not have shares within the keyblob.
  *
  * @param config Key configuration.
  * @returns Word-length of one key share (or unblinded key).

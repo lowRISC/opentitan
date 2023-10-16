@@ -33,6 +33,8 @@ static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p256_ecdh, d1);
 static const uint32_t kOtbnEcdhModeWords = 1;
 static const uint32_t kOtbnEcdhModeKeypairRandom = 0x3f1;
 static const uint32_t kOtbnEcdhModeSharedKey = 0x5ec;
+static const uint32_t kOtbnEcdhModeKeypairFromSeed = 0x29f;
+static const uint32_t kOtbnEcdhModeSharedKeyFromSeed = 0x74b;
 
 status_t ecdh_p256_keypair_start(void) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
@@ -104,4 +106,48 @@ status_t ecdh_p256_shared_key_finalize(ecdh_p256_shared_key_t *shared_key) {
   HARDENED_TRY(otbn_dmem_sec_wipe());
 
   return OTCRYPTO_OK;
+}
+
+status_t ecdh_p256_sideload_keypair_start(void) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
+
+  // Set mode so start() will jump into sideloaded keygen.
+  HARDENED_TRY(otbn_dmem_write(
+      kOtbnEcdhModeWords, &kOtbnEcdhModeKeypairFromSeed, kOtbnVarEcdhMode));
+
+  // Start the OTBN routine.
+  return otbn_execute();
+}
+
+status_t ecdh_p256_sideload_keypair_finalize(p256_point_t *public_key) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the public key from OTBN dmem.
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhX, public_key->x));
+  HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarEcdhY, public_key->y));
+
+  // Wipe DMEM.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  return OTCRYPTO_OK;
+}
+
+status_t ecdh_p256_sideload_shared_key_start(const p256_point_t *public_key) {
+  // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
+
+  // Set mode so start() will jump into shared-key generation.
+  HARDENED_TRY(otbn_dmem_write(
+      kOtbnEcdhModeWords, &kOtbnEcdhModeSharedKeyFromSeed, kOtbnVarEcdhMode));
+
+  // Set the public key x coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->x, kOtbnVarEcdhX));
+
+  // Set the public key y coordinate.
+  HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->y, kOtbnVarEcdhY));
+
+  // Start the OTBN routine.
+  return otbn_execute();
 }
