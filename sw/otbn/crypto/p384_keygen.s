@@ -156,7 +156,7 @@ p384_random_scalar:
  * @param[in]  dmem[4]: dptr_d1, pointer to location in dmem containing
  *                      2nd private key share d1
  *
- * clobbered registers: x2, x20, w6 to w9
+ * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
  */
 .globl p384_generate_random_key
@@ -196,7 +196,7 @@ p384_generate_random_key:
  * @param[in]  dmem[4]: dptr_k1, pointer to location in dmem containing
  *                      2nd scalar share k1
  *
- * clobbered registers: x2, x20, w6 to w9
+ * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
  */
 .globl p384_generate_k
