@@ -180,9 +180,11 @@ p384_sign:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* scalar multiplication with base point
+  /* scalar multiplication with base point and
+     conversion of projective coordinates to affine space
      [w28:w25] <= (x_1, y_1) = (k*alpha) * G */
   jal       x1, scalar_mult_int_p384
+  jal       x1, proj_to_affine_p384
 
   /* store r of signature in dmem: dmem[dptr_r] <= r = [w26,w25] */
   li        x2, 25
