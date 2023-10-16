@@ -62,12 +62,49 @@ status_t ecdh_p256_shared_key_start(const p256_masked_scalar_t *private_key,
 /**
  * Finish an async ECDH/P-256 shared key generation operation on OTBN.
  *
- * Blocks until OTBN is idle.
+ * Blocks until OTBN is idle. May be used after either
+ * `ecdh_p256_shared_key_start` or `ecdh_p256_sideload_shared_key_start`; the
+ * operation is the same.
  *
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
  */
 status_t ecdh_p256_shared_key_finalize(ecdh_p256_shared_key_t *shared_key);
+
+/**
+ * Start an async ECDH/P-256 sideloaded keypair generation operation on OTBN.
+ *
+ * Generates the keypair from a key manager seed. The key manager should
+ * already have sideloaded the key into OTBN before this operation is called.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdh_p256_sideload_keypair_start(void);
+
+/**
+ * Finish an async ECDH/P-256 sideloaded keypair generation operation on OTBN.
+ *
+ * Blocks until OTBN is idle. Returns only the public key.
+ *
+ * @param[out] public_key Generated public key.
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdh_p256_sideload_keypair_finalize(p256_point_t *public_key);
+
+/**
+ * Start an async ECDH/P-256 shared key generation operation on OTBN.
+ *
+ * Uses a private key generated from a key manager seed. The key manager should
+ * already have sideloaded the key into OTBN before this operation is called.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key Public key (Q).
+ * @return Result of the operation (OK or error).
+ */
+status_t ecdh_p256_sideload_shared_key_start(const p256_point_t *public_key);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -674,11 +674,6 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (private_key->config.hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Check the key configuration.
   HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdh));
@@ -690,8 +685,13 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      HARDENED_TRY(ecdh_p256_keypair_start());
-      return OTCRYPTO_OK;
+      if (private_key->config.hw_backed == kHardenedBoolTrue) {
+        HARDENED_TRY(sideload_key_seed(private_key));
+        return ecdh_p256_sideload_keypair_start();
+      } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+        return ecdh_p256_keypair_start();
+      }
+      return OTCRYPTO_BAD_ARGS;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
     case kEccCurveTypeBrainpoolP256R1:
@@ -721,26 +721,29 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
  */
 static status_t internal_ecdh_p256_keygen_finalize(
     crypto_blinded_key_t *private_key, ecc_public_key_t *public_key) {
-  if (private_key->config.hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
   // Check the lengths of caller-allocated buffers.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
+  if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    HARDENED_TRY(p256_private_key_length_check(private_key));
+  }
   HARDENED_TRY(p256_public_key_length_check(public_key));
 
-  // Note: This operation wipes DMEM after retrieving the keys, so if an error
-  // occurs after this point then the keys would be unrecoverable. This should
-  // be the last potentially error-causing line before returning to the caller.
-  p256_masked_scalar_t sk;
-  p256_point_t pk;
-  HARDENED_TRY(ecdh_p256_keypair_finalize(&sk, &pk));
+  // Note: The `finalize` operations wipe DMEM after retrieving the keys, so if
+  // an error occurs after this point then the keys would be unrecoverable.
+  // The `finalize` call should be the last potentially error-causing line
+  // before returning to the caller.
 
-  // Prepare the private key.
-  keyblob_from_shares(sk.share0, sk.share1, private_key->config,
-                      private_key->keyblob);
-  private_key->checksum = integrity_blinded_checksum(private_key);
+  p256_point_t pk;
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(ecdh_p256_sideload_keypair_finalize(&pk));
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    p256_masked_scalar_t sk;
+    HARDENED_TRY(ecdh_p256_keypair_finalize(&sk, &pk));
+    keyblob_from_shares(sk.share0, sk.share1, private_key->config,
+                        private_key->keyblob);
+    private_key->checksum = integrity_blinded_checksum(private_key);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Prepare the public key.
   memcpy(public_key->x.key, pk.x, kP256CoordBytes);
@@ -748,7 +751,8 @@ static status_t internal_ecdh_p256_keygen_finalize(
   public_key->x.checksum = integrity_unblinded_checksum(&public_key->x);
   public_key->y.checksum = integrity_unblinded_checksum(&public_key->y);
 
-  return OTCRYPTO_OK;
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 crypto_status_t otcrypto_ecdh_keygen_async_finalize(
@@ -797,40 +801,34 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
 static status_t internal_ecdh_p256_start(
     const crypto_blinded_key_t *private_key,
     const ecc_public_key_t *public_key) {
-  if (private_key->config.hw_backed != kHardenedBoolFalse) {
-    // TODO: Implement support for sideloaded keys.
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
-
-  // Check the private key size.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
-
-  // Get pointers to the individual shares within the blinded key.
-  uint32_t *share0;
-  uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(private_key, &share0, &share1));
-
-  // Copy the shares into a P256-specific struct.
-  p256_masked_scalar_t sk;
-  memcpy(sk.share0, share0, sizeof(sk.share0));
-  memcpy(sk.share1, share1, sizeof(sk.share1));
-
-  // Check the public key size.
-  HARDENED_TRY(p256_public_key_length_check(public_key));
-
   // Copy the public key into a P256-specific struct.
   p256_point_t pk;
   memcpy(pk.x, public_key->x.key, sizeof(pk.x));
   memcpy(pk.y, public_key->y.key, sizeof(pk.y));
-
-  // Check the lengths of caller-allocated buffers.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
 
-  // Note: This operation wipes DMEM after retrieving the key, so if an error
-  // occurs after this point then the keys would be unrecoverable. This should
-  // be the last potentially error-causing line before returning to the caller.
-  return ecdh_p256_shared_key_start(&sk, &pk);
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return ecdh_p256_sideload_shared_key_start(&pk);
+  } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    // Get pointers to the individual shares within the blinded key.
+    uint32_t *share0;
+    uint32_t *share1;
+    HARDENED_TRY(keyblob_to_shares(private_key, &share0, &share1));
+
+    // Copy the shares into a P256-specific struct.
+    p256_masked_scalar_t sk;
+    memcpy(sk.share0, share0, sizeof(sk.share0));
+    memcpy(sk.share1, share1, sizeof(sk.share1));
+    HARDENED_TRY(p256_private_key_length_check(private_key));
+    return ecdh_p256_shared_key_start(&sk, &pk);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Should never get here.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 crypto_status_t otcrypto_ecdh_async_start(
@@ -913,7 +911,8 @@ static status_t internal_ecdh_p256_finalize(
   // Set the checksum.
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
 
-  return OTCRYPTO_OK;
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 crypto_status_t otcrypto_ecdh_async_finalize(
