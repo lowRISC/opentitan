@@ -2,6 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST")
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
+)
 load("//rules:otp.bzl", "otp_image")
 load("//rules:splice.bzl", "bitstream_splice")
 load(
@@ -9,6 +14,7 @@ load(
     "cw310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -134,9 +140,9 @@ opentitan_test(
 )
 
 opentitan_binary(
-    name = "sram_ft_provision",
+    name = "sram_ft_individualize",
     testonly = True,
-    srcs = ["sram_ft_provision.c"],
+    srcs = ["sram_ft_individualize.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
@@ -189,14 +195,16 @@ bitstream_splice(
 
 opentitan_test(
     name = "ft_provision",
+    srcs = ["ft_personalize.c"],
     cw310 = cw310_jtag_params(
         binaries = {
-            ":sram_ft_provision": "sram_ft_provision",
+            ":sram_ft_individualize": "sram_ft_individualize",
         },
         bitstream = ":bitstream_post_cp_test_locked0",
         tags = ["manuf"],
         test_cmd = """
-            --elf={sram_ft_provision}
+            --bootstrap={firmware}
+            --elf={sram_ft_individualize}
             --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
@@ -204,4 +212,23 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:individualize",
+        "//sw/device/silicon_creator/manuf/lib:otp_fields",
+    ],
 )

@@ -7,7 +7,11 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::{Args, Parser};
 
-use ft_lib::{run_sram_ft_individualize, test_exit, test_unlock, ManufFtProvisioningActions};
+use ft_lib::{
+    run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
+    ManufFtProvisioningActions,
+};
+use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
@@ -51,7 +55,12 @@ struct Opts {
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
-    let transport = opts.init.init_target()?;
+
+    // We call the below functions, instead of calling `opts.init.init_target()` since we do not
+    // want to perform bootstrap yet.
+    let transport = backend::create(&opts.init.backend_opts)?;
+    transport.apply_default_configuration()?;
+    InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
     let test_unlock_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
@@ -87,6 +96,14 @@ fn main() -> Result<()> {
             opts.init.bootstrap.options.reset_delay,
             &test_exit_token,
             opts.provisioning_data.target_mission_mode_lc_state,
+        )?;
+    }
+    if opts.provisioning_actions.all_steps || opts.provisioning_actions.personalize {
+        run_ft_personalize(
+            &transport,
+            &opts.init,
+            opts.init.bootstrap.options.reset_delay,
+            opts.timeout,
         )?;
     }
 

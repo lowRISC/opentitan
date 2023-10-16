@@ -11,6 +11,7 @@ use clap::{ArgAction, Args};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
@@ -69,6 +70,14 @@ pub struct ManufFtProvisioningActions {
         help = "Whether to transition to a mission mode state (specified by another arg) after provisioning is complete."
     )]
     pub test_exit: bool,
+
+    #[arg(
+        long,
+        action = ArgAction::SetTrue,
+        conflicts_with = "all_steps",
+        help = "Whether to personalize the device with secrets.",
+    )]
+    pub personalize: bool,
 }
 
 pub fn test_unlock(
@@ -209,6 +218,25 @@ pub fn test_exit(
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+
+    Ok(())
+}
+
+pub fn run_ft_personalize(
+    transport: &TransportWrapper,
+    init: &InitializeTest,
+    reset_delay: Duration,
+    timeout: Duration,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+
+    // Bootstrap test program into flash and wait for test status pass over the UART.
+    uart.clear_rx_buffer()?;
+    init.bootstrap.init(transport)?;
+
+    // Get UART, set flow control, and wait for test to start running.
+    uart.set_flow_control(true)?;
+    let _ = UartConsole::wait_for(&*uart, r"Personalize.", timeout)?;
 
     Ok(())
 }
