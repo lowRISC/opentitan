@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_jtag_params",
     "opentitan_test",
     new_cw310_params = "cw310_params",
 )
@@ -2265,25 +2266,24 @@ test_suite(
     # does not matter but opentitan_functest() is unhappy if we don't provide one.
     # Since execution in the ROM is disabled, bootstrap is not possible so we need
     # to make sure that the test does not try to bootstrap
-    opentitan_functest(
+    opentitan_test(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["empty_test.c"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
+            binaries = {
+                "//sw/device/examples/sram_program:sram_program": "sram_program",
+            },
             bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
             logging = "debug",
             tags = ["cw310_rom_with_fake_keys"],
-            test_cmds = [
-                "--bitstream=\"$(rootpath {bitstream})\"",
-                "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
-                # the following values come from the sram linker script
-                "--load-addr=0x10001fc4",
-            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+            test_cmd = """
+                --elf={sram_program}
+            """,
+            test_harness = "//sw/host/tests/chip/jtag:sram_load",
         ),
-        data = [
-            "//sw/device/examples/sram_program:sram_program_fpga_cw310_vmem",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/chip/jtag:sram_load",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
