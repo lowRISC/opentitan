@@ -106,6 +106,11 @@ keypair_random:
  * @param[out]  dmem[y]: x1, second share of shared key.
  */
 shared_key:
+  /* Validate the public key. Halts the program if the key is invalid and jumps
+     back here if it's OK. */
+  jal      x0, check_public_key_valid
+  _pk_valid:
+
   /* Generate arithmetically masked shared key d*Q.
        dmem[x] <= (d*Q).x - m_x mod p
        dmem[y] <= m_x */
@@ -229,6 +234,94 @@ secret_key_from_seed:
   bn.sid   x2, 32(x3)
 
   ret
+
+/**
+ * Check if a provided public key is valid.
+ *
+ * For a given public key (x, y), check that:
+ * - x and y are both fully reduced mod p
+ * - (x, y) is on the P-256 curve.
+ *
+ * Note that, because the point is in affine form, it is not possible that (x,
+ * y) is the point at infinity. In some other forms such as projective
+ * coordinates, we would need to check for this also.
+ *
+ * This routine raises a software error and halts operation if the public key
+ * is invalid.
+ *
+ * @param[in] dmem[x]: Public key x-coordinate.
+ * @param[in] dmem[y]: Public key y-coordinate.
+ */
+check_public_key_valid:
+  /* Init all-zero register. */
+  bn.xor   w31, w31, w31
+
+  /* Load domain parameter p.
+       w29 <= dmem[p256_p] = p */
+  li        x2, 29
+  la        x3, p256_p
+  bn.lid    x2, 0(x3)
+
+  /* Load public key x-coordinate.
+       w2 <= dmem[x] = x */
+  li        x2, 2
+  la        x3, x
+  bn.lid    x2, 0(x3)
+
+  /* Compare x to p.
+       FG0.C <= (x < p) */
+  bn.cmp    w2, w29
+
+  /* Trigger a fault if FG0.C is false. */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _x_valid
+  unimp
+
+  _x_valid:
+
+  /* Load public key y-coordinate.
+       w2 <= dmem[y] = y */
+  li        x2, 2
+  la        x3, y
+  bn.lid    x2, 0(x3)
+
+  /* Compare y to p.
+       FG0.C <= (y < p) */
+  bn.cmp    w2, w29
+
+  /* Trigger a fault if FG0.C is false. */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _y_valid
+  unimp
+
+  _y_valid:
+
+  /* Compute both sides of the Weierstrauss equation.
+       dmem[r] <= (x^3 + ax + b) mod p
+       dmem[s] <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Load both sides of the equation.
+       w2 <= dmem[r]
+       w3 <= dmem[s] */
+  li        x2, 2
+  la        x3, r
+  bn.lid    x2++, 0(x3)
+  la        x3, s
+  bn.lid    x2, 0(x3)
+
+  /* Compare the two sides of the equation.
+       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp    w2, w3
+
+  /* Trigger a fault if FG0.Z is false. */
+  csrrs     x2, 0x7c0, x0
+  srli      x2, x2, 3
+  andi      x2, x2, 1
+  bne       x2, x0, _pk_valid
+  unimp
 
 .bss
 
