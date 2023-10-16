@@ -1211,10 +1211,11 @@ p256_base_mult:
 /**
  * Externally callable wrapper for P-256 scalar point multiplication
  *
- * returns R = k*P = k*(x_a, y_a)
+ * Calculates R = k*P = k*(x_a, y_a)
  *         with R, P being valid P-256 curve points in affine form,
  *         k being a 256 bit scalar. The x coordinate of R is
  *         arithmetically masked.
+ * Returns the masked x coordinate of R and the corresponding mask.
  *
  * This routine assumes that the scalar k is provided in two shares, k0 and k1,
  * where:
@@ -1281,7 +1282,7 @@ p256_scalar_mult:
 
   /* Subtract random mask from x coordinate of
      projective point.
-     The addition has to be done within the underlying
+     The subtraction has to be done within the underlying
      finite field -> mod p.
      w8 = (w8 - w2) mod p */
   bn.subm    w8, w8, w2

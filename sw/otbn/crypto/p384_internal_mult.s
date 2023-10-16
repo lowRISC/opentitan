@@ -8,262 +8,6 @@
  .section .text
 
 /**
- * Convert projective coordinates of a P-384 curve point to affine coordinates
- *
- * returns P = (x_a, y_a) = (x/z mod p, y/z mod p)
- *              where P is a valid P-384 curve point,
- *                    x_a and y_a are the resulting affine coordinates of the
- *                      curve point,
- *                    x,y and z are a set of projective coordinates of the
- *                      point and
- *                    p is the modulus of the P-384 underlying finite field.
- *
- * This routine computes the affine coordinates for a set of projective
- * coordinates of a valid P-384 curve point. The routine performs the required
- * divisions by computing the multiplicative modular inverse of the
- * projective z-coordinate in the underlying finite field of the P-384 curve.
- * For inverse computation Fermat's little theorem is used, i.e.
- * we compute z^-1 = z^(p-2) mod p.
- * For exponentiation a 16 step addition chain is used.
- * Source of the addition chain is the addchain project:
- * https://github.com/mmcloughlin/addchain/
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  [w26,w25]: x, x-coordinate of curve point (projective).
- * @param[in]  [w26,w25]: y, y-coordinate of curve point (projective).
- * @param[in]  [w30,w29]: z, z-coordinate of curve point (projective).
- * @param[in]  [w13, w12]: p, modulus of P-384.
- * @param[in]  w31: all-zero.
- * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point.
- * @param[out] [w28, w27]: y_a, affine y-coordinate of resulting point.
- *
- * clobbered registers: w0 to w28
- * clobbered flag groups: FG0
- */
- .globl proj_to_affine_p384
-proj_to_affine_p384:
-
-  /* Exp: 0b10 = 2*0b1
-     Val: r10 = z^2 mod p
-          [w17,w16] <= [w30,w29]^2 mod [w13,w12] */
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  bn.mov    w16, w29
-  bn.mov    w17, w30
-  jal       x1, p384_mulmod_p
-
-  /* Exp: 0b11 = 0b1+0b10
-     Val: r11 <= z*r10 mod p
-          [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  jal       x1, p384_mulmod_p
-
-  /* Exp: 0b110 = 2*0b11
-     Val: r110 = r11^2 mod p
-          [w17,w16] <= [w17,w16]^2 mod [w13,w12] */
-  bn.mov    w10, w16
-  bn.mov    w11, w17
-  jal       x1, p384_mulmod_p
-
-  /* Exp: 0b111 = 0b1+0b110
-     Val: r111 <= z*r110  mod p
-          [w1,w0] = [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  jal       x1, p384_mulmod_p
-  bn.mov    w0, w16
-  bn.mov    w1, w17
-
-  /* Exp: 0b111000 = 0b111<<3
-     Val: r111000 <= r111^(2^3)  mod p
-          [w17,w16] <= [w17,w16]^(2^3) mod [w13,w12] */
-  loopi     3, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-
-  /* Exp: 0b1111111 = 0b111+0b111000
-     Val: r1111111 <= r111*r111000 mod p
-          [w3,w2] = [w17,w16] <= [w1,w0]*[w17,w16] mod [w13,w12] */
-  bn.mov    w10, w0
-  bn.mov    w11, w1
-  jal       x1, p384_mulmod_p
-  bn.mov    w2, w16
-  bn.mov    w3, w17
-
-  /* Exp: 2^12-1 = (0b1111111<<6)+0b111111
-     Val: r_12_1 <= r111111^(2^6)*r111111 mod p
-          [w5,w4] = [w17,w16] <= [w17,w16]^(2^6)*[w17,w16] mod [w13,w12] */
-  loopi     6, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w2
-  bn.mov    w11, w3
-  jal       x1, p384_mulmod_p
-  bn.mov    w4, w16
-  bn.mov    w5, w17
-
-  /* Exp: 2^24-1 = ((2^12-1)<<12)+(2^12-1)
-     Val: r_24_1 <= r_12_1^(2^12)*r12_1 mod p
-          [w17,w16] <= [w17,w16]^(2^12)*[w5,w4] mod [w13,w12] */
-  loopi     12, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w4
-  bn.mov    w11, w5
-  jal       x1, p384_mulmod_p
-
-  /* Exp: 2^30-1 = ((2^24-1)<<6)+0b111111
-     Val: r_30_1 <= r_24_1^(2^6)*r111111 mod p
-          [w3, w2] = [w17,w16] <= [w17,w16]^(2^6)*[w3,w2] mod [w13,w12] */
-  loopi     6, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w2
-  bn.mov    w11, w3
-  jal       x1, p384_mulmod_p
-  bn.mov    w2, w16
-  bn.mov    w3, w17
-
-  /* Exp: 2^31-1 <= (2^30-1)*2+0b1
-     Val: r_31_1 <= r30_1^2*z mod p
-          [w7,w6] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
-  bn.mov    w10, w16
-  bn.mov    w11, w17
-  jal       x1, p384_mulmod_p
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  jal       x1, p384_mulmod_p
-  bn.mov    w6, w16
-  bn.mov    w7, w17
-
-  /* Exp: 2^32-1 <= (2^30-1)*2+0b1
-     Val: r_32_1 <= r31_1^2*z mod p
-          [w9,w8] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
-  bn.mov    w10, w16
-  bn.mov    w11, w17
-  jal       x1, p384_mulmod_p
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  jal       x1, p384_mulmod_p
-  bn.mov    w9, w16
-  bn.mov    w8, w17
-
-  /* Exp: 2^63-1 <= ((2^32-1)<<31)+(2^31-1)
-     Val: r_63_1 <= r_32_1^(2^31)*r_31_1 mod p
-          [w7,w6] = [w17,w16] <= [w17,w16]^(2^31)*[w7,w6] mod [w13,w12] */
-  loopi     31, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w6
-  bn.mov    w11, w7
-  jal       x1, p384_mulmod_p
-  bn.mov    w6, w16
-  bn.mov    w7,w17
-
-  /* Exp: 2^126-1 = ((2^63-1)<<63) + (2^63-1)
-     Val: r_126_1 <= r_63_1^(2^63)*r_63_1 mod p
-          [w7,w6] = [w17,w16] <= [w17,w16]^(2^63)*[w7,w6] mod [w13,w12] */
-  loopi     63, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w6
-  bn.mov    w11, w7
-  jal       x1, p384_mulmod_p
-  bn.mov    w6, w16
-  bn.mov    w7, w17
-
-  /* Exp: 2^252-1 = ((2^126-1)<<126)+(2^126-1)
-     Val: r_252_1 <= r_126_1^(2^63)*r_126_1 mod p
-          [w17,w16] <= [w17,w16]^(2^126)*[w7,w6] mod [w13,w12] */
-  loopi     126, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w6
-  bn.mov    w11, w7
-  jal       x1, p384_mulmod_p
-
-  /* Exp: 2^255-1 = ((2^252-1)<<3)+0b111
-     Val: r_255_1 <= r_252_1^(2^3)*r111 mod p
-          [w17,w16] <= [w17,w16]^(2^3)*[w1,w0] mod [w13,w12] */
-  loopi     3, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w0
-  bn.mov    w11, w1
-  jal       x1, p384_mulmod_p
-
-  /* Exp: p-2 = ((((((2^255-1)<<33)+(2^32-1))<<94)+(2^30-1))<<2)+0b1
-     Val: x_inv <=((r_255_1^(2^33)*r_32_1)^(2^94)*r_30_1)^(2^2)*z mod p
-          [w17,w16] <= (([w17,w16]^(2^33)*[w9,w8])^(2^94)*[w3,w2])^(2^2)
-                       *[w30,w29] mod [w13,w12] */
-  loopi     33, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w9
-  bn.mov    w11, w8
-  jal       x1, p384_mulmod_p
-  loopi     94, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w2
-  bn.mov    w11, w3
-  jal       x1, p384_mulmod_p
-  loopi     2, 4
-    bn.mov    w10, w16
-    bn.mov    w11, w17
-    jal       x1, p384_mulmod_p
-    nop
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-  jal       x1, p384_mulmod_p
-
-  /* store inverse [w1,w0] <= [w17,w16] = z_inv*/
-  bn.mov w0, w16
-  bn.mov w1, w17
-
-  /* convert x-coordinate to affine space
-     [w26,w25] <= [w17,w16] = x_a <= x/z = x*z_inv = [w26,w25]*[w1,w0] mod p */
-  bn.mov    w10, w25
-  bn.mov    w11, w26
-  jal       x1, p384_mulmod_p
-  bn.mov    w25, w16
-  bn.mov    w26, w17
-
-  /* convert y-coordinate to affine space
-     [w28,w27] <= [w17,w16] = y_a <= y/z = y*z_inv = [w28,w27]*[w1,w0] mod p */
-  bn.mov    w10, w27
-  bn.mov    w11, w28
-  bn.mov    w16, w0
-  bn.mov    w17, w1
-  jal       x1, p384_mulmod_p
-  bn.mov    w27, w16
-  bn.mov    w28, w17
-
-  ret
-
-/**
  * Fetch curve point from dmem, randomize z-coordinate and store point in dmem
  *
  * returns P = (x, y, z) = (x_a*z, y_a*z, z)
@@ -354,11 +98,12 @@ store_proj_randomize:
   ret
 
 /**
- * P-384 scalar point multiplication in affine space
+ * P-384 scalar point multiplication in projective space
  *
  * returns R = k*P = k*(x_p, y_p)
- *         where R, P are valid P-384 curve points in affine coordinates,
- *               k is a 384-bit scalar.
+ *         where P is a valid P-384 curve point in affine coordinates,
+ *               k is a 384-bit scalar,
+ *               R is a valid P-384 curve point in projective coordinates.
  *
  * This routine performs scalar multiplication based on the group laws
  * of Weierstrass curves.
@@ -395,8 +140,9 @@ store_proj_randomize:
  * @param[in]  [w11, w10]: n, domain parameter of P-384 curve
  *                            (order of base point G)
  * @param[in]  w31: all-zero
- * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point R.
- * @param[out] [w28, w26]: y_a, affine y-coordinate of resulting point R.
+ * @param[out]  [w26,w25]: x, x-coordinate of resulting point R (projective).
+ * @param[out]  [w28,w27]: y, y-coordinate of resulting point R (projective).
+ * @param[out]  [w30,w29]: z, z-coordinate of resulting point R (projective).
  *
  * Scratchpad memory layout:
  * The routine expects at least 704 bytes of scratchpad memory at dmem
@@ -624,8 +370,5 @@ scalar_mult_int_p384:
     jal       x1, p384_mulmod_p
     bn.sid    x2, 384(x30)
     bn.sid    x3, 416(x30)
-
-  /* convert coordinates to affine space */
-  jal       x1, proj_to_affine_p384
 
   ret
