@@ -88,6 +88,7 @@ format_exclude = [
     # Directories used exclusively to store build artifacts are still copied into.
     "./build-out/**",
     "./build-bin/**",
+    "./build-site/**",
     # fusesoc build dir
     "./build/**",
 ]
