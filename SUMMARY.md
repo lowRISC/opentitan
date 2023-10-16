@@ -465,6 +465,7 @@
     - [Crypto Library Tests](./sw/device/tests/crypto/README.md)
 
 - [Host Software](./sw/host/README.md)
+  - [OpenTitan Certificate Generator](./sw/host/ot_certs/README.md)
   - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
     - [Requirements](./sw/host/hsmtool/doc/requirements.md)
   - [OpenTitanLib](./sw/host/opentitanlib/README.md)
