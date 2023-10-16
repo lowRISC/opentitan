@@ -110,7 +110,7 @@ pub fn test_unlock(
     Ok(())
 }
 
-pub fn run_sram_ft_provision(
+pub fn run_sram_ft_individualize(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
     reset_delay: Duration,
