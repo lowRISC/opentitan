@@ -301,7 +301,7 @@ otbn_sim_test(
     exp = "p256_isoncurve_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
-        "//sw/otbn/crypto:p256_verify",
+        "//sw/otbn/crypto:p256_isoncurve",
     ],
 )
 
