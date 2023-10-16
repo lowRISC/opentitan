@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::{Args, Parser};
 
-use ft_lib::{run_sram_ft_provision, test_exit, test_unlock, ManufFtProvisioningActions};
+use ft_lib::{run_sram_ft_individualize, test_exit, test_unlock, ManufFtProvisioningActions};
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
@@ -71,7 +71,7 @@ fn main() -> Result<()> {
         || opts.provisioning_actions.otp_owner_sw_cfg
         || opts.provisioning_actions.otp_hw_cfg
     {
-        run_sram_ft_provision(
+        run_sram_ft_individualize(
             &transport,
             &opts.init.jtag_params,
             opts.init.bootstrap.options.reset_delay,

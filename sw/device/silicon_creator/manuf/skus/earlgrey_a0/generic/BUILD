@@ -2,14 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:otp.bzl", "otp_image")
+load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
 )
-load("//rules:otp.bzl", "otp_image")
-load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
