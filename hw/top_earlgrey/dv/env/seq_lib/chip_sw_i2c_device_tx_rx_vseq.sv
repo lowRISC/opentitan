@@ -77,7 +77,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     cfg.m_i2c_agent_cfgs[i2c_idx].en_monitor = 1'b1;
     cfg.m_i2c_agent_cfgs[i2c_idx].if_mode = Host;
 
-    // Enbale appropriate interface
+    // Enable appropriate interface
     cfg.chip_vif.enable_i2c(.inst_num(i2c_idx), .enable(1));
 
     // tSetupBit need to be non-zero to detect the data bits. This represents

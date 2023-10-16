@@ -33,7 +33,7 @@ class chip_sw_patt_ios_vseq extends chip_sw_base_vseq;
   rand bit[1:0] chan_en;
 
   constraint chan_cfg_c {
-    // Cover limited sets of divsor in full chip test.
+    // Cover limited sets of divisor in full chip test.
     rand_chan_cfg.clk_div dist { 0 := 4, [1:15] := 1};
     rand_chan_cfg.len inside {[1:64]};
     rand_chan_cfg.rep inside {[1:5]};
