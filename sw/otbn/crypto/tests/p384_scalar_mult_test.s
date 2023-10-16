@@ -17,6 +17,9 @@
 
 p384_scalar_mult_test:
 
+  /* Init all-zero register. */
+  bn.xor  w31, w31, w31
+
   /* set dmem pointer to point to x-coordinate */
   la       x2, p1_x
   la       x3, dptr_x
@@ -48,6 +51,24 @@ p384_scalar_mult_test:
   la        x3, p1_y
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
+
+  /* load domain parameter p (modulus)
+     [w13, w12] = p = dmem[p384_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* unmask x coordinate x = x_m + m mod p = x-coord. + y-coord. mod p */
+  bn.add    w0, w0, w2
+  bn.addc   w1, w1, w3
+
+  bn.mov    w18, w0
+  bn.mov    w19, w1
+  bn.mov    w20, w31
+  jal       x1, p384_reduce_p
+  bn.mov    w0, w16
+  bn.mov    w1, w17
 
   ecall
 
