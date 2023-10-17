@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/log.h"
@@ -25,12 +26,13 @@
 
   There are 6 wake up inputs.
   0: sysrst_ctrl
-  1: adc_ctrl
+  1: adc_ctrl, only runnable in DV
   2: pinmux
   3: usb
   4: aon_timer
   5: sensor_ctrl
 
+  #1 is excluded in non-DV because it forces an internal signal.
   #5 is excluded because sensor_ctrl is not in the aon domain.
 
   There are 10 cases to be tested. For each wake up this tests the normal and
@@ -71,40 +73,62 @@ bool test_main(void) {
   uint32_t wakeup_count = 0;
   uint32_t wakeup_unit = 0;
   bool deep_sleep = false;
+  dif_pwrmgr_wakeup_reason_t wakeup_reason;
+  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
-  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
-    LOG_INFO("POR reset");
-    execute_test(wakeup_unit, deep_sleep);
+  if (wakeup_reason.request_sources == 0) {
+    // This is a POR. Prepare to start the test.
+    CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterCases));
+  } else if (wakeup_reason.types != kDifPwrmgrWakeupTypeRequest) {
+    LOG_ERROR("Unexpected wakeup_reason.types 0x%x", wakeup_reason.types);
+    return false;
+  } else {
+    // This is a reset from deep_sleep wakeup. Run checks.
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+    wakeup_unit = get_wakeup_unit(wakeup_count);
+    deep_sleep = get_deep_sleep(wakeup_count);
+    CHECK(deep_sleep, "Should be deep sleep");
     check_wakeup_reason(wakeup_unit);
     LOG_INFO("Woke up by source %d", wakeup_unit);
-    cleanup(wakeup_unit);
-    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
-    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
-    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
-    wakeup_unit = get_wakeup_unit(wakeup_count);
-    deep_sleep = get_deep_sleep(wakeup_count);
-    delay_n_clear(4);
-    execute_test(wakeup_unit, deep_sleep);
-  } else {
-    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
-    wakeup_unit = get_wakeup_unit(wakeup_count);
-    deep_sleep = get_deep_sleep(wakeup_count);
-    for (int i = 0; i < 2; ++i) {
-      check_wakeup_reason(wakeup_unit);
-      LOG_INFO("Woke up by source %d", wakeup_unit);
-      cleanup(wakeup_unit);
-      if (wakeup_unit == PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX &&
-          deep_sleep) {
-        return true;
-      }
-      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
-      CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &wakeup_count));
-      wakeup_unit = get_wakeup_unit(wakeup_count);
-      deep_sleep = get_deep_sleep(wakeup_count);
-      delay_n_clear(4);
-      execute_test(wakeup_unit, deep_sleep);
+    clear_wakeup(wakeup_unit);
+
+    // All is well, get ready for the next test.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+
+    // Check if all wakeups are tested, or some need to be skipped.
+    if (wakeup_count >= 2 * PWRMGR_PARAM_NUM_WKUPS) {
+      return true;
+    } else if (kDeviceType != kDeviceSimDV &&
+               wakeup_count == 2 * PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
+      // Skip both normal and deep sleep.
+      wakeup_count += 2;
+      CHECK_STATUS_OK(
+          ret_sram_testutils_counter_set(kCounterCases, wakeup_count));
     }
   }
+  // All is well, get ready for the next unit, normal and deep sleep.
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+  wakeup_unit = get_wakeup_unit(wakeup_count);
+  deep_sleep = get_deep_sleep(wakeup_count);
+  delay_n_clear(4);
+  CHECK(!deep_sleep, "Should be normal sleep");
+  execute_test(wakeup_unit, deep_sleep);
+  check_wakeup_reason(wakeup_unit);
+  LOG_INFO("Woke up by source %d", wakeup_unit);
+  clear_wakeup(wakeup_unit);
+  // Prepare deep sleep. The check is done above where a reset is handled.
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+  wakeup_unit = get_wakeup_unit(wakeup_count);
+  deep_sleep = get_deep_sleep(wakeup_count);
+  delay_n_clear(4);
+  CHECK(deep_sleep, "Should be deep sleep");
+  execute_test(wakeup_unit, deep_sleep);
 
+  // This is not reachable.
   return false;
 }

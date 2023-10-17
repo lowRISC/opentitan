@@ -52,15 +52,19 @@ bool test_main(void) {
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
 
-    for (size_t i = 0; i < PWRMGR_PARAM_NUM_WKUPS; ++i) {
-      LOG_INFO("Test %d begin", i);
-      execute_test(i, /*deep_sleep=*/false);
-      check_wakeup_reason(i);
-      LOG_INFO("Woke up by source %d", i);
-      cleanup(i);
-      LOG_INFO("clean up done source %d", i);
+    for (size_t wakeup_unit = 0; wakeup_unit < PWRMGR_PARAM_NUM_WKUPS;
+         ++wakeup_unit) {
+      if (kDeviceType != kDeviceSimDV &&
+          wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
+        continue;
+      }
+      LOG_INFO("Test %d begin", wakeup_unit);
+      execute_test(wakeup_unit, /*deep_sleep=*/false);
+      check_wakeup_reason(wakeup_unit);
+      LOG_INFO("Woke up by source %d", wakeup_unit);
+      clear_wakeup(wakeup_unit);
+      LOG_INFO("clean up done source %d", wakeup_unit);
     }
-
     return true;
   }
 

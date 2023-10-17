@@ -69,7 +69,7 @@
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_wake_ups_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
