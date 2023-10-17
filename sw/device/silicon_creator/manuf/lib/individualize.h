@@ -73,7 +73,7 @@ status_t manuf_individualize_device_secret0(
  * Checks the SECRET0 OTP partition end state.
  *
  * @param otp_ctrl OTP controller interface.
- * @return OK_STATUS if the SECRET1 partition is locked.
+ * @return OK_STATUS if the SECRET0 partition is locked.
  */
 status_t manuf_individualize_device_secret0_check(
     const dif_otp_ctrl_t *otp_ctrl);
@@ -84,9 +84,6 @@ status_t manuf_individualize_device_secret0_check(
  * The SECRET1 partition contains the Flash and SRAM scrambling seeds for the
  * device.
  *
- * Preconditions:
- * - Device is in DEV, PROD, or PROD_END lifecycle stage.
- *
  * Note: The test will skip all programming steps and succeed if the SECRET1
  * parition is already locked. This is to facilitate test re-runs.
  *
@@ -96,7 +93,7 @@ status_t manuf_individualize_device_secret0_check(
  *
  * @param lc_ctrl Lifecycle controller instance.
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the HW_CFG partition is locked.
+ * @return OK_STATUS on success.
  */
 status_t manuf_individualize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
                                             const dif_otp_ctrl_t *otp_ctrl);

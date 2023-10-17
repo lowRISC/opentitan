@@ -265,9 +265,6 @@ status_t manuf_individualize_device_secret0_check(
 
 status_t manuf_individualize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
                                             const dif_otp_ctrl_t *otp_ctrl) {
-  // Check life cycle in either PROD or DEV.
-  TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
-
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                       &is_locked));
