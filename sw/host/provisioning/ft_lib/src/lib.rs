@@ -19,7 +19,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
-use ujson_lib::provisioning_command::FtSramProvisioningCommand;
+use ujson_lib::provisioning_command::{FtPersonalizeCommand, FtSramProvisioningCommand};
 
 /// Provisioning action command-line parameters, namely, the provisioning commands to send.
 #[derive(Debug, Args, Clone)]
@@ -225,7 +225,6 @@ pub fn test_exit(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    reset_delay: Duration,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
@@ -236,7 +235,15 @@ pub fn run_ft_personalize(
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Personalize.", timeout)?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"FT personalization start. Waiting for command ...",
+        timeout,
+    )?;
+
+    // Inject provisioning commands.
+    FtPersonalizeCommand::Done.send(&*uart)?;
+    Status::recv(&*uart, timeout, false)?;
 
     Ok(())
 }
