@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: "rom_ext_e2e"
+
+  testpoints: [
+    {
+      name: rom_ext_e2e_verified_boot_positions
+      desc: '''Verify that ROM_EXT can boot an owner stage test program in various locations.
+
+            - The test program should be launched via the OTTF.
+            - The test program should print out the `boot_log` data.
+            - The test program should be tested in the A slot, the B slot and the virtual slot.
+            '''
+      tags: ["rom_ext", "fpga", "silicon"]
+      stage: V2
+      tests: []
+    }
+
+    {
+      name: rom_ext_e2e_verified_boot_keys
+      desc: '''Verify that ROM_EXT can boot an owner stage signed with different keys.
+
+            - The test program should be launched via the OTTF.
+            - The test program should print out the `boot_log` data.
+            - The test program should be signed with the fake `test` key, the fake `dev` key and an invalid key.
+            '''
+      tags: ["rom_ext", "fpga", "silicon"]
+      stage: V2
+      tests: []
+    }
+
+  ]
+}
