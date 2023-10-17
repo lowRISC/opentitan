@@ -23,24 +23,22 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
 }
 
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
-                                  crypto_const_byte_buf_t input_message,
+                                  const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
-                                  rsa_hash_t hash_mode,
                                   crypto_word32_buf_t *signature) {
-  HARDENED_TRY(otcrypto_rsa_sign_async_start(rsa_private_key, input_message,
-                                             padding_mode, hash_mode));
+  HARDENED_TRY(otcrypto_rsa_sign_async_start(rsa_private_key, message_digest,
+                                             padding_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
 }
 
 crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
-                                    crypto_const_byte_buf_t input_message,
+                                    const hash_digest_t *message_digest,
                                     rsa_padding_t padding_mode,
-                                    rsa_hash_t hash_mode,
                                     crypto_const_word32_buf_t signature,
                                     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(rsa_public_key, signature));
-  return otcrypto_rsa_verify_async_finalize(input_message, padding_mode,
-                                            hash_mode, verification_result);
+  return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
+                                            verification_result);
 }
 
 /**
@@ -279,13 +277,12 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
 
 crypto_status_t otcrypto_rsa_sign_async_start(
     const rsa_private_key_t *rsa_private_key,
-    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode) {
+    const hash_digest_t *message_digest, rsa_padding_t padding_mode) {
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(rsa_private_key));
 
   // Check for NULL input buffer.
-  if (input_message.len != 0 && input_message.data == NULL) {
+  if (message_digest->len != 0 && message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -314,9 +311,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
 
       // Start signature generation.
       return rsa_signature_generate_2048_start(
-          &private_key2k, input_message.data, input_message.len,
-          (rsa_signature_padding_t)padding_mode,
-          (rsa_signature_hash_t)hash_mode);
+          &private_key2k, message_digest,
+          (rsa_signature_padding_t)padding_mode);
     }
     case kRsaKeySize3072: {
       // Construct the private key.
@@ -328,9 +324,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
 
       // Start signature generation.
       return rsa_signature_generate_3072_start(
-          &private_key3k, input_message.data, input_message.len,
-          (rsa_signature_padding_t)padding_mode,
-          (rsa_signature_hash_t)hash_mode);
+          &private_key3k, message_digest,
+          (rsa_signature_padding_t)padding_mode);
     }
     case kRsaKeySize4096: {
       // Construct the private key.
@@ -342,9 +337,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
 
       // Start signature generation.
       return rsa_signature_generate_4096_start(
-          &private_key4k, input_message.data, input_message.len,
-          (rsa_signature_padding_t)padding_mode,
-          (rsa_signature_hash_t)hash_mode);
+          &private_key4k, message_digest,
+          (rsa_signature_padding_t)padding_mode);
     }
     default:
       // Invalid key size.
@@ -477,13 +471,13 @@ crypto_status_t otcrypto_rsa_verify_async_start(
 }
 
 crypto_status_t otcrypto_rsa_verify_async_finalize(
-    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode, hardened_bool_t *verification_result) {
+    const hash_digest_t *message_digest, rsa_padding_t padding_mode,
+    hardened_bool_t *verification_result) {
   // Initialize verification result to false by default.
   *verification_result = kHardenedBoolFalse;
 
   // Check for NULL pointers.
-  if (input_message.len != 0 && input_message.data == NULL) {
+  if (message_digest->len != 0 && message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (verification_result == NULL) {
@@ -492,8 +486,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
 
   // Call the unified `finalize` operation, which will determine the RSA size
   // based on the mode stored in OTBN.
-  return rsa_signature_verify_finalize(input_message.data, input_message.len,
+  return rsa_signature_verify_finalize(message_digest,
                                        (rsa_signature_padding_t)padding_mode,
-                                       (rsa_signature_hash_t)hash_mode,
                                        verification_result);
 }

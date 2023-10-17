@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,6 +22,13 @@ extern "C" {
  *
  * Schemes are defined in IETF RFC 8017:
  *   https://www.rfc-editor.org/rfc/rfc8017
+ *
+ * In PSS padding mode, the mask generation function (MGF) is determined by the
+ * hash function used for the message:
+ * - If the message is hashed with a SHA-2 or SHA-3 hash function, PSS padding
+ *   will use MGF1 with the same hash function.
+ * - If the message is hashed with a SHAKE128 or SHAKE256 XOF, PSS padding will
+ *   use the same XOF as the MGF, as described in FIPS 186-5.
  *
  * Values in this enum should match the top-level `rsa_padding` enum from
  * `sw/device/lib/crypto/include/rsa.h`.
@@ -33,18 +41,6 @@ typedef enum rsa_signature_padding {
 } rsa_signature_padding_t;
 
 /**
- * Hash function options for RSA signatures.
- *
- * Values in this enum should match the top-level `rsa_hash` enum from
- * `sw/device/lib/crypto/include/rsa.h`.
- */
-typedef enum rsa_signature_hash {
-  kRsaSignatureHashSha256 = 0x378,
-  kRsaSignatureHashSha384 = 0xe8c,
-  kRsaSignatureHashSha512 = 0xf1b,
-} rsa_signature_hash_t;
-
-/**
  * Starts generating an RSA-2048 signature; returns immediately.
  *
  * The key exponent must be F4=65537; no other exponents are supported.
@@ -52,16 +48,14 @@ typedef enum rsa_signature_hash {
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param private_key RSA private key.
- * @param message Message to sign.
- * @param message_len Message length in bytes.
+ * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
- * @param hash_mode Hash function to use.
  * @return Result of the operation (OK or error).
  */
 status_t rsa_signature_generate_2048_start(
-    const rsa_2048_private_key_t *private_key, const uint8_t *message,
-    const size_t message_len, const rsa_signature_padding_t padding_mode,
-    const rsa_signature_hash_t hash_mode);
+    const rsa_2048_private_key_t *private_key,
+    const hash_digest_t *message_digest,
+    const rsa_signature_padding_t padding_mode);
 
 /**
  * Waits for an RSA-2048 signature generation to complete.
@@ -87,7 +81,7 @@ status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature);
 
 /**
- * Waits for an signature generation to complete.
+ * Waits for any RSA signature verification to complete.
  *
  * Should be invoked only after a `rsa_signature_verify_{size}_start` call, but
  * can be invoked for any size. Blocks until OTBN is done processing, and then
@@ -98,17 +92,15 @@ status_t rsa_signature_verify_2048_start(
  * OK unless there are operational errors while running the verification and
  * reading back the result.
  *
- * @param message Message to verify the signature against.
- * @param message_len Message length in bytes.
+ * @param message_digest Message digest to verify the signature against.
  * @param padding_mode Signature padding mode.
- * @param hash_mode Hash function to use.
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
 status_t rsa_signature_verify_finalize(
-    const uint8_t *message, const size_t message_len,
+    const hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode,
-    const rsa_signature_hash_t hash_mode, hardened_bool_t *verification_result);
+    hardened_bool_t *verification_result);
 
 /**
  * Starts generating an RSA-3072 signature; returns immediately.
@@ -118,16 +110,14 @@ status_t rsa_signature_verify_finalize(
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param private_key RSA private key.
- * @param message Message to sign.
- * @param message_len Message length in bytes.
+ * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
- * @param hash_mode Hash function to use.
  * @return Result of the operation (OK or error).
  */
 status_t rsa_signature_generate_3072_start(
-    const rsa_3072_private_key_t *private_key, const uint8_t *message,
-    const size_t message_len, const rsa_signature_padding_t padding_mode,
-    const rsa_signature_hash_t hash_mode);
+    const rsa_3072_private_key_t *private_key,
+    const hash_digest_t *message_digest,
+    const rsa_signature_padding_t padding_mode);
 
 /**
  * Waits for an RSA-3072 signature generation to complete.
@@ -160,16 +150,14 @@ status_t rsa_signature_verify_3072_start(
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
  * @param private_key RSA private key.
- * @param message Message to sign.
- * @param message_len Message length in bytes.
+ * @param message_digest Message digest to sign.
  * @param padding_mode Signature padding mode.
- * @param hash_mode Hash function to use.
  * @return Result of the operation (OK or error).
  */
 status_t rsa_signature_generate_4096_start(
-    const rsa_4096_private_key_t *private_key, const uint8_t *message,
-    const size_t message_len, const rsa_signature_padding_t padding_mode,
-    const rsa_signature_hash_t hash_mode);
+    const rsa_4096_private_key_t *private_key,
+    const hash_digest_t *message_digest,
+    const rsa_signature_padding_t padding_mode);
 
 /**
  * Waits for an RSA-4096 signature generation to complete.

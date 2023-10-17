@@ -393,6 +393,48 @@ typedef struct crypto_blinded_key {
   uint32_t checksum;
 } crypto_blinded_key_t;
 
+/**
+ * Enum to define supported hashing modes.
+ *
+ * Values are hardened.
+ */
+typedef enum hash_mode {
+  // SHA2-256 mode.
+  kHashModeSha256 = 0x69b,
+  // SHA2-384 mode.
+  kHashModeSha384 = 0x7ae,
+  // SHA2-512 mode.
+  kHashModeSha512 = 0x171,
+  // SHA3-224 mode.
+  kHashModeSha3_224 = 0x516,
+  // SHA3-256 mode.
+  kHashModeSha3_256 = 0x2d4,
+  // SHA3-384 mode.
+  kHashModeSha3_384 = 0x267,
+  // SHA3-512 mode.
+  kHashModeSha3_512 = 0x44d,
+  // Shake128 mode.
+  kHashXofModeShake128 = 0x5d8,
+  // Shake256 mode.
+  kHashXofModeShake256 = 0x34a,
+  // cShake128 mode.
+  kHashXofModeCshake128 = 0x0bd,
+  // cShake256 mode.
+  kHashXofModeCshake256 = 0x4e2,
+} hash_mode_t;
+
+/**
+ * Container for a hash digest.
+ */
+typedef struct hash_digest {
+  // Digest type.
+  hash_mode_t mode;
+  // Digest length in 32-bit words.
+  size_t len;
+  // Digest data.
+  uint32_t *data;
+} hash_digest_t;
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

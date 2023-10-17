@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
@@ -14,6 +15,7 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
+  kSha512DigestWords = 512 / 32,
   kRsa4096NumBytes = 4096 / 8,
   kRsa4096NumWords = kRsa4096NumBytes / sizeof(uint32_t),
 };
@@ -145,18 +147,17 @@ static const uint32_t kValidSignaturePss[kRsa4096NumWords] = {
  * Helper function to run the RSA-4096 signing routine.
  *
  * Packages input into cryptolib-style structs and calls `otcrypto_rsa_sign`
- * using the constant test private key.
+ * using the constant test private key. Always uses SHA-512 as the hash
+ * function.
  *
  * @param msg Message to sign.
  * @param msg_len Message length in bytes.
  * @param padding_mode RSA padding mode.
- * @param hash_mode Hash function to use.
  * @param[out] sig Buffer for the generated RSA signature (4096 bits).
  * @return OK or error.
  */
 static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
-                                  rsa_padding_t padding_mode,
-                                  rsa_hash_t hash_mode, uint32_t *sig) {
+                                  rsa_padding_t padding_mode, uint32_t *sig) {
   key_mode_t key_mode;
   switch (padding_mode) {
     case kRsaPaddingPkcs:
@@ -191,10 +192,15 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   private_key.n.checksum = integrity_unblinded_checksum(&private_key.n);
   private_key.d.checksum = integrity_blinded_checksum(&private_key.d);
 
-  crypto_const_byte_buf_t msg_buf = {
-      .data = msg,
-      .len = msg_len,
+  // Hash the message.
+  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  uint32_t msg_digest_data[kSha512DigestWords];
+  hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = kHashModeSha512,
   };
+  TRY(otcrypto_hash(msg_buf, &msg_digest));
 
   crypto_word32_buf_t sig_buf = {
       .data = sig,
@@ -202,8 +208,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   };
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_sign(&private_key, msg_buf, padding_mode, hash_mode,
-                        &sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
 
   return OK_STATUS();
@@ -213,20 +218,19 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
  * Helper function to run the RSA-4096 verification routine.
  *
  * Packages input into cryptolib-style structs and calls `otcrypto_rsa_verify`
- * using the constant test public key.
+ * using the constant test public key. Always uses SHA-512 as the hash
+ * function.
  *
  * @param msg Message to verify.
  * @param msg_len Message length in bytes.
  * @param sig Signature to verify
  * @param padding_mode RSA padding mode.
- * @param hash_mode Hash function to use.
  * @param[out] verification_result Whether the signature passed verification.
  * @return OK or error.
  */
 static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
                                     const uint32_t *sig,
                                     const rsa_padding_t padding_mode,
-                                    const rsa_hash_t hash_mode,
                                     hardened_bool_t *verification_result) {
   key_mode_t key_mode;
   switch (padding_mode) {
@@ -254,10 +258,15 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   public_key.n.checksum = integrity_unblinded_checksum(&public_key.n);
   public_key.e.checksum = integrity_unblinded_checksum(&public_key.e);
 
-  crypto_const_byte_buf_t msg_buf = {
-      .data = msg,
-      .len = msg_len,
+  // Hash the message.
+  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  uint32_t msg_digest_data[kSha512DigestWords];
+  hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = kHashModeSha512,
   };
+  TRY(otcrypto_hash(msg_buf, &msg_digest));
 
   crypto_const_word32_buf_t sig_buf = {
       .data = sig,
@@ -265,8 +274,8 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   };
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_verify(&public_key, msg_buf, padding_mode, hash_mode,
-                          sig_buf, verification_result));
+  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, padding_mode, sig_buf,
+                          verification_result));
   profile_end_and_print(t_start, "RSA verify");
 
   return OK_STATUS();
@@ -276,8 +285,7 @@ status_t pkcs1v15_sign_test(void) {
   // Generate a signature using PKCS#1 v1.5 padding and SHA-512 as the hash
   // function.
   uint32_t sig[kRsa4096NumWords];
-  TRY(run_rsa_4096_sign(kTestMessage, kTestMessageLen, kRsaPaddingPkcs,
-                        kRsaHashSha512, sig));
+  TRY(run_rsa_4096_sign(kTestMessage, kTestMessageLen, kRsaPaddingPkcs, sig));
 
   // Compare to the expected signature.
   TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
@@ -290,7 +298,7 @@ status_t pkcs1v15_verify_valid_test(void) {
   hardened_bool_t verification_result;
   TRY(run_rsa_4096_verify(kTestMessage, kTestMessageLen,
                           kValidSignaturePkcs1v15, kRsaPaddingPkcs,
-                          kRsaHashSha512, &verification_result));
+                          &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -301,8 +309,7 @@ status_t pkcs1v15_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   hardened_bool_t verification_result;
   TRY(run_rsa_4096_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kRsaPaddingPkcs, kRsaHashSha512,
-                          &verification_result));
+                          kRsaPaddingPkcs, &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
