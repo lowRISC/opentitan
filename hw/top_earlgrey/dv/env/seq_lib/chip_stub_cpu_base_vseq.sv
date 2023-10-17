@@ -47,6 +47,13 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.post_apply_reset(reset_kind);
     // Wait until rom_ctrl and lc_ctrl have finished to ensure stub_cpu
     // does not conflict with any background power-up activity
+
+    // Add extra guard for closed source env.
+    // Closed source has long reset period (> 1ms).
+    // If `wait_rom_check_done()` is called during the reset period,
+    // this task pass without checking and causes false failure.
+    // wait for aon clock to make sure reset is de-asserted.
+    @cfg.chip_vif.aon_clk_por_rst_if.cb;
     `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
     wait_rom_check_done();
   endtask
