@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -53,6 +54,8 @@ void sw_reset(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(
+      lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
   if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(&flash_state, &otp_ctrl));

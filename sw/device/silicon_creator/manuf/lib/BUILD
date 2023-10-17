@@ -106,13 +106,13 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_initial",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":individualize",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -121,6 +121,7 @@ opentitan_test(
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -157,7 +158,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
         tags = ["manuf"],
     ),
     exec_env = {
