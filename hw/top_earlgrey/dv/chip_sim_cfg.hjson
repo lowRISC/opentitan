@@ -1945,7 +1945,7 @@
       name: chip_sw_power_virus
       uvm_test_seq: chip_sw_power_virus_vseq
       sw_images: [
-        "//sw/device/tests:power_virus_systemtest:1",
+        "//sw/device/tests:power_virus_systemtest:1:new_rules",
         "//sw/device/tests:power_virus_systemtest_otp_img_rma:4",
       ]
       en_run_modes: ["sw_test_mode_test_rom"]
@@ -1959,7 +1959,7 @@
       name: chip_sw_flash_scrambling_smoketest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/tests:flash_scrambling_smoketest:1",
+        "//sw/device/tests:flash_scrambling_smoketest:1:new_rules",
         "//sw/device/tests:flash_scrambling_smoketest_otp_img_rma:4",
       ]
       en_run_modes: ["sw_test_mode_test_rom"]
