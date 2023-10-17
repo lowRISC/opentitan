@@ -169,6 +169,10 @@ typedef struct dif_flash_ctrl_status {
    * Flash controller undergoing init.
    */
   bool controller_init_wip : 1;
+  /**
+   * Flash controller initialized.
+   */
+  bool controller_initialized : 1;
 } dif_flash_ctrl_status_t;
 
 /**

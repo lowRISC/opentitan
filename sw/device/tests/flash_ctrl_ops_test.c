@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -13,9 +14,23 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 #define FLASH_CTRL_NUM_IRQS 5
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define FLASH_CTRL_OTP_FIELD_ECC \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+#define FLASH_CTRL_OTP_FIELD_HE \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -44,6 +59,7 @@ enum {
   kRegionBaseBank1Page255Index = 511,
   kFlashBank0DataRegion = 0,
   kFlashBank1DataRegion = 1,
+  kFlashBank1DataRegionSCR = 2,
   kPartitionId = 0,
   kRegionSize = 1,
   kInfoSize = 16,
@@ -202,15 +218,33 @@ static void do_info_partition_test(uint32_t partition_number,
  * Tests the interrupts for read of bank0 data partition.
  * Only read is tested as this partition contains the program
  * code so should not be erased or written.
+ * bootstrap uses programmed otp value to set default regions
+ * (https://github.com/lowRISC/opentitan/blob/2f58b40b9ce2f44b8e1f65cf87043eff97b0ad6c/
+ *  sw/device/silicon_creator/lib/drivers/flash_ctrl.c#L270-L275)
+ *
+ * So set the region 0 as the same as bootstrap did.
  * The data read via the flash_ctrl interface is checked against the
  * data read via the host interface.
  */
 static void do_bank0_data_partition_test(void) {
-  uint32_t address;
-  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-      &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
-      kRegionSize, &address));
+  uint32_t address = 0;
+  uint32_t otp_val = abs_mmio_read32(
+      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
 
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .ecc_en = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .high_endurance_en =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+      .scramble_en =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .erase_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .rd_en = kMultiBitBool4True};
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
+      &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
+      kRegionSize, region_properties, &address));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
   clear_irq_variables();
@@ -246,10 +280,17 @@ static void do_bank1_data_partition_test(void) {
         (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
     const uint32_t *test_data = (i == 0) ? kRandomData4 : kRandomData5;
 
-    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
-        &address));
-
+    if (i == 0) {
+      // Set region1 for non-scrambled ecc enabled.
+      CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+          &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+          &address));
+    } else {
+      // Set region2 for scrambled ecc enabled.
+      CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
+          &flash_state, page_index, kFlashBank1DataRegionSCR, kRegionSize,
+          &address));
+    }
     clear_irq_variables();
 
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
