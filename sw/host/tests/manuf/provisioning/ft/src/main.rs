@@ -99,12 +99,7 @@ fn main() -> Result<()> {
         )?;
     }
     if opts.provisioning_actions.all_steps || opts.provisioning_actions.personalize {
-        run_ft_personalize(
-            &transport,
-            &opts.init,
-            opts.init.bootstrap.options.reset_delay,
-            opts.timeout,
-        )?;
+        run_ft_personalize(&transport, &opts.init, opts.timeout)?;
     }
 
     Ok(())
