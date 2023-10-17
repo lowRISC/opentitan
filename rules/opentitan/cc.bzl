@@ -234,6 +234,11 @@ def _opentitan_binary(ctx):
         if "logs" in provides:
             default_info.extend(provides["logs"])
 
+        # FIXME: vmem is a special case for ram targets used in ROM e2e test
+        # cases.
+        if provides.get("vmem"):
+            default_info.append(provides["vmem"])
+
         # FIXME(cfrantz): Special case: The englishbreakfast verilator model
         # requires a non-scrambled ROM image.
         if provides.get("rom32"):

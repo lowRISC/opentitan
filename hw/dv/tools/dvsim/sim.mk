@@ -83,7 +83,7 @@ ifneq (${sw_images},)
 		index=`echo $$sw_image | cut -d: -f 3`; \
 		flags=(`echo $$sw_image | cut -d: -f 4- --output-delimiter " "`); \
 		bazel_label="`echo $$sw_image | cut -d: -f 1-2`"; \
-		if [[ $${index} != 4 ]]; then \
+		if [[ $${index} != 4 && $${index} != 5 ]]; then \
 			bazel_label="$${bazel_label}_$${sw_build_device}"; \
 			bazel_cquery="labels(data, $${bazel_label}) union labels(srcs, $${bazel_label})"; \
 		else \
