@@ -20,6 +20,10 @@ extern "C" {
     value(_, I2cReadTransaction) \
     value(_, I2cWriteTransaction) \
     value(_, I2cWriteTransactionSlow) \
+    value(_, MemRead) \
+    value(_, MemRead32) \
+    value(_, MemWrite) \
+    value(_, MemWrite32) \
     value(_, PinmuxConfig) \
     value(_, SpiConfigureJedecId) \
     value(_, SpiReadStatus) \

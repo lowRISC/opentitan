@@ -26,6 +26,12 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "mem",
+    srcs = ["//sw/device/lib/testing/json:mem"],
+    defines = ["opentitanlib=crate"],
+)
+
+ujson_rust(
     name = "pinmux_config",
     srcs = ["//sw/device/lib/testing/json:pinmux_config"],
     defines = ["opentitanlib=crate"],
@@ -123,6 +129,7 @@ rust_library(
         "src/test_utils/lc_transition.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/load_sram_program.rs",
+        "src/test_utils/mem.rs",
         "src/test_utils/mod.rs",
         "src/test_utils/otp_ctrl.rs",
         "src/test_utils/poll.rs",
@@ -209,6 +216,7 @@ rust_library(
         ":config",
         ":gpio",
         ":i2c_target",
+        ":mem",
         ":e2e_command",
         ":pinmux_config",
         ":spi_passthru",
@@ -231,6 +239,7 @@ rust_library(
         "e2e_command": "$(location :e2e_command)",
         "gpio": "$(location :gpio)",
         "i2c_target": "$(location :i2c_target)",
+        "mem": "$(location :mem)",
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",

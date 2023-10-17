@@ -37,6 +37,16 @@ cc_library(
 )
 
 cc_library(
+    name = "mem",
+    srcs = ["mem.c"],
+    hdrs = ["mem.h"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+    ],
+)
+
+cc_library(
     name = "pinmux",
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
