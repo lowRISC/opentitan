@@ -46,11 +46,11 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
  * Data exported during device personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_PERSONALIZE(field, string) \
+#define STRUCT_MANUF_PERSO_DATA_OUT(field, string) \
     field(wrapped_rma_unlock_token, wrapped_rma_unlock_token_t)
-UJSON_SERDE_STRUCT(ManufPersonalize, \
-                   manuf_personalize_t, \
-                   STRUCT_MANUF_PERSONALIZE);
+UJSON_SERDE_STRUCT(ManufPersoDataOut, \
+                   manuf_perso_data_out_t, \
+                   STRUCT_MANUF_PERSO_DATA_OUT);
 // clang-format on
 
 /**

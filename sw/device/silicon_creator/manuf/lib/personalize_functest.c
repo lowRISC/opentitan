@@ -49,15 +49,15 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-status_t personalize_test(manuf_personalize_t *export_data) {
+status_t personalize_test(manuf_perso_data_out_t *export_data) {
   LOG_INFO("Personalizing device.");
   TRY(manuf_personalize_device(&flash_state, &lc_ctrl, &otp_ctrl, export_data));
   return OK_STATUS();
 }
 
 status_t export_data_over_console(ujson_t *uj,
-                                  manuf_personalize_t *export_data) {
-  RESP_OK(ujson_serialize_manuf_personalize_t, uj, export_data);
+                                  manuf_perso_data_out_t *export_data) {
+  RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, export_data);
   return OK_STATUS();
 }
 
@@ -84,8 +84,8 @@ bool test_main(void) {
   // retention SRAM (namely in the creator partition) as it is faster than
   // storing it in flash, and still persists across a SW initiated reset.
   retention_sram_t *ret_sram_data = retention_sram_get();
-  manuf_personalize_t *export_data =
-      (manuf_personalize_t *)&ret_sram_data->creator.reserved;
+  manuf_perso_data_out_t *export_data =
+      (manuf_perso_data_out_t *)&ret_sram_data->creator.reserved;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {

@@ -25,7 +25,7 @@ use opentitanlib::test_utils::rpc::UartRecv;
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
-use provisioning_data::ManufPersonalize;
+use provisioning_data::ManufPersoDataOut;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -56,7 +56,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     )?;
 
     // Wait for exported data to be transimitted over the console.
-    let export_data = ManufPersonalize::recv(&*uart, opts.timeout, false)?;
+    let export_data = ManufPersoDataOut::recv(&*uart, opts.timeout, false)?;
     log::info!("{:x?}", export_data);
 
     // Load HSM-generated EC private key.
