@@ -19,7 +19,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
-use ujson_lib::provisioning_command::{FtPersonalizeCommand, FtSramProvisioningCommand};
+use ujson_lib::provisioning_command::{FtIndividualizeCommand, FtPersonalizeCommand};
 
 /// Provisioning action command-line parameters, namely, the provisioning commands to send.
 #[derive(Debug, Args, Clone)]
@@ -156,22 +156,22 @@ pub fn run_sram_ft_individualize(
 
     // Inject provisioning commands.
     if provisioning_actions.all_steps {
-        FtSramProvisioningCommand::WriteAll.send(&*uart)?;
+        FtIndividualizeCommand::WriteAll.send(&*uart)?;
         Status::recv(&*uart, timeout, false)?;
     }
     if provisioning_actions.otp_creator_sw_cfg {
-        FtSramProvisioningCommand::OtpCreatorSwCfgWrite.send(&*uart)?;
+        FtIndividualizeCommand::OtpCreatorSwCfgWrite.send(&*uart)?;
         Status::recv(&*uart, timeout, false)?;
     }
     if provisioning_actions.otp_owner_sw_cfg {
-        FtSramProvisioningCommand::OtpOwnerSwCfgWrite.send(&*uart)?;
+        FtIndividualizeCommand::OtpOwnerSwCfgWrite.send(&*uart)?;
         Status::recv(&*uart, timeout, false)?;
     }
     if provisioning_actions.otp_hw_cfg {
-        FtSramProvisioningCommand::OtpHwCfgWrite.send(&*uart)?;
+        FtIndividualizeCommand::OtpHwCfgWrite.send(&*uart)?;
         Status::recv(&*uart, timeout, false)?;
     }
-    FtSramProvisioningCommand::Done.send(&*uart)?;
+    FtIndividualizeCommand::Done.send(&*uart)?;
     Status::recv(&*uart, timeout, false)?;
 
     jtag.disconnect()?;
