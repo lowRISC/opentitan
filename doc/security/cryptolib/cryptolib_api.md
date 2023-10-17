@@ -138,8 +138,8 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 #### Hash data structures
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h hash_mode }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h hash_digest }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h hash_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h hash_digest }}
 
 #### Key derivation data structures
 
@@ -152,7 +152,6 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 #### RSA data structures
 
 {{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_padding }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_hash }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_private_key }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_key_size }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_public_key }}

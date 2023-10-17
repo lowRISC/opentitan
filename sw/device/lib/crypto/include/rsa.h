@@ -29,22 +29,6 @@ typedef enum rsa_padding {
 } rsa_padding_t;
 
 /**
- * Enum to define hash modes for RSA schemes.
- *
- * Aligning with existing hash modes. Values are hardened.
- */
-typedef enum rsa_hash {
-  // SHA2-256 hashing mode for RSA.
-  kRsaHashSha256 = 0x378,
-  // SHA2-384 hashing mode for RSA.
-  kRsaHashSha384 = 0xe8c,
-  // SHA2-512 hashing mode for RSA.
-  kRsaHashSha512 = 0xf1b,
-  // SHA3-384 hashing mode for RSA.
-  kRsaHashSha3_384 = 0x767,
-} rsa_hash_t;
-
-/**
  * Struct to handle the RSA private exponent and modulus.
  */
 typedef struct rsa_private_key {
@@ -121,16 +105,14 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
  * match, an error message will be returned.
  *
  * @param rsa_private_key Pointer to RSA private exponent struct.
- * @param input_message Input message to be signed.
+ * @param message_digest Message digest to be signed (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing mode to be used for the signature.
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation.
  */
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
-                                  crypto_const_byte_buf_t input_message,
+                                  const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
-                                  rsa_hash_t hash_mode,
                                   crypto_word32_buf_t *signature);
 
 /**
@@ -140,18 +122,16 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
  * PASS / FAIL is returned.
  *
  * @param rsa_public_key Pointer to RSA public exponent struct.
- * @param input_message Input message to be signed for verification.
+ * @param message_digest Message digest to be verified (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing mode to be used for signature verification.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification
  * (Pass/Fail).
  * @return Result of the RSA verify operation.
  */
 crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
-                                    crypto_const_byte_buf_t input_message,
+                                    const hash_digest_t *message_digest,
                                     rsa_padding_t padding_mode,
-                                    rsa_hash_t hash_mode,
                                     crypto_const_word32_buf_t signature,
                                     hardened_bool_t *verification_result);
 
@@ -197,15 +177,13 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  * started.
  *
  * @param rsa_private_key Pointer to RSA private exponent struct.
- * @param input_message Input message to be signed.
+ * @param message_digest Message digest to be signed (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing scheme to be used for the signature scheme.
  * @return Result of async RSA sign start operation.
  */
 crypto_status_t otcrypto_rsa_sign_async_start(
     const rsa_private_key_t *rsa_private_key,
-    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode);
+    const hash_digest_t *message_digest, rsa_padding_t padding_mode);
 
 /**
  * Finalizes the asynchronous digital signature generation function.
@@ -249,16 +227,15 @@ crypto_status_t otcrypto_rsa_verify_async_start(
  * The (hash of) recovered message is compared against the input
  * message and a PASS or FAIL is returned.
  *
- * @param input_message Input message to be signed for verification.
+ * @param message_digest Message digest to be verified (pre-hashed).
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing scheme to be used for the signature scheme.
  * @param[out] verification_result Result of signature verification
  * (Pass/Fail).
  * @return Result of async RSA verify finalize operation.
  */
 crypto_status_t otcrypto_rsa_verify_async_finalize(
-    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
-    rsa_hash_t hash_mode, hardened_bool_t *verification_result);
+    const hash_digest_t *message_digest, rsa_padding_t padding_mode,
+    hardened_bool_t *verification_result);
 
 #ifdef __cplusplus
 }  // extern "C"

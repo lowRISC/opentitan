@@ -279,6 +279,7 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
@@ -310,10 +311,12 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_signature_functest",
     srcs = ["rsa_3072_signature_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
@@ -345,10 +348,12 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_signature_functest",
     srcs = ["rsa_4096_signature_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
