@@ -1002,10 +1002,11 @@ opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:rv_plic",

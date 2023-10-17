@@ -264,6 +264,8 @@ dif_result_t dif_flash_ctrl_get_status(const dif_flash_ctrl_state_t *handle,
           bitfield_bit32_read(reg, FLASH_CTRL_STATUS_PROG_EMPTY_BIT),
       .controller_init_wip =
           bitfield_bit32_read(reg, FLASH_CTRL_STATUS_INIT_WIP_BIT),
+      .controller_initialized =
+          bitfield_bit32_read(reg, FLASH_CTRL_STATUS_INITIALIZED_BIT),
   };
   *status_out = status;
   return kDifOk;
