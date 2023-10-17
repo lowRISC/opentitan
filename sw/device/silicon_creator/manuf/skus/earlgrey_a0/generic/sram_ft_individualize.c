@@ -52,30 +52,30 @@ static status_t peripheral_handles_init(void) {
 status_t command_processor(ujson_t *uj) {
   LOG_INFO("FT SRAM provisioning start. Waiting for command ...");
   while (true) {
-    ft_sram_provisioning_command_t command;
-    TRY(ujson_deserialize_ft_sram_provisioning_command_t(uj, &command));
+    ft_individualize_command_t command;
+    TRY(ujson_deserialize_ft_individualize_command_t(uj, &command));
     switch (command) {
-      case kFtSramProvisioningCommandWriteAll:
+      case kFtIndividualizeCommandWriteAll:
         LOG_INFO("Writing both *_SW_CFG and HW_CFG OTP partitions ...");
         CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
         CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
         CHECK_STATUS_OK(
             manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
         break;
-      case kFtSramProvisioningCommandOtpCreatorSwCfgWrite:
+      case kFtIndividualizeCommandOtpCreatorSwCfgWrite:
         LOG_INFO("Writing the CREATOR_SW_CFG OTP partition ...");
         CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
         break;
-      case kFtSramProvisioningCommandOtpOwnerSwCfgWrite:
+      case kFtIndividualizeCommandOtpOwnerSwCfgWrite:
         LOG_INFO("Writing the OWNER_SW_CFG OTP partition ...");
         CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
         break;
-      case kFtSramProvisioningCommandOtpHwCfgWrite:
+      case kFtIndividualizeCommandOtpHwCfgWrite:
         LOG_INFO("Writing the HW_CFG OTP partition ...");
         CHECK_STATUS_OK(
             manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
         break;
-      case kFtSramProvisioningCommandDone:
+      case kFtIndividualizeCommandDone:
         LOG_INFO("FT SRAM provisioning done.");
         return RESP_OK_STATUS(uj);
       default:
