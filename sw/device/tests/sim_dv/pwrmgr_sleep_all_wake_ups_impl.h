@@ -26,6 +26,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+/**
+ * The retention sram counter used in this test.
+ */
+enum { kCounterCases };
+
 typedef struct test_wakeup_sources {
   /**
    * Name of the device.
@@ -56,12 +61,27 @@ extern dif_sensor_ctrl_t sensor_ctrl;
 extern dif_sysrst_ctrl_t sysrst_ctrl;
 extern dif_usbdev_t usbdev;
 
+/**
+ * Initialize the units used in this test.
+ */
 void init_units(void);
 
-void check_wakeup_reason(uint32_t wakeup_source);
+/**
+ * Check pwrmgr reports this unit as the reason for the wakeup.
+ */
+void check_wakeup_reason(uint32_t wakeup_unit);
 
-void execute_test(uint32_t wakeup_source, bool deep_sleep);
+/**
+ * Execute the test for a given unit and sleep mode.
+ *
+ * Configure wakeup_unit to cause a wakeup up and the pwrmgr sleep mode,
+ * and let the CPU wait for interrupt.
+ */
+void execute_test(uint32_t wakeup_unit, bool deep_sleep);
 
-void cleanup(uint32_t test_idx);
+/**
+ * Clear the wakeup for the given unit.
+ */
+void clear_wakeup(uint32_t wakeup_unit);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
