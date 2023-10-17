@@ -333,6 +333,11 @@ typedef struct partition_info {
    * Whether this partition has a digest field.
    */
   bool has_digest;
+
+  /**
+   * Whether this partition is the lifecycle partition.
+   */
+  bool is_lifecycle;
 } partition_info_t;
 
 // This is generates too many lines with different formatting variants, so
@@ -345,13 +350,16 @@ static const partition_info_t kPartitions[] = {
   part_name_camel = part_name.as_camel_case()
   part_name_define = part_name.as_c_define()
   has_digest = part["hw_digest"] or part["sw_digest"]
+  is_lifecycle = part["variant"] == "LifeCycle"
+  is_software = part["variant"] == "Unbuffered"
 %>\
     [kDifOtpCtrlPartition${part_name_camel}] = {
         .start_addr = OTP_CTRL_PARAM_${part_name_define}_OFFSET,
         .len = OTP_CTRL_PARAM_${part_name_define}_SIZE,
         .align_mask = ${"0x7" if part in secret_parts else "0x3"},
-        .is_software = ${"true" if part["sw_digest"] else "false"},
-        .has_digest = ${"true" if has_digest else "false"}},
+        .is_software = ${"true" if is_software else "false"},
+        .has_digest = ${"true" if has_digest else "false"},
+        .is_lifecycle = ${"true" if is_lifecycle else "false"}},
 % endfor
 };
 // clang-format on
@@ -468,7 +476,7 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
   // Note furthermore that the LC partition is *not* writeable, so we eject
   // here.
   if (kPartitions[partition].align_mask != 0x3 ||
-      !kPartitions[partition].has_digest) {
+      kPartitions[partition].is_lifecycle) {
     return kDifError;
   }
 
@@ -561,7 +569,7 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
     return kDifBadArg;
   }
 
-  // The LC partition does not have a digest.
+  // Not all partitions have a digest.
   if (!kPartitions[partition].has_digest) {
     return kDifError;
   }
