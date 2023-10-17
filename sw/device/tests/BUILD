@@ -18,6 +18,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "opentitan_binary",
     "opentitan_test",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
@@ -962,6 +963,34 @@ opentitan_test(
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "example_mem_ujcmd_test",
+    srcs = ["example_mem_ujcmd.c"],
+    cw310 = new_cw310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/mem",
+    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
+        timeout = "eternal",
+        tags = ["manual"],
+        test_cmd = " ".join([
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/mem",
+    ),
+    deps = [
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:mem",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
