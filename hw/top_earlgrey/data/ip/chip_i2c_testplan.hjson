@@ -59,8 +59,8 @@
             - Program the I2C to be in the appropriate mode (host/target).
             - For hosts, the SW test writes a known payload over the chip's I2C host interface.
               It should then receive back that payload plus one.
-              The test checks whether the payload is sent at the appropriate baud-rate.
-            - For targets, the test sends data at the appropriate baud-rate and checks whether an ack is received.
+              The test checks whether the payload is sent at the appropriate throughput with 3% of tolerance.
+            - For targets, the test sends data at the appropriate speed mode and checks whether an ack is received.
               The test should also do a read request.
 
             Verify all instances of I2C in the chip.
@@ -68,7 +68,7 @@
             Notes for silicon targets:
             - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
             - To check the baud rate the test bench should time the packets and average this time out over multiple runs.
-            Then check whether these timings match the appropriate baud-rate within an acceptable range:
+            Then check whether these timings match the appropriate throughput within 3% of tolerance:
             Fast-mode should be faster than standard-mode and fast-mode plus should be faster than fast-mode.
             '''
       features: ["I2C.MODE.HOST", "I2C.MODE.TARGET", "I2C.SPEED.STANDARD", "I2C.SPEED.FAST", "I2C.SPEED.FASTPLUS"]
