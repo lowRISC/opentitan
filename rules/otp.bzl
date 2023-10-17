@@ -51,7 +51,6 @@ def get_otp_images():
 
     img_targets = [
         "//hw/ip/otp_ctrl/data:img_dev",
-        "//hw/ip/otp_ctrl/data:img_dev_initial",
         "//hw/ip/otp_ctrl/data:img_dev_individualized",
         "//hw/ip/otp_ctrl/data:img_rma",
         "//hw/ip/otp_ctrl/data:img_test_locked0",
@@ -63,6 +62,7 @@ def get_otp_images():
         "//hw/ip/otp_ctrl/data:img_test_locked6",
         "//hw/ip/otp_ctrl/data:img_test_unlocked0",
         "//hw/ip/otp_ctrl/data:img_test_unlocked1",
+        "//hw/ip/otp_ctrl/data:img_test_unlocked1_initial",
         "//hw/ip/otp_ctrl/data:img_test_unlocked2",
         "//hw/ip/otp_ctrl/data:img_test_unlocked3",
         "//hw/ip/otp_ctrl/data:img_test_unlocked4",

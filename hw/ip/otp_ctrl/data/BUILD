@@ -474,15 +474,16 @@ otp_image(
     for i in range(0, 7)
 ]
 
-# Represents a DEV state OTP image emulating the state of the device after the
-# exit test token has been applied and before running individualization.
-# The following partitions are missing to ensure the image is initialize with
-# default values: SECRET1, SECRET2, HW_CFG.
-# The following partitions are expected to be configured in previous lifecycle
-# stages: SECRET0, CREATOR_SW, OWNER_SW.
+# Represents a TEST_UNLOCKED1 state OTP image emulating the state of the device
+# after the test tokens have been applied and before running individualization.
+# The following partitions are missing to ensure the image is initialized with
+# values that would be present prior to the final individualization
+# manufacturing stage: SECRET1, SECRET2, HW_CFG.
+# The following partitions are expected to be configured in previous
+# manufacturing stages: SECRET0, CREATOR_SW, OWNER_SW.
 otp_image(
-    name = "img_dev_initial",
-    src = ":otp_json_dev",
+    name = "img_test_unlocked1_initial",
+    src = ":otp_json_test_unlocked1",
     overlays = [
         ":otp_json_secret0",
         ":otp_json_creator_sw_cfg",
@@ -565,7 +566,6 @@ filegroup(
     srcs = [
         ":img_dev",
         ":img_dev_individualized",
-        ":img_dev_initial",
         ":img_prod",
         ":img_raw",
         ":img_rma",
@@ -578,6 +578,7 @@ filegroup(
         ":img_test_locked6",
         ":img_test_unlocked0",
         ":img_test_unlocked1",
+        ":img_test_unlocked1_initial",
         ":img_test_unlocked2",
         ":img_test_unlocked3",
         ":img_test_unlocked4",
