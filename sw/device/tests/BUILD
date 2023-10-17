@@ -17,8 +17,10 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_jtag_params",
     "opentitan_test",
     new_cw310_params = "cw310_params",
+    new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
@@ -2317,25 +2319,25 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
-    cw310 = cw310_params(
+    cw310 = new_cw310_params(
         bitstream = ":power_virus_systemtest_bitstream",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/power_virus",
     ),
-    dv = dv_params(
+    dv = new_dv_params(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
-    targets = [
+    exec_env = {
         # TODO(#14814): add more targets
-        "cw310_test_rom",
-        "dv",
-    ],
-    test_harness = "//sw/host/tests/chip/power_virus",
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
         "//hw/ip/aes:model",
@@ -2387,25 +2389,22 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_passthru_test",
-    srcs = [
-        "spi_passthru_test.c",
-    ],
-    cw310 = cw310_params(
-        # This test will need hyperdebug once we start using multi-lane
+    srcs = ["spi_passthru_test.c"],
+    cw310 = new_cw310_params(
+        # TODO: This test will need hyperdebug once we start using multi-lane
         # SPI modes.
-        #interface = "hyper310",
-        #tags = ["manual"],
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+        # interface = "hyper310",
+        # tags = ["manual"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
-    targets = [
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/spi_passthru",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
@@ -2439,39 +2438,42 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "flash_scrambling_smoketest",
     srcs = ["example_test_from_flash.c"],
-    dv = dv_params(
+    dv = new_dv_params(
         otp = ":flash_scrambling_smoketest_otp_img_rma",
     ),
-    targets = [
-        "dv",
-    ],
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
-        test_cmds = [
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/chip/jtag:openocd_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
+# TODO(#19902): Migrate to `opentitan_test` once there is support for the
+# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
+# covers support for cw340_params.
 opentitan_functest(
     name = "openocd_hyperdebug_test",
     srcs = ["example_test_from_flash.c"],
@@ -2500,6 +2502,9 @@ opentitan_functest(
     ],
 )
 
+# TODO(#19902): Migrate to `opentitan_test` once there is support for the
+# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
+# covers support for cw340_params.
 opentitan_functest(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
@@ -2531,6 +2536,8 @@ opentitan_functest(
     ],
 )
 
+# TODO(#19902): Migrate to `opentitan_test` once there is support for the
+# hyperdebug310 target.
 opentitan_functest(
     name = "i2c_target_test",
     srcs = [
