@@ -45,40 +45,45 @@
    * May clobber temporary registers (t0-t6).
    */
   .balign 4
-  .global rom_epmp_init
-  .type rom_epmp_init, @function
-rom_epmp_init:
+  .global base_rom_epmp_init
+  .type base_rom_epmp_init, @function
+base_rom_epmp_init:
   // Pre-encoded addresses defined in linker script.
-  .extern _epmp_text_tor_lo
-  .extern _epmp_text_tor_hi
+  .extern _epmp_base_text_tor_lo
+  .extern _epmp_base_text_tor_hi
   .extern _epmp_stack_guard_na4
 
   // Setup PMP address registers.
 
-  // ROM TEXT
-  la   t0, _epmp_text_tor_lo
+  // BASE ROM TEXT
+  la   t0, _epmp_base_text_tor_lo
   csrw pmpaddr0, t0
-  la   t0, _epmp_text_tor_hi
+  la   t0, _epmp_base_text_tor_hi
   csrw pmpaddr1, t0
 
-  // ROM
+  // BASE ROM
   li   t0, NAPOT(TOP_DARJEELING_ROM0_BASE_ADDR, TOP_DARJEELING_ROM0_SIZE_BYTES)
   csrw pmpaddr2, t0
 
-  // ROM_EXT TEXT (configured after signature verification)
-  csrw pmpaddr3, zero // ROM_EXT TEXT low
-  csrw pmpaddr4, zero // ROM_EXT TEXT high
+  // unused in BASE ROM
+  csrw pmpaddr3, zero
+  csrw pmpaddr4, zero
+  csrw pmpaddr5, zero
 
-  // This used to be the eFLASH region. However, since Darjeeling does not have an eFLASH,
-  // we execute out of the shared CTN SRAM.
-  li   t0, NAPOT(TOP_DARJEELING_RAM_CTN_BASE_ADDR, TOP_DARJEELING_RAM_CTN_SIZE_BYTES)
-  csrw pmpaddr5, t0
+  // ROM1, will be configured just before jumping to it
+  csrw pmpaddr6, zero
+  csrw pmpaddr7, zero
+  csrw pmpaddr8, zero
+
+  // unused in BASE ROM
+  csrw pmpaddr9, zero
+  csrw pmpaddr10, zero
 
   // MMIO
   li   t0, TOR(TOP_DARJEELING_MMIO_BASE_ADDR)
-  csrw pmpaddr10, t0
-  li   t0, TOR(TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES)
   csrw pmpaddr11, t0
+  li   t0, TOR(TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES)
+  csrw pmpaddr12, t0
 
   // Debug ROM
   li   t0, NAPOT(TOP_DARJEELING_RV_DM_MEM_BASE_ADDR, TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES)
@@ -93,17 +98,18 @@ rom_epmp_init:
   csrw pmpaddr15, t0
 
   // Set PMP configuration registers.
-  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
-           CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
-  li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
-  li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
-           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
-           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
+  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) |  /* Base ROM TEXT         */ \
+           CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)     /* Base ROM              */
+  li   t1, 0
+  li   t2, 0
+  li   t3, CFG_INDEX(12 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW) |  /* MMIO        */ \
+           CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)|  /* Debug ROM   */ \
+           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   |  /* Stack Guard */ \
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)    /* RAM         */
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3
 
   ret
-  .size rom_epmp_init, .-rom_epmp_init
+  .size base_rom_epmp_init, .-base_rom_epmp_init
