@@ -96,11 +96,19 @@ _stack_start = _stack_end - _stack_size;
 _static_critical_size = 8136;
 
 /**
- * `.chip_info` at the top of ROM0.
+ * `.chip_info` at the top of each ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom0) + LENGTH(rom0);
-_chip_info_start = _chip_info_end - _chip_info_size;
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, mem in m["memory"].items():
+      % if key == "rom":
+_${mem["label"]}_chip_info_end = ORIGIN(${mem["label"]}) + LENGTH(${mem["label"]});
+_${mem["label"]}_chip_info_start = _${mem["label"]}_chip_info_end - _chip_info_size;
+      % endif
+    % endfor
+  % endif
+% endfor
 
 /**
  * Size of the initial ePMP RX region at reset (in bytes). This region must be
