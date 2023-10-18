@@ -6,6 +6,11 @@
 
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
+### TODO: Remove these waivers together with fwmode
+waive -rules {CONST_FF} -location {spi_device.sv} \
+      -regexp {Flip-flop '*' is driven by constant}
+      -comment "Temporary waiver for tie-offs due to deprecated fwmode."
+
 ### ARITH
 waive -rules {ARITH_CONTEXT} -location {spi_readcmd.sv} \
       -regexp {'addr_q\[31:2\] \+ 1'b1' is self-determined} \
