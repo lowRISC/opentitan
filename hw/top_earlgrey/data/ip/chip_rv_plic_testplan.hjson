@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: rv_plic
+  testpoints: [
+    // PLIC integration tests:
+    {
+      name: chip_sw_plic_all_irqs
+      desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
+
+            The automated SW test enables all interrupts at the PLIC to interrupt the core. It uses
+            the `intr_test` CSR in each peripheral to mock assert an interrupt, looping through all
+            available interrupts in that peripheral. The ISR verifies that the right interrupt
+            occurred. This is used as a catch-all interrupt test for all peripheral integration
+            testing within which functionally asserting an interrupt is hard to achieve or not of
+            high value.
+            '''
+      stage: V2
+      tests: ["chip_plic_all_irqs"]
+    }
+    {
+      name: chip_sw_plic_sw_irq
+      desc: '''Verify the SW interrupt to the CPU.
+
+            Enable all peripheral interrupts at PLIC. Enable all types of interrupt at the CPU core.
+            Write to the MSIP CSR to generate a SW interrupt to the CPU. Verify that the only
+            interrupt that is seen is the SW interrupt.
+            '''
+      stage: V2
+      tests: ["chip_sw_plic_sw_irq"]
+    }
+    {
+      name: chip_sw_plic_alerts
+      desc: '''Verify alerts from PLIC due to both, TL intg and reg WE onehot check faults.
+
+            - Since PLIC is not pre-verified in a DV environment, we need to ensure these are tested
+              separately.
+            '''
+      stage: V3
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+  ]
+}
