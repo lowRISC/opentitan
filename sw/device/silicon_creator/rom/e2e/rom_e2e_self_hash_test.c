@@ -47,7 +47,7 @@ const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
     0xe3a7c719, 0x6875c88c, 0xbf1c08b4, 0xad5fd883,
 };
 
-extern const char _chip_info_start[];
+extern const char _rom0_chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
@@ -63,7 +63,7 @@ status_t hash_rom(void) {
 
   TRY(otcrypto_hash(input, kHashModeSha256, &output));
   LOG_INFO("ROM Hash: 0x%!x", kSha256HashSizeInBytes, rom_hash);
-  chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
+  chip_info_t *rom_chip_info = (chip_info_t *)_rom0_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",
            rom_chip_info->scm_revision.scm_revision_high,
