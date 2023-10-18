@@ -54,6 +54,12 @@ waive -rules CONST_OUTPUT         -location {rv_core_ibex.sv} -regexp {Output 't
       -comment "not all bus constructs are used"
 waive -rules SIGNED_RANGE         -location {ibex_controller.sv} -msg {Part select of signed signal 'i[3:0]' encountered} \
       -comment "switching the loop variable i to unsigned would require loop restructuring to not change interrupt priorities, making the code less readable"
+waive -rules SIGNED_RANGE         -location {ibex_cs_registers.sv} -regexp {Part select of signed signal 'i[11:0]' encountered}\
+      -comment "This is due to the genvar being a signed variable."
+waive -rules SIGNED_RANGE         -location {ibex_cs_registers.sv} -regexp {Part select of signed signal 'i[DbgHwNumLen - 1:0]' encountered} \
+      -comment "This is due to the genvar being a signed variable."
+waive -rules SIGNED_RANGE         -location {ibex_cs_registers.sv} -regexp {Part select of signed signal 'b[IC_LINE_BEATS_W - 1:0]'} \
+      -comment "This is due to the genvar being a signed variable."
 waive -rules CONST_OUTPUT         -location {ibex_controller.sv} -regexp {Output 'exc_cause_o.5.' is driven by constant} \
       -comment "easier to write with enum, not all causes used yet"
 waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'data_reg_offset_o' is driven by constant} \
