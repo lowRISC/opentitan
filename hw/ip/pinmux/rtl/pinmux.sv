@@ -490,6 +490,11 @@ module pinmux
     assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
   end
 
+  if (AlignedMuxSize > 2**$clog2(NMioPads + 2)) begin : gen_align_unused
+    logic unused_mio_mux_signals;
+    assign unused_mio_mux_signals = ^{mio_mux[AlignedMuxSize-1:2**$clog2(NMioPads + 2)]};
+  end
+
   //////////////////////
   // MIO Output Muxes //
   //////////////////////
