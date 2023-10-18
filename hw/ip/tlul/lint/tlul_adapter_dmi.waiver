@@ -6,5 +6,5 @@
 
 waive -rules {CONST_FF} \
       -location {tlul_adapter_dmi.sv} \
-      -regexp {Flip-flop 'rspop_q[2:1]' is driven by constant zeros} \
+      -msg {Flip-flop 'rspop_q[2:1]' is driven by constant zeros} \
       -comment "The assigned enums happen to be all-zeroes in those bit positions."
