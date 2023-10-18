@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_common.h"
@@ -163,21 +164,6 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
 }
 
 /**
- * Checks if the SECRET2 OTP partition is in locked state.
- *
- * @param otp_ctrl OTP controller instance.
- * @param[out] is_locked Set to true if the SECRET2 partition is locked.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT
-static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp_ctrl,
-                                                bool *is_locked) {
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
-                                      is_locked));
-  return OK_STATUS();
-}
-
-/**
  * Writes a device-generated secret to a flash info page.
  *
  * Entropy is extracted from the CSRNG instance and programmed into the target
@@ -292,15 +278,25 @@ status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
-  // TODO(#17393): check SECRET1 and HW_CFG OTP partitions are locked.
-
-  // Skip if SECRET2 partition is locked. We won't be able to configure the
-  // secret info flash page nor the OTP secrets if the OTP SECRET2 partition is
-  // locked.
+  // Skip provisioning of SECRET1 OTP partition if already done.
   bool is_locked;
-  TRY(otp_partition_secret2_is_locked(otp_ctrl, &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+                                      &is_locked));
   if (is_locked) {
     return OK_STATUS();
+  }
+
+  // Check the SECRET1 partition is locked. Flash scrambling seeds must be
+  // provisioned before the keymgr seeds can be written to flash info pages, as
+  // these pages must be scrambled.
+  //
+  // Note: for SECRET1 partition to be provisioned, the HW_CFG partition must
+  // have been provisioned, and the CSRNG SW interface should have been enabled,
+  // so no need to check again here.
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                      &is_locked));
+  if (!is_locked) {
+    return INTERNAL();
   }
 
   // Re-initialize the entropy complex in continous mode. This also configures
@@ -375,17 +371,38 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
 
 status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(otp_partition_secret2_is_locked(otp_ctrl, &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+                                      &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
                                           const dif_otp_ctrl_t *otp_ctrl) {
+  // Skip provisioning of SECRET1 OTP partition if already done.
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
+  }
+
+  // Check that the HW_CFG OTP partition has been locked (and is activated).
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
+                                      &is_locked));
+  if (!is_locked) {
+    return INTERNAL();
+  }
+
+  // Check that the CSRNG SW application interface is enabled in the HW_CFG
+  // partition, as we cannot provision SECRET1 without access to the CSRNG.
+  uint32_t otp_hw_cfg_settings;
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
+                                    kHwCfgEnSramIfetchOffset,
+                                    &otp_hw_cfg_settings));
+  uint32_t csrng_sw_app_read =
+      bitfield_field32_read(otp_hw_cfg_settings, kCsrngAppRead);
+  if (csrng_sw_app_read != kMultiBitBool8True) {
+    return INTERNAL();
   }
 
   TRY(entropy_complex_init());
