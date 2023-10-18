@@ -943,19 +943,19 @@ e0000558:	4501                	li	a0,0
 e000055a:	362d                	jal	e0000084 <uart_set_cfg>
 
   // Init CVA6 Plic
-  pointer = (int *) PLIC_BASE+mbox_id;
+  pointer = (int *) 0x0C000028;
   *pointer = 0x1;
 e000055c:	4485                	li	s1,1
 e000055e:	0c0007b7          	lui	a5,0xc000
 
-  pointer = (int *) 0x0C002090;
-  *pointer =  1<<(mbox_id%32);
+  pointer = (int *) 0x0C002080;
+  *pointer =  0x400;
 e0000562:	40000713          	li	a4,1024
   *pointer = 0x1;
 e0000566:	d784                	sw	s1,40(a5)
-  *pointer =  1<<(mbox_id%32);
+  *pointer =  0x400;
 e0000568:	0c0027b7          	lui	a5,0xc002
-e000056c:	08e7a823          	sw	a4,144(a5) # c002090 <tohost+0xbfe2088>
+e000056c:	08e7a023          	sw	a4,128(a5) # c002080 <tohost+0xbfe2078>
 
   printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
 e0000570:	00000517          	auipc	a0,0x0
@@ -4220,7 +4220,7 @@ Disassembly of section .debug_loc:
  ab8:	057a                	slli	a0,a0,0x1e
  aba:	e000                	fsw	fs0,0(s0)
  abc:	0006                	0x6
- abe:	900c                	0x900c
+ abe:	800c                	0x800c
  ac0:	0020                	addi	s0,sp,8
  ac2:	9f0c                	0x9f0c
  ac4:	057a                	slli	a0,a0,0x1e

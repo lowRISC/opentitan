@@ -48,12 +48,12 @@ bool test_main(void) {
   // Initialazing the uart
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
-  // Init CVA6 Plic
-  pointer = (int *) PLIC_BASE+mbox_id*4;
+    // Init CVA6 Plic
+  pointer = (int *) 0x0C000028;
   *pointer = 0x1;
 
-  pointer = (int *) PLIC_EN_BITS+((int)(mbox_id/32))*4;
-  *pointer =  1<<(mbox_id%32);
+  pointer = (int *) 0x0C002080;
+  *pointer =  0x400;
 
   printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
   // Write CVA6 boot PC to mbox
