@@ -49,10 +49,13 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-status_t personalize_test(manuf_perso_data_out_t *export_data) {
-  LOG_INFO("Personalizing device.");
-  TRY(manuf_personalize_device(&flash_state, &lc_ctrl, &otp_ctrl, export_data));
-  return OK_STATUS();
+/**
+ * Perform software reset.
+ */
+static void sw_reset(void) {
+  rstmgr_testutils_reason_clear();
+  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+  wait_for_interrupt();
 }
 
 status_t export_data_over_console(ujson_t *uj,
@@ -89,25 +92,32 @@ bool test_main(void) {
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
-    // Provision secrets into the device.
-    CHECK_STATUS_OK(personalize_test(export_data));
-
-    // Issue and wait for reset.
-    rstmgr_testutils_reason_clear();
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-    wait_for_interrupt();
+    // Provision the OTP SECRET1 partition.
+    if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
+      LOG_INFO("Provisioning OTP SECRET1 ...");
+      CHECK_STATUS_OK(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
+    }
+    // We move the SW reset outside the above if-clause so the next block of the
+    // outter conditional (the block executed under a soft reset condition) is
+    // always executed. This facilitates test-reruns.
+    sw_reset();
   } else if (info == kDifRstmgrResetInfoSw) {
-    // Check personalization completed successfully.
-    LOG_INFO("Personalization complete. Checking status ...");
-    CHECK_STATUS_OK(manuf_personalize_device_check(&otp_ctrl));
+    // Provision the OTP SECRET2 partition.
+    if (!status_ok(manuf_personalize_device_check(&otp_ctrl))) {
+      LOG_INFO("Provisioning OTP SECRET2 ...");
+      CHECK_STATUS_OK(manuf_personalize_device(&flash_state, &lc_ctrl,
+                                               &otp_ctrl, export_data));
+      sw_reset();
+    }
 
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
+    LOG_INFO("Exporting RMA unlock token ...");
     CHECK_STATUS_OK(export_data_over_console(&uj, export_data));
+
     // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
     // resetting the chip.
     LOG_INFO("Spinning for host to connect over JTAG.");
-    // Abort simply forever loops on a wait_for_interrupt.
     abort();
   } else {
     LOG_FATAL("Unexpected reset reason: %08x", info);

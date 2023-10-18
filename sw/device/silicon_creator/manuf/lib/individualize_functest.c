@@ -62,10 +62,5 @@ bool test_main(void) {
     sw_reset();
   }
 
-  if (!status_ok(manuf_individualize_device_secret1_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(manuf_individualize_device_secret1(&lc_ctrl, &otp_ctrl));
-    sw_reset();
-  }
-
   return true;
 }

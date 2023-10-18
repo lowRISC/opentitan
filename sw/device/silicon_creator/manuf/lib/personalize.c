@@ -339,8 +339,77 @@ status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
+OT_WARN_UNUSED_RESULT
+static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
+                                 uint32_t offset, size_t len) {
+  enum {
+    kBufferSize = 4,
+  };
+  if (len > kBufferSize) {
+    return INTERNAL();
+  }
+
+  TRY(entropy_csrng_reseed(/*disable_trng_inpu=*/kHardenedBoolFalse,
+                           /*seed_material=*/NULL));
+
+  size_t len_in_32bit_words = len * 2;
+  uint64_t data[kBufferSize];
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)data,
+                             len_in_32bit_words,
+                             /*fips_check=*/kHardenedBoolTrue));
+
+  bool found_error = false;
+  uint64_t prev_val = 0;
+  for (size_t i = 0; i < len; ++i) {
+    found_error |= data[i] == 0 || data[i] == UINT64_MAX || data[i] == prev_val;
+    prev_val = data[i];
+  }
+  if (found_error) {
+    return INTERNAL();
+  }
+
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                     offset, data, len));
+  return OK_STATUS();
+}
+
 status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
   TRY(otp_partition_secret2_is_locked(otp_ctrl, &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
+                                          const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                      &is_locked));
+  if (is_locked) {
+    return OK_STATUS();
+  }
+
+  TRY(entropy_complex_init());
+  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
+                                /*seed_material=*/NULL));
+
+  TRY(otp_secret_write(otp_ctrl, kSecret1FlashAddrKeySeedOffset,
+                       kSecret1FlashAddrKeySeed64BitWords));
+  TRY(otp_secret_write(otp_ctrl, kSecret1FlashDataKeySeedOffset,
+                       kSecret1FlashDataKeySeed64BitWords));
+  TRY(otp_secret_write(otp_ctrl, kSecret1SramDataKeySeedOffset,
+                       kSecret1SramDataKeySeed64Bitwords));
+
+  TRY(entropy_csrng_uninstantiate());
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                        /*digest=*/0));
+
+  return OK_STATUS();
+}
+
+status_t manuf_personalize_device_secret1_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                      &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
