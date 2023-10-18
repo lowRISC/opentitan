@@ -76,6 +76,6 @@ rust_library(
     deps = [
         "@crate_index__getrandom-0.2.10//:getrandom",
         "@crate_index__redox_syscall-0.2.16//:syscall",
-        "@crate_index__thiserror-1.0.47//:thiserror",
+        "@crate_index__thiserror-1.0.49//:thiserror",
     ],
 )

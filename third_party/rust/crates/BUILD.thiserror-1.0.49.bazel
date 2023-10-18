@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "proc_macro2",
+    name = "thiserror",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,16 +29,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "proc-macro",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@crate_index__thiserror-impl-1.0.49//:thiserror_impl",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=proc-macro2",
+        "crate-name=thiserror",
         "manual",
         "noclippy",
         "norustfmt",
@@ -77,20 +76,15 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.66",
+    version = "1.0.49",
     deps = [
-        "@crate_index__proc-macro2-1.0.66//:build_script_build",
-        "@crate_index__unicode-ident-1.0.11//:unicode_ident",
+        "@crate_index__thiserror-1.0.49//:build_script_build",
     ],
 )
 
 cargo_build_script(
-    name = "proc-macro2_build_script",
+    name = "thiserror_build_script",
     srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-        "proc-macro",
-    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -110,17 +104,17 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=proc-macro2",
+        "crate-name=thiserror",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.66",
+    version = "1.0.49",
     visibility = ["//visibility:private"],
 )
 
 alias(
     name = "build_script_build",
-    actual = "proc-macro2_build_script",
+    actual = "thiserror_build_script",
     tags = ["manual"],
 )

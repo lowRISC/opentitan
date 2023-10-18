@@ -80,7 +80,7 @@ rust_library(
     version = "0.14.7",
     deps = [
         "@crate_index__generic-array-0.14.7//:build_script_build",
-        "@crate_index__typenum-1.16.0//:typenum",
+        "@crate_index__typenum-1.17.0//:typenum",
         "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )

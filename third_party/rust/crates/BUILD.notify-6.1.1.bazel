@@ -82,7 +82,7 @@ rust_library(
     deps = [
         "@crate_index__crossbeam-channel-0.5.8//:crossbeam_channel",
         "@crate_index__filetime-0.2.22//:filetime",
-        "@crate_index__libc-0.2.147//:libc",
+        "@crate_index__libc-0.2.149//:libc",
         "@crate_index__log-0.4.20//:log",
         "@crate_index__walkdir-2.3.3//:walkdir",
     ] + select({

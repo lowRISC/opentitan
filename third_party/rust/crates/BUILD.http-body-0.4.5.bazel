@@ -74,7 +74,7 @@ rust_library(
     }),
     version = "0.4.5",
     deps = [
-        "@crate_index__bytes-1.4.0//:bytes",
+        "@crate_index__bytes-1.5.0//:bytes",
         "@crate_index__http-0.2.9//:http",
         "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
     ],

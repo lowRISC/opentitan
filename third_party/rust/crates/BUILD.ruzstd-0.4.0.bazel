@@ -81,7 +81,7 @@ rust_library(
     }),
     version = "0.4.0",
     deps = [
-        "@crate_index__byteorder-1.4.3//:byteorder",
+        "@crate_index__byteorder-1.5.0//:byteorder",
         "@crate_index__thiserror-core-1.0.38//:thiserror_core",
         "@crate_index__twox-hash-1.6.3//:twox_hash",
     ],

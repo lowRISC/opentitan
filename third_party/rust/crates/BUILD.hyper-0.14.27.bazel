@@ -85,7 +85,7 @@ rust_library(
     }),
     version = "0.14.27",
     deps = [
-        "@crate_index__bytes-1.4.0//:bytes",
+        "@crate_index__bytes-1.5.0//:bytes",
         "@crate_index__futures-channel-0.3.28//:futures_channel",
         "@crate_index__futures-core-0.3.28//:futures_core",
         "@crate_index__futures-util-0.3.28//:futures_util",
@@ -97,9 +97,9 @@ rust_library(
         "@crate_index__itoa-1.0.9//:itoa",
         "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
         "@crate_index__socket2-0.4.9//:socket2",
-        "@crate_index__tokio-1.32.0//:tokio",
+        "@crate_index__tokio-1.33.0//:tokio",
         "@crate_index__tower-service-0.3.2//:tower_service",
-        "@crate_index__tracing-0.1.37//:tracing",
+        "@crate_index__tracing-0.1.39//:tracing",
         "@crate_index__want-0.3.1//:want",
     ],
 )

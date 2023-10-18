@@ -79,7 +79,7 @@ rust_library(
     version = "1.1.2",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__libc-0.2.147//:libc",
+        "@crate_index__libc-0.2.149//:libc",
         "@crate_index__libftdi1-sys-1.1.2//:build_script_build",
     ],
 )

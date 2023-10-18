@@ -81,6 +81,6 @@ rust_library(
     deps = [
         "@crate_index__equivalent-1.0.1//:equivalent",
         "@crate_index__hashbrown-0.14.0//:hashbrown",
-        "@crate_index__serde-1.0.188//:serde",
+        "@crate_index__serde-1.0.189//:serde",
     ],
 )
