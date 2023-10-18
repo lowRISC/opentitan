@@ -84,7 +84,8 @@ enum {
   kEscalationPhase2Micros = 100,  // us
   kRoundOneDelay = 100,           // us
   kRoundTwoDelay = 100,           // us
-  kRoundThreeDelay = 1000         // us
+  kRoundThreeDelay = 1000,        // us
+  kEventCounter = 0               // the retention sram counter tracking events
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -740,9 +741,9 @@ bool test_main(void) {
   // TODO(#13098): Change to equality after #13277 is merged.
   if (rst_info & kDifRstmgrResetInfoPor) {
     // Initialize the counter. Upon POR they have random values.
-    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
-    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &event_idx));
-    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kEventCounter));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
     // We need to initialize the info FLASH partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
@@ -767,9 +768,9 @@ bool test_main(void) {
   } else {
     // The retention sram counters have been initialized, so only now they
     // can be reliably used.
-    CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &event_idx));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
     // Increment retention sram counter to know where we are.
-    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
 
     if (rst_info == kDifRstmgrResetInfoSw && event_idx == 1) {
