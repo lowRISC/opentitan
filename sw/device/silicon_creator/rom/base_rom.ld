@@ -18,18 +18,15 @@ __DYNAMIC = 0;
 INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /**
- * The boot address, which indicates the location of the initial interrupt
- * vector.
+ * The Base ROM boot address, which indicates the location of the initial
+ * interrupt vector.
  */
-_rom_boot_address = ORIGIN(rom0);
+_base_rom_boot_address = ORIGIN(rom0);
 
 /**
- * Symbols to be used in the setup of the address translation for ROM_EXT.
+ * The Second ROM boot address.
  */
-_rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
-_rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_virtual_size <= (LENGTH(ram_ctn) / 2)),
-  "Error: rom ext flash is bigger than slot.");
+_second_rom_boot_address = ORIGIN(rom1);
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
@@ -54,8 +51,8 @@ __abi_shutdown$ = 0x0;
  * See The RISC-V Instruction Set Manual Volume II: Privileged Architecture
  * for more information about PMP address register encodings.
  */
-_epmp_text_tor_lo = _text_start / 4;
-_epmp_text_tor_hi = _text_end / 4;
+_epmp_base_text_tor_lo = _text_start / 4;
+_epmp_base_text_tor_hi = _text_end / 4;
 _epmp_stack_guard_na4 = _stack_start / 4;
 
 ENTRY(_rom_start_boot);
@@ -71,7 +68,7 @@ SECTIONS {
    * This has to be set up at the boot address, so that execution jumps to the
    * reset handler correctly.
    */
-  .vectors _rom_boot_address : ALIGN(256) {
+  .vectors _base_rom_boot_address : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
   } > rom0
