@@ -44,6 +44,21 @@ enum {
 
 enum {
   /**
+   * Maximum generate length supported in CSRNG generate commands.
+   */
+  kDifEntropySeedMaterialMaxGlen = 4095,
+};
+
+enum {
+  /**
+   * Maximum number of generate commands between reseed commands in
+   * the EDN auto mode.
+   */
+  kDifMaxNumReqsBetweenReseeds = 0xffffffff,
+};
+
+enum {
+  /**
    * Csrng commands
    */
   kDifEdnCmdInstantiate = 1,
