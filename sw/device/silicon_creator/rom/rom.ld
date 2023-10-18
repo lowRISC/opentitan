@@ -198,7 +198,7 @@ SECTIONS {
    *
    * This is the last thing in rom.
    */
-  .chip_info _chip_info_start : ALIGN(4) {
+  .chip_info _rom_chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
   } > rom
 
