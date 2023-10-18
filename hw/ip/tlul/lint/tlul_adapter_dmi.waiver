@@ -1,0 +1,10 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+waive -rules {CONST_FF} \
+      -location {tlul_adapter_dmi.sv} \
+      -regexp {Flip-flop 'rspop_q[2:1]' is driven by constant zeros} \
+      -comment "The assigned enums happen to be all-zeroes in those bit positions."
