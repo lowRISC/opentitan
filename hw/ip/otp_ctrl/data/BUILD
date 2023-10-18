@@ -492,14 +492,13 @@ otp_image(
     ],
 )
 
-# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
-# locked state. SECRET2 partition is unlocked.
+# Represents a device in DEV state with the SECRET0 partition in the locked
+# state. SECRET1 and SECRET2 partitions are in the unlocked state.
 otp_image(
     name = "img_dev_individualized",
     src = ":otp_json_dev",
     overlays = [
         ":otp_json_secret0",
-        ":otp_json_secret1",
     ] + STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
 )
 
