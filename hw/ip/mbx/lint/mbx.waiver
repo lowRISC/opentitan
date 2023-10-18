@@ -4,6 +4,9 @@
 #
 # waiver file for mbx
 
+waive -rules SAME_NAME_TYPE    -location {mbx.sv} -regexp {'mbx' is used as a module here, and as a} \
+      -comment "The module has a very short name and it is hence possible that other scopes use the same name for a signal."
+
 waive -rules INPUT_NOT_READ -location {mbx_imbx.sv} -regexp {Input port 'sysif_status_busy_i' is not read from} \
       -comment "Signal only used for assertions"
 waive -rules HIER_BRANCH_NOT_READ: -location {mbx_imbx.sv} -regexp {Net 'sysif_status_busy_i' is not read from} \
