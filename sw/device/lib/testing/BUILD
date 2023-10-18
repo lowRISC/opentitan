@@ -108,6 +108,18 @@ cc_library(
 )
 
 cc_library(
+    name = "edn_testutils",
+    srcs = ["edn_testutils.c"],
+    hdrs = ["edn_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/testing:rand_testutils",
+    ],
+)
+
+cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],
