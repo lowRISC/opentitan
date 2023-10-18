@@ -13,3 +13,10 @@ manifest({
     "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
 })
+
+manifest({
+    "name": "manifest_virtual",
+    "address_translation": hex(CONST.HARDENED_TRUE),
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+})
