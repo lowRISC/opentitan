@@ -60,4 +60,35 @@ OT_WARN_UNUSED_RESULT
 status_t aes_testutils_csrng_kat(void);
 #endif
 
+/**
+ * Sets up an AES encryption.
+ *
+ * Starts the encryption operation by loading a key share along with some
+ * plain text and transaction data into the AES block.
+ * This function is used in tandem with aes_testutils_decrypt_ciphertext.
+ *
+ * @param transaction The AES transaction settings.
+ * @param aes An AES handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_testutils_setup_encryption(dif_aes_transaction_t transaction,
+                                        dif_aes_t *aes);
+
+/**
+ * Reads some produced cipher text and sets up an AES decryption.
+ *
+ * Starts the decryption operation by loading a key along with some
+ * cipher text and transaction data into the AES block. Also checks whether
+ * the produced cipher text and decrypted cipher text are correct.
+ * This function is used in tandem with aes_testutils_setup_encryption.
+ *
+ * @param transaction The AES transaction settings used for encryption.
+ * @param aes An AES handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_testutils_decrypt_ciphertext(dif_aes_transaction_t transaction,
+                                          dif_aes_t *aes);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
