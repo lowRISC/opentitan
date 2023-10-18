@@ -121,15 +121,28 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
                                           uint8_t *bytes, uint8_t *cont_byte);
 
 /**
- * Initialize the pinmux.
+ * Define the available platforms which i2c is mapped
+ */
+typedef enum i2c_pinmux_platform_id {
+  I2cPinmuxPlatformIdHyper310 = 0,
+  I2cPinmuxPlatformIdDvsim,
+  I2cPinmuxPlatformIdCw310Pmod,
+  I2cPinmuxPlatformIdCount,
+} i2c_pinmux_platform_id_t;
+
+/**
+ * Connect the i2c pins to mio pins via pinmux based on the platform the test is
+ * running.
  *
  * @param pimmux A pinmux handler.
- * @param kI2cIdx The i2c identifier.
+ * @param kI2cIdx The i2c instance identifier.
+ * @param platform The platform which the test is running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                     uint8_t kI2cIdx);
+                                     uint8_t kI2cIdx,
+                                     i2c_pinmux_platform_id_t platform);
 
 /**
  * Return whether the fifo is empty.
