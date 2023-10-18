@@ -240,16 +240,7 @@ sim_dv(
 sim_dv(
     name = "sim_dv",
     testonly = True,
-    args = [
-        "{dvsim_config}",
-    ],
     base = ":sim_dv_base",
-    data = [
-        "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
-    ],
     exec_env = "sim_dv",
-    param = {
-        "dvsim_config": "$(location //hw/top_earlgrey/dv:chip_sim_cfg.hjson)",
-    },
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )

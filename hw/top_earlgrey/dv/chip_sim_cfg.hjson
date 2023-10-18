@@ -442,7 +442,7 @@
     {
       name: chip_sw_example_manufacturer
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["@manufacturer_test_hooks//:example_test:1"]
+      sw_images: ["@manufacturer_test_hooks//:example_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
