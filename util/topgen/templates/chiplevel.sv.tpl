@@ -964,10 +964,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_i               (clkmgr_aon_clocks.clk_io_div4_powerup),
     // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
     // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
-    // it retains some of the TAP selection state during an active debug session where NDM reset
-    // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
-    // whenever pwrmgr_strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
-    // we always consume the live lc_dft_en_i signal.
+    // it retains some of the TAP selection state during an active debug session where NDM reset is
+    // triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
+    // whenever pwrmgr_strap_en_i is asserted. Note that this does not affect the DFT TAP
+    // selection, since we always consume the live lc_dft_en_i signal.
     .rst_ni              (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
     .scanmode_i          (scanmode),
     .out_padring_o       ({dio_out,  mio_out} ),
