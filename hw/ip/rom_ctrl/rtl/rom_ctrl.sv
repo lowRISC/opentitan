@@ -410,7 +410,7 @@ module rom_ctrl
     assign hw2reg.digest[i].de = digest_de;
 
     assign hw2reg.exp_digest[i].d = exp_digest_word_d;
-    assign hw2reg.exp_digest[i].de = exp_digest_de && (i[2:0] == exp_digest_idx);
+    assign hw2reg.exp_digest[i].de = exp_digest_de && (i == exp_digest_idx);
 
     assign digest_q[TopBit -: 32] = reg2hw.digest[i].q;
     assign exp_digest_q[TopBit -: 32] = reg2hw.exp_digest[i].q;
