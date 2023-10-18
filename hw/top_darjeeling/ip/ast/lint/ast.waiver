@@ -45,7 +45,7 @@ waive -rules CLOCK_EDGE -location {ast_clks_byp.sv} \
       -comment {This ifdef statement is fine as it is part of the FPGA/Verilator clock bypass mechanism.}
 
 waive -rules CLOCK_DRIVER -location {ast.sv} \
-      -regexp {'clk_src_(aon|io|sys)' is driven by instance 'u_ast_clks_byp' of module 'ast_clks_byp', and used as a clock 'clk_i' at} \
+      -regexp {'clk_src_(aon|io|sys|usb)' is driven by instance 'u_ast_clks_byp' of module 'ast_clks_byp', and used as a clock 'clk_i' at} \
       -comment {This is clock generation logic, hence it needs to drive this clock signal.}
 
 waive -rules CLOCK_DRIVER -location {ast.sv} \
