@@ -108,7 +108,7 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
  * @param[out] addr Address that received the I2C write.
- * @param[out] bytes Array of bytes to store the result of the write.
+ * @param[out] bytes Array of bytes to stores the result of the write.
  * @param[out] cont_byte Received continuation byte. Can be null if test expects
  *                       STOP signal.
  * @return kOk(dir) Where dir indicates that repeated START has signaled that
