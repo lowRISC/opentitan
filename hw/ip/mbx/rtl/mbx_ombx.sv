@@ -280,7 +280,7 @@ module mbx_ombx #(
     .d_i   ( sram_read_ptr_d        ),
     .q_o   ( sram_read_ptr_assert_q )
   );
-  // A granted write by the host adapter must advance the write pointer
+  // A granted read by the host adapter must advance the read pointer
   `ASSERT_IF(GntMustAdvanceReadPtr_A, sram_read_ptr_assert_q == sram_read_ptr_q,
              ombx_sram_read_gnt_i)
 `endif

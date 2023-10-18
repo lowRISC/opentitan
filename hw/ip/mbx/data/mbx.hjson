@@ -408,7 +408,7 @@
             bits: "31"
             resval: "0x0"
             swaccess: "ro"
-            hwaccess: "hwo"
+            hwaccess: "hrw"
           }
         ]
         tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
