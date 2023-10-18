@@ -6,7 +6,8 @@ Dashboard project JSON file validation
 """
 
 import logging as log
-from reggen.ip_block import REQUIRED_FIELDS, OPTIONAL_FIELDS
+
+from reggen.ip_block import OPTIONAL_FIELDS, REQUIRED_FIELDS
 
 
 def check_keys(obj, required_keys, optional_keys, err_prefix):
@@ -17,8 +18,7 @@ def check_keys(obj, required_keys, optional_keys, err_prefix):
             log.error(err_prefix + " missing required key " + x)
     for x in obj:
         if x not in required_keys and x not in optional_keys:
-            log.warning(err_prefix + " contains extra key rmn " + x)
-#            log.warning('{} contains extra key {!r}'.format(err_prefix, x))
+            log.warning(err_prefix + " contains extra key " + x)
 
     return error
 
