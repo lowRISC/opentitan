@@ -1,15 +1,16 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
 )
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_macronix_flash_test",
     srcs = ["spi_host_macronix_flash_test.c"],
     cw310 = cw310_params(
@@ -18,7 +19,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -36,7 +39,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_gigadevice256Mb_flash_test",
     srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
     cw310 = cw310_params(
@@ -45,7 +48,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -64,7 +69,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_gigadevice1Gb_flash_test",
     srcs = ["spi_host_gigadevice1Gb_flash_test.c"],
     cw310 = cw310_params(
@@ -73,7 +78,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -92,7 +99,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
     cw310 = cw310_params(
@@ -101,7 +108,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -120,7 +129,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
     cw310 = cw310_params(
@@ -129,7 +138,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -145,7 +156,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
     cw310 = cw310_params(
@@ -154,7 +165,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -170,7 +183,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
     cw310 = cw310_params(
@@ -179,7 +192,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -195,7 +210,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
     cw310 = cw310_params(
@@ -204,7 +219,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -222,7 +239,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
     cw310 = cw310_params(
@@ -231,7 +248,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -248,7 +267,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
     cw310 = cw310_params(
@@ -257,7 +276,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -273,7 +294,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
     cw310 = cw310_params(
@@ -282,7 +303,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -298,7 +321,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
     cw310 = cw310_params(
@@ -307,7 +330,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -323,7 +348,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
     cw310 = cw310_params(
@@ -332,7 +357,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -348,7 +375,7 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "i2c_host_irq_test",
     srcs = ["i2c_host_irq_test.c"],
     cw310 = cw310_params(
@@ -357,7 +384,9 @@ opentitan_functest(
             "manual",
         ],  # Requires the BoB in CI.
     ),
-    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
