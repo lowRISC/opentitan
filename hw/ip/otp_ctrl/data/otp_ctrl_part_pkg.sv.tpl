@@ -226,10 +226,10 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_ctrl_core_hw2reg_t named_reg_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest);
-    logic unused_digest;
+    logic unused;
     otp_ctrl_core_hw2reg_t hw2reg;
     hw2reg = '0;
-    unused_digest = 1'b0;
+    unused = 1'b0;
 % for k, part in enumerate(otp_mmap.config["partitions"]):
 <%
   part_name = Name.from_snake_case(part["name"])
@@ -238,7 +238,7 @@ package otp_ctrl_part_pkg;
   % if part["sw_digest"] or part["hw_digest"]:
     hw2reg.${part["name"].lower()}_digest = part_digest[${part_name_camel}Idx];
   % else:
-    unused_digest ^= ^part_digest[${part_name_camel}Idx];
+    unused ^= ^part_digest[${part_name_camel}Idx];
   % endif
 % endfor
     return hw2reg;
