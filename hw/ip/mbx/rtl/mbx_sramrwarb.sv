@@ -90,7 +90,7 @@ module mbx_sramrwarb
     .we_i              ( arb_write_winner                         ),
     .wdata_i           ( imbx_write_data_i                       ),
     .wdata_intg_i      ( TL_A_USER_DEFAULT.data_intg              ),
-    .be_i              ( {{top_pkg::TL_DBW}{1'b1}}                ),
+    .be_i              ( {top_pkg::TL_DBW{1'b1}}                  ),
     .instr_type_i      ( prim_mubi_pkg::MuBi4False                ),
     .user_rsvd_i       ( '0                                       ),
     // Response channel
