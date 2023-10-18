@@ -35,3 +35,6 @@ targets:
         ascentlint_options:
           - "-wait_license"
           - "-stop_on_error"
+      verilator:
+        verilator_options:
+          - '--max-num-width 131072'
