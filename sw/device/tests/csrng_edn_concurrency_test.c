@@ -222,8 +222,8 @@ static void entropy_config(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   LOG_INFO("Generating EDN params");
-  dif_edn_auto_params_t edn_params0 = edn_testutils_auto_params_build();
-  dif_edn_auto_params_t edn_params1 = edn_testutils_auto_params_build();
+  dif_edn_auto_params_t edn_params0 = edn_testutils_auto_params_build(false);
+  dif_edn_auto_params_t edn_params1 = edn_testutils_auto_params_build(false);
 
   task_iter_count_max[kTestTaskIdOtbn] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumOtbnIterationsMax);
