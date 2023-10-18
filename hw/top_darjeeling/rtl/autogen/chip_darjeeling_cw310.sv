@@ -252,7 +252,7 @@ module chip_darjeeling_cw310 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [19-1:0]                       dio_in_raw;
+  logic [78-1:0] dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -833,7 +833,6 @@ module chip_darjeeling_cw310 #(
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
-  ast_pkg::ast_pwst_t ast_pwst_h;
 
   // TLUL interface
   tlul_pkg::tl_h2d_t base_ast_bus;
@@ -850,7 +849,6 @@ module chip_darjeeling_cw310 #(
   logic sck_monitor;
 
   // observe interface
-  logic [7:0] fla_obs;
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -858,12 +856,6 @@ module chip_darjeeling_cw310 #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
-  logic usb_ref_pulse;
-  logic usb_ref_val;
-
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -892,10 +884,6 @@ module chip_darjeeling_cw310 #(
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
-  // Debug connections
-  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
-
   // Jitter enable
   prim_mubi_pkg::mubi4_t jen;
 
@@ -911,12 +899,8 @@ module chip_darjeeling_cw310 #(
   ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
   ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
 
-  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
-  prim_rom_pkg::rom_cfg_t rom_cfg;
-
   // conversion from ast structure to memory centric structures
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
   assign ram_1p_cfg = '{
     ram_cfg: '{
                 cfg_en: ast_ram_1p_cfg.marg_en,
@@ -928,22 +912,15 @@ module chip_darjeeling_cw310 #(
               }
   };
 
-  // this maps as follows:
-  // assign usb_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_fcfg, ram_2p_cfg_i.b_ram_fcfg};
-  assign usb_ram_2p_cfg = '{
-    a_ram_lcfg: '{
-                   cfg_en: ast_ram_2p_fcfg.marg_en_a,
-                   cfg:    ast_ram_2p_fcfg.marg_a
-                 },
-    b_ram_lcfg: '{
-                   cfg_en: ast_ram_2p_fcfg.marg_en_b,
-                   cfg:    ast_ram_2p_fcfg.marg_b
-                 },
-    default: '0
-  };
+  logic unused_usb_ram_2p_cfg;
+  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
+                                   ast_ram_2p_fcfg.marg_a,
+                                   ast_ram_2p_fcfg.marg_en_b,
+                                   ast_ram_2p_fcfg.marg_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
   assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
@@ -956,6 +933,7 @@ module chip_darjeeling_cw310 #(
     default: '0
   };
 
+  prim_rom_pkg::rom_cfg_t rom_cfg;
   assign rom_cfg = '{
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
@@ -1062,7 +1040,7 @@ module chip_darjeeling_cw310 #(
     .viob_supp_i           ( 1'b1 ),
     // pok
     .ast_pwst_o            ( ast_pwst ),
-    .ast_pwst_h_o          ( ast_pwst_h ),
+    .ast_pwst_h_o          ( ),
     // main regulator
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
@@ -1086,8 +1064,8 @@ module chip_darjeeling_cw310 #(
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
     .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
-    .usb_ref_pulse_i       ( usb_ref_pulse ),
-    .usb_ref_val_i         ( usb_ref_val ),
+    .usb_ref_pulse_i       ( '0 ),
+    .usb_ref_val_i         ( '0 ),
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
@@ -1097,8 +1075,8 @@ module chip_darjeeling_cw310 #(
     // adc
     .adc_pd_i              ( '0 ),
     .adc_chnsel_i          ( '0 ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
+    .adc_d_o               (    ),
+    .adc_d_val_o           (    ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -1108,10 +1086,10 @@ module chip_darjeeling_cw310 #(
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( fla_obs ),
+    .fla_obs_i             ( '0 ),
+    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
-    .usb_obs_i             ( usb_diff_rx_obs ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
@@ -1253,7 +1231,7 @@ module chip_darjeeling_cw310 #(
   // Steering signal for address decoding.
   logic [0:0] ctn_dev_sel_s1n;
 
-  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
+  logic sram_req, sram_we, sram_rvalid;
   logic [top_pkg::CtnSramAw-1:0] sram_addr;
   logic [CtnSramDw-1:0] sram_wdata, sram_wmask, sram_rdata;
 
@@ -1308,7 +1286,7 @@ module chip_darjeeling_cw310 #(
     .req_o       (sram_req),
     .req_type_o  (),
     // SRAM can always accept a request.
-    .gnt_i       (1),
+    .gnt_i       (1'b1),
     .we_o        (sram_we),
     .addr_o      (sram_addr),
     .wdata_o     (sram_wdata),
@@ -1316,7 +1294,7 @@ module chip_darjeeling_cw310 #(
     .intg_error_o(),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
-    .rerror_i    (1'b0)
+    .rerror_i    ('0)
   );
 
   prim_ram_1p_adv #(

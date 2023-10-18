@@ -202,13 +202,7 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-## TODO: Calculate this signal width, rather than hardcode it.
-## Currently, the -5 difference between EG/DJ is due to the removal of USB.
-% if top["name"] == "darjeeling":
-  logic [19-1:0]                       dio_in_raw;
-% else:
-  logic [24-1:0]                       dio_in_raw;
-% endif
+  logic [${len(dedicated_pads)}-1:0] dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -507,7 +501,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
+% if top["name"] != "darjeeling":
   ast_pkg::ast_pwst_t ast_pwst_h;
+% endif
 
   // TLUL interface
   tlul_pkg::tl_h2d_t base_ast_bus;
@@ -524,7 +520,9 @@ module chip_${top["name"]}_${target["name"]} #(
   logic sck_monitor;
 
   // observe interface
+% if top["name"] != "darjeeling":
   logic [7:0] fla_obs;
+% endif
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -532,12 +530,10 @@ module chip_${top["name"]}_${target["name"]} #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
+% if top["name"] != "darjeeling":
   logic usb_ref_pulse;
   logic usb_ref_val;
-
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
+% endif
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -548,6 +544,14 @@ module chip_${top["name"]}_${target["name"]} #(
   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
   logic es_rng_fips;
+
+  // adc
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
+
+  // Debug connections
+  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
+  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 % endif
 
   // entropy distribution network
@@ -578,10 +582,6 @@ module chip_${top["name"]}_${target["name"]} #(
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
-  // Debug connections
-  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
-
   // Jitter enable
   prim_mubi_pkg::mubi4_t jen;
 
@@ -597,12 +597,8 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
   ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
 
-  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
-  prim_rom_pkg::rom_cfg_t rom_cfg;
-
   // conversion from ast structure to memory centric structures
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
   assign ram_1p_cfg = '{
     ram_cfg: '{
                 cfg_en: ast_ram_1p_cfg.marg_en,
@@ -614,8 +610,16 @@ module chip_${top["name"]}_${target["name"]} #(
               }
   };
 
+% if top["name"] == "darjeeling":
+  logic unused_usb_ram_2p_cfg;
+  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
+                                   ast_ram_2p_fcfg.marg_a,
+                                   ast_ram_2p_fcfg.marg_en_b,
+                                   ast_ram_2p_fcfg.marg_b};
+% else:
   // this maps as follows:
   // assign usb_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_fcfg, ram_2p_cfg_i.b_ram_fcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
   assign usb_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_fcfg.marg_en_a,
@@ -627,9 +631,11 @@ module chip_${top["name"]}_${target["name"]} #(
                  },
     default: '0
   };
+% endif
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
   assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
@@ -642,6 +648,7 @@ module chip_${top["name"]}_${target["name"]} #(
     default: '0
   };
 
+  prim_rom_pkg::rom_cfg_t rom_cfg;
   assign rom_cfg = '{
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
@@ -665,17 +672,21 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % if target["name"] == "asic":
 
-  logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
-
   // external clock comes in at a fixed position
 % if top["name"] != "darjeeling":
   assign ext_clk = mio_in_raw[MioPadIoc6];
+
+  logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
+  logic usb_diff_rx_obs;
+
+  assign pad2ast = `PAD2AST_WIRES ;
+
 % else:
   assign ext_clk = dio_in_raw[MioPadMio11];
-  % endif
 
-% if top["name"] != "darjeeling":
-  assign pad2ast = `PAD2AST_WIRES ;
+  wire unused_t0, unused_t1;
+  assign unused_t0 = 1'bz;
+  assign unused_t1 = 1'bz;
 % endif
 
   // AST does not use all clocks / resets forwarded to it
@@ -684,8 +695,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
-
-  logic usb_diff_rx_obs;
 
 % else:
   // TODO: Hook this up when FPGA pads are updated
@@ -735,7 +744,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .por_ni                ( manual_in_por_n ),
 
     // USB IO Pull-up Calibration Setting
+% if top["name"] == "darjeeling":
+    .usb_io_pu_cal_o       ( ),
+% else:
     .usb_io_pu_cal_o       ( usb_io_pu_cal ),
+% endif
 
     // adc
 % if top["name"] == "earlgrey":
@@ -747,8 +760,13 @@ module chip_${top["name"]}_${target["name"]} #(
 % endif
 
     // Direct short to PAD
+% if top["name"] == "darjeeling":
+    .ast2pad_t0_ao         ( unused_t0 ),
+    .ast2pad_t1_ao         ( unused_t1 ),
+% else:
     .ast2pad_t0_ao         ( IOA2 ),
     .ast2pad_t1_ao         ( IOA3 ),
+% endif
 % else:
     // external POR
     .por_ni                ( rst_n ),
@@ -794,7 +812,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .viob_supp_i           ( 1'b1 ),
     // pok
     .ast_pwst_o            ( ast_pwst ),
+% if top["name"] == "darjeeling":
+    .ast_pwst_h_o          ( ),
+% else:
     .ast_pwst_h_o          ( ast_pwst_h ),
+% endif
     // main regulator
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
@@ -823,8 +845,13 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
     .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
+% if top["name"] == "darjeeling":
+    .usb_ref_pulse_i       ( '0 ),
+    .usb_ref_val_i         ( '0 ),
+% else:
     .usb_ref_pulse_i       ( usb_ref_pulse ),
     .usb_ref_val_i         ( usb_ref_val ),
+% endif
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
@@ -835,8 +862,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // adc
     .adc_pd_i              ( '0 ),
     .adc_chnsel_i          ( '0 ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
+    .adc_d_o               (    ),
+    .adc_d_val_o           (    ),
 % else:
     // adc
     .adc_pd_i              ( adc_req.pd ),
@@ -858,10 +885,15 @@ module chip_${top["name"]}_${target["name"]} #(
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
+% if top["name"] == "darjeeling":
+    .fla_obs_i             ( '0 ),
+    .usb_obs_i             ( '0 ),
+% else:
     .fla_obs_i             ( fla_obs ),
+    .usb_obs_i             ( usb_diff_rx_obs ),
+% endif
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
-    .usb_obs_i             ( usb_diff_rx_obs ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
 % if top["name"] == "darjeeling":
@@ -1013,7 +1045,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // Steering signal for address decoding.
   logic [0:0] ctn_dev_sel_s1n;
 
-  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
+  logic sram_req, sram_we, sram_rvalid;
   logic [top_pkg::CtnSramAw-1:0] sram_addr;
   logic [CtnSramDw-1:0] sram_wdata, sram_wmask, sram_rdata;
 
@@ -1068,7 +1100,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .req_o       (sram_req),
     .req_type_o  (),
     // SRAM can always accept a request.
-    .gnt_i       (1),
+    .gnt_i       (1'b1),
     .we_o        (sram_we),
     .addr_o      (sram_addr),
     .wdata_o     (sram_wdata),
@@ -1076,7 +1108,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .intg_error_o(),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
-    .rerror_i    (1'b0)
+    .rerror_i    ('0)
   );
 
   prim_ram_1p_adv #(
@@ -1116,12 +1148,11 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
 
+  % if top["name"] != "darjeeling":
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
-
-  % if top["name"] != "darjeeling":
   assign manual_out_ast_misc = 1'b0;
   assign manual_oe_ast_misc = 1'b0;
   always_comb begin
@@ -1143,9 +1174,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // These pad attributes currently tied off permanently (these are all input-only pads).
   assign manual_attr_por_n = '0;
+  % if top["name"] != "darjeeling":
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
-  % if top["name"] != "darjeeling":
   assign manual_attr_flash_test_mode0 = '0;
   assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;

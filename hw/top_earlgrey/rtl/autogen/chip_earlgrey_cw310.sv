@@ -212,7 +212,7 @@ module chip_earlgrey_cw310 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [24-1:0]                       dio_in_raw;
+  logic [28-1:0] dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -677,15 +677,19 @@ module chip_earlgrey_cw310 #(
   logic usb_ref_pulse;
   logic usb_ref_val;
 
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
-
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
   logic es_rng_fips;
+
+  // adc
+  ast_pkg::adc_ast_req_t adc_req;
+  ast_pkg::adc_ast_rsp_t adc_rsp;
+
+  // Debug connections
+  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
+  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -713,10 +717,6 @@ module chip_earlgrey_cw310 #(
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
-  // Debug connections
-  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
-
   // Jitter enable
   prim_mubi_pkg::mubi4_t jen;
 
@@ -732,12 +732,8 @@ module chip_earlgrey_cw310 #(
   ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
   ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
 
-  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
-  prim_rom_pkg::rom_cfg_t rom_cfg;
-
   // conversion from ast structure to memory centric structures
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
   assign ram_1p_cfg = '{
     ram_cfg: '{
                 cfg_en: ast_ram_1p_cfg.marg_en,
@@ -751,6 +747,7 @@ module chip_earlgrey_cw310 #(
 
   // this maps as follows:
   // assign usb_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_fcfg, ram_2p_cfg_i.b_ram_fcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t usb_ram_2p_cfg;
   assign usb_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_fcfg.marg_en_a,
@@ -765,6 +762,7 @@ module chip_earlgrey_cw310 #(
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
   assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
@@ -777,6 +775,7 @@ module chip_earlgrey_cw310 #(
     default: '0
   };
 
+  prim_rom_pkg::rom_cfg_t rom_cfg;
   assign rom_cfg = '{
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
@@ -932,9 +931,9 @@ module chip_earlgrey_cw310 #(
     .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( fla_obs ),
+    .usb_obs_i             ( usb_diff_rx_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
-    .usb_obs_i             ( usb_diff_rx_obs ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
