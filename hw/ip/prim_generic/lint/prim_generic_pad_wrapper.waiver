@@ -25,3 +25,5 @@ waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'pr
       -comment "This parameter has been provisioned for later and is currently unused."
 waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_generic_pad_wrapper'} \
       -comment "This clock is not read in RTL since it will be connected after synthesis during DFT insertion"
+waive -rules CLOCK_DRIVER -msg {is driven here, and used as a clock 'clk_ast_ext_scn' at ast_clks_byp} \
+      -comment "The external clock is fed through pads."
