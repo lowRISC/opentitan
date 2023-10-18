@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/lib/runtime/log.h"
 
 // Convert a sysrst_ctrl_pin_t to dif_sysrst_ctrl_pin_t.
 // The values were chose to be equal so that this operation is trivial.
@@ -35,6 +36,7 @@ static status_t config_pin_override(ujson_t *uj,
       .allow_one = cfg.allow_one,
       .override_value = cfg.override_value,
   };
+  LOG_INFO("dif_sysrst_ctrl_output_pin_override_configure: pin=%d, en=%d", pin_to_dif_pin(cfg.pin), dif_cfg.enabled);
   TRY(dif_sysrst_ctrl_output_pin_override_configure(
       sysrst_ctrl, pin_to_dif_pin(cfg.pin), dif_cfg));
 

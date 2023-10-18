@@ -50,6 +50,31 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
+  mmio_region_write32(sysrst_ctrl.base_addr,
+                        SYSRST_CTRL_EC_RST_CTL_REG_OFFSET,
+                        0);
+  // Make sure the the DIO pins EC reset and flash WP are configured correctly.
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {
+      .slew_rate = 0,
+      .drive_strength = 0,
+      // FIXME OpenDrain does not work (rejected by hardware)
+      .flags = kDifPinmuxPadAttrVirtualOpenDrain,
+  };
+  LOG_INFO("Configure pin");
+  dif_result_t res = dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL,
+                                          kDifPinmuxPadKindDio, in_attr, &out_attr);
+  LOG_INFO("res=%d, attrs: in={%d,%d,%x}, out={%d,%d,%x}", res,
+           in_attr.slew_rate, in_attr.drive_strength, in_attr.flags,
+           out_attr.slew_rate, out_attr.drive_strength, out_attr.flags);
+  CHECK_DIF_OK(res);
+  res = dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSysrstCtrlAonFlashWpL,
+                                          kDifPinmuxPadKindDio, in_attr, &out_attr);
+  LOG_INFO("res=%d, attrs: in={%d,%d,%x}, out={%d,%d,%x}", res,
+           in_attr.slew_rate, in_attr.drive_strength, in_attr.flags,
+           out_attr.slew_rate, out_attr.drive_strength, out_attr.flags);
+  CHECK_DIF_OK(res);
+
   ujson_t uj = ujson_ottf_console();
 
   status_t s = command_processor(&uj);

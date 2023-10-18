@@ -153,6 +153,7 @@ fn test_combination(
             .gpio_pin(pin.transport_pin)?
             .write(values.is_pin_set(i))?;
     }
+    std::thread::sleep(Duration::from_secs(1));
     // Read pins on the device.
     let mut sysrst_values = PinValues::new(config);
     for (i, pin) in config.pins.iter().enumerate() {
@@ -183,8 +184,53 @@ fn chip_sw_sysrst_ctrl_input(
         &*uart,
         transport,
         config,
-        &PinValues { config, values: 0b10001011 }
+        &PinValues { config, values: 0b00001011 }
     )?;
+
+    Ok(())
+}
+
+fn ec_reset_pin(
+    _opts: &Opts,
+    transport: &TransportWrapper,
+    config: &Config,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+
+    let EC_RESET_PIN: &'static str = "IOR8";
+    let FLASH_WP_PIN: &'static str = "IOR9";
+    transport
+        .gpio_pin(EC_RESET_PIN)?
+        .set_mode(PinMode::Input)?;
+    transport
+        .gpio_pin(FLASH_WP_PIN)?
+        .set_mode(PinMode::Input)?;
+
+    for exp_val in [false, true] {
+        log::info!("Set ec_reset to {}", exp_val);
+        SysrstCtrlPin::EcResetInOut.configure_override(
+            &*uart, /* enabled */ true, /* allow_zero */ true, /* allow_one */ true,
+            /* override_value */ exp_val,
+        )?;
+        let val = transport.gpio_pin(EC_RESET_PIN)?.read()?;
+        log::info!("Got: {}", val);
+        if val != exp_val {
+            bail!("Pin value mismatch");
+        }
+    }
+
+    for exp_val in [false, true] {
+        log::info!("Set flash_wp to {}", exp_val);
+        SysrstCtrlPin::FlashWriteProtectInOut.configure_override(
+            &*uart, /* enabled */ true, /* allow_zero */ true, /* allow_one */ true,
+            /* override_value */ exp_val,
+        )?;
+        let val = transport.gpio_pin(FLASH_WP_PIN)?.read()?;
+        log::info!("Got: {}", val);
+        if val != exp_val {
+            bail!("Pin value mismatch");
+        }
+    }
 
     Ok(())
 }
@@ -206,6 +252,7 @@ fn main() -> Result<()> {
         .get(opts.init.backend_opts.interface.as_str())
         .expect("interface");
 
+    //execute_test!(ec_reset_pin, &opts, &transport, config);
     execute_test!(chip_sw_sysrst_ctrl_input, &opts, &transport, config);
     Ok(())
 }
