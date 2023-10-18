@@ -37,7 +37,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@crate_index__zerocopy-derive-0.7.1//:zerocopy_derive",
+        "@crate_index__zerocopy-derive-0.7.11//:zerocopy_derive",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
@@ -81,7 +81,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.7.1",
+    version = "0.7.11",
     deps = [
         "@crate_index__byteorder-1.5.0//:byteorder",
     ],
