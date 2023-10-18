@@ -172,7 +172,9 @@ status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c);
  * @param byte_count The number of bytes to be read.
  * @param[out] data Buffer to receive the fifo data.
  * @param timeout Timeout in microseconds.
- * @return The result of the operation.
+ * @return Return an error code if fails to read, otherwise `kOk(nak_count)`,
+ * where `nak_count` is the number of NAKs received or attempts needed before
+ * the success`.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
