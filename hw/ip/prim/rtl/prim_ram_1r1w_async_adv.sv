@@ -238,6 +238,9 @@ module prim_ram_1r1w_async_adv import prim_ram_2p_pkg::*; #(
 
     assign b_req_q   = b_req_d;
     assign b_addr_q  = b_addr_d;
+
+    logic unused_reset;
+    assign unused_reset = rst_a_ni;
   end
 
   if (EnableOutputPipeline) begin : gen_regslice_output
