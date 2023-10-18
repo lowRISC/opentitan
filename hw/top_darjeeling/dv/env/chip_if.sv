@@ -68,6 +68,7 @@ interface chip_if;
 `define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
 `define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
 `define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl
+`define SOC_PROXY_HIER      `TOP_HIER.u_soc_proxy
 `define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
@@ -964,6 +965,16 @@ interface chip_if;
 `endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
+
+  // Signal probe function for `wkup_internal_req_o` of SOC_PROXY_HIER
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_proxy_wkup_internal_req,
+                                   `SOC_PROXY_HIER.wkup_internal_req_o,
+                                   1)
+
+  // Signal probe function for `soc_intr_async_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_intr_async,
+                                   `TOP_HIER.soc_intr_async_i,
+                                   soc_proxy_reg_pkg::NumExternalIrqs)
 
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,

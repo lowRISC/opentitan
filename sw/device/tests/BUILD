@@ -1668,10 +1668,13 @@ opentitan_functest(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:soc_proxy",
         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )

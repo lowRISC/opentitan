@@ -2540,7 +2540,7 @@
                - In SW, ensure that the IRQ shows up in the respective *Interrupt Pending* register of the PLIC.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_soc_proxy_smoketest"]
     }
     {
       name: chip_sw_soc_proxy_external_alerts
