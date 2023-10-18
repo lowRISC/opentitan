@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/aes_block_schema.json",
+  "title": "Cryptotest AES Block Cipher Testvector",
+  "description": "A list of testvectors for AES block cipher testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "algorithm": {
+        "description": "Should be AES",
+        "type": "string",
+        "enum": ["aes"]
+      },
+      "operation": {
+        "description": "AES operation",
+        "type": "string",
+        "enum": ["encrypt", "decrypt"]
+      },
+      "key_len": {
+        "description": "Length in bits of the key",
+        "type": "integer",
+        "enum": [128, 192, 256]
+      },
+      "mode": {
+        "description": "Block cipher mode of operation",
+        "type": "string",
+        "enum": ["cbc", "cfb1", "cfb8", "cfb128", "ecb", "ofb"]
+      },
+      "padding": {
+        "description": "Padding scheme",
+        "type": "string",
+        "enum": ["null", "pkcs7", "iso9797m2"]
+      },
+      "key": {
+        "description": "AES key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "iv": {
+        "description": "AES intermediate value",
+        "$ref": "#/$defs/byte_array"
+      },
+      "ciphertext": {
+        "description": "Ciphertext",
+        "$ref": "#/$defs/byte_array"
+      },
+      "plaintext": {
+        "description": "Plaintext",
+        "$ref": "#/$defs/byte_array"
+      }
+    }
+  }
+}
