@@ -323,12 +323,12 @@ module pinmux
       .TargetCfg (TargetCfg)
     ) u_pinmux_strap_sampling (
       .clk_i,
-      // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
-      // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
-      // it retains some of the TAP selection state during an active debug session where NDM reset
-      // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
-      // whenever strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
-      // we always consume the live lc_dft_en_i signal.
+      // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason
+      // for that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and
+      // hence it retains some of the TAP selection state during an active debug session where NDM
+      // reset is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i
+      // signal whenever strap_en_i is asserted. Note that this does not affect the DFT TAP
+      // selection, since we always consume the live lc_dft_en_i signal.
       .rst_ni (rst_sys_ni),
       .scanmode_i,
       // To padring side
