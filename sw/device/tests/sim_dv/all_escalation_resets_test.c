@@ -50,9 +50,8 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -178,24 +177,18 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
   uint32_t type_addr = (uint32_t)(fault_checker->type);
-  CHECK_STATUS_OK(flash_ctrl_testutils_write(
-      &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-      0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK_STATUS_OK(flash_ctrl_testutils_write(
-      &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-      0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
-  CHECK_STATUS_OK(flash_ctrl_testutils_write(
-      &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[2]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-      0, &type_addr, kDifFlashCtrlPartitionTypeData, 1));
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_write(0, 1, &function_addr));
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_write(1, 1, &ip_inst_addr));
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_write(2, 1, &type_addr));
 }
 
 static void restore_fault_checker(fault_checker_t *fault_checker) {
-  fault_checker->function = (FaultCheckerFunction)nv_fault_checker[0];
-  fault_checker->ip_inst = (char *)nv_fault_checker[1];
-  fault_checker->type = (char *)nv_fault_checker[2];
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_read(
+      0, 1, (uint32_t *)&(fault_checker->function)));
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_read(
+      1, 1, (uint32_t *)&(fault_checker->ip_inst)));
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_read(
+      2, 1, (uint32_t *)&(fault_checker->type)));
 }
 
 // It would be handy to generate these.
@@ -509,22 +502,19 @@ static void sram_ctrl_ret_fault_checker(bool enable, const char *ip_inst,
 void ottf_external_isr(void) {
   dif_rv_plic_irq_id_t irq_id;
 
-  LOG_INFO("At regular external ISR");
-
   // There may be multiple interrupts due to the alert firing, so this keeps an
   // interrupt counter and errors-out if there are too many interrupts.
 
   // Increment the interrupt count and detect overflows.
   uint32_t interrupt_count = 0;
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+      ret_sram_testutils_counter_get(kCounterInterrupt, &interrupt_count));
   if (interrupt_count > kMaxInterrupts) {
     restore_fault_checker(&fault_checker);
     CHECK(false, "For %s, reset count %d got too many interrupts (%d)",
           fault_checker.ip_inst, reset_count, interrupt_count);
   }
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1));
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterInterrupt));
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -560,19 +550,12 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
                                            kDifToggleDisabled));
 
-  uint16_t accum_count;
-  CHECK_DIF_OK(dif_alert_handler_get_accumulator(
-      &alert_handler, alert_class_to_use, &accum_count));
-  LOG_INFO("Accumulator count %d", accum_count);
-
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 
   // Notify test function that the alert IRQ has been seen
   alert_irq_seen = true;
-
-  LOG_INFO("Regular external ISR exiting");
 }
 
 /**
@@ -582,16 +565,11 @@ void ottf_external_isr(void) {
  */
 void ottf_external_nmi_handler(void) {
   dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
-  LOG_INFO("At NMI handler");
-
   // Increment the nmi interrupt count.
   uint32_t nmi_count = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
-  if (nmi_count > kMaxInterrupts) {
-    LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
-  } else {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterNmi, nmi_count + 1));
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterNmi, &nmi_count));
+  if (nmi_count <= kMaxInterrupts) {
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterNmi));
   }
 
   // Check that this NMI was due to an alert handler escalation, and not due
@@ -622,7 +600,6 @@ void ottf_external_nmi_handler(void) {
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
                                                    kExpectedAlertNumber));
-  LOG_INFO("NMI handler exiting");
 }
 
 /**
@@ -1139,31 +1116,6 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
 
-  // Enable access to flash for storing info across resets.
-  LOG_INFO("Setting default region accesses");
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  // Get the flash maintained reset counter.
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterReset,
-                                                   (uint32_t *)&reset_count));
-  LOG_INFO("Reset counter value: %u", reset_count);
-  if (reset_count > kMaxResets) {
-    restore_fault_checker(&fault_checker);
-    CHECK(false, "Ip %d Got too many resets (%d)", fault_checker.ip_inst,
-          reset_count);
-  }
-
-  // Increment reset counter to know where we are.
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterReset, reset_count + 1));
-
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
   rst_info = rstmgr_testutils_reason_get();
@@ -1177,17 +1129,33 @@ bool test_main(void) {
     LOG_INFO("Booting for the first time, starting test");
     // Enable rstmgr alert info capture.
     CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterReset));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterInterrupt));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterNmi));
     execute_test(&aon_timer);
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     restore_fault_checker(&fault_checker);
+    // Get the reset counter.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterReset,
+                                                   (uint32_t *)&reset_count));
+    LOG_INFO("Reset counter value: %u", reset_count);
+    if (reset_count > kMaxResets) {
+      CHECK(false, "Ip %d Got too many resets (%d)", fault_checker.ip_inst,
+            reset_count);
+    }
 
-    LOG_INFO("Booting for the second time due to escalation reset");
+    // Increment reset counter to know where we are.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterReset));
+
+    restore_fault_checker(&fault_checker);
+
+    LOG_INFO("Booting due to escalation reset");
 
     uint32_t interrupt_count = 0;
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+        ret_sram_testutils_counter_get(kCounterInterrupt, &interrupt_count));
     uint32_t nmi_count = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterNmi, &nmi_count));
 
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
