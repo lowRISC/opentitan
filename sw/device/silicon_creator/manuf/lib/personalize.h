@@ -21,6 +21,9 @@
  * The SECRET1 partition contains the Flash and SRAM scrambling seeds for the
  * device.
  *
+ * Preconditions:
+ * - Device has SW CSRNG data access (configured in HW_CFG parition).
+ *
  * Note: The test will skip all programming steps and succeed if the SECRET1
  * parition is already locked. This is to facilitate test re-runs.
  *
@@ -56,8 +59,7 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * 2. the RMA unlock token (OTP - SECRET2 Partition)
  *
  * Preconditions:
- * - Device is in DEV, PROD, or PROD_END lifecycle state.
- * - Device has SW CSRNG data access.
+ * - Device has SW CSRNG data access (configured in HW_CFG parition).
  *
  * Note: The test will skip all programming steps and succeed if the SECRET2
  * partition is already locked. This is to facilitate test re-runs.
