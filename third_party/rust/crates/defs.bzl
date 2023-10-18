@@ -358,7 +358,7 @@ _NORMAL_DEPENDENCIES = {
             "tempfile": "@crate_index__tempfile-3.8.0//:tempfile",
             "thiserror": "@crate_index__thiserror-1.0.49//:thiserror",
             "typetag": "@crate_index__typetag-0.2.13//:typetag",
-            "zerocopy": "@crate_index__zerocopy-0.7.1//:zerocopy",
+            "zerocopy": "@crate_index__zerocopy-0.7.11//:zerocopy",
         },
     },
 }
@@ -4087,22 +4087,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__zerocopy-0.7.1",
-        sha256 = "2f00a66029e63d181fa590cc5694cf2afbc0974a4604824e80017b1789f99c07",
+        name = "crate_index__zerocopy-0.7.11",
+        sha256 = "4c19fae0c8a9efc6a8281f2e623db8af1db9e57852e04cde3e754dd2dc29340f",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/zerocopy/0.7.1/download"],
-        strip_prefix = "zerocopy-0.7.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-0.7.1.bazel"),
+        urls = ["https://crates.io/api/v1/crates/zerocopy/0.7.11/download"],
+        strip_prefix = "zerocopy-0.7.11",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-0.7.11.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__zerocopy-derive-0.7.1",
-        sha256 = "e9c682f46403e5d567cb27b79f6279c145759528ba9450fe371f43b921b452bd",
+        name = "crate_index__zerocopy-derive-0.7.11",
+        sha256 = "fc56589e9ddd1f1c28d4b4b5c773ce232910a6bb67a70133d61c9e347585efe9",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/zerocopy-derive/0.7.1/download"],
-        strip_prefix = "zerocopy-derive-0.7.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-derive-0.7.1.bazel"),
+        urls = ["https://crates.io/api/v1/crates/zerocopy-derive/0.7.11/download"],
+        strip_prefix = "zerocopy-derive-0.7.11",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-derive-0.7.11.bazel"),
     )
 
     maybe(
