@@ -52,7 +52,7 @@ const uint32_t kSiliconGoldenRomHash[kSha256HashSizeIn32BitWords] = {
     0xbd023b8a, 0xe5a4ddfc, 0xf66b45b5, 0x5b2ba0ba,
 };
 
-extern const char _chip_info_start[];
+extern const char _rom_chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
@@ -67,7 +67,7 @@ status_t hash_rom(void) {
               rom_hash.digest[7], rom_hash.digest[6], rom_hash.digest[5],
               rom_hash.digest[4], rom_hash.digest[3], rom_hash.digest[2],
               rom_hash.digest[1], rom_hash.digest[0]);
-  chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
+  chip_info_t *rom_chip_info = (chip_info_t *)_rom_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",
            rom_chip_info->scm_revision.scm_revision_high,

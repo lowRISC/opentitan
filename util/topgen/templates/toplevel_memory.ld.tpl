@@ -2,8 +2,6 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 <%!
-import topgen.lib as lib
-
 # TODO(#4709): Remove this function, once the old way of defining memories has been deprecated.
 def memory_to_flags(memory):
     memory_type = memory["type"]
@@ -86,21 +84,20 @@ _stack_start = _stack_end - _stack_size;
  */
 _static_critical_size = 8168;
 
-% if lib.num_rom_ctrl(top["module"]) > 1:
 /**
- * `.chip_info` at the top of ROM0.
+ * `.chip_info` at the top of each ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom0) + LENGTH(rom0);
-_chip_info_start = _chip_info_end - _chip_info_size;
-% else:
-/**
- * `.chip_info` at the top of ROM.
- */
-_chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
-_chip_info_start = _chip_info_end - _chip_info_size;
-% endif
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, mem in m["memory"].items():
+      % if key == "rom":
+_${mem["label"]}_chip_info_end = ORIGIN(${mem["label"]}) + LENGTH(${mem["label"]});
+_${mem["label"]}_chip_info_start = _${mem["label"]}_chip_info_end - _chip_info_size;
+      % endif
+    % endfor
+  % endif
+% endfor
 
 /**
  * Size of the initial ePMP RX region at reset (in bytes). This region must be
