@@ -67,13 +67,6 @@ const hw_cfg_settings_t kHwCfgSettings = {
  */
 OT_WARN_UNUSED_RESULT
 static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
-#define HW_CFG_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
-  static const bitfield_field32_t kSramFetch = HW_CFG_EN_OFFSET(0xff, 0);
-  static const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 8);
-  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG_EN_OFFSET(0xff, 16);
-  static const bitfield_field32_t kEntropySrcFwOvr = HW_CFG_EN_OFFSET(0xff, 24);
-#undef HW_CFG_EN_OFFSET
-
   uint32_t val =
       bitfield_field32_write(0, kSramFetch, kHwCfgSettings.en_sram_ifetch);
   val = bitfield_field32_write(val, kCsrngAppRead,

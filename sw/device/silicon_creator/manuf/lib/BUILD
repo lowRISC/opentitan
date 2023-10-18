@@ -56,8 +56,12 @@ cc_library(
 
 cc_library(
     name = "otp_fields",
+    srcs = ["otp_fields.c"],
     hdrs = ["otp_fields.h"],
-    deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:bitfield",
+    ],
 )
 
 cc_library(
@@ -88,6 +92,8 @@ cc_library(
         ":flash_info_fields",
         ":otp_fields",
         ":util",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hash",
@@ -184,6 +190,7 @@ cc_library(
         ":flash_info_fields",
         ":otp_fields",
         ":util",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",

@@ -5,7 +5,14 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_FIELDS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_FIELDS_H_
 
+#include "sw/device/lib/base/bitfield.h"
+
 #include "otp_ctrl_regs.h"  // Generated.
+
+extern const bitfield_field32_t kSramFetch;
+extern const bitfield_field32_t kCsrngAppRead;
+extern const bitfield_field32_t kEntropySrcFwRd;
+extern const bitfield_field32_t kEntropySrcFwOvr;
 
 enum {
   /**
