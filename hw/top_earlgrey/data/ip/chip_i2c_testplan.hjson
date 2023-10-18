@@ -137,6 +137,7 @@
       stage: V3
       si_stage: SV2
       tests: []
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
     }
     {
       name: chip_sw_i2c_repeatedstart
