@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors.
+# Copyright TU Graz - IAIK contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This is a custom Yosys template that is later patched
+# by CocoAlma's `parse.py` script before being passed to Yosys.
+# The idea is to keep the synthesis as bare as possible
+# so that it only replaces cell instantiations with
+# their provided logical equivalents with no optimization
+# or rewiring.
+{READ_FILES}
+
+hierarchy -check -top {TOP_MODULE};
+proc;
+flatten;
+
+# In case CocoAlma does not like the final netlist output, some small optimization
+# might be necssary. Here is an example optimization flags:
+# opt -nodffe -nosdff; memory; opt  -nodffe -nosdff; techmap; opt  -nodffe -nosdff -purge; clean;
+
+# If the netlist needs to be shared later, scrambling wire names might be useful.
+# rename -scramble-name;
+
+write_verilog -noattr {NETLIST_FILE_PATH};
+design -reset; design -reset-vlog;
+
+{KEEP}
+read_verilog {NETLIST_FILE_PATH};
+proc; techmap; clean;
+write_json {JSON_FILE_PATH};
