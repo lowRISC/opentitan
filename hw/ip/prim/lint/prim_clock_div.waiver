@@ -22,5 +22,5 @@ waive -rules SAME_NAME_TYPE -location {prim_clock_div.sv} -regexp {'ResetValue' 
 waive -rules CLOCK_DRIVER -location {prim_clock_div.sv} -regexp {clk_int' is driven here, and used as a clock} \
       -comment "This is an internal clock signal."
 
-waive -rules CLOCK_DRIVER -location {prim_clock_div.sv} -regexp {gen_div2.q_p' is driven by instance 'gen_div2^u_div2' of module 'prim_flop', and used as a clock 'clk_i' at prim_clock_div} \
+waive -rules CLOCK_DRIVER -location {prim_clock_div.sv} -msg {'gen_div2.q_p' is driven by instance 'gen_div2^u_div2' of module 'prim_flop', and used as a clock 'clk_i' at prim_clock_div} \
       -comment "This is an internal clock signal."
