@@ -183,6 +183,5 @@
   `endif
 
 `include "prim_assert_sec_cm.svh"
-`include "prim_flop_macros.sv"
 
 `endif // PRIM_ASSERT_SV
