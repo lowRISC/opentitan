@@ -77,7 +77,7 @@ rust_library(
         "@crate_index__globset-0.4.13//:globset",
         "@crate_index__lazy_static-1.4.0//:lazy_static",
         "@crate_index__log-0.4.20//:log",
-        "@crate_index__memchr-2.6.2//:memchr",
+        "@crate_index__memchr-2.6.4//:memchr",
         "@crate_index__regex-1.9.4//:regex",
         "@crate_index__same-file-1.0.6//:same_file",
         "@crate_index__thread_local-1.1.7//:thread_local",

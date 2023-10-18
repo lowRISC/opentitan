@@ -80,7 +80,7 @@ rust_library(
     }),
     version = "1.6.2",
     deps = [
-        "@crate_index__memchr-2.6.2//:memchr",
+        "@crate_index__memchr-2.6.4//:memchr",
         "@crate_index__regex-automata-0.3.7//:regex_automata",
     ],
 )

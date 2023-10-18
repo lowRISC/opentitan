@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_proc_macro(
-    name = "thiserror_impl",
+    name = "serde_derive",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +28,15 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2015",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=thiserror-impl",
+        "crate-name=serde_derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,10 +75,10 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.0.47",
+    version = "1.0.189",
     deps = [
-        "@crate_index__proc-macro2-1.0.66//:proc_macro2",
+        "@crate_index__proc-macro2-1.0.69//:proc_macro2",
         "@crate_index__quote-1.0.33//:quote",
-        "@crate_index__syn-2.0.29//:syn",
+        "@crate_index__syn-2.0.38//:syn",
     ],
 )

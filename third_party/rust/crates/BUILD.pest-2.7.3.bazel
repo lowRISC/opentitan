@@ -79,8 +79,8 @@ rust_library(
     }),
     version = "2.7.3",
     deps = [
-        "@crate_index__memchr-2.6.2//:memchr",
-        "@crate_index__thiserror-1.0.47//:thiserror",
+        "@crate_index__memchr-2.6.4//:memchr",
+        "@crate_index__thiserror-1.0.49//:thiserror",
         "@crate_index__ucd-trie-0.1.6//:ucd_trie",
     ],
 )

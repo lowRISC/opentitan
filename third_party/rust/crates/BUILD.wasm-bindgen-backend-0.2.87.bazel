@@ -80,9 +80,9 @@ rust_library(
         "@crate_index__bumpalo-3.13.0//:bumpalo",
         "@crate_index__log-0.4.20//:log",
         "@crate_index__once_cell-1.18.0//:once_cell",
-        "@crate_index__proc-macro2-1.0.66//:proc_macro2",
+        "@crate_index__proc-macro2-1.0.69//:proc_macro2",
         "@crate_index__quote-1.0.33//:quote",
-        "@crate_index__syn-2.0.29//:syn",
+        "@crate_index__syn-2.0.38//:syn",
         "@crate_index__wasm-bindgen-shared-0.2.87//:wasm_bindgen_shared",
     ],
 )

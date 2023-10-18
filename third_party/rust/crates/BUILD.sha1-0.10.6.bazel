@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "mio",
+    name = "sha1",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -30,17 +30,14 @@ rust_library(
     ),
     crate_features = [
         "default",
-        "log",
-        "net",
-        "os-ext",
-        "os-poll",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=mio",
+        "crate-name=sha1",
         "manual",
         "noclippy",
         "norustfmt",
@@ -79,85 +76,70 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.8.8",
+    version = "0.10.6",
     deps = [
-        "@crate_index__log-0.4.20//:log",
+        "@crate_index__cfg-if-1.0.0//:cfg_if",
+        "@crate_index__digest-0.10.7//:digest",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:armv7-linux-androideabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:wasm32-wasi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(target_os = "wasi")
-            "@crate_index__wasi-0.11.0-wasi-snapshot-preview1//:wasi",  # cfg(target_os = "wasi")
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-none": [
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "//conditions:default": [],
     }),

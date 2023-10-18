@@ -82,8 +82,8 @@ rust_library(
     deps = [
         "@crate_index__log-0.4.20//:log",
         "@crate_index__pest-2.7.3//:pest",
-        "@crate_index__serde-1.0.188//:serde",
-        "@crate_index__serde_json-1.0.105//:serde_json",
-        "@crate_index__thiserror-1.0.47//:thiserror",
+        "@crate_index__serde-1.0.189//:serde",
+        "@crate_index__serde_json-1.0.107//:serde_json",
+        "@crate_index__thiserror-1.0.49//:thiserror",
     ],
 )

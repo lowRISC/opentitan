@@ -76,7 +76,7 @@ rust_library(
     deps = [
         "@crate_index__num-bigint-0.4.4//:num_bigint",
         "@crate_index__num-traits-0.2.16//:num_traits",
-        "@crate_index__thiserror-1.0.47//:thiserror",
+        "@crate_index__thiserror-1.0.49//:thiserror",
         "@crate_index__time-0.3.28//:time",
     ],
 )

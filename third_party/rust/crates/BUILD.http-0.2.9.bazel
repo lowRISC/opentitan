@@ -74,7 +74,7 @@ rust_library(
     }),
     version = "0.2.9",
     deps = [
-        "@crate_index__bytes-1.4.0//:bytes",
+        "@crate_index__bytes-1.5.0//:bytes",
         "@crate_index__fnv-1.0.7//:fnv",
         "@crate_index__itoa-1.0.9//:itoa",
     ],

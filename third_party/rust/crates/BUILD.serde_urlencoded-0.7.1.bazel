@@ -77,6 +77,6 @@ rust_library(
         "@crate_index__form_urlencoded-1.2.0//:form_urlencoded",
         "@crate_index__itoa-1.0.9//:itoa",
         "@crate_index__ryu-1.0.15//:ryu",
-        "@crate_index__serde-1.0.188//:serde",
+        "@crate_index__serde-1.0.189//:serde",
     ],
 )

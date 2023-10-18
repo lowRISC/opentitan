@@ -83,6 +83,6 @@ rust_library(
     }),
     version = "0.7.1",
     deps = [
-        "@crate_index__byteorder-1.4.3//:byteorder",
+        "@crate_index__byteorder-1.5.0//:byteorder",
     ],
 )

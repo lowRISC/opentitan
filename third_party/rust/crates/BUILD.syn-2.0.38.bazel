@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Unlicense OR MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "memchr",
+    name = "syn",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,16 +29,24 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
+        "clone-impls",
         "default",
-        "std",
+        "derive",
+        "extra-traits",
+        "full",
+        "parsing",
+        "printing",
+        "proc-macro",
+        "quote",
+        "visit",
+        "visit-mut",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=memchr",
+        "crate-name=syn",
         "manual",
         "noclippy",
         "norustfmt",
@@ -77,5 +85,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.6.2",
+    version = "2.0.38",
+    deps = [
+        "@crate_index__proc-macro2-1.0.69//:proc_macro2",
+        "@crate_index__quote-1.0.33//:quote",
+        "@crate_index__unicode-ident-1.0.12//:unicode_ident",
+    ],
 )
