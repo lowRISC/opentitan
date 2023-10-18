@@ -2,14 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:opentitan_test.bzl", "dv_params", "opentitan_functest")
-load(
-    "@//rules:const.bzl",
-    "CONST",
-)
+load("@//rules:const.bzl", "CONST")
 load(
     "@//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
+    "RSA_ONLY_KEY_STRUCTS",
+)
+load(
+    "@//rules/opentitan:defs.bzl",
+    "dv_params",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -122,7 +124,7 @@ cc_library(
 # open-source tests may, but it is probably uneccessary, since these are custom
 # manufacturer defined tests.
 #
-# Additional tests may be added below as `opentitan_functest` rules. Same as
+# Additional tests may be added below as `opentitan_test` rules. Same as
 # above, any dependencies local to this repo can start with `//`. However, any
 # dependencies from the main opentitan repo must start with `@//`.
 #
@@ -134,23 +136,23 @@ cc_library(
 # `MANUFACTURER_HOOKS_DIR=/path/to/test_hooks
 #     bazel test @manufacturer_test_hooks//:example_test`
 ################################################################################
-# OTFT-Step 1: Copy/paste the below `opentitan_functest` to add an additional
+# OTFT-Step 1: Copy/paste the below `opentitan_test` to add an additional
 # manufacturer-specific test.
-opentitan_functest(
+opentitan_test(
     name = "example_test",
     srcs = ["example_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key_struct = get_key_structs_for_lc_state(
+    exec_env = {
+        "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "@//hw/top_earlgrey:sim_dv": None,
+    },
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.TEST_UNLOCKED0,
-        spx = None,
-    )[0],
-    targets = [
-        "cw310_rom_with_fake_keys",
-        "cw310_test_rom",
-        "dv",
-    ],
+    ),
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -174,21 +176,21 @@ opentitan_functest(
 # `MANUFACTURER_HOOKS_DIR=/path/to/test_hooks
 #     bazel test @manufacturer_test_hooks//:statically_hooked_opensource_test`
 ################################################################################
-opentitan_functest(
+opentitan_test(
     name = "statically_hooked_opensource_test",
     srcs = ["@//sw/device/tests:example_test_from_flash.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key_struct = get_key_structs_for_lc_state(
+    exec_env = {
+        "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "@//hw/top_earlgrey:sim_dv": None,
+    },
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.TEST_UNLOCKED0,
-        spx = None,
-    )[0],
-    targets = [
-        "cw310_rom_with_fake_keys",
-        "cw310_test_rom",
-        "dv",
-    ],
+    ),
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
         "@manufacturer_test_hooks//:test_hooks_1",
