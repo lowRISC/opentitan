@@ -271,10 +271,10 @@ static status_t otp_partition_secret2_configure(
   return OK_STATUS();
 }
 
-status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
-                                  const dif_lc_ctrl_t *lc_ctrl,
-                                  const dif_otp_ctrl_t *otp_ctrl,
-                                  manuf_perso_data_out_t *export_data) {
+status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
+                                          const dif_lc_ctrl_t *lc_ctrl,
+                                          const dif_otp_ctrl_t *otp_ctrl,
+                                          manuf_perso_data_out_t *export_data) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -369,7 +369,8 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
   return OK_STATUS();
 }
 
-status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl) {
+status_t manuf_personalize_device_secrets_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                       &is_locked));

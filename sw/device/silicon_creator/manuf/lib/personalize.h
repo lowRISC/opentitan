@@ -72,10 +72,10 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * @param[out] export_data UJSON struct of data to export from the device.
  * @return OK_STATUS on success.
  */
-status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
-                                  const dif_lc_ctrl_t *lc_ctrl,
-                                  const dif_otp_ctrl_t *otp_ctrl,
-                                  manuf_perso_data_out_t *export_data);
+status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
+                                          const dif_lc_ctrl_t *lc_ctrl,
+                                          const dif_otp_ctrl_t *otp_ctrl,
+                                          manuf_perso_data_out_t *export_data);
 
 /**
  * Checks the device personalization end state.
@@ -85,6 +85,6 @@ status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the SECRET2 OTP partition is locked.
  */
-status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl);
+status_t manuf_personalize_device_secrets_check(const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PERSONALIZE_H_
