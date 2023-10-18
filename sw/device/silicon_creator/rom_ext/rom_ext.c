@@ -179,8 +179,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
       ibex_addr_remap_1_set((uintptr_t)_owner_virtual_start_address,
-                            (uintptr_t)TOP_EARLGREY_EFLASH_BASE_ADDR,
-                            (size_t)_owner_virtual_size);
+                            (uintptr_t)manifest, (size_t)_owner_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
