@@ -30,7 +30,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      # - lint/tlul_adapter_dmi.waiver
+      - lint/tlul_adapter_dmi.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
