@@ -497,10 +497,7 @@ package spi_device_pkg;
   typedef enum logic [3:0] {
     ClkInvSel,
     CsbRstMuxSel,
-    TxRstMuxSel,
-    RxRstMuxSel,
     ClkMuxSel,
-    ClkSramSel,
     RstSramSel,
     TpmRstSel,
     ScanModeUseLast

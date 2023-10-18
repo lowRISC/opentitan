@@ -107,8 +107,6 @@ module spi_device
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
   logic              sram_clk;
   logic              sram_clk_en;
-  logic              sram_clk_ungated;
-  logic              sram_clk_muxed;
   logic              sram_rst_n;
   logic              sram_rst_n_noscan;
 
@@ -212,7 +210,6 @@ module spi_device
 
   logic sys_csb_syncd;
 
-  logic rst_txfifo_n, rst_rxfifo_n;
   logic rst_txfifo_reg, rst_rxfifo_reg;
 
   //spi_addr_size_e addr_size; // Not used in fwmode
@@ -910,24 +907,6 @@ module spi_device
     .clk_o(rst_spi_n)
   );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_tx_rst_scan_mux (
-    .clk0_i(rst_ni & ~rst_txfifo_reg),
-    .clk1_i(scan_rst_ni),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[TxRstMuxSel])),
-    .clk_o(rst_txfifo_n)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_rx_rst_scan_mux (
-    .clk0_i(rst_ni & ~rst_rxfifo_reg),
-    .clk1_i(scan_rst_ni),
-    .sel_i(prim_mubi_pkg::mubi4_test_true_strict(scanmode[RxRstMuxSel])),
-    .clk_o(rst_rxfifo_n)
-  );
-
   logic tpm_rst_n, sys_tpm_rst_n;
 
   prim_clock_mux2 #(
@@ -1338,6 +1317,18 @@ module spi_device
   assign rxf_full = '0;
   assign txf_empty = '1;
   assign txf_full = '0;
+
+  logic unused_sigs;
+  assign unused_sigs = ^{mbist_en_i,
+                         timer_v,
+                         abort,
+                         sram_rxf_rptr,
+                         sram_txf_wptr,
+                         sram_rxf_bindex,
+                         sram_txf_bindex,
+                         sram_rxf_lindex,
+                         sram_txf_lindex,
+                         sram_clk_en};
 
   ////////////////////
   // SPI Flash Mode //
@@ -1902,7 +1893,7 @@ module spi_device
   logic sys_sram_hw_req;
   always_comb begin
     sys_sram_hw_req = 1'b0;
-    for (int i = 0; i < SysSramEnd; i++) begin
+    for (int unsigned i = 0; i < SysSramEnd; i++) begin
       if ((i != SysSramFwEgress) && (i != SysSramFwIngress)) begin
         sys_sram_hw_req |= sys_sram_l2m[i].req;
       end
@@ -1910,7 +1901,7 @@ module spi_device
   end
 
   always_comb begin
-    for (int i = 0; i < SysSramEnd; i++) begin
+    for (int unsigned i = 0; i < SysSramEnd; i++) begin
       sys_sram_req[i] = sys_sram_l2m[i].req;
     end
     if (sys_sram_hw_req) begin

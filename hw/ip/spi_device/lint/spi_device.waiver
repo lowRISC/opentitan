@@ -8,7 +8,7 @@ set_clock_drivers prim_clock_buf prim_clock_mux2
 
 ### TODO: Remove these waivers together with fwmode
 waive -rules {CONST_FF} -location {spi_device.sv} \
-      -regexp {Flip-flop '*' is driven by constant}
+      -regexp {Flip-flop '.*' is driven by constant}
       -comment "Temporary waiver for tie-offs due to deprecated fwmode."
 
 ### ARITH
@@ -146,8 +146,8 @@ waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement ta
 #### NOT used
 ####   For the convenience of the design, below signals are intentionally unused
 waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
-      -regexp {'sub_(sram|p2s)_.*\[1\]' is not (used|read)} \
-      -comment "CmdParse does not have SRAM intf"
+      -regexp {'sub_(sram|p2s)_.*\[(0|0:1)\]' is not (used|read)} \
+      -comment "CmdParse does not have SRAM intf and Fwmode has been tied off"
 
 #### Intented Terminal States
 waive -rules {TERMINAL_STATE} -location {spi_cmdparse.sv} \
