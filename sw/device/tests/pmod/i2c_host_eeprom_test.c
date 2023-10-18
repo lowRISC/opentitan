@@ -57,12 +57,14 @@ static status_t poll_while_busy(dif_i2c_t *i2c) {
 }
 
 static status_t write_read_random(dif_i2c_t *i2c) {
+  int32_t naks = 0;
   // Write a byte to some random address.
   const uint8_t kAddr[2] = {0x03, 0x21};
   TRY(write_byte(i2c, kAddr, 0xAB));
 
   // Wait for the write to finish.
-  TRY(poll_while_busy(i2c));
+  naks = TRY(poll_while_busy(i2c));
+  TRY_CHECK(naks > 0, "We should have received naks");
 
   // Read back the data at that address.
   uint8_t read_data = 0x00;
@@ -74,7 +76,8 @@ static status_t write_read_random(dif_i2c_t *i2c) {
   // Erase the value we just wrote to prevent the success state persisting to
   // subsequent runs of the test.
   TRY(write_byte(i2c, kAddr, 0xFF));
-  TRY(poll_while_busy(i2c));
+  naks = TRY(poll_while_busy(i2c));
+  TRY_CHECK(naks > 0, "We should have received naks");
   TRY(read_byte(i2c, kAddr, &read_data));
 
   // Check the over-written byte matches the new value.
@@ -117,36 +120,53 @@ static status_t write_read_page(dif_i2c_t *i2c) {
 }
 
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
-                          uintptr_t i2c_base_addr) {
-  mmio_region_t base_addr;
+                              uint8_t i2c_instance,
+                              i2c_pinmux_platform_id_t platform) {
+  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
+                                         TOP_EARLGREY_I2C1_BASE_ADDR,
+                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
-  base_addr = mmio_region_from_addr(i2c_base_addr);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
   TRY(dif_i2c_init(base_addr, i2c));
 
-  TRY(i2c_testutils_select_pinmux(pinmux, 2, I2cPinmuxPlatformIdCw310Pmod));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+
+  TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance, platform));
 
   TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
 
   return OK_STATUS();
 }
 
+static status_t test_shutdown(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
+                              uint8_t i2c_instance) {
+  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
+  return i2c_testutils_detach_pinmux(pinmux, i2c_instance);
+}
+
 bool test_main(void) {
   dif_pinmux_t pinmux;
   dif_i2c_t i2c;
-
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
-  CHECK_STATUS_OK(i2c_configure(&i2c, &pinmux, TOP_EARLGREY_I2C2_BASE_ADDR));
-
-  dif_i2c_speed_t speeds[] = {kDifI2cSpeedStandard, kDifI2cSpeedFast,
-                              kDifI2cSpeedFastPlus};
-
+  i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdCw310Pmod;
   status_t test_result = OK_STATUS();
-  for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-    CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
-    EXECUTE_TEST(test_result, write_read_random, &i2c);
-    EXECUTE_TEST(test_result, write_read_page, &i2c);
+  for (uint8_t i2c_instance = 0; i2c_instance < 3; ++i2c_instance) {
+    LOG_INFO("Testing i2c%d", i2c_instance);
+    CHECK_STATUS_OK(i2c_configure(&i2c, &pinmux, i2c_instance, platform));
+
+    dif_i2c_speed_t kSpeeds[] = {kDifI2cSpeedStandard, kDifI2cSpeedFast,
+                                 kDifI2cSpeedFastPlus};
+
+    for (size_t i = 0; i < ARRAYSIZE(kSpeeds); ++i) {
+      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSpeeds[i]));
+      EXECUTE_TEST(test_result, write_read_random, &i2c);
+      EXECUTE_TEST(test_result, write_read_page, &i2c);
+    }
+    CHECK_STATUS_OK(test_shutdown(&i2c, &pinmux, i2c_instance));
   }
 
   return status_ok(test_result);
