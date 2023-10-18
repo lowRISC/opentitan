@@ -7,17 +7,16 @@ load(
     "Cw305BinaryInfo",
     "Cw310BinaryInfo",
     "Cw340BinaryInfo",
-    "get_one_binary_file",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
     "assemble_for_test",
     "get_fallback",
-    "get_files",
 )
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
+    "common_test_setup",
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
@@ -97,76 +96,20 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "mapfile": mapfile,
     }
 
-def _test_dispatch(ctx, exec_env, provider):
+def _test_dispatch(ctx, exec_env, firmware):
     """Dispatch a test for the fpga_cw310 environment.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
-      provider: A label with a Cw310BinaryInfo provider attached.
+      firmware: A label with a Cw310BinaryInfo provider attached.
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
     if ctx.attr.kind == "rom":
         fail("CW310 is not capable of executing ROM tests")
 
-    # If there is no explicitly specified test_harness, then the harness is opentitantool.
-    test_harness = ctx.executable.test_harness
-    if test_harness == None:
-        test_harness = exec_env._opentitantool
-
-    # Get the files we'll need to run the test.
-    bitstream = get_fallback(ctx, "file.bitstream", exec_env)
-    otp = get_fallback(ctx, "file.otp", exec_env)
-    rom = get_fallback(ctx, "attr.rom", exec_env)
-    rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
-    data_labels = ctx.attr.data + exec_env.data
-    data_files = get_files(data_labels)
-    if bitstream:
-        data_files.append(bitstream)
-    if rom:
-        rom = get_one_binary_file(rom, field = "rom", providers = [exec_env.provider])
-        data_files.append(rom)
-    if rom_ext:
-        rom_ext = get_one_binary_file(rom_ext, field = "signed_bin", providers = [exec_env.provider])
-        data_files.append(rom_ext)
-    if otp:
-        data_files.append(otp)
-    data_files.append(test_harness)
-
-    # Construct a param dictionary by combining the exec_env.param, the rule's
-    # param and and some extra file references.
-    param = dict(exec_env.param)
-    param.update(ctx.attr.param)
-    action_param = dict(param)
-
-    for attr, name in ctx.attr.binaries.items():
-        file = get_one_binary_file(attr, field = "default", providers = [exec_env.provider])
-        data_files.append(file)
-        if name in param:
-            fail("The binaries substitution name", name, "already exists")
-        param[name] = file.short_path
-        action_param[name] = file.path
-
-    if bitstream and "bitstream" not in param:
-        param["bitstream"] = bitstream.short_path
-        action_param["bitstream"] = bitstream.path
-    if rom and "rom" not in param:
-        param["rom"] = rom.short_path
-        action_param["rom"] = rom.path
-    if rom_ext and "rom_ext" not in param:
-        param["rom_ext"] = rom_ext.short_path
-        action_param["rom_ext"] = rom_ext.path
-    if otp and "otp" not in param:
-        param["otp"] = otp.short_path
-        action_param["otp"] = otp.path
-    if provider:
-        data_files.append(provider.default)
-        if "firmware" not in param:
-            param["firmware"] = provider.default.short_path
-            action_param["firmware"] = provider.default.path
-        else:
-            fail("This test builds firmware, but the firmware param has already been provided")
+    test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
     # If the test requested an assembled image, then use opentitantool to
     # assemble the image.  Replace the firmware param with the newly assembled
