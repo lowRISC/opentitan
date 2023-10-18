@@ -38,11 +38,11 @@ _stack_start = _stack_end - _stack_size;
 _static_critical_size = 8168;
 
 /**
- * `.chip_info` at the top of ROM.
+ * `.chip_info` at the top of each ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
-_chip_info_start = _chip_info_end - _chip_info_size;
+_rom_chip_info_end = ORIGIN(rom) + LENGTH(rom);
+_rom_chip_info_start = _rom_chip_info_end - _chip_info_size;
 
 /**
  * Size of the initial ePMP RX region at reset (in bytes). This region must be
