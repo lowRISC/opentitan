@@ -97,6 +97,17 @@
     }
   ]
 
+  features: [
+    { name: "RV_PLIC.PRIORITY",
+      desc: '''Each interrupt source can be given a configurable priority.'''
+    }
+    { name: "RV_PLIC.ENABLE",
+      desc: '''Each target has an associated set of interrupt enable bits. Configuring these
+               controls whether a target will be notified when the interrupt is triggered.
+            '''
+    }
+  ]
+
   regwidth: "32",
   registers: [
 % for i in range(src):
