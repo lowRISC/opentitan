@@ -170,8 +170,8 @@ module otbn_loop_controller
   assign current_loop_counter_dec = ~state_reset_i & ~otbn_stall_i & at_current_loop_end_insn;
 
   // Push current loop to the loop stack when a new loop starts (LOOP instruction executed).
-  // loop_stack_push_req indicates a push is requested, loop_stack_commit must also be asserted (when
-  // the loop start is committed) for it to take effect.
+  // loop_stack_push_req indicates a push is requested, loop_stack_commit must also be asserted
+  // (when the loop start is committed) for it to take effect.
   assign loop_stack_push_req = loop_start_req_i;
 
   // The OTBN controller must not commit a loop request if it sees a loop error.
