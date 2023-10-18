@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -33,65 +34,103 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .read_cont = false,
                                                   .suppress_nak_irq = false};
 
-typedef struct i2c_pinmux_map {
-  const top_earlgrey_pinmux_mio_out_t mio_out;
-  const top_earlgrey_pinmux_insel_t insel;
-  const top_earlgrey_pinmux_peripheral_in_t peripheral_in;
-  const top_earlgrey_pinmux_outsel_t outsel;
-} i2c_pinmux_map_t;
+/**
+ * Define an i2c pinmux configuration.
+ */
+typedef struct i2c_pinmux_pins {
+  pinmux_testutils_peripheral_pin_t sda;
+  pinmux_testutils_peripheral_pin_t scl;
+} i2c_pinmux_pins_t;
 
-typedef struct i2c_pinmux_conf {
-  i2c_pinmux_map_t sda;
-  i2c_pinmux_map_t scl;
-} i2c_pinmux_conf_t;
+/**
+ * Define an i2c pinmux configuration.
+ */
+typedef struct i2c_platform_pins {
+  pinmux_testutils_mio_pin_t sda;
+  pinmux_testutils_mio_pin_t scl;
+} i2c_platform_pins_t;
 
-static const i2c_pinmux_conf_t pinmux_conf[] = {
+/**
+ * This table store the pins of all i2c instances of Earlgrey.
+ * This is used to connect i2c instances to mio pins based on the platform.
+ */
+static const i2c_pinmux_pins_t kI2cPinmuxPins[] = {
     // I2C0.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-             .insel = kTopEarlgreyPinmuxInselIoa7,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Sda,
              .outsel = kTopEarlgreyPinmuxOutselI2c0Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-             .insel = kTopEarlgreyPinmuxInselIoa8,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Scl,
              .outsel = kTopEarlgreyPinmuxOutselI2c0Scl,
          }},
     // I2C1.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob10,
-             .insel = kTopEarlgreyPinmuxInselIob10,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Sda,
              .outsel = kTopEarlgreyPinmuxOutselI2c1Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob9,
-             .insel = kTopEarlgreyPinmuxInselIob9,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Scl,
              .outsel = kTopEarlgreyPinmuxOutselI2c1Scl,
          }},
     // I2C2.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob12,
-             .insel = kTopEarlgreyPinmuxInselIob12,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Sda,
              .outsel = kTopEarlgreyPinmuxOutselI2c2Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob11,
-             .insel = kTopEarlgreyPinmuxInselIob11,
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
              .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
          }},
 };
+
+/**
+ * This table store i2c pin mappings of different platforms.
+ * This is used to connect i2c instances to mio pins based on the platform.
+ */
+static const i2c_platform_pins_t kI2cPlatformPins[] = {
+    // Hyper310 bitstream.
+    [I2cPinmuxPlatformIdHyper310] =
+        {.sda =
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
+                 .insel = kTopEarlgreyPinmuxInselIoa7,
+             },
+         .scl =
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
+                 .insel = kTopEarlgreyPinmuxInselIoa8,
+             }},
+    // DV.
+    [I2cPinmuxPlatformIdDvsim] = {.sda =
+                                      {
+                                          .mio_out =
+                                              kTopEarlgreyPinmuxMioOutIob10,
+                                          .insel = kTopEarlgreyPinmuxInselIob10,
+                                      },
+                                  .scl =
+                                      {
+                                          .mio_out =
+                                              kTopEarlgreyPinmuxMioOutIob9,
+                                          .insel = kTopEarlgreyPinmuxInselIob9,
+                                      }},
+    // Cw310 PMOD.
+    [I2cPinmuxPlatformIdCw310Pmod] = {
+        .sda =
+            {
+                .mio_out = kTopEarlgreyPinmuxMioOutIob12,
+                .insel = kTopEarlgreyPinmuxInselIob12,
+            },
+        .scl = {
+            .mio_out = kTopEarlgreyPinmuxMioOutIob11,
+            .insel = kTopEarlgreyPinmuxInselIob11,
+        }}};
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                              uint8_t byte_count, const uint8_t *data,
@@ -273,19 +312,22 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                     uint8_t i2c_id) {
+status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux, uint8_t i2c_id,
+                                     i2c_pinmux_platform_id_t platform) {
+  TRY_CHECK(
+      platform < I2cPinmuxPlatformIdCount && i2c_id < ARRAYSIZE(kI2cPinmuxPins),
+      "Index out of bounds");
   // Configure sda pin.
-  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].sda.peripheral_in,
-                              pinmux_conf[i2c_id].sda.insel));
-  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].sda.mio_out,
-                               pinmux_conf[i2c_id].sda.outsel));
+  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].sda.peripheral_in,
+                              kI2cPlatformPins[platform].sda.insel));
+  TRY(dif_pinmux_output_select(pinmux, kI2cPlatformPins[platform].sda.mio_out,
+                               kI2cPinmuxPins[i2c_id].sda.outsel));
 
   // Configure scl pin.
-  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].scl.peripheral_in,
-                              pinmux_conf[i2c_id].scl.insel));
-  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].scl.mio_out,
-                               pinmux_conf[i2c_id].scl.outsel));
+  TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].scl.peripheral_in,
+                              kI2cPlatformPins[platform].scl.insel));
+  TRY(dif_pinmux_output_select(pinmux, kI2cPlatformPins[platform].scl.mio_out,
+                               kI2cPinmuxPins[i2c_id].scl.outsel));
   return OK_STATUS();
 }
 

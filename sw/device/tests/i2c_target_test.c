@@ -272,7 +272,7 @@ static status_t test_init(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  TRY(i2c_testutils_select_pinmux(&pinmux, 0));
+  TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
 
   TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
   TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));

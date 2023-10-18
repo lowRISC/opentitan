@@ -123,7 +123,7 @@ static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
   base_addr = mmio_region_from_addr(i2c_base_addr);
   TRY(dif_i2c_init(base_addr, i2c));
 
-  TRY(i2c_testutils_select_pinmux(pinmux, 2));
+  TRY(i2c_testutils_select_pinmux(pinmux, 2, I2cPinmuxPlatformIdCw310Pmod));
 
   TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
 
