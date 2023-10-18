@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:types.bzl", "types")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "PROVIDER_FIELDS")
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+
 # ExecEnvInfo provider fields and whether the field is required.
 _FIELDS = {
     "design": ("attr.design", True),
@@ -202,3 +206,137 @@ def exec_env_common_attrs(**kwargs):
             cfg = "exec",
         ),
     }
+
+def _do_update(name, file, data_files, param, action_param):
+    """Update the files list and param dictionaries."""
+    if name in param:
+        fail(name, "already exists in the param dictionary")
+    data_files.append(file)
+    param[name] = file.short_path
+    if action_param != None:
+        action_param[name] = file.path
+
+def _update(name, file, data_files, param, action_param):
+    """Update the files list and param dictionaries."""
+    if types.is_list(file) or types.is_tuple(file):
+        for i, f in enumerate(file):
+            _do_update("{}:{}".format(name, i), f, data_files, param, action_param)
+    else:
+        _do_update(name, file, data_files, param, action_param)
+
+def update_file_provider(name, provider, data_files, param, action_param = None, default = "default"):
+    """Map available provider files into a file list and param dictionary.
+
+    All available Files will be added into the data_files list and param
+    dictionary.  Dict keys will be named as `name:fieldname` for all
+    non-default items in the provider.
+
+    Args:
+      name: The name of the item to add to the param dictionary.
+      provider: The provider contaning the files.
+      data_files: A list of files to append available files into.
+      param: A mapping of item names to file short_paths.
+      action_param: A mapping of item names to full file paths.
+      default: The element of the provider to consider as the default item.
+    Returns:
+      None
+    """
+    if not provider:
+        # Nothing to do.
+        return
+    for field in PROVIDER_FIELDS:
+        file = getattr(provider, field, None)
+        if not file:
+            continue
+        if field == default:
+            _update(name, file, data_files, param, action_param)
+        else:
+            _update("{}:{}".format(name, field), file, data_files, param, action_param)
+
+def update_file_attr(name, attr, provider, data_files, param, action_param = None, default = "default"):
+    """Map available attr files into a file list and param dictionary.
+
+    All available Files will be added into the data_files list and param
+    dictionary.  Dict keys will be named as `name:fieldname` for all
+    non-default items in the provider.
+
+    If the `provider` is not present in `attr`, DefaultInfo will be inspected.
+
+    Args:
+      name: The name of the item to add to the param dictionary.
+      attr: The attribute holding the files.
+      provider: The provider to check in `attr`.
+      data_files: A list of files to append available files into.
+      param: A mapping of item names to file short_paths.
+      action_param: A mapping of item names to full file paths.
+      default: The element of the provider to consider as the default item.
+    Returns:
+      None
+    """
+
+    if not attr:
+        # Nothing to do.
+        return
+    if type(attr) == "File":
+        _update(name, attr, data_files, param, action_param)
+    elif provider and provider in attr:
+        update_file_provider(name, attr[provider], data_files, param, action_param, default)
+    elif DefaultInfo in attr:
+        file = attr[DefaultInfo].files.to_list()
+        if len(file) > 1:
+            fail("Expected to find exactly one file in", attr)
+        _update(name, file[0], data_files, param, action_param)
+    else:
+        fail("No file providers in", attr)
+
+def common_test_setup(ctx, exec_env, firmware):
+    """Perform the common test setup used by the exec_envs.
+
+    Args:
+      ctx: The rule context for this test.
+      exec_env: The execution environment for this test.
+      firmware: The firmware for this test.
+    Returns:
+      (test_harness, data_labels, data_files, param, action_param)
+    """
+
+    # If there is no explicitly specified test_harness, then the harness is opentitantool.
+    test_harness = ctx.executable.test_harness
+    if test_harness == None:
+        test_harness = exec_env._opentitantool
+
+    # Get the files we'll need to run the test.
+    data_labels = ctx.attr.data + exec_env.data
+    data_files = get_files(data_labels)
+    data_files.append(test_harness)
+
+    # Construct a param dictionary by combining the exec_env.param, the rule's
+    # param and and some extra file references.
+    param = dict(exec_env.param)
+    param.update(ctx.attr.param)
+    action_param = dict(param)
+
+    # Collect all file resource specified in the exec_env or as overrides.
+    bitstream = get_fallback(ctx, "attr.bitstream", exec_env)
+    update_file_attr("bitstream", bitstream, None, data_files, param, action_param)
+
+    otp = get_fallback(ctx, "attr.otp", exec_env)
+    update_file_attr("otp", otp, None, data_files, param, action_param)
+
+    if ctx.attr.kind == "rom" and firmware:
+        # If its a "rom" test, then the firmware built by the rule should be
+        # loaded into ROM.
+        update_file_provider("rom", firmware, data_files, param, action_param)
+    else:
+        rom = get_fallback(ctx, "attr.rom", exec_env)
+        update_file_attr("rom", rom, exec_env.provider, data_files, param, action_param, default = "rom")
+
+    rom_ext = get_fallback(ctx, "attr.rom_ext", exec_env)
+    update_file_attr("rom_ext", rom_ext, exec_env.provider, data_files, param, action_param)
+
+    # Add the binaries built by the test or added to the test.
+    update_file_provider("firmware", firmware, data_files, param, action_param)
+    for attr, name in ctx.attr.binaries.items():
+        update_file_attr(name, attr, exec_env.provider, data_files, param, action_param)
+
+    return test_harness, data_labels, data_files, param, action_param
