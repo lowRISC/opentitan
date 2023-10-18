@@ -16,10 +16,7 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
-#include "flash_ctrl_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "lc_ctrl_regs.h"   // Generated
-#include "otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -103,10 +100,10 @@ bool test_main(void) {
     sw_reset();
   } else if (info == kDifRstmgrResetInfoSw) {
     // Provision the OTP SECRET2 partition.
-    if (!status_ok(manuf_personalize_device_check(&otp_ctrl))) {
+    if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
       LOG_INFO("Provisioning OTP SECRET2 ...");
-      CHECK_STATUS_OK(manuf_personalize_device(&flash_state, &lc_ctrl,
-                                               &otp_ctrl, export_data));
+      CHECK_STATUS_OK(manuf_personalize_device_secrets(&flash_state, &lc_ctrl,
+                                                       &otp_ctrl, export_data));
       sw_reset();
     }
 
