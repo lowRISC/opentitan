@@ -362,7 +362,9 @@ module otp_ctrl_part_unbuf
     );
   end else begin : gen_no_ecc_reg
     logic unused_digest_reg_en;
+    logic unused_rdata;
     assign unused_digest_reg_en = digest_reg_en;
+    assign unused_rdata = ^otp_rdata_i[32 +: 32]; // Upper word is not connected in this case.
     assign digest_o = '0;
     assign ecc_err = 1'b0;
   end
