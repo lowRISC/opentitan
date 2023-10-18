@@ -17,6 +17,8 @@
             high value.
             '''
       stage: V2
+      si_stage: SV2
+      features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
       tests: ["chip_plic_all_irqs"]
     }
     {
@@ -28,6 +30,8 @@
             interrupt that is seen is the SW interrupt.
             '''
       stage: V2
+      si_stage: SV3
+      features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
       tests: ["chip_sw_plic_sw_irq"]
     }
     {
@@ -38,6 +42,7 @@
               separately.
             '''
       stage: V3
+      si_stage: None
       tests: ["chip_sw_all_escalation_resets"]
     }
   ]
