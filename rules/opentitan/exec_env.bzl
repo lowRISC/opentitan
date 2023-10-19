@@ -10,7 +10,7 @@ load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files"
 _FIELDS = {
     "design": ("attr.design", True),
     "exec_env": ("attr.exec_env", False),
-    "lib": ("attr.lib", True),
+    "libs": ("attr.libs", True),
     "linker_script": ("attr.linker_script", False),
     "rsa_key": ("attr.rsa_key", False),
     "spx_key": ("attr.spx_key", False),
@@ -103,10 +103,10 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("exec_env", "{name}"),
             doc = "Name of the execution environment (e.g. `fpga_cw310`)",
         ),
-        "lib": attr.label(
-            default = kwargs.get("lib"),
+        "libs": attr.label_list(
+            default = kwargs.get("libs", []),
             providers = [CcInfo],
-            doc = "Library providing environment-specific constants",
+            doc = "Libraries providing environment-specific constants",
         ),
         "linker_script": attr.label(
             default = kwargs.get("linker_script"),
