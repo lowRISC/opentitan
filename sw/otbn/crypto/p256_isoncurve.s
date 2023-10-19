@@ -25,28 +25,21 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
+ * @param[in]      w31: all-zero
  * @param[in]  dmem[x]: affine x-coordinate of input point
  * @param[in]  dmem[y]: affine y-coordinate of input point
  * @param[out]     w18: lhs, left side of equation = (x^3 + ax + b) mod p
  * @param[out]     w19: rhs, right side of equation = y^2 mod p
  *
- * clobbered registers: x2, x3, x19, x20, w0, w19 to w25
+ * clobbered registers: x2, x3, x19, x20, w0, w19 to w29
  * clobbered flag groups: FG0
  */
 p256_isoncurve:
-
-  /* setup all-zero reg */
-  bn.xor    w31, w31, w31
-
-  /* setup modulus p and Barrett constant u
-     MOD <= w29 <= dmem[p256_p] = p; w28 <= dmem[p256_u_p] = u_p */
-  li        x2, 29
-  la        x3, p256_p
-  bn.lid    x2, 0(x3)
-  bn.wsrw   MOD, w29
-  li        x2, 28
-  la        x3, p256_u_p
-  bn.lid    x2, 0(x3)
+  /* Set up for coordinate arithmetic.
+       MOD <= p
+       w28 <= r256
+       w29 <= r448 */
+  jal       x1, setup_modp
 
   /* load domain parameter b from dmem
      w27 <= b = dmem[p256_b] */
@@ -63,12 +56,12 @@ p256_isoncurve:
   /* w19 <= x^2 = w26*w26 */
   bn.mov    w25, w26
   bn.mov    w24, w26
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* w19 = x^3 <= x^2 * x = w25*w24 = w26*w19 */
   bn.mov    w25, w19
   bn.mov    w24, w26
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* for curve P-256, 'a' can be written as a = -3, therefore we subtract
      x three times from x^3.
@@ -88,6 +81,6 @@ p256_isoncurve:
 
   /* w19 <= w24*w24 mod p = y^2 mod p = rhs */
   bn.mov    w25, w24
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   ret

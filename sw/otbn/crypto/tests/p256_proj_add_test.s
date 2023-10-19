@@ -37,20 +37,24 @@ p256_proj_add_test:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load lower 256 bit of Barrett constant u for modulus p from dmem
-     w28 <= u = dmem[p256_u_p] */
-  li        x2, 28
-  la        x3, p256_u_p
-  bn.lid    x2, 0(x3)
-
   /* load field modulus p from dmem
-     w29 <= p = dmem[p256_p] */
+     MOD <= w29 <= p = dmem[p256_p] */
   li        x2, 29
   la        x3, p256_p
   bn.lid    x2, 0(x3)
 
   /* store modulus to MOD WSR */
   bn.wsrw   MOD, w29
+
+  /* Compute the constant r256 for reduction modulo p.
+       w28 <= 2^256 - p = r256 */
+  bn.sub   w28, w31, w29
+
+  /* Load the other constant for reduction modulo p.
+     w29 <= dmem[p256_r448] = r448 */
+  li        x2, 29
+  la        x3, p256_r448
+  bn.lid    x2, 0(x3)
 
   /* init all-zero reg */
   bn.xor   w31, w31, w31
