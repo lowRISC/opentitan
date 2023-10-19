@@ -78,6 +78,52 @@ module prim_fifo_async_sram_adapter #(
   // PtrW: Read/Write pointer with flip bit
   localparam int unsigned PtrW  = PtrVW+1;
 
+  //////////////
+  // Function //
+  //////////////
+
+  // dec2gray / gray2dec copied from prim_fifo_async.sv
+  function automatic [PtrW-1:0] dec2gray(input logic [PtrW-1:0] decval);
+    logic [PtrW-1:0] decval_sub;
+    logic [PtrW-1:0] decval_in;
+    logic            unused_decval_msb;
+
+    decval_sub = (PtrW)'(Depth) - {1'b0, decval[PtrW-2:0]} - 1'b1;
+
+    decval_in = decval[PtrW-1] ? decval_sub : decval;
+
+    // We do not care about the MSB, hence we mask it out
+    unused_decval_msb = decval_in[PtrW-1];
+    decval_in[PtrW-1] = 1'b0;
+
+    // Perform the XOR conversion
+    dec2gray = decval_in;
+    dec2gray ^= (decval_in >> 1);
+
+    // Override the MSB
+    dec2gray[PtrW-1] = decval[PtrW-1];
+  endfunction
+
+  // Algorithm walks up from 0..N-1 then flips the upper bit and walks down from N-1 to 0.
+  function automatic [PtrW-1:0] gray2dec(input logic [PtrW-1:0] grayval);
+    logic [PtrW-1:0] dec_tmp, dec_tmp_sub;
+    logic            unused_decsub_msb;
+
+    dec_tmp = '0;
+    for (int i = PtrW-2; i >= 0; i--) begin
+      dec_tmp[i] = dec_tmp[i+1] ^ grayval[i];
+    end
+    dec_tmp_sub = (PtrW)'(Depth) - dec_tmp - 1'b1;
+    if (grayval[PtrW-1]) begin
+      gray2dec = dec_tmp_sub;
+      // Override MSB
+      gray2dec[PtrW-1] = 1'b1;
+      unused_decsub_msb = dec_tmp_sub[PtrW-1];
+    end else begin
+      gray2dec = dec_tmp;
+    end
+  endfunction
+
   ////////////
   // Signal //
   ////////////
@@ -333,52 +379,6 @@ module prim_fifo_async_sram_adapter #(
       rdata_q <= Width'(0);
     end
   end
-
-  //////////////
-  // Function //
-  //////////////
-
-  // dec2gray / gray2dec copied from prim_fifo_async.sv
-  function automatic [PtrW-1:0] dec2gray(input logic [PtrW-1:0] decval);
-    logic [PtrW-1:0] decval_sub;
-    logic [PtrW-1:0] decval_in;
-    logic            unused_decval_msb;
-
-    decval_sub = (PtrW)'(Depth) - {1'b0, decval[PtrW-2:0]} - 1'b1;
-
-    decval_in = decval[PtrW-1] ? decval_sub : decval;
-
-    // We do not care about the MSB, hence we mask it out
-    unused_decval_msb = decval_in[PtrW-1];
-    decval_in[PtrW-1] = 1'b0;
-
-    // Perform the XOR conversion
-    dec2gray = decval_in;
-    dec2gray ^= (decval_in >> 1);
-
-    // Override the MSB
-    dec2gray[PtrW-1] = decval[PtrW-1];
-  endfunction
-
-  // Algorithm walks up from 0..N-1 then flips the upper bit and walks down from N-1 to 0.
-  function automatic [PtrW-1:0] gray2dec(input logic [PtrW-1:0] grayval);
-    logic [PtrW-1:0] dec_tmp, dec_tmp_sub;
-    logic            unused_decsub_msb;
-
-    dec_tmp = '0;
-    for (int i = PtrW-2; i >= 0; i--) begin
-      dec_tmp[i] = dec_tmp[i+1] ^ grayval[i];
-    end
-    dec_tmp_sub = (PtrW)'(Depth) - dec_tmp - 1'b1;
-    if (grayval[PtrW-1]) begin
-      gray2dec = dec_tmp_sub;
-      // Override MSB
-      gray2dec[PtrW-1] = 1'b1;
-      unused_decsub_msb = dec_tmp_sub[PtrW-1];
-    end else begin
-      gray2dec = dec_tmp;
-    end
-  endfunction
 
   ///////////////
   // Assertion //
