@@ -1209,9 +1209,7 @@ module dma
 
     // Clear the inline initial transfer flag starting flag when leaving the
     // DmaAddrSetup the first time
-    if ((ctrl_state_q == DmaAddrSetup) &
-        use_inline_hashing             &
-        reg2hw.control.initial_transfer.q) begin
+    if ((ctrl_state_q == DmaAddrSetup) & reg2hw.control.initial_transfer.q) begin
       hw2reg.control.initial_transfer.de = 1'b1;
     end
 
