@@ -120,6 +120,7 @@ In particular, since there are multiple slots inside keymgr_dpe, source and dest
 The very first advance call only latches the OTP root key, therefore most of these registers are ignored during the first call.
 The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for the UDS.
+Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
 This initial latching can only be done once unless keymgr_dpe is reset.
 If the OTP root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid`state.
 
@@ -135,7 +136,7 @@ At the end of a successful advance operation, the following updates are made for
 * `valid` bit is set to 1.
 * `key_policy` is updated (based on the parent’s policy and SLOT_POLICY).
 * `max_key_version` is updated with MAX_KEY_VERSION register.
-* `boot_stage` is set to the parent’s `boot_stage + 1`.
+* `boot_stage` is set to the parent’s `boot_stage + 1`, except for the initial `Advance` call that initializes the UDS slot `boot_stage` value to `0`.
 * `key` is updated from the key received from KMAC.
 
 Note that the same slot can be chosen both as source and destination. In this case, the child DICE context overwrites the parent DICE context. Otherwise (if the source and destination are not same), then the source slot remains unmodified.
