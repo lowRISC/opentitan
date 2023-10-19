@@ -1,4 +1,4 @@
-From 4333f206097c28f16efefc4025cb5dcb4a57915d Mon Sep 17 00:00:00 2001
+From de14c615628e7f0a2bf53fa5eec5685cccb1504d Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Thu, 17 Aug 2023 10:30:17 -0700
 Subject: [PATCH 4/4] Extend DMI address width
@@ -13,6 +13,28 @@ the specific integration.
 
 Signed-off-by: Michael Schaffner <msf@opentitan.org>
 
+diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
+index 259f3fc..b899b17 100644
+--- a/src/dm_csrs.sv
++++ b/src/dm_csrs.sv
+@@ -87,7 +87,6 @@ module dm_csrs #(
+   dm::dtm_op_e dtm_op;
+   assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
+ 
+-
+   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
+   localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
+ 
+@@ -212,6 +211,9 @@ module dm_csrs #(
+ 
+   // Get the data index, i.e. 0 for dm::Data0 up to 11 for dm::Data11
+   assign dm_csr_addr = dm::dm_csr_e'({1'b0, dmi_req_i.addr});
++  logic unused_addr_bits;
++  assign unused_addr_bits = ^dmi_req_i.addr[31:$bits(dm_csr_addr)];
++
+   // Xilinx Vivado 2020.1 does not allow subtraction of two enums; do the subtraction with logic
+   // types instead.
+   assign autoexecdata_idx = 4'({dm_csr_addr} - {dm::Data0});
 diff --git a/src/dm_pkg.sv b/src/dm_pkg.sv
 index cc2e1eb..a8a27d2 100644
 --- a/src/dm_pkg.sv

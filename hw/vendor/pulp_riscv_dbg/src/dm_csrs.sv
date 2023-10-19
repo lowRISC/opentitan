@@ -87,7 +87,6 @@ module dm_csrs #(
   dm::dtm_op_e dtm_op;
   assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
 
-
   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
   localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
 
@@ -212,6 +211,9 @@ module dm_csrs #(
 
   // Get the data index, i.e. 0 for dm::Data0 up to 11 for dm::Data11
   assign dm_csr_addr = dm::dm_csr_e'({1'b0, dmi_req_i.addr});
+  logic unused_addr_bits;
+  assign unused_addr_bits = ^dmi_req_i.addr[31:$bits(dm_csr_addr)];
+
   // Xilinx Vivado 2020.1 does not allow subtraction of two enums; do the subtraction with logic
   // types instead.
   assign autoexecdata_idx = 4'({dm_csr_addr} - {dm::Data0});
