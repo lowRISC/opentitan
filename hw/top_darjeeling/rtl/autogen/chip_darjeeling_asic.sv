@@ -1102,7 +1102,7 @@ module chip_darjeeling_asic #(
 
 
   // external clock comes in at a fixed position
-  assign ext_clk = dio_in_raw[MioPadMio11];
+  assign ext_clk = mio_in_raw[MioPadMio11];
 
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'bz;

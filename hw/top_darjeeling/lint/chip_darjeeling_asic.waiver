@@ -4,6 +4,13 @@
 #
 # waiver file for chip_darjeeling_asic
 
+# TODO: remove these waivers later when the USB clock was removed from the integrated system
+# in a clean way. Right now there are some dangling signals that we have to keep in order
+# to not disrupt the RTL structure and associated DV.
+waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {xbar_main.sv} \
+      -regexp {'(clk_usb_i|rst_usb_ni)' is not read from in module 'xbar_main'} \
+      -comment "Temporary waiver for dangling USB clocks and resets."
+
 waive -rules {MULTI_DRIVEN} -location {chip_darjeeling_asic.sv} -regexp {'(IOA2|IOA3)' has 2 drivers, also driven at} \
       -comment "These two pads are shorted to AST, hence this multiple driver warning is OK."
 
@@ -12,11 +19,11 @@ waive -rules {COMBO_LOOP} -location {chip_darjeeling_asic.sv} \
       -comment "In the passthrough mode, SPI 4 lines are connected from pads to pads."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
-      -msg {'mio_in_raw[28]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'clk_ast_ext_i' at ast_dft} \
+      -msg {'mio_in_raw[11]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'clk_ast_ext_i' at ast_dft} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
-      -msg {'mio_in_raw_o[28]' driven in module 'padring' by port 'gen_mio_pads[28].u_mio_pad.in_raw_o' at padring} \
+      -msg {'mio_in_raw[11]' driven in module 'padring' by port 'gen_mio_pads[11].u_mio_pad.in_raw_o' at padring} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
@@ -40,7 +47,7 @@ waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
       -comment "This is a clock source."
 
 waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} \
-      -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_i' at ast_dft} \
+      -msg {'mio_in_raw[11]' is used for some other purpose, and as clock 'clk_ast_ext_i' at ast_dft} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {RESET_DRIVER} -location {chip_darjeeling_asic.sv} \
@@ -64,11 +71,17 @@ waive -rules {COMBO_LOOP} -location {chip_darjeeling_asic.sv} -regexp {'tx' driv
       -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
 
 # External clock
-waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv}  -regexp {'(attr_padring_o|mio_attr)\[28\].pull_select' driven in module} \
-      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv}  -regexp {'(attr_padring_o|mio_attr)\[11\].pull_select' driven in module} \
+      -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
 
-waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
-      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -msg {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock 'clk_src_i' at prim_pulse_sync} \
+      -comment "This is a a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port 'sns_clks_i..*', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[11]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
+      -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
 
 # Unused power OK signals
 waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_darjeeling_asic'} \
