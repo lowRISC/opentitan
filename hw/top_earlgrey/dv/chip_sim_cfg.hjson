@@ -452,6 +452,16 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sival_flash_info_access
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:flash_ctrl_info_access_lc:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // Following run opt can be alternatively selected.
+      // +use_otp_image=OtpTypeLcStDev
+      // +use_otp_image=OtpTypeLcStProd
+      run_opts: ["+use_otp_image=OtpTypeLcStTestUnlocked0"]
+    }
+    {
       name: chip_sw_all_escalation_resets
       uvm_test_seq: chip_sw_all_escalation_resets_vseq
       sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:1:new_rules"]
