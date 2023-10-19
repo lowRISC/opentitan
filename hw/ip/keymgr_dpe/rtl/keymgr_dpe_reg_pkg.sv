@@ -107,6 +107,11 @@ package keymgr_dpe_reg_pkg;
   } keymgr_dpe_reg2hw_key_version_mreg_t;
 
   typedef struct packed {
+    logic        q;
+    logic        qe;
+  } keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t;
+
+  typedef struct packed {
     logic [31:0] q;
   } keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t;
 
@@ -176,6 +181,10 @@ package keymgr_dpe_reg_pkg;
   typedef struct packed {
     logic        d;
   } keymgr_dpe_hw2reg_sw_binding_regwen_reg_t;
+
+  typedef struct packed {
+    logic        d;
+  } keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -312,31 +321,33 @@ package keymgr_dpe_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [633:633]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [632:632]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [631:630]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [629:626]
-    keymgr_dpe_reg2hw_start_reg_t start; // [625:625]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [624:616]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [615:613]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [612:597]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [596:595]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [594:592]
-    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [591:590]
-    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [589:334]
-    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [333:78]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [77:46]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [635:635]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [634:634]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [633:632]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [631:628]
+    keymgr_dpe_reg2hw_start_reg_t start; // [627:627]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [626:618]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [617:615]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [614:599]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [598:597]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [596:594]
+    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [593:592]
+    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [591:336]
+    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [335:80]
+    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [79:48]
+    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [47:46]
     keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [45:14]
     keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [13:0]
   } keymgr_dpe_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [592:591]
-    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [590:590]
-    keymgr_dpe_hw2reg_start_reg_t start; // [589:588]
-    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [587:587]
-    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [586:586]
+    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [593:592]
+    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [591:591]
+    keymgr_dpe_hw2reg_start_reg_t start; // [590:589]
+    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [588:588]
+    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [587:587]
+    keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t max_key_ver_regwen; // [586:586]
     keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [585:322]
     keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [321:58]
     keymgr_dpe_hw2reg_working_state_reg_t working_state; // [57:55]
@@ -413,6 +424,8 @@ package keymgr_dpe_reg_pkg;
   parameter logic [0:0] KEYMGR_DPE_SLOT_POLICY_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_DPE_SW_BINDING_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_DPE_SW_BINDING_REGWEN_EN_RESVAL = 1'h 1;
+  parameter logic [0:0] KEYMGR_DPE_MAX_KEY_VER_REGWEN_RESVAL = 1'h 1;
+  parameter logic [0:0] KEYMGR_DPE_MAX_KEY_VER_REGWEN_EN_RESVAL = 1'h 1;
 
   // Register index
   typedef enum int {
