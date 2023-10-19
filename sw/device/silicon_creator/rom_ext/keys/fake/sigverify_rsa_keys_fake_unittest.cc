@@ -95,10 +95,41 @@ struct RsaVerifyTestCase {
   sigverify_rsa_buffer_t sig;
 };
 
-const RsaVerifyTestCase kRsaVerifyTestCases[2]{
+const RsaVerifyTestCase kRsaVerifyTestCases[3]{
     // message: "test"
     {
         .key = &kSigverifyRsaKeys[0].key,
+        /*
+         * echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
+         *     rom_ext_prod_key_0_rsa_3072_exp_f4.der -binary \
+         *     | xxd -p -c 4 | tac | sed 's|.*|0x&,|'
+         */
+        .sig =
+            {
+                0x36eaced4, 0xfd86736f, 0x4be5bc52, 0xd58c0bad, 0x7bbaf753,
+                0xe1d483d5, 0xb91e93df, 0xdc5a4d8b, 0x31a81dd8, 0x03964d74,
+                0x4110c8e8, 0x4b26bd63, 0xeec9e880, 0x0658fbad, 0x9115acbb,
+                0x30546e81, 0xd89b004a, 0x46ec0654, 0x7c790757, 0x40e5518a,
+                0x5a8cac89, 0x77b9f7bf, 0xdde3ddb5, 0x74e3a826, 0xd63bfa53,
+                0x72b514f8, 0xf6122729, 0x1196c0a4, 0x8c874559, 0xd7d8e6c9,
+                0xa9dedeaa, 0xa7e09a18, 0xdcfd6da6, 0x31190e90, 0xf9e418ac,
+                0xfdecd060, 0x422ffa89, 0x96b47e16, 0xfae6baab, 0x0e483c70,
+                0x6ed98af7, 0xfdb5502a, 0xead118d2, 0x6fb8f362, 0xadfccb76,
+                0x20c69cc4, 0x6a3eb2d1, 0x0ae30269, 0xf55a6c6a, 0xc7195f63,
+                0x6178d106, 0x183df636, 0xc575b1c2, 0x0bfddb1b, 0xe3807c38,
+                0x6fbe2b23, 0xf162c7dd, 0x47a54ad4, 0x45a48579, 0xa70aa643,
+                0x77ecaa63, 0x77702f39, 0x5a7ded0c, 0x5c6db917, 0xfc5be756,
+                0x119d6f7a, 0x4e55fe65, 0xbc3ad594, 0x753675d7, 0x909ad497,
+                0x0bda2c0e, 0xc118e450, 0x99ac8b0c, 0xb1cd6836, 0x76dd6b92,
+                0xd3e982b7, 0x8719abd7, 0xb1384cee, 0x86bbcbdc, 0xc211cab7,
+                0x18ce7877, 0x9650d2ea, 0xda551fc0, 0x037bb2d5, 0x9dcadb98,
+                0x8e65dd62, 0x582c6490, 0xc2f5e492, 0xc05f78f7, 0x24ee7700,
+                0x682504ec, 0x46737d60, 0x482ab4a5, 0x23463420, 0x7b5b99c1,
+                0x4293d6b4,
+            },
+    },
+    {
+        .key = &kSigverifyRsaKeys[1].key,
         /*
          * echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
          *   rom_ext_test_key_0_rsa_3072_exp_f4.der -hex
@@ -127,8 +158,9 @@ const RsaVerifyTestCase kRsaVerifyTestCases[2]{
                 0xc25256a9,
             },
     },
+
     {
-        .key = &kSigverifyRsaKeys[1].key,
+        .key = &kSigverifyRsaKeys[2].key,
         /*
          * echo -n "test" | openssl dgst -sha256 -keyform DER -sign \
          *   rom_ext_dev_key_0_rsa_3072_exp_f4.der -hex

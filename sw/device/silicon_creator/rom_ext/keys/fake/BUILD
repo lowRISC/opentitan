@@ -12,6 +12,7 @@ cc_library(
     ],
     hdrs = [
         "rom_ext_dev_key_0_rsa_3072_exp_f4.h",
+        "rom_ext_prod_key_0_rsa_3072_exp_f4.h",
         "rom_ext_test_key_0_rsa_3072_exp_f4.h",
     ],
     deps = [
@@ -53,4 +54,9 @@ filegroup(
 filegroup(
     name = "rom_ext_test_private_key_0",
     srcs = ["rom_ext_test_key_0_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
+    name = "rom_ext_prod_private_key_0",
+    srcs = ["rom_ext_prod_key_0_rsa_3072_exp_f4.der"],
 )
