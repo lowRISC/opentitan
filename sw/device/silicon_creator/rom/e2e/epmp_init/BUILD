@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
     "verilator_params",
 )
 load(
@@ -16,7 +17,6 @@ load(
 load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
-    "filter_key_structs_for_lc_state",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -26,14 +26,17 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         cw310 = cw310_params(
             bitstream = "//hw/bitstream:rom_with_fake_keys_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+        },
         local_defines = [
             "EXPECT_DEBUG={}".format(1 if lc_state_val in [
                 CONST.LCV.TEST_UNLOCKED0,
@@ -41,10 +44,11 @@ package(default_visibility = ["//visibility:public"])
                 CONST.LCV.RMA,
             ] else 0),
         ],
-        targets = [
-            "cw310_rom_with_fake_keys",
-            "verilator",
-        ],
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
