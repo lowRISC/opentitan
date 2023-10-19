@@ -3,19 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
 )
 load(
     "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -121,7 +121,7 @@ SHUTDOWN_WATCHDOG_CASES = [
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],
@@ -138,14 +138,17 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["lc_state"].upper(),
             )),
         ),
-        key_struct = get_key_structs_for_lc_state(
-            t["lc_state_val"],
-            spx = None,
-        )[0],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         local_defines = [
             "HANG_SECS=2",
         ],
-        targets = ["cw310_rom_with_fake_keys"],
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            t["lc_state_val"],
+        ),
         deps = [
             "//sw/device/lib/base:memory",
             "//sw/device/lib/dif:aon_timer",
