@@ -13,24 +13,24 @@
  * Returns the value of the AES status flag.
  *
  * @param aes An aes DIF handle.
- * @param flag Status flag to query.
+ * @param status Status value to query.
  */
-inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
-  bool status;
-  dif_result_t res = dif_aes_get_status(aes, flag, &status);
-  return (res == kDifOk) && status;
+inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t status) {
+  bool set;
+  dif_result_t res = dif_aes_get_status(aes, status, &set);
+  return (res == kDifOk) && set;
 }
 
 /**
  * Waits for the given AES status flag to be set the given value.
  *
  * @param aes An aes DIF handle.
- * @param flag Status flag to query.
- * @param value The status flag value.
+ * @param flag Status flag value.
+ * @param status The status value.
  * @param timeout_usec Timeout in microseconds.
  */
-#define AES_TESTUTILS_WAIT_FOR_STATUS(aes_, flag_, value_, timeout_usec_)  \
-  IBEX_TRY_SPIN_FOR(aes_testutils_get_status((aes_), (flag_)) == (value_), \
+#define AES_TESTUTILS_WAIT_FOR_STATUS(aes_, status_, flag_, timeout_usec_)  \
+  IBEX_TRY_SPIN_FOR(aes_testutils_get_status((aes_), (status_)) == (flag_), \
                     (timeout_usec_))
 
 #if !OT_IS_ENGLISH_BREAKFAST
