@@ -15,10 +15,10 @@
                      "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
 
   testpoints: [
-    ////////////////////////////////////////////////////////
-    // IO Peripherals                                     //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL //
-    ////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////
+    // IO Peripherals                                          //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL, MBX //
+    /////////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
     {
@@ -361,6 +361,22 @@
             '''
       stage: V2
       tests: ["chip_sw_sleep_pin_retention"]
+    }
+    {
+      name: chip_sw_mbx_smoke
+      desc: '''Verify the mailbox integrations with a basic smoketest
+
+            - Random-cyclicly select a mailbox to perform a req-rsp transaction with
+            - TB(requester) writes a message into the imbx, then awaits a response
+            - sw(responder) awaits the request, reads it then replies with a modified version
+              of the original message
+            - TB checks if the received response is as-expected
+            - Requester randomly selects between an irq or polling-based handler
+            - Responder polls the peripheral to await transaction completed
+            - Repeat process for all mailboxes in the system
+            '''
+      stage: V2
+      tests: ["chip_sw_mbx_smoke"]
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

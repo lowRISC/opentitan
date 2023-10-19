@@ -59,6 +59,7 @@ filesets:
       - seq_lib/chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_mbx_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_fault_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rstmgr_cnsty_fault_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_data_integrity_vseq.sv: {is_include_file: true}
