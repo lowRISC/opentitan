@@ -2,26 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use clap::Parser;
 use directories::{BaseDirs, ProjectDirs};
 use erased_serde::Serialize;
 use log::LevelFilter;
-use nix::sys::signal::{self, Signal};
-use nix::unistd::{dup2, setsid, Pid};
+use rustix::process::{Pid, Signal};
 use std::env::{self, args_os, ArgsOs};
 use std::ffi::OsString;
 use std::fs::{self, read_to_string, File};
 use std::io::{self, ErrorKind, Write};
 use std::iter::Iterator;
-use std::os::unix::io::AsRawFd;
 use std::path::PathBuf;
 use std::process::{self, ChildStdout, Command, Stdio};
 use std::str::FromStr;
 use std::time::Duration;
 
+use opentitanlib::backend;
 use opentitanlib::proxy::SessionHandler;
-use opentitanlib::{backend, util};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -162,13 +160,13 @@ fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) 
     // Close stderr, which remained open in order to allow any errors from the above code to
     // surface, but needs to be severed in order for the daemon to avoid being killed by SIGHUP
     // if the user closes the terminal window.
-    dup2(File::open("/dev/null")?.as_raw_fd(), 2)?;
+    rustix::stdio::dup2_stderr(File::open("/dev/null")?)?;
 
     // After severing the only connection to the controlling terminal inherited from the parent,
     // we can now establish a new Unix "session" for this process, which will not be
     // "controlled" by any terminal.  This means that this daemon will not be killed by SIGHUP,
     // in case the terminal that was used for running `session start` is later closed.
-    setsid()?;
+    rustix::process::setsid()?;
 
     // Report startup success to parent process.
     serde_json::to_writer::<io::Stdout, Result<SessionStartResult, String>>(
@@ -180,10 +178,10 @@ fn session_child(listen_port: Option<u16>, backend_opts: &backend::BackendOpts) 
     io::stdout().flush()?;
 
     // Closing the standard output pipe is the signal to the parent process that this child has
-    // started up successfully.  We close the pipe indirectly, by replacing file descriptor 1
+    // started up successfully.  We close the pipe indirectly, by replacing stdout file descriptor
     // with one pointing to /dev/null.  This will ensure that any subsequent accidentally
     // executed println!() will be a no-op, rather than trigger termination via SIGPIPE.
-    dup2(2, 1)?;
+    rustix::stdio::dup2_stdout(io::stderr())?;
 
     // Indefinitely run command processing loop in this daemon process.
     session.run_loop()
@@ -197,17 +195,18 @@ pub struct SessionStopResult {}
 fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<Box<dyn Serialize>> {
     // Read the pid file corresponding to the requested TCP port.
     let path = run_file_fn(port);
-    let pid: i32 = FromStr::from_str(fs::read_to_string(&path)?.trim())?;
+    let pid = FromStr::from_str(fs::read_to_string(&path)?.trim())?;
+    let pid = Pid::from_raw(pid).context("Pid is not valid")?;
     // Send signal to daemon process, asking it to terminate.
-    signal::kill(Pid::from_raw(pid), Signal::SIGTERM)?;
+    rustix::process::kill_process(pid, Signal::Term)?;
     // Wait for daemon process to stop.
     loop {
         std::thread::sleep(Duration::from_millis(100));
         // Send "signal 0", meaning that the kernel performs error checks (among those, checking
         // that the target process exists), without actually sending any signal.
-        match signal::kill(Pid::from_raw(pid), None) {
+        match rustix::process::test_kill_process(pid) {
             Ok(()) => (), // Process still running, repeat.
-            Err(nix::errno::Errno::ESRCH) => {
+            Err(rustix::io::Errno::SRCH) => {
                 // Process could not be found, meaning that it has terminated, as expected.
                 fs::remove_file(&path)?;
                 return Ok(Box::new(SessionStopResult {}));
@@ -225,7 +224,7 @@ fn main() -> Result<()> {
         // terminate if its parent dies.  This might be useful for use in scripts.
 
         // Request a SIGTERM if our parent dies.
-        util::nix::request_parent_death_signal(Signal::SIGTERM)?;
+        rustix::process::set_parent_process_death_signal(Some(Signal::Term))?;
 
         let transport = backend::create(&opts.backend_opts)?;
         let mut session = SessionHandler::init(&transport, opts.listen_port)?;

@@ -191,7 +191,6 @@ rust_library(
         "src/util/bitfield.rs",
         "src/util/file.rs",
         "src/util/mod.rs",
-        "src/util/nix.rs",
         "src/util/num_de.rs",
         "src/util/openocd.rs",
         "src/util/parse_int.rs",
