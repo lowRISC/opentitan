@@ -538,6 +538,9 @@ module keymgr_dpe
   // such as policy violation etc.
   logic [3:0] invalid_data;
   assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[active_key_slot.boot_stage];
+  // Keymgr_dpe does not have identity generation, therefore `id_en = 0`. The value of
+  // `invalid_data[OpGenId] does not matter, but assign it to 0 for the sake of lint.
+  assign invalid_data[OpGenId] = 1'b0;
   assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
   assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
 
