@@ -1285,7 +1285,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.status.busy.q),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
