@@ -231,8 +231,12 @@ module otp_ctrl
   for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
     localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(PartInfo[k].offset) +
                                                     (OtpByteAddrWidth+1)'(PartInfo[k].size);
-    assign tlul_part_sel_oh[k] = ({tlul_addr, 2'b00} >= PartInfo[k].offset) &
-                                 ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
+    if (PartInfo[k].offset == 0) begin : gen_zero_offset
+      assign tlul_part_sel_oh[k] = ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
+    end else begin : gen_nonzero_offset
+      assign tlul_part_sel_oh[k] = ({tlul_addr, 2'b00} >= PartInfo[k].offset) &
+                                   ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
+    end
   end
 
   `ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
