@@ -3,20 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
     "dv_params",
-    "opentitan_functest",
+    "opentitan_binary",
+    "opentitan_test",
     "verilator_params",
 )
 load(
     "//rules:const.bzl",
     "CONST",
-    "hex",
-)
-load(
-    "//rules:opentitan.bzl",
-    "opentitan_flash_binary",
 )
 load(
     "//rules:otp.bzl",
@@ -33,10 +29,15 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "rom_e2e_keymgr_init_test",
     testonly = True,
     srcs = [":rom_e2e_keymgr_init_test.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+        "//hw/top_earlgrey:sim_dv",
+        "//hw/top_earlgrey:sim_verilator",
+    ],
     deps = [
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing:keymgr_testutils",
@@ -98,23 +99,25 @@ rom_e2e_keymgr_init_configs = [
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "rom_e2e_keymgr_init_{}".format(config["name"]),
         cw310 = cw310_params(
+            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             bitstream = ":bitstream_keymgr_{}".format(config["name"]),
         ),
         dv = dv_params(
+            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
-        ot_flash_binary = ":rom_e2e_keymgr_init_test",
-        targets = [
-            "cw310_rom_with_fake_keys",
-            "dv",
-            "verilator",
-        ],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+        },
         verilator = verilator_params(
             timeout = "eternal",
+            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
             otp = ":otp_img_keymgr_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
