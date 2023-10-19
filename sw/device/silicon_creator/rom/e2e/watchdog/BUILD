@@ -3,19 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_binary",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
     "verilator_params",
+)
+load(
+    "@//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
     "get_lc_items",
-)
-load(
-    "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
-    "opentitan_flash_binary",
 )
 load(
     "//rules:otp.bzl",
@@ -58,47 +59,27 @@ otp_json(
 )
 
 # OTP images that enable the watchdog.
-[otp_image(
-    name = "otp_img_watchdog_enable_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-    overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
-) for lc_state, _ in get_lc_items()]
+[
+    otp_image(
+        name = "otp_img_watchdog_enable_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
+    )
+    for lc_state, _ in get_lc_items()
+]
 
 # Bitstreams with the watchdog-enable OTP images spliced in.
-[bitstream_splice(
-    name = "bitstream_watchdog_enable_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_watchdog_enable_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
-    tags = maybe_skip_in_ci(lc_state_val),
-    update_usr_access = True,
-) for lc_state, lc_state_val in get_lc_items()]
-
-# Creates a binary that confirms the watchdog is enabled and a binary that
-# confirms the watchdog is disabled.
-[opentitan_flash_binary(
-    name = "test_watchdog_{}".format(watchdog_config),
-    testonly = True,
-    srcs = ["watchdog_test.c"],
-    devices = [
-        "fpga_cw310",
-        "sim_verilator",
-    ],
-    local_defines = [
-        "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
-        "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
-    ],
-    deps = [
-        "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-) for watchdog_config in [
-    "disabled",
-    "enabled",
-]]
+[
+    bitstream_splice(
+        name = "bitstream_watchdog_enable_{}".format(lc_state),
+        src = "//hw/bitstream:rom_with_fake_keys",
+        data = ":otp_img_watchdog_enable_{}".format(lc_state),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+    )
+    for lc_state, lc_state_val in get_lc_items()
+]
 
 WATCHDOG_TEST_CASES = {
     "disable": {
@@ -117,6 +98,41 @@ WATCHDOG_TEST_CASES = {
     },
 }
 
+# Creates a binary that confirms the watchdog is enabled and a binary that
+# confirms the watchdog is disabled.
+[
+    opentitan_binary(
+        name = "test_watchdog_{}_{}".format(watchdog_config, lc_state),
+        testonly = True,
+        srcs = ["watchdog_test.c"],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:sim_verilator",
+        ],
+        local_defines = [
+            "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
+            "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
+        ],
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/ip/aon_timer/data:aon_timer_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for watchdog_config in [
+        "disabled",
+        "enabled",
+    ]
+    for lc_state, lc_state_val in get_lc_items()
+]
+
 # Bitstream targets (CW310) and otp images (verilator) for the watchdog config
 # tests. The format argument should be replaced with the desired life cycle
 # state.
@@ -131,35 +147,41 @@ WATCHDOG_OTP = {
 }
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "watchdog_{}_{}".format(
-            otp_config,
+            watchdog_config,
             lc_state,
         ),
         cw310 = cw310_params(
-            bitstream = WATCHDOG_BITSTREAM[otp_config].format(lc_state),
+            binaries = {
+                ":test_watchdog_{}_{}".format(
+                    WATCHDOG_TEST_CASES[watchdog_config][lc_state],
+                    lc_state,
+                ): "firmware",
+            },
+            bitstream = WATCHDOG_BITSTREAM[watchdog_config].format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = get_key_structs_for_lc_state(
-            lc_state_val,
-            spx = None,
-        )[0],
-        ot_flash_binary = ":test_watchdog_{}".format(WATCHDOG_TEST_CASES[otp_config][lc_state]),
-        signed = True,
-        targets = [
-            "cw310_rom_with_fake_keys",
-            "verilator",
-        ],
+        exec_env = {
+            "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "@//hw/top_earlgrey:sim_verilator": None,
+        },
         verilator = verilator_params(
             timeout = "eternal",
-            otp = WATCHDOG_OTP[otp_config].format(lc_state),
+            binaries = {
+                ":test_watchdog_{}_{}".format(
+                    WATCHDOG_TEST_CASES[watchdog_config][lc_state],
+                    lc_state,
+                ): "firmware",
+            },
+            otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
             # Test cases that enable the watchdog time out in verilator, cause
             # unknown.
-            tags = ["broken"] if WATCHDOG_TEST_CASES[otp_config][lc_state] == "enabled" else [],
+            tags = ["broken"] if WATCHDOG_TEST_CASES[watchdog_config][lc_state] == "enabled" else [],
         ),
     )
-    for otp_config in [
+    for watchdog_config in [
         "disable",
         "enable",
     ]
