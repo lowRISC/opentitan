@@ -775,7 +775,9 @@ countermeasures: [
     { name: "MAX_KEY_VER_REGWEN",
       desc: "Register write enable for MAX_KEY_VERSION",
       swaccess: "rw0c",
-      hwaccess: "none",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
           name: "EN",
