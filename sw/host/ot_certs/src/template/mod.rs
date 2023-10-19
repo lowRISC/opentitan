@@ -333,3 +333,205 @@ impl Template {
         Ok(deser_hjson::from_str(content)?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use indoc::indoc;
+
+    /// Test parsing a typical cdi_owner template.
+    #[test]
+    fn cdi_owner() {
+        // Input string for a Hjson template.
+        let input = indoc! {r#"
+            {
+              name: "cdi_owner",
+
+              variables: {
+                owner_pub_key_ec_x: {
+                  type: "integer",
+                  size: 32,
+                },
+                owner_pub_key_ec_y: {
+                  type: "integer",
+                  size: 32,
+                },
+                owner_pub_key_id: {
+                  type: "byte-array",
+                  size: 20,
+                },
+                signing_pub_key_id: {
+                  type: "byte-array",
+                  size: 20,
+                },
+                rom_ext_hash: {
+                  type: "byte-array",
+                  size: 20,
+                },
+                ownership_manifest_hash: {
+                  type: "byte-array",
+                  size: 20,
+                },
+                rom_ext_security_version: {
+                  type: "integer",
+                  size: 4,
+                }
+                layer: {
+                  type: "integer",
+                  size: 4,
+                }
+                cert_signature_r: {
+                  type: "integer",
+                  size: 32,
+                },
+                cert_signature_s: {
+                  type: "integer",
+                  size: 32,
+                },
+              },
+
+              certificate: {
+                serial_number: { var: "owner_pub_key_id", convert: "little-endian" },
+                issuer: {
+                  serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" },
+                },
+                subject: {
+                  serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" },
+                },
+                subject_public_key_info: {
+                  algorithm: "ec-public-key",
+                  curve: "prime256v1",
+                  public_key: {
+                    x: { var: "owner_pub_key_ec_x" },
+                    y: { var: "owner_pub_key_ec_y" },
+                  },
+                },
+                authority_key_identifier: { var: "signing_pub_key_id" },
+                subject_key_identifier: { var: "owner_pub_key_id" },
+                vendor: "OpenTitan",
+                model: "ROM_EXT",
+                svn: { var: "rom_ext_security_version" },
+                layer: { var: "layer" },
+                version: "ES",
+                fw_ids: [
+                  { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
+                  { hash_algorithm: "sha256", digest: { var: "ownership_manifest_hash" } },
+                ],
+                flags: {
+                  not_configured: true,
+                  not_secure: false,
+                  recovery: true,
+                  debug: false,
+                }
+                signature: {
+                  algorithm: "ecdsa-with-sha256",
+                  // The value field is optional: if not present, the signature will be cleared.
+                  // Otherwise, we can reference the various fields of the signature.
+                  value: {
+                    r: { var: "cert_signature_r" },
+                    s: { var: "cert_signature_s" }
+                  }
+                }
+              }
+            }
+        "#};
+
+        let variables = HashMap::from([
+            (
+                "owner_pub_key_ec_x".to_string(),
+                VariableType::Integer { size: 32 },
+            ),
+            (
+                "owner_pub_key_ec_y".to_string(),
+                VariableType::Integer { size: 32 },
+            ),
+            (
+                "owner_pub_key_id".to_string(),
+                VariableType::ByteArray { size: 20 },
+            ),
+            (
+                "signing_pub_key_id".to_string(),
+                VariableType::ByteArray { size: 20 },
+            ),
+            (
+                "rom_ext_hash".to_string(),
+                VariableType::ByteArray { size: 20 },
+            ),
+            (
+                "ownership_manifest_hash".to_string(),
+                VariableType::ByteArray { size: 20 },
+            ),
+            (
+                "rom_ext_security_version".to_string(),
+                VariableType::Integer { size: 4 },
+            ),
+            ("layer".to_string(), VariableType::Integer { size: 4 }),
+            (
+                "cert_signature_r".to_string(),
+                VariableType::Integer { size: 32 },
+            ),
+            (
+                "cert_signature_s".to_string(),
+                VariableType::Integer { size: 32 },
+            ),
+        ]);
+
+        // Certificate template values.
+        let certificate = Certificate {
+            serial_number: Value::convert("owner_pub_key_id", Conversion::LittleEndian),
+            issuer: HashMap::from([(
+                AttributeType::SerialNumber,
+                Value::convert("signing_pub_key_id", Conversion::LowercaseHex),
+            )]),
+            subject: HashMap::from([(
+                AttributeType::SerialNumber,
+                Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
+            )]),
+            subject_public_key_info: SubjectPublicKeyInfo::EcPublicKey(EcPublicKeyInfo {
+                curve: EcCurve::Prime256v1,
+                public_key: EcPublicKey {
+                    x: Value::variable("owner_pub_key_ec_x"),
+                    y: Value::variable("owner_pub_key_ec_y"),
+                },
+            }),
+            authority_key_identifier: Value::variable("signing_pub_key_id"),
+            subject_key_identifier: Value::variable("owner_pub_key_id"),
+            vendor: Some(Value::literal("OpenTitan")),
+            model: Some(Value::literal("ROM_EXT")),
+            svn: Some(Value::variable("rom_ext_security_version")),
+            layer: Some(Value::variable("layer")),
+            version: Some(Value::literal("ES")),
+            fw_ids: Some(Vec::from([
+                FirmwareId {
+                    hash_algorithm: HashAlgorithm::Sha256,
+                    digest: Value::variable("rom_ext_hash"),
+                },
+                FirmwareId {
+                    hash_algorithm: HashAlgorithm::Sha256,
+                    digest: Value::variable("ownership_manifest_hash"),
+                },
+            ])),
+            flags: Some(Flags {
+                not_configured: true,
+                not_secure: false,
+                recovery: true,
+                debug: false,
+            }),
+            signature: Signature::EcdsaWithSha256 {
+                value: Some(EcdsaSignature {
+                    r: Value::variable("cert_signature_r"),
+                    s: Value::variable("cert_signature_s"),
+                }),
+            },
+        };
+
+        // Compare expected and actual parsed structs.
+        let expected = Template {
+            name: "cdi_owner".to_string(),
+            variables,
+            certificate,
+        };
+        let actual = Template::from_hjson_str(input).expect("failed to parse template");
+        assert_eq!(expected, actual);
+    }
+}
