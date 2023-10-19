@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_binary",
+)
+load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
     "dv_params",
@@ -12,7 +16,6 @@ load(
 load(
     "//rules:const.bzl",
     "CONST",
-    "hex",
     "hex_digits",
 )
 load(
@@ -103,25 +106,52 @@ opentitan_functest(
     ],
 )
 
-[opentitan_flash_binary(
-    name = "empty_test_slot_{}".format(slot),
-    testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    devices = [
-        "fpga_cw310",
-        "sim_dv",
-        "sim_verilator",
-    ],
-    signed = True,
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-) for slot in SLOTS]
+[
+    opentitan_flash_binary(
+        name = "empty_test_slot_{}".format(slot),
+        testonly = True,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        devices = [
+            "fpga_cw310",
+            "sim_dv",
+            "sim_verilator",
+        ],
+        signed = True,
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for slot in SLOTS
+]
+
+[
+    # TODO(#19923): This target has been temporarily added until the original
+    # target and its dependencies are migrated to the new build and test rules.
+    opentitan_binary(
+        name = "new_empty_test_slot_{}".format(slot),
+        testonly = True,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:sim_dv",
+            "//hw/top_earlgrey:sim_verilator",
+        ],
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for slot in SLOTS
+]
 
 [
     genrule(
