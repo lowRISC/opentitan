@@ -345,6 +345,7 @@ _NORMAL_DEPENDENCIES = {
             "rsa": "@crate_index__rsa-0.9.2//:rsa",
             "rsa-der": "@crate_index__rsa-der-0.3.0//:rsa_der",
             "rusb": "@crate_index__rusb-0.9.3//:rusb",
+            "rustix": "@crate_index__rustix-0.38.10//:rustix",
             "secrecy": "@crate_index__secrecy-0.8.0//:secrecy",
             "serde": "@crate_index__serde-1.0.189//:serde",
             "serde_bytes": "@crate_index__serde_bytes-0.11.12//:serde_bytes",

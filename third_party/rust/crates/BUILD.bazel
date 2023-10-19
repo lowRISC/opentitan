@@ -332,6 +332,12 @@ alias(
 )
 
 alias(
+    name = "rustix",
+    actual = "@crate_index__rustix-0.38.10//:rustix",
+    tags = ["manual"],
+)
+
+alias(
     name = "secrecy",
     actual = "@crate_index__secrecy-0.8.0//:secrecy",
     tags = ["manual"],
