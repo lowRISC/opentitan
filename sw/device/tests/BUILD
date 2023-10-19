@@ -317,7 +317,6 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     deps = [
-        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -2056,7 +2055,6 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -2071,7 +2069,6 @@ opentitan_test(
     srcs = ["uart_smoketest.c"],
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
-        "//hw/top_earlgrey/sw/dts:cw310_devicetree",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
