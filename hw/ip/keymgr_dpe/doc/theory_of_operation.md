@@ -127,8 +127,8 @@ Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
 `KDF(child_key) = KDF(parent_key, message)`, where the message input might take few forms depending on boot_stage of the parent slot.
 In particular:
-* If `boot_stage=0` for the parent, then `message = (SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_div_secret)`. See [KDF Details](#kdf-details) for more details on HW backed inputs.
-* If `boot_stage=1` for the parent, the concatenated message input of KDF call is `(SW_CDI_INPUT || owner_div_secret)`.
+* If `boot_stage=0` for the parent, then `message = (SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed)`. See [KDF Details](#kdf-details) for more details on HW backed inputs.
+* If `boot_stage=1` for the parent, the concatenated message input of KDF call is `(SW_CDI_INPUT || owner_seed)`.
 * If `boot_stage>1` for the parent, then the message input is simply `SW_CDI_INPUT`.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by SLOT_DST_SEL:
@@ -197,8 +197,8 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `device_identifier` is a 256-bit non-secret device identifier. This value is received from peripheral OTP port.
 * `health_st_measurement` is a 128-bit domain separator (i.e. diversification constant) that depends on the life cycle stage. This value is received from peripheral LC port.
 * `rom_descriptors` are two hash values for ROM0, ROM1. Each digest is 256-bits. These values are received from their respective ROM controllers.
-* `creator_div_secret` is 256-bit creator secret received from the flash controller.
-* `owner_div_secret` is 256-bit owner secret received from the flash controller.
+* `creator_seed` is 256-bit creator secret received from the `SECRET2` OTP partition..
+* `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 
 During key generation operations, KDF inputs are 0 padded to `GenDataWidth` bits. Some diversification constants are:
 * `dest_seed` is a 256-bit diversification value for each cryptograhic key type {AES, KMAC, OTBN}.
