@@ -1057,6 +1057,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "flash_ctrl_info_access_lc",
+    srcs = ["flash_ctrl_info_access_lc.c"],
+    # Will be updated with a separate PR.
+    # Put this tag for now.
+    cw310 = new_cw310_params(tags = ["broken"]),
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
