@@ -133,9 +133,8 @@ module keymgr_dpe_ctrl
   logic fsm_at_disabled;
   logic fsm_at_invalid;
 
-  logic adv_req, dis_req, gen_req, erase_req;
+  logic adv_req, gen_req, erase_req;
   assign adv_req   = op_req & (op_i == OpDpeAdvance);
-  assign dis_req   = op_req & (op_i == OpDpeDisable);
   assign gen_req   = op_req & gen_key_op;
   assign erase_req = op_req & (op_i == OpDpeErase);
 
@@ -244,8 +243,8 @@ module keymgr_dpe_ctrl
   assign data_valid_o = op_ack & gen_key_op;
   assign wipe_key_o = update_sel == SlotQuickWipeAll;
 
-  keymgr_dpe_slot_t destination_slot;
-  assign destination_slot = key_slots_q[slot_dst_sel_i];
+  logic destination_slot_valid;
+  assign destination_slot_valid = key_slots_q[slot_dst_sel_i].valid;
 
   /////////////////////////
   // Keymgr slots MUX
@@ -488,7 +487,9 @@ module keymgr_dpe_ctrl
       // gracefully complete, even though its result will be void.
       StCtrlDpeWipe: begin
         wipe_req = 1'b1;
-
+        // If LC is disabled during transaction, better let the operation complete
+        // (see #7902 in OT-discrete)
+        op_req = op_busy;
         // During wipe, any incoming operation is rejected.
         invalid_op = op_start_i;
 
@@ -607,15 +608,19 @@ module keymgr_dpe_ctrl
   // in-place update. Therefore, src and dst must be the same.
   logic invalid_retain_parent;
   assign invalid_retain_parent = active_slot_policy.retain_parent ?
-                           (slot_src_sel_i == slot_dst_sel_i | destination_slot.valid) :
+                           (slot_src_sel_i == slot_dst_sel_i | destination_slot_valid) :
                            (slot_src_sel_i != slot_dst_sel_i);
 
   assign invalid_advance = adv_req & (invalid_allow_child | invalid_max_boot_stage |
                                       invalid_src_slot | invalid_retain_parent);
 
-  assign invalid_erase = erase_req & ~destination_slot.valid;
+  assign invalid_erase = erase_req & ~destination_slot_valid;
 
   assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
+
+  // Exportable DPE is not yet implemented, so mark it unused for lint.
+  logic unused_exportable_bit;
+  assign unused_exportable_bit = active_slot_policy.exportable;
 
   keymgr_err u_err (
     .clk_i,

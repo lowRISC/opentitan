@@ -22,12 +22,3 @@ waive -rules {HIER_NET_NOT_READ} -location {keymgr_dpe.sv} -regexp {.*} \
 
 waive -rules {NOT_READ} -location {keymgr_dpe.sv} -regexp {.*} \
       -comment "Temporarily ignore unconnected wires, because RTL is WIP"
-
-waive -rules {HIER_NET_NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
-      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
-
-waive -rules {INPUT_NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
-      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
-
-waive -rules {NOT_READ} -location {keymgr_dpe_ctrl.sv} -regexp {.*} \
-      -comment "Temporarily ignore unconnected wires, because RTL is WIP"
