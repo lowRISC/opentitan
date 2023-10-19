@@ -237,6 +237,7 @@ module keymgr_dpe_reg_top (
   logic key_version_we;
   logic [31:0] key_version_qs;
   logic [31:0] key_version_wd;
+  logic max_key_ver_regwen_re;
   logic max_key_ver_regwen_we;
   logic max_key_ver_regwen_qs;
   logic max_key_ver_regwen_wd;
@@ -1419,32 +1420,24 @@ module keymgr_dpe_reg_top (
   );
 
 
-  // R[max_key_ver_regwen]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+  // R[max_key_ver_regwen]: V(True)
+  logic max_key_ver_regwen_qe;
+  logic [0:0] max_key_ver_regwen_flds_we;
+  assign max_key_ver_regwen_qe = &max_key_ver_regwen_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_max_key_ver_regwen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (max_key_ver_regwen_re),
     .we     (max_key_ver_regwen_we),
     .wd     (max_key_ver_regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .d      (hw2reg.max_key_ver_regwen.d),
+    .qre    (),
+    .qe     (max_key_ver_regwen_flds_we[0]),
+    .q      (reg2hw.max_key_ver_regwen.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (max_key_ver_regwen_qs)
   );
+  assign reg2hw.max_key_ver_regwen.qe = max_key_ver_regwen_qe;
 
 
   // R[max_key_ver_shadowed]: V(False)
@@ -2939,6 +2932,7 @@ module keymgr_dpe_reg_top (
   assign key_version_we = addr_hit[29] & reg_we & !reg_error;
 
   assign key_version_wd = reg_wdata[31:0];
+  assign max_key_ver_regwen_re = addr_hit[30] & reg_re & !reg_error;
   assign max_key_ver_regwen_we = addr_hit[30] & reg_we & !reg_error;
 
   assign max_key_ver_regwen_wd = reg_wdata[0];
