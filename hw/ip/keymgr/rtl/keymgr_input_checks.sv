@@ -28,6 +28,11 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   output logic rom_digest_vld_o
 );
 
+  // checks for all 0's or all 1's of value
+  function automatic logic valid_chk (logic [MaxWidth-1:0] value);
+    return |value & ~&value;
+  endfunction // valid_chk
+
   // key version must be smaller than or equal to max version
   assign key_version_vld_o = key_version_i <= cur_max_key_version_i;
 
@@ -99,13 +104,5 @@ module keymgr_input_checks import keymgr_pkg::*; #(
       rom_digest_vld_o &= rom_digest_i[k].valid && valid_chk(MaxWidth'(rom_digest_i[k].data));
     end
   end
-
-  // checks for all 0's or all 1's of value
-  function automatic logic valid_chk (logic [MaxWidth-1:0] value);
-
-    return |value & ~&value;
-
-  endfunction // valid_chk
-
 
 endmodule // keymgr_input_checks
