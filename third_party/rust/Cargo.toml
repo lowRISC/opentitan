@@ -45,7 +45,6 @@ p256 = "0.13.2"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
 pqcrypto-sphincsplus = { version = "0.6.4", default-features = false, features = ["std"] }
 pqcrypto-traits = "0.3.4"
-proc-macro-error = "1.0"
 proc-macro2 = "1.0.45"
 quote = "1.0"
 rand = "0.8.4"
@@ -89,6 +88,7 @@ libftdi1-sys = "1.0.0"
 ansi_term = "0.12"
 pest = "2.2"
 pest_derive = "2.2"
+proc-macro-error = "1.0"
 
 # documentation generation tools
 mdbook = "0.4.31"

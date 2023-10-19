@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use proc_macro2::TokenStream;
-use proc_macro_error::{abort, proc_macro_error};
 use quote::quote;
-use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant};
+use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Error, Fields, Ident, Result, Variant};
 
 /// Derives the `CommandDispatch` trait for a NewType enum.
 ///
@@ -41,30 +40,34 @@ use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant
 /// }
 /// ```
 #[proc_macro_derive(CommandDispatch)]
-#[proc_macro_error]
 pub fn derive_command_dispatch(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
+    dispatch(input)
+        .unwrap_or_else(Error::into_compile_error)
+        .into()
+}
 
+fn dispatch(input: DeriveInput) -> Result<TokenStream> {
     match &input.data {
-        Data::Enum(e) => dispatch_enum(&input.ident, e).into(),
-        _ => abort!(
+        Data::Enum(e) => dispatch_enum(&input.ident, e),
+        _ => Err(Error::new(
             input.ident.span(),
-            "CommandDispatch is only implemented for enums"
-        ),
+            "CommandDispatch is only implemented for enums",
+        )),
     }
 }
 
-fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
+fn dispatch_enum(name: &Ident, e: &DataEnum) -> Result<TokenStream> {
     let arms = e
         .variants
         .iter()
         .map(|variant| dispatch_variant(name, variant))
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
 
     // We wrap the derived code inside an anonymous const block to give the
     // `extern crate` references a local namespace that wont pollute the
     // global namespace.
-    quote! {
+    Ok(quote! {
         const _: () = {
             extern crate opentitanlib;
             extern crate anyhow;
@@ -82,26 +85,28 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> TokenStream {
                 }
             }
         };
-    }
+    })
 }
 
-fn dispatch_variant(name: &Ident, variant: &Variant) -> TokenStream {
+fn dispatch_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
     let ident = &variant.ident;
     let unnamed_len = match &variant.fields {
         Fields::Unnamed(u) => u.unnamed.len(),
-        _ => abort!(
-            variant.ident.span(),
-            "CommandDispatch is only implemented for Newtype variants"
-        ),
+        _ => {
+            return Err(Error::new(
+                variant.ident.span(),
+                "CommandDispatch is only implemented for Newtype variants",
+            ));
+        }
     };
     if unnamed_len != 1 {
-        abort!(
+        return Err(Error::new(
             variant.ident.span(),
-            "CommandDispatch is only implemented for Newtype variants"
-        );
+            "CommandDispatch is only implemented for Newtype variants",
+        ));
     }
-    quote! {
+    Ok(quote! {
         #name::#ident(ref __field) =>
             opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
-    }
+    })
 }
