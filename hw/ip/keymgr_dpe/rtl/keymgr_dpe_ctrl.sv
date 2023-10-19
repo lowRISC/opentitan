@@ -52,7 +52,7 @@ module keymgr_dpe_ctrl
   output logic data_valid_o,
   output logic wipe_key_o,
   output keymgr_dpe_exposed_working_state_e working_state_o,
-  output logic sw_binding_unlock_o,
+  output logic unlock_after_advance_o,
   output logic init_o,
 
   // Data input
@@ -149,8 +149,8 @@ module keymgr_dpe_ctrl
   logic op_err;
   logic op_fault_err;
 
-  // unlock sw binding configuration whenever an advance call is made without errors
-  assign sw_binding_unlock_o = adv_req & op_ack & ~(op_err | op_fault_err);
+  // Unlock `SW_BINDING`, `SLOT_POLICY` and `MAX_KEY_VERSION` registers after succesful advance
+  assign unlock_after_advance_o = adv_req & op_ack & ~(op_err | op_fault_err);
 
   // error definition
   // check incoming kmac data validity
