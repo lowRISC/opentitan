@@ -22,4 +22,8 @@ package ibex_mem_intf_agent_pkg;
   `include "ibex_mem_intf_request_driver.sv"
   `include "ibex_mem_intf_request_agent.sv"
 
+  // Re-export parameters from ibex_mem_intf_pkg so that other packages can access them through this
+  // package.
+  export ibex_mem_intf_pkg::*;
+
 endpackage

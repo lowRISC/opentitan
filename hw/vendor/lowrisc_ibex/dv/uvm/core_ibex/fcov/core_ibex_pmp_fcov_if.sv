@@ -384,7 +384,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
           illegal_bins illegal_machine_deny_read =
             // Ensuring MML is high and we are in a R allowed configuration in Machine Mode
             (binsof(cp_region_priv_bits) intersect {MML_WRM_RU, MML_WRM_WRU, MML_RM_RU, MML_RM,
-                                                    MML_WRM, MML_XRM, MML_XRM_XU, NONE} &&
+                                                    MML_WRM, MML_XRM, MML_XRM_XU, NONE,
+                                                    W, X, XW} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_READ} &&
              binsof(pmp_dside_req_err) intersect {1});
@@ -428,7 +429,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
              binsof(pmp_dside_req_err) intersect {1});
           illegal_bins illegal_machine_deny_write =
             // Ensuring MML is high and we are in a W allowed configuration in Machine Mode
-            (binsof(cp_region_priv_bits) intersect {MML_WRM_WRU, MML_WRM_RU, MML_WRM, NONE} &&
+            (binsof(cp_region_priv_bits) intersect {MML_WRM_WRU, MML_WRM_RU, MML_WRM, NONE,
+                                                    R, X, XR, XW} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_WRITE} &&
              binsof(pmp_dside_req_err) intersect {1});
@@ -463,11 +465,12 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
              ((!pmp_region_priv_bits[2] && pmp_region_priv_bits != MML_XM_XU) ||
               pmp_region_priv_bits inside {MML_WRM_WRU, MML_RM_RU})) {
 
-          // Only interested in MML configuration
-          ignore_bins non_mml_in = binsof(pmp_region_priv_bits) with (!pmp_region_priv_bits[4]);
+          // Only interested in MML configuration, so ignore anything where the top bit is not set
+          ignore_bins non_mml_in =
+            binsof(pmp_region_priv_bits) with (pmp_region_priv_bits >> 4 == 5'b0);
 
           ignore_bins non_mml_out =
-            binsof(pmp_region_priv_bits_wr) with (!pmp_region_priv_bits_wr[4]);
+            binsof(pmp_region_priv_bits_wr) with (pmp_region_priv_bits_wr >> 4 == 5'b0);
 
           // Only interested in starting configs that weren't executable so ignore executable
           // regions

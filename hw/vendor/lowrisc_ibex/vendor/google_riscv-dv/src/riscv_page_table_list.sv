@@ -186,6 +186,9 @@ class riscv_page_table_list#(satp_mode_t MODE = SV39) extends uvm_object;
     $cast(valid_data_leaf_pte, valid_leaf_pte.clone());
     illegal_pte.turn_off_default_constraint();
     valid_link_pte.xwr = NEXT_LEVEL_PAGE;
+    valid_link_pte.a = 1'b0;
+    valid_link_pte.d = 1'b0;
+    valid_link_pte.u = 1'b0;
     valid_link_pte.pack_entry();
     // Set data page to read/write, but not executable
     valid_data_leaf_pte.xwr = READ_WRITE_PAGE;

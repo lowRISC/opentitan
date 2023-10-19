@@ -764,15 +764,26 @@ class riscv_pmp_cfg extends uvm_object;
              // if counter < pmp_num_regions => branch to beginning of loop,
              // otherwise jump to the end of the loop
              $sformatf("ble x%0d, x%0d, 19f", scratch_reg[1], scratch_reg[0]),
-             $sformatf("j 0b"),
-             // If we reach here, it means that no PMP entry has matched the request.
-             // We must immediately jump to <test_done> since the CPU is taking a PMP exception,
-             // but this routine is unable to find a matching PMP region for the faulting access -
-             // there is a bug somewhere.
-             // In case of MMWP mode this is expected behavior, we should try to continue.
-             $sformatf("19: csrr x%0d, 0x%0x", scratch_reg[0], MSECCFG),
-             $sformatf("andi x%0d, x%0d, 2", scratch_reg[0], scratch_reg[0]),
-             $sformatf("bnez x%0d, 27f", scratch_reg[0]),
+             $sformatf("j 0b")
+    };
+
+    // If we reach here, it means that no PMP entry has matched the request.
+    // We must immediately jump to <test_done> since the CPU is taking a PMP exception,
+    // but this routine is unable to find a matching PMP region for the faulting access -
+    // there is a bug somewhere.
+    // In case of MMWP mode this is expected behavior, we should try to continue.
+    if (riscv_instr_pkg::support_epmp) begin
+      instr = {instr,
+               $sformatf("19: csrr x%0d, 0x%0x", scratch_reg[0], MSECCFG),
+               $sformatf("andi x%0d, x%0d, 2", scratch_reg[0], scratch_reg[0]),
+               $sformatf("bnez x%0d, 27f", scratch_reg[0])
+              };
+    end else begin
+      instr = {instr,
+               $sformatf("19: nop")
+              };
+    end
+    instr = {instr,
              $sformatf("la x%0d, test_done", scratch_reg[0]),
              $sformatf("jalr x0, x%0d, 0", scratch_reg[0])
             };
@@ -839,16 +850,24 @@ class riscv_pmp_cfg extends uvm_object;
              // If masked_fault_addr != masked_pmpaddr[i] : mismatch, so continue looping
              $sformatf("bne x%0d, x%0d, 18b", scratch_reg[0], scratch_reg[4]),
              $sformatf("j 26f")
-           };
+            };
 
     // Sub-section that is common to the address modes deciding what to do what to do when hitting
     // a locked region
+    if (riscv_instr_pkg::support_epmp) begin
+      instr = {instr,
+               // If we get here there is an address match.
+               // First check whether we are in MML mode.
+               $sformatf("26: csrr x%0d, 0x%0x", scratch_reg[4], MSECCFG),
+               $sformatf("andi x%0d, x%0d, 1", scratch_reg[4], scratch_reg[4]),
+               $sformatf("bnez x%0d, 27f", scratch_reg[4])
+              };
+    end else begin
+      instr = {instr,
+               $sformatf("26: nop")
+              };
+    end
     instr = {instr,
-             // If we get here there is an address match.
-             // First check whether we are in MML mode.
-             $sformatf("26: csrr x%0d, 0x%0x", scratch_reg[4], MSECCFG),
-             $sformatf("andi x%0d, x%0d, 1", scratch_reg[4], scratch_reg[4]),
-             $sformatf("bnez x%0d, 27f", scratch_reg[4]),
              // Then check whether the lock bit is set.
              $sformatf("andi x%0d, x%0d, 128", scratch_reg[4], scratch_reg[3]),
              $sformatf("bnez x%0d, 27f", scratch_reg[4]),

@@ -33,7 +33,6 @@
           -timescale=1ns/10ps
           -licqueue
           -LDFLAGS '-Wl,--no-as-needed'
-          -CFLAGS '--std=c99 -fno-extended-identifiers'
           -Mdir=<tb_dir>/vcs_simv.csrc
           -o <tb_dir>/vcs_simv
           -debug_access+pp

@@ -1,0 +1,63 @@
+# https://github.com/chipsalliance/Cores-VeeR-EL2/blob/774510e43f5408ec2b818db8f865027bc9be97b8/.github/workflows/build-spike.yml
+
+name: Spike Build
+
+on:
+  workflow_call:
+
+jobs:
+  verilator:
+    name: Build Spike
+    runs-on: ubuntu-latest
+    env:
+      TOOL_NAME: spike
+      TOOL_VERSION: d70ea67d
+      DEBIAN_FRONTEND: "noninteractive"
+
+    steps:
+      - name: Setup Cache Metadata
+        id: cache_metadata
+        run: |
+          cache_date=$(date +"%Y_%m_%d")
+          cache_name=cache_${{ env.TOOL_NAME }}_${{ env.TOOL_VERSION }}
+          echo "Cache date: "$cache_date
+          echo "Cache name: "$cache_name
+          echo "cache_date=$cache_date" >> "$GITHUB_ENV"
+          echo "cache_name=$cache_name" >> "$GITHUB_ENV"
+
+      - name: Setup cache
+        uses: actions/cache@v3
+        id: cache
+        timeout-minutes: 60
+        with:
+          path: |
+            /opt/spike
+            /opt/spike/.cache
+          key: ${{ env.cache_name }}_${{ env.cache_date }}
+          restore-keys: ${{ env.cache_name }}_
+
+      - name: Install prerequisities
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt -qqy update && sudo apt -qqy --no-install-recommends install \
+            git build-essential cmake ccache device-tree-compiler
+
+      - name: Build Spike
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          export CCACHE_DIR=/opt/spike/.cache
+          ccache --show-config | grep cache_dir
+          git clone https://github.com/riscv-software-src/riscv-isa-sim spike
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          pushd spike
+            git checkout ${{ env.TOOL_VERSION }}
+            mkdir build
+            cd build
+            ../configure --prefix=/opt/spike
+            make -j`nproc`
+            make install
+          popd
+          rm -rf /opt/spike/include # Remove include and lib to save space
+          rm -rf /opt/spike/lib
+

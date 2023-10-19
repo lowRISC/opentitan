@@ -161,7 +161,7 @@ class riscv_page_table_entry(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
   void pack_entry() {
     switch (MODE) {
     case satp_mode_t.SV32:
-      bits = ppn1 ~ ppn0 ~ rsw ~ d ~ a ~ g ~ u ~ xwr ~ v;
+      bits = cast(ubvec!XLEN) (ppn1 ~ ppn0 ~ rsw ~ d ~ a ~ g ~ u ~ xwr ~ v);
       break;
     case satp_mode_t.SV39:
       bits = cast(ubvec!XLEN) (rsvd ~ ppn2 ~ ppn1 ~ ppn0 ~ rsw ~ d ~ a ~ g ~ u ~ xwr ~ v);

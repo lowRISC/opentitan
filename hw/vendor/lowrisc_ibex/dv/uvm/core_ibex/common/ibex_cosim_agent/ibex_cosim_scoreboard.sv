@@ -6,7 +6,6 @@
 `include "cosim_dpi.svh"
 
 class ibex_cosim_scoreboard extends uvm_scoreboard;
-  import ibex_pkg::*;
   chandle cosim_handle;
 
   core_ibex_cosim_cfg cfg;
@@ -151,8 +150,10 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
 
       // Set performance counters through a pseudo-backdoor write
       for (int i=0; i < 10; i++) begin
-        riscv_cosim_set_csr(cosim_handle, CSR_MHPMCOUNTER3 + i, rvfi_instr.mhpmcounters[i]);
-        riscv_cosim_set_csr(cosim_handle, CSR_MHPMCOUNTER3H + i, rvfi_instr.mhpmcountersh[i]);
+        riscv_cosim_set_csr(cosim_handle,
+                            ibex_pkg::CSR_MHPMCOUNTER3 + i, rvfi_instr.mhpmcounters[i]);
+        riscv_cosim_set_csr(cosim_handle,
+                            ibex_pkg::CSR_MHPMCOUNTER3H + i, rvfi_instr.mhpmcountersh[i]);
       end
 
       riscv_cosim_set_ic_scr_key_valid(cosim_handle, rvfi_instr.ic_scr_key_valid);

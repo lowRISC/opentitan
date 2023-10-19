@@ -119,6 +119,7 @@ ${PRJ_DIR}/vendor/google_riscv-dv/src/riscv_signature_pkg.sv
 +incdir+${PRJ_DIR}/dv/uvm/core_ibex/common/ibex_cosim_agent
 +incdir+${PRJ_DIR}/dv/cosim
 ${PRJ_DIR}/dv/uvm/bus_params_pkg/bus_params_pkg.sv
+${LOWRISC_IP_DIR}/dv/sv/common_ifs/common_ifs_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/common_ifs/clk_rst_if.sv
 ${LOWRISC_IP_DIR}/dv/sv/common_ifs/pins_if.sv
 ${LOWRISC_IP_DIR}/dv/sv/str_utils/str_utils_pkg.sv

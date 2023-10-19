@@ -50,21 +50,6 @@ module ibex_pmp #(
   //                                                            |
   //                                                            \--> pmp_req_err_o
 
-  // A wrapper function in which it is decided which form of permission check function gets called
-  function automatic logic perm_check_wrapper(logic                csr_pmp_mseccfg_mml,
-                                              ibex_pkg::pmp_cfg_t  csr_pmp_cfg,
-                                              ibex_pkg::pmp_req_e  pmp_req_type,
-                                              ibex_pkg::priv_lvl_e priv_mode,
-                                              logic                permission_check);
-    return csr_pmp_mseccfg_mml ? mml_perm_check(csr_pmp_cfg,
-                                                pmp_req_type,
-                                                priv_mode,
-                                                permission_check) :
-                                 orig_perm_check(csr_pmp_cfg.lock,
-                                                 priv_mode,
-                                                 permission_check);
-  endfunction
-
   // Compute permissions checks that apply when MSECCFG.MML is set. Added for Smepmp support.
   function automatic logic mml_perm_check(ibex_pkg::pmp_cfg_t  csr_pmp_cfg,
                                           ibex_pkg::pmp_req_e  pmp_req_type,
@@ -116,6 +101,21 @@ module ibex_pmp #(
           (~pmp_cfg_lock | permission_check) :
           // For other modes, the lock bit doesn't matter
           permission_check;
+  endfunction
+
+  // A wrapper function in which it is decided which form of permission check function gets called
+  function automatic logic perm_check_wrapper(logic                csr_pmp_mseccfg_mml,
+                                              ibex_pkg::pmp_cfg_t  csr_pmp_cfg,
+                                              ibex_pkg::pmp_req_e  pmp_req_type,
+                                              ibex_pkg::priv_lvl_e priv_mode,
+                                              logic                permission_check);
+    return csr_pmp_mseccfg_mml ? mml_perm_check(csr_pmp_cfg,
+                                                pmp_req_type,
+                                                priv_mode,
+                                                permission_check) :
+                                 orig_perm_check(csr_pmp_cfg.lock,
+                                                 priv_mode,
+                                                 permission_check);
   endfunction
 
   // Access fault determination / prioritization

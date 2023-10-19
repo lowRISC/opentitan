@@ -27,7 +27,7 @@ def run_one(verbose: bool,
             redirect_stdstreams: Optional[Union[str, pathlib.Path, IOBase]] = None,
             timeout_s: Optional[int] = None,
             reraise: bool = False,
-            env: Dict[str, str] = None) -> int:
+            env: Optional[Dict[str, str]] = None) -> int:
     """Run a command, returning its retcode.
 
     If verbose is true, print the command to stderr first (a bit like bash -x).

@@ -114,7 +114,7 @@ class riscv_csr_instr extends riscv_instr;
 
     foreach (initial_csrs[r]) begin
       if (!(initial_csrs[r] inside {remove_csr})) begin
-        include_write_reg.push_back(initial_csrs[r]);
+        include_write_reg.push_back(privileged_reg_t'(initial_csrs[r]));
       end
     end
 

@@ -14,6 +14,10 @@
   scratch_path:       "{scratch_base_path}/{branch}"
   tool_srcs_dir:      "{scratch_path}/{tool}"
 
+  // Common DVSIM data structures
+  build_pass_patterns: []
+  build_fail_patterns: []
+
   // The current design level
   design_level:  "ip"
 }

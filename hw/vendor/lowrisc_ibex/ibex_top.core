@@ -27,10 +27,6 @@ filesets:
     files:
       - lint/verilator_waiver.vlt: {file_type: vlt}
 
-  files_lint_verible:
-    files:
-      - lint/verible_waiver.vbw: {file_type: veribleLintWaiver}
-
   files_check_tool_requirements:
     depend:
      - lowrisc:tool:check_tool_requirements
@@ -155,7 +151,6 @@ targets:
   default: &default_target
     filesets:
       - tool_verilator ? (files_lint_verilator)
-      - tool_veriblelint ? (files_lint_verible)
       - files_rtl
       - files_check_tool_requirements
     toplevel: ibex_top

@@ -27,10 +27,12 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from riscv_trace_csv import *
 from lib import *
 
-RD_RE = re.compile(r"(core\s+\d+:\s+)?(?P<pri>\d) 0x(?P<addr>[a-f0-9]+?) " \
-                   "\((?P<bin>.*?)\) (?P<reg>[xf]\s*\d*?) 0x(?P<val>[a-f0-9]+)")
+RD_RE = re.compile(
+    r"(core\s+\d+:\s+)?(?P<pri>\d)\s+0x(?P<addr>[a-f0-9]+?)\s+" \
+    r"\((?P<bin>.*?)\)\s+(?P<reg>[xf]\s*\d*?)\s+0x(?P<val>[a-f0-9]+)" \
+    r"(\s+(?P<csr>\S+)\s+0x(?P<csr_val>[a-f0-9]+))?")
 CORE_RE = re.compile(
-    r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?) \(0x(?P<bin>.*?)\) (?P<instr>.*?)$")
+    r"core\s+\d+:\s+0x(?P<addr>[a-f0-9]+?)\s+\(0x(?P<bin>.*?)\)\s+(?P<instr>.*?)$")
 ADDR_RE = re.compile(
     r"(?P<rd>[a-z0-9]+?),(?P<imm>[\-0-9]+?)\((?P<rs1>[a-z0-9]+)\)")
 ILLE_RE = re.compile(r"trap_illegal_instruction")
@@ -173,9 +175,13 @@ def read_spike_trace(path, full_trace):
             # the --log-commits Spike option)?
             commit_match = RD_RE.match(line)
             if commit_match:
-                instr.gpr.append(gpr_to_abi(commit_match.group('reg')
-                                            .replace(' ', '')) +
-                                 ':' + commit_match.group('val'))
+                groups = commit_match.groupdict()
+                instr.gpr.append(gpr_to_abi(groups["reg"].replace(' ', '')) +
+                                 ":" + groups["val"])
+
+                if groups["csr"] and groups["csr_val"]:
+                    instr.csr.append(groups["csr"] + ":" + groups["csr_val"])
+
                 instr.mode = commit_match.group('pri')
 
         # At EOF, we might have an instruction in hand. Yield it if so.

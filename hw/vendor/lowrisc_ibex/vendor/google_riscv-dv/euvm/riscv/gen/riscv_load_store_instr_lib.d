@@ -670,11 +670,11 @@ class riscv_vector_load_store_instr_stream : riscv_mem_access_stream
     add_mixed_instr(num_mixed_instr);
     add_rs1_init_la_instr(rs1_reg, data_page_id, base);
     if (address_mode == address_mode_e.STRIDED) {
-      this.append_instr(get_init_gpr_instr(rs2_reg, toubvec!64(stride_byte_offset)));
+      this.append_instr(get_init_gpr_instr(rs2_reg, toubvec!XLEN(stride_byte_offset)));
     }
     else if (address_mode == address_mode_e.INDEXED) {
       // TODO: Support different index address for each element
-      add_init_vector_gpr_instr(vs2_reg, toubvec!64(index_addr));
+      add_init_vector_gpr_instr(vs2_reg, toubvec!XLEN(index_addr));
     }
     super.post_randomize();
   }

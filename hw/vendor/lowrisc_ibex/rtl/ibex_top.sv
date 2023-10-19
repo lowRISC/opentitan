@@ -1301,4 +1301,33 @@ module ibex_top import ibex_pkg::*; #(
     crash_dump_o.exception_pc === u_ibex_core.cs_registers_i.mepc_q)
   `ASSERT(CrashDumpExceptionAddrConn,
     crash_dump_o.exception_addr === u_ibex_core.cs_registers_i.mtval_q)
+
+  // Explicit INC_ASSERT due to instantiation of prim_secded_inv_39_32_dec below that is only used
+  // by assertions
+  `ifdef INC_ASSERT
+  if (MemECC) begin : g_mem_ecc_asserts
+    logic [1:0] data_ecc_err, instr_ecc_err;
+
+    // Check alerts from memory integrity failures
+
+    prim_secded_inv_39_32_dec u_data_intg_dec (
+      .data_i     (data_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (data_ecc_err)
+    );
+    `ASSERT(MajorAlertOnDMemIntegrityErr,
+      data_rvalid_i && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
+
+    prim_secded_inv_39_32_dec u_instr_intg_dec (
+      .data_i     (instr_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (instr_ecc_err)
+    );
+    // Check alerts from memory integrity failures
+    `ASSERT(MajorAlertOnIMemIntegrityErr,
+      instr_rvalid_i && (|instr_ecc_err) |-> ##[0:5] alert_major_bus_o)
+  end
+  `endif
 endmodule
