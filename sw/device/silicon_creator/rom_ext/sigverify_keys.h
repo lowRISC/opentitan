@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
@@ -16,9 +15,16 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Key types.
+ * ROM_EXT Key types.
  *
- * The life cycle states in which a key can be used depend on its type.
+ * ROM_EXT key types are unlike ROM key types:
+ * - ROM key types are bound to certain lifecycle states.  ROM_EXT keys types
+ *   are not.
+ * - ROM_EXT key types affect keymgr diversification.  This prevents the
+ *   different keys types from being able to derive the same secrets.
+ *
+ * To distinguish these types from ROM key types, we refer to them as firmware
+ * keys.
  *
  * Encoding generated with
  * $ ./util/design/sparse-fsm-encode.py -d 6 -m 3 -n 32 \
@@ -31,31 +37,23 @@ extern "C" {
  */
 typedef enum sigverify_key_type {
   /**
-   * A key used for manufacturing, testing, and RMA.
-   *
-   * Keys of this type can be used only in TEST_UNLOCKED* and RMA life cycle
-   * states.
+   * A testing key.
    */
-  kSigverifyKeyTypeTest = 0x3ff0c819,
+  kSigverifyKeyTypeFirmwareTest = 0x3ff0c819,
   /**
    * A production key.
-   *
-   * Keys of this type can be used in all operational life cycle states, i.e.
-   * states in which CPU execution is enabled.
    */
-  kSigverifyKeyTypeProd = 0x43a839ad,
+  kSigverifyKeyTypeFirmwareProd = 0x43a839ad,
   /**
    * A development key.
-   *
-   * Keys of this type can be used only in the DEV life cycle state.
    */
-  kSigverifyKeyTypeDev = 0x7a01a471,
+  kSigverifyKeyTypeFirmwareDev = 0x7a01a471,
 } sigverify_key_type_t;
 
 /**
  * An RSA public key stored in ROM.
  */
-typedef struct sigverify_rom_key {
+typedef struct sigverify_rom_ext_key {
   /**
    * An RSA public key.
    */
@@ -64,7 +62,7 @@ typedef struct sigverify_rom_key {
    * Type of the key.
    */
   sigverify_key_type_t key_type;
-} sigverify_rom_key_t;
+} sigverify_rom_ext_key_t;
 
 /**
  * Number of RSA public keys.
@@ -82,7 +80,7 @@ extern const size_t kSigverifyRsaKeysStep;
 /**
  * Public keys for signature verification.
  */
-extern const sigverify_rom_key_t kSigverifyRsaKeys[];
+extern const sigverify_rom_ext_key_t kSigverifyRsaKeys[];
 
 /**
  * Returns the key with the given ID.
@@ -97,7 +95,7 @@ extern const sigverify_rom_key_t kSigverifyRsaKeys[];
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
+rom_error_t sigverify_rsa_key_get(uint32_t key_id,
                                   const sigverify_rsa_key_t **key);
 
 #ifdef __cplusplus

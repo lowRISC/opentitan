@@ -90,7 +90,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
   const sigverify_rsa_key_t *key;
   RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &key));
+      sigverify_rsa_key_id_get(&manifest->rsa_modulus), &key));
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
          sizeof(boot_measurements.bl0.data));
 
