@@ -1304,6 +1304,22 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "mbx_smoketest",
+    srcs = ["mbx_smoketest.c"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:mbx",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+    ],
+)
+
+opentitan_functest(
     name = "otp_ctrl_nvm_cnt_test",
     srcs = ["otp_ctrl_nvm_cnt_test.c"],
     deps = [

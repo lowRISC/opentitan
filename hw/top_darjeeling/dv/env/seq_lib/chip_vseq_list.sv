@@ -34,6 +34,7 @@
 `include "chip_sw_lc_volatile_raw_unlock_vseq.sv"
 `include "chip_sw_lc_walkthrough_vseq.sv"
 `include "chip_sw_lc_walkthrough_testunlocks_vseq.sv"
+`include "chip_sw_mbx_smoke_vseq.sv"
 `include "chip_sw_otp_ctrl_vendor_test_csr_access_vseq.sv"
 `include "chip_sw_otp_ctrl_escalation_vseq.sv"
 `include "chip_sw_spi_host_tx_rx_vseq.sv"
