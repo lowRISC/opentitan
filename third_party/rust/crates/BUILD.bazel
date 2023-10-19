@@ -200,12 +200,6 @@ alias(
 )
 
 alias(
-    name = "nix",
-    actual = "@crate_index__nix-0.26.4//:nix",
-    tags = ["manual"],
-)
-
-alias(
     name = "num-bigint-dig",
     actual = "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig",
     tags = ["manual"],
