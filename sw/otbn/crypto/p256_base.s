@@ -16,6 +16,8 @@
 .globl p256_generate_random_key
 .globl p256_key_from_seed
 .globl trigger_fault_if_fg0_z
+.globl mul_modp
+.globl setup_modp
 .globl mod_mul_256x256
 .globl mod_mul_320x128
 .globl scalar_mult_int
@@ -315,7 +317,214 @@ mod_mul_320x128:
 
   ret
 
+/**
+ * 256-bit modular multiplication for P-256 coordinate field.
+ *
+ * Returns c = a * b mod p
+ *
+ * Uses a specialized algorithm to quicly multiply modulo the P-256 coordinate
+ * modulus p = 2^256 - 2^224 + 2^192 + 2^96 - 1.
+ *
+ * This code has been proven correct in Coq here against a simplified model of
+ * OTBN (simplified in the sense of only including the instructions and
+ * functionality that this code uses):
+ * https://gist.github.com/jadephilipoom/5c1910fd355f730238c99ce620aed98a
+ *
+ * For more details about the code and how to read the proofs above, see the PR
+ * description here: https://github.com/lowRISC/opentitan/pull/20701
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w24: a, first 256 bit operand (a < p)
+ * @param[in]  w25: b, second 256 bit operand (b < p)
+ * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[in]  w29: r448, constant, 2^448 mod p
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[out]  w19: c, result
+ *
+ * clobbered registers: w19, w20, w21, w22, w23, w24, w25
+ * clobbered flag groups: FG0
+ */
+mul_modp:
+  /* First, compute the high partial products (coefficient 2^192 or higher).
+       w19,w20.U <= 2^192*(a0b3 + a1b2 + a2b1 + a3b0)
+                    + 2^256*(a1b3 + a2b2 + a3b1)
+                    + 2^320*(a2b3 + a3b2)
+                    + 2^384*a3b3 */
+  bn.mulqacc.z          w24.0, w25.3, 64  /* a0b3 */
+  bn.mulqacc            w24.1, w25.2, 64  /* a1b2 */
+  bn.mulqacc            w24.2, w25.1, 64  /* a2b1 */
+  bn.mulqacc.so  w20.U, w24.3, w25.0, 64  /* a3b0 */
+  bn.mulqacc            w24.1, w25.3, 0   /* a1b3 */
+  bn.mulqacc            w24.2, w25.2, 0   /* a2b2 */
+  bn.mulqacc            w24.3, w25.1, 0   /* a3b1 */
+  bn.mulqacc            w24.2, w25.3, 64  /* a2b3 */
+  bn.mulqacc            w24.3, w25.2, 64  /* a3b2 */
+  bn.mulqacc.wo    w19, w24.3, w25.3, 128 /* a3b3 */
 
+  /* Now, we have:
+     a * b = a0b0 + 2^64*(a0b1 + a1b0) + 2^128*(a0b2 + a1b1 + a2b0 + w20.U)
+             + 2^256*w19
+
+     If we separate w19 into limbs t0, t1, t2, and t3, that gives us
+     a * b = a0b0 + 2^64*(a0b1 + a1b0) + 2^128*(a0b2 + a1b1 + a2b0 + w20.U)
+              + 2^256*t0 + 2^320*t1 + 2^384*t2 + 2^448*t3
+
+     This implies the modular equivalence:
+     (a * b) mod p
+       \equiv (a0b0 + 2^64*(a0b1 + a1b0) + 2^128*(a0b2 + a1b1 + a2b0 + w20.U)
+              + (2^256 mod p)*t0 + (2^448 mod p)*t3 - ((-2^320) mod p)*t1
+              - ((-2^384) mod p)*t2
+
+     The only reason above for using ((-2^320) mod p) and ((-2^384) mod p)
+     instead of (2^320 mod p) and (2^384 mod p) is that, for these specific
+     values, the positive terms are ~256 bits and the negative ones are ~224
+     bits, so the negative ones are quicker to compute.
+
+     For simplicity, let's call the additive terms u and the subtractive ones v:
+     u = a0b0 + 2^64*(a0b1 + a1b0) + 2^128*(a0b2 + a1b1 + a2b0 + w20.U)
+         + (2^256 mod p)*t0 + (2^448 mod p)*t3
+     v = ((-2^320) mod p)*t1 + ((-2^384) mod p)*t2
+     (a * b) mod p \equiv (u - v) mod p
+  */
+
+  /* Compute the additive terms (u). The term in w21 is offset 128 bits to save
+     a writeback instruction.
+       w20 + w21 << 384 = u  */
+  bn.mulqacc.z          w24.0, w25.0, 0   /* a0b0 */
+  bn.mulqacc            w28.0, w19.0, 0   /* r256[0] * t0 */
+  bn.mulqacc            w29.0, w19.3, 0   /* r448[0] * t3 */
+  bn.mulqacc            w24.0, w25.1, 64  /* a0b1 */
+  bn.mulqacc            w24.1, w25.0, 64  /* a1b0 */
+  bn.mulqacc            w28.1, w19.0, 64  /* r256[1] * t0 */
+  bn.mulqacc.so  w20.L, w29.1, w19.3, 64  /* r448[1] * t3 */
+  bn.mulqacc            w24.0, w25.2, 0   /* a0b2 */
+  bn.mulqacc            w24.1, w25.1, 0   /* a1b1 */
+  bn.mulqacc            w24.2, w25.0, 0   /* a2b0 */
+  bn.mulqacc            w28.2, w19.0, 0   /* r256[2] * t0 */
+  bn.mulqacc            w29.2, w19.3, 0   /* r448[2] * t3 */
+  bn.mulqacc            w28.3, w19.0, 64  /* r256[3] * t0 */
+  bn.mulqacc.wo    w21, w29.3, w19.3, 64  /* r448[3] * t3 */
+
+  /* To fully reduce u mod p, we'll separate the low 256 bits (u0) from the
+     high 33 bits (u1) and compute:
+      u0 + (2^256 mod p)*u1 = u0 + (2^224 - 2^192 - 2^96 + 1) * u1 */
+
+  /* Rotate 128 bits to undo the offset and put u1 in the least significant
+     position.
+       w22 <= w21[128:0] << 128 | w21[255:127] */
+  bn.rshi   w22, w21, w21 >> 128
+
+  /* w21 <= (u0 + u1) mod p */
+  bn.addm   w20, w20, w31
+  bn.addm   w21, w22, w31
+  bn.addm   w21, w20, w21
+
+  /* w24 <= u1 << 223 */
+  bn.rshi   w24, w22, w31 >> 33
+
+  /* w25 <= u1 * (2^223 - 2^191 - 2^95) */
+  bn.sub    w25, w24, w24 >> 32
+  bn.sub    w25, w25, w24 >> 128
+
+  /* Note: the value in w25 is small enough for addm because u1 < 2^33, and
+     2^33*(2^223 - 2^191 - 2^95) < p.
+     w25 <= (u0 + (2^224 - 2^192 - 2^96 + 1) * u1) mod p = u mod p */
+  bn.addm   w25, w25, w25
+  bn.addm   w25, w25, w21
+
+  /* Now, compute the subtractive terms (v). We don't store constants for this
+     one; instead we transform the expression into something that is
+     computable with (the minimum number of) shifts and adds.
+       v = ((-2^320) mod p)*t1 + ((-2^384) mod p)*t2
+         = t1 * (2^224 + 2^160 + 2^128 - 2^64 - 2^32)
+           + t2 * (2^224 - 2*2^128 - 2*2^96 + 2^32 + 1)
+         = 2^224 * (t1 + t2) + (2^32 + 1) * (t1*2^128 + t2)
+           - 2^32 * (2^32 + 1) * (t1 + t2*2*2^64) */
+
+  /* First, isolate t1 and t2 using `mulqacc` and the lowest limb of r256,
+     which happens to be 1. This method is faster than using shifts.
+       w20 <= t1
+       w21 <= t2 */
+  bn.mulqacc.wo.z  w20, w28.0, w19.1, 0
+  bn.mulqacc.wo.z  w21, w28.0, w19.2, 0
+
+  /* w22 <= (2^32 + 1) * (t1*2^128 + t2) */
+  bn.add    w22, w21, w20 << 128
+  bn.add    w22, w22, w22 << 32
+
+  /* w23 <= t1 + t2 */
+  bn.add    w23, w20, w21
+
+  /* w24 <= (2^32 + 1) * (t1 + 2*2^64*t2) */
+  bn.add    w24, w20, w21 << 64
+  bn.add    w24, w24, w21 << 64
+  bn.add    w24, w24, w24 << 32
+
+  /* w21, w20 <= v */
+  bn.add    w20, w22, w23 << 224
+  bn.addc   w21, w31, w23 >> 32
+  bn.sub    w20, w20, w24 << 32
+  bn.subb   w21, w21, w31
+
+  /* The maximum value of v is 289 bits, so we can now reduce v the same way we
+     reduced u earlier. */
+
+  /* w22 <= (v0 + v1) mod p */
+  bn.addm   w22, w20, w21
+
+  /* w24 <= v1 << 223 */
+  bn.rshi   w24, w21, w31 >> 33
+
+  /* w23 <= v1 * (2^223 - 2^191 - 2^95) */
+  bn.sub    w23, w24, w24 >> 32
+  bn.sub    w23, w23, w24 >> 128
+
+  /* w23 <= (v0 + (2^224 - 2^192 - 2^96 + 1) * v1) mod p = v mod p */
+  bn.addm   w23, w23, w23
+  bn.addm   w23, w23, w22
+
+  /* w19 = (u - v) mod p = (a * b) mod p */
+  bn.subm   w19, w25, w23
+
+  ret
+
+
+/**
+ * Set up for coordinate field operations modulo the prime p.
+ *
+ * Loads the constants required by `mul_modp` and other coordinate-arithmetic
+ * routines.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[out] MOD: p, modulus of P-256 underlying finite field
+ * @param[out] w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[out] w29: r448, constant, 2^448 mod p
+ *
+ * clobbered registers: w28, w29
+ * clobbered flag groups: FG0
+ */
+setup_modp:
+  /* Load the modulus p from DMEM and store it in MOD.
+     MOD <= w29 <= p = dmem[p256_p] */
+  li        x2, 29
+  la        x3, p256_p
+  bn.lid    x2, 0(x3)
+  bn.wsrw   MOD, w29
+
+  /* Compute the constant r256 for reduction modulo p.
+       w28 <= 2^256 - p = r256 */
+  bn.sub   w28, w31, w29
+
+  /* Load the constant r448 for reduction modulo p.
+     w29 <= dmem[p256_r448] = r448 */
+  li        x2, 29
+  la        x3, p256_r448
+  bn.lid    x2, 0(x3)
+  ret
 
 /**
  * P-256 point addition in projective coordinates
@@ -334,7 +543,7 @@ mod_mul_320x128:
  * terminology of Algorithm 4 of [2].
  * The routine is limited to P-256 curve points due to:
  *   - fixed a=-3 domain parameter
- *   - usage of a P-256 optimized Barrett multiplication kernel
+ *   - usage of a P-256 optimized modular multiplication kernel
  * This routine runs in constant time.
  *
  * [1] https://doi.org/10.1006/jnth.1995.1088
@@ -347,9 +556,8 @@ mod_mul_320x128:
  * @param[in]  w12: y_q, x-coordinate of input point Q
  * @param[in]  w13: z_q, x-coordinate of input point Q
  * @param[in]  w27: b, curve domain parameter
- * @param[in]  w29: p, modulus, 2^256 > p > 2^255.
- * @param[in]  w28: u, pre-computed Barrett constant (without u[256]/MSb
- *                           of u which is always 1 for the allowed range.
+ * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  w31: all-zero.
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
  * @param[out]  w11: x_r, x-coordinate of resulting point R
@@ -369,19 +577,19 @@ proj_add:
   /* 1: w14 = t0 <= X1*X2 = w11*w8 */
   bn.mov    w24, w11
   bn.mov    w25, w8
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w14, w19
 
   /* 2: w15 = t1 <= Y1*Y2 = w12*w9 */
   bn.mov    w24, w12
   bn.mov    w25, w9
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w15, w19
 
   /* 3: w16 = t2 <= Z1*Z2 = w13*w10*/
   bn.mov    w24, w13
   bn.mov    w25, w10
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w16, w19
 
   /* 5: w17 = t4 <= X2+Y2 = w11 + w12 */
@@ -393,7 +601,7 @@ proj_add:
   /* 6: w19 = t3 <= t3*t4 = w18*w17 */
   bn.mov    w24, w17
   bn.mov    w25, w18
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 7: w18 = t4 <= t0+t1 = w14+w15 */
   bn.addm   w18, w14, w15
@@ -410,7 +618,7 @@ proj_add:
   /* 11: w18 = t4 <= t4 * X3 = w19 * w18 */
   bn.mov    w24, w18
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w18, w19
 
   /* 12: w19 = X3 <= t1 + t2 = w15 + w16 */
@@ -428,7 +636,7 @@ proj_add:
   /* 16: w11 = X3 <= X3 * Y3 = w12 * w19 */
   bn.mov    w24, w19
   bn.mov    w25, w12
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w11, w19
 
   /* 17: w12 = Y3 <= t0 + t2 = w14 + w16 */
@@ -440,7 +648,7 @@ proj_add:
   /* 19: w19 = Z3 <= b * t2 =  w27 * w16 */
   bn.mov    w24, w27
   bn.mov    w25, w16
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 20: w11 = X3 <= Y3 -Z3 = w12 - w19 */
   bn.subm   w11, w12, w19
@@ -460,7 +668,7 @@ proj_add:
   /* 25: w19 = Y3 <= w27 * w12 = b * Y3 */
   bn.mov    w24, w27
   bn.mov    w25, w12
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 26: w15 = t1 <= t2 + t2 = w16 + w16 */
   bn.addm   w15, w16, w16
@@ -492,19 +700,19 @@ proj_add:
   /* 35: w15 = t1 <= t4 * Y3 = w18 * w12 */
   bn.mov    w24, w18
   bn.mov    w25, w12
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w15, w19
 
   /* 36: w16 = t2 <= t0 * Y3 = w14 * w12 */
   bn.mov    w24, w14
   bn.mov    w25, w12
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w16, w19
 
   /* 37: w12 = Y3 <= X3 * Z3 = w11 * w13 */
   bn.mov    w24, w11
   bn.mov    w25, w13
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 38: w12 = Y3 <= Y3 + t2 = w19 + w16 */
   bn.addm   w12, w19, w16
@@ -512,7 +720,7 @@ proj_add:
   /* 39: w19 = X3 <= t3 * X3 = w17 * w11 */
   bn.mov    w24, w17
   bn.mov    w25, w11
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 40: w11 = X3 <= X3 - t1 = w19 - w15 */
   bn.subm   w11, w19, w15
@@ -520,13 +728,13 @@ proj_add:
   /* 41: w13 = Z3 <= t4 * Z3 = w18 * w13 */
   bn.mov    w24, w18
   bn.mov    w25, w13
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w13, w19
 
   /* 42: w19 = t1 <= t3 * t0 = w17 * w14 */
   bn.mov    w24, w17
   bn.mov    w25, w14
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 43: w13 = Z3 <= Z3 + t1 = w13 + w19 */
   bn.addm   w13, w13, w19
@@ -566,9 +774,8 @@ proj_add:
  * @param[in]  w8: x, x-coordinate of curve point (projective)
  * @param[in]  w9: y, y-coordinate of curve point (projective)
  * @param[in]  w10: z, z-coordinate of curve point (projective)
- * @param[in]  w29: p, modulus, 2^256 > p > 2^255.
- * @param[in]  w28: u, pre-computed Barrett constant (without u[256]/MSb
- *                           of u which is always 1 for the allowed range.
+ * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  MOD: p, modulus of the finite field of P-256
  * @param[out]  w11: x_a, x-coordinate of curve point (affine)
  * @param[out]  w12: y_a, y-coordinate of curve point (affine)
@@ -585,81 +792,81 @@ proj_to_affine:
   /* 2: exp = 0x2 = 2*0x1 */
   bn.mov    w24, w10
   bn.mov    w25, w10
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 3: exp = 0x3 = 0x2+0x1 */
   bn.mov    w24, w19
   bn.mov    w25, w10
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w12, w19
 
   /* 4: exp = 0x6 = 2*0x3 */
   bn.mov    w24, w19
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 5: exp = 0xc = 2*0x6 */
   bn.mov    w24, w19
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 6: exp = 0xf = 0xc+0x3 */
   bn.mov    w24, w19
   bn.mov    w25, w12
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w13, w19
 
   /* 7: exp = 0xf0 = 16*0xf */
   loopi     4, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 8: exp = 0xff = 0xf0+0xf */
   bn.mov    w24, w19
   bn.mov    w25, w13
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w14, w19
 
   /* 9: exp = 0xff00 = 256*0xff */
   loopi     8, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 10: exp = 0xffff = 0xff00+0xff */
   bn.mov    w24, w19
   bn.mov    w25, w14
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w15, w19
 
   /* 11: exp = 0xffff0000 = 2^16*0xffff */
   loopi     16, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 12: exp = 0xffffffff = 0xffff0000+0xffff */
   bn.mov    w24, w19
   bn.mov    w25, w15
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w16, w19
 
   /* 13: exp = 0xffffffff00000000 = 2^32*0xffffffff */
   loopi     32, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
   bn.mov    w17, w19
 
   /* 14: exp = 0xffffffff00000001 = 0xffffffff00000000+0x1 */
   bn.mov    w24, w10
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 15: exp =
            0xffffffff00000001000000000000000000000000000000000000000000000000
@@ -667,74 +874,74 @@ proj_to_affine:
   loopi     192, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
   bn.mov    w18, w19
 
   /* 16: exp = 0xffffffffffffffff = 0xffffffff00000000+0xffffffff */
   bn.mov    w24, w17
   bn.mov    w25, w16
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 17: exp = 0xffffffffffffffff0000 = 2^16*0xffffffffffffffff */
   loopi     16, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 18: exp = 0xffffffffffffffffffff = 0xffffffffffffffff0000+0xffff */
   bn.mov    w24, w15
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 19: exp = 0xffffffffffffffffffff00 = 256*0xffffffffffffffffffff */
   loopi     8, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 20: exp = 0xffffffffffffffffffffff = 0xffffffffffffffffffff00+0xff */
   bn.mov    w24, w14
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 21: exp = 0xffffffffffffffffffffff0 = 16*0xffffffffffffffffffffff */
   loopi     4, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 22: exp = 0xfffffffffffffffffffffff = 0xffffffffffffffffffffff0+0xf */
   bn.mov    w24, w13
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 23: exp = 0x3ffffffffffffffffffffffc = 4*0xfffffffffffffffffffffff */
   loopi     2, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 24: exp = 0x3fffffffffffffffffffffff = 0x3ffffffffffffffffffffffc+0x3 */
   bn.mov    w24, w12
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 25: exp = 0xfffffffffffffffffffffffc = 4*0x3fffffffffffffffffffffff */
   loopi     2, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     nop
 
   /* 26: exp = 0xfffffffffffffffffffffffd = 0xfffffffffffffffffffffffc+0x1 */
   bn.mov    w24, w10
   bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* 27: exp = p-2
          = 0xffffffff00000001000000000000000000000000fffffffffffffffffffffffd
@@ -743,21 +950,21 @@ proj_to_affine:
      w14 = z^exp = z^(p-2) = z^-1   mod p */
   bn.mov    w24, w19
   bn.mov    w25, w18
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w14, w19
 
   /* convert x-coordinate to affine
      w11 = x_a = x/z = x * z^(-1) = w8 * w14 */
   bn.mov    w24, w8
   bn.mov    w25, w14
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w11, w19
 
   /* convert y-coordinate to affine
      w12 = y_a = y/z = y * z^(-1) = w9 * w14 */
   bn.mov    w24, w9
   bn.mov    w25, w14
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w12, w19
 
   ret
@@ -847,8 +1054,8 @@ mod_inv:
  *                          x-coordinate of input point
  * @param[in]  x22: dptr_y, pointer to dmem location containing affine
  *                          y-coordinate of input point
- * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
- * @param[in]  w29: p, modulus of P-256 underlying finite field
+ * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
  * @param[out] w14: x, projective x-coordinate
@@ -877,7 +1084,7 @@ fetch_proj_randomize:
   /* scale x-coordinate
      w14 = x <= w24*w16 = x_a*z  mod p */
   bn.mov    w25, w16
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w14, w19
 
   /* fetch y-coordinate from dmem
@@ -887,7 +1094,7 @@ fetch_proj_randomize:
   /* scale y-coordinate
      w15 = y <= w24*w16 = y_a*z  mod p */
   bn.mov    w25, w16
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
   bn.mov    w15, w19
 
   ret
@@ -908,8 +1115,8 @@ fetch_proj_randomize:
  * @param[in]  w9: y_p, y-coordinate of input point
  * @param[in]  w10: z_p, z-coordinate of input point
  * @param[in]  w27: b, curve domain parameter
- * @param[in]  w29: p, p, modulus of P-256 underlying finite field
- * @param[in]  w28: u, u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
+ * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  w31: all-zero.
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
  * @param[out]  w11: x_r, x-coordinate of resulting point
@@ -985,21 +1192,11 @@ proj_double:
  * clobbered flag groups: FG0
  */
 scalar_mult_int:
-
-  /* load field modulus p from dmem
-     w29 <= p = dmem[p256_p] */
-  li        x2, 29
-  la        x3, p256_p
-  bn.lid    x2, 0(x3)
-
-  /* store modulus to MOD WSR */
-  bn.wsrw   MOD, w29
-
-  /* load lower 256 bit of Barrett constant u for modulus p from dmem
-     w28 <= u = dmem[p256_u_p] */
-  li        x2, 28
-  la        x3, p256_u_p
-  bn.lid    x2, 0(x3)
+  /* Set up for coordinate arithmetic.
+       MOD <= p
+       w28 <= r256
+       w29 <= r448 */
+  jal       x1, setup_modp
 
   /* load domain parameter b from dmem
      w27 <= b = dmem[p256_b] */
@@ -1111,19 +1308,19 @@ scalar_mult_int:
     /* w4 = w4 * w7 */
     bn.mov    w24, w4
     bn.mov    w25, w7
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     bn.mov    w4, w19
 
     /* w5 = w5 * w7 */
     bn.mov    w24, w5
     bn.mov    w25, w7
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     bn.mov    w5, w19
 
     /* w6 = w6 * w7 */
     bn.mov    w24, w6
     bn.mov    w25, w7
-    jal       x1, mod_mul_256x256
+    jal       x1, mul_modp
     bn.mov    w6, w19
 
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
@@ -1681,17 +1878,17 @@ p256_p:
   .word 0x00000001
   .word 0xffffffff
 
-/* Barrett constant u for modulus p */
-.globl p256_u_p
+/* Constant ((2^448) mod p) for reduction modulo p. */
+.globl p256_r448
 .balign 32
-p256_u_p:
-  .word 0x00000003
+p256_r448:
+  .word 0xffffffff
+  .word 0xfffffffe
+  .word 0xfffffffe
+  .word 0xffffffff
   .word 0x00000000
-  .word 0xffffffff
-  .word 0xfffffffe
-  .word 0xfffffffe
-  .word 0xfffffffe
-  .word 0xffffffff
+  .word 0x00000002
+  .word 0x00000003
   .word 0x00000000
 
 /* P-256 domain parameter n (order of base point) */
