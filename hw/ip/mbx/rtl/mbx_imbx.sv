@@ -169,7 +169,8 @@ module mbx_imbx #(
   //////////////////////////////////////////////////////////////////////////////
 
   // Don't write the mailbox if it is full
-  // `ASSERT(NeverWriteMbxIfFull_A, imbx_is_full & hostif_sram_write_req_o) TODO(#476)
+  `ASSERT_NEVER(NeverWriteMbxIfFull_A, hostif_sram_write_req_o &
+                (sram_write_ptr_q > hostif_limit_i))
 
 `ifdef INC_ASSERT
   logic[CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
@@ -182,19 +183,24 @@ module mbx_imbx #(
     .q_o   ( sram_write_ptr_assert_q )
   );
   // A granted write by the host adapter must advance the write pointer
-  `ASSERT_IF(GntMustAdvanceWritePtr_A, sram_write_ptr_assert_q == sram_write_ptr_q,
+  `ASSERT_IF(GntMustAdvanceWritePtr_A, advance_write_ptr &
+             (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC),
              hostif_sram_write_gnt_i)
 `endif
 
-  // The write pointer should not be advanced if there  is not yet acked request
-  `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, ~imbx_pending_o, advance_write_ptr & imbx_pending_o)
-  // Clear busy/abort does not clear the IRQ
-  // `ASSERT_IF(ClearBusyAbortDoesNotClearIrq_A, sysif_status_busy_i == imbx_irq_host_o,
-  //            sysif_status_busy_i & imbx_irq_host_o) TODO(#476)
-  // Busy and host IRQ are not set together
-  // `ASSERT_IF(BusyIrqNotSetTogether_A, sysif_status_busy_i & imbx_irq_host_o,
-  //            sysif_control_go_set_i | sysif_control_abort_set_i) TODO(#476)
-  // When writing to the mailbox, DOE status busy must be low
-  `ASSERT_NEVER(WriteToMbxBusyMustBeLow_A, hostif_sram_write_req_o & sysif_status_busy_i)
+  // Ready IRQ to core should not be asserted whilst there is still pending write traffic
+  // TODO: this should wait until the write receives a response and not just a grent, and
+  //       presently it should be expected to fire because assertion of ibmx_irq_ready_o is not
+  //       even deferred until the final word write has been granted. (#476)
+  //`ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
+  //              hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
+
+  // The write pointer should not be advanced if the request has not yet been granted.
+  `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
+             advance_write_ptr & imbx_pending_o)
+
+  // When writing to the mailbox, DOE status busy must be low; it shall be set after the request
+  // writing is complete, and no further requests shall be received until it has been cleared.
+  `ASSERT_NEVER(WriteToMbxBusyMustBeLow_A, sysif_data_write_valid_i & sysif_status_busy_i)
 
 endmodule
