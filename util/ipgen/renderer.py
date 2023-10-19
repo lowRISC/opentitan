@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 import reggen.gen_rtl
+import reggen.gen_dt_api
 from mako import exceptions as mako_exceptions  # type: ignore
 from mako.lookup import TemplateLookup as MakoTemplateLookup  # type: ignore
 from reggen.countermeasure import CounterMeasure

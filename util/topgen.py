@@ -24,7 +24,7 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
 from mako.template import Template
-from reggen import access, gen_rtl, gen_sec_cm_testplan, window
+from reggen import access, gen_dt_api, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
@@ -1323,6 +1323,10 @@ def main():
             cformat_path = cformat_dir / ".clang-format"
             cformat_path.write_text(cformat_tplpath.read_text())
 
+            # Devicetable directory
+            dt_dir = cformat_dir / "devicetables"
+            dt_dir.mkdir(parents=True, exist_ok=True)
+
             # Save the header macro prefix into `c_helper`
             rel_header_dir = cformat_dir.relative_to(root_paths[idx])
             c_helper.header_macro_prefix = (
@@ -1333,6 +1337,44 @@ def main():
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
                             cheader_path,
                             helper=c_helper)
+
+            # Devicetable generation
+            module_types = {m["type"] for m in topcfg["module"]}
+            top_reggen_module_types = {m["type"] for m in topcfg["module"] if lib.is_top_reggen(m)}
+            ipgen_module_types = {m["type"] for m in topcfg["module"] if lib.is_ipgen(m)}
+            templated_module_types = {m["type"] for m in topcfg["module"] if lib.is_templated(m)}
+            dt_headers = []
+            for m in module_types:
+                # "device.c.tpl" -> "sw/autogen/dt_{module_name}.c"
+                if m in top_reggen_module_types:
+                    # No implemention for these yet. Skip these modules.
+                    continue
+                elif m in templated_module_types:
+                    dt_header_path = f'hw/top_{topname}/sw/autogen/devicetables/dt_{m}.h'
+                    dt_api_out_path = f'sw/autogen/devicetables/dt_{m}.h'
+                    include_guard = (
+                        f'opentitan_hw_top_{topcfg["name"]}_sw_autogen_devicetables_dt_{m}_h_'
+                    ).upper()
+                    block = name_to_block[m]
+                    with open(path / dt_api_out_path, 'w', encoding='UTF-8') as dt_api_file:
+                        gen_dt_api.gen_dt_api(block, dt_api_file, include_guard)
+                elif m in ipgen_module_types:
+                    dt_header_path = f'hw/top_{topname}/sw/autogen/devicetables/dt_{m}.h'
+                    dt_api_out_path = f'sw/autogen/devicetables/dt_{m}.h'
+                    include_guard = (
+                        f'opentitan_hw_top_{topcfg["name"]}_sw_autogen_devicetables_dt_{m}_h_'
+                    ).upper()
+                    block = name_to_block[m]
+                    with open(path / dt_api_out_path, 'w', encoding='UTF-8') as dt_api_file:
+                        gen_dt_api.gen_dt_api(block, dt_api_file, include_guard)
+                else:
+                    dt_header_path = f'sw/device/lib/devicetables/dt_{m}.h'
+                dt_headers.append(dt_header_path)
+            dt_device_path = cformat_dir / "devicetables.c"
+            render_template(TOPGEN_TEMPLATE_PATH / "devicetables.c.tpl",
+                            dt_device_path,
+                            helper = c_helper,
+                            dt_headers = dt_headers)
 
             # Save the relative header path into `c_helper`
             rel_header_path = cheader_path.relative_to(root_paths[idx])

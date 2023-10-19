@@ -15,6 +15,7 @@ py_library(
         "renderer.py",
     ],
     deps = [
+        "//util/reggen:gen_dt_api",
         "//util/reggen:gen_rtl",
         "//util/reggen:lib",
         "//util/reggen:params",
