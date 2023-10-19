@@ -101,9 +101,9 @@ module mbx_ombx #(
   assign writer_close_mbx = mbx_empty & ombx_sram_read_resp_valid_i;
 
   // Terminate mbx_read state (Ready = 1 -> 0) if ombx is already drained (sram_read is not issued)
-  assign  sys_read_all_o = mbx_read                       &
-                           sysif_read_data_write_valid_i  &
-                           (sram_read_ptr_q == sram_read_ptr_limit_q);
+  assign sys_read_all_o = mbx_read                       &
+                          sysif_read_data_write_valid_i  &
+                          (sram_read_ptr_q == sram_read_ptr_limit_q);
 
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
@@ -115,7 +115,7 @@ module mbx_ombx #(
   assign load_read_ptr = set_first_req | sys_read_all_o | host_clear_abort;
 
   // Advance the read pointer when one request went through
-  assign  advance_read_ptr = ombx_sram_read_req_o & ombx_sram_read_gnt_i;
+  assign advance_read_ptr = ombx_sram_read_req_o & ombx_sram_read_gnt_i;
 
   always_comb begin
     sram_read_ptr_d = sram_read_ptr_q;
@@ -264,13 +264,14 @@ module mbx_ombx #(
                 (sysif_read_data_read_valid_i | sysif_read_data_write_valid_i))
   // Never read the SRAM if it is empty
   logic ombx_is_empty;
-  assign  ombx_is_empty = (sram_read_ptr_q == sram_read_ptr_limit_q);
+  assign ombx_is_empty = (sram_read_ptr_q == sram_read_ptr_limit_q);
   `ASSERT_NEVER(NeverReadWhenEmpty_A, ombx_sram_read_req_o & ombx_is_empty)
-  // Never let the read pointer run out of the limit
-  `ASSERT_NEVER(NeverRunOutOfLimit_A, sram_read_ptr_q > sram_read_ptr_limit_q)
+  // Never let the read pointer run out of the limit, but allow the range to be redefined whilst
+  // the mailbox is not active
+  `ASSERT_NEVER(NeverRunOutOfLimit_A, |{set_first_req, first_req_q, mbx_read} &
+                (sram_read_ptr_q > sram_read_ptr_limit_q))
 
 `ifdef INC_ASSERT
-
   logic[CfgSramAddrWidth-1:0] sram_read_ptr_assert_q;
   prim_flop #(
     .Width(CfgSramAddrWidth)
@@ -280,8 +281,10 @@ module mbx_ombx #(
     .d_i   ( sram_read_ptr_d        ),
     .q_o   ( sram_read_ptr_assert_q )
   );
+
   // A granted read by the host adapter must advance the read pointer
-  `ASSERT_IF(GntMustAdvanceReadPtr_A, sram_read_ptr_assert_q == sram_read_ptr_q,
+  `ASSERT_IF(GntMustAdvanceWritePtr_A, advance_read_ptr &
+             (sram_read_ptr_d == sram_read_ptr_assert_q + LCFG_SRM_ADDRINC),
              ombx_sram_read_gnt_i)
 `endif
 endmodule
