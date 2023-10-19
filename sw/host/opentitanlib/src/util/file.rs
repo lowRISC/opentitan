@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use nix::libc::c_int;
-use nix::poll;
 use pem_rfc7468::{Decoder, Encoder, LineEnding};
 use thiserror::Error;
 
@@ -12,7 +10,6 @@ use std::convert::TryInto;
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::fd::{AsFd, BorrowedFd};
-use std::os::unix::io::AsRawFd;
 use std::path::Path;
 use std::time::Duration;
 
@@ -93,10 +90,14 @@ pub trait ToWriter: Sized {
 }
 
 /// Waits for an event on `fd` or for `timeout` to expire.
-pub fn wait_timeout(fd: BorrowedFd<'_>, events: poll::PollFlags, timeout: Duration) -> Result<()> {
-    let timeout = timeout.as_millis().try_into().unwrap_or(c_int::MAX);
-    let mut pfd = [poll::PollFd::new(fd.as_raw_fd(), events)];
-    match poll::poll(&mut pfd, timeout)? {
+pub fn wait_timeout(
+    fd: BorrowedFd<'_>,
+    events: rustix::event::PollFlags,
+    timeout: Duration,
+) -> Result<()> {
+    let timeout = timeout.as_millis().try_into().unwrap_or(i32::MAX);
+    let mut pfd = [rustix::event::PollFd::from_borrowed_fd(fd, events)];
+    match rustix::event::poll(&mut pfd, timeout)? {
         0 => Err(io::Error::new(
             io::ErrorKind::TimedOut,
             "timed out waiting for fd to be ready",
@@ -108,38 +109,35 @@ pub fn wait_timeout(fd: BorrowedFd<'_>, events: poll::PollFlags, timeout: Durati
 
 /// Waits for `fd` to become ready to read or `timeout` to expire.
 pub fn wait_read_timeout(fd: &impl AsFd, timeout: Duration) -> Result<()> {
-    wait_timeout(fd.as_fd(), poll::PollFlags::POLLIN, timeout)
+    wait_timeout(fd.as_fd(), rustix::event::PollFlags::IN, timeout)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use anyhow::bail;
-    use nix::sys::socket::{socketpair, AddressFamily, SockFlag, SockType};
-    use nix::unistd::{read, write};
-    use std::os::fd::{FromRawFd, OwnedFd};
+    use rustix::io::{read, write};
+    use rustix::net::{socketpair, AddressFamily, SocketFlags, SocketType};
 
     #[test]
     fn test_data_ready() -> Result<()> {
         let (snd, rcv) = socketpair(
-            AddressFamily::Unix,
-            SockType::Stream,
+            AddressFamily::UNIX,
+            SocketType::STREAM,
+            SocketFlags::empty(),
             None,
-            SockFlag::empty(),
         )?;
-        let snd = unsafe { OwnedFd::from_raw_fd(snd) };
-        let rcv = unsafe { OwnedFd::from_raw_fd(rcv) };
 
         // Send the test data into the socket.
         let sndbuf = b"abc123";
-        assert_eq!(write(snd.as_raw_fd(), sndbuf)?, sndbuf.len());
+        assert_eq!(write(&snd, sndbuf)?, sndbuf.len());
 
         // Wait for it to be ready.
         wait_read_timeout(&rcv, Duration::from_millis(10))?;
 
         // Receive the test data and compare.
         let mut rcvbuf = [0u8; 6];
-        assert_eq!(read(rcv.as_raw_fd(), &mut rcvbuf)?, sndbuf.len());
+        assert_eq!(read(&rcv, &mut rcvbuf)?, sndbuf.len());
         assert_eq!(sndbuf, &rcvbuf);
         Ok(())
     }
@@ -147,12 +145,11 @@ mod tests {
     #[test]
     fn test_timeout() -> Result<()> {
         let (_snd, rcv) = socketpair(
-            AddressFamily::Unix,
-            SockType::Stream,
+            AddressFamily::UNIX,
+            SocketType::STREAM,
+            SocketFlags::empty(),
             None,
-            SockFlag::empty(),
         )?;
-        let rcv = unsafe { OwnedFd::from_raw_fd(rcv) };
 
         // Expect to timeout since there is no data ready on the socket.
         let result = wait_read_timeout(&rcv, Duration::from_millis(10));

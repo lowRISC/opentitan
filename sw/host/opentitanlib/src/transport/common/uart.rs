@@ -3,10 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Context, Result};
-use nix::fcntl::{flock, FlockArg};
-use nix::poll;
-use nix::sys::signal;
-use nix::unistd::Pid;
 use serialport::ClearBuffer;
 //use serialport::{FlowControl, SerialPort};
 use serialport::{SerialPort, TTYPort};
@@ -161,7 +157,7 @@ impl Uart for SerialPortUart {
                         util::file::wait_timeout(
                             // SAFETY: The file descriptor is owned by `port` and is valid.
                             unsafe { BorrowedFd::borrow_raw(port.as_raw_fd()) },
-                            poll::PollFlags::POLLOUT,
+                            rustix::event::PollFlags::OUT,
                             Duration::from_secs(5),
                         )?;
                     }
@@ -247,7 +243,9 @@ impl SerialPortExclusiveLock {
                     Ok(PID_FILE_LEN) => {
                         let line = std::str::from_utf8(&buf)?;
                         let pid = line.trim().parse()?;
-                        signal::kill(Pid::from_raw(pid), None)?;
+                        let pid =
+                            rustix::process::Pid::from_raw(pid).context("Pid is not valid")?;
+                        rustix::process::test_kill_process(pid)?;
                         Ok(()) // This will result in "Device is locked" error.
                     }
                     _ => bail!(""),
@@ -270,20 +268,17 @@ impl SerialPortExclusiveLock {
             .open(&lockfilename)
         {
             Ok(mut lockfile) => {
-                let written = lockfile
-                    .write(format!("{:10}\n", nix::unistd::getpid()).as_bytes())
-                    .map_err(|e| {
-                        TransportError::OpenError(
-                            port_name.to_string(),
-                            format!("Error creating lockfile {}: {}", lockfilename, e),
-                        )
-                    })?;
-                if PID_FILE_LEN != written {
-                    bail!(TransportError::OpenError(
+                writeln!(
+                    lockfile,
+                    "{:10}",
+                    rustix::process::getpid().as_raw_nonzero()
+                )
+                .map_err(|e| {
+                    TransportError::OpenError(
                         port_name.to_string(),
-                        format!("Error writing lockfile {}: short write", lockfilename)
-                    ));
-                }
+                        format!("Error writing lockfile {}: {}", lockfilename, e),
+                    )
+                })?;
                 Ok(Self {
                     lockfilename: Some(lockfilename),
                 })
@@ -322,7 +317,9 @@ impl Drop for SerialPortExclusiveLock {
 /// Invoke Linux `flock()` on the given serial port, lock will be released when the file
 /// descriptor is closed (or when the process terminates).
 pub fn flock_serial(port: &TTYPort, port_name: &str) -> Result<()> {
-    flock(port.as_raw_fd(), FlockArg::LockExclusiveNonblock).map_err(|_| {
+    // SAFETY: `fd` is owned by `port` and is valid.
+    let fd = unsafe { BorrowedFd::borrow_raw(port.as_raw_fd()) };
+    rustix::fs::flock(fd, rustix::fs::FlockOperation::NonBlockingLockExclusive).map_err(|_| {
         TransportError::OpenError(port_name.to_string(), "Device is locked".to_string())
     })?;
     Ok(())

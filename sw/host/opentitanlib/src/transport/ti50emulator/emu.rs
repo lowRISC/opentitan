@@ -15,8 +15,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{bail, Context, Result};
 use log;
-use nix::sys::signal::{self, Signal};
-use nix::unistd::Pid;
+use rustix::process::{Pid, Signal};
 use serde::{Deserialize, Serialize};
 
 use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
@@ -326,16 +325,17 @@ impl EmulatorProcess {
     fn stop_process(&mut self) -> Result<()> {
         self.power_cycle_count += 1;
         if let Some(handle) = &mut self.proc {
-            let pid = handle.id() as i32;
-            log::debug!("Stop sub-process PID:{} SIGTERM", pid);
-            signal::kill(Pid::from_raw(pid), Signal::SIGTERM)
+            let raw_pid = handle.id() as i32;
+            let pid = Pid::from_raw(raw_pid).context("Pid is invalid")?;
+            log::debug!("Stop sub-process PID:{} SIGTERM", raw_pid);
+            rustix::process::kill_process(pid, Signal::Term)
                 .context("Stop sub-process using SIGTERM")?;
             for _retry in 0..MAX_RETRY {
-                log::debug!("Stop sub-process PID:{} ...", pid);
+                log::debug!("Stop sub-process PID:{} ...", raw_pid);
                 match handle.try_wait() {
                     Ok(None) => {}
                     Ok(Some(status)) => {
-                        log::info!("Stop sub-process terminated PID: {} {}", pid, status);
+                        log::info!("Stop sub-process terminated PID: {} {}", raw_pid, status);
                         self.cleanup()?;
                         self.state = EmuState::Off;
                         self.proc = None;
@@ -352,24 +352,24 @@ impl EmulatorProcess {
                 std::thread::sleep(TIMEOUT);
             }
             log::warn!("Ti50Emulator sub-process did not shut down gracefully, killing...");
-            log::debug!("Stop sub-process PID:{} SIGKILL", pid);
+            log::debug!("Stop sub-process PID:{} SIGKILL", raw_pid);
             for _retry in 0..MAX_RETRY {
-                match signal::kill(Pid::from_raw(pid), Signal::SIGKILL) {
+                match rustix::process::kill_process(pid, Signal::Kill) {
                     Ok(()) => {}
-                    Err(nix::errno::Errno::ESRCH) => {}
+                    Err(rustix::io::Errno::SRCH) => {}
                     Err(e) => {
                         self.proc = None;
                         self.state = EmuState::Error;
                         bail!(EmuError::StopFailureCause(format!(
                             "Unable to stop process pid:{} error:{}",
-                            pid, e
+                            raw_pid, e
                         )));
                     }
                 }
                 match handle.try_wait() {
                     Ok(None) => {}
                     Ok(Some(status)) => {
-                        log::info!("Stop sub-process terminated PID: {} {}", pid, status);
+                        log::info!("Stop sub-process terminated PID: {} {}", raw_pid, status);
                         self.cleanup()?;
                         self.state = EmuState::Off;
                         self.proc = None;
@@ -388,7 +388,7 @@ impl EmulatorProcess {
             self.state = EmuState::Error;
             return Err(EmuError::StopFailureCause(format!(
                 "Timeout unable to stop process pid:{}",
-                pid,
+                raw_pid,
             ))
             .into());
         } else if self.state == EmuState::Error {

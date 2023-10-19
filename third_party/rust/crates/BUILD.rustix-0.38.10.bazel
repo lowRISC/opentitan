@@ -113,7 +113,9 @@ rust_library(
     crate_features = [
         "alloc",
         "default",
+        "event",
         "fs",
+        "net",
         "process",
         "std",
         "stdio",
@@ -304,7 +306,9 @@ cargo_build_script(
     crate_features = [
         "alloc",
         "default",
+        "event",
         "fs",
+        "net",
         "process",
         "std",
         "stdio",
