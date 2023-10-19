@@ -19,3 +19,9 @@ waive -rules OUTPUT_NOT_DRIVEN -location {prim_clock_gating.sv} -regexp {.*} \
 # clock mux errors
 waive -rules CLOCK_MUX -location {clkmgr.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "All divided clocks terminate with a scan mux"
+
+# TODO: this root clock is currently unused - the tooling needs to be updated to
+# omit it in a clean way.
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
+      -regexp {'clk_io_div2_root' is not read from in module 'clkmgr'} \
+      -comment "Temporary waiver for dangling clocks."
