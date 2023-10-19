@@ -615,7 +615,7 @@ module otp_ctrl_part_buf
     .set_cnt_i('0),
     .incr_en_i(cnt_en),
     .decr_en_i(1'b0),
-    .step_i(CntWidth'(1)),
+    .step_i(CntWidth'(1'b1)),
     .commit_i(1'b1),
     .cnt_o(cnt),
     .cnt_after_commit_o(),
