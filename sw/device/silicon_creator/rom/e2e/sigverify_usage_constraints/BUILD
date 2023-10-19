@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
@@ -18,7 +19,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:manifest.bzl",
@@ -90,22 +91,28 @@ otp_json(
     visibility = ["//visibility:private"],
 )
 
-[otp_image(
-    name = "otp_img_sigverify_usage_constraints_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-    overlays = STD_OTP_OVERLAYS + [":otp_json_set_usage_constraint_params_overlay"],
-    visibility = ["//visibility:private"],
-) for lc_state, _ in get_lc_items()]
+[
+    otp_image(
+        name = "otp_img_sigverify_usage_constraints_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_set_usage_constraint_params_overlay"],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, _ in get_lc_items()
+]
 
-[bitstream_splice(
-    name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
-    tags = maybe_skip_in_ci(lc_state_val),
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-) for lc_state, lc_state_val in get_lc_items()]
+[
+    bitstream_splice(
+        name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
+        src = "//hw/bitstream:rom_with_fake_keys",
+        data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, lc_state_val in get_lc_items()
+]
 
 _SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE))
 
@@ -282,35 +289,39 @@ invalid_unselected_word_cases = [
 
 test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases + all_constr_test_cases + invalid_unselected_word_cases
 
-[opentitan_functest(
-    name = "sigverify_usage_constraint_{}".format(t["name"]),
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    cw310 = cw310_params(
-        bitstream = t["bitstream"],
-        exit_failure = t["exit_failure"],
-        exit_success = t["exit_success"],
-        tags = maybe_skip_in_ci(t["lc_state_val"]),
-    ),
-    key_struct = get_key_structs_for_lc_state(
-        t["lc_state_val"],
-        spx = None,
-    )[0],
-    manifest = manifest(
-        dict(
-            t["manifest"],
-            name = "sigverify_usage_constraint_manifest_{}".format(t["name"]),
-            address_translation = hex(CONST.HARDENED_FALSE),
-            identifier = hex(CONST.ROM_EXT),
+[
+    opentitan_test(
+        name = "sigverify_usage_constraint_{}".format(t["name"]),
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        cw310 = cw310_params(
+            bitstream = t["bitstream"],
+            exit_failure = t["exit_failure"],
+            exit_success = t["exit_success"],
+            tags = maybe_skip_in_ci(t["lc_state_val"]),
         ),
-    ),
-    signed = True,
-    targets = ["cw310_rom_with_fake_keys"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-) for t in test_cases]
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        manifest = manifest(
+            dict(
+                t["manifest"],
+                name = "sigverify_usage_constraint_manifest_{}".format(t["name"]),
+                address_translation = hex(CONST.HARDENED_FALSE),
+                identifier = hex(CONST.ROM_EXT),
+            ),
+        ),
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            t["lc_state_val"],
+        ),
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for t in test_cases
+]
 
 test_suite(
     name = "rom_e2e_sigverify_usage_constraints",
