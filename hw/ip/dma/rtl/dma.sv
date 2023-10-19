@@ -1523,6 +1523,18 @@ module dma
   );
 
   //////////////////////////////////////////////////////////////////////////////
+  // Unused signals
+  //////////////////////////////////////////////////////////////////////////////
+  logic unused_signals;
+  assign unused_signals = ^{reg2hw.clear_state.q,
+                            reg2hw.enabled_memory_range_base.qe,
+                            reg2hw.enabled_memory_range_limit.qe,
+                            reg2hw.status.busy.q,
+                            sys_resp_q.error_vec,
+                            sys_resp_q.read_metadata,
+                            sys_resp_q.grant_vec[0]};
+
+  //////////////////////////////////////////////////////////////////////////////
   // Assertions
   //////////////////////////////////////////////////////////////////////////////
 
