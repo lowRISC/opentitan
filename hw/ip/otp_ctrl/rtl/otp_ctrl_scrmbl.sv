@@ -144,11 +144,12 @@ module otp_ctrl_scrmbl
     digest_iv_lut = '0;
 
     for (int k = 0; k < NumScrmblKeys; k++) begin
+      localparam logic [4:0] NumRounds = 5'(unsigned'(NumPresentRounds));
       otp_enc_key_lut[k] = rnd_cnst_key_anchor[k];
       // Due to the PRESENT key schedule, we have to step the key schedule function by
       // NumPresentRounds forwards to get the decryption key.
       otp_dec_key_lut[k] =
-          prim_cipher_pkg::present_get_dec_key128(rnd_cnst_key_anchor[k], 5'(NumPresentRounds));
+          prim_cipher_pkg::present_get_dec_key128(rnd_cnst_key_anchor[k], NumRounds);
     end
 
     for (int k = 0; k < NumDigestSets; k++) begin

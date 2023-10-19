@@ -128,6 +128,7 @@ module otp_ctrl_part_unbuf
   logic digest_reg_en;
   logic ecc_err;
 
+  logic tlul_addr_in_range;
   logic [SwWindowAddrWidth-1:0] tlul_addr_d, tlul_addr_q;
 
   // This is only used to return bus errors when the FSM is in ErrorSt.
@@ -233,9 +234,7 @@ module otp_ctrl_part_unbuf
       ReadSt: begin
         init_done_o = 1'b1;
         // Double check the address range.
-        if ({tlul_addr_q, 2'b00} >= Info.offset &&
-            {1'b0, tlul_addr_q, 2'b00} < PartEnd &&
-             mubi8_test_false_strict(access_o.read_lock)) begin
+        if (tlul_addr_in_range && mubi8_test_false_strict(access_o.read_lock)) begin
           otp_req_o = 1'b1;
           otp_addr_sel = DataAddrSel;
           if (otp_gnt_i) begin
@@ -324,6 +323,14 @@ module otp_ctrl_part_unbuf
   assign tlul_addr_d  = tlul_addr_i;
   // Do not forward data in case of an error.
   assign tlul_rdata_o = (tlul_rvalid_o && tlul_rerror_o == '0) ? otp_rdata_i[31:0] : '0;
+
+  if (Info.offset == 0) begin : gen_zero_offset
+    assign tlul_addr_in_range = {1'b0, tlul_addr_q, 2'b00} < PartEnd;
+
+  end else begin : gen_nonzero_offset
+    assign tlul_addr_in_range = {tlul_addr_q, 2'b00} >= Info.offset &&
+                                {1'b0, tlul_addr_q, 2'b00} < PartEnd;
+  end
 
   // Note that OTP works on halfword (16bit) addresses, hence need to
   // shift the addresses appropriately.

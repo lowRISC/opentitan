@@ -702,8 +702,13 @@ module otp_ctrl_dai
     // between OtpAddrWidth and OtpByteAddrWidth, so we know that we can slice safely here.
     localparam bit [OtpAddrWidth-1:0] DigestAddrLut = DigestAddrLutInt[OtpAddrWidth-1:0];
 
-    assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) &
-                            ({1'b0, dai_addr_i} < PartEndInt[OtpByteAddrWidth:0]);
+    if (PartInfo[k].offset == 0) begin : gen_zero_offset
+      assign part_sel_oh[k] = ({1'b0, dai_addr_i} < PartEndInt[OtpByteAddrWidth:0]);
+
+    end else begin : gen_nonzero_offset
+      assign part_sel_oh[k] = (dai_addr_i >= PartInfo[k].offset) &
+                              ({1'b0, dai_addr_i} < PartEndInt[OtpByteAddrWidth:0]);
+    end
     assign digest_addr_lut[k] = DigestAddrLut;
   end
 
