@@ -116,14 +116,11 @@ p256_verify:
   jal       x1, mod_mul_256x256
   bn.mov    w1, w19
 
-  /* setup modulus p and Barrett constant */
-  li        x2, 29
-  la        x3, p256_p
-  bn.lid    x2, 0(x3)
-  bn.wsrw   MOD, w29
-  li        x2, 28
-  la        x3, p256_u_p
-  bn.lid    x2, 0(x3)
+  /* Set up for coordinate arithmetic.
+       MOD <= p
+       w28 <= r256
+       w29 <= r448 */
+  jal       x1, setup_modp
 
   /* load public key Q from dmem and use in projective form (set z to 1)
      Q = (w11, w12, w13) = (dmem[x], dmem[y], 1) */
@@ -229,7 +226,7 @@ p256_verify:
   /* convert x-coordinate of C back to affine: x1 = x_c * z_c^-1  mod p */
   bn.mov    w24, w1
   bn.mov    w25, w11
-  jal       x1, mod_mul_256x256
+  jal       x1, mul_modp
 
   /* final reduction: w24 = x1 <= x1 mod n */
   la        x3, p256_n
