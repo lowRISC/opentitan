@@ -128,6 +128,18 @@ waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is drive
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_in_buf' reaches a multiplexer here, used as a clock.*} \
       -comment "These multiplexers are needed to select between inverted and non-inverted clock based on configuration"
 
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in|out)' is driven by a multiplexer here, used as a clock 'clk_src_i'} \
+      -comment "These multiplexers are needed to select between inverted and non-inverted clock based on configuration"
+
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in_muxed|out_muxed|csb_muxed)' is driven by a multiplexer here, used as a clock 'clk_src_i'} \
+      -comment "These multiplexers are needed to select the scan clock"
+
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock '(cio_sck_i|sck_n)' reaches a multiplexer here, used as a clock 'clk_src_i'} \
+      -comment "These multiplexers are needed to select between inverted and non-inverted clock based on configuration"
+
+waive -rules INV_CLOCK -location {spi_device.sv} -regexp {'rst_csb_buf' is inverted, used as clock 'clk_i' } \
+      -comment "CSB sense needs to be inverted so that a reset is only asserted if CSB is high."
+
 ## For Generic Ascentlint only
 waive -rules CLOCK_MUX -location {spi_device.sv} \
       -regexp {Clock '(clk_i|sram_clk_muxed)'} \
@@ -146,7 +158,7 @@ waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement ta
 #### NOT used
 ####   For the convenience of the design, below signals are intentionally unused
 waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
-      -regexp {'sub_(sram|p2s)_.*\[(0|0:1)\]' is not (used|read)} \
+      -regexp {'sub_(sram|p2s|iomode)_.*\[(0|0:1)\]' is not (used|read)} \
       -comment "CmdParse does not have SRAM intf and Fwmode has been tied off"
 
 #### Intented Terminal States
@@ -178,6 +190,21 @@ waive -rules {CLOCK_USE} -location {spi_device.sv} \
       -regexp {clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock 'CK' at} \
       -comment "This clock mux is required."
 
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'rst_csb_buf' is used for some other purpose, and as clock 'clk_i' at} \
+      -comment "This clock mux is required."
+
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'(sys|sck)_csb' is connected to 'prim_edge_detector' port 'd_i[0]', and used as a clock} \
+      -comment "The clock is sampled here by a prim edge detector."
+
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {'sck_csb' is connected to 'spi_p2s' port 'csb_i', and used as a clock 'clk_i' at} \
+      -comment "CSB acts as a clock in certain cases."
+
+waive -rules {CLOCK_USE} -location {spi_device.sv} \
+      -regexp {cio_csb_i' is connected to 'spi_passthrough' port 'host_csb_i', and used as a clock 'clk_i' at} \
+      -comment "CSB acts as a clock in certain cases."
 
 #### Passthrough
 waive -rules {TERMINAL_STATE} -location {spi_passthrough.sv} \
