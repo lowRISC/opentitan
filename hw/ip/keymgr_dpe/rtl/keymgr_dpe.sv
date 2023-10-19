@@ -252,7 +252,7 @@ module keymgr_dpe
   logic [Shares-1:0][KeyWidth-1:0] kmac_data_truncated;
   logic [ErrLastPos-1:0] err_code;
   logic [FaultLastPos-1:0] fault_code;
-  logic sw_binding_unlock;
+  logic unlock_after_advance;
   logic sideload_fsm_err;
   logic sideload_sel_err;
   logic key_version_vld;
@@ -305,7 +305,7 @@ module keymgr_dpe
     .op_start_i(op_start),
     .op_done_o(op_done),
     .init_o(init),
-    .sw_binding_unlock_o(sw_binding_unlock),
+    .unlock_after_advance_o(unlock_after_advance),
     .status_o(hw2reg.op_status.d),
     .fault_o(fault_code),
     .error_o(err_code),
@@ -355,9 +355,15 @@ module keymgr_dpe
 
   logic sw_binding_clr;
   logic sw_binding_regwen;
+  logic slot_policy_clr;
+  logic slot_policy_regwen;
+  logic max_key_ver_clr;
+  logic max_key_ver_regwen;
 
   // this is w0c
   assign sw_binding_clr = reg2hw.sw_binding_regwen.qe & ~reg2hw.sw_binding_regwen.q;
+  assign slot_policy_clr = reg2hw.slot_policy_regwen.qe & ~reg2hw.slot_policy_regwen.q;
+  assign max_key_ver_clr = reg2hw.max_key_ver_regwen.qe & ~reg2hw.max_key_ver_regwen.q;
 
   // software clears the enable
   // hardware restores it upon successful advance
@@ -366,16 +372,47 @@ module keymgr_dpe
   ) u_sw_binding_regwen (
     .clk_i,
     .rst_ni,
-    // `init` is raised only for 1 clock cycle, when FSM is at StCtrlRootKey (loading Root Key/UDS)
+    // `init` is raised only for 1 clock cycle, when FSM is loading OTP root key (UDS)
     .init_i(init),
     .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnBinding])),
-    .set_i(sw_binding_unlock),
+    .set_i(unlock_after_advance),
     .clr_i(sw_binding_clr),
     .out_o(sw_binding_regwen)
   );
 
-  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & cfg_regwen;
+  // software clears the enable
+  // hardware restores it upon successful advance
+  keymgr_cfg_en #(
+    .NonInitClr(1'b1)  // clear has an effect regardless of init state
+  ) u_slot_policy_regwen (
+    .clk_i,
+    .rst_ni,
+    // `init` is raised only for 1 clock cycle, when FSM is loading OTP root key (UDS)
+    .init_i(init),
+    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnBinding])),
+    .set_i(unlock_after_advance),
+    .clr_i(slot_policy_clr),
+    .out_o(slot_policy_regwen)
+  );
 
+  // software clears the enable
+  // hardware restores it upon successful advance
+  keymgr_cfg_en #(
+    .NonInitClr(1'b1)  // clear has an effect regardless of init state
+  ) u_max_key_ver_regwen (
+    .clk_i,
+    .rst_ni,
+    // `init` is raised only for 1 clock cycle, when FSM is loading OTP root key (UDS)
+    .init_i(init),
+    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnBinding])),
+    .set_i(unlock_after_advance),
+    .clr_i(max_key_ver_clr),
+    .out_o(max_key_ver_regwen)
+  );
+
+  assign hw2reg.sw_binding_regwen.d = sw_binding_regwen & cfg_regwen;
+  assign hw2reg.slot_policy_regwen.d = slot_policy_regwen & cfg_regwen;
+  assign hw2reg.max_key_ver_regwen.d = max_key_ver_regwen & cfg_regwen;
   /////////////////////////////////////
   //  Key Manager Input Construction
   /////////////////////////////////////
@@ -772,15 +809,12 @@ module keymgr_dpe
   logic unused_kmac_en_masking;
   assign unused_kmac_en_masking = kmac_en_masking_i;
 
-  // TODO(#384): Implement slot policy assignments and checks
-  // temporarily assigned to unused variables to satisfy lint requirements
-  logic unused_slot_policy_regwen;
-  assign unused_slot_policy_regwen = reg2hw.slot_policy_regwen.q;
-  assign hw2reg.slot_policy_regwen = 1'b1;
   // We are passing `active_key_slot` from ctrl to main module in its original struct for simplicity
-  // so `key_policy` field is not really used
+  // so `key_policy` and `max_key_version` fields are not really used.
   keymgr_dpe_policy_t unused_active_policy;
+  logic [KeyVersionWidth-1:0] unused_active_key_version;
   assign unused_active_policy = active_key_slot.key_policy;
+  assign unused_active_key_version = active_key_slot.max_key_version;
 
   `ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
 
