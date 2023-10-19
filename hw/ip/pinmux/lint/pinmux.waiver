@@ -25,3 +25,9 @@ waive -rules CLOCK_DRIVER -location {pinmux_strap_sampling.sv} -regexp {'*_jtag_
 
 waive -rules CLOCK_DRIVER -location {pinmux.sv} -regexp {dio_attr[*].pull_select' is driven here, and used as a clock 'clk_ast_ext_scn' at ast_clks_byp} \
       -comment "Pull selects can have an impact on debug signals (including clocks) feeding into AST."
+
+waive -rules CLOCK_MUX -location {pinmux_strap_sampling.sv} -regexp {is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap} \
+      -comment "This is a JTAG clock signal."
+
+waive -rules CLOCK_MUX -location {pinmux_strap_sampling.sv} -regexp {Clock .* reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap} \
+      -comment "This is a JTAG clock signal."
