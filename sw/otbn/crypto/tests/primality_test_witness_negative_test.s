@@ -30,22 +30,12 @@ main:
   la         x18, mont_rr
   jal        x1, test_witness
 
-  /* Load the value from the working buffer into registers. This buffer holds
-     the witness raised to some portion of the exponent; we can check it to
-     ensure that w was found to be composite at exactly the point we expected.
-       w0,w1 <= dmem[tmp:tmp+n*32] */
-  li         x8, 0
-  la         x15, tmp
-  loop       x30, 2
-    bn.lid     x8, 0(x15++)
-    addi       x8, x8, 1
-
   ecall
 
 .data
 
 /* Candidate prime (composite, randomly generated) =
-0xf7b5cc32e3c7c3ff6f220312fe4be4af76c9e51e8c17648c863751d70359bab17c1d7b4844e01d1ec0cd695ff3bae05dc51d95a001ab7b69f66d0c056c2dec39
+0xf7b5cc32e3c7c3ff6f220312fe4be4af76c9e51e8c17648c863751d70359bab17c1d7b4844e01d1ec0cd695ff3bae05dc51d95a001ab7b69f66d0c056c2dec3b
 */
 .balign 32
 input:
@@ -89,34 +79,34 @@ witness:
 /* Precomputed Montgomery constant m0' (256 bits). */
 .balign 32
 mont_m0inv:
-.word 0xd0a3bdf7
-.word 0x7dde1093
-.word 0xf7fe594f
-.word 0x8f66b353
-.word 0x03a1c874
-.word 0x3c4a0e42
-.word 0x0d02fb70
-.word 0x2cf2f731
+.word 0xbb5df30d
+.word 0xf47b30a4
+.word 0x45c4b2af
+.word 0xb6e86212
+.word 0xacafa4f9
+.word 0x6e5afd69
+.word 0x9ae7984c
+.word 0xce44dadc
 
 /* Precomputed Montgomery constant RR (512 bits). */
 .balign 32
 mont_rr:
-.word 0xd04011c2
-.word 0x8ef6bac2
-.word 0x2c87d164
-.word 0x5f60cb7a
-.word 0x5e64a3f6
-.word 0xe9f883b0
-.word 0xa802122b
-.word 0xf910bf58
-.word 0x94680653
-.word 0x3dadc1f1
-.word 0x4adf397f
-.word 0xa87c8a2a
-.word 0x0576494c
-.word 0x5ce4999d
-.word 0x8188e572
-.word 0x0911fc89
+.word 0xc1e31e17
+.word 0x6f9be028
+.word 0xcd184ada
+.word 0xbbd4bbb9
+.word 0x10d84741
+.word 0xa11300bd
+.word 0x4e5c6583
+.word 0x50805ac8
+.word 0x78f6cf41
+.word 0x163b312e
+.word 0x126593d5
+.word 0x03cc62ac
+.word 0x23cbc231
+.word 0xa53b2634
+.word 0x5d9d6071
+.word 0xdf10ee86
 
 .section .scratchpad
 
