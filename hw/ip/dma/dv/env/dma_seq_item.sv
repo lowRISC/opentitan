@@ -98,7 +98,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint lsio_trigger_i_c {
     solve handshake_intr_en before lsio_trigger_i;
-    soft lsio_trigger_i & handshake_intr_en != 0;
+    soft (lsio_trigger_i & handshake_intr_en) != 0;
   }
 
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
@@ -269,11 +269,52 @@ class dma_seq_item extends uvm_sequence_item;
               UVM_HIGH)
   endfunction
 
+  // We need to position the 'Clear Interrupt' addresses such that they are disjoint with each other
+  // and with the source and destination buffers
+  function bit choose_int_src_addrs();
+    `uvm_info(`gfn, "Randomizing 'clear interrupt' addresses", UVM_HIGH)
+    for (uint i = 0; i < int_src_addr.size(); i++) begin
+      const uint max_tries = 100;
+      uint tries = 0;
+      // Only try so many attempts, to keep things time-bounded
+      while (tries < max_tries) begin
+        const uint gap = 'h10;
+        bit [31:0] cand = $urandom;
+        // Here are we treating all interrupt sourcers and buffers as if they belonged to a single
+        // memory space, to avoid further complicating the code
+        //
+        // Check against the memory buffers, again leaving a small gap to reduce confusion
+        if ((cand + gap < src_addr || cand > src_addr + total_transfer_size + gap) &&
+            (cand + gap < dst_addr || cand > dst_addr + total_transfer_size + gap)) begin
+          uint j = i;
+          // Check against all of the addresses so far decided
+          while (j > 0 && int_src_addr[j] != cand) begin
+            j--;
+          end
+          if (!j) begin
+            // This candidate is acceptable
+            int_src_addr[i] = cand;
+            break;
+          end
+        end
+      end
+      if (tries >= max_tries) begin
+        // Failed to choose suitable addresses
+        return 1'b0;
+      end
+    end
+    `uvm_info(`gfn, "Finished randomizing 'clear interrupt' addresses", UVM_HIGH)
+    return 1'b1;
+  endfunction
+
   function void post_randomize();
     super.post_randomize();
     // Check if randomization leads to valid configuration
-    is_valid_config = check_config();
-    `uvm_info(`gfn, $sformatf("[DMA] dma_seq_item:%s", this.convert2string()), UVM_MEDIUM)
+    is_valid_config = choose_int_src_addrs();
+    if (is_valid_config) begin
+      is_valid_config = check_config();
+    end
+    `uvm_info(`gfn, $sformatf("[DMA] dma_seq_item:%s", convert2string()), UVM_MEDIUM)
   endfunction : post_randomize
 
   // Function to check if provided address and size is in DMA memory region
@@ -327,8 +368,8 @@ class dma_seq_item extends uvm_sequence_item;
     // Source and destination address must have same alignment for valid DMA configuration
     if (src_addr[1:0] != dst_addr[1:0]) begin
       `uvm_info(`gfn,
-                $sformatf("Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)"),
-                UVM_MEDIUM)
+                $sformatf("Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)",
+                src_addr[1:0], dst_addr[1:0]), UVM_MEDIUM)
       valid_config = 0;
     end
     // Check if memory range is locked
