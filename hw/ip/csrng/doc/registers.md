@@ -222,6 +222,9 @@ the generate request. This register must be four times for each request
 number made. For example, a application command generate request with
 a `creq` value of 4 requires this register to be read 16 times to get all
 of the data out of the FIFO path.
+Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [`CTRL.SW_APP_ENABLE`](#ctrl) needs to be set to `kMultiBitBool4True`.
+In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+Otherwise, the register reads as 0.
 
 ## INT_STATE_NUM
 Internal state number register
@@ -274,6 +277,9 @@ register to gather the entire field. Once 14 reads have been done, the internal 
 pointer (selects 32 bits of the 448 bit field) will reset to zero. The [`INT_STATE_NUM`](#int_state_num)
 can be re-written at this time (internal read pointer is also reset), and then
 another internal state field can be read.
+Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
+In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+Otherwise, the register reads as 0.
 
 ## HW_EXC_STS
 Hardware instance exception status register

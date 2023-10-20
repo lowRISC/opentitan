@@ -376,6 +376,9 @@
                 number made. For example, a application command generate request with
                 a `creq` value of 4 requires this register to be read 16 times to get all
                 of the data out of the FIFO path.
+                Note that for !!GENBITS to be able to deliver random numbers, also !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
+                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+                Otherwise, the register reads as 0.
                 '''
         }
       ]
@@ -420,6 +423,9 @@
                 pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
+                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
+                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
+                Otherwise, the register reads as 0.
                 '''
         }
       ]
