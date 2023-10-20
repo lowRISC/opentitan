@@ -41,7 +41,7 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   mem_model#(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH)) mem_sys;
 
   // Associative array with mapping of ASID encoding to interface name
-  string asid_interace_map[asid_encoding_e];
+  string asid_interface_map[asid_encoding_e];
 
   // Constraints
   //  TODO
@@ -64,10 +64,10 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
       dma_dir_fifo[fifo_names[i]] = $sformatf("tl_dir_%s_fifo", fifo_names[i]);
     end
     // Initialize mapping
-    asid_interace_map[OtInternalAddr] = "host";
-    asid_interace_map[SocControlAddr] = "ctn";
-    asid_interace_map[SocSystemAddr] = "sys";
-    asid_interace_map[OtExtFlashAddr] = "ctn";
+    asid_interface_map[OtInternalAddr] = "host";
+    asid_interface_map[SocControlAddr] = "ctn";
+    asid_interface_map[SocSystemAddr] = "sys";
+    asid_interface_map[OtExtFlashAddr] = "ctn";
     // Initialize cip_base_env_cfg
     super.initialize(csr_base_addr);
 
