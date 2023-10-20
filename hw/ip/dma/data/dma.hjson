@@ -568,7 +568,7 @@
         { bits: "0"
           name: "busy"
           resval: 0x0
-          hwaccess: "hrw"
+          hwaccess: "hwo"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
