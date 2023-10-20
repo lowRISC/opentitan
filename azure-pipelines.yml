@@ -410,7 +410,7 @@ jobs:
     displayName: GCP key path
     # Set the remote cache GCP key path
   - bash: |
-      ci/bazelisk.sh test //sw/otbn/crypto/...
+      ci/bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
     displayName: Execute tests
 
 - job: chip_earlgrey_cw310
