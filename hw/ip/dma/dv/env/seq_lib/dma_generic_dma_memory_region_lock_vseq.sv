@@ -23,7 +23,8 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
   `uvm_object_utils(dma_generic_dma_memory_region_lock_vseq)
   `uvm_object_new
 
-  // Check that memory region registers are locked
+  // Check that memory region registers still match expectations, because they have been locked
+  // to prevent changes.
   virtual task check_dma_memory_registers(ref dma_seq_item dma_config);
     uvm_reg_data_t data;
     mubi4_t lock_reg_value;
@@ -68,7 +69,8 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
       run_common_config(dma_config);
       start_device(dma_config);
       // Write random data in to DMA enabled memory region registers
-      // before DMA operation
+      // before DMA operation; these attempted writes should be suppressed by the
+      // 'regwen' locking within the register interface.
       repeat(5) begin
         update_and_check_register(dma_config);
       end

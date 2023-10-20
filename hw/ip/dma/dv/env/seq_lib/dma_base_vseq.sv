@@ -24,7 +24,7 @@ class dma_base_vseq extends cip_base_vseq #(
     '{SocControlAddr, OtInternalAddr},
     // TODO remove once SYS support is enabled '{SocSystemAddr, OtInternalAddr},
     '{OtExtFlashAddr, OtInternalAddr},
-    '{OtInternalAddr,OtInternalAddr}
+    '{OtInternalAddr, OtInternalAddr}
   };
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
@@ -365,7 +365,7 @@ class dma_base_vseq extends cip_base_vseq #(
           if (dma_config.clear_int_src[i]) begin
             `uvm_info(`gfn, $sformatf("Detected FIFO reg clear enable at index : %0d", i),
                       UVM_HIGH)
-            // Set FIFO interrupt clear address and values in correponding pull sequence instance
+            // Set FIFO interrupt clear address and values in corresponding pull sequence instance
             case (dma_config.clear_int_bus)
               0: seq_ctn.add_fifo_reg({dma_config.int_src_addr[i][31:2], 2'd0},
                                        dma_config.int_src_wr_val[i]);
@@ -376,7 +376,7 @@ class dma_base_vseq extends cip_base_vseq #(
             break;
           end
         end
-        // Set FIFO interrupt clear in correponding pull sequence instance
+        // Set FIFO interrupt clear in corresponding pull sequence instance
         case (dma_config.clear_int_bus)
           0: seq_ctn.set_fifo_clear(fifo_intr_clear_en);
           1: seq_host.set_fifo_clear(fifo_intr_clear_en);
@@ -393,7 +393,7 @@ class dma_base_vseq extends cip_base_vseq #(
     join_none
   endtask: start_device
 
-  // Method to terminate scequences gracefully
+  // Method to terminate sequences gracefully
   virtual task stop_device();
     `uvm_info(`gfn, "DMA: Stopping Devices", UVM_HIGH)
     fork
