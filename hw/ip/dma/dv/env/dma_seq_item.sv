@@ -233,7 +233,8 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   constraint mem_range_lock_c {
-    // For valid DMA configurations, memory range register must be locked
+    // For valid DMA configurations, memory range register must be locked or the DMA controller
+    // will reject the configuration with an error
     if (valid_dma_config) {
       mem_range_lock == MuBi4False;
     }
@@ -241,7 +242,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint handshake_intr_en_c {
     solve handshake before handshake_intr_en;
-    // For valid dma confiugurations, enable at least one handshake interrupt
+    // For valid dma configurations, enable at least one handshake interrupt
     if (valid_dma_config) {
       if (handshake) {
         handshake_intr_en != 0;
@@ -397,14 +398,14 @@ class dma_seq_item extends uvm_sequence_item;
     mem_range_lock.rand_mode(0);
   endfunction
 
-  // Return if Read address increment is disabled
+  // Return if Read FIFO mode enabled (no auto increment of source address)
   function bit get_read_fifo_en();
     return handshake && // Handshake mode enabled
            direction == DmaRcvData && // Read from FIFO
            !auto_inc_fifo; // FIFO address auto increment disabled
   endfunction
 
-  // Return if Write address increment is disabled
+  // Return if Write FIFO mode enabled (no auto increment of destination address)
   function bit get_write_fifo_en();
     return handshake && // Handshake mode enabled
            direction == DmaSendData && // Write to FIFO
