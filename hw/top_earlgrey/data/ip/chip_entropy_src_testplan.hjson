@@ -47,6 +47,7 @@
       features: ["ENTROPY_SRC.MODE.FIPS"]
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_csrng"]
       bazel: []
     },
@@ -61,9 +62,18 @@
             - Reset the chip, but this time, initialize the OTP with the fuse disabled.
             - Read the OTP and verify that fuse is disabled.
             - Read the internal state via SW and verify that the entropy valid bit is zero.
+
+            Notes for silicon targets:
+            - The current understanding is that the en_entropy_src_fw_read OTP switch controlling the ENTROPY_SRC.ROUTE_TO_FIRMWARE feature will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
+              Thus, burning the en_entropy_src_fw_read OTP fuses is not advisable for silicon validation.
+              This particular test may be skipped in favor of chip_sw_entropy_src_known_answer_tests which also tests the ENTROPY_SRC.ROUTE_TO_FIRMWARE feature.
             '''
+      features: [
+        "ENTROPY_SRC.ROUTE_TO_FIRMWARE",
+      ]
       stage: V2
       si_stage: None
+      lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
       bazel: []
     },
@@ -122,6 +132,7 @@
       ]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     },
@@ -158,6 +169,7 @@
       ]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     },
