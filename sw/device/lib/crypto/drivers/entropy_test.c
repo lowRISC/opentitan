@@ -28,7 +28,7 @@ static status_t entropy_complex_init_test(void) {
   dif_otbn_t otbn;
   TRY_CHECK(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
                           &otbn) == kDifOk);
-  otbn_randomness_test_start(&otbn);
+  otbn_randomness_test_start(&otbn, /*iters=*/0);
   TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
   return OK_STATUS();
 }

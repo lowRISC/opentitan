@@ -146,7 +146,7 @@ status_t execute_test(void) {
   // Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and
   // verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is not
   // idle).
-  otbn_randomness_test_start(&otbn);
+  otbn_randomness_test_start(&otbn, /*iters=*/0);
 
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kOtbnClock, kDifToggleDisabled, kDifToggleEnabled);
