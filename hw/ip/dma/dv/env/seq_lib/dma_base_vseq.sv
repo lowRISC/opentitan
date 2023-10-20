@@ -412,10 +412,6 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_ctn.set_fifo_clear(0);
     seq_host.set_fifo_clear(0);
     seq_sys.set_fifo_clear(0);
-    // Clear bytes_sent
-    seq_ctn.bytes_sent = 0;
-    seq_host.bytes_sent = 0;
-    seq_sys.bytes_sent = 0;
     // Disable FIFO
     cfg.fifo_host.disable_fifo();
     cfg.fifo_ctn.disable_fifo();

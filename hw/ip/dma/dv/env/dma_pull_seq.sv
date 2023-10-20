@@ -44,18 +44,13 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
         bit [tl_agent_pkg::DataWidth-1:0] data;
         data = rsp.a_data;
         // First series of writes will be to clear FIFO interrupts
-        if (fifo_reg_clear_en && (fifo_intr_clear_reg.size() > 0)) begin
+        if (fifo_reg_clear_en && fifo_intr_clear_reg.exists(rsp.a_addr)) begin
           // Check if the address matches FIFO register address
           `DV_CHECK(fifo_intr_clear_reg.exists(rsp.a_addr),
                     $sformatf("Invalid FIFO reg addr: 0x%0x detected", rsp.a_addr))
           // Check if write value matches FIFO register clear value
           `DV_CHECK_EQ(fifo_intr_clear_reg[rsp.a_addr], rsp.a_data,
                        "Invalid FIFO reg value detected")
-          // Delete address entry
-          `uvm_info(`gfn, $sformatf("Delete FIFO addr entry : 0x%0x", rsp.a_addr), UVM_DEBUG)
-          fifo_intr_clear_reg.delete(rsp.a_addr);
-          `uvm_info(`gfn, $sformatf("fifo_intr_clear_reg.size = %0d", fifo_intr_clear_reg.size()),
-                    UVM_DEBUG)
         end else begin
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
             bytes_sent++;
