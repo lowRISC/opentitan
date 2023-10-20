@@ -58,26 +58,26 @@ main:
 .data
 
 /* Candidate prime (randomly generated using pycryptodome) =
-0x9ac5b6d69aa1d91c418d9bf315ba72595488aabddbd435dafe630ba818e3d4ef03ab9bf93147a781cc45f6219f8bc92fc500c92dc8539832055036f6537320a1
+0x83f4fb7ca746b70dd7e37ce93847ed7995ccf101bb7a9c628ebcffeeaa0114efd346ddfb53c1d31d51ab13bbcb0b2346d6689cd78210bfe05f458233d8e58e1b
 */
 .balign 32
 input:
-.word 0x537320a1
-.word 0x055036f6
-.word 0xc8539832
-.word 0xc500c92d
-.word 0x9f8bc92f
-.word 0xcc45f621
-.word 0x3147a781
-.word 0x03ab9bf9
-.word 0x18e3d4ef
-.word 0xfe630ba8
-.word 0xdbd435da
-.word 0x5488aabd
-.word 0x15ba7259
-.word 0x418d9bf3
-.word 0x9aa1d91c
-.word 0x9ac5b6d6
+.word 0xd8e58e1b
+.word 0x5f458233
+.word 0x8210bfe0
+.word 0xd6689cd7
+.word 0xcb0b2346
+.word 0x51ab13bb
+.word 0x53c1d31d
+.word 0xd346ddfb
+.word 0xaa0114ef
+.word 0x8ebcffee
+.word 0xbb7a9c62
+.word 0x95ccf101
+.word 0x3847ed79
+.word 0xd7e37ce9
+.word 0xa746b70d
+.word 0x83f4fb7c
 
 .section .scratchpad
 
