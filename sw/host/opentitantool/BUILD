@@ -11,6 +11,7 @@ rust_binary(
     name = "opentitantool",
     srcs = [
         "src/command/bootstrap.rs",
+        "src/command/certificate.rs",
         "src/command/clear_bitstream.rs",
         "src/command/console.rs",
         "src/command/emulator.rs",
@@ -48,6 +49,7 @@ rust_binary(
     stamp = 1,
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_certs",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:directories",

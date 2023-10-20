@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod bootstrap;
+pub mod certificate;
 pub mod clear_bitstream;
 pub mod console;
 pub mod emulator;

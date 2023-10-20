@@ -225,11 +225,14 @@ pub fn generate_certificate(
     let subject = subject_builder.build();
     builder.set_subject_name(&subject)?;
 
-    // Random public key.
+    // Get the public key specified in the template or generate a random one.
+    // OpenSSL will not allow us to produce an unsigned certificate so if the
+    // template does not specify a public key, we have to generate a random one
+    // to be able to please openssl and then find the offsets in the DER.
     let pubkey = get_or_register_pubkey(&mut generator, &tmpl.certificate.subject_public_key_info)?;
     builder.set_pubkey(&pubkey)?;
 
-    // Sign the certificate with a random public key.
+    // Sign the certificate with a public key.
     let algo = generate_signature_keypair(&tmpl.certificate.signature)?;
     builder.sign(&algo.key_pair, algo.hash)?;
 
