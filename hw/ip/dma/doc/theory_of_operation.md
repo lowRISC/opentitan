@@ -148,10 +148,9 @@ hardware handshake DMA operation.
     -   Data Direction = 0 (receive)
 
     -   FIFO address auto-increment enable: If set, consecutive
-        'transfer width' worth of data chunks are popped from the FIFO
-        using consecutive register addresses. If not enabled,
-        consecutive data chunks are popped by repeatedly reading the
-        same register address.
+        'transfer width' bytes of data are transferred to/from the FIFO using consecutive
+        register addresses, resetting to the initial address at the start of each new chunk within
+        the transfer. If not enabled, all accesses are performed to/from a single address.
 
     -   Data buffer Auto-increment Enable: If set to 1, data shall be
         loaded into consecutive buffer segments in memory, where each

@@ -508,8 +508,8 @@
           resval: 0x0
           desc: '''
                 Used in conjunction with the hardware handshake mode of operation.
-                If set, reads/writes from/to incremental addresses for FIFO data register addresses.
-                Else uses the same address for subsequent transactions.
+                If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
+                Else uses the same address for all transactions.
                 '''
         }
         { bits: "9"
