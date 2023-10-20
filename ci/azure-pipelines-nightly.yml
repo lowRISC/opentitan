@@ -70,6 +70,29 @@ jobs:
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
 
+- job: slow_otbn_crypto_tests
+  displayName: Run slow OTBN crypto tests
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  pool:
+    vmImage: ubuntu-20.04
+  timeoutInMinutes: 120
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: bazelCacheGcpKey
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
+  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    displayName: GCP key path
+    # Set the remote cache GCP key path
+  - bash: |
+      ci/bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
+    displayName: Execute tests
+
 - job: bob_spi_i2c
   displayName: "BoB: SPI and I2C Tests"
   timeoutInMinutes: 30
