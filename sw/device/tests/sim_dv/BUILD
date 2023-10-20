@@ -627,6 +627,46 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "pwrmgr_deep_sleep_por_reset_test",
+    srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_normal_sleep_por_reset_test",
+    srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "pwrmgr_random_sleep_power_glitch_reset_test",
     srcs = ["pwrmgr_random_sleep_power_glitch_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},

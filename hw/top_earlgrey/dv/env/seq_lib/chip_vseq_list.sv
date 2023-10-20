@@ -26,6 +26,7 @@
 `include "chip_sw_sysrst_ctrl_vseq.sv"
 `include "chip_sw_random_sleep_all_reset_vseq.sv"
 `include "chip_sw_deep_sleep_all_reset_vseq.sv"
+`include "chip_sw_sleep_por_reset_vseq.sv"
 `include "chip_sw_uart_tx_rx_vseq.sv"
 `include "chip_sw_uart_rand_baudrate_vseq.sv"
 `include "chip_sw_sysrst_ctrl_inputs_vseq.sv"

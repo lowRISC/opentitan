@@ -1020,6 +1020,18 @@
       run_timeout_mins: 120
     }
     {
+      name: chip_sw_pwrmgr_deep_sleep_por_reset
+      uvm_test_seq: chip_sw_sleep_por_reset_vseq
+      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_por_reset_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_pwrmgr_normal_sleep_por_reset
+      uvm_test_seq: chip_sw_sleep_por_reset_vseq
+      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_por_reset_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_sleep_power_glitch_test:1:new_rules"]
