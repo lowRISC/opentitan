@@ -239,6 +239,17 @@ otbn_sim_test(
     ],
 )
 
+otbn_sim_test(
+    name = "p256_mul_modp_test",
+    srcs = [
+        "p256_mul_modp_test.s",
+    ],
+    exp = "p256_mul_modp_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+    ],
+)
+
 otbn_consttime_test(
     name = "p256_proj_add_consttime",
     subroutine = "proj_add",
