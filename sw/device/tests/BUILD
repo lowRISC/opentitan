@@ -990,9 +990,9 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/testing/json:command",
-        "//sw/device/lib/testing/json:mem",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
     ],
 )
 
