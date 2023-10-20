@@ -729,6 +729,7 @@ otbn_sim_test(
         "rsa_keygen_checkp_good_test.s",
     ],
     exp = "rsa_keygen_checkp_good_test.exp",
+    tags = ["nightly"],  # slow, do not run in CI
     deps = [
         ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
@@ -803,6 +804,7 @@ otbn_sim_test(
         "rsa_keygen_checkq_good_test.s",
     ],
     exp = "rsa_keygen_checkq_good_test.exp",
+    tags = ["nightly"],  # slow, do not run in CI
     deps = [
         ":rsa_keygen_checkpq_test_data",
         "//sw/otbn/crypto:div",
