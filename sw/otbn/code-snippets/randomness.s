@@ -14,11 +14,12 @@
 /* Test entry point, no arguments need to be passed in nor results returned. */
 .globl main
 main:
-  /* Init all-zero reg. */ 
+  /* Init all-zero reg. */
   bn.xor    w31, w31, w31
 
   jal x1, test_rnd
   jal x1, test_urnd
+  jal x1, consume_entropy
 
   jal x0, exit_success
 
@@ -118,12 +119,31 @@ test_urnd:
   ret
 
 /**
+ * Subroutine that consumes entropy (RND).
+ *
+ * This subroutine consumes entropy to stress test the entropy complex.
+ * It consumes data from RND for a given number of iterations.
+ */
+consume_entropy:
+  /* Read number of iterations. */
+  la x11, iterations
+  lw x10, 0(x11)
+  beq x0, x10, skip_loops
+
+  loop x10, 1
+    /* Read the RND CSR. */
+    csrrs x2, CSR_RND, x0
+
+skip_loops:
+  ret
+
+/**
  * This subroutine performs the following checks:
  *
  *  `w0 != w1` The two random numbers read shall be different.
  *  `w0 != 0 ` The random numbers shall not have all bits equal to zero.
  *  `w0 != ~0` The random numbers shall not have all bits equal to one.
- */ 
+ */
 error_checking:
   /* Fail the test if the two numbers read from RND are equal. */
   bn.cmp w0, w1
@@ -168,6 +188,12 @@ exit_fail:
   ecall
 
 .data
+/* #iterations per round of entropy generation. */
+.globl iterations
+.balign 4
+iterations:
+  .word 0x0
+
 /* Return value. */
 .globl rv
 .balign 4
