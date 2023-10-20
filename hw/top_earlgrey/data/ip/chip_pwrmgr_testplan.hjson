@@ -104,6 +104,50 @@
       stage: V2
       si_stage: None
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+      bazel: ["//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_por_reset
+      desc: '''Verify that the chip can go into deep sleep state and be reset by POR.
+
+            This verifies that the pwrmgr can handle POR in deep sleep. The chip is placed
+            in deep sleep, a POR is sent, and the wakeup cause is checked to be POR. This
+            test is broken out of the all_reset_reqs tests since the retention sram is wiped
+            on POR, so there is no state indicating the two PORs are any different.
+            SiVal: The CPU must be running to configure lop power entry.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      tests: ["chip_sw_pwrmgr_deep_sleep_por_reset"]
+      bazel: []
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_por_reset
+      desc: '''Verify that the chip can go into normal sleep state and be reset by POR.
+
+            This verifies that the pwrmgr can handle POR in normal sleep. The chip is placed
+            in normal sleep, a POR is sent, and the wakeup cause is checked to be POR. This
+            test is broken out of the all_reset_reqs tests since the retention sram is wiped
+            on POR, so there is no state indicating the two PORs are any different.
+            SiVal: The CPU must be running to configure lop power entry.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      tests: ["chip_sw_pwrmgr_sleep_por_reset"]
       bazel: []
     }
     {
