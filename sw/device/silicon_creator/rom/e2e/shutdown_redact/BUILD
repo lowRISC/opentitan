@@ -3,16 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "error_redact",
     "get_lc_items",
-    "hex",
     "hex_digits",
 )
 load(
@@ -99,13 +98,15 @@ REDACT.update({"INVALID": 0x0})
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "e2e_shutdown_redact_{}_{}".format(
             lc_state,
             redact.lower(),
         ),
-        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
+            binaries = {
+                "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
+            },
             bitstream = "bitstream_{}_{}".format(
                 lc_state,
                 redact.lower(),
@@ -118,15 +119,11 @@ REDACT.update({"INVALID": 0x0})
             ))),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        signed = False,
-        targets = ["cw310_rom_with_fake_keys"],
-        deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/lib/drivers:lifecycle",
-            "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        ],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        # Skip signing by clearing the manifest configuration.
+        manifest = None,
     )
     for lc_state, lc_state_val in get_lc_items()
     for redact, redact_val in REDACT.items()
