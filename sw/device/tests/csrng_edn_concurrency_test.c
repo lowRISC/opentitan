@@ -157,7 +157,7 @@ static void otbn_task(void *task_parameters) {
     }
     LOG_INFO("OTBN:START");
     for (size_t i = 0; i < task_iter_count_max[kTestTaskIdOtbn]; ++i) {
-      otbn_randomness_test_start(&otbn);
+      otbn_randomness_test_start(&otbn, /*iters=*/0);
       dif_otbn_status_t status;
       do {
         CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
