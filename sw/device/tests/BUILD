@@ -1021,25 +1021,53 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "flash_ctrl_info_access_lc",
-    srcs = ["flash_ctrl_info_access_lc.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+_FLASH_CTRL_INFO_ACCESS_LC_STATES = {
+    'test_unlocked0': 0x02108421,
+    'dev': 0x21084210,
+    'dev_individualized': 0x21084210,
+    'prod': 0x2318c631,
+    'prod_end': 0x25294a52
+}
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
+load(
+    "//rules/opentitan:defs.bzl",
+    "rsa_key_for_lc_state",
+)
+
+[
+    opentitan_test(
+        name = "flash_ctrl_info_access_lc_{}".format(lc_state),
+        srcs = ["flash_ctrl_info_access_lc.c"],
+        cw310 = new_cw310_params(
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state),
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            _FLASH_CTRL_INFO_ACCESS_LC_STATES[lc_state],
+        ),
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:isr_testutils",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rv_plic_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_state_val in _FLASH_CTRL_INFO_ACCESS_LC_STATES.items()
+]
 
 opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
