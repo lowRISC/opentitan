@@ -9,6 +9,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/lib/testing/test_framework/ujson_ottf_commands.h"
 #include "sw/device/lib/ujson/ujson.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
@@ -21,22 +22,11 @@ status_t command_processor(ujson_t *uj) {
   while (!kEndTest) {
     test_command_t command;
     TRY(ujson_deserialize_test_command_t(uj, &command));
-    switch (command) {
-      case kTestCommandMemRead32:
-        RESP_ERR(uj, ujcmd_mem_read32(uj));
-        break;
-      case kTestCommandMemRead:
-        RESP_ERR(uj, ujcmd_mem_read(uj));
-        break;
-      case kTestCommandMemWrite32:
-        RESP_ERR(uj, ujcmd_mem_write32(uj));
-        break;
-      case kTestCommandMemWrite:
-        RESP_ERR(uj, ujcmd_mem_write(uj));
-        break;
-      default:
-        LOG_ERROR("Unrecognized command: %d", command);
-        RESP_ERR(uj, INVALID_ARGUMENT());
+    status_t status = ujson_ottf_dispatch(uj, command);
+    if (status_err(status) == kUnimplemented) {
+      RESP_ERR(uj, status);
+    } else if (status_err(status) != kOk) {
+      return status;
     }
   }
   return OK_STATUS();

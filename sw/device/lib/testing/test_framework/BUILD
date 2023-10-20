@@ -268,6 +268,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "ujson_ottf_commands",
+    srcs = ["ujson_ottf_commands.c"],
+    hdrs = ["ujson_ottf_commands.h"],
+    deps = [
+        ":ujson_ottf",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:mem",
+        "//sw/device/lib/ujson",
+    ],
+)
+
 dual_cc_library(
     name = "ottf_console",
     srcs = dual_inputs(
