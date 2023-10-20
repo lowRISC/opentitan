@@ -39,22 +39,30 @@ int main(int argc, char **argv) {
   *pointer = 0x1;
 
   // Enable mbox irq to Core 0
-  pointer = (int *) 0x0C002180;
-  *pointer =  0x400;
-  // Enable mbox irq to Core 1
   pointer = (int *) 0x0C002080;
   *pointer =  0x400;
-
-  printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
   // Write CVA6 boot PC to mbox
   pointer = (int *) 0x10404000;
   *pointer = 0x80000000;
-
-  printf("[SECD] Booting CVA6\r\n");
-
-  // Send IRQ and boot
+  // Send IRQ to boot core 0
   pointer = (int *) 0x10404024;
   *pointer = 0x1;
+
+  // wait for completion of irq
+  while(*pointer!=0);
+
+  // Enable mbox irq to Core 1
+  pointer = (int *) 0x0C002180;
+  *pointer =  0x400;
+  // Write CVA6 boot PC to mbox
+  pointer = (int *) 0x10404000;
+  *pointer = 0x80000000;
+  // Send IRQ to boot core 1
+  pointer = (int *) 0x10404024;
+  *pointer = 0x1;
+
+  printf("[SECD] Booting CVA6\r\n");
+  uart_wait_tx_done();
 
   while(1)
     asm volatile ("wfi");
