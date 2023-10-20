@@ -723,20 +723,24 @@ module dma
         endcase
 
         if ((transfer_byte_q == '0) ||
-            (cfg_handshake_en     &&
-            (!cfg_data_direction) &&
-            (!cfg_fifo_auto_increment_en))) begin
+            (cfg_handshake_en &&
+             // Does the source address need resetting to the configured base address?
+             (( cfg_data_direction && chunk_byte_q == '0 && !cfg_memory_buffer_auto_increment_en) ||
+              (!cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
           src_addr_d = {reg2hw.source_address_hi.q, reg2hw.source_address_lo.q};
         end else begin
+          // Advance from the previous transaction within this chunk
           src_addr_d = src_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
         end
 
         if ((transfer_byte_q == '0) ||
             (cfg_handshake_en    &&
-            (cfg_data_direction) &&
-            (!cfg_fifo_auto_increment_en))) begin
+             // Does the destination address need resetting to the configured base address?
+             ((!cfg_data_direction && chunk_byte_q == '0 && !cfg_memory_buffer_auto_increment_en) ||
+              ( cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
           dst_addr_d = {reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q};
         end else begin
+          // Advance from the previous transaction within this chunk
           dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
         end
 
