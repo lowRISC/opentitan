@@ -34,11 +34,14 @@ int main(int argc, char **argv) {
   // Initialazing the uart
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
-  // Init CVA6 Plic
   // Set plic mbox irq prio
   pointer = (int *) 0x0C000028;
   *pointer = 0x1;
-  // Set plic mbox irq enable to core 0
+
+  // Enable mbox irq to Core 0
+  pointer = (int *) 0x0C002180;
+  *pointer =  0x400;
+  // Enable mbox irq to Core 1
   pointer = (int *) 0x0C002080;
   *pointer =  0x400;
 
