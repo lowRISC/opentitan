@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO pending checks
+// TODO: pending checks
 // - handshake interrupt check
 // - Alert checks
 class dma_scoreboard extends cip_base_scoreboard #(
@@ -21,7 +21,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit [63:0] last_src_addr; // last observed source address
   bit [63:0] last_dst_addr; // last observed destination address
 
-  // Internal variables to compare transactions
+  // Internal copy of the DMA configuration information for use in validating TL-UL transactions
+  // This copy is updated in the `process_reg_write` function below
   dma_seq_item dma_config;
 
   // Indicates if DMA operation is in progress
@@ -29,7 +30,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Indicates if current DMA operation is valid or invalid
   bit current_operation_valid = 1;
   // Variable to keep track of number of bytes transferred in current operation
-  uint num_bytes_transfered;
+  uint num_bytes_transferred;
   // Variable to indicate if TL error is detected on interface
   bit src_tl_error_detected;
   bit dst_tl_error_detected;
@@ -66,9 +67,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
     foreach (cfg.dma_dir_fifo[key]) begin
       tl_dir_fifos[cfg.dma_dir_fifo[key]] = new(cfg.dma_dir_fifo[key], this);
     end
+    // `dma_config` serves to hold a copy of the DMA configuration registers, which are the same
+    // values being randomized and used by the vseqs. Its fields are updated in `process_reg_write`
+    // and randomizing may catch failures to update them properly
     dma_config = dma_seq_item::type_id::create("dma_config");
-    dma_config.randomize();
-
+    if (!dma_config.randomize()) begin
+      `uvm_fatal(`gfn, "Failed to randomize dma_config")
+    end
   endfunction: build_phase
 
   // Check if address is valid for different configurations of DMA
@@ -114,7 +119,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ($countones(item.a_mask), 4) // Always 4B
       // Check source ASID for read transaction
       `DV_CHECK_EQ(if_name,
-                   cfg.asid_interace_map[dma_config.src_asid],
+                   cfg.asid_interface_map[dma_config.src_asid],
                    $sformatf("Unexpected read txn on %s interface with source ASID %s",
                              if_name, dma_config.src_asid.name()))
       // Check if opcode is as expected
@@ -140,7 +145,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Update last address
       last_src_addr = item.a_addr;
     end else begin // Write transaction
-      uint remaining_bytes = dma_config.total_transfer_size - num_bytes_transfered;
+      uint remaining_bytes = dma_config.total_transfer_size - num_bytes_transferred;
       uint exp_a_mask_count_ones = remaining_bytes > dma_config.per_transfer_width ?
                                    expected_per_txn_bytes : remaining_bytes;
       uint num_bytes_this_txn = $countones(item.a_mask);
@@ -153,7 +158,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       if (!dma_config.handshake || fifo_intr_cleared) begin
         // Check destination ASID for write transaction
         `DV_CHECK_EQ(if_name,
-                     cfg.asid_interace_map[dma_config.dst_asid],
+                   cfg.asid_interface_map[dma_config.dst_asid],
                      $sformatf("Unexpected write txn on %s interface with destination ASID %s",
                                if_name, dma_config.dst_asid.name()))
         // Check if the transaction address is in destination address range
@@ -186,10 +191,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Update last address
       last_dst_addr = item.a_addr;
       // Update number of bytes transferred only in case of write txn - refer #338
-      num_bytes_transfered += num_bytes_this_txn;
+      num_bytes_transferred += num_bytes_this_txn;
     end
     // Update expected value of dma_done interrupt
-    exp_dma_done_intr = (num_bytes_transfered >= dma_config.total_transfer_size);
+    exp_dma_done_intr = (num_bytes_transferred >= dma_config.total_transfer_size);
   endtask
 
   // Process items on Data channel
@@ -311,7 +316,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     src_queue.delete();
     dst_queue.delete();
     operation_in_progress = 1'b0;
-    num_bytes_transfered = 0;
+    num_bytes_transferred = 0;
     src_tl_error_detected = 0;
     dst_tl_error_detected = 0;
     abort_via_reg_write = 0;
@@ -430,6 +435,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Return the index that a register name refers to e.g. "int_source_addr_1" yields 1
   function uint get_index_from_reg_name(string reg_name);
     int str_len = reg_name.len();
+    // Note: this extracts the final two characters which are either '_y' or 'xy',
+    //       and because '_' is permitted in (System)Verilog numbers, it works for 0-99
     string index_str = reg_name.substr(str_len-2, str_len-1);
     return index_str.atoi();
   endfunction
@@ -612,7 +619,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                  .tl_dst_err (1'b0));
           end
           // Clear status variables
-          num_bytes_transfered = 0;
+          num_bytes_transferred = 0;
           fifo_intr_cleared = 0;
         end
       end
@@ -665,14 +672,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
           num_fifo_reg_write = 0;
         end
         // Check total data transferred at the end of DMA operation
-        if (done && // dont bit detected in STATUS
+        if (done && // `done` bit detected in STATUS
             !(aborted || error) && // no abort or error detected
            !(src_tl_error_detected || dst_tl_error_detected))
         begin // no TL error
             // Check if number of bytes transferred is as expected
-            `DV_CHECK_EQ(dma_config.total_transfer_size, num_bytes_transfered,
+            `DV_CHECK_EQ(dma_config.total_transfer_size, num_bytes_transferred,
                          $sformatf("exp_data_size: %0d obs_data_size: %0d",
-                                   dma_config.total_transfer_size, num_bytes_transfered))
+                                   dma_config.total_transfer_size, num_bytes_transferred))
         end
         // Check if aborted bit is set if there is a TL error
         `DV_CHECK_EQ(aborted, exp_aborted, "Aborted bit not set with TL error or DMA config err")
