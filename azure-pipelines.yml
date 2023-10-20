@@ -394,6 +394,29 @@ jobs:
       make -C hw/ip/otbn/util asm-check
     displayName: Assemble & link code snippets
 
+- job: otbn_crypto_tests
+  displayName: Run OTBN crypto tests
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  pool:
+    vmImage: ubuntu-20.04
+  timeoutInMinutes: 60
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: bazelCacheGcpKey
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
+  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    displayName: GCP key path
+    # Set the remote cache GCP key path
+  - bash: |
+      ci/bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+    displayName: Execute tests
+
 - job: chip_darjeeling_cw310
   displayName: CW310's Darjeeling Bitstream
   # Build CW310 variant of the Darjeeling toplevel design using Vivado
