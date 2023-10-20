@@ -55,6 +55,8 @@ enum RootCommandHierarchy {
     Version(command::version::Version),
     #[command(subcommand)]
     Status(command::status_cmd::StatusCommand),
+    #[command(subcommand)]
+    Certificate(command::certificate::CertificateCommand),
 
     // Flattened because `Greetings` is a subcommand hierarchy.
     #[cfg(feature = "demo_commands")]
