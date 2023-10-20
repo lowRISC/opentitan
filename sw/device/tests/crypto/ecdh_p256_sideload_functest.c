@@ -187,7 +187,10 @@ status_t key_exchange_test(void) {
 }
 
 static status_t test_setup(void) {
-  // Initialize the key manager and advance to OwnerRootKey state.
+  // Initialize the key manager and advance to OwnerRootKey state.  Note: the
+  // keymgr testutils set this up using software entropy, so there is no need
+  // to initialize the entropy complex first. However, this is of course not
+  // the expected setup in production.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
   TRY(keymgr_testutils_startup(&keymgr, &kmac));
@@ -195,9 +198,9 @@ static status_t test_setup(void) {
   TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
   TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
 
-  // Initialize entropy complex, which the key manager uses to clear sideloaded
-  // keys. The `keymgr_testutils_startup` function restarts the device, so this
-  // should happen afterwards.
+  // Initialize entropy complex for cryptolib, which the key manager uses to
+  // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
+  // the device, so this should happen afterwards.
   return entropy_complex_init();
 }
 
