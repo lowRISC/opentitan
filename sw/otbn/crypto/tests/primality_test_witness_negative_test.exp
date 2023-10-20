@@ -1,6 +1,2 @@
-# w0, w1 == (- (b^((w-1 / 2)) * R)) % w
-w0 = 0x9b70a02814edc6a217c49109bef18e7aec9a14569efc5bd2002884e71582663f
-w1 = 0xba0e3ecf6d6db86212f9f237bb3c271e9f0bdf2dcdd9645994dbb1a724893d67
-
 # Result from witness test: 0 (indicating "composite")
 w21 = 0
