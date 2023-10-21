@@ -46,6 +46,13 @@ load(
     "SIGVERIFY_LC_KEYS",
     "SLOTS",
 )
+load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_binary",
+    "opentitan_test",
+    "rsa_key_by_name",
+    new_cw310_params = "cw310_params",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -154,28 +161,77 @@ opentitan_functest(
 ]
 
 [
-    genrule(
-        name = "empty_test_slot_{}_corrupted_{}_bin_signed_{}".format(slot, device, key),
+    opentitan_binary(
+        name = "empty_test_slot_{}_{}".format(slot, key),
         testonly = True,
-        srcs = [":empty_test_slot_{}_{}_bin_signed_{}".format(slot, device, key)],
-        outs = ["empty_test_slot_{}_corrupted_{}.{}.signed.bin".format(slot, device, key)],
-        cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=1971 count=1 conv=notrunc status=none".format(slot),
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+        },
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        # We need to specify the manifest because the simulation environments do not
+        # specify one by default.
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        rsa_key = rsa_key_by_name(RSA_ONLY_KEY_STRUCTS, key),
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
     )
     for slot in SLOTS
-    for device in [
-        "sim_dv",
-        "fpga_cw310",
-    ]
     for key in SIGVERIFY_LC_KEYS
 ]
 
+# Extract the various signed binaries for corruption
+[
+    filegroup(
+        name = "empty_test_slot_{}_{}_{}_signed_bin".format(slot, key, group),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_{}".format(slot, key)],
+        output_group = "{}_signed_bin".format(group),
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+    for group in [
+        "fpga_cw310_rom_with_fake_keys",
+        "sim_dv",
+    ]
+]
+
+# Corrupt binaries
+# Note: the naming of the files is important for dvsim. The code expects fiel to be named:
+# - binary: <something>.<key_name>.signed.bin
+# - vmem: <something>.<key_name>.signed.64.vmem
+# - flash vmem: <something>.<key_name>.signed.64.scr.vmem
+[
+    genrule(
+        name = "empty_test_slot_{}_{}_corrupted_{}_signed_bin".format(slot, key, group),
+        testonly = True,
+        srcs = [":empty_test_slot_{}_{}_{}_signed_bin".format(slot, key, group)],
+        outs = ["empty_test_slot_{}_corrupted_{}.{}.signed.bin".format(slot, group, key)],
+        cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=1971 count=1 conv=notrunc status=none",
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+    for group in [
+        "fpga_cw310_rom_with_fake_keys",
+        "sim_dv",
+    ]
+]
+
 # The below three rule sets (bin_to_vmem, scramble_flash_vmem, and filegroup)
-# are needed to run `sigverify_always` test in DV.
+# are needed to run `sigverify_always` tests in DV.
 [
     bin_to_vmem(
-        name = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
+        name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
         testonly = True,
-        bin = "empty_test_slot_{}_corrupted_sim_dv_bin_signed_{}".format(slot, key),
+        bin = "empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for slot in SLOTS
@@ -184,24 +240,27 @@ opentitan_functest(
 
 [
     scramble_flash_vmem(
-        name = "empty_test_slot_{}_corrupted_sim_dv_scr_vmem64_signed_{}".format(slot, key),
+        name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
-        vmem = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
+        vmem = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
 ]
 
+# This file group is here to simplify the naming of the files in the hjson testplan:
+# the file group contains the files for all possible keys that follow the expected
+# name format specified by the tags.
 [
     filegroup(
         name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
         testonly = True,
         srcs = [
-            "empty_test_slot_{}_corrupted_sim_dv_{}_signed_{}".format(slot, file_type, key)
+            "empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
             for file_type in [
-                "bin",
-                "vmem64",
-                "scr_vmem64",
+                "signed_bin",
+                "vmem64_signed",
+                "scr_vmem64_signed",
             ]
             for key in SIGVERIFY_LC_KEYS
         ],

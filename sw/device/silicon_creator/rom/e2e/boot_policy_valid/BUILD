@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_binary",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
@@ -53,31 +55,8 @@ BOOT_POLICY_VALID_CASES = [
     },
     {
         "desc": "bad",
-        "suffix": "_corrupted",
+        "suffix": "_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin",
     },
-]
-
-[
-    opentitan_multislot_flash_binary(
-        name = "boot_policy_valid_img_a_{}_b_{}".format(
-            a["desc"],
-            b["desc"],
-        ),
-        testonly = True,
-        srcs = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a{}".format(a["suffix"]): {
-                "key": RSA_ONLY_KEY_STRUCTS[2],
-                "offset": SLOTS["a"],
-            },
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b{}".format(b["suffix"]): {
-                "key": RSA_ONLY_KEY_STRUCTS[2],
-                "offset": SLOTS["b"],
-            },
-        },
-        devices = ["fpga_cw310"],
-    )
-    for a in BOOT_POLICY_VALID_CASES
-    for b in BOOT_POLICY_VALID_CASES
 ]
 
 [
@@ -102,24 +81,30 @@ BOOT_POLICY_VALID_CASES = [
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "boot_policy_valid_{}_a_{}_b_{}".format(
             lc_state,
             a["desc"],
             b["desc"],
         ),
         cw310 = cw310_params(
+            assemble = "{{slot_a}}@{} {{slot_b}}@{}".format(
+                SLOTS["a"],
+                SLOTS["b"],
+            ),
+            binaries = {
+                # PROD keys can sign binaries able to run across all life cycle states.
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_rsa_prod_key_0{}".format(a["suffix"]): "slot_a",
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_rsa_prod_key_0{}".format(b["suffix"]): "slot_b",
+            },
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = "multislot",
-        ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
-            a["desc"],
-            b["desc"],
-        ),
-        targets = ["cw310_rom_with_fake_keys"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
     )
     for lc_state, lc_state_val in get_lc_items()
     for a in BOOT_POLICY_VALID_CASES
