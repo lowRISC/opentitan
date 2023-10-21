@@ -3,19 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
+)
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "hex",
     "hex_digits",
-)
-load(
-    "//rules:opentitan.bzl",
-    "opentitan_flash_binary",
 )
 load(
     "//rules:manifest.bzl",
@@ -90,91 +91,81 @@ BOOT_DATA_RECOVERY_CASES = [
     },
 ]
 
-[otp_json(
-    name = "boot_data_recovery_creator_sw_cfg_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    ),
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                # Set the min_sec version.
-                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(case["min_sec_ver"]),
-                # Set allowing use of default boot data in PROD LC state.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(
-                    CONST.HARDENED_TRUE if case["default_boot_data"] == "default" else CONST.HARDENED_FALSE,
-                ),
-            },
+[
+    otp_json(
+        name = "boot_data_recovery_creator_sw_cfg_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
         ),
-    ],
-) for case in BOOT_DATA_RECOVERY_CASES]
-
-[otp_image(
-    name = "otp_img_boot_data_recovery_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    ),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(case["lc_state"]),
-    overlays = STD_OTP_OVERLAYS + [":boot_data_recovery_creator_sw_cfg_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    )],
-) for case in BOOT_DATA_RECOVERY_CASES]
-
-[bitstream_splice(
-    name = "bitstream_boot_data_recovery_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    ),
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_boot_data_recovery_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    ),
-    meminfo = "//hw/bitstream:otp_mmi",
-    tags = maybe_skip_in_ci(getattr(
-        CONST.LCV,
-        case["lc_state"].upper(),
-    )),
-    update_usr_access = True,
-) for case in BOOT_DATA_RECOVERY_CASES]
-
-[opentitan_flash_binary(
-    name = "rom_e2e_boot_data_recovery_{}_{}".format(
-        case["lc_state"],
-        case["default_boot_data"],
-    ),
-    testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    devices = [
-        "fpga_cw310",
-    ],
-    manifest = manifest(
-        dict(
-            name = "boot_data_recovery_manifest_{}_{}".format(
-                case["lc_state"],
-                case["default_boot_data"],
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    # Set the min_sec version.
+                    "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(case["min_sec_ver"]),
+                    # Set allowing use of default boot data in PROD LC state.
+                    "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(
+                        CONST.HARDENED_TRUE if case["default_boot_data"] == "default" else CONST.HARDENED_FALSE,
+                    ),
+                },
             ),
-            address_translation = hex(CONST.HARDENED_FALSE),
-            identifier = hex(CONST.ROM_EXT),
-            security_version = hex(2),
-        ),
-    ),
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-) for case in BOOT_DATA_RECOVERY_CASES]
+        ],
+    )
+    for case in BOOT_DATA_RECOVERY_CASES
+]
 
 [
-    opentitan_functest(
+    otp_image(
+        name = "otp_img_boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(case["lc_state"]),
+        overlays = STD_OTP_OVERLAYS + [":boot_data_recovery_creator_sw_cfg_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        )],
+    )
+    for case in BOOT_DATA_RECOVERY_CASES
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        ),
+        src = "//hw/bitstream:rom_with_fake_keys",
+        data = ":otp_img_boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = maybe_skip_in_ci(getattr(
+            CONST.LCV,
+            case["lc_state"].upper(),
+        )),
+        update_usr_access = True,
+    )
+    for case in BOOT_DATA_RECOVERY_CASES
+]
+
+BOOT_DATA_RECOVERY_MANIFEST = manifest(
+    d = dict(
+        name = "boot_data_recovery_manifest",
+        address_translation = hex(CONST.HARDENED_FALSE),
+        identifier = hex(CONST.ROM_EXT),
+        security_version = hex(2),
+    ),
+)
+
+[
+    opentitan_test(
         name = "boot_data_recovery_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],
         ),
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
             bitstream = ":bitstream_boot_data_recovery_{}_{}".format(
                 case["lc_state"],
@@ -186,14 +177,20 @@ BOOT_DATA_RECOVERY_CASES = [
                 case["lc_state"].upper(),
             )),
         ),
-        key_struct = "fake_rsa_prod_key_0",
-        ot_flash_binary = ":rom_e2e_boot_data_recovery_{}_{}".format(
-            case["lc_state"],
-            case["default_boot_data"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        manifest = BOOT_DATA_RECOVERY_MANIFEST,
+        # PROD keys can sign binaries able to run across all life cycle states.
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            CONST.LCV.PROD,
         ),
-        signed = True,
-        targets = [
-            "cw310_rom_with_fake_keys",
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
     )
     for case in BOOT_DATA_RECOVERY_CASES
