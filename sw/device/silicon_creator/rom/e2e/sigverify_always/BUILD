@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "dv_params",
-    "opentitan_functest",
+    "opentitan_binary",
+    "opentitan_test",
 )
 load(
     "//rules:const.bzl",
@@ -19,7 +20,6 @@ load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
-    "opentitan_multislot_flash_binary",
 )
 load(
     "//rules:otp.bzl",
@@ -45,91 +45,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-[
-    opentitan_multislot_flash_binary(
-        name = "sigverify_always_img_a_{}_b_{}_{}".format(
-            "nothing" if slot == "b" else "bad",
-            "nothing" if slot == "a" else "bad",
-            key,
-        ),
-        testonly = True,
-        srcs = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_corrupted".format(slot): {
-                "key": key,
-                "offset": offset,
-            },
-        },
-        devices = [
-            "sim_dv",
-            "fpga_cw310",
-        ],
-    )
-    for slot, offset in SLOTS.items()
-    for key in SIGVERIFY_LC_KEYS
-]
-
-[
-    opentitan_multislot_flash_binary(
-        name = "sigverify_always_img_a_bad_b_bad_{}".format(key),
-        testonly = True,
-        srcs = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted": {
-                "key": key,
-                "offset": SLOTS["a"],
-            },
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted": {
-                "key": key,
-                "offset": SLOTS["b"],
-            },
-        },
-        devices = [
-            "sim_dv",
-            "fpga_cw310",
-        ],
-    )
-    for key in SIGVERIFY_LC_KEYS
-]
-
-# Since we cannot feed the `assemble_flash_image` rule that is instantiated by
-# the `opentitan_multislot_flash_binary` macro an empty dictionary, we create
-# two images with "nothing" in them by created files of all ones, and stitching
-# them together.
-[
-    genrule(
-        name = "sigverify_always_img_{}_nothing_{}_bin_signed_{}".format(slot, device, key),
-        outs = ["sigverify_always_img_{}_all_ones_{}_bin_signed_{}".format(slot, device, key)],
-        cmd_bash = "touch $(OUTS)",
-    )
-    for slot in SLOTS
-    for device in [
-        "sim_dv",
-        "fpga_cw310",
-    ]
-    for key in SIGVERIFY_LC_KEYS
-]
-
-[
-    opentitan_multislot_flash_binary(
-        name = "sigverify_always_img_a_nothing_b_nothing_{}".format(key),
-        testonly = True,
-        srcs = {
-            ":sigverify_always_img_a_nothing": {
-                "key": key,
-                "offset": SLOTS["a"],
-            },
-            ":sigverify_always_img_b_nothing": {
-                "key": key,
-                "offset": SLOTS["b"],
-            },
-        },
-        devices = [
-            "sim_dv",
-            "fpga_cw310",
-        ],
-    )
-    for key in SIGVERIFY_LC_KEYS
-]
 
 [otp_image(
     name = "otp_img_sigverify_always_{}".format(lc_state),
@@ -174,13 +89,27 @@ SIGVERIFY_BAD_CASES = [
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "sigverify_always_{}_a_{}_b_{}".format(
             lc_state,
             case["a"],
             case["b"],
         ),
         cw310 = cw310_params(
+            assemble = " ".join([
+                "{{slot_{}}}@{}".format(slot, addr)
+                for (slot, addr) in SLOTS.items()
+                if case[slot] == "bad"
+            ]),
+            binaries = {
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_{}_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin"
+                    .format(
+                    slot,
+                    filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0].rsa.name,
+                ): "slot_{}".format(slot)
+                for (slot, addr) in SLOTS.items()
+                if case[slot] == "bad"
+            },
             bitstream = ":bitstream_sigverify_always_{}".format(lc_state),
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
@@ -190,20 +119,9 @@ SIGVERIFY_BAD_CASES = [
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        dv = dv_params(
-            otp = ":otp_img_sigverify_always_{}".format(lc_state),
-            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-        ),
-        key_struct = "multislot",
-        ot_flash_binary = ":sigverify_always_img_a_{}_b_{}_{}".format(
-            case["a"],
-            case["b"],
-            filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0].rsa.name,
-        ),
-        targets = [
-            "dv",
-            "cw310_rom_with_fake_keys",
-        ],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
     )
     for case in SIGVERIFY_BAD_CASES
     for lc_state, lc_state_val in get_lc_items()
