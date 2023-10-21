@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -38,7 +38,7 @@ pub struct AssembleCommand {
     #[arg(short, long)]
     output: PathBuf,
     /// One or more filename@offset specifiers to assemble into an image.
-    #[arg(value_name = "FILE", required = true, num_args = 1..)]
+    #[arg(value_name = "FILE", required = true, num_args = 0..)]
     filename: Vec<String>,
 }
 
@@ -48,13 +48,19 @@ impl CommandDispatch for AssembleCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        // The `min_values` arg attribute should take care of this, but it doesn't.
-        ensure!(
-            !self.filename.is_empty(),
-            "You must supply at least one filename"
-        );
         let mut image = ImageAssembler::with_params(self.size, self.mirror);
-        image.parse(&self.filename)?;
+        // Filter out empty arguments that could appear e.g. because of bazel
+        // and also trim extra spaces if necessary.
+        let filenames = self
+            .filename
+            .iter()
+            .map(|x| x.trim())
+            .filter(|x| !x.is_empty())
+            .collect::<Vec<_>>();
+        if filenames.is_empty() {
+            log::warn!("No filenames provided, will produce an empty image")
+        }
+        image.parse(&filenames)?;
         let content = image.assemble()?;
         std::fs::write(&self.output, content)?;
         Ok(None)
