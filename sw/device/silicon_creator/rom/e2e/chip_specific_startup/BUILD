@@ -3,17 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
+)
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
     "get_lc_items",
-)
-load(
-    "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -39,26 +40,27 @@ package(default_visibility = ["//visibility:public"])
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "e2e_chip_specific_startup_{}".format(lc_state),
         srcs = ["chip_specific_startup.c"],
-        args = [],
         cw310 = cw310_params(
             bitstream = ":bitstream_chip_specific_startup_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
-            test_cmds = [
-                "--bitstream=\"$(location {bitstream})\"",
-                "--bootstrap=\"$(location {flash})\"",
-                "--otp-unprogrammed",
-            ],
+            test_cmd = """
+                --bitstream="{bitstream}"
+                --bootstrap="{firmware}"
+                --otp-unprogrammed
+            """,
+            test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
         ),
-        key_struct = get_key_structs_for_lc_state(
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
             lc_state_val,
-            spx = None,
-        )[0],
-        signed = True,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
+        ),
         deps = [
             "//hw/ip/csrng/data:csrng_regs",
             "//hw/ip/edn/data:edn_regs",
