@@ -90,25 +90,8 @@
       bazel: []
     }
     {
-      name: chip_sw_pwrmgr_sleep_all_reset_reqs
-      desc: '''Verify that the chip can go into normal sleep state and be reset by ALL reset req
-            sources.
-
-            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests. For each reset
-            source, enable the source and bring the chip to low power, issue a reset, and verify the
-            rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
-            reset_reason.
-            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
-            '''
-      stage: V2
-      si_stage: None
-      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
-      bazel: ["//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom"]
-    }
-    {
       name: chip_sw_pwrmgr_deep_sleep_por_reset
-      desc: '''Verify that the chip can go into deep sleep state and be reset by POR.
+      desc: '''Verify POR in deep sleep mode.
 
             This verifies that the pwrmgr can handle POR in deep sleep. The chip is placed
             in deep sleep, a POR is sent, and the wakeup cause is checked to be POR. This
@@ -125,12 +108,17 @@
         "PROD_END",
         "RMA",
       ]
+      features: [
+        "PWRMGR.LOW_POWER.DISABLE_POWER",
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.POR_REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_deep_sleep_por_reset"]
       bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_por_reset
-      desc: '''Verify that the chip can go into normal sleep state and be reset by POR.
+      desc: '''Verify POR in normal sleep mode.
 
             This verifies that the pwrmgr can handle POR in normal sleep. The chip is placed
             in normal sleep, a POR is sent, and the wakeup cause is checked to be POR. This
@@ -146,6 +134,10 @@
         "PROD",
         "PROD_END",
         "RMA",
+      ]
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_sleep_por_reset"]
       bazel: []
@@ -167,19 +159,40 @@
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
-      desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
-            sources.
+      desc: '''Verify resets by relevant reset sources in deep sleep mode.
 
-            This verifies ALL reset sources.
-            - 7 resets are generated randomly with deep sleeps
-            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
-            - esc reset is followed by normal mode because it does not work with sleep mode
-            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
+            - 4 resets are generated with deep sleep mode
+            - sysrst, wdog timer reset, rstmgr sw reset, and escalation reset
+            Notice rstmgr sw reset cannot be triggered in sleep mode.
+            Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
+            alert handler so that the reset triggers after setting sleep mode.
+            This verifies ALL programable or external reset sources. This also verifies
+            that the pwrmgr sequencing is working correctly as expected. X-ref'ed with
+            all individual IP tests. For each reset source, enable the source and bring
+            the chip to low power, issue a reset, and verify the rstmgr's `reset_info`
+            indicates the expected reset.
+            SiVal: The CPU must be enabled to enter sleep mode.
+            No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
       si_stage: None
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
-      bazel: []
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+      ]
+      tests: [
+        "chip_sw_pwrmgr_deep_sleep_all_reset_reqs",
+        "chip_sw_aon_timer_wdog_bite_reset",
+      ]
+      bazel: [
+        "//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
@@ -195,6 +208,15 @@
             '''
       stage: V2
       si_stage: None
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
       bazel: []
     }
@@ -316,12 +338,17 @@
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
       desc: '''Verify resets by relevant reset sources in sleep modes.
 
-            - 12 resets are generated randomly with normal/deep sleeps
-            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
-            - SW reset from rstmgr cannot be requested in sleep mode.
-            SiVal: What is SW POR? It seems to just set mio_in_i[46].
-            Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, and can configure the
+            - 4 resets are generated with normal and deep sleep mode each
+            - sysrst, wdog timer reset, rstmgr sw reset, and escalation reset
+            Notice rstmgr sw reset cannot be triggered in sleep mode.
+            Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
             alert handler so that the reset triggers after setting sleep mode.
+            This verifies ALL programable or external reset sources. This also verifies
+            that the pwrmgr sequencing is working correctly as expected. X-ref'ed with
+            all individual IP tests. For each reset source, enable the source and bring
+            the chip to low power, issue a reset, and verify the rstmgr's `reset_info`
+            indicates the expected reset.
+            SiVal: The CPU must be enabled to enter sleep mode.
             '''
       stage: V2
       si_stage: SV3
@@ -333,12 +360,14 @@
         "RMA",
       ]
       features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
         "PWRMGR.RESET.ESCALATION_REQUEST",
-        "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
       bazel: []
