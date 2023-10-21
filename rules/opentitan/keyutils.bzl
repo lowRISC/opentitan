@@ -13,3 +13,14 @@ def rsa_key_for_lc_state(key_structs, hw_lc_state):
     return {
         keys[0].rsa.label: keys[0].rsa.name,
     }
+
+def rsa_key_by_name(key_structs, nickname):
+    """Return a dictionary containing a single key that matches the name given.
+    The format of the dictionary is compatible with opentitan_test.
+    """
+    keys = [k for k in key_structs if (k.rsa != None and k.rsa.name == nickname)]
+    if len(keys) == 0:
+        fail("There are no RSA keys compatible with name {} in key structs".format(nickname))
+    return {
+        keys[0].rsa.label: keys[0].rsa.name,
+    }
