@@ -149,6 +149,9 @@ opentitan_test(
         "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "@//hw/top_earlgrey:sim_dv": None,
     },
+    # We need to specify the manifest because the simulation environments do not
+    # specify one by default.
+    manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.TEST_UNLOCKED0,
@@ -187,6 +190,9 @@ opentitan_test(
         "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "@//hw/top_earlgrey:sim_dv": None,
     },
+    # We need to specify the manifest because the simulation environments do not
+    # specify one by default.
+    manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.TEST_UNLOCKED0,
