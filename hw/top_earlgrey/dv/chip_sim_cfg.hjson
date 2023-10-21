@@ -998,7 +998,7 @@
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
-      uvm_test_seq: chip_sw_random_sleep_all_reset_vseq
+      uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_reset_reqs_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
