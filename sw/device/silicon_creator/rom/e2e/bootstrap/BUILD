@@ -3,20 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
+    "//rules/opentitan:defs.bzl",
+    "cw310_jtag_params",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
+)
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
     "CONST",
-    "hex",
-)
-load(
-    "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
 )
 load(
     "//rules:otp.bzl",
@@ -83,26 +82,26 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
-    cw310 = cw310_params(
+    cw310 = cw310_jtag_params(
         bitstream = ":bitstream_bootstrap_rma",
-        test_cmds = [
-            # We need to clear the bitstream between consecutive runs of this
-            # test since it modifies OTP state (i.e., the LC state).
-            "--clear-bitstream",
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        # We need to clear the bitstream between consecutive runs of this
+        # test since it modifies OTP state (i.e., the LC state).
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    key_struct = get_key_structs_for_lc_state(
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.PROD,
-        spx = None,
-    )[0],
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -112,19 +111,23 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(
+        # Since the bitstream disables bootstrap, there is no firmware to
+        # load into the chip.  However, opentitan_functest wants to build a
+        # binary target.  We'll build an unsigned do-nothing binary.
+        binaries = {
+            "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
+        },
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-        ],
+        test_cmd = """
+            --bitstream="{bitstream}"
+        """,
+        test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
     ),
-    # Since the bitstream disables bootstrap, there is no firmware to
-    # load into the chip.  However, opentitan_functest wants to build a
-    # binary target.  We'll build an unsigned do-nothing binary.
-    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a",
-    signed = False,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    manifest = None,
 )
