@@ -218,10 +218,10 @@ module top_darjeeling #(
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
   output tlul_pkg::tl_h2d_t       ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t       ctn_tl_d2h_i,
-  input  soc_proxy_pkg::soc_alert_req_t [7:0] soc_fatal_alert_req_i,
-  output soc_proxy_pkg::soc_alert_rsp_t [7:0] soc_fatal_alert_rsp_o,
-  input  soc_proxy_pkg::soc_alert_req_t [19:0] soc_recov_alert_req_i,
-  output soc_proxy_pkg::soc_alert_rsp_t [19:0] soc_recov_alert_rsp_o,
+  input  soc_proxy_pkg::soc_alert_req_t [23:0] soc_fatal_alert_req_i,
+  output soc_proxy_pkg::soc_alert_rsp_t [23:0] soc_fatal_alert_rsp_o,
+  input  soc_proxy_pkg::soc_alert_req_t [3:0] soc_recov_alert_req_i,
+  output soc_proxy_pkg::soc_alert_rsp_t [3:0] soc_recov_alert_rsp_o,
   input  logic       soc_wkup_async_i,
   input  logic       soc_rst_req_async_i,
   input  logic [31:0] soc_intr_async_i,
@@ -1549,26 +1549,26 @@ module top_darjeeling #(
       // [29]: fatal_alert_external_5
       // [30]: fatal_alert_external_6
       // [31]: fatal_alert_external_7
-      // [32]: recov_alert_external_0
-      // [33]: recov_alert_external_1
-      // [34]: recov_alert_external_2
-      // [35]: recov_alert_external_3
-      // [36]: recov_alert_external_4
-      // [37]: recov_alert_external_5
-      // [38]: recov_alert_external_6
-      // [39]: recov_alert_external_7
-      // [40]: recov_alert_external_8
-      // [41]: recov_alert_external_9
-      // [42]: recov_alert_external_10
-      // [43]: recov_alert_external_11
-      // [44]: recov_alert_external_12
-      // [45]: recov_alert_external_13
-      // [46]: recov_alert_external_14
-      // [47]: recov_alert_external_15
-      // [48]: recov_alert_external_16
-      // [49]: recov_alert_external_17
-      // [50]: recov_alert_external_18
-      // [51]: recov_alert_external_19
+      // [32]: fatal_alert_external_8
+      // [33]: fatal_alert_external_9
+      // [34]: fatal_alert_external_10
+      // [35]: fatal_alert_external_11
+      // [36]: fatal_alert_external_12
+      // [37]: fatal_alert_external_13
+      // [38]: fatal_alert_external_14
+      // [39]: fatal_alert_external_15
+      // [40]: fatal_alert_external_16
+      // [41]: fatal_alert_external_17
+      // [42]: fatal_alert_external_18
+      // [43]: fatal_alert_external_19
+      // [44]: fatal_alert_external_20
+      // [45]: fatal_alert_external_21
+      // [46]: fatal_alert_external_22
+      // [47]: fatal_alert_external_23
+      // [48]: recov_alert_external_0
+      // [49]: recov_alert_external_1
+      // [50]: recov_alert_external_2
+      // [51]: recov_alert_external_3
       .alert_tx_o  ( alert_tx[51:23] ),
       .alert_rx_i  ( alert_rx[51:23] ),
 

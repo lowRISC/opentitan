@@ -1497,46 +1497,46 @@ pub enum TopDarjeelingAlertId {
     SocProxyFatalAlertExternal6 = 30,
     /// soc_proxy_fatal_alert_external_7
     SocProxyFatalAlertExternal7 = 31,
+    /// soc_proxy_fatal_alert_external_8
+    SocProxyFatalAlertExternal8 = 32,
+    /// soc_proxy_fatal_alert_external_9
+    SocProxyFatalAlertExternal9 = 33,
+    /// soc_proxy_fatal_alert_external_10
+    SocProxyFatalAlertExternal10 = 34,
+    /// soc_proxy_fatal_alert_external_11
+    SocProxyFatalAlertExternal11 = 35,
+    /// soc_proxy_fatal_alert_external_12
+    SocProxyFatalAlertExternal12 = 36,
+    /// soc_proxy_fatal_alert_external_13
+    SocProxyFatalAlertExternal13 = 37,
+    /// soc_proxy_fatal_alert_external_14
+    SocProxyFatalAlertExternal14 = 38,
+    /// soc_proxy_fatal_alert_external_15
+    SocProxyFatalAlertExternal15 = 39,
+    /// soc_proxy_fatal_alert_external_16
+    SocProxyFatalAlertExternal16 = 40,
+    /// soc_proxy_fatal_alert_external_17
+    SocProxyFatalAlertExternal17 = 41,
+    /// soc_proxy_fatal_alert_external_18
+    SocProxyFatalAlertExternal18 = 42,
+    /// soc_proxy_fatal_alert_external_19
+    SocProxyFatalAlertExternal19 = 43,
+    /// soc_proxy_fatal_alert_external_20
+    SocProxyFatalAlertExternal20 = 44,
+    /// soc_proxy_fatal_alert_external_21
+    SocProxyFatalAlertExternal21 = 45,
+    /// soc_proxy_fatal_alert_external_22
+    SocProxyFatalAlertExternal22 = 46,
+    /// soc_proxy_fatal_alert_external_23
+    SocProxyFatalAlertExternal23 = 47,
     /// soc_proxy_recov_alert_external_0
-    SocProxyRecovAlertExternal0 = 32,
+    SocProxyRecovAlertExternal0 = 48,
     /// soc_proxy_recov_alert_external_1
-    SocProxyRecovAlertExternal1 = 33,
+    SocProxyRecovAlertExternal1 = 49,
     /// soc_proxy_recov_alert_external_2
-    SocProxyRecovAlertExternal2 = 34,
+    SocProxyRecovAlertExternal2 = 50,
     /// soc_proxy_recov_alert_external_3
-    SocProxyRecovAlertExternal3 = 35,
-    /// soc_proxy_recov_alert_external_4
-    SocProxyRecovAlertExternal4 = 36,
-    /// soc_proxy_recov_alert_external_5
-    SocProxyRecovAlertExternal5 = 37,
-    /// soc_proxy_recov_alert_external_6
-    SocProxyRecovAlertExternal6 = 38,
-    /// soc_proxy_recov_alert_external_7
-    SocProxyRecovAlertExternal7 = 39,
-    /// soc_proxy_recov_alert_external_8
-    SocProxyRecovAlertExternal8 = 40,
-    /// soc_proxy_recov_alert_external_9
-    SocProxyRecovAlertExternal9 = 41,
-    /// soc_proxy_recov_alert_external_10
-    SocProxyRecovAlertExternal10 = 42,
-    /// soc_proxy_recov_alert_external_11
-    SocProxyRecovAlertExternal11 = 43,
-    /// soc_proxy_recov_alert_external_12
-    SocProxyRecovAlertExternal12 = 44,
-    /// soc_proxy_recov_alert_external_13
-    SocProxyRecovAlertExternal13 = 45,
-    /// soc_proxy_recov_alert_external_14
-    SocProxyRecovAlertExternal14 = 46,
-    /// soc_proxy_recov_alert_external_15
-    SocProxyRecovAlertExternal15 = 47,
-    /// soc_proxy_recov_alert_external_16
-    SocProxyRecovAlertExternal16 = 48,
-    /// soc_proxy_recov_alert_external_17
-    SocProxyRecovAlertExternal17 = 49,
-    /// soc_proxy_recov_alert_external_18
-    SocProxyRecovAlertExternal18 = 50,
-    /// soc_proxy_recov_alert_external_19
-    SocProxyRecovAlertExternal19 = 51,
+    SocProxyRecovAlertExternal3 = 51,
     /// sram_ctrl_ret_aon_fatal_error
     SramCtrlRetAonFatalError = 52,
     /// rv_dm_fatal_fault
@@ -1669,26 +1669,26 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             29 => Ok(Self::SocProxyFatalAlertExternal5),
             30 => Ok(Self::SocProxyFatalAlertExternal6),
             31 => Ok(Self::SocProxyFatalAlertExternal7),
-            32 => Ok(Self::SocProxyRecovAlertExternal0),
-            33 => Ok(Self::SocProxyRecovAlertExternal1),
-            34 => Ok(Self::SocProxyRecovAlertExternal2),
-            35 => Ok(Self::SocProxyRecovAlertExternal3),
-            36 => Ok(Self::SocProxyRecovAlertExternal4),
-            37 => Ok(Self::SocProxyRecovAlertExternal5),
-            38 => Ok(Self::SocProxyRecovAlertExternal6),
-            39 => Ok(Self::SocProxyRecovAlertExternal7),
-            40 => Ok(Self::SocProxyRecovAlertExternal8),
-            41 => Ok(Self::SocProxyRecovAlertExternal9),
-            42 => Ok(Self::SocProxyRecovAlertExternal10),
-            43 => Ok(Self::SocProxyRecovAlertExternal11),
-            44 => Ok(Self::SocProxyRecovAlertExternal12),
-            45 => Ok(Self::SocProxyRecovAlertExternal13),
-            46 => Ok(Self::SocProxyRecovAlertExternal14),
-            47 => Ok(Self::SocProxyRecovAlertExternal15),
-            48 => Ok(Self::SocProxyRecovAlertExternal16),
-            49 => Ok(Self::SocProxyRecovAlertExternal17),
-            50 => Ok(Self::SocProxyRecovAlertExternal18),
-            51 => Ok(Self::SocProxyRecovAlertExternal19),
+            32 => Ok(Self::SocProxyFatalAlertExternal8),
+            33 => Ok(Self::SocProxyFatalAlertExternal9),
+            34 => Ok(Self::SocProxyFatalAlertExternal10),
+            35 => Ok(Self::SocProxyFatalAlertExternal11),
+            36 => Ok(Self::SocProxyFatalAlertExternal12),
+            37 => Ok(Self::SocProxyFatalAlertExternal13),
+            38 => Ok(Self::SocProxyFatalAlertExternal14),
+            39 => Ok(Self::SocProxyFatalAlertExternal15),
+            40 => Ok(Self::SocProxyFatalAlertExternal16),
+            41 => Ok(Self::SocProxyFatalAlertExternal17),
+            42 => Ok(Self::SocProxyFatalAlertExternal18),
+            43 => Ok(Self::SocProxyFatalAlertExternal19),
+            44 => Ok(Self::SocProxyFatalAlertExternal20),
+            45 => Ok(Self::SocProxyFatalAlertExternal21),
+            46 => Ok(Self::SocProxyFatalAlertExternal22),
+            47 => Ok(Self::SocProxyFatalAlertExternal23),
+            48 => Ok(Self::SocProxyRecovAlertExternal0),
+            49 => Ok(Self::SocProxyRecovAlertExternal1),
+            50 => Ok(Self::SocProxyRecovAlertExternal2),
+            51 => Ok(Self::SocProxyRecovAlertExternal3),
             52 => Ok(Self::SramCtrlRetAonFatalError),
             53 => Ok(Self::RvDmFatalFault),
             54 => Ok(Self::RvPlicFatalFault),
@@ -2123,6 +2123,38 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 99
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyFatalAlertExternal7 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal8 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal9 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal10 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal11 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal12 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal13 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal14 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal15 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal16 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal17 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal18 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal19 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal20 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal21 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal22 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
+    // SocProxyFatalAlertExternal23 -> TopDarjeelingAlertPeripheral::SocProxy
+    TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal0 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal1 -> TopDarjeelingAlertPeripheral::SocProxy
@@ -2130,38 +2162,6 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 99
     // SocProxyRecovAlertExternal2 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SocProxyRecovAlertExternal3 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal4 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal5 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal6 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal7 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal8 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal9 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal10 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal11 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal12 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal13 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal14 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal15 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal16 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal17 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal18 -> TopDarjeelingAlertPeripheral::SocProxy
-    TopDarjeelingAlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal19 -> TopDarjeelingAlertPeripheral::SocProxy
     TopDarjeelingAlertPeripheral::SocProxy,
     // SramCtrlRetAonFatalError -> TopDarjeelingAlertPeripheral::SramCtrlRetAon
     TopDarjeelingAlertPeripheral::SramCtrlRetAon,
