@@ -20,11 +20,18 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_resets_lib.h"
+#include "sw/device/tests/pwrmgr_sleep_resets_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// In dvsim, one run
+// with --waves can take
+// 1.874h  | 38.068ms
+// without --waves,
+// 38.072m | 39.484ms
+
 OTTF_DEFINE_TEST_CONFIG();
+
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 bool test_main(void) {
@@ -71,23 +78,23 @@ bool test_main(void) {
   CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterResets, &reset_case));
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterResets));
   LOG_INFO("New reset event");
-  LOG_INFO("  case %d, normal sleep mode", reset_case);
+  LOG_INFO("  case %d, deep sleep mode", reset_case);
 
   switch (reset_case) {
     case 0:
-      LOG_INFO("Sysrst reset in normal sleep mode");
+      LOG_INFO("Sysrst reset in deep sleep mode");
       config_sysrst(kTopEarlgreyPinmuxInselIor13);
-      enter_sleep_for_sysrst(/*deep_sleep=*/false);
+      enter_sleep_for_sysrst(/*deep_sleep=*/true);
       break;
     case 1:
-      LOG_INFO("Watchdog reset in normal sleep mode");
+      LOG_INFO("Watchdog reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
-      enter_sleep_for_wdog(/*deep_sleep=*/false);
+      enter_sleep_for_wdog(/*deep_sleep=*/true);
       break;
     case 2:
-      LOG_INFO("Rstmgr software reset in normal sleep mode");
+      LOG_INFO("Rstmgr software reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
       LOG_INFO("Device reset from sw");
@@ -98,10 +105,10 @@ bool test_main(void) {
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
       // Assert rstmgr software reset request.
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(rstmgr));
-      enter_sleep_for_wdog(/*deep_sleep=*/false);
+      enter_sleep_for_wdog(/*deep_sleep=*/true);
       break;
     case 3:
-      LOG_INFO("Escalation reset in normal sleep mode");
+      LOG_INFO("Booting and running normal sleep followed by escalation reset");
       LOG_INFO("Let SV wait timer reset");
       trigger_escalation();
       break;

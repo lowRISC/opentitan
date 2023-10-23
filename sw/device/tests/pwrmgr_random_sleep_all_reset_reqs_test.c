@@ -20,7 +20,7 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_resets_lib.h"
+#include "sw/device/tests/pwrmgr_sleep_resets_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

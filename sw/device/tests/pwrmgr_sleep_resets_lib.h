@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_RESETS_LIB_H_
-#define OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_RESETS_LIB_H_
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_RESETS_LIB_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_RESETS_LIB_H_
 
 #include <stdint.h>
 
@@ -95,4 +95,4 @@ void enter_sleep_for_sysrst(bool deep_sleep);
  */
 void ottf_external_isr(void);
 
-#endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_RESETS_LIB_H_
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_RESETS_LIB_H_
