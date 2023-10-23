@@ -130,6 +130,24 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "rom_patch_unittest",
+    srcs = ["//sw/lib/sw/device/silicon_creator:rom_patch_unittest.cc"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/lib/sw/device/base:hardened_memory",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:rom_patch",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "manifest",
     srcs = dual_inputs(

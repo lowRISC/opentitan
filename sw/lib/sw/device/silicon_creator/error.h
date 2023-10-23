@@ -100,6 +100,8 @@ enum module_ {
   \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
   \
+  X(kErrorRomPatchFailed,             ERROR_(1, kModuleRom, kInternal)), \
+  \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   \
