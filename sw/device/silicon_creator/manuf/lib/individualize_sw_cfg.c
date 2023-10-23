@@ -12,6 +12,8 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
+#include "otp_ctrl_regs.h"  // Generated.
+
 /**
  * Writes OTP values to target OTP `partition`.
  *
@@ -30,6 +32,18 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
                               dif_otp_ctrl_partition_t partition,
                               const otp_kv_t *kv, size_t len) {
   for (size_t i = 0; i < len; ++i) {
+    // We purposely skip the provisioning of the flash data region default
+    // configuration as it must be enabled only after the OTP SECRET1
+    // partition has been provisioned. Since OTP SECRET1 provisioning requires
+    // the HW_CFG partition to be provisioned to use the CSRNG SW interface,
+    // there is a delicate order of operations in which this field is
+    // provisioned. Therefore we require explicit provisioning of this field
+    // immediately before the transport image is loaded, after all other
+    // provisioning is complete.
+    if (kv[i].offset ==
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET) {
+      continue;
+    }
     uint32_t offset;
     TRY(dif_otp_ctrl_relative_address(partition, kv[i].offset, &offset));
     switch (kv[i].type) {
@@ -90,15 +104,24 @@ status_t manuf_individualize_device_creator_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                     kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_owner_sw_cfg(
+status_t manuf_individualize_device_flash_data_default_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
-                    kOtpKvOwnerSwCfgSize));
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionCreatorSwCfg,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
+  TRY(otp_ctrl_testutils_dai_write32(
+      otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, offset,
+      &kCreatorSwCfgFlashDataDefaultCfgValue, /*len=*/1));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_creator_sw_cfg_lock(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
   return OK_STATUS();
 }
 
@@ -108,6 +131,14 @@ status_t manuf_individualize_device_creator_sw_cfg_check(
   TRY(dif_otp_ctrl_is_digest_computed(
       otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_owner_sw_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
+                    kOtpKvOwnerSwCfgSize));
+  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
+  return OK_STATUS();
 }
 
 status_t manuf_individualize_device_owner_sw_cfg_check(

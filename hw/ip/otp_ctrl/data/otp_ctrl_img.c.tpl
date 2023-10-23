@@ -63,7 +63,9 @@ ${fileheader}
     else:
       raise f"Invalid alignment: {alignment}"
 
-    base_declaration = f"static const {type_str} {ToConstLabelValue(item['name'])}"
+    base_declaration = f"const {type_str} {ToConstLabelValue(item['name'])}"
+    if item["name"] != "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG":
+      base_declaration = "static " + base_declaration
 
     if item["num_items"] == 1:
       return f"{base_declaration} = {item['values'][0]};"
