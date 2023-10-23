@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_resets_lib.h"
+#include "sw/device/tests/pwrmgr_sleep_resets_lib.h"
 
 #include <assert.h>
 #include <limits.h>
