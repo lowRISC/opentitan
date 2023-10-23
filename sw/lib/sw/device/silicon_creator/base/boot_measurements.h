@@ -28,10 +28,12 @@ typedef struct boot_measurements {
    * binding registers.
    */
   keymgr_binding_value_t rom_ext;
+  keymgr_binding_value_t rom_patch;
 } boot_measurements_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_ext, 0);
-OT_ASSERT_SIZE(boot_measurements_t, 32);
+OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_patch, 32);
+OT_ASSERT_SIZE(boot_measurements_t, 64);
 
 extern boot_measurements_t boot_measurements;
 
