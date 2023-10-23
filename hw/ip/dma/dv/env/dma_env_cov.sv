@@ -41,8 +41,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_transfer_width: coverpoint dma_config.per_transfer_width{
     bins one_byte = {0};
     bins two_byte = {1};
-    bins fourbyte = {3};
-    bins reserved = {[0:$]} with (!(item inside {0,1,3}));
+    bins fourbyte = {2};
+    bins reserved = {[0:$]} with (!(item inside {0,1,2}));
   }
   // Cross of transfer width and total transfer size
   cp_transfer_width_x_transfer_size: cross cp_transfer_width, cp_transfer_size;
@@ -92,7 +92,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_range_lock: coverpoint dma_config.mem_range_lock{
     bins unlocked = {MuBi4True};
     bins locked = {MuBi4False};
-    bins reserved = {[0:$]} with (!(item inside {MuBi4True, MuBi4False}));
+// TODO: this faults with vcs
+//  bins reserved = {[0:$]} with (!(item inside {MuBi4True, MuBi4False}));
   }
   // handhshake interrupt enable
   cp_handshake_intr: coverpoint dma_config.handshake_intr_en;

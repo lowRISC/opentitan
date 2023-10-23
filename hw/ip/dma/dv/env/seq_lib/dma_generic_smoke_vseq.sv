@@ -72,9 +72,7 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
                            1'b1); // Go
       poll_status();
       clear();
-      delay(10);
       stop_device();
-      delay(10);
       apply_resets_concurrently();
       delay(10);
       // Reset config

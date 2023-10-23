@@ -26,9 +26,9 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
-      handshake == 1'b1; //disable hardware handhake mode
+      handshake == 1'b1; // Enable hardware handhake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
-      clear_int_src == 0;) // disable clearing of FIFO interrupt
+      clear_int_src == 0;) // Disable clearing of FIFO interrupt
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
   endfunction
@@ -42,6 +42,9 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
     `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns), UVM_LOW)
 
     for (int i = 0; i < num_txns; i++) begin
+      bit stop = 1'b0;
+      int status;
+
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
       randomise_item(dma_config);
       run_common_config(dma_config);
@@ -54,22 +57,49 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
                            dma_config.direction, // Direction
                            1'b1); // Go
       `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", dma_config.lsio_trigger_i), UVM_HIGH)
-      set_hardware_handshake_intr(dma_config.lsio_trigger_i);
-      delay(5); // wait for DMA state change
       fork
+        // Wait for completion of the entire transfer
         begin
-          wait_for_idle();
+          wait_for_completion(status);
+          stop = 1'b1;
         end
+        // Waggle the interrupt lines up and down at random times to keep the data moving
         begin
-          // Wait for transmission of a number of bytes before releasing
-          // hardware handshake interrupt
-          uint num_bytes_per_txn = dma_config.transfer_width_to_num_bytes(
-                                              dma_config.per_transfer_width);
-          uint wait_bytes = $urandom_range(1, dma_config.total_transfer_size - num_bytes_per_txn);
-          `uvm_info(`gfn, $sformatf("wait_bytes = %0d", wait_bytes), UVM_HIGH)
-          wait_num_bytes_transfer(wait_bytes);
-          `uvm_info(`gfn, $sformatf("Release hardware handshake interrupt"), UVM_HIGH)
-          release_hardware_handshake_intr();
+          uint bytes_to_move = dma_config.total_transfer_size;
+          while (!stop) begin
+            uint num_bytes_per_txn;
+            uint bytes_moved;
+            uint wait_bytes;
+
+            set_hardware_handshake_intr(dma_config.lsio_trigger_i);
+
+            // Wait for transmission of a number of bytes before releasing
+            // hardware handshake interrupt
+            num_bytes_per_txn = dma_config.transfer_width_to_num_bytes(
+                                                dma_config.per_transfer_width);
+            wait_bytes = $urandom_range(1, dma_config.chunk_data_size - num_bytes_per_txn);
+
+            bytes_moved = get_bytes_written(dma_config);
+            if (bytes_moved > bytes_to_move) begin
+              `uvm_fatal(`gfn, $sformatf("Too many bytes moved = %0d, exceeds %0d", bytes_moved,
+                         bytes_to_move))
+            end
+            if (wait_bytes > bytes_to_move - bytes_moved) begin
+              wait_bytes = bytes_to_move - bytes_moved;
+            end
+
+            `uvm_info(`gfn, $sformatf("wait_bytes = %0d", wait_bytes), UVM_HIGH)
+
+            // Delay until the chosen number of additional bytes have been transferred
+            if (|wait_bytes) begin
+              wait_num_bytes_transfer(bytes_moved + wait_bytes);
+            end else begin
+              // Processing still ongoing; parallel task `wait_for_completion` handles termination
+              delay(1);
+            end
+            `uvm_info(`gfn, $sformatf("Release hardware handshake interrupt"), UVM_HIGH)
+            release_hardware_handshake_intr();
+          end
         end
       join
 
@@ -79,15 +109,14 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       end
 
       clear();
-      delay(10);
       stop_device();
-      delay(10);
       apply_resets_concurrently();
       delay(10);
       // Reset config
       dma_config.reset_config();
       clear_memory();
       enable_interrupt();
+      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
     `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_LOW)
