@@ -808,7 +808,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       "sha2_digest_13",
       "sha2_digest_14",
       "sha2_digest_15": begin
-        int digest_idx = get_digest_index(csr.get_name());
+        int digest_idx = get_index_from_reg_name(csr.get_name());
         // By default, the hardware outputs little-endian data for each digest (32 bits). But DPI
         // functions expect output to be big-endian. Thus we should flip the expected value if
         // digest_swap is zero.
@@ -861,7 +861,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
     bit [63:0] addr;
     asid_encoding_e asid;
     bit [7:0] msg_q[];
-    int j;
 
     msg_q = new[dma_config.total_transfer_size];
 
@@ -879,16 +878,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
     end
 
-    j = 3;
     for (int i = 0; i < dma_config.total_transfer_size; i++) begin
-      msg_q[j] = get_model_data(asid, addr);
-
       // Convert endianness on 32-bit word from little endian to big endian
-      if ((j % 4) == 0) begin
-        j = i + 4;
-      end else begin
-        j--;
-      end
+      msg_q[i ^ 3] = get_model_data(asid, addr);
       addr++;
     end
 
