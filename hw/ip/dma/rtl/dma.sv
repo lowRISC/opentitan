@@ -896,7 +896,7 @@ module dma
           bad_dst_addr = 1'b1;
         end
 
-        if (mubi4_test_true_loose(mubi4_t'(reg2hw.range_regwen.q))) begin
+        if (!reg2hw.range_valid.q) begin
           bad_go_config = 1'b1;
         end
 
