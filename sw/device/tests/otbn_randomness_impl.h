@@ -10,6 +10,17 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 
 /**
+ * Prepares the OTBN randomness test.
+ *
+ * Does the same as otbn_randomness_test_start() without
+ * executing the test.
+ *
+ * @param otbn A OTBN dif handle.
+ * @param iters The number of entropy requests to the RND CSR.
+ */
+void otbn_randomness_test_prepare(dif_otbn_t *otbn, uint32_t iters);
+
+/**
  * Starts OTBN randomness test.
  *
  * Requires EDN0 and EDN1 to be serving entropy, as well as an initialized
