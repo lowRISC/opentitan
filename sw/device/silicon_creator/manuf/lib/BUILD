@@ -143,6 +143,7 @@ cc_library(
     deps = [
         ":otp_img_types",
         ":util",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
@@ -166,6 +167,12 @@ opentitan_test(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
         tags = ["manuf"],
+        test_cmd = """
+        --clear-bitstream
+        --bitstream={bitstream}
+        --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/individualize_sw_cfg",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -176,7 +183,8 @@ opentitan_test(
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
