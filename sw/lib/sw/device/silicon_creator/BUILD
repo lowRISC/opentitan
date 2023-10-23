@@ -92,6 +92,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rom_patch",
+    srcs = ["rom_patch.c"],
+    hdrs = ["rom_patch.h"],
+    deps = [
+        ":error",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/lib/sw/device/base:hardened_memory",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
+    ],
+)
+
 dual_cc_library(
     name = "crc32",
     srcs = dual_inputs(
@@ -135,6 +152,8 @@ exports_files([
     "mock_boot_data.h",
     "mock_manifest.h",
     "mock_shutdown.h",
+    "rom_patch.c",
+    "rom_patch.h",
     "shutdown.c",
     "shutdown.h",
 ])
