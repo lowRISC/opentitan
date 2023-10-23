@@ -78,6 +78,8 @@ otp_json(
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
+                # Enable flash data page scrambling and ECC.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
