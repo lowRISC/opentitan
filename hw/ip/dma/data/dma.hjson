@@ -278,6 +278,19 @@
         }
       ]
     }
+    { name: "RANGE_VALID"
+      desc: "Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "RANGE_REGWEN"
+      fields: [
+        { name: "range_valid"
+          desc: "Once set the enabled memory base and limit registers are valid."
+          bits: "0"
+          resval: "0"
+        }
+      ]
+    }
     { name: "RANGE_REGWEN"
       desc: "Used to lock the DMA enabled memory range configuration registers."
       swaccess: "rw0c"
@@ -724,7 +737,7 @@
         ]
       }
     }
-    { skipto: "0x124" }
+    { skipto: "0x128" }
     { multireg: {
         name: "INT_SOURCE_WR_VAL"
         desc: "Write value for interrupt clearing write."
