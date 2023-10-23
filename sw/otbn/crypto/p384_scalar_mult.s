@@ -87,21 +87,21 @@ p384_scalar_mult:
   /* Arithmetic masking:
    1. Generate a random mask r
    2. Subtract masks from projective x coordinate
-      (x, y, z) -> ((x - m) mod p,
+      (x, y, z) -> ((x - r) mod p,
                      y,
                      z)
    3. Convert masked curve point back to affine
       form.
    4. Multiply mask with z^-1 for use in
       affine space. */
-  
+
   /* Load domain parameter.
      [w13,w12] = dmem[p384_p] */
   li        x2, 12
   la        x4, p384_p
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
-  
+
   /* Fetch a fresh randomness for mask.
      [w20, w19, w18] <= URND() = r */
   bn.wsrr   w18, 0x2 /* URND */
@@ -146,7 +146,7 @@ p384_scalar_mult:
   /* Get modular inverse z^-1 of projective z coordinate
      and multiply the random masks with z^-1 to
      also convert them into affine space. */
-  
+
   /* Load domain parameter.
      [w13,w12] = dmem[p384_p] */
   li        x2, 12
@@ -154,7 +154,7 @@ p384_scalar_mult:
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
-  /* Move previously stored mask r and z^-1 into inpud WDRs
+  /* Move previously stored mask r and z^-1 into input WDRs
      for multiplication. */
   li        x2, 10
   bn.lid    x2++, 0(x21)

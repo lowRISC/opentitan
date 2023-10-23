@@ -541,10 +541,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w6, w16
-  bn.mov    w7, w17
+  bn.sel    w6, w16, w10, C
+  bn.sel    w7, w17, w11, C
 
   /* 5: [w9, w8] = t4 <= X2+Y2 = dmem[x27+0]+dmem[x27+64] */
   bn.lid    x22, 0(x27)
@@ -555,10 +553,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 6: [w7, w6] = t3 <= t3*t4 = [w7, w6]*[w9, w8] */
   bn.mov    w10, w6
@@ -574,20 +570,16 @@ proj_add_p384:
   bn.addc   w17, w1, w3
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 8: [w7, w6] = t3 <= t3-t4 = [w7, w6]-[w9, w8] */
   bn.sub    w16, w6, w8
   bn.subb   w17, w7, w9
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w6, w16
-  bn.mov    w7, w17
+  bn.sel    w6, w10, w16, C
+  bn.sel    w7, w11, w17, C
 
   /* 9: [w9, w8] = t4 <= Y1+Z1 = dmem[x26+64]+dmem[x26+128] */
   bn.lid    x22, 64(x26)
@@ -598,10 +590,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 10: [w26, w25] = X3 <= Y2+Z2 = dmem[x27+64]+dmem[x27+128] */
   bn.lid    x22, 64(x27)
@@ -612,10 +602,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 11: [w9, w8] = t4 <= t4*X3 = [w9, w8]*[w26, w25] */
   bn.mov    w10, w8
@@ -631,20 +619,16 @@ proj_add_p384:
   bn.addc   w17, w3, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 13: [w9, w8] = t4 <= t4-X3 = [w9, w8]-[w26, w25] */
   bn.sub    w16, w8, w25
   bn.subb   w17, w9, w26
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w10, w16, C
+  bn.sel    w9, w11, w17, C
 
   /* 14: [w26, w25] = X3 <= X1+Z1 = dmem[x26+0]+dmem[x26+128] */
   bn.lid    x22, 0(x26)
@@ -655,10 +639,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 15: [w28, w27] = Y3 <= X2+Z2 = dmem[x27+0]+dmem[x27+128] */
   bn.lid    x22, 0(x27)
@@ -669,10 +651,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 16: [w26, w25] = X3 <= X3*Y3 = [w26, w25]*[w28, w27] */
   bn.mov    w10, w25
@@ -688,20 +668,16 @@ proj_add_p384:
   bn.addc   w17, w1, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 18: [w28, w27] = Y3 <= X3-Y3 = [w26, w25]-[w28, w27] */
   bn.sub    w16, w25, w27
   bn.subb   w17, w26, w28
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 19: [w30, w29] = Z3 <= b*t2 = dmem[x28+0]*[w5, w4] */
   bn.lid    x22, 0(x28)
@@ -717,50 +693,40 @@ proj_add_p384:
   bn.subb   w17, w28, w30
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w10, w16, C
+  bn.sel    w26, w11, w17, C
 
   /* 21: [w30, w29] = Z3 <= X3+X3 = [w26, w25]+[w26, w25] */
   bn.add    w16, w25, w25
   bn.addc   w17, w26, w26
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w16, w10, C
+  bn.sel    w30, w17, w11, C
 
   /* 22: [w26, w25] = X3 <= X3+Z3 = [w26, w25]+[w30, w29] */
   bn.add    w16, w25, w29
   bn.addc   w17, w26, w30
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 23: [w30, w29] = Z3 <= t1-X3 = [w3, w2]-[w26, w25] */
   bn.sub    w16, w2, w25
   bn.subb   w17, w3, w26
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w10, w16, C
+  bn.sel    w30, w11, w17, C
 
   /* 24: [w26, w25] = X3 <= t1+X3 = [w3, w2]+[w26, w25] */
   bn.add    w16, w2, w25
   bn.addc   w17, w3, w26
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 25: [w28, w27] = Y3 <= b*Y3 = dmem[x28+0]*[w28, w27] */
   bn.lid    x22, 0(x28)
@@ -776,90 +742,72 @@ proj_add_p384:
   bn.addc   w17, w5, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 27: [w5, w4] = t2 <= t1+t2 = [w3, w2]+[w5, w4] */
   bn.add    w16, w2, w4
   bn.addc   w17, w3, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w4, w16
-  bn.mov    w5, w17
+  bn.sel    w4, w16, w10, C
+  bn.sel    w5, w17, w11, C
 
   /* 28: [w28, w27] = Y3 <= Y3-t2 = [w28, w27]-[w5, w4] */
   bn.sub    w16, w27, w4
   bn.subb   w17, w28, w5
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 29: [w28, w27] = Y3 <= Y3-t0 = [w28, w27]-[w1, w0] */
   bn.sub    w16, w27, w0
   bn.subb   w17, w28, w1
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 30: [w3, w2] = t1 <= Y3+Y3 = [w28, w27]+[w28, w27] */
   bn.add    w16, w27, w27
   bn.addc   w17, w28, w28
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 31: [w28, w27] = Y3 <= t1+Y3 = [w3, w2]+[w28, w27] */
   bn.add    w16, w2, w27
   bn.addc   w17, w3, w28
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 32: [w3, w2] = t1 <= t0+t0 = [w1, w0]+[w1, w0] */
   bn.add    w16, w0, w0
   bn.addc   w17, w1, w1
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 33: [w1, w0] = t0 <= t1+t0 = [w3, w2]+[w1, w0] */
   bn.add    w16, w2, w0
   bn.addc   w17, w3, w1
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w0, w16
-  bn.mov    w1, w17
+  bn.sel    w0, w16, w10, C
+  bn.sel    w1, w17, w11, C
 
   /* 34: [w1, w0] = t0 <= t0-t2 = [w1, w0]-[w5, w4] */
   bn.sub    w16, w0, w4
   bn.subb   w17, w1, w5
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w0, w16
-  bn.mov    w1, w17
+  bn.sel    w0, w10, w16, C
+  bn.sel    w1, w11, w17, C
 
   /* 35: [w3, w2] = t1 <= t4*Y3 = [w9, w8]*[w28, w27] */
   bn.mov    w10, w8
@@ -893,10 +841,8 @@ proj_add_p384:
   bn.addc   w17, w28, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 39: [w26, w25] = X3 <= t3*X3 = [w7, w6]*[w26, w25] */
   bn.mov    w10, w6
@@ -912,10 +858,8 @@ proj_add_p384:
   bn.subb   w17, w26, w3
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w10, w16, C
+  bn.sel    w26, w11, w17, C
 
   /* 41: [w30, w29] = Z3 <= t4*Z3 = [w9, w8]*[w30, w29] */
   bn.mov    w10, w8
@@ -940,10 +884,8 @@ proj_add_p384:
   bn.addc   w17, w30, w3
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w16, w10, C
+  bn.sel    w30, w17, w11, C
 
   ret
 
