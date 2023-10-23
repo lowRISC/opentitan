@@ -67,8 +67,12 @@ bool test_main(void) {
   // Check we are in a mission mode LC state (i.e., DEV, PROD, or PROD_END).
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
 
-  // Check {CREATOR,OWNER}_SW_CFG and HW_CFG OTP partitions have been locked.
-  CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl));
+  // Check the CREATOR_SW_CFG is NOT yet be locked, as the flash data page
+  // configuration field should not yet be provisioned.
+  CHECK_STATUS_NOT_OK(
+      manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl));
+
+  // Check OWNER_SW_CFG and HW_CFG OTP partitions have been locked.
   CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl));
   CHECK_STATUS_OK(manuf_individualize_device_hw_cfg_check(&otp_ctrl));
 

@@ -5,6 +5,8 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -47,13 +49,25 @@ bool test_main(void) {
 
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
-    sw_reset();
+    CHECK_STATUS_OK(
+        manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
+    LOG_INFO("Provisioned and locked CREATOR_SW_CFG OTP partition.");
+    // Halt the CPU here to enable host to perform POR and bootstrap again since
+    // flash scrambling enablement has changed.
+    abort();
   }
 
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+    LOG_INFO("Provisioned and locked OWNER_SW_CFG OTP partition.");
+    // Perform SW reset to complete locking of the OWNER_SW_CFG partition.
     sw_reset();
   }
 
-  return true;
+  if (status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl)) &&
+      status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
+    return true;
+  }
+  return false;
 }
