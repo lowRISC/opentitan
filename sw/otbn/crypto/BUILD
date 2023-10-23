@@ -157,6 +157,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_isoncurve",
+    srcs = [
+        "p384_isoncurve.s",
+    ],
+)
+
+otbn_library(
     name = "p384_sign",
     srcs = [
         "p384_sign.s",
@@ -336,6 +343,31 @@ otbn_binary(
         ":p384_base",
         ":p384_internal_mult",
         ":p384_sign",
+    ],
+)
+
+otbn_binary(
+    name = "p384_curve_point_valid",
+    srcs = [
+        "p384_curve_point_valid.s",
+    ],
+    deps = [
+        ":p384_base",
+        ":p384_isoncurve",
+    ],
+)
+
+otbn_binary(
+    name = "p384_ecdh",
+    srcs = [
+        "p384_ecdh.s",
+    ],
+    deps = [
+        ":p384_a2b",
+        ":p384_base",
+        ":p384_internal_mult",
+        ":p384_keygen",
+        ":p384_scalar_mult",
     ],
 )
 

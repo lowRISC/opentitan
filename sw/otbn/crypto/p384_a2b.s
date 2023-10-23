@@ -133,13 +133,6 @@ p384_arithmetic_to_boolean_mod:
  * clobbered flag groups: FG0
  */
 p384_arithmetic_to_boolean:
-  /* Initialize inputs: in case of randomness in upper part of inputs
-     truncate to 385 bits. */
-  bn.rshi   w19, w19, w31 >> 129
-  bn.rshi   w19, w31, w19 >> 127
-  bn.rshi   w12, w12, w31 >> 129
-  bn.rshi   w12, w31, w12 >> 127
-
   /* Fetch 385 bits of randomness.
      [w2,w1] = gamma    <= URND */
   bn.wsrr   w1, 2
