@@ -55,28 +55,6 @@ package dma_env_pkg;
     asid_encoding_e dst_id;
   } addr_space_id_t;
 
-  function automatic int get_digest_index(string csr_name);
-    case (csr_name)
-      "sha2_digest_0": return 0;
-      "sha2_digest_1": return 1;
-      "sha2_digest_2": return 2;
-      "sha2_digest_3": return 3;
-      "sha2_digest_4": return 4;
-      "sha2_digest_5": return 5;
-      "sha2_digest_6": return 6;
-      "sha2_digest_7": return 7;
-      "sha2_digest_8": return 8;
-      "sha2_digest_9": return 9;
-      "sha2_digest_10": return 10;
-      "sha2_digest_11": return 11;
-      "sha2_digest_12": return 12;
-      "sha2_digest_13": return 13;
-      "sha2_digest_14": return 14;
-      "sha2_digest_15": return 15;
-      default: `uvm_fatal("get_digest_index", $sformatf("invalid digest csr name: %0s", csr_name))
-    endcase
-  endfunction
-
   // package sources
   `include "dma_seq_item.sv"
   `include "dma_handshake_mode_fifo.sv"
