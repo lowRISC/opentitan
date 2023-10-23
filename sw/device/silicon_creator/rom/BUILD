@@ -267,6 +267,7 @@ cc_library(
         "//sw/lib/sw/device/silicon_creator:cfi",
         "//sw/lib/sw/device/silicon_creator:epmp_state",
         "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:rom_patch",
         "//sw/lib/sw/device/silicon_creator:rom_print",
         "//sw/lib/sw/device/silicon_creator/base:chip",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",

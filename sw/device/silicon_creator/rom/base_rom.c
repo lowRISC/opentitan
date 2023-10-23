@@ -33,6 +33,7 @@
 #include "sw/lib/sw/device/silicon_creator/cfi.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/rom_patch.h"
 #include "sw/lib/sw/device/silicon_creator/rom_print.h"
 #include "sw/lib/sw/device/silicon_creator/shutdown.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
@@ -67,7 +68,8 @@ typedef void second_rom_entry_point(void);
 #define ROM_CFI_FUNC_COUNTERS_TABLE(X) \
   X(kCfiBaseRomMain,         0x426) \
   X(kCfiBaseRomInit,         0x2dd) \
-  X(kCfiSecondRomBoot,       0x740)
+  X(kCfiSecondRomBoot,       0x740) \
+  X(kCfiSecondRomPatch,      0x3aa)
 // clang-format on
 
 // Define counters and constant values required by the CFI counter macros.
@@ -133,6 +135,52 @@ static rom_error_t base_rom_init(void) {
   return kErrorOk;
 }
 
+/**
+ * Patches second ROM code with an OTP ROM patch.
+ *
+ * If a patch is successfully applied, the patch digest
+ * is stored into the boot measurement section.
+ *
+ * @return Result of the second ROM patching.
+ */
+static rom_error_t second_rom_patch(void) {
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomPatch, 1);
+  uintptr_t latest_patch = kRomPatchInvalidAddr;
+
+  do {
+    latest_patch = rom_patch_latest(latest_patch);
+
+    /* We could not find a latest patch, we're done */
+    if (latest_patch == kRomPatchInvalidAddr) {
+      break;
+    }
+
+    /* The latest patch is invalid, let's try the next one */
+    if (!rom_patch_valid(latest_patch)) {
+      continue;
+    }
+
+    hmac_digest_t patch_digest;
+    rom_error_t error = rom_patch_apply(latest_patch, &patch_digest);
+
+    /* The latest patch could not be applied, let's try the next one */
+    if (launder32(error) != kErrorOk) {
+      continue;
+    }
+    HARDENED_CHECK_EQ(error, kErrorOk);
+
+    /* Store the applied patch measurement */
+    static_assert(sizeof(boot_measurements.rom_patch) == sizeof(patch_digest),
+                  "Unexpected ROM patch digest size.");
+    memcpy(&boot_measurements.rom_patch, &patch_digest,
+           sizeof(boot_measurements.rom_patch));
+
+  } while (false);
+
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomPatch, 2);
+  return kErrorOk;
+}
+
 // This symbol is defined in `base_rom.ld` and describes the location of the
 // second ROM entry point.
 extern char _second_rom_boot_address[];
@@ -144,7 +192,13 @@ extern char _second_rom_boot_address[];
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t second_rom_boot(void) {
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomBoot, 1);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiSecondRomBoot, 1,
+                            kCfiSecondRomPatch);
+  HARDENED_RETURN_IF_ERROR(second_rom_patch());
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomBoot, 3);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiSecondRomPatch, 3);
+
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiSecondRomBoot, 4);
   uintptr_t entry_point = ((uintptr_t)_second_rom_boot_address) + 0x80;
 
   // Configure ePMP for the second stage ROM
