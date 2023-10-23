@@ -597,6 +597,9 @@ class SimCfg(FlowCfg):
         results['report_type'] = 'simulation'
         results['tool'] = self.tool.lower()
 
+        if self.build_seed and not self.run_only:
+            results['build_seed'] = str(self.build_seed)
+
         # Create dictionary to store results.
         results['results'] = {
             'testpoints': [],
@@ -683,7 +686,7 @@ class SimCfg(FlowCfg):
                     frs = []
                     for test, line, context in test_runs:
                         frs.append({
-                            'seed': test.seed,
+                            'seed': str(test.seed),
                             'failure_message': {
                                 'log_file_path': test.get_log_path(),
                                 'log_file_line_num': line,
