@@ -18,6 +18,57 @@ import hjson  # type: ignore
 
 REPO_TOP = Path(__file__).parents[2].resolve()
 
+block_level_urls = {
+    "adc_ctrl": ["https://reports.opentitan.org/hw/ip/adc_ctrl/dv/2023.10.16_18.03.35/"],
+    "aes": ["https://reports.opentitan.org/hw/ip/aes_masked/dv/2023.10.16_18.04.57/",
+            "https://reports.opentitan.org/hw/ip/aes_unmasked/dv/2023.10.16_18.04.21/"],
+    "alert_handler":
+    [("https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/"
+      "2023.10.16_18.37.53/")],
+    "aon_timer": ["https://reports.opentitan.org/hw/ip/aon_timer/dv/2023.10.16_18.05.42/"],
+    "clkmgr": ["https://reports.opentitan.org/hw/ip/clkmgr/dv/2023.10.16_18.06.50/"],
+    "csrng": ["https://reports.opentitan.org/hw/ip/csrng/dv/2023.10.16_18.07.39/"],
+    "edn": ["https://reports.opentitan.org/hw/ip/edn/dv/2023.10.16_18.08.30/"],
+    "entropy_src": ["https://reports.opentitan.org/hw/ip/entropy_src/dv/2023.10.16_18.09.15/"],
+    "flash_ctrl": ["https://reports.opentitan.org/hw/ip/flash_ctrl/dv/2023.10.16_18.10.58/"],
+    "gpio": ["https://reports.opentitan.org/hw/ip/gpio/dv/2023.10.16_18.12.48/"],
+    "hmac": ["https://reports.opentitan.org/hw/ip/hmac/dv/2023.10.16_18.13.24/"],
+    "i2c": ["https://reports.opentitan.org/hw/ip/i2c/dv/2023.10.16_18.14.22/"],
+    "keymgr": ["https://reports.opentitan.org/hw/ip/keymgr/dv/2023.10.16_18.15.42/"],
+    "kmac": ["https://reports.opentitan.org/hw/ip/kmac_masked/dv/2023.10.16_18.17.06/",
+             "https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/2023.10.16_18.17.38/"],
+    "lc_ctrl": ["https://reports.opentitan.org/hw/ip/lc_ctrl/dv/2023.10.16_18.18.27/"],
+    "otbn": ["https://reports.opentitan.org/hw/ip/otbn/dv/uvm/2023.10.16_18.19.22/"],
+    "otp_ctrl": ["https://reports.opentitan.org/hw/ip/otp_ctrl/dv/2023.10.16_18.20.46/"],
+    "pattgen": ["https://reports.opentitan.org/hw/ip/pattgen/dv/2023.10.16_18.21.41/"],
+    "prim_alert": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_alert/2023.10.16_18.22.07/"],
+    "prim_esc": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_esc/2023.10.16_18.22.31/"],
+    "prim_lfsr": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/2023.10.16_18.22.54/"],
+    "prim_present":
+    ["https://reports.opentitan.org/hw/ip/prim/dv/prim_present/2023.10.16_18.23.17/"],
+    "prim_prince": ["https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/2023.10.16_18.23.44/"],
+    "pwm": ["https://reports.opentitan.org/hw/ip/pwm/dv/2023.10.16_18.24.16/"],
+    "pwrmgr": ["https://reports.opentitan.org/ip_autogen/pwrmgr/dv/2023.10.16_18.39.21/"],
+    "rom_ctrl": ["https://reports.opentitan.org/hw/ip/rom_ctrl/dv/2023.10.16_18.25.05/"],
+    "rstmgr": ["https://reports.opentitan.org/hw/ip/rstmgr/dv/2023.10.16_18.26.28/"],
+    "rstmgr_cnsty_chk":
+    ["https://reports.opentitan.org/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/2023.10.16_18.25.40/"],
+    "rv_dm": ["https://reports.opentitan.org/hw/ip/rv_dm/dv/2023.10.16_18.27.26/"],
+    "rv_timer": ["https://reports.opentitan.org/hw/ip/rv_timer/dv/2023.10.16_18.28.14/"],
+    "spi_device": ["https://reports.opentitan.org/hw/ip/spi_device/dv/2023.10.16_18.30.21/"],
+    "spi_host": ["https://reports.opentitan.org/hw/ip/spi_host/dv/2023.10.16_18.28.52/"],
+    "sram_ctrl": ["https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/2023.10.16_18.31.42/",
+                  "https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/2023.10.16_18.32.44/"],
+    "sysrst_ctrl": ["https://reports.opentitan.org/hw/ip/sysrst_ctrl/dv/2023.10.16_18.33.56/"],
+    "tl_agent": ["https://reports.opentitan.org/hw/dv/sv/tl_agent/dv/2023.10.16_18.02.43/"],
+    "uart": ["https://reports.opentitan.org/hw/ip/uart/dv/2023.10.16_18.34.58/"],
+    "usbdev": ["https://reports.opentitan.org/hw/ip/usbdev/dv/2023.10.16_18.36.00/"],
+    "xbar":
+    ["https://reports.opentitan.org/hw/top_earlgrey/ip/xbar_main/dv/autogen/2023.10.16_18.40.38/",
+     "https://reports.opentitan.org/hw/top_earlgrey/ip/xbar_peri/dv/autogen/2023.10.16_18.41.48/"],
+    "rv_core_ibex": ["https://ibex.reports.lowrisc.org/opentitan/latest/"],
+}
+
 
 def parse_report(path: str) -> Tuple[int, int]:
     with urlopen(f'https://reports.opentitan.org{path}/latest/report.json') as response:
