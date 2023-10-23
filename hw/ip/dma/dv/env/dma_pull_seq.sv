@@ -17,19 +17,22 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   // FIFO instance
   dma_handshake_mode_fifo #(AddrWidth) fifo;
 
-  // Variable to keep track of number of bytes sent or received
-  uint bytes_sent;
+  // Variables to keep track of number of bytes sent or received
+  uint bytes_read;
+  uint bytes_written;
 
   function new (string name = "");
     super.new(name);
     min_rsp_delay = 1;
     max_rsp_delay = 4;
-    bytes_sent = 0;
+    bytes_read = 0;
+    bytes_written = 0;
   endfunction: new
 
   virtual function void set_fifo_clear(bit en);
     fifo_reg_clear_en = en;
-    bytes_sent = 0;
+    bytes_read = 0;
+    bytes_written = 0;
   endfunction
 
   virtual function void add_fifo_reg(bit [31:0] addr, bit [31:0] data);
@@ -53,8 +56,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
                        "Invalid FIFO reg value detected")
         end else begin
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
-            bytes_sent++;
             if (rsp.a_mask[i]) begin
+              bytes_written++;
               if (write_fifo_en) begin
                 fifo.write_byte(rsp.a_addr + i, data[7:0]);
               end else begin
@@ -66,7 +69,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
         end
       end else begin
         for (int i = 2**rsp.a_size - 1; i >= 0; i--) begin
-          bytes_sent++;
+          bytes_read++;
           rsp.d_data = rsp.d_data << 8;
           if (read_fifo_en) begin
             rsp.d_data[7:0] = fifo.read_byte(rsp.a_addr+i);

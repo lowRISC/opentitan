@@ -278,7 +278,7 @@ class dma_base_vseq extends cip_base_vseq #(
                                   dma_config.mem_buffer_limit);
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_transfer_size);
-    set_chunk_data_size(dma_config.total_transfer_size);  // TODO: same config for now
+    set_chunk_data_size(dma_config.chunk_data_size);
     set_transfer_width(dma_config.per_transfer_width);
     configure_mem_model(dma_config);
     set_handshake_int_regs(dma_config);
@@ -467,7 +467,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Wait for Completion
   task wait_for_completion(output int status);
-    int timeout = 1000;
+    int timeout = 1000000;
     // Case 1.    Timeout due to simulation hang
     // Case 2.    Generic Mode - Completion
     // Case 3.    Generic Mode - Error
@@ -545,7 +545,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task to wait for transfer of specified number of bytes
    task wait_num_bytes_transfer(uint num_bytes);
      forever begin
-       if (get_bytes_sent(dma_config) >= num_bytes) begin
+       if (get_bytes_written(dma_config) >= num_bytes) begin
          `uvm_info(`gfn, $sformatf("Got %d", num_bytes), UVM_DEBUG)
          break;
        end else begin
@@ -584,20 +584,23 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: %s digest: %x", sha_mode, digest), UVM_MEDIUM)
   endtask
 
-  // Return number of bytes transferred from interface corresponding to source ASID
-  virtual function uint get_bytes_sent(ref dma_seq_item dma_config);
-    case (dma_config.src_asid)
+  // Return number of bytes transferred to interface corresponding to destination ASID
+  virtual function uint get_bytes_written(ref dma_seq_item dma_config);
+    case (dma_config.dst_asid)
       OtInternalAddr: begin
-        `uvm_info(`gfn, $sformatf("OTInternal bytes_sent = %0d", seq_host.bytes_sent), UVM_HIGH)
-        return seq_host.bytes_sent;
+        `uvm_info(`gfn,
+                  $sformatf("OTInternal bytes_written = %0d", seq_host.bytes_written), UVM_HIGH)
+        return seq_host.bytes_written;
       end
       SocControlAddr, OtExtFlashAddr: begin
-        `uvm_info(`gfn, $sformatf("SocControlAddr bytes_sent = %0d", seq_ctn.bytes_sent), UVM_HIGH)
-        return seq_ctn.bytes_sent;
+        `uvm_info(`gfn,
+                  $sformatf("SocControlAddr bytes_written = %0d", seq_ctn.bytes_written), UVM_HIGH)
+        return seq_ctn.bytes_written;
       end
       SocSystemAddr: begin
-        `uvm_info(`gfn, $sformatf("SocSystemAddr bytes_sent = %0d", seq_sys.bytes_sent), UVM_HIGH)
-        return seq_sys.bytes_sent;
+        `uvm_info(`gfn,
+                  $sformatf("SocSystemAddr bytes_written = %0d", seq_sys.bytes_written), UVM_HIGH)
+        return seq_sys.bytes_written;
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", dma_config.src_asid))

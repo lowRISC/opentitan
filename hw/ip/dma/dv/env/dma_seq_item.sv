@@ -17,6 +17,16 @@
 // - auto_inc_fifo
 // - handshake
 // - per_transfer_width
+// Then the memory range is randomized
+// - mem_range_base
+// - mem_range_limit
+// Finally the addresses of data to be transferred, if the configuration must be valid
+// - chunk_data_size
+// - total_transfer_size
+// decided before source buffer, to assist in meeting memory range requirement:
+// - src_addr
+// decided before destination buffer, to assist in preventing overlap with source:
+// - dst_addr
 //
 // Most of the constraints in this file are primarily to limit randomization to
 // valid configurations based on valid_dma_config bit.
@@ -35,6 +45,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
   rand bit [31:0] total_transfer_size;
+  rand bit [31:0] chunk_data_size;
   rand mubi4_t mem_range_lock;
   rand opcode_e opcode;
   rand dma_transfer_width_e per_transfer_width;
@@ -80,6 +91,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
     `uvm_field_enum(mubi4_t, mem_range_lock, UVM_DEFAULT)
     `uvm_field_int(total_transfer_size, UVM_DEFAULT)
+    `uvm_field_int(chunk_data_size, UVM_DEFAULT)
     `uvm_field_enum(dma_transfer_width_e, per_transfer_width, UVM_DEFAULT)
     `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
     `uvm_field_int(auto_inc_fifo, UVM_DEFAULT)
@@ -128,21 +140,29 @@ class dma_seq_item extends uvm_sequence_item;
   constraint mem_range_base_c {
     // Set solve order to make sure mem_range_base is randomized correctly in
     // case align_address is set
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> mem_range_base % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> mem_range_base % 4 == 0;
-    }
+    solve src_asid, dst_asid, per_transfer_width, handshake, auto_inc_buffer, auto_inc_fifo,
+          direction before mem_range_base;
   }
 
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
     // valid_dma_config or align_address is set
-    solve src_asid, per_transfer_width, mem_range_base before src_addr;
+    solve mem_range_base, mem_range_limit before src_addr;
     if (valid_dma_config) {
       // If OT internal address space is the source then source address must be
       // greater than the memory base address
       if (src_asid == OtInternalAddr){
-        src_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
+        // Must be satisfied for all operations
+        src_addr >= mem_range_base;
+        src_addr <= mem_range_limit;
+        mem_range_limit - src_addr >= chunk_data_size;
+        // If auto increment is not used on the memory end of the operation, successive chunks
+        // overlap each other
+        if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
+          src_addr >= mem_range_base;
+          src_addr <= mem_range_limit;
+          mem_range_limit - src_addr >= total_transfer_size;
+        }
         // For valid configurations, Address must be aligned to transfer width
         per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
         per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
@@ -158,13 +178,35 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint dst_addr_c {
     // Set solve order to make sure destination address is randomized correctly in case
-    // valid_dma_config or align_address is set
-    solve dst_asid, src_asid, mem_range_base before dst_addr;
+    // valid_dma_config or align_address is set.
+    //
+    // Ensure that the the source buffer has been decided already, so that we can prevent this
+    // destination buffer overlapping it.
+    solve src_addr before dst_addr;
     if (valid_dma_config) {
       // If OT internal address space is the destination then destination address must be
       // greater than the memory base address
       if (dst_asid == OtInternalAddr) {
-        dst_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
+        // Must be satisfied for all operations
+        dst_addr >= mem_range_base;
+        dst_addr <= mem_range_limit;
+        mem_range_limit - dst_addr >= chunk_data_size;
+        // If auto increment is not used on the memory end of the operation, successive chunks
+        // overlap each other
+        if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
+          dst_addr >= mem_range_base;
+          dst_addr <= mem_range_limit;
+          mem_range_limit - dst_addr >= total_transfer_size;
+        }
+        if (src_asid == OtInternalAddr) {
+          // Avoid overlap between source and destination buffers, also leaving a slight gap so
+          // that any out-of-bounds access does not hit a contiguous buffer
+          //
+          // `total_transfer_size` here is often larger than the valid addressable range in
+          // handshake mode, but keeps things simpler
+          (dst_addr > src_addr + total_transfer_size + 'h10) ||
+          (src_addr > dst_addr + total_transfer_size + 'h10);
+        }
         // For valid configurations, Address must be aligned to transfer width
         per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
         per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
@@ -179,34 +221,63 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   constraint total_transfer_size_c {
-    // Add a soft constrain the total transfer size to limit the amount of time test takes to run
+    solve mem_range_limit before total_transfer_size;
+    if (valid_dma_config) {
+      total_transfer_size <= mem_range_limit - mem_range_base;
+    }
+    // Add a soft constraint on the total transfer size to limit the test run time
     soft total_transfer_size inside {[1:1024]};
+  }
+
+  constraint chunk_data_size_c {
+    solve mem_range_limit before chunk_data_size;
+    if (valid_dma_config) {
+      chunk_data_size <= mem_range_limit - mem_range_base;
+    }
+    if (handshake) {
+      if (!auto_inc_buffer && opcode != OpcCopy) {
+        // TODO: SHA digest prediction currently cannot handle chunked transfers to/from a FIFO
+        // because all chunks are coincident within the memory model and the prediction is
+        // calculated after the operation, so ensure that we have only a single chunk
+        chunk_data_size >= total_transfer_size;
+      } else {
+        // Add a soft constraint to model realistic FIFO transfers; smaller, more frequent transfers
+        // are more susceptible to races in interrupt generation/handling
+        soft chunk_data_size inside {[1:256]};
+      }
+    }
+    // For non-final chunks in a 4B-wide transfer, the chunk size must ensure that updated
+    // source/destination addresses meet the alignment requirements for the start of the next
+    // chunk.
+    // For narrower handshaking transfers, there is also a 4n requirement on the chunk size when
+    // the FIFO address end does not advance, to keep the source and destination alignments equal
+    if (per_transfer_width == DmaXfer4BperTxn || (handshake && !auto_inc_fifo)) {
+      chunk_data_size[1:0] == '0;
+    } else {
+      per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
+    }
   }
 
   constraint mem_range_limit_c {
     // Set solver order to make sure mem range limit is randomized correctly in case
     // valid_dma_config or align_address is set
-    solve mem_range_base, per_transfer_width, total_transfer_size before mem_range_limit;
-    // For valid DMA config, address must not exceed mem_range_limit.
-    // So, mem_range_limit must at least be greater than total_transfer_size from mem_range_base
-    if (valid_dma_config) {
-      mem_range_limit >= (mem_range_base + total_transfer_size);
-    }
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> mem_range_limit % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> mem_range_limit % 4 == 0;
+    solve mem_range_base before mem_range_limit;
+    // For valid DMA config, [mem_range_base, mem_range_limit) describes the addressable memory
+    // window.
+    if (valid_dma_config && dst_asid == OtInternalAddr) {
+      mem_range_limit >= mem_range_base;
     }
   }
 
   constraint mem_buffer_limit_c {
     // Set solver order to make sure mem buffer limit is randomized correctly in case
     // valid_dma_config or align_address is set
-    solve handshake, dst_addr, per_transfer_width before mem_buffer_limit;
+    solve mem_buffer_almost_limit before mem_buffer_limit;
     // For valid dma config, mem buffer limit must be greater than destination address
-    // in order to detect overflow
+    // in order to detect passing the limit
     if (valid_dma_config) {
-       if (handshake) {
-         mem_buffer_limit > dst_addr;
+       if (handshake && direction == DmaRcvData) {
+          mem_buffer_limit > mem_buffer_almost_limit;
        }
     }
     if (align_address) {
@@ -218,12 +289,12 @@ class dma_seq_item extends uvm_sequence_item;
   constraint mem_buffer_almost_limit_c {
     // Set solver order to make sure mem buffer almost limit is randomized correctly
     // in case valid_dma_config or align_address is set
-    solve handshake, dst_addr, per_transfer_width before mem_buffer_almost_limit;
+    solve dst_addr before mem_buffer_almost_limit;
     // For valid dma config, mem buffer almost limit must not be
-    // less than destionation address
+    // less than destination address
     if (valid_dma_config) {
-       if (handshake) {
-         mem_buffer_almost_limit > dst_addr;
+       if (handshake && direction == DmaRcvData) {
+          mem_buffer_almost_limit > dst_addr;
        }
     }
     if (align_address) {
@@ -309,6 +380,11 @@ class dma_seq_item extends uvm_sequence_item;
 
   function void post_randomize();
     super.post_randomize();
+    // TODO: For `generic` mode we presently do not support multi-chunk transfers in the DV env;
+    // this requires the vseqs to be extended to model firmware involvement
+    if (!handshake) begin
+      chunk_data_size = total_transfer_size;
+    end
     // Check if randomization leads to valid configuration
     is_valid_config = choose_int_src_addrs();
     if (is_valid_config) begin
