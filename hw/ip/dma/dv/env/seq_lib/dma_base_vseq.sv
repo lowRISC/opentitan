@@ -220,6 +220,8 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory base = %0x08h", base), UVM_HIGH)
     csr_wr(ral.enabled_memory_range_limit, limit);
     `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory limit = %0x08h", limit), UVM_HIGH)
+    csr_wr(ral.range_valid, 1'b1);
+    `uvm_info(`gfn, "DMA: DMA Enabled Memory Range is valid", UVM_HIGH)
     if (lock != MuBi4True) begin
       csr_wr(ral.range_regwen, int'(lock));
       `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory lock = %s", lock.name()), UVM_HIGH)
