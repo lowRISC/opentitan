@@ -145,6 +145,16 @@ status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
                                      i2c_pinmux_platform_id_t platform);
 
 /**
+ * Disconnect the i2c input pins from mio pads and wire it to zero.
+ *
+ * @param pimmux A pinmux handler.
+ * @param i2c_id The i2c instance identifier.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t i2c_id);
+/**
  * Return whether the fifo is empty.
  *
  * @param i2c An I2C DIF handle.
