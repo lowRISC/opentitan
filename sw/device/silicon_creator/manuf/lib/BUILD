@@ -251,6 +251,5 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )
