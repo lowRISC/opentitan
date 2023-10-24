@@ -142,15 +142,21 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
+ * The message digest must be exactly the right length for the curve in use
+ * (e.g. 256 bits for P-256), but may use any hash mode. The caller is
+ * responsible for ensuring that the security strength of the hash function is
+ * at least equal to the security strength of the curve. See FIPS 186-5 for
+ * details.
+ *
  * @param private_key Pointer to the blinded private key (d) struct.
- * @param input_message Input message to be signed.
+ * @param message_digest Message digest to be signed (pre-hashed).
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of the ECDSA signature generation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
-                                    crypto_const_byte_buf_t input_message,
+                                    const hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
                                     const ecc_signature_t *signature);
 
@@ -161,8 +167,14 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
+ * The message digest must be exactly the right length for the curve in use
+ * (e.g. 256 bits for P-256), but may use any hash mode. The caller is
+ * responsible for ensuring that the security strength of the hash function is
+ * at least equal to the security strength of the curve. See FIPS 186-5 for
+ * details.
+ *
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param input_message Input message to be signed for verification.
+ * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] verification_result Result of signature verification
@@ -171,7 +183,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
-                                      crypto_const_byte_buf_t input_message,
+                                      const hash_digest_t *message_digest,
                                       const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
@@ -375,14 +387,14 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * curves this field is ignored and can be set to `NULL`.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
- * @param input_message Input message to be signed.
+ * @param message_digest Message digest to be signed (pre-hashed).
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDSA start operation.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_byte_buf_t input_message, const ecc_curve_t *elliptic_curve);
+    const hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
@@ -412,14 +424,14 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  * curves this field is ignored and can be set to `NULL`.
  *
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param input_message Input message to be signed for verification.
+ * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDSA verify start function.
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
+    const ecc_public_key_t *public_key, const hash_digest_t *message_digest,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
 
 /**

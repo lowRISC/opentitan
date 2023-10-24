@@ -223,6 +223,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
@@ -234,6 +235,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -242,6 +244,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",

@@ -281,8 +281,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(rsa_private_key));
 
-  // Check for NULL input buffer.
-  if (message_digest->len != 0 && message_digest->data == NULL) {
+  // Check for NULL digest buffer.
+  if (message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -477,7 +477,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
   *verification_result = kHardenedBoolFalse;
 
   // Check for NULL pointers.
-  if (message_digest->len != 0 && message_digest->data == NULL) {
+  if (message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (verification_result == NULL) {
