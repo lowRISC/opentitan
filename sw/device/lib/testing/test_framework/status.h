@@ -5,6 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_
 
+#include <stdbool.h>
+#include <stdnoreturn.h>
+
 /**
  * Indicates the status of the software running on the CPU, from a testing
  * perspective.
@@ -84,5 +87,12 @@ typedef enum test_status {
  * @param test_status current status of the test.
  */
 void test_status_set(test_status_t test_status);
+
+/**
+ * Set the function to call when test_status_set is called to abort a test.
+ * If set to NULL, it will call abort on failure.
+ */
+typedef void (*test_status_abort_fn_t)(bool result);
+void test_status_set_abort_handler(test_status_abort_fn_t fn);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_STATUS_H_

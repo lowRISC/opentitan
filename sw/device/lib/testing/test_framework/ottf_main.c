@@ -100,7 +100,7 @@ void status_report(status_t status) {
   status_report_list_cnt++;
 }
 
-static void report_test_status(bool result) {
+noreturn void ottf_abort(bool result) {
   // Reinitialize UART before print any debug output if the test clobbered it.
   if (kDeviceType != kDeviceSimDV) {
     if (kOttfTestConfig.console.test_may_clobber) {
@@ -131,6 +131,9 @@ static void report_test_status(bool result) {
   }
 
   coverage_send_buffer();
+}
+
+static void report_test_status(bool result) {
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 
@@ -162,6 +165,7 @@ void _ottf_main(void) {
       &rv_core_ibex));
   rand_testutils_rng_ctx = rand_testutils_init(&rv_core_ibex);
 
+  test_status_set_abort_handler(ottf_abort);
   // Run the test.
   if (kOttfTestConfig.enable_concurrency) {
     // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to

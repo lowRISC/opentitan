@@ -9,6 +9,17 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 
+static test_status_abort_fn_t abort_handler = NULL;
+
+static noreturn void test_status_abort(bool result) { abort(); }
+
+void test_status_set_abort_handler(test_status_abort_fn_t fn) {
+  if (fn == NULL)
+    abort_handler = test_status_abort;
+  else
+    abort_handler = fn;
+}
+
 /**
  * Writes the test status to the test status device address.
  *
@@ -27,13 +38,13 @@ void test_status_set(test_status_t test_status) {
     case kTestStatusPassed: {
       LOG_INFO("PASS!");
       test_status_device_write(test_status);
-      abort();
+      abort_handler(true);
       break;
     }
     case kTestStatusFailed: {
       LOG_INFO("FAIL!");
       test_status_device_write(test_status);
-      abort();
+      abort_handler(false);
       break;
     }
     default: {
