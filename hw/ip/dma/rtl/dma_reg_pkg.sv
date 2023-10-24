@@ -417,17 +417,17 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_8_OFFSET = 9'h cc;
   parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_9_OFFSET = 9'h d0;
   parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_10_OFFSET = 9'h d4;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_0_OFFSET = 9'h 128;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_1_OFFSET = 9'h 12c;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_2_OFFSET = 9'h 130;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_3_OFFSET = 9'h 134;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_4_OFFSET = 9'h 138;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_5_OFFSET = 9'h 13c;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_6_OFFSET = 9'h 140;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_7_OFFSET = 9'h 144;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_8_OFFSET = 9'h 148;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_9_OFFSET = 9'h 14c;
-  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_10_OFFSET = 9'h 150;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_0_OFFSET = 9'h 12c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_1_OFFSET = 9'h 130;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_2_OFFSET = 9'h 134;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_3_OFFSET = 9'h 138;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_4_OFFSET = 9'h 13c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_5_OFFSET = 9'h 140;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_6_OFFSET = 9'h 144;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_7_OFFSET = 9'h 148;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_8_OFFSET = 9'h 14c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_9_OFFSET = 9'h 150;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_10_OFFSET = 9'h 154;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] DMA_INTR_TEST_RESVAL = 3'h 0;
