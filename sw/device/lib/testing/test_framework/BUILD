@@ -225,6 +225,18 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_utils",
+    hdrs = ["ottf_utils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+    ],
+)
+
+cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
