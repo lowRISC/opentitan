@@ -715,11 +715,13 @@ module dma
         capture_be             = 1'b1;
         sha2_consumed_d        = 1'b0;
 
-        // Value 2 (3-bytes represents an invalid config that leads to an error)
+        // Convert the `transfer_width` encoding to bytes per transaction
         unique case (reg2hw.transfer_width.q)
-          2'b00:   transfer_width_d = 3'b001; // 1 byte
-          2'b01:   transfer_width_d = 3'b010; // 2 bytes
-          default: transfer_width_d = 3'b100; // 4 bytes
+          DmaXfer1BperTxn: transfer_width_d = 3'b001; // 1 byte
+          DmaXfer2BperTxn: transfer_width_d = 3'b010; // 2 bytes
+          DmaXfer4BperTxn: transfer_width_d = 3'b100; // 4 bytes
+          // Value 3 is an invalid configuration value that leads to an error
+          default: bad_size = 1'b1;  // Invalid transfer_width
         endcase
 
         if ((transfer_byte_q == '0) ||
@@ -788,8 +790,7 @@ module dma
         // Error checking. An invalid configuration triggers one or more errors
         // and does not start the DMA transfer
         if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
-            (reg2hw.total_data_size.q == '0) ||         // No empty transactions
-            (reg2hw.transfer_width.q == 2'b11))  begin  // Invalid transfer_width
+            (reg2hw.total_data_size.q == '0)) begin     // No empty transactions
           bad_size = 1'b1;
         end
 
@@ -799,7 +800,7 @@ module dma
 
         // Inline hashing is only allowed for 32-bit transfer width
         if (use_inline_hashing) begin
-          if (reg2hw.transfer_width.q != 2'b10) begin
+          if (reg2hw.transfer_width.q != DmaXfer4BperTxn) begin
             bad_size = 1'b1;
           end
         end
@@ -819,23 +820,27 @@ module dma
           bad_asid = 1'b1;
         end
 
+        // Check the validity of the restricted DMA-enabled memory range
+        // Note: both the base and the limit addresses are inclusive
         if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
           bad_base_limit = 1'b1;
         end
 
         // In 4-byte transfers, source and destination address must be 4-byte aligned
-        if (reg2hw.transfer_width.q == 2'b11 && (|reg2hw.source_address_lo.q[1:0])) begin
+        if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
+          (|reg2hw.source_address_lo.q[1:0])) begin
           bad_src_addr = 1'b1;
         end
-        if (reg2hw.transfer_width.q == 2'b11 && (|reg2hw.destination_address_lo.q[1:0])) begin
+        if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
+          (|reg2hw.destination_address_lo.q[1:0])) begin
           bad_dst_addr = 1'b1;
         end
 
         // In 2-byte transfers, source and destination address must be 2-byte aligned
-        if (reg2hw.transfer_width.q == 2'b01 && reg2hw.source_address_lo.q[0]) begin
+        if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.source_address_lo.q[0]) begin
           bad_src_addr = 1'b1;
         end
-        if (reg2hw.transfer_width.q == 2'b01 && reg2hw.destination_address_lo.q[0]) begin
+        if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.destination_address_lo.q[0]) begin
           bad_dst_addr = 1'b1;
         end
 
