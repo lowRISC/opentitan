@@ -314,7 +314,7 @@
     }
     { name: "CFG_REGWEN"
       desc: '''
-            Indicates whether the configuration registers are locked because the DMA controller is operating. 
+            Indicates whether the configuration registers are locked because the DMA controller is operating.
             The CONTROL, STATUS, and CLEAR_STATE registers remain usable.
             '''
       swaccess: "ro"
@@ -612,6 +612,7 @@
           resval: 0x0
           hwaccess: "hrw"
           swaccess: "ro"
+          hwaccess: "hrw"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
@@ -644,10 +645,12 @@
         }
         { bits: "4"
           name: "sha2_digest_valid"
+          swaccess: "ro"
           resval: 0x0
           hwaccess: "hrw"
           hwqe: "true"
-          desc: '''Indicates whether the SHA2_DIGEST register contains a valid digest.
+          desc: '''
+                Indicates whether the SHA2_DIGEST register contains a valid digest.
                 This value is cleared on the initial transfer and set when the digest is written.
                 '''
         }
@@ -789,7 +792,7 @@
         ]
       }
     }
-    { skipto: "0x128" }
+    { skipto: "0x12C" }
     { multireg: {
         name: "INT_SOURCE_WR_VAL"
         desc: "Write value for interrupt clearing write."

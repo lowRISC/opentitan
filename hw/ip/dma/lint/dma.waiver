@@ -6,5 +6,5 @@
 
 waive -rules {ARITH_CONTEXT} -location {dma.sv} -regexp {.*Bitlength of arithmetic operation.*is self-determined in this context.*} \
       -comment "Carry issue when determining the bit length."
-waive -rules {HIER_NET_NOT_READ} -location {dma_reg_top.sv} -regexp {status_flds_we\[0\]' is not read from in module} \
+waive -rules {HIER_NET_NOT_READ} -location {dma_reg_top.sv} -regexp {status_flds_we\[0|4\]' is not read from in module} \
       -comment "Internal register is accepted to not be read. Tracked in #702."

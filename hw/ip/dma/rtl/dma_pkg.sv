@@ -44,6 +44,21 @@ package dma_pkg;
     OpcSha512 = 4'h3
   } opcode_e;
 
+  // Control state captured during the operation
+  typedef struct packed {
+    // Control register
+    opcode_e    opcode;
+    logic       cfg_handshake_en;
+    logic       cfg_memory_buffer_auto_increment_en;
+    logic       cfg_fifo_auto_increment_en;
+    logic       cfg_data_direction;
+    logic       range_valid;
+    // Enabled memory base register
+    logic [31:0] enabled_memory_range_base;
+    // Enabled memory limit register
+    logic [31:0] enabled_memory_range_limit;
+  } control_state_t;
+
   typedef enum logic [3:0] {
     DmaIdle                  = 4'b0000,
     DmaClearIntrSrc          = 4'b0001,
