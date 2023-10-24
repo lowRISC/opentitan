@@ -19,8 +19,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
 
-#define TIMEOUT (1000 * 1000)
-
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 
@@ -36,6 +34,10 @@ static const uint8_t kKeyShare1[] = {
 };
 
 dif_aes_key_share_t key;
+
+enum {
+  kAesTestutilsTimeout = (10 * 1000 * 1000),
+};
 
 #if !OT_IS_ENGLISH_BREAKFAST
 /**
@@ -230,7 +232,8 @@ status_t aes_testutils_setup_encryption(dif_aes_transaction_t transaction,
   memcpy(key.share0, key_share0, sizeof(key.share0));
   memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
-  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true, TIMEOUT);
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true,
+                                kAesTestutilsTimeout);
   CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
@@ -238,8 +241,10 @@ status_t aes_testutils_setup_encryption(dif_aes_transaction_t transaction,
   memcpy(in_data_plain.data, kAesModesPlainText, sizeof(in_data_plain.data));
 
   // Load the plain text to trigger the encryption operation.
-  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true, TIMEOUT);
-  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true,
+                                kAesTestutilsTimeout);
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true,
+                                kAesTestutilsTimeout);
   CHECK_DIF_OK(dif_aes_load_data(aes, in_data_plain));
 
   return OK_STATUS();
@@ -261,11 +266,13 @@ status_t aes_testutils_decrypt_ciphertext(dif_aes_transaction_t transaction,
   CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, NULL));
 
   // Load the previously produced cipher text to start the decryption operation.
-  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true,
+                                kAesTestutilsTimeout);
   CHECK_DIF_OK(dif_aes_load_data(aes, out_data));
 
   // Read out the produced plain text.
-  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusOutputValid, true, TIMEOUT);
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusOutputValid, true,
+                                kAesTestutilsTimeout);
   CHECK_DIF_OK(dif_aes_read_output(aes, &out_data));
 
   // Finish the ECB encryption transaction.
