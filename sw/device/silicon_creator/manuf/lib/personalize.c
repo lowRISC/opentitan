@@ -114,13 +114,13 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
           {
               .key_mode = kKeyModeEcdh,
               .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = wrapped_token->ecc_pk_device_x,
+              .key = wrapped_token->device_pk.x,
           },
       .y =
           {
               .key_mode = kKeyModeEcdh,
               .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = wrapped_token->ecc_pk_device_y,
+              .key = wrapped_token->device_pk.y,
           },
   };
 

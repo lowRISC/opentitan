@@ -59,8 +59,7 @@ UJSON_SERDE_STRUCT(ManufPersoDataIn, \
 // clang-format off
 #define STRUCT_WRAPPED_RMA_UNLOCK_TOKEN(field, string) \
     field(data, uint32_t, 4) \
-    field(ecc_pk_device_x, uint32_t, 8) \
-    field(ecc_pk_device_y, uint32_t, 8)
+    field(device_pk, ecc_p256_public_key_t)
 UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
                    wrapped_rma_unlock_token_t, \
                    STRUCT_WRAPPED_RMA_UNLOCK_TOKEN);
