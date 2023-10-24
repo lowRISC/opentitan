@@ -99,13 +99,11 @@ module dma
   //   (Note: in use `write_rsp_error` must be qualified with `write_rsp_valid`)
   logic write_rsp_error;
 
-  logic cfg_handshake_en;
-  logic cfg_fifo_auto_increment_en;
-  logic cfg_memory_buffer_auto_increment_en;
-  logic cfg_data_direction;
   logic cfg_abort_en;
+  assign cfg_abort_en = reg2hw.control.abort.q;
 
   logic clear_cfg_regwen, set_cfg_regwen;
+  logic cfg_handshake_en;
 
   logic [SYS_METADATA_WIDTH-1:0] src_metadata;
   assign src_metadata = SYS_METADATA_WIDTH'(1'b1) << OtAgentId;
@@ -257,27 +255,37 @@ module dma
   logic [$bits(dma_ctrl_state_e)-1:0] ctrl_state_logic;
   assign ctrl_state_q = dma_ctrl_state_e'(ctrl_state_logic);
 
-  // Captured state that we cannot lock with a REGWEN
-  logic [31:0] enabled_memory_range_base_q, enabled_memory_range_limit_q;
-  logic        capture_enabled_memory_range;
+  // During the active DMA operation, most of the DMA registers are locked with a hardware-
+  // controlled REGWEN. However, this mechanism is not possible for all registers. For example,
+  // some registers already have a different REGWEn attached (range locking) or the CONTROL
+  // register, which needs to be partly writable. To lock those registers, we capture their value
+  // during the start of the operation and, further on, only use the captured value in the state
+  // machine. The captured state is stored in control_q.
+  control_state_t control_d, control_q;
+  logic           capture_state;
+
+  // Fiddle out control bits into captured state
+  always_comb begin
+    control_d.opcode                     = opcode_e'(reg2hw.control.opcode.q);
+    control_d.cfg_handshake_en           = reg2hw.control.hardware_handshake_enable.q;
+    control_d.cfg_data_direction         = reg2hw.control.data_direction.q;
+    control_d.cfg_fifo_auto_increment_en = reg2hw.control.fifo_auto_increment_enable.q;
+    control_d.range_valid                = reg2hw.range_valid.q;
+    control_d.enabled_memory_range_base  = reg2hw.enabled_memory_range_base.q;
+    control_d.enabled_memory_range_limit = reg2hw.enabled_memory_range_limit.q;
+
+    control_d.cfg_memory_buffer_auto_increment_en =
+      reg2hw.control.memory_buffer_auto_increment_enable.q;
+  end
 
   prim_generic_flop_en #(
-    .Width(32)
-  ) u_enabled_memory_base (
-    .clk_i  ( gated_clk                           ),
-    .rst_ni ( rst_ni                              ),
-    .en_i   ( capture_enabled_memory_range        ),
-    .d_i    ( reg2hw.enabled_memory_range_base.q  ),
-    .q_o    ( enabled_memory_range_base_q         )
-  );
-  prim_generic_flop_en #(
-    .Width(32)
-  ) u_enabled_memory_limit (
-    .clk_i  ( gated_clk                           ),
-    .rst_ni ( rst_ni                              ),
-    .en_i   ( capture_enabled_memory_range        ),
-    .d_i    ( reg2hw.enabled_memory_range_limit.q ),
-    .q_o    ( enabled_memory_range_limit_q        )
+    .Width($bits(control_state_t))
+  ) u_opcode (
+    .clk_i  ( gated_clk     ),
+    .rst_ni ( rst_ni        ),
+    .en_i   ( capture_state ),
+    .d_i    ( control_d     ),
+    .q_o    ( control_q     )
   );
 
   prim_flop #(
@@ -392,7 +400,7 @@ module dma
   digest_mode_e sha2_mode;
   sha_word64_t [7:0] sha2_digest;
 
-  assign use_inline_hashing = reg2hw.control.opcode.q inside {OpcSha256,  OpcSha384, OpcSha512};
+  assign use_inline_hashing = control_q.opcode inside {OpcSha256,  OpcSha384, OpcSha512};
   // When reaching DmaShaFinalize, we are consuming data and start computing the digest value
   assign sha2_hash_process = (ctrl_state_q == DmaShaFinalize);
 
@@ -423,7 +431,7 @@ module dma
 
   // Translate the DMA opcode to the SHA2 digest mode
   always_comb begin
-    unique case (reg2hw.control.opcode.q)
+    unique case (control_q.opcode)
       OpcSha256: sha2_mode = SHA2_256;
       OpcSha384: sha2_mode = SHA2_384;
       OpcSha512: sha2_mode = SHA2_512;
@@ -572,14 +580,14 @@ module dma
   always_comb begin
     ctrl_state_d = ctrl_state_q;
 
-    capture_transfer_byte        = 1'b0;
-    transfer_byte_d              = transfer_byte_q;
-    capture_chunk_byte           = 1'b0;
-    chunk_byte_d                 = chunk_byte_q;
-    capture_transfer_width       = 1'b0;
-    transfer_width_d             = '0;
-    capture_return_data          = 1'b0;
-    capture_enabled_memory_range = 1'b0;
+    capture_transfer_byte  = 1'b0;
+    transfer_byte_d        = transfer_byte_q;
+    capture_chunk_byte     = 1'b0;
+    chunk_byte_d           = chunk_byte_q;
+    capture_transfer_width = 1'b0;
+    transfer_width_d       = '0;
+    capture_return_data    = 1'b0;
+    capture_state          = 1'b0;
 
     next_error   = '0;
     capture_addr = 1'b0;
@@ -616,6 +624,9 @@ module dma
       sha2_hash_done_d = sha2_hash_done_q | sha2_hash_done;
     end
 
+    // Default assignments for the muxed config signals for the idle state
+    cfg_handshake_en = control_q.cfg_handshake_en;
+
     // Abort has the highest priority in the state machine. In all cases, if the abort is raised,
     // the DMA is reset to the idle state. This includes the error state and the default state,
     // which should never be reached during the normal operation. The abort condition has precedence
@@ -628,19 +639,30 @@ module dma
         DmaIdle: begin
           chunk_byte_d       = '0;
           capture_chunk_byte = 1'b1;
+
+          // In DmaIdle we need to determine if we are really idling or, we are doing a roundtrip
+          // via idle. If we are really idling, we need to take the config from the register
+          // interface otherwise, we need to take the captured data
+          if (!reg2hw.status.busy.q) begin
+            // We are idling
+            cfg_handshake_en = reg2hw.control.hardware_handshake_enable.q;
+          end
+          // else, we are doing a roundtrip, which signaling is covered by the default assignment
+
           // Wait for go bit to be set to proceed with data movement
-          if (reg2hw.control.go.q) begin
+          if (reg2hw.control.go.q || reg2hw.status.busy.q) begin
             // Clear the transferred bytes only on the very first iteration
-            if (reg2hw.control.initial_transfer.q) begin
+            if (reg2hw.control.initial_transfer.q && !reg2hw.status.busy.q) begin
               transfer_byte_d       = '0;
               capture_transfer_byte = 1'b1;
               // Capture unlocked state  when starting the transfer.
-              capture_enabled_memory_range = 1'b1;
+              capture_state = 1'b1;
             end
             // if not handshake start transfer
             if (!cfg_handshake_en) begin
               ctrl_state_d = DmaAddrSetup;
-            end else if (cfg_handshake_en && |lsio_trigger) begin // if handshake wait for interrupt
+            end else if (cfg_handshake_en && |lsio_trigger) begin
+              // if handshake wait for interrupt
               if (|reg2hw.clear_int_src.q) begin
                 clear_index_en = 1'b1;
                 clear_index_d  = '0;
@@ -713,11 +735,12 @@ module dma
           endcase
 
           if ((transfer_byte_q == '0) ||
-              (cfg_handshake_en &&
+              (control_q.cfg_handshake_en &&
               // Does the source address need resetting to the configured base address?
-              ((cfg_data_direction && chunk_byte_q == '0 &&
-                !cfg_memory_buffer_auto_increment_en) ||
-               (!cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
+              ((control_q.cfg_data_direction && chunk_byte_q == '0 &&
+                !control_q.cfg_memory_buffer_auto_increment_en) ||
+               (!control_q.cfg_data_direction &&
+               (chunk_byte_q == '0 || !control_q.cfg_fifo_auto_increment_en))))) begin
             src_addr_d = {reg2hw.source_address_hi.q, reg2hw.source_address_lo.q};
           end else begin
             // Advance from the previous transaction within this chunk
@@ -725,11 +748,12 @@ module dma
           end
 
           if ((transfer_byte_q == '0) ||
-              (cfg_handshake_en    &&
+              (control_q.cfg_handshake_en    &&
               // Does the destination address need resetting to the configured base address?
-              ((!cfg_data_direction && chunk_byte_q == '0 &&
-                !cfg_memory_buffer_auto_increment_en) ||
-               ( cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
+              ((!control_q.cfg_data_direction && chunk_byte_q == '0 &&
+                !control_q.cfg_memory_buffer_auto_increment_en) ||
+               (control_q.cfg_data_direction &&
+               (chunk_byte_q == '0 || !control_q.cfg_fifo_auto_increment_en))))) begin
             dst_addr_d = {reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q};
           end else begin
             // Advance from the previous transaction within this chunk
@@ -799,7 +823,7 @@ module dma
 
           // Check the validity of the restricted DMA-enabled memory range
           // Note: both the base and the limit addresses are inclusive
-          if (enabled_memory_range_limit_q < enabled_memory_range_base_q) begin
+          if (control_q.enabled_memory_range_limit < control_q.enabled_memory_range_base) begin
             next_error[DmaBaseLimitErr] = 1'b1;
           end
 
@@ -833,11 +857,11 @@ module dma
 
           if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
               // Out-of-bound check
-              ((reg2hw.destination_address_lo.q > enabled_memory_range_limit_q) ||
-                (reg2hw.destination_address_lo.q < enabled_memory_range_base_q) ||
+              ((reg2hw.destination_address_lo.q > control_q.enabled_memory_range_limit) ||
+                (reg2hw.destination_address_lo.q < control_q.enabled_memory_range_base) ||
                 ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(enabled_memory_range_limit_q)))) begin
+                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
             next_error[DmaDestAddrErr] = 1'b1;
           end
 
@@ -846,11 +870,11 @@ module dma
           // DMA enabled memory region.
           if ((dst_asid inside {SocControlAddr, SocSystemAddr}) && (src_asid == OtInternalAddr) &&
                 // Out-of-bound check
-                ((reg2hw.source_address_lo.q > enabled_memory_range_limit_q) ||
-                (reg2hw.source_address_lo.q < enabled_memory_range_base_q)   ||
+                ((reg2hw.source_address_lo.q > control_q.enabled_memory_range_limit) ||
+                (reg2hw.source_address_lo.q < control_q.enabled_memory_range_base)   ||
                 ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(enabled_memory_range_limit_q)))) begin
+                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
             next_error[DmaSourceAddrErr] = 1'b1;
           end
 
@@ -868,7 +892,7 @@ module dma
             next_error[DmaDestAddrErr] = 1'b1;
           end
 
-          if (!reg2hw.range_valid.q) begin
+          if (!control_q.range_valid) begin
             next_error[DmaRangeValidErr] = 1'b1;
           end
 
@@ -876,10 +900,9 @@ module dma
           if (|next_error) begin
             ctrl_state_d = DmaError;
           end else begin
-            // Start the inline hashing if we are in the very first transfer. If we are in the first
-            // iteration of a transfer, which is not the very first transfer, only capture the
-            // transfer length to compute the final message length
-            if (reg2hw.control.initial_transfer.q) begin
+            // Start the inline hashing if we are in the very first transfer. This is indicated
+            // when transfer_byte_q is still 0
+            if (transfer_byte_q == '0) begin
               if (use_inline_hashing) begin
                 sha2_hash_start = 1'b1;
               end
@@ -940,7 +963,7 @@ module dma
                 // Conditionally clear the go bit when not being in hardware handshake mode.
                 // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
                 // and done bit, and release the go bit for the next FW-controlled chunk.
-                clear_go     = !cfg_handshake_en;
+                clear_go     = !control_q.cfg_handshake_en;
                 ctrl_state_d = DmaIdle;
               end else begin
                 ctrl_state_d = DmaAddrSetup;
@@ -972,7 +995,7 @@ module dma
               // Conditionally clear the go bit when not being in hardware handshake mode.
               // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
               // and done bit, and release the go bit for the next FW-controlled chunk.
-              clear_go     = !cfg_handshake_en;
+              clear_go     = !control_q.cfg_handshake_en;
               ctrl_state_d = DmaIdle;
             end else begin
               ctrl_state_d = DmaAddrSetup;
@@ -1100,9 +1123,9 @@ module dma
   assign send_almost_limit_interrupt =
     (!sent_almost_limit_interrupt_q)    &&  // only want to send once
     data_move_state_valid               &&  // only trigger for single cycle when data has moved
-    cfg_handshake_en                    &&
-    cfg_memory_buffer_auto_increment_en &&
-    (!cfg_data_direction)               &&
+    control_q.cfg_handshake_en          &&
+    control_q.cfg_memory_buffer_auto_increment_en &&
+    (!control_q.cfg_data_direction)     &&
     (dst_addr_q >= {reg2hw.destination_address_almost_limit_hi.q,
                     reg2hw.destination_address_almost_limit_lo.q});
 
@@ -1128,9 +1151,9 @@ module dma
   assign send_limit_interrupt =
     (!sent_limit_interrupt_q)           &&  // only want to send once
     data_move_state_valid               &&  // only trigger for single cycle when data has moved
-    cfg_handshake_en                    &&
-    cfg_memory_buffer_auto_increment_en &&
-    (!cfg_data_direction)               &&
+    control_q.cfg_handshake_en          &&
+    control_q.cfg_memory_buffer_auto_increment_en &&
+    (!control_q.cfg_data_direction)     &&
     (dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
                     reg2hw.destination_address_limit_lo.q});
 
@@ -1146,13 +1169,13 @@ module dma
                            (ctrl_state_q == DmaShaWait)           ||
                            (ctrl_state_q == DmaShaFinalize);
 
-  assign new_destination_addr = cfg_data_direction ?
+  assign new_destination_addr = control_q.cfg_data_direction ?
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
      SYS_ADDR_WIDTH'(transfer_width_q)) :
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
      SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q));
 
-  assign new_source_addr = cfg_data_direction ?
+  assign new_source_addr = control_q.cfg_data_direction ?
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
       SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) :
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
@@ -1170,9 +1193,14 @@ module dma
   always_comb begin
     hw2reg = '0;
 
+    // Clear the go bit if we are in a single transfer and finished the DMA operation,
+    // hardware handshake mode when we finished all transfers, or when aborting the transfer.
+    hw2reg.control.go.de = clear_go || cfg_abort_en;
+    hw2reg.control.go.d  = 1'b0;
+
     // Lock or unlock the regwen when leaving or returning back to DmaIdle
     clear_cfg_regwen = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle);
-    set_cfg_regwen   = (ctrl_state_d == DmaIdle);
+    set_cfg_regwen   = hw2reg.control.go.de;
     // Convert the regwen set/clear signal to the multi bit
     hw2reg.cfg_regwen.de = set_cfg_regwen | clear_cfg_regwen;
     hw2reg.cfg_regwen.d  = prim_mubi_pkg::mubi4_bool_to_mubi(set_cfg_regwen);
@@ -1182,18 +1210,18 @@ module dma
     // when finishing a DMA operation when transitioning from a data move state to the idle state
     update_destination_addr_reg = 1'b0;
     update_source_addr_reg      = 1'b0;
-    if (cfg_handshake_en && cfg_memory_buffer_auto_increment_en &&
+    if (control_q.cfg_handshake_en && control_q.cfg_memory_buffer_auto_increment_en &&
         data_move_state && (ctrl_state_d == DmaIdle)) begin
-      if (cfg_data_direction) begin
+      if (control_q.cfg_data_direction) begin
         update_source_addr_reg = 1'b1;
       end else begin
         update_destination_addr_reg = 1'b1;
       end
     end
 
-    // Clear the inline initial transfer flag starting flag when leaving the
-    // DmaAddrSetup the first time
-    if ((ctrl_state_q == DmaAddrSetup) & reg2hw.control.initial_transfer.q) begin
+    // Clear the inline initial transfer flag starting flag when leaving the DmaIdle the first time
+    if ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
+        reg2hw.control.initial_transfer.q) begin
       hw2reg.control.initial_transfer.de = 1'b1;
     end
 
@@ -1213,16 +1241,16 @@ module dma
     // - transitions from IDLE out
     // - clearing the go bit (going back to idle)
     // - abort               (going back to idle)
-    hw2reg.status.busy.de = ((ctrl_state_q  == DmaIdle) && (ctrl_state_d != DmaIdle)) || clear_go;
+    hw2reg.status.busy.de = ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle)) ||
+                            clear_go                                                 ||
+                            cfg_abort_en;
     // If transitioning from IDLE, set busy, otherwise clear it
-    hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) &&
-                            (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
+    hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
 
     // Status is cleared when leaving the IDLE state the first time, i.e., when busy is not yet set
     clear_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) && !reg2hw.status.busy.q;
-    // The SHA digest valid and the digest itself needs to incorporate the initial transfer flag
-    // as busy is deasserted for every chunk in the middle of a multi-chunk memory-to-memory
-    //transfer
+    // The SHA digest valid and the digest itself needs to incorporate the initial transfer flag as
+    // busy is deasserted for every chunk in the middle of a multi-chunk memory-to-memory transfer
     clear_sha_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
                        reg2hw.control.initial_transfer.q;
 
@@ -1234,7 +1262,7 @@ module dma
     hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
     hw2reg.status.error.d  = clear_status? 1'b0 : 1'b1;
 
-    hw2reg.status.aborted.de = (cfg_abort_en && (ctrl_state_d == DmaIdle)) | clear_status;
+    hw2reg.status.aborted.de = cfg_abort_en | clear_status;
     hw2reg.status.aborted.d  = clear_status? 1'b0 : 1'b1;
 
     hw2reg.status.sha2_digest_valid.de = sha2_digest_set | clear_sha_status;
@@ -1267,11 +1295,6 @@ module dma
         end
       endcase
     end
-
-    // Clear the go bit if we are in a single transfer and finished the DMA operation,
-    // hardware handshake mode when we finished all transfers, or when aborting the transfer.
-    hw2reg.control.go.de = clear_go;
-    hw2reg.control.go.d  = 1'b0;
 
     // Fiddle out error signals
     hw2reg.error_code.src_address_error.de = (ctrl_state_d == DmaError) | clear_status;
@@ -1336,14 +1359,6 @@ module dma
       hw2reg.error_code.range_valid_error.d  = 1'b0;
       hw2reg.error_code.asid_error.d         = 1'b0;
     end
-  end
-
-  always_comb begin
-    cfg_handshake_en                    = reg2hw.control.hardware_handshake_enable.q;
-    cfg_data_direction                  = reg2hw.control.data_direction.q;
-    cfg_fifo_auto_increment_en          = reg2hw.control.fifo_auto_increment_enable.q;
-    cfg_memory_buffer_auto_increment_en = reg2hw.control.memory_buffer_auto_increment_enable.q;
-    cfg_abort_en                        = reg2hw.control.abort.q;
   end
 
   //////////////////////////////////////////////////////////////////////////////
