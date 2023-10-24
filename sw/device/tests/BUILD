@@ -25,6 +25,19 @@ load(
 )
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "rsa_key_for_lc_state",
+)
+load(
+    "//rules:const.bzl",
+    "CONST",
+    "get_lc_items",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -1084,13 +1097,12 @@ opentitan_test(
     ],
 )
 
+# This is sim_dv only target.
+# Real sival target is implement after this.
 opentitan_test(
     name = "flash_ctrl_info_access_lc",
     srcs = ["flash_ctrl_info_access_lc.c"],
-    # Will be updated with a separate PR.
-    # Put this tag for now.
-    cw310 = new_cw310_params(tags = ["broken"]),
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1105,6 +1117,51 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+# hash table for lc_state name and value.
+_FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED0,
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+)
+
+[
+    opentitan_test(
+        name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
+        srcs = ["flash_ctrl_info_access_lc.c"],
+        cw310 = new_cw310_params(
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:isr_testutils",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rv_plic_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_state_val in _FLASH_CTRL_INFO_ACCESS_LC_STATES
+]
+
+test_suite(
+    name = "flash_ctrl_info_access_lc_states",
+    tests = ["flash_ctrl_info_access_lc_{}".format(lc_state.lower()) for lc_state, _ in _FLASH_CTRL_INFO_ACCESS_LC_STATES],
 )
 
 opentitan_test(
