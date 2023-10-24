@@ -2582,6 +2582,7 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         interface = "hyper310",
+        tags = ["flaky"],
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
@@ -2590,6 +2591,7 @@ opentitan_functest(
     cw340 = cw340_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         interface = "hyper340",
+        tags = ["flaky"],
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
