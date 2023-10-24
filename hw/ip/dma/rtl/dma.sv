@@ -353,28 +353,6 @@ module dma
     .q_o   ( dst_addr_q   )
   );
 
-  logic                  capture_asid;
-  logic [ASID_WIDTH-1:0] src_asid_q, dst_asid_q;
-  prim_generic_flop_en #(
-    .Width(ASID_WIDTH)
-  ) aff_src_asid (
-    .clk_i ( gated_clk    ),
-    .rst_ni( rst_ni       ),
-    .en_i  ( capture_asid ),
-    .d_i   ( reg2hw.address_space_id.source_asid.q ),
-    .q_o   ( src_asid_q   )
-  );
-
-  prim_generic_flop_en #(
-    .Width(ASID_WIDTH)
-  ) aff_dst_asid (
-    .clk_i ( gated_clk    ),
-    .rst_ni( rst_ni       ),
-    .en_i  ( capture_asid ),
-    .d_i   ( reg2hw.address_space_id.destination_asid.q ),
-    .q_o   ( dst_asid_q   )
-  );
-
   logic                       capture_be;
   logic [top_pkg::TL_DBW-1:0] req_src_be_q, req_src_be_d;
   logic [top_pkg::TL_DBW-1:0] req_dst_be_q, req_dst_be_d;
@@ -473,13 +451,18 @@ module dma
     .idle             (                       )
   );
 
+  // Fiddle ASIDs out for better readability during the rest of the code
+  logic [ASID_WIDTH-1:0] src_asid, dst_asid;
+  assign src_asid = reg2hw.address_space_id.source_asid.q;
+  assign dst_asid = reg2hw.address_space_id.destination_asid.q;
+
   // Note: bus signals shall be asserted only when configured and active, to ensure
   // that address and - especially - data are not leaked to other buses.
 
   // Host interface to OT Internal address space
   always_comb begin
-    dma_host_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == OtInternalAddr);
-    dma_host_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == OtInternalAddr);
+    dma_host_write = (ctrl_state_q == DmaSendWrite) & (dst_asid == OtInternalAddr);
+    dma_host_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == OtInternalAddr);
 
     dma_host_tlul_req_valid = dma_host_write | dma_host_read | dma_host_clear_int;
     // TLUL 4B aligned
@@ -496,8 +479,8 @@ module dma
 
   // Host interface to SoC CTN address space
   always_comb begin
-    dma_ctn_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == SocControlAddr);
-    dma_ctn_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == SocControlAddr);
+    dma_ctn_write = (ctrl_state_q == DmaSendWrite) & (dst_asid == SocControlAddr);
+    dma_ctn_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == SocControlAddr);
 
     dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_int;
     // TLUL 4B aligned
@@ -513,8 +496,8 @@ module dma
 
   // Host interface to SoC SYS address space
   always_comb begin
-    dma_sys_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == SocSystemAddr);
-    dma_sys_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == SocSystemAddr);
+    dma_sys_write = (ctrl_state_q == DmaSendWrite) & (dst_asid == SocSystemAddr);
+    dma_sys_read  = (ctrl_state_q == DmaSendRead)  & (src_asid  == SocSystemAddr);
 
     sys_req_d.vld_vec     [SysCmdWrite] = dma_sys_write;
     sys_req_d.metadata_vec[SysCmdWrite] = src_metadata;
@@ -537,7 +520,7 @@ module dma
 
   // Write response muxing
   always_comb begin
-    unique case (dst_asid_q)
+    unique case (dst_asid)
       OtInternalAddr: begin
         // Write request grant
         write_gnt       = dma_host_tlul_gnt;
@@ -563,7 +546,7 @@ module dma
 
   // Read response muxing
   always_comb begin
-    unique case (src_asid_q)
+    unique case (src_asid)
       OtInternalAddr: begin
         // Read request grant
         read_gnt       = dma_host_tlul_gnt;
@@ -603,7 +586,6 @@ module dma
     capture_addr = 1'b0;
     src_addr_d   = '0;
     dst_addr_d   = '0;
-    capture_asid = 1'b0;
 
     capture_be   = '0;
     req_src_be_d = '0;
@@ -655,7 +637,6 @@ module dma
               capture_transfer_byte = 1'b1;
               // Capture unlocked state  when starting the transfer.
               capture_enabled_memory_range = 1'b1;
-              capture_asid                 = 1'b1;
             end
             // if not handshake start transfer
             if (!cfg_handshake_en) begin
@@ -756,11 +737,6 @@ module dma
             dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
           end
 
-          // Capture ASID values for use throughout the transfer.
-          if (transfer_byte_q == '0) begin
-            capture_asid = 1'b1;
-          end
-
           unique case (transfer_width_d)
             3'b001: begin
               req_dst_be_d = top_pkg::TL_DBW'('b0001) << dst_addr_d[1:0];
@@ -815,14 +791,10 @@ module dma
 
           // Ensure that ASIDs have valid values
           // SEC_CM: ASID.INTERSIG.MUBI
-          if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
-                                                              SocControlAddr,
-                                                              SocSystemAddr})) begin
+          if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
             next_error[DmaAsidErr] = 1'b1;
           end
-          if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
-                                                                  SocControlAddr,
-                                                                  SocSystemAddr})) begin
+          if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
             next_error[DmaAsidErr] = 1'b1;
           end
 
@@ -859,9 +831,8 @@ module dma
           // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
           // the DMA enabled memory region.
-          if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.source_asid.q == SocSystemAddr)) &&
-              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
+
+          if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
               // Out-of-bound check
               ((reg2hw.destination_address_lo.q > enabled_memory_range_limit_q) ||
                 (reg2hw.destination_address_lo.q < enabled_memory_range_base_q) ||
@@ -874,9 +845,7 @@ module dma
           // If data from the OT internal memory is transferred  to the SOC system bus or the
           // control bus, we must check if the source address range falls into the
           // DMA enabled memory region.
-          if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)) &&
-              (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
+          if ((dst_asid inside {SocControlAddr, SocSystemAddr}) && (src_asid == OtInternalAddr) &&
                 // Out-of-bound check
                 ((reg2hw.source_address_lo.q > enabled_memory_range_limit_q) ||
                 (reg2hw.source_address_lo.q < enabled_memory_range_base_q)   ||
@@ -888,16 +857,14 @@ module dma
 
           // If the source ASID is the SOC control port or the OT internal port, we are accessing a
           // 32-bit address space. Thus the upper bits of the source address must be zero
-          if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
+          if ((src_asid inside {SocControlAddr, OtInternalAddr}) &&
               (|reg2hw.source_address_hi.q)) begin
             next_error[DmaSourceAddrErr] = 1'b1;
           end
 
           // If the destination ASID is the SOC control por or the OT internal port we are accessing
           // a 32-bit address space. Thus the upper bits of the destination address must be zero
-          if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
+          if ((dst_asid inside {SocControlAddr, OtInternalAddr}) &&
               (|reg2hw.destination_address_hi.q)) begin
             next_error[DmaDestAddrErr] = 1'b1;
           end
@@ -1041,7 +1008,7 @@ module dma
 
   // Collect read data from the appropriate port.
   always_comb begin
-    unique case (src_asid_q)
+    unique case (src_asid)
       OtInternalAddr: dma_rsp_data = dma_host_tlul_rsp_data;
       SocControlAddr: dma_rsp_data = dma_ctn_tlul_rsp_data;
       default:        dma_rsp_data = sys_resp_q.read_data;
