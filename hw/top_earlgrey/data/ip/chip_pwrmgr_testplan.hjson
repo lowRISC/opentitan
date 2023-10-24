@@ -114,7 +114,7 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_deep_sleep_por_reset"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_sleep_por_reset
@@ -140,7 +140,7 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_sleep_por_reset"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -181,10 +181,10 @@
         "PWRMGR.LOW_POWER.DISABLE_POWER"
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: [
         "chip_sw_aon_timer_wdog_bite_reset",
@@ -213,10 +213,10 @@
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_reset_reqs_test_fpga_cw310_test_rom"]
@@ -365,10 +365,10 @@
         "PWRMGR.LOW_POWER.DISABLE_POWER"
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
       bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test_fpga_cw310_test_rom"]
@@ -465,9 +465,10 @@
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: []
@@ -480,12 +481,12 @@
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and pwrmgr
             should not attempt to send out more alerts.
-            SiVal: Could generate escalation writing to the alert_test, and setting the
+            SiVal: This is not suitable for sival, and the various reset tests that work in sival
+            platforms cover escalation resets via writing to the alert_test, and setting the
             alert_handler to immediately trip escalation reset.
-            Any LC state and OTP image.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: None
       lc_states: [
         "TEST_UNLOCKED",
         "DEV",
