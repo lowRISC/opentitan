@@ -109,12 +109,13 @@
       name: chip_sw_aes_entropy
       desc: '''Verify the AES entropy input used by the internal PRNGs.
 
+            - Configure encryption using the CBC mode, key length 256, and set the engine to
+              manual operation.
             - Write the initial key share, IV and data in CSRs (known combinations).
-            - Configure the entropy_src to generate entropy in LFSR mode.
             - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
             - Poll the status idle bit to ensure reseed operation is complete.
             - Trigger the AES operation to run and wait for it to complete.
-            - Check the digest against the expected value.
+            - Check the ciphertext against the expected value.
             - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
               complete by polling the status idle bit.
             - Read back the data out CSRs - they should all read garbage values.
