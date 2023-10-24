@@ -2783,3 +2783,21 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "example_sival",
+    srcs = ["example_sival.c"],
+    cw310 = new_cw310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/example_sival",
+    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
