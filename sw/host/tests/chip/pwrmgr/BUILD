@@ -33,3 +33,17 @@ rust_binary(
         "@crate_index//:log",
     ],
 )
+
+rust_binary(
+    name = "sleep_por",
+    srcs = [
+        "src/sleep_por.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
