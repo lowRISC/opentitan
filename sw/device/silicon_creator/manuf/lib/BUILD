@@ -226,7 +226,7 @@ opentitan_test(
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
-            --hsm-ecdh-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
         test_harness = "//sw/host/tests/manuf/personalize",
     ),

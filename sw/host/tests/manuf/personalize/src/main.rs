@@ -37,9 +37,9 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
 
-    /// HSM generated ECDH private key DER file.
+    /// Host (HSM) generated ECC (P256) private key DER file.
     #[arg(long)]
-    hsm_ecdh_sk: PathBuf,
+    host_ecc_sk: PathBuf,
 }
 
 fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -47,27 +47,27 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-    // Load HSM-generated ECC keys.
-    let hsm_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.hsm_ecdh_sk)?;
-    let hsm_pk = PublicKey::<NistP256>::from_secret_scalar(&hsm_sk.to_nonzero_scalar());
+    // Load host (HSM) generated ECC keys.
+    let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.host_ecc_sk)?;
+    let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
 
-    // Format HSM-generated ECC public key to inject it into the device.
-    let hsm_pk_sec1_bytes = hsm_pk.to_sec1_bytes();
-    let num_coord_bytes: usize = (hsm_pk_sec1_bytes.len() - 1) / 2;
-    let mut hsm_pk_x_bytes = hsm_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
+    // Format host generated ECC public key to inject it into the device.
+    let host_pk_sec1_bytes = host_pk.to_sec1_bytes();
+    let num_coord_bytes: usize = (host_pk_sec1_bytes.len() - 1) / 2;
+    let mut host_pk_x = host_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
         .chunks(4)
         .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
         .collect::<ArrayVec<u32, 8>>();
-    let mut hsm_pk_y_bytes = hsm_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
+    let mut host_pk_y = host_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
         .chunks(4)
         .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
         .collect::<ArrayVec<u32, 8>>();
-    hsm_pk_x_bytes.reverse();
-    hsm_pk_y_bytes.reverse();
+    host_pk_x.reverse();
+    host_pk_y.reverse();
     let in_data = ManufPersoDataIn {
         host_pk: EccP256PublicKey {
-            x: hsm_pk_x_bytes,
-            y: hsm_pk_y_bytes,
+            x: host_pk_x,
+            y: host_pk_y,
         },
     };
 
@@ -88,9 +88,6 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     let export_data = ManufPersoDataOut::recv(&*uart, opts.timeout, false)?;
     log::info!("{:x?}", export_data);
 
-    // Load HSM-generated EC private key.
-    let hsm_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.hsm_ecdh_sk)?;
-
     // Load device-generated EC public key.
     let mut device_pk_sec1_bytes = Vec::new();
     for key_word in &export_data.wrapped_rma_unlock_token.device_pk.y {
@@ -104,7 +101,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     let device_pk = PublicKey::<NistP256>::from_sec1_bytes(&device_pk_sec1_bytes)?;
 
     // Peform ECDH to generate shared secret (AES) key.
-    let ecdh_shared_secret = diffie_hellman(hsm_sk.to_nonzero_scalar(), device_pk.as_affine());
+    let ecdh_shared_secret = diffie_hellman(host_sk.to_nonzero_scalar(), device_pk.as_affine());
     let mut aes_key_bytes = Vec::from(ecdh_shared_secret.raw_secret_bytes().as_slice());
     aes_key_bytes.reverse();
     let aes_key = GenericArray::from_slice(aes_key_bytes.as_slice());
