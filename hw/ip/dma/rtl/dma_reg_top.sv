@@ -220,7 +220,6 @@ module dma_reg_top (
   logic status_error_qs;
   logic status_error_wd;
   logic status_sha2_digest_valid_qs;
-  logic status_sha2_digest_valid_wd;
   logic error_code_src_address_error_qs;
   logic error_code_dst_address_error_qs;
   logic error_code_opcode_error_qs;
@@ -1403,7 +1402,7 @@ module dma_reg_top (
   ) u_status0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&(status_flds_we | 5'h1)),
+    .d_i(&(status_flds_we | 5'h11)),
     .q_o(status_qe)
   );
   //   F[busy]: 0:0
@@ -1518,7 +1517,7 @@ module dma_reg_top (
   //   F[sha2_digest_valid]: 4:4
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_status_sha2_digest_valid (
@@ -1526,8 +1525,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (status_we),
-    .wd     (status_sha2_digest_valid_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.sha2_digest_valid.de),
@@ -3315,8 +3314,6 @@ module dma_reg_top (
   assign status_aborted_wd = reg_wdata[2];
 
   assign status_error_wd = reg_wdata[3];
-
-  assign status_sha2_digest_valid_wd = reg_wdata[4];
   assign handshake_interrupt_enable_we = addr_hit[40] & reg_we & !reg_error;
 
   assign handshake_interrupt_enable_wd = reg_wdata[10:0];
