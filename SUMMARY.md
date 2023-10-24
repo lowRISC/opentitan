@@ -551,6 +551,7 @@
   - [API Documentation](./doc/security/cryptolib/cryptolib_api.md)
 - [Implementation Guidelines](./doc/security/implementation_guidelines/README.md)
   - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
+  - [Reset vs. Non-Reset Flops](./doc/security/implementation_guidelines/reset_vs_non-reset_flops/README.md)
 
 - [Logical Security Model](./doc/security/logical_security_model/README.md)
 - [Security Model Specification](./doc/security/specs/README.md)
