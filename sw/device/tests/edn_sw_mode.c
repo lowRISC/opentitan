@@ -74,8 +74,10 @@ static void entropy_config(void) {
   // Enable CSRNG.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   // Enable EDN1 in auto request mode. This does not generate entropy for AES.
-  CHECK_DIF_OK(
-      dif_edn_set_auto_mode(&edn1, edn_testutils_auto_params_build(true)));
+  CHECK_DIF_OK(dif_edn_set_auto_mode(
+      &edn1, edn_testutils_auto_params_build(true,
+                                             /*res_itval=*/0,
+                                             /*glen_val=*/0)));
   // Enable EDN0 in software port mode.
   CHECK_DIF_OK(dif_edn_configure(&edn0));
 }

@@ -20,9 +20,13 @@ dif_edn_seed_material_t edn_testutils_seed_material_build(bool disable_rand);
  * Returns a randomized EDN auto mode configuration.
  *
  * @param disable_rand If set, a struct containing default values is returned.
+ * @param res_itval If > 0, the reseed interval is set to res_itval.
+ * @param glen_val If > 0, the generate length is set to glen_val.
  * @return A parameter struct containing the settings required for auto mode.
  */
 OT_WARN_UNUSED_RESULT
-dif_edn_auto_params_t edn_testutils_auto_params_build(bool disable_rand);
+dif_edn_auto_params_t edn_testutils_auto_params_build(bool disable_rand,
+                                                      unsigned int res_itval,
+                                                      unsigned int glen_val);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_EDN_TESTUTILS_H_
