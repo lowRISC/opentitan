@@ -18,7 +18,8 @@
  * Convert the ECDH private key from SEC1 format to PKCS8 (we do this because
  * the Rust elliptic-curve crate is able to load PKCS8 keys with less additional
  * crates):
- * `openssl ecparam -in curve.pem -genkey -out sk_hsm.pem`
+ * `openssl pkcs8 -in sk_hsm.pem -topk8 -nocrypt -out sk_hsm.pkcs8.der \
+ *   -outform DER`
  *
  * Show the ECDH public key (so this file can be manually created):
  * `openssl ec -in sk_hsm.pem -text -noout`
