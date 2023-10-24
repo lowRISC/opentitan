@@ -93,10 +93,10 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     // Load device-generated EC public key.
     let mut device_pk_sec1_bytes = Vec::new();
-    for key_word in &export_data.wrapped_rma_unlock_token.ecc_pk_device_y {
+    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.y {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
-    for key_word in &export_data.wrapped_rma_unlock_token.ecc_pk_device_x {
+    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.x {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
     device_pk_sec1_bytes.push(0x04); // This indicates the EC public key is not compressed.
