@@ -19,7 +19,6 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/manuf/keys/manuf_keys.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
@@ -72,14 +71,35 @@ static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
  * Generate ECDH keypair for use in generating an ephemeral AES encryption key
  * for exporting the RMA unlock token.
  *
- * @param[in,out] aes_key RMA unlock token AES encryption key buffer.
+ * @param host_pk Host ephemeral ECC public key used to derive shared AES key.
+ * @param[out] aes_key RMA unlock token AES encryption key buffer.
  * @param[out] wrapped_token Wrapped RMA unlock token struct that stores the
  *                           ECDH device public key and encrypted RMA token.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
-    crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
-  // ECDH private key.
+    ecc_p256_public_key_t host_pk, crypto_blinded_key_t *aes_key,
+    wrapped_rma_unlock_token_t *wrapped_token) {
+  // ECDH host (HSM) private key.
+  // TODO: update the .checksum fields once cryptolib uses this field.
+  ecc_public_key_t pk_host = {
+      .x =
+          {
+              .key_mode = kKeyModeEcdh,
+              .key_length = kP256CoordWords * sizeof(uint32_t),
+              .key = host_pk.x,
+              .checksum = 0,
+          },
+      .y =
+          {
+              .key_mode = kKeyModeEcdh,
+              .key_length = kP256CoordWords * sizeof(uint32_t),
+              .key = host_pk.y,
+              .checksum = 0,
+          },
+  };
+
+  // ECDH device private key.
   uint32_t sk_device_keyblob[keyblob_num_words(kEcdhPrivateKeyConfig)];
   crypto_blinded_key_t sk_device = {
       .config = kEcdhPrivateKeyConfig,
@@ -88,7 +108,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
       .checksum = 0,
   };
 
-  // ECDH public key.
+  // ECDH device public key.
   ecc_public_key_t pk_device = {
       .x =
           {
@@ -106,8 +126,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
 
   TRY(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device));
 
-  return otcrypto_ecdh(&sk_device, &kRmaUnlockTokenExportKeyPkHsm, &kCurveP256,
-                       aes_key);
+  return otcrypto_ecdh(&sk_device, &pk_host, &kCurveP256, aes_key);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -274,7 +293,8 @@ static status_t otp_partition_secret2_configure(
 status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
                                           const dif_lc_ctrl_t *lc_ctrl,
                                           const dif_otp_ctrl_t *otp_ctrl,
-                                          manuf_perso_data_out_t *export_data) {
+                                          manuf_perso_data_in_t *in_data,
+                                          manuf_perso_data_out_t *out_data) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -311,8 +331,8 @@ status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
       .keyblob_length = sizeof(aes_key_buf),
       .keyblob = aes_key_buf,
   };
-  TRY(gen_rma_unlock_token_aes_key(&token_aes_key,
-                                   &export_data->wrapped_rma_unlock_token));
+  TRY(gen_rma_unlock_token_aes_key(in_data->host_pk, &token_aes_key,
+                                   &out_data->wrapped_rma_unlock_token));
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
@@ -326,11 +346,11 @@ status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl,
-                                      &export_data->wrapped_rma_unlock_token));
+                                      &out_data->wrapped_rma_unlock_token));
 
   // Encrypt the RMA unlock token with AES.
   TRY(encrypt_rma_unlock_token(&token_aes_key,
-                               &export_data->wrapped_rma_unlock_token));
+                               &out_data->wrapped_rma_unlock_token));
 
   return OK_STATUS();
 }
