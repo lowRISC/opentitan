@@ -14,6 +14,30 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'p', 'd')
 
 /**
+ * Ephemeral HSM ECC public key used to derive ECDH shared secret key for
+ * wrapping the RMA unlock token.
+ */
+// clang-format off
+#define STRUCT_ECC_P256_PUBLIC_KEY(field, string) \
+    field(x, uint32_t, 8) \
+    field(y, uint32_t, 8)
+UJSON_SERDE_STRUCT(EccP256PublicKey, \
+                   ecc_p256_public_key_t, \
+                   STRUCT_ECC_P256_PUBLIC_KEY);
+// clang-format on
+
+/**
+ * Data imported during device personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_PERSO_DATA_IN(field, string) \
+    field(host_pk, ecc_p256_public_key_t)
+UJSON_SERDE_STRUCT(ManufPersoDataIn, \
+                   manuf_perso_data_in_t, \
+                   STRUCT_MANUF_PERSO_DATA_IN);
+// clang-format on
+
+/**
  * Wrapped (encrypted) RMA unlock token.
  *
  * The RMA unlock token is encrypted with AES-ECB using an ECDH emphemeral key.

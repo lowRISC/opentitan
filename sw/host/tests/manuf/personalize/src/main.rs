@@ -9,6 +9,7 @@ use std::time::Duration;
 use aes::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
 use aes::Aes256Dec;
 use anyhow::Result;
+use arrayvec::ArrayVec;
 use clap::Parser;
 use elliptic_curve::ecdh::diffie_hellman;
 use elliptic_curve::pkcs8::DecodePrivateKey;
@@ -21,11 +22,11 @@ use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
-use opentitanlib::test_utils::rpc::UartRecv;
+use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
-use provisioning_data::ManufPersoDataOut;
+use provisioning_data::{EccP256PublicKey, ManufPersoDataIn, ManufPersoDataOut};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -46,12 +47,44 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
+    // Load HSM-generated ECC keys.
+    let hsm_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.hsm_ecdh_sk)?;
+    let hsm_pk = PublicKey::<NistP256>::from_secret_scalar(&hsm_sk.to_nonzero_scalar());
+
+    // Format HSM-generated ECC public key to inject it into the device.
+    let hsm_pk_sec1_bytes = hsm_pk.to_sec1_bytes();
+    let num_coord_bytes: usize = (hsm_pk_sec1_bytes.len() - 1) / 2;
+    let mut hsm_pk_x_bytes = hsm_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    let mut hsm_pk_y_bytes = hsm_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    hsm_pk_x_bytes.reverse();
+    hsm_pk_y_bytes.reverse();
+    let in_data = ManufPersoDataIn {
+        host_pk: EccP256PublicKey {
+            x: hsm_pk_x_bytes,
+            y: hsm_pk_y_bytes,
+        },
+    };
+
     // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Ready to receive host ECC pubkey ...",
+        opts.timeout,
+    )?;
 
-    // Wait for exported data to be transimitted over the console.
+    // Send data into the device over the console.
+    in_data.send(&*uart)?;
+
+    // Wait for output data to be transimitted over the console.
+    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
     let export_data = ManufPersoDataOut::recv(&*uart, opts.timeout, false)?;
     log::info!("{:x?}", export_data);
 

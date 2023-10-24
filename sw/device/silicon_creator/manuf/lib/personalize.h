@@ -69,13 +69,15 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * @param flash_state Flash controller instance.
  * @param lc_ctrl Lifecycle controller instance.
  * @param otp_ctrl OTP controller instance.
- * @param[out] export_data UJSON struct of data to export from the device.
+ * @param in_data UJSON struct of data to import into the device.
+ * @param[out] out_data UJSON struct of data to export from the device.
  * @return OK_STATUS on success.
  */
 status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
                                           const dif_lc_ctrl_t *lc_ctrl,
                                           const dif_otp_ctrl_t *otp_ctrl,
-                                          manuf_perso_data_out_t *export_data);
+                                          manuf_perso_data_in_t *in_data,
+                                          manuf_perso_data_out_t *out_data);
 
 /**
  * Checks the device personalization end state.

@@ -214,7 +214,6 @@ cc_library(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/manuf/keys",
     ],
 )
 
@@ -223,9 +222,7 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
-        data = [
-            "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
-        ],
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
