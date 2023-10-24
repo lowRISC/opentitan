@@ -23,8 +23,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
+#include "sw/device/lib/testing/test_framework/ottf_debugger.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 // TODO: make this toplevel agnostic.
@@ -131,6 +133,9 @@ noreturn void ottf_abort(bool result) {
   }
 
   coverage_send_buffer();
+  while (true) {
+    ottf_debugger_loop(NULL);
+  }
 }
 
 static void report_test_status(bool result) {
