@@ -49,8 +49,10 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
                                transaction.destination.asid);
   mmio_region_write32(dma->base_addr, DMA_ADDRESS_SPACE_ID_REG_OFFSET, reg);
 
+  mmio_region_write32(dma->base_addr, DMA_CHUNK_DATA_SIZE_REG_OFFSET,
+                      transaction.chunk_size);
   mmio_region_write32(dma->base_addr, DMA_TOTAL_DATA_SIZE_REG_OFFSET,
-                      transaction.size);
+                      transaction.total_size);
   mmio_region_write32(dma->base_addr, DMA_TRANSFER_WIDTH_REG_OFFSET,
                       transaction.width);
 
@@ -98,6 +100,7 @@ dif_result_t dif_dma_start(const dif_dma_t *dma,
   uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
   reg = bitfield_field32_write(reg, DMA_CONTROL_OPCODE_FIELD, opcode);
   reg = bitfield_bit32_write(reg, DMA_CONTROL_GO_BIT, 1);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_INITIAL_TRANSFER_BIT, 1);
   mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
   return kDifOk;
 }
@@ -125,6 +128,8 @@ dif_result_t dif_dma_memory_range_set(const dif_dma_t *dma, uint32_t address,
   uint32_t end_addr = address + size - 1;
   mmio_region_write32(dma->base_addr, DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET,
                       end_addr);
+  // Indicate the range to be valid
+  mmio_region_write32(dma->base_addr, DMA_RANGE_VALID_REG_OFFSET, 1);
 
   return kDifOk;
 }
@@ -164,6 +169,16 @@ dif_result_t dif_dma_is_memory_range_locked(const dif_dma_t *dma,
 
   *is_locked = kMultiBitBool4False ==
                mmio_region_read32(dma->base_addr, DMA_RANGE_REGWEN_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_dma_is_memory_range_valid(const dif_dma_t *dma,
+                                           bool *is_valid) {
+  if (dma == NULL || is_valid == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_valid = mmio_region_read32(dma->base_addr, DMA_RANGE_VALID_REG_OFFSET);
   return kDifOk;
 }
 
@@ -220,11 +235,29 @@ dif_result_t dif_dma_status_get(const dif_dma_t *dma,
   uint32_t reg = mmio_region_read32(dma->base_addr, DMA_STATUS_REG_OFFSET);
 
   const bitfield_field32_t kStatusFields = {
-      .mask = (1 << DMA_STATUS_ERROR_CODE_OFFSET) - 1,
+      .mask = ((1 << DMA_STATUS_ERROR_CODE_OFFSET) - 1) |
+              (1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT),
       .index = DMA_STATUS_BUSY_BIT};
 
   *status = bitfield_field32_read(reg, kStatusFields);
 
+  return kDifOk;
+}
+
+dif_result_t dif_dma_status_poll(const dif_dma_t *dma,
+                                 dif_dma_status_code_t flag) {
+  while (true) {
+    dif_dma_status_t status;
+    if (dif_dma_status_get(dma, &status) != kDifOk) {
+      return kDifError;
+    }
+    if (bitfield_bit32_read(status, flag)) {
+      break;
+    }
+    if (bitfield_bit32_read(status, kDifDmaStatusError)) {
+      return kDifError;
+    }
+  }
   return kDifOk;
 }
 
@@ -236,6 +269,37 @@ dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
   uint32_t reg = mmio_region_read32(dma->base_addr, DMA_STATUS_REG_OFFSET);
   *error = bitfield_field32_read(reg, DMA_STATUS_ERROR_CODE_FIELD);
 
+  return kDifOk;
+}
+
+dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
+                                     dif_dma_transaction_opcode_t opcode,
+                                     uint32_t digest[]) {
+  if (dma == NULL || digest == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t regs_num;
+  switch (opcode) {
+    case kDifDmaSha256Opcode:
+      regs_num = 8;
+      break;
+    case kDifDmaSha384Opcode:
+      regs_num = 12;
+      break;
+    case kDifDmaSha512Opcode:
+      regs_num = 16;
+      break;
+    default:
+      regs_num = 0;
+  }
+
+  for (int i = 0; i < regs_num; ++i) {
+    ptrdiff_t offset = DMA_SHA2_DIGEST_0_REG_OFFSET +
+                       (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t);
+
+    digest[i] = mmio_region_read32(dma->base_addr, offset);
+  }
   return kDifOk;
 }
 

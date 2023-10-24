@@ -42,13 +42,19 @@ typedef enum dif_dma_transaction_width {
   /* Transfer 2 byte at a time.*/
   kDifDmaTransWidth2Bytes = 0x01,
   /* Transfer 4 byte at a time.*/
-  kDifDmaTransWidth4Bytes = 0x03,
+  kDifDmaTransWidth4Bytes = 0x02,
 } dif_dma_transaction_width_t;
 
 /* Supported Opcodes by the DMA */
 typedef enum dif_dma_transaction_opcode {
   /* Simple copy from source to destination.*/
   kDifDmaCopyOpcode = 0x00,
+  /* Inline hashing with SHA2-256.*/
+  kDifDmaSha256Opcode = 0x01,
+  /* Inline hashing with SHA2-384.*/
+  kDifDmaSha384Opcode = 0x02,
+  /* Inline hashing with SHA2-512.*/
+  kDifDmaSha512Opcode = 0x03,
 } dif_dma_transaction_opcode_t;
 
 /**
@@ -65,8 +71,10 @@ typedef struct dif_dma_transaction_address {
 typedef struct dif_dma_transaction {
   dif_dma_transaction_address_t source;
   dif_dma_transaction_address_t destination;
-  /* Size (in bytes) of the data object to transferred.*/
-  size_t size;
+  /* Chunk size (in bytes) of the data object to transferred.*/
+  size_t chunk_size;
+  /* Total size (in bytes) of the data object to transferred.*/
+  size_t total_size;
   /* Iteration width.*/
   dif_dma_transaction_width_t width;
 } dif_dma_transaction_t;
@@ -202,6 +210,17 @@ dif_result_t dif_dma_is_memory_range_locked(const dif_dma_t *dma,
                                             bool *is_locked);
 
 /**
+ * Checks whether the DMA memory range is valid.
+ *
+ * @param dma A DMA Controller handle.
+ * @param[out] is_valid Out-param for the valid state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_is_memory_range_valid(const dif_dma_t *dma,
+                                           bool *is_valid);
+
+/**
  * Set thresholds for detecting the level of the buffer.Used in conjunction with
  * the address auto-increment mode for hardware handshake operation to generate
  * an interrupt when the buffer address approaches to the buffer address limit.
@@ -247,6 +266,8 @@ typedef enum dif_dma_status_code {
   // Error occurred during the operation.
   // Check the error_code for information about the source of the error.
   kDifDmaStatusError = 0x01 << 3,
+  // Set once the SHA2 digest is valid after finishing a transfer
+  kDifDmaStatusSha2DigestValid = 0x01 << 12,
 } dif_dma_status_code_t;
 
 /**
@@ -262,6 +283,17 @@ typedef uint32_t dif_dma_status_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
+
+/**
+ * Poll the DMA status util a given flag in the register is set.
+ *
+ * @param dma A DMA Controller handle.
+ * @param flag The flag that needs to bet set.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_poll(const dif_dma_t *dma,
+                                 dif_dma_status_code_t flag);
 
 typedef enum dif_dma_error_code {
   // Source address error.
@@ -294,6 +326,18 @@ typedef enum dif_dma_error_code {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
                                     dif_dma_error_code_t *error);
+/**
+ * Read out the SHA2 digest
+ *
+ * @param dma A DMA Controller handle.
+ * @param opcode The opcode to select the length of the read digest.
+ * @param[out] digest Pointer to the digest, to store the read values.
+ * @return The result of the operation.
+ */
+dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
+                                     dif_dma_transaction_opcode_t opcode,
+                                     uint32_t digest[]);
+
 /**
  * Clear the DMA controller state.
  *

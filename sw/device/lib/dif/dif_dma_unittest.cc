@@ -55,75 +55,81 @@ TEST_P(ConfigureTest, Success) {
            transaction.destination.asid},
       });
 
-  EXPECT_WRITE32(DMA_TOTAL_DATA_SIZE_REG_OFFSET, transaction.size);
+  EXPECT_WRITE32(DMA_CHUNK_DATA_SIZE_REG_OFFSET, transaction.chunk_size);
+  EXPECT_WRITE32(DMA_TOTAL_DATA_SIZE_REG_OFFSET, transaction.total_size);
   EXPECT_WRITE32(DMA_TRANSFER_WIDTH_REG_OFFSET, transaction.width);
 
   EXPECT_DIF_OK(dif_dma_configure(&dma_, transaction));
 }
 
-INSTANTIATE_TEST_SUITE_P(ConfigureTest, ConfigureTest,
-                         testing::ValuesIn(std::vector<dif_dma_transaction_t>{{
-                             // Test 0
-                             {
-                                 .source =
-                                     {
-                                         .address = 0xB05BA84B,
-                                         .asid = kDifDmaOpentitanInternalBus,
-                                     },
-                                 .destination =
-                                     {
-                                         .address = 0x721F400F,
-                                         .asid = kDifDmaOpentitanInternalBus,
-                                     },
-                                 .size = 0x1,
-                                 .width = kDifDmaTransWidth1Byte,
-                             },
-                             // Test 1
-                             {
-                                 .source =
-                                     {
-                                         .address = 0x34FCA80BC5C5CA67,
-                                         .asid = kDifDmaOpentitanExternalFlash,
-                                     },
-                                 .destination =
-                                     {
-                                         .address = 0xD0CF2C50,
-                                         .asid = kDifDmaSoCControlRegisterBus,
-                                     },
-                                 .size = 0x2,
-                                 .width = kDifDmaTransWidth2Bytes,
-                             },
-                             // Test 2
-                             {
-                                 .source =
-                                     {
-                                         .address = 0x05BA857F8D9C0838,
-                                         .asid = kDifDmaOpentitanExternalFlash,
-                                     },
-                                 .destination =
-                                     {
-                                         .address = 0x32CD872A12225CCE,
-                                         .asid = kDifDmaSoCSystemBus,
-                                     },
-                                 .size = 0x4,
-                                 .width = kDifDmaTransWidth4Bytes,
-                             },
-                             // Test 3
-                             {
-                                 .source =
-                                     {
-                                         .address = 0xBFED148856E0555E,
-                                         .asid = kDifDmaSoCSystemBus,
-                                     },
-                                 .destination =
-                                     {
-                                         .address = 0x9ECFA11919F684D7,
-                                         .asid = kDifDmaOpentitanExternalFlash,
-                                     },
-                                 .size = std::numeric_limits<uint32_t>::max(),
-                                 .width = kDifDmaTransWidth4Bytes,
-                             },
-                         }}));
+INSTANTIATE_TEST_SUITE_P(
+    ConfigureTest, ConfigureTest,
+    testing::ValuesIn(std::vector<dif_dma_transaction_t>{{
+        // Test 0
+        {
+            .source =
+                {
+                    .address = 0xB05BA84B,
+                    .asid = kDifDmaOpentitanInternalBus,
+                },
+            .destination =
+                {
+                    .address = 0x721F400F,
+                    .asid = kDifDmaOpentitanInternalBus,
+                },
+            .chunk_size = 0x1,
+            .total_size = 0x1,
+            .width = kDifDmaTransWidth1Byte,
+        },
+        // Test 1
+        {
+            .source =
+                {
+                    .address = 0x34FCA80BC5C5CA67,
+                    .asid = kDifDmaOpentitanExternalFlash,
+                },
+            .destination =
+                {
+                    .address = 0xD0CF2C50,
+                    .asid = kDifDmaSoCControlRegisterBus,
+                },
+            .chunk_size = 0x2,
+            .total_size = 0x2,
+            .width = kDifDmaTransWidth2Bytes,
+        },
+        // Test 2
+        {
+            .source =
+                {
+                    .address = 0x05BA857F8D9C0838,
+                    .asid = kDifDmaOpentitanExternalFlash,
+                },
+            .destination =
+                {
+                    .address = 0x32CD872A12225CCE,
+                    .asid = kDifDmaSoCSystemBus,
+                },
+            .chunk_size = 0x4,
+            .total_size = 0x4,
+            .width = kDifDmaTransWidth4Bytes,
+        },
+        // Test 3
+        {
+            .source =
+                {
+                    .address = 0xBFED148856E0555E,
+                    .asid = kDifDmaSoCSystemBus,
+                },
+            .destination =
+                {
+                    .address = 0x9ECFA11919F684D7,
+                    .asid = kDifDmaOpentitanExternalFlash,
+                },
+            .chunk_size = std::numeric_limits<uint32_t>::max(),
+            .total_size = std::numeric_limits<uint32_t>::max(),
+            .width = kDifDmaTransWidth4Bytes,
+        },
+    }}));
 
 TEST_F(ConfigureTest, BadArg) {
   dif_dma_transaction_t transaction;
@@ -197,6 +203,7 @@ TEST_P(StartTest, Success) {
   EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
                  {
                      {DMA_CONTROL_OPCODE_OFFSET, opcode},
+                     {DMA_CONTROL_INITIAL_TRANSFER_BIT, true},
                      {DMA_CONTROL_GO_BIT, true},
                      {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
                  });
@@ -221,6 +228,7 @@ TEST_F(MemoryRangeTests, SetSuccess) {
   enum { kStartAddr = 0xD0CF2C50, kEndAddr = 0xD1CF2C0F };
   EXPECT_WRITE32(DMA_ENABLED_MEMORY_RANGE_BASE_REG_OFFSET, kStartAddr);
   EXPECT_WRITE32(DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET, kEndAddr);
+  EXPECT_WRITE32(DMA_RANGE_VALID_REG_OFFSET, 1);
 
   EXPECT_DIF_OK(
       dif_dma_memory_range_set(&dma_, kStartAddr, kEndAddr - kStartAddr + 1));
@@ -378,6 +386,8 @@ INSTANTIATE_TEST_SUITE_P(
          kDifDmaStatusError, kDifDmaErrorRegisterConfig},
         {1 << DMA_STATUS_ERROR_BIT | (1 << 7) << DMA_STATUS_ERROR_CODE_OFFSET,
          kDifDmaStatusError, kDifDmaErrorInvalidAsid},
+        {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid,
+         kDifDmaErrorNone},
     }}));
 
 TEST_F(StatusTest, GetBadArg) {
