@@ -1771,6 +1771,66 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "pwrmgr_deep_sleep_por_reset_test",
+    srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_normal_sleep_por_reset_test",
+    srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
     cw310 = new_cw310_params(
