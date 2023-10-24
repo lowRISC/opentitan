@@ -2431,6 +2431,22 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "sram_ctrl_subword_access_test",
+    srcs = ["sram_ctrl_subword_access_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 opentitan_functest(
     name = "uart_smoketest_signed",
     srcs = ["uart_smoketest.c"],

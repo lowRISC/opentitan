@@ -149,6 +149,7 @@
       stage: V3
       si_stage: SV3
       tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_subword_access_test"]
     }
   ]
 }
