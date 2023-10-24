@@ -139,7 +139,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Unbuffered,
       offset:     14'd64,
-      size:       768,
+      size:       320,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b1,
@@ -152,8 +152,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:    Unbuffered,
-      offset:     14'd832,
-      size:       768,
+      offset:     14'd384,
+      size:       632,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b1,
@@ -166,7 +166,7 @@ package otp_ctrl_part_pkg;
     // OWNERSHIP_SLOT_STATE
     '{
       variant:    Unbuffered,
-      offset:     14'd1600,
+      offset:     14'd1016,
       size:       48,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -180,7 +180,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH
     '{
       variant:    Unbuffered,
-      offset:     14'd1648,
+      offset:     14'd1064,
       size:       1424,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -194,7 +194,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT0
     '{
       variant:    Unbuffered,
-      offset:     14'd3072,
+      offset:     14'd2488,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -208,7 +208,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT1
     '{
       variant:    Unbuffered,
-      offset:     14'd3400,
+      offset:     14'd2816,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -222,7 +222,7 @@ package otp_ctrl_part_pkg;
     // PLAT_INTEG_AUTH_SLOT0
     '{
       variant:    Unbuffered,
-      offset:     14'd3728,
+      offset:     14'd3144,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -236,7 +236,7 @@ package otp_ctrl_part_pkg;
     // PLAT_INTEG_AUTH_SLOT1
     '{
       variant:    Unbuffered,
-      offset:     14'd4056,
+      offset:     14'd3472,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -250,7 +250,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT0
     '{
       variant:    Unbuffered,
-      offset:     14'd4384,
+      offset:     14'd3800,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -264,7 +264,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT1
     '{
       variant:    Unbuffered,
-      offset:     14'd4712,
+      offset:     14'd4128,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -278,7 +278,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT2
     '{
       variant:    Unbuffered,
-      offset:     14'd5040,
+      offset:     14'd4456,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -292,7 +292,7 @@ package otp_ctrl_part_pkg;
     // PLAT_OWNER_AUTH_SLOT3
     '{
       variant:    Unbuffered,
-      offset:     14'd5368,
+      offset:     14'd4784,
       size:       328,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -306,7 +306,7 @@ package otp_ctrl_part_pkg;
     // EXT_NVM
     '{
       variant:    Unbuffered,
-      offset:     14'd5696,
+      offset:     14'd5112,
       size:       1024,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -320,8 +320,8 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     '{
       variant:    Unbuffered,
-      offset:     14'd6720,
-      size:       9200,
+      offset:     14'd6136,
+      size:       9784,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b1,
@@ -546,8 +546,9 @@ package otp_ctrl_part_pkg;
       256'h40119A3C6E63CDF358840E458E4029A6B5AC1F53D00A08C3B28B5C0FEE5F4C02,
       256'hB3A5B4421F462370FFF698183664DC7EDF3888886BD10DC67ABB319BDA0529AE
     }),
-    73600'({
+    78272'({
       64'h4D104B5B0B3D8FDD,
+      4672'h0, // unallocated space
       73536'h0
     }),
     8192'({
@@ -608,9 +609,9 @@ package otp_ctrl_part_pkg;
       128'h0,
       128'h0
     }),
-    6144'({
+    5056'({
       64'h6FDFE93D3146B0F,
-      1248'h0, // unallocated space
+      160'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -629,9 +630,9 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    6144'({
+    2560'({
       64'h67BBE3B4555DF35C,
-      3744'h0, // unallocated space
+      160'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,

@@ -7,7 +7,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |:-------:|:---------------------:|:----------:|:----------------:|:-------------------------------------------------------------------:|:--------------:|:----------:|
 |    0    |      VENDOR_TEST      |     64     |      32bit       |                               SCRATCH                               |     0x000      |     56     |
 |         |                       |            |      64bit       |           [VENDOR_TEST_DIGEST](#Reg_vendor_test_digest_0)           |     0x038      |     8      |
-|    1    |    CREATOR_SW_CFG     |    768     |      32bit       |                       CREATOR_SW_CFG_AST_CFG                        |     0x040      |    156     |
+|    1    |    CREATOR_SW_CFG     |    320     |      32bit       |                       CREATOR_SW_CFG_AST_CFG                        |     0x040      |    156     |
 |         |                       |            |      32bit       |                     CREATOR_SW_CFG_AST_INIT_EN                      |     0x0DC      |     4      |
 |         |                       |            |      32bit       |                     CREATOR_SW_CFG_ROM_EXT_SKU                      |     0x0E0      |     4      |
 |         |                       |            |      32bit       |            CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN             |     0x0E4      |     4      |
@@ -40,61 +40,61 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                       |            |      32bit       |                 CREATOR_SW_CFG_RNG_ALERT_THRESHOLD                  |     0x158      |     4      |
 |         |                       |            |      32bit       |               CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST               |     0x15C      |     4      |
 |         |                       |            |      32bit       |                  CREATOR_SW_CFG_SRAM_KEY_RENEW_EN                   |     0x160      |     4      |
-|         |                       |            |      64bit       |        [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)        |     0x338      |     8      |
-|    2    |     OWNER_SW_CFG      |    768     |      32bit       |                  OWNER_SW_CFG_ROM_ERROR_REPORTING                   |     0x340      |     4      |
-|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_BOOTSTRAP_DIS                    |     0x344      |     4      |
-|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_ALERT_CLASS_EN                   |     0x348      |     4      |
-|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_ESCALATION                  |     0x34C      |     4      |
-|         |                       |            |      32bit       |                OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION                |     0x350      |    396     |
-|         |                       |            |      32bit       |             OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION             |     0x4DC      |     64     |
-|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH                 |     0x51C      |     16     |
-|         |                       |            |      32bit       |                OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES                |     0x52C      |     16     |
-|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES                 |     0x53C      |     64     |
-|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD                  |     0x57C      |     4      |
-|         |                       |            |      32bit       |               OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END                |     0x580      |     4      |
-|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV                  |     0x584      |     4      |
-|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA                  |     0x588      |     4      |
-|         |                       |            |      32bit       |           OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES           |     0x58C      |     4      |
-|         |                       |            |      32bit       |               OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN               |     0x590      |     4      |
-|         |                       |            |      32bit       |                      OWNER_SW_CFG_MANUF_STATE                       |     0x594      |     4      |
-|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                   |     0x598      |     4      |
-|         |                       |            |      64bit       |          [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)          |     0x638      |     8      |
-|    3    | OWNERSHIP_SLOT_STATE  |     48     |      32bit       |                 OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH                 |     0x640      |     16     |
-|         |                       |            |      32bit       |                OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH                 |     0x650      |     16     |
-|         |                       |            |      32bit       |                OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH                 |     0x660      |     16     |
-|    4    |   ROT_CREATOR_AUTH    |    1424    |      32bit       |              ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY              |     0x670      |    160     |
-|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_OWNERSHIP_STATE                   |     0x710      |     4      |
-|         |                       |            |      32bit       |              ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY              |     0x714      |    160     |
-|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_KEYMANIFEST_KEY                   |     0x7B4      |    160     |
-|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_UNLOCK4XFER_KEY                   |     0x854      |    160     |
-|         |                       |            |      32bit       |                   ROT_CREATOR_AUTH_IDENTITY_CERT                    |     0x8F4      |    768     |
-|         |                       |            |      64bit       |      [ROT_CREATOR_AUTH_DIGEST](#Reg_rot_creator_auth_digest_0)      |     0xBF8      |     8      |
-|    5    | ROT_OWNER_AUTH_SLOT0  |    328     |      32bit       |                ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY                 |     0xC00      |    160     |
-|         |                       |            |      32bit       |                ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY                 |     0xCA0      |    160     |
-|         |                       |            |      64bit       |  [ROT_OWNER_AUTH_SLOT0_DIGEST](#Reg_rot_owner_auth_slot0_digest_0)  |     0xD40      |     8      |
-|    6    | ROT_OWNER_AUTH_SLOT1  |    328     |      32bit       |                ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY                 |     0xD48      |    160     |
-|         |                       |            |      32bit       |                ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY                 |     0xDE8      |    160     |
-|         |                       |            |      64bit       |  [ROT_OWNER_AUTH_SLOT1_DIGEST](#Reg_rot_owner_auth_slot1_digest_0)  |     0xE88      |     8      |
-|    7    | PLAT_INTEG_AUTH_SLOT0 |    328     |      32bit       |                PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY                |     0xE90      |    160     |
-|         |                       |            |      32bit       |                PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY                |     0xF30      |    160     |
-|         |                       |            |      64bit       | [PLAT_INTEG_AUTH_SLOT0_DIGEST](#Reg_plat_integ_auth_slot0_digest_0) |     0xFD0      |     8      |
-|    8    | PLAT_INTEG_AUTH_SLOT1 |    328     |      32bit       |                PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY                |     0xFD8      |    160     |
-|         |                       |            |      32bit       |                PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY                |     0x1078     |    160     |
-|         |                       |            |      64bit       | [PLAT_INTEG_AUTH_SLOT1_DIGEST](#Reg_plat_integ_auth_slot1_digest_0) |     0x1118     |     8      |
-|    9    | PLAT_OWNER_AUTH_SLOT0 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY                |     0x1120     |    160     |
-|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY                |     0x11C0     |    160     |
-|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT0_DIGEST](#Reg_plat_owner_auth_slot0_digest_0) |     0x1260     |     8      |
-|   10    | PLAT_OWNER_AUTH_SLOT1 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY                |     0x1268     |    160     |
-|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY                |     0x1308     |    160     |
-|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT1_DIGEST](#Reg_plat_owner_auth_slot1_digest_0) |     0x13A8     |     8      |
-|   11    | PLAT_OWNER_AUTH_SLOT2 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY                |     0x13B0     |    160     |
-|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY                |     0x1450     |    160     |
-|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT2_DIGEST](#Reg_plat_owner_auth_slot2_digest_0) |     0x14F0     |     8      |
-|   12    | PLAT_OWNER_AUTH_SLOT3 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY                |     0x14F8     |    160     |
-|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY                |     0x1598     |    160     |
-|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT3_DIGEST](#Reg_plat_owner_auth_slot3_digest_0) |     0x1638     |     8      |
-|   13    |        EXT_NVM        |    1024    |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT                   |     0x1640     |    1024    |
-|   14    |       ROM_PATCH       |    9200    |      32bit       |                           ROM_PATCH_DATA                            |     0x1A40     |    9192    |
+|         |                       |            |      64bit       |        [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0)        |     0x178      |     8      |
+|    2    |     OWNER_SW_CFG      |    632     |      32bit       |                  OWNER_SW_CFG_ROM_ERROR_REPORTING                   |     0x180      |     4      |
+|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_BOOTSTRAP_DIS                    |     0x184      |     4      |
+|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_ALERT_CLASS_EN                   |     0x188      |     4      |
+|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_ESCALATION                  |     0x18C      |     4      |
+|         |                       |            |      32bit       |                OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION                |     0x190      |    396     |
+|         |                       |            |      32bit       |             OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION             |     0x31C      |     64     |
+|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH                 |     0x35C      |     16     |
+|         |                       |            |      32bit       |                OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES                |     0x36C      |     16     |
+|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES                 |     0x37C      |     64     |
+|         |                       |            |      32bit       |                 OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD                  |     0x3BC      |     4      |
+|         |                       |            |      32bit       |               OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END                |     0x3C0      |     4      |
+|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV                  |     0x3C4      |     4      |
+|         |                       |            |      32bit       |                  OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA                  |     0x3C8      |     4      |
+|         |                       |            |      32bit       |           OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES           |     0x3CC      |     4      |
+|         |                       |            |      32bit       |               OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN               |     0x3D0      |     4      |
+|         |                       |            |      32bit       |                      OWNER_SW_CFG_MANUF_STATE                       |     0x3D4      |     4      |
+|         |                       |            |      32bit       |                   OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                   |     0x3D8      |     4      |
+|         |                       |            |      64bit       |          [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)          |     0x3F0      |     8      |
+|    3    | OWNERSHIP_SLOT_STATE  |     48     |      32bit       |                 OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH                 |     0x3F8      |     16     |
+|         |                       |            |      32bit       |                OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH                 |     0x408      |     16     |
+|         |                       |            |      32bit       |                OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH                 |     0x418      |     16     |
+|    4    |   ROT_CREATOR_AUTH    |    1424    |      32bit       |              ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY              |     0x428      |    160     |
+|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_OWNERSHIP_STATE                   |     0x4C8      |     4      |
+|         |                       |            |      32bit       |              ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY              |     0x4CC      |    160     |
+|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_KEYMANIFEST_KEY                   |     0x56C      |    160     |
+|         |                       |            |      32bit       |                  ROT_CREATOR_AUTH_UNLOCK4XFER_KEY                   |     0x60C      |    160     |
+|         |                       |            |      32bit       |                   ROT_CREATOR_AUTH_IDENTITY_CERT                    |     0x6AC      |    768     |
+|         |                       |            |      64bit       |      [ROT_CREATOR_AUTH_DIGEST](#Reg_rot_creator_auth_digest_0)      |     0x9B0      |     8      |
+|    5    | ROT_OWNER_AUTH_SLOT0  |    328     |      32bit       |                ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY                 |     0x9B8      |    160     |
+|         |                       |            |      32bit       |                ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY                 |     0xA58      |    160     |
+|         |                       |            |      64bit       |  [ROT_OWNER_AUTH_SLOT0_DIGEST](#Reg_rot_owner_auth_slot0_digest_0)  |     0xAF8      |     8      |
+|    6    | ROT_OWNER_AUTH_SLOT1  |    328     |      32bit       |                ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY                 |     0xB00      |    160     |
+|         |                       |            |      32bit       |                ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY                 |     0xBA0      |    160     |
+|         |                       |            |      64bit       |  [ROT_OWNER_AUTH_SLOT1_DIGEST](#Reg_rot_owner_auth_slot1_digest_0)  |     0xC40      |     8      |
+|    7    | PLAT_INTEG_AUTH_SLOT0 |    328     |      32bit       |                PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY                |     0xC48      |    160     |
+|         |                       |            |      32bit       |                PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY                |     0xCE8      |    160     |
+|         |                       |            |      64bit       | [PLAT_INTEG_AUTH_SLOT0_DIGEST](#Reg_plat_integ_auth_slot0_digest_0) |     0xD88      |     8      |
+|    8    | PLAT_INTEG_AUTH_SLOT1 |    328     |      32bit       |                PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY                |     0xD90      |    160     |
+|         |                       |            |      32bit       |                PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY                |     0xE30      |    160     |
+|         |                       |            |      64bit       | [PLAT_INTEG_AUTH_SLOT1_DIGEST](#Reg_plat_integ_auth_slot1_digest_0) |     0xED0      |     8      |
+|    9    | PLAT_OWNER_AUTH_SLOT0 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY                |     0xED8      |    160     |
+|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY                |     0xF78      |    160     |
+|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT0_DIGEST](#Reg_plat_owner_auth_slot0_digest_0) |     0x1018     |     8      |
+|   10    | PLAT_OWNER_AUTH_SLOT1 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY                |     0x1020     |    160     |
+|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY                |     0x10C0     |    160     |
+|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT1_DIGEST](#Reg_plat_owner_auth_slot1_digest_0) |     0x1160     |     8      |
+|   11    | PLAT_OWNER_AUTH_SLOT2 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY                |     0x1168     |    160     |
+|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY                |     0x1208     |    160     |
+|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT2_DIGEST](#Reg_plat_owner_auth_slot2_digest_0) |     0x12A8     |     8      |
+|   12    | PLAT_OWNER_AUTH_SLOT3 |    328     |      32bit       |                PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY                |     0x12B0     |    160     |
+|         |                       |            |      32bit       |                PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY                |     0x1350     |    160     |
+|         |                       |            |      64bit       | [PLAT_OWNER_AUTH_SLOT3_DIGEST](#Reg_plat_owner_auth_slot3_digest_0) |     0x13F0     |     8      |
+|   13    |        EXT_NVM        |    1024    |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT                   |     0x13F8     |    1024    |
+|   14    |       ROM_PATCH       |    9784    |      32bit       |                           ROM_PATCH_DATA                            |     0x17F8     |    9192    |
 |         |                       |            |      64bit       |             [ROM_PATCH_DIGEST](#Reg_rom_patch_digest_0)             |     0x3E28     |     8      |
 |   15    |        HW_CFG0        |     72     |      32bit       |                              DEVICE_ID                              |     0x3E30     |     32     |
 |         |                       |            |      32bit       |                             MANUF_STATE                             |     0x3E50     |     32     |
