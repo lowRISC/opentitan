@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:autogen.bzl", "autogen_hjson_header")
 load(
     "//rules/opentitan:defs.bzl",
@@ -15,6 +13,8 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+
+package(default_visibility = ["//visibility:public"])
 
 autogen_hjson_header(
     name = "rv_plic_regs",
@@ -107,6 +107,32 @@ fpga_cw310(
     },
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
+# FPGA configuration used to emulate silicon targets. This rule can be used by
+# targets that require executing at the `rom_ext` stage level in flash, as well
+# as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
+# emulate silicon targets containing a `rom_ext` stage.
+fpga_cw310(
+    name = "fpga_cw310_sival",
+    testonly = True,
+    base = ":fpga_cw310_rom_with_fake_keys",
+    exec_env = "fpga_cw310_sival",
+
+    # PROD keys are allowed to run across all life cycle stages. This prod key
+    # is used to enable execution across life cycle stages with a single
+    # binary.
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+)
+
+# FPGA configuration used to emulate silicon targets containing a `rom_ext`
+# stage. See `fpga_cw310_sival` for more details.
+fpga_cw310(
+    name = "fpga_cw310_sival_rom_ext",
+    testonly = True,
+    base = ":fpga_cw310_rom_ext",
+    exec_env = "fpga_cw310_sival_rom_ext",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
 )
 
 ###########################################################################
