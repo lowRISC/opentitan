@@ -2801,3 +2801,19 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
+
+opentitan_test(
+    name = "sram_ctrl_memset_test",
+    srcs = ["sram_ctrl_memset_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
