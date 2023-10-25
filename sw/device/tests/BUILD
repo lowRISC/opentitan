@@ -18,7 +18,6 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
-    "opentitan_binary",
     "opentitan_test",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
@@ -1974,7 +1973,7 @@ opentitan_test(
     srcs = ["sram_ctrl_execution_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
