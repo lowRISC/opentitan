@@ -229,9 +229,10 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
 
     sw_symbol_backdoor_overwrite("kBackdoorExpectedBytes", backdoor_data);
 
-    sync_with_sw(kTestPhaseMainSram);
+    `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
+    sync_with_sw(kTestPhaseMainSram);
 
     `uvm_info(`gfn, $sformatf("Testing main sram addr: %x", main_sram_offset), UVM_LOW);
     fork
@@ -239,9 +240,10 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
       main_backdoor_write(main_sram_offset);
     join_none
 
-    sync_with_sw(kTestPhaseRetSram);
+    `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
+    sync_with_sw(kTestPhaseRetSram);
 
     `uvm_info(`gfn, $sformatf("Testing ret sram addr: %x", ret_sram_offset), UVM_LOW);
     fork
