@@ -18,7 +18,7 @@ cd "$(dirname "$0")"
 : "${CURL_FLAGS:=--silent}"
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 : "${BINDIR:=.bin}"
-: "${BAZEL_BIN:=$(which bazel)}"
+: "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
 
 readonly release="v1.11.0"
 declare -A hashes=(
@@ -121,7 +121,7 @@ function main() {
         fi
     fi
 
-    case "$1" in
+    case "${1-}" in
         outquery*)
             # The custom 'outquery' command can be used to query bazel for the
             # outputs associated with labels.
