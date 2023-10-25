@@ -132,6 +132,7 @@
       stage: V3
       si_stage: SV3
       tests: []
+      bazel: ["//sw/device/tests:sram_ctrl_memset_test"]
     }
     {
       name: chip_sw_sram_subword_access
