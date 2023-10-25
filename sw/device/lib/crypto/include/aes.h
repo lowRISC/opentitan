@@ -292,15 +292,27 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
                                       crypto_byte_buf_t output);
 
 /**
+ * Returns the length that the blinded key will have once wrapped.
+ *
+ * @param config Key configuration.
+ * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
+ * @return Result of the operation.
+ */
+crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+                                             size_t *wrapped_num_words);
+
+/**
  * Performs the cryptographic key wrapping operation.
  *
  * This key wrap function takes an input key `key_to_wrap` and using
  * the encryption key `key_kek` outputs a wrapped key `wrapped_key`.
  *
- * The caller should allocate space for the `wrapped_key` buffer,
- * (same len as `key_to_wrap`), and set the length of expected output
+ * The caller should allocate space for the `wrapped_key` buffer according to
+ * `otcrypto_aes_kwp_wrapped_len`., and set the length of expected output
  * in the `len` field of `wrapped_key`. If the user-set length and the
- * output length does not match, an error message will be returned.
+ * output length do not match, an error message will be returned.
+ *
+ * The blinded key struct to wrap must be 32-bit aligned.
  *
  * @param key_to_wrap Pointer to the blinded key to be wrapped.
  * @param key_kek Input Pointer to the blinded encryption key.
@@ -317,13 +329,33 @@ crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
  * This key unwrap function takes a wrapped key `wrapped_key` and using
  * encryption key `key_kek` outputs an unwrapped key `unwrapped_key`.
  *
+ * The caller must allocate space for the keyblob and set the keyblob-length
+ * and keyblob fields in `unwrapped_key` accordingly. If there is not enough
+ * space in the keyblob, this function will return an error. Too much space in
+ * the keyblob is okay; this function will write to the first part of the
+ * keyblob buffer and set the keyblob length field to the correct exact value
+ * for the unwrapped key, at which point it is safe to check the new length and
+ * free the remaining keyblob memory. It is always safe to allocate a keyblob
+ * the same size as the wrapped key; this will always be enough space by
+ * definition.
+ *
+ * The caller does not need to populate the blinded key configuration, since
+ * this information is encrypted along with the key.  However, the caller may
+ * want to check that the configuration matches expectations.
+ *
+ * An OK status from this function does NOT necessarily mean that unwrapping
+ * succeeded; the caller must check both the returned status and the `success`
+ * parameter before reading the unwrapped key.
+ *
  * @param wrapped_key Pointer to the input wrapped key.
  * @param key_kek Input Pointer to the blinded encryption key.
+ * @param[out] success Whether the wrapped key was valid.
  * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
  * @return Result of the aes-kwp unwrap operation.
  */
 crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                         const crypto_blinded_key_t *key_kek,
+                                        hardened_bool_t *success,
                                         crypto_blinded_key_t *unwrapped_key);
 
 #ifdef __cplusplus

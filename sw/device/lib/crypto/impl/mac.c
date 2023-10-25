@@ -16,13 +16,6 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
-crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key) {
-  // TODO: Implement KMAC sideloaded key generation once we have a keymgr
-  // driver. In the meantime, non-sideloaded KMAC or HMAC keys can simply be
-  // generated using the DRBG and key-import functions.
-  return OTCRYPTO_NOT_IMPLEMENTED;
-}
-
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
