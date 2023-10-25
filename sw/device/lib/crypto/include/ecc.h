@@ -102,8 +102,9 @@ typedef enum ecc_curve_type {
 typedef struct ecc_curve {
   // Type of the Weierstrass curve, custom curve or named curve.
   ecc_curve_type_t curve_type;
-  // Domain parameters for a custom Weierstrass curve.
-  ecc_domain_t domain_parameter;
+  // Domain parameters for a custom Weierstrass curve. May be NULL for a named
+  // curve.
+  const ecc_domain_t *const domain_parameter;
 } ecc_curve_t;
 
 /**

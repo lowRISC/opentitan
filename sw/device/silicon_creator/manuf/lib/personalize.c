@@ -36,17 +36,7 @@ static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE == 16,
 // ECC curve to use with ECDH keygen.
 static const ecc_curve_t kCurveP256 = {
     .curve_type = kEccCurveTypeNistP256,
-    .domain_parameter =
-        (ecc_domain_t){
-            .p = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .a = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .b = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .q = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .gx = NULL,
-            .gy = NULL,
-            .cofactor = 0u,
-            .checksum = 0u,
-        },
+    .domain_parameter = NULL,
 };
 
 // ECDH private key configuration.
