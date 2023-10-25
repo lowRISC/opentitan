@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -31,13 +32,8 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kBlockCipherModeCtr);
 static_assert(sizeof(ghash_context_t) == sizeof(gcm_ghash_context_t),
               "Sizes of GHASH context object for top-level API must match the "
               "underlying implementation.");
-
-crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key) {
-  // TODO: Implement AES sideloaded key generation once we have a keymgr
-  // driver. In the meantime, non-sideloaded AES keys can simply be generated
-  // using the DRBG and key-import functions.
-  return OTCRYPTO_NOT_IMPLEMENTED;
-}
+static_assert(sizeof(crypto_key_config_t) % sizeof(uint32_t) == 0,
+              "Key configuration size should be a multiple of 32 bits");
 
 /**
  * Extract an AES key from the blinded key struct.
@@ -82,7 +78,7 @@ static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
   }
   aes_key->sideload = blinded_key->config.hw_backed;
 
-  // Check for null pointer (not allowed for non-sideloaded keys).
+  // Check for null pointer.
   if (blinded_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -411,7 +407,7 @@ static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
   }
   aes_key->sideload = blinded_key->config.hw_backed;
 
-  // Check for null pointer (not allowed for non-sideloaded keys).
+  // Check for null pointer.
   if (blinded_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -702,16 +698,194 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
+crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+                                             size_t *wrapped_num_words) {
+  // Check that the total wrapped key length will fit in 32 bits.
+  size_t config_num_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // A wrapped key includes:
+  //   - The full key configuration
+  //   - The key checksum (32 bits)
+  //   - The keyblob length (in words) as a 32-bit word
+  //   - The keyblob
+  *wrapped_num_words = config_num_words + 2 + keyblob_num_words(config);
+
+  // We need to add 64 bits for the AES-KWP prefix.
+  *wrapped_num_words += 2;
+
+  // The number of words needs to be rounded up to the next multiple of 64 bits.
+  if (*wrapped_num_words % 2 == 1) {
+    *wrapped_num_words += 1;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Extract an AES-KWP key encryption key from the blinded key struct.
+ *
+ * Also checks the key's integrity and mode.
+ *
+ * @param key_kek Blinded key encryption key.
+ * @param[out] aes_key Destination AES key struct.
+ * @return Result of the operation.
+ */
+static status_t aes_kwp_key_construct(const crypto_blinded_key_t *key_kek,
+                                      aes_key_t *aes_key) {
+  // Key integrity check.
+  if (launder32(integrity_blinded_key_check(key_kek)) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_kek), kHardenedBoolTrue);
+
+  // Check the key mode.
+  if (launder32((uint32_t)key_kek->config.key_mode) != kKeyModeAesKwp) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key_kek->config.key_mode, kKeyModeAesKwp);
+
+  // Set the mode of the underlying AES key to ECB (since this is the
+  // underlying block cipher mode for KWP).
+  aes_key->mode = kAesCipherModeEcb;
+
+  if (key_kek->config.hw_backed == kHardenedBoolTrue) {
+    // Call keymgr to sideload the key into AES.
+    keymgr_diversification_t diversification;
+    HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));
+    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+  } else if (key_kek->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  aes_key->sideload = key_kek->config.hw_backed;
+
+  // Set the AES key length (in words).
+  aes_key->key_len = keyblob_share_num_words(key_kek->config);
+
+  // Get pointers to the individual shares.
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key_kek, &share0, &share1));
+  aes_key->key_shares[0] = share0;
+  aes_key->key_shares[1] = share1;
+
+  return OTCRYPTO_OK;
+}
+
 crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
                                       const crypto_blinded_key_t *key_kek,
                                       crypto_word32_buf_t *wrapped_key) {
-  // TODO: AES-KWP is not yet implemented.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+  if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
+      key_kek->keyblob == NULL || wrapped_key == NULL ||
+      wrapped_key->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the integrity of the key material we are wrapping.
+  if (launder32(integrity_blinded_key_check(key_to_wrap)) !=
+      kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_to_wrap),
+                    kHardenedBoolTrue);
+
+  // Check the length of the output buffer.
+  size_t exp_len;
+  HARDENED_TRY(otcrypto_aes_kwp_wrapped_len(key_to_wrap->config, &exp_len));
+  if (wrapped_key->len != exp_len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the integrity/lengths/mode of the key encryption key, and construct
+  // an internal AES key.
+  aes_key_t kek;
+  HARDENED_TRY(aes_kwp_key_construct(key_kek, &kek));
+
+  // Check the keyblob length.
+  uint32_t keyblob_words = keyblob_num_words(key_to_wrap->config);
+  if (key_to_wrap->keyblob_length != keyblob_words * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check that the configuration is aligned.
+  if (misalignment32_of((uintptr_t)&key_to_wrap->config) != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Create the plaintext by copying the key configuration, checksum, keyblob
+  // length, and keyblob into a buffer.
+  uint32_t config_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  size_t plaintext_num_words = config_words + 2 + keyblob_words;
+  uint32_t plaintext[plaintext_num_words];
+  hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
+  plaintext[config_words] = key_to_wrap->checksum;
+  plaintext[config_words + 1] = keyblob_words;
+  hardened_memcpy(plaintext + config_words + 2, key_to_wrap->keyblob,
+                  keyblob_words);
+
+  // Wrap the key.
+  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data);
 }
 
 crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                         const crypto_blinded_key_t *key_kek,
+                                        hardened_bool_t *success,
                                         crypto_blinded_key_t *unwrapped_key) {
-  // TODO: AES-KWP is not yet implemented.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+  *success = kHardenedBoolFalse;
+
+  if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||
+      success == NULL || unwrapped_key == NULL ||
+      unwrapped_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the integrity/lengths/mode of the key encryption key, and construct
+  // an internal AES key.
+  aes_key_t kek;
+  HARDENED_TRY(aes_kwp_key_construct(key_kek, &kek));
+
+  // Check that the configuration is aligned.
+  if (misalignment32_of((uintptr_t)&unwrapped_key->config) != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Unwrap the key.
+  uint32_t plaintext[wrapped_key.len];
+  HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key.data,
+                              wrapped_key.len * sizeof(uint32_t), success,
+                              plaintext));
+
+  if (launder32(*success) != kHardenedBoolTrue) {
+    *success = kHardenedBoolFalse;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_EQ(*success, kHardenedBoolTrue);
+
+  // Set back to false while we check other conditions.
+  *success = kHardenedBoolFalse;
+
+  // Extract the key configuration.
+  uint32_t config_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  hardened_memcpy((uint32_t *)&unwrapped_key->config, plaintext, config_words);
+
+  // Extract the checksum and keyblob length.
+  unwrapped_key->checksum = plaintext[config_words];
+  uint32_t keyblob_words = plaintext[config_words + 1];
+  if (keyblob_words != keyblob_num_words(unwrapped_key->config)) {
+    *success = kHardenedBoolFalse;
+    return OTCRYPTO_OK;
+  }
+
+  // Extract the keyblob.
+  if (unwrapped_key->keyblob_length != keyblob_words * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  hardened_memcpy(unwrapped_key->keyblob, plaintext + config_words + 2,
+                  keyblob_words);
+
+  // Finally, check the integrity of the key material we unwrapped.
+  *success = integrity_blinded_key_check(unwrapped_key);
+  return OTCRYPTO_OK;
 }
