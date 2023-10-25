@@ -29,6 +29,20 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "aes_kwp_kat_functest",
+    srcs = ["aes_kwp_kat_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl/aes_kwp",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
