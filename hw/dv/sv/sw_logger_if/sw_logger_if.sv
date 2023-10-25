@@ -94,6 +94,7 @@ interface sw_logger_if #(
   // Indicate when the log was printed and what was the final string.
   event  printed_log_event;
   arg_t  printed_log;
+  arg_t  printed_format;
   arg_t  printed_arg [];
 
   // Sets the sw_name with the provided path.
@@ -390,6 +391,7 @@ interface sw_logger_if #(
   // print the log captured from the SW.
   function automatic void print_sw_log(sw_log_t sw_log);
     string log_header = sw_log.name;
+    string original_format = sw_log.format;
     if (sw_log.file != "") begin
       // Append the SW file and line to the header.
       log_header = {log_header, "(", sw_log.file, ":",
@@ -532,6 +534,7 @@ interface sw_logger_if #(
       $fwrite(sw_logs_output_fd, "[%15t]: [%0s] %0s\n", $time, log_header, sw_log.format);
     end
 
+    printed_format = original_format;
     printed_log = sw_log.format;
     printed_arg = sw_log.arg;
     ->printed_log_event;
