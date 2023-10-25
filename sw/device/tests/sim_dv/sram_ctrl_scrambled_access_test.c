@@ -391,12 +391,12 @@ bool test_main(void) {
 
   scrambling_frame = (scramble_test_frame *)main_sram_addr;
   reference_frame = (scramble_test_frame *)ret_sram_addr;
-  LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
-           main_sram_addr);
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   uint8_t current_phase = kTestPhase[0];
   if (info == kDifRstmgrResetInfoPor) {
+    LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
+             main_sram_addr);
     sync_testbench(current_phase);
     CHECK(kTestPhase[0] == kTestPhaseMainSram);
     LOG_INFO("First boot, testing main sram");
