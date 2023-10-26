@@ -43,8 +43,7 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
-      handshake == 1'b0; //disable hardware handhake mode
-      opcode == OpcCopy;)
+      handshake == 1'b0;) //disable hardware handhake mode
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
   endfunction
