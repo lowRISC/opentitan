@@ -109,6 +109,13 @@ class dma_seq_item extends uvm_sequence_item;
     soft (lsio_trigger_i & handshake_intr_en) != 0;
   }
 
+  // SHA hashing supports only 4-byte transactions
+  constraint transfer_width_c {
+    if (valid_dma_config) {
+      opcode inside {OpcSha256, OpcSha384, OpcSha512} -> per_transfer_width == DmaXfer4BperTxn;
+    }
+  }
+
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
   constraint sha2_digest_c {
     sha2_digest.size() == 16;
@@ -228,6 +235,13 @@ class dma_seq_item extends uvm_sequence_item;
       chunk_data_size[1:0] == '0;
     } else {
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
+    }
+
+    // SHA2 can accept a partial 32-bit word only at the very end of the message being hashed,
+    // so non-final transfers must have a size of 4n. Since 4B/txn mode demands 4n alignment
+    // already, constraining the chunk size is enough to guarantee 4n alignment of the chunk end.
+    if (chunk_data_size < total_transfer_size) {
+      opcode inside {OpcSha256, OpcSha384, OpcSha512} -> chunk_data_size[1:0] == 2'b00;
     }
   }
 
