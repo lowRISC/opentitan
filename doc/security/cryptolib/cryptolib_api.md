@@ -129,9 +129,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_signature }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h eddsa_sign_mode }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_public_key }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_domain }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_curve_type }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_curve }}

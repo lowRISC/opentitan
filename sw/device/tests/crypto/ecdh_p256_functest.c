@@ -3,14 +3,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/ecc.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+enum {
+  /* Number of 32-bit words in a P-256 public key. */
+  kP256PublicKeyWords = 512 / 32,
+  /* Number of 32-bit words in a P-256 signature. */
+  kP256SignatureWords = 512 / 32,
+  /* Number of bytes in a P-256 private key. */
+  kP256PrivateKeyBytes = 256 / 8,
+  /* Number of bytes in an ECDH/P-256 shared key. */
+  kP256SharedKeyBytes = 256 / 8,
+  /* Number of 32-bit words in an ECDH/P-256 shared key. */
+  kP256SharedKeyWords = kP256SharedKeyBytes / sizeof(uint32_t),
+};
 
 static const ecc_curve_t kCurveP256 = {
     .curve_type = kEccCurveTypeNistP256,
@@ -21,7 +32,7 @@ static const ecc_curve_t kCurveP256 = {
 static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .version = kCryptoLibVersion1,
     .key_mode = kKeyModeEcdh,
-    .key_length = kP256ScalarBytes,
+    .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
 };
@@ -32,7 +43,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 static const crypto_key_config_t kEcdhSharedKeyConfig = {
     .version = kCryptoLibVersion1,
     .key_mode = kKeyModeAesCtr,
-    .key_length = kP256CoordBytes,
+    .key_length = kP256SharedKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
 };
@@ -55,37 +66,17 @@ status_t key_exchange_test(void) {
   };
 
   // Allocate space for two public keys.
-  uint32_t xA[kP256CoordWords];
-  uint32_t yA[kP256CoordWords];
-  ecc_public_key_t public_keyA = {
-      .x =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = sizeof(xA),
-              .key = xA,
-          },
-      .y =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = sizeof(yA),
-              .key = yA,
-          },
+  uint32_t pkA[kP256PublicKeyWords] = {0};
+  uint32_t pkB[kP256PublicKeyWords] = {0};
+  crypto_unblinded_key_t public_keyA = {
+      .key_mode = kKeyModeEcdh,
+      .key_length = sizeof(pkA),
+      .key = pkA,
   };
-  uint32_t xB[kP256CoordWords];
-  uint32_t yB[kP256CoordWords];
-  ecc_public_key_t public_keyB = {
-      .x =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = sizeof(xB),
-              .key = xB,
-          },
-      .y =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = sizeof(yB),
-              .key = yB,
-          },
+  crypto_unblinded_key_t public_keyB = {
+      .key_mode = kKeyModeEcdh,
+      .key_length = sizeof(pkB),
+      .key = pkB,
   };
 
   // Generate a keypair.
@@ -97,8 +88,7 @@ status_t key_exchange_test(void) {
   TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyB, &public_keyB));
 
   // Sanity check; public keys should be different from each other.
-  CHECK_ARRAYS_NE(xA, xB, ARRAYSIZE(xA));
-  CHECK_ARRAYS_NE(yA, yB, ARRAYSIZE(yA));
+  CHECK_ARRAYS_NE(pkA, pkB, ARRAYSIZE(pkA));
 
   // Allocate space for two shared keys.
   uint32_t shared_keyblobA[keyblob_num_words(kEcdhSharedKeyConfig)];
@@ -135,8 +125,8 @@ status_t key_exchange_test(void) {
   TRY(keyblob_to_shares(&shared_keyB, &keyB0, &keyB1));
 
   // Unmask the keys and check that they match.
-  uint32_t keyA[kP256CoordWords];
-  uint32_t keyB[kP256CoordWords];
+  uint32_t keyA[kP256SharedKeyWords];
+  uint32_t keyB[kP256SharedKeyWords];
   for (size_t i = 0; i < ARRAYSIZE(keyA); i++) {
     keyA[i] = keyA0[i] ^ keyA1[i];
     keyB[i] = keyB0[i] ^ keyB1[i];

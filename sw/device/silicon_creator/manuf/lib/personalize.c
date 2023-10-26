@@ -73,21 +73,11 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
     wrapped_rma_unlock_token_t *wrapped_token) {
   // ECDH host (HSM) private key.
   // TODO: update the .checksum fields once cryptolib uses this field.
-  ecc_public_key_t pk_host = {
-      .x =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = host_pk.x,
-              .checksum = 0,
-          },
-      .y =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = host_pk.y,
-              .checksum = 0,
-          },
+  crypto_unblinded_key_t pk_host = {
+      .key_mode = kKeyModeEcdh,
+      .key_length = sizeof(host_pk),
+      .key = (uint32_t *)&host_pk,
+      .checksum = 0,
   };
 
   // ECDH device private key.
@@ -100,23 +90,14 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
   };
 
   // ECDH device public key.
-  ecc_public_key_t pk_device = {
-      .x =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = wrapped_token->device_pk.x,
-          },
-      .y =
-          {
-              .key_mode = kKeyModeEcdh,
-              .key_length = kP256CoordWords * sizeof(uint32_t),
-              .key = wrapped_token->device_pk.y,
-          },
+  crypto_unblinded_key_t pk_device = {
+      .key_mode = kKeyModeEcdh,
+      .key_length = sizeof(wrapped_token->device_pk),
+      .key = (uint32_t *)&wrapped_token->device_pk,
+      .checksum = 0,
   };
 
   TRY(otcrypto_ecdh_keygen(&kCurveP256, &sk_device, &pk_device));
-
   return otcrypto_ecdh(&sk_device, &pk_host, &kCurveP256, aes_key);
 }
 
