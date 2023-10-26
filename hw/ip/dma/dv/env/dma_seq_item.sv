@@ -369,6 +369,47 @@ class dma_seq_item extends uvm_sequence_item;
     return 1'b1;
   endfunction
 
+  virtual function string convert2string();
+    // Controller configuration
+    string str = {
+        $sformatf("\n\tmem_range_valid         : %0d",    mem_range_valid),
+        $sformatf("\n\tmem_range_base          : 0x%08x", mem_range_base),
+        $sformatf("\n\tmem_range_limit         : 0x%08x", mem_range_limit),
+        $sformatf("\n\tmem_buffer_almost_limit : 0x%16x", mem_buffer_almost_limit),
+        $sformatf("\n\tmem_buffer_limit        : 0x%16x", mem_buffer_limit),
+        $sformatf("\n\tclear_int_src           : 0x%8x",  clear_int_src),
+        $sformatf("\n\tclear_int_bus           : 0x%8x",  clear_int_bus),
+        $sformatf("\n\thandshake_intr_en       : 0x%08x", handshake_intr_en),
+        $sformatf("\n\tlsio_trigger_i          : 0x%08x", lsio_trigger_i)
+    };
+
+    // Transfer mode
+    str = {str,
+        $sformatf("\n\thandshake               : %0d", handshake),
+        $sformatf("\n\tdirection               : %0d", direction),
+        $sformatf("\n\tauto_inc_fifo           : %0d", auto_inc_fifo),
+        $sformatf("\n\tauto_inc_buffer         : %0d", auto_inc_buffer)
+    };
+
+    // Transfer properties
+    str = {str,
+        $sformatf("\n\tsrc_asid                : %x",     src_asid),
+        $sformatf("\n\tdst_asid                : %x",     dst_asid),
+        $sformatf("\n\tsrc_addr                : 0x%16x", src_addr),
+        $sformatf("\n\tdst_addr                : 0x%16x", dst_addr),
+        $sformatf("\n\topcode                  : %0d",    opcode),
+        $sformatf("\n\tper_transfer_width      : %0d",    per_transfer_width),
+        $sformatf("\n\tchunk_data_size         : 0x%x",   chunk_data_size),
+        $sformatf("\n\ttotal_transfer_size     : 0x%x",   total_transfer_size)
+    };
+
+    // Verdict on whether this is a valid DMA configuration, eg. post-randomization
+    str = {str,
+        $sformatf("\n\n\t=> Valid: %0d", is_valid_config)
+    };
+    return str;
+  endfunction
+
   function void post_randomize();
     super.post_randomize();
     // TODO: For `generic` mode we presently do not support multi-chunk transfers in the DV env;
