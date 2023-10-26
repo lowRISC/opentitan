@@ -23,25 +23,26 @@ enum {
 /**
  * An empty boot services message.
  *
- * This message type consists of a random payload that is as large as the
- * largest boot services message. ROM_EXT should use an object of this type to
- * initialize the boot services area in the retention SRAM or to clear a boot
- * services request before writing the response. Silicon owner code should use
- * an object of this type to clear a boot services response.
+ * This message type consists of a payload that is as large as the largest boot
+ * services message. ROM_EXT should use an object of this type to initialize the
+ * boot services area in the retention SRAM or to clear a boot services request
+ * before writing the response. Silicon owner code should use an object of this
+ * type to clear a boot services response.
  */
+
 typedef struct boot_svc_empty {
   /**
    * Boot services message header.
    */
   boot_svc_header_t header;
   /**
-   * Random data.
+   * An arbitrary payload.
    */
-  uint32_t rand_data[kBootSvcEmptyPayloadWordCount];
+  uint32_t payload[kBootSvcEmptyPayloadWordCount];
 } boot_svc_empty_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_empty_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(boot_svc_empty_t, rand_data,
+OT_ASSERT_MEMBER_OFFSET(boot_svc_empty_t, payload,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
 OT_ASSERT_SIZE(boot_svc_empty_t, CHIP_BOOT_SVC_MSG_SIZE_MAX);
 

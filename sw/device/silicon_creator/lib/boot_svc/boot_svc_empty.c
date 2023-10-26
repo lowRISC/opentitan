@@ -4,8 +4,6 @@
 
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 
-#include "sw/device/silicon_creator/lib/drivers/rnd.h"
-
 void boot_svc_empty_init(boot_svc_empty_t *msg) {
   // We use `uint32_t` instead of `size_t` so that end-of-loop check passes both
   // on- and off-target tests.
@@ -13,7 +11,7 @@ void boot_svc_empty_init(boot_svc_empty_t *msg) {
   for (; launder32(i) < kBootSvcEmptyPayloadWordCount &&
          launder32(j) < kBootSvcEmptyPayloadWordCount;
        ++i, --j) {
-    msg->rand_data[i] = rnd_uint32();
+    msg->payload[i] = 0;
   }
   HARDENED_CHECK_EQ(i, kBootSvcEmptyPayloadWordCount);
   HARDENED_CHECK_EQ(j, UINT32_MAX);
