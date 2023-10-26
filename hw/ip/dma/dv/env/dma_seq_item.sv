@@ -40,6 +40,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [63:0] dst_addr;
   rand bit [63:0] mem_buffer_almost_limit;
   rand bit [63:0] mem_buffer_limit;
+  rand bit        mem_range_valid;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
   rand bit [31:0] total_transfer_size;
@@ -82,6 +83,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_enum(asid_encoding_e, dst_asid, UVM_DEFAULT)
     `uvm_field_enum(opcode_e, opcode, UVM_DEFAULT)
     `uvm_field_enum(dma_control_data_direction_e, direction, UVM_DEFAULT)
+    `uvm_field_int(mem_range_valid, UVM_DEFAULT)
     `uvm_field_int(mem_range_base, UVM_DEFAULT)
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
     `uvm_field_enum(mubi4_t, mem_range_lock, UVM_DEFAULT)
@@ -131,34 +133,26 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  constraint mem_range_base_c {
-    solve src_asid, dst_asid, per_transfer_width, handshake, auto_inc_buffer, auto_inc_fifo,
-          direction before mem_range_base;
-  }
-
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
     // valid_dma_config is set
     solve mem_range_base, mem_range_limit before src_addr;
     if (valid_dma_config) {
-      // If OT internal address space is the source then source address must be
-      // greater than the memory base address
-      if (src_asid == OtInternalAddr){
-        // Must be satisfied for all operations
+      // If OT internal address space is the source, data is being exported, and the memory
+      // window is enabled, then ensure all source addresses lie within the window
+      if (mem_range_valid && src_asid == OtInternalAddr && dst_asid != OtInternalAddr) {
         src_addr >= mem_range_base;
         src_addr <= mem_range_limit;
         mem_range_limit - src_addr >= chunk_data_size;
-        // If auto increment is not used on the memory end of the operation, successive chunks
-        // overlap each other
+        // If auto increment is not used on the memory end of the operation then successive chunks
+        // overlap each other, but in other cases the entire transfer must fit within the window
         if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
-          src_addr >= mem_range_base;
-          src_addr <= mem_range_limit;
           mem_range_limit - src_addr >= total_transfer_size;
         }
-        // For valid configurations, Address must be aligned to transfer width
-        per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
-        per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
       }
+      // For valid configurations, Address must be aligned to transfer width
+      per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
+      per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
     }
   }
@@ -171,18 +165,15 @@ class dma_seq_item extends uvm_sequence_item;
     // destination buffer overlapping it.
     solve src_addr before dst_addr;
     if (valid_dma_config) {
-      // If OT internal address space is the destination then destination address must be
-      // greater than the memory base address
-      if (dst_asid == OtInternalAddr) {
-        // Must be satisfied for all operations
+      // If OT internal address space is the destination, data is being imported, and the memory
+      // window is enabled, then ensure all destination addresses lie within the window
+      if (mem_range_valid && dst_asid == OtInternalAddr && src_asid != OtInternalAddr) {
         dst_addr >= mem_range_base;
         dst_addr <= mem_range_limit;
         mem_range_limit - dst_addr >= chunk_data_size;
-        // If auto increment is not used on the memory end of the operation, successive chunks
-        // overlap each other
+        // If auto increment is not used on the memory end of the operation, then successive chunks
+        // overlap each other, but in other cases the entire transfer must fit within the window
         if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
-          dst_addr >= mem_range_base;
-          dst_addr <= mem_range_limit;
           mem_range_limit - dst_addr >= total_transfer_size;
         }
         if (src_asid == OtInternalAddr) {
@@ -194,9 +185,6 @@ class dma_seq_item extends uvm_sequence_item;
           (dst_addr > src_addr + total_transfer_size + 'h10) ||
           (src_addr > dst_addr + total_transfer_size + 'h10);
         }
-        // For valid configurations, Address must be aligned to transfer width
-        per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
-        per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
       }
       // For valid configurations, Address must be aligned to transfer width but must further have
       // the same alignment as the source.
@@ -243,13 +231,24 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
+  constraint mem_range_valid_c {
+    if (valid_dma_config) {
+      // Note: The DMA controller insists upon the `range_valid` bit being set before it will accept
+      // any operation. This does not mean the range must be 'locked.'
+      mem_range_valid == 1'b1;
+    }
+  }
+
   constraint mem_range_limit_c {
     // Set solver order to make sure mem range limit is randomized correctly in case
     // valid_dma_config is set
     solve mem_range_base before mem_range_limit;
     // For valid DMA config, [mem_range_base, mem_range_limit) describes the addressable memory
-    // window.
-    if (valid_dma_config && dst_asid == OtInternalAddr) {
+    // window, but it need not always be enabled, and only applies to transfers crossing the divide
+    // (importing to/exporting from OT)
+    if (valid_dma_config && mem_range_valid) {
+      // Note: The DMA controller insists upon checking that a valid range has been specified
+      // before it will accept any operation.
       mem_range_limit >= mem_range_base;
     }
   }
