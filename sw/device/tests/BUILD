@@ -319,6 +319,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/devicetree:dt_cw310",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
@@ -329,7 +330,6 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_irqs",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "@zephyr//:devicetree_lib",
     ],
 )
 
@@ -2071,6 +2071,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/devicetree:dt_cw310",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",

@@ -6,10 +6,12 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <zephyr/devicetree.h>
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/devicetree/dt_aon_timer.h"
+#include "sw/device/lib/devicetree/dt_rv_plic.h"
+#include "sw/device/lib/devicetree/dt_rv_timer.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -35,19 +37,6 @@ static volatile dif_aon_timer_irq_t irq;
 static volatile ottf_irq_peripheral_t peripheral;
 static volatile uint64_t irq_tick;
 
-enum {
-  kPlicAonTimerIrqIdBase =
-      DT_IRQ_BY_NAME(DT_NODELABEL(aon_timer_aon), wkup_timer_expired, irq),
-  kPlicIrqIdAonTimerAonWkupTimerExpired =
-      DT_IRQ_BY_NAME(DT_NODELABEL(aon_timer_aon), wkup_timer_expired, irq),
-  kPlicIrqIdAonTimerAonWdogTimerBark =
-      DT_IRQ_BY_NAME(DT_NODELABEL(aon_timer_aon), wdog_timer_bark, irq),
-};
-
-enum {
-  kPlicPeripheralIdAonTimer = DT_DEP_ORD(DT_NODELABEL(aon_timer_aon)),
-};
-
 // TODO:(lowrisc/opentitan#9984): Add timing API to the test framework
 /**
  * Initialize the rv timer to count the tick.
@@ -69,8 +58,8 @@ static_assert(configUSE_PREEMPTION == 0,
               "rv_timer may be initialized already by FreeRtos");
 
 static void tick_init(void) {
-  CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(DT_REG_ADDR(DT_NODELABEL(rv_timer))), &rv_timer));
+  CHECK_DIF_OK(dif_rv_timer_init(mmio_region_from_addr(dt_rv_timer_reg_addr(0)),
+                                 &rv_timer));
 
   CHECK_DIF_OK(dif_rv_timer_reset(&rv_timer));
 
@@ -142,7 +131,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   irq_global_ctrl(false);
 
   // Only enter WFI loop if we haven't already seen the interrupt.
-  if (peripheral != kPlicPeripheralIdAonTimer) {
+  const int32_t kAonTimerId = dt_aon_timer_device_id(0);
+  if (peripheral != kAonTimerId) {
     do {
       wait_for_interrupt();
       // WFI ignores global interrupt enable, so enable it now and then
@@ -152,8 +142,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
       irq_global_ctrl(true);
       irq_global_ctrl(false);
       time_elapsed = (uint32_t)irq_tick - start_tick;
-    } while (peripheral != kPlicPeripheralIdAonTimer &&
-             time_elapsed < sleep_range_h);
+    } while (peripheral != kAonTimerId && time_elapsed < sleep_range_h);
   }
 
   CHECK(time_elapsed < sleep_range_h && time_elapsed > sleep_range_l,
@@ -161,9 +150,9 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
         (uint32_t)time_elapsed, (uint32_t)sleep_range_l,
         (uint32_t)sleep_range_h);
 
-  CHECK(peripheral == kPlicPeripheralIdAonTimer,
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        kPlicPeripheralIdAonTimer, peripheral);
+  CHECK(peripheral == kAonTimerId,
+        "Interrupt from incorrect peripheral: exp = %d, obs = %d", kAonTimerId,
+        peripheral);
 
   CHECK(irq == expected_irq, "Interrupt type incorrect: exp = %d, obs = %d",
         kDifAonTimerIrqWkupTimerExpired, irq);
@@ -183,13 +172,18 @@ void ottf_external_isr(void) {
 
   peripheral = ottf_plic_peripheral_table[irq_id];
 
-  if (peripheral == kPlicPeripheralIdAonTimer) {
-    irq = (dif_aon_timer_irq_t)(irq_id -
-                                (dif_rv_plic_irq_id_t)kPlicAonTimerIrqIdBase);
+  const int32_t kAonTimerId = dt_aon_timer_device_id(0);
+  if (peripheral == kAonTimerId) {
+    const int32_t kIrqWkupTimer =
+        dt_aon_timer_irq_id(0, kDtAonTimerIrqWkupTimerExpired);
+    const int32_t kIrqWdogTimer =
+        dt_aon_timer_irq_id(0, kDtAonTimerIrqWdogTimerBark);
 
-    if (irq_id == kPlicIrqIdAonTimerAonWkupTimerExpired) {
+    irq = (dif_aon_timer_irq_t)(irq_id - (dif_rv_plic_irq_id_t)kIrqWkupTimer);
+
+    if (irq_id == kIrqWkupTimer) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-    } else if (irq_id == kPlicIrqIdAonTimerAonWdogTimerBark) {
+    } else if (irq_id == kIrqWdogTimer) {
       CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
     }
 
@@ -211,18 +205,21 @@ bool test_main(void) {
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(DT_REG_ADDR(DT_NODELABEL(aon_timer_aon))),
-      &aon_timer));
+      mmio_region_from_addr(dt_aon_timer_reg_addr(0)), &aon_timer));
 
   // Initialize the PLIC.
-  mmio_region_t plic_base_addr =
-      mmio_region_from_addr(DT_REG_ADDR(DT_NODELABEL(rv_plic)));
+  mmio_region_t plic_base_addr = mmio_region_from_addr(dt_rv_plic_reg_addr(0));
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kPlicIrqIdAonTimerAonWkupTimerExpired,
-                                     kPlicIrqIdAonTimerAonWdogTimerBark);
+  const int32_t kIrqWkupTimer =
+      dt_aon_timer_irq_id(0, kDtAonTimerIrqWkupTimerExpired);
+  assert(kIrqWkupTimer > 0);
+  const int32_t kIrqWdogTimer =
+      dt_aon_timer_irq_id(0, kDtAonTimerIrqWdogTimerBark);
+  assert(kIrqWdogTimer > 0);
+  rv_plic_testutils_irq_range_enable(
+      &plic, kPlicTarget, (uint32_t)kIrqWkupTimer, (uint32_t)kIrqWdogTimer);
 
   // Executing the test using random time bounds calculated from the clock
   // frequency to make sure the aon timer is generating the interrupt after the
