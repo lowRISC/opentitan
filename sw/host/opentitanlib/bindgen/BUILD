@@ -158,6 +158,20 @@ rust_bindgen_library(
     ],
 )
 
+rust_bindgen_library(
+    name = "test_status",
+    bindgen_flags = [
+        "--allowlist-type=test_status_t",
+    ],
+    cc_lib = "//sw/device/lib/testing/test_framework:status_headers",
+    header = "//sw/device/lib/testing/test_framework:status.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
 rust_library(
     name = "bindgen",
     srcs = ["lib.rs"],
@@ -169,5 +183,6 @@ rust_library(
         ":multibits",
         ":sram_program",
         ":status",
+        ":test_status",
     ],
 )

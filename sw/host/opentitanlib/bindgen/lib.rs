@@ -9,3 +9,4 @@ pub use hardened;
 pub use multibits;
 pub use sram_program;
 pub use status;
+pub use test_status;
