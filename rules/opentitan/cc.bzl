@@ -88,7 +88,7 @@ def ot_binary(ctx, **kwargs):
         compilation_contexts = compilation_contexts,
         srcs = srcs,
         private_hdrs = hdrs,
-        user_compile_flags = ["-ffreestanding"] + _expand(ctx, "copts", get_override(ctx, "attr.copts", kwargs)),
+        user_compile_flags = ["-ffreestanding", "-flto=full"] + _expand(ctx, "copts", get_override(ctx, "attr.copts", kwargs)),
         defines = _expand(ctx, "defines", get_override(ctx, "attr.defines", kwargs)),
         local_defines = _expand(ctx, "local_defines", get_override(ctx, "attr.local_defines", kwargs)),
         quote_includes = _expand(ctx, "includes", get_override(ctx, "attr.includes", kwargs)),
@@ -105,6 +105,8 @@ def ot_binary(ctx, **kwargs):
     linkopts = [
         "-Wl,-Map={}".format(mapfile.path),
         "-nostdlib",
+        "-flto=full",
+        "-fuse-ld=lld",
     ] + _expand(ctx, "linkopts", get_override(ctx, "attr.linkopts", kwargs))
 
     lout = cc_common.link(

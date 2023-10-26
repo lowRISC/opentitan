@@ -2,12 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
+dual_cc_library(
     name = "top_earlgrey",
     srcs = [
         "top_earlgrey.c",
@@ -16,6 +17,10 @@ cc_library(
         "top_earlgrey.h",
         "top_earlgrey_memory.h",
     ],
+    copts = dual_inputs(
+        device = ["-flto=full"],
+    ),
+    target_compatible_with = dual_inputs(device = [OPENTITAN_CPU]),
     deps = ["//sw/device/lib/devicetables:dt_api"],
 )
 

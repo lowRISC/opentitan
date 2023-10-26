@@ -35,11 +35,31 @@ _targets_compatible_with = {
 # simulation platforms (DV and Verilator), and two FPGA platforms (CW305
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["@//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["@//sw/device/lib/arch:sim_dv"],
-    "fpga_cw305": ["@//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
-    "fpga_cw340": ["@//sw/device/lib/arch:fpga_cw340"],
+    "sim_verilator": [
+        "@//hw/top_earlgrey/sw/autogen:devicetables",
+        "@//hw/top_earlgrey/sw/cw310:devicetables",
+        "@//sw/device/lib/arch:sim_verilator",
+    ],
+    "sim_dv": [
+        "@//hw/top_earlgrey/sw/autogen:devicetables",
+        "@//hw/top_earlgrey/sw/cw310:devicetables",
+        "@//sw/device/lib/arch:sim_dv",
+    ],
+    "fpga_cw305": [
+        "@//hw/top_earlgrey/sw/autogen:devicetables",
+        "@//hw/top_earlgrey/sw/cw310:devicetables",
+        "@//sw/device/lib/arch:fpga_cw305",
+    ],
+    "fpga_cw310": [
+        "@//hw/top_earlgrey/sw/autogen:devicetables",
+        "@//hw/top_earlgrey/sw/cw310:devicetables",
+        "@//sw/device/lib/arch:fpga_cw310",
+    ],
+    "fpga_cw340": [
+        "@//hw/top_earlgrey/sw/autogen:devicetables",
+        "@//hw/top_earlgrey/sw/cw310:devicetables",
+        "@//sw/device/lib/arch:fpga_cw340",
+    ],
 }
 
 def create_key_(name, label, hw_lc_states):
@@ -726,6 +746,9 @@ def opentitan_binary(
         "-nostartfiles",
         "-nostdlib",
     ]
+    features = kwargs.pop("features", []) + [
+        "use_lld",
+    ]
     deps = kwargs.pop("deps", [])
     targets = []
 
@@ -737,6 +760,7 @@ def opentitan_binary(
         copts = copts,
         linkopts = linkopts,
         testonly = testonly,
+        features = features,
         **kwargs
     )
     elf_transition_binary_name = "{}_elf_transition".format(name)

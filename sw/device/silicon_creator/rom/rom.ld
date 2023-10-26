@@ -90,7 +90,7 @@ SECTIONS {
     ASSERT(
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
-    . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
+    . = ABSOLUTE(MAX(., _rom_boot_address + _epmp_reset_rx_size));
   } > rom
 
   /**

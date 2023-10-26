@@ -259,11 +259,13 @@ SECTIONS {
   /**
    * Non-volatile scratch area in flash.
    */
+
   .non_volatile_scratch _non_volatile_scratch_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_scratch))
     KEEP(*(.non_volatile_scratch.*))
-    . = _non_volatile_scratch_size;
+    . = ABSOLUTE(_non_volatile_scratch_end);
   } > ottf_flash
+
 
 
   /**
@@ -277,25 +279,25 @@ SECTIONS {
   .non_volatile_counter_0 _non_volatile_counter_0_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_0))
     KEEP(*(.non_volatile_counter_0.*))
-    . = _non_volatile_counter_size;
+    . = ABSOLUTE(_non_volatile_counter_0_end);
   } > ottf_flash
 
   .non_volatile_counter_1 _non_volatile_counter_1_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_1))
     KEEP(*(.non_volatile_counter_1.*))
-    . = _non_volatile_counter_size;
+    . = ABSOLUTE(_non_volatile_counter_1_end);
   } > ottf_flash
 
   .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_2))
     KEEP(*(.non_volatile_counter_2.*))
-    . = _non_volatile_counter_size;
+    . = ABSOLUTE(_non_volatile_counter_2_end);
   } > ottf_flash
 
   .non_volatile_counter_3 _non_volatile_counter_3_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_3))
     KEEP(*(.non_volatile_counter_3.*))
-    . = _non_volatile_counter_size;
+    . = ABSOLUTE(_non_volatile_counter_3_end);
   } > ottf_flash
 
   INCLUDE sw/device/info_sections.ld
