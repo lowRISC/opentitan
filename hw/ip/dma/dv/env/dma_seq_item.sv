@@ -133,11 +133,10 @@ class dma_seq_item extends uvm_sequence_item;
 
   // Constrain source and destinatination address space ids for valid configurations
   constraint asid_c {
-    if (valid_dma_config) {
-      // For valid DMA config, either source or destination address space Id must point
-      // to OT internal address space
-      src_asid == OtInternalAddr || dst_asid == OtInternalAddr;
-    }
+    // TODO: at present there is no model of the SoC System bus, so attempting any transaction
+    // to that bus will result in the DMA controller stalling
+    src_asid != SocSystemAddr;
+    dst_asid != SocSystemAddr;
   }
 
   constraint src_addr_c {
@@ -168,7 +167,7 @@ class dma_seq_item extends uvm_sequence_item;
     // Set solve order to make sure destination address is randomized correctly in case
     // valid_dma_config is set.
     //
-    // Ensure that the the source buffer has been decided already, so that we can prevent this
+    // Ensure that the source buffer has been decided already, so that we can prevent this
     // destination buffer overlapping it.
     solve src_addr before dst_addr;
     if (valid_dma_config) {
@@ -298,6 +297,9 @@ class dma_seq_item extends uvm_sequence_item;
     // will reject the configuration with an error
     if (valid_dma_config) {
       mem_range_lock == MuBi4False;
+    } else {
+      // We need to keep this true to prevent subsequent randomization failures
+      mem_range_lock == MuBi4True;
     }
   }
 
@@ -377,7 +379,7 @@ class dma_seq_item extends uvm_sequence_item;
     // Check if randomization leads to valid configuration
     is_valid_config = choose_int_src_addrs();
     if (is_valid_config) begin
-      is_valid_config = check_config();
+      is_valid_config = check_config("post-randomization");
     end
     `uvm_info(`gfn, $sformatf("[DMA] randomized dma_seq_item:%s", convert2string()), UVM_MEDIUM)
   endfunction : post_randomize
@@ -388,60 +390,153 @@ class dma_seq_item extends uvm_sequence_item;
     return ((address >= mem_range_base) && (address <= mem_range_limit));
   endfunction
 
+  // Is a buffer of the given base address and size fully contained within the DMA-enabled memory
+  // range?
+  function bit is_buffer_in_dma_memory_region(bit [31:0] base, bit [31:0] size);
+    return (is_address_in_dma_memory_region(base) &&
+            is_address_in_dma_memory_region(base + size - 1'b1));
+  endfunction
+
   // Function to check if the programmed DMA settings are valid.
   //   if settings are valid (returns 1), expected request queue must be populated
   //   else (returns 0) queue will not be updated
-  function bit check_config();
+  function bit check_config(string reason = "");
+    bit [31:0] memory_range;
+    bit [1:0] align_mask;
     bit valid_config = 1;
-    // Check if operation is valid
-    if (!(opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
-      `uvm_info(`gfn, $sformatf("Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
+
+    `uvm_info(`gfn, $sformatf("Checking configuration (%s)", reason), UVM_MEDIUM)
+    // Each check is performed independently and reported, to produce a complete list of reasons
+    // that the configuration is invalid.
+
+    // TODO: SocSystemAddr is presently unavailable
+    if (src_asid == SocSystemAddr || dst_asid == SocSystemAddr) begin
+      `uvm_info(`gfn, " - SoCSystemAddr is NOT yet implemented", UVM_MEDIUM)
       valid_config = 0;
     end
+
+    // Check that the ASIDs are valid
+    if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr, OtExtFlashAddr})) begin
+      `uvm_info(`gfn, " - Destination ASID invalid", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr, OtExtFlashAddr})) begin
+      `uvm_info(`gfn, " - Source ASID invalid", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // Check if operation is valid
+    if (opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
+      if (per_transfer_width != DmaXfer4BperTxn) begin
+        `uvm_info(`gfn, $sformatf(" - SHA hashing operates only on 4B/txn"), UVM_MEDIUM)
+        valid_config = 0;
+      end
+    end else if (opcode != OpcCopy) begin
+      `uvm_info(`gfn, $sformatf(" - Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // TODO: The DMA-enabled memory range must have been set up, even though it may not be used
+    if (!mem_range_valid) begin
+      `uvm_info(`gfn, " - Valid DMA enabled memory range has not been set up", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    // Check the validity of the DMA-enabled memory range
+    // Note: the base and limit addresses are both inclusive
+    if (mem_range_valid && !(mem_range_base <= mem_range_limit)) begin
+      `uvm_info(`gfn, " - DMA-enabled memory range invalid but enabled", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // Ascertain the size of the in-memory buffer
+    memory_range = total_transfer_size;
+    if (handshake && !auto_inc_buffer) begin
+      memory_range = chunk_data_size;  // All chunks overlap each other
+    end
+
     // Check if operation is performed between valid source and destination combinations
     // For all valid configurations, either source or destination address space Id must point
-    // to OT internal address space
-    if (src_asid == OtInternalAddr) begin
-      if (!is_address_in_dma_memory_region(src_addr[31:0])) begin
+    // to OT internal address space, but the memory range restriction does not apply if _both_
+    // are within the OT internal address space.
+    if (src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
+      if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0], memory_range)) begin
         // If source address space ID points to OT internal address space,
         // it must be within DMA enabled address range.
         `uvm_info(`gfn,
                 $sformatf(
-                  "Invalid src addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
+                  " - Invalid src addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
                   src_addr[31:0], src_addr[63:32], mem_range_base, mem_range_limit),
                 UVM_MEDIUM)
         valid_config = 0;
       end
-    end else if (dst_asid == OtInternalAddr) begin
+    end else if (dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
       // If destination address space ID points to OT internal address space
       // it must be within DMA enabled address range.
-      if (!is_address_in_dma_memory_region(dst_addr[31:0])) begin
+      if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0], memory_range)) begin
         `uvm_info(`gfn,
                   $sformatf(
-                    "Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
+                    " - Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
                     dst_addr[31:0], dst_addr[63:32], mem_range_base, mem_range_limit),
                   UVM_MEDIUM)
         valid_config = 0;
       end
     end
-    // If either source or destination is SOC address space the other can't be OT private memory
-    if((src_asid == SocSystemAddr && dst_asid != OtInternalAddr) ||
-                (dst_asid == SocSystemAddr && dst_asid != OtInternalAddr)) begin
-      `uvm_info(`gfn, $sformatf("Invalid source : %s and destination : %s combination",
-                                src_asid.name(), dst_asid.name()), UVM_MEDIUM)
-      valid_config = 0;
-    end
+
     // Source and destination address must have same alignment for valid DMA configuration
     if (src_addr[1:0] != dst_addr[1:0]) begin
       `uvm_info(`gfn,
-                $sformatf("Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)",
+                $sformatf(" - Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)",
                 src_addr[1:0], dst_addr[1:0]), UVM_MEDIUM)
       valid_config = 0;
     end
-    // Check if memory range is locked
-    if (mem_range_lock == MuBi4True) begin
-      `uvm_info(`gfn, "Memory range registers locked", UVM_MEDIUM)
+
+    // Check that the upper 32 bits of the destination and source address are zero for
+    // 32-bit address spaces
+    if (dst_asid != SocSystemAddr && |dst_addr[63:32]) begin
+      `uvm_info(`gfn, " - Destination address out of range for destination ASID", UVM_MEDIUM)
       valid_config = 0;
+    end
+    if (src_asid != SocSystemAddr && |src_addr[63:32]) begin
+      `uvm_info(`gfn, " - Source addess out of range for source ASID", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // Source and destination addresses must meet alignment requirements
+    case (per_transfer_width)
+      DmaXfer1BperTxn: align_mask = 2'b00;
+      DmaXfer2BperTxn: align_mask = 2'b01;
+      DmaXfer4BperTxn: align_mask = 2'b11;
+      default: begin
+        align_mask = 2'b00;
+        `uvm_info(`gfn, " - Invalid transfer width", UVM_MEDIUM)
+        valid_config = 0;
+      end
+    endcase
+
+    if (|(src_addr & align_mask)) begin
+      `uvm_info(`gfn, " - Source address does not meet alignment requirements", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    if (|(dst_addr & align_mask)) begin
+      `uvm_info(`gfn, " - Destination address does not meet alignment requirements", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // Multi-chunk transfers will fault the transfer at the point of starting non-initial chunks
+    // if the `chunk_data_size` values does not ensure that they do not have appropriately-aligned
+    // addresses, so we expect an error at some point even if not immediately.
+    if (chunk_data_size < total_transfer_size && (!handshake || auto_inc_buffer)) begin
+      if (|(chunk_data_size & align_mask)) begin
+        `uvm_info(`gfn,
+                  " - Chunk data does not meet alignment requirements for multi-chunk transfers",
+                  UVM_MEDIUM)
+      end
+    end
+
+    if (valid_config) begin
+      `uvm_info(`gfn, "=> Configuration accepted as valid", UVM_MEDIUM)
+    end else begin
+      `uvm_info(`gfn, "=> Configuration is invalid", UVM_MEDIUM)
     end
     return valid_config;
   endfunction: check_config

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Stress Generic mode of DMA Operation
-class dma_generic_stress_vseq extends dma_generic_smoke_vseq;
+class dma_generic_stress_vseq extends dma_base_vseq;
   rand int num_txns;
 
   `uvm_object_utils(dma_generic_stress_vseq)
@@ -21,62 +21,85 @@ class dma_generic_stress_vseq extends dma_generic_smoke_vseq;
     return valid_config;
   endfunction
 
-  // Function : Rerandomization of address ranges
-  function void randomize_iter_config(ref dma_seq_item dma_config);
-    enable_asid_buf_limit_randomization(dma_config);
-    if (pick_if_config_valid()) begin
-      `uvm_info(`gfn, "Using a valid DMA configuration", UVM_MEDIUM)
-      super.randomize_item(dma_config);
-      // Reset constrain control bits after randomization
-      dma_config.valid_dma_config = 0;
+  function void randomize_config(ref dma_seq_item dma_config);
+    dma_config.valid_dma_config = pick_if_config_valid();
+    if (dma_config.valid_dma_config) begin
+      // Allow only valid DMA configurations
+      `uvm_info(`gfn, " ***** Choosing a valid DMA configuration *****", UVM_MEDIUM)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config, handshake == 0;)
+      `DV_CHECK(dma_config.is_valid_config);
     end else begin
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config, handshake == 0; opcode == OpcCopy;)
+      `uvm_info(`gfn, "***** Choosing a possibly invalid DMA configuration *****", UVM_MEDIUM)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config, handshake == 0;)
     end
+    // Has the DMA-enabled memory configuration now been locked?
+    if (dma_config.mem_range_lock != MuBi4True) begin
+      // Suppress further attempts at randomization because otherwise the TB will form incorrect
+      // predictions.
+      set_memory_range_randomization(dma_config, 0);
+    end
+
+    // Reset constraint control bits after randomization
+    dma_config.valid_dma_config = 0;
+  endfunction
+
+  // Function : Re-randomization of address ranges
+  function void randomize_iter_config(ref dma_seq_item dma_config);
+
+    // We have just reset the device, so we may now try randomizing these until such time as we
+    // choose to lock the memory range.
+    set_asid_buf_limit_randomization(dma_config, 1);
+    set_memory_range_randomization(dma_config, 1);
+
+    randomize_config(dma_config);
+
     `uvm_info(`gfn, $sformatf("Randomized DMA iter configuration\n%s", dma_config.sprint()),
               UVM_HIGH)
-    disable_asid_buf_limit_randomization(dma_config);
   endfunction
 
   // Randomizes transaction configuration of each iteration
   function void randomize_txn_config(ref dma_seq_item dma_config);
-    dma_config.valid_dma_config = pick_if_config_valid();
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config, handshake == 0;)
-    // Reset constraint control bits after randomization
-    dma_config.valid_dma_config = 0;
+    randomize_config(dma_config);
+
     `uvm_info(`gfn, $sformatf("Randomized DMA txn configuration\n%s", dma_config.sprint()),
               UVM_HIGH)
   endfunction
 
-  // Disable randomization of ASID
-  // so that source and destination interfraces remain same address and other parameters get randomized
-  function void disable_asid_buf_limit_randomization(ref dma_seq_item dma_config);
-    dma_config.src_asid.rand_mode(0);
-    dma_config.dst_asid.rand_mode(0);
-    dma_config.asid_c.constraint_mode(0);
-    `uvm_info(`gfn, "Disabled ASID and DMA enabled memory buffer randomization", UVM_HIGH)
+  // Once we have settled upon a valid configuration that moves data between the OT and SoC
+  // domains we must prevent further randomization of the base/limit registers, because otherwise
+  // the TB will form incorrect predictions.
+  function void set_memory_range_randomization(ref dma_seq_item dma_config, input bit enable);
+    string action = enable ? "Enabled" : "Disabled";
+    dma_config.mem_range_valid.rand_mode(enable);
+    dma_config.mem_range_base.rand_mode(enable);
+    dma_config.mem_range_limit.rand_mode(enable);
+    dma_config.mem_range_limit_c.constraint_mode(enable);
+    `uvm_info(`gfn, $sformatf("%s DMA-enabled memory range randomization", action), UVM_HIGH)
   endfunction
 
-  function void enable_asid_buf_limit_randomization(ref dma_seq_item dma_config);
-    dma_config.src_asid.rand_mode(1);
-    dma_config.dst_asid.rand_mode(1);
-    dma_config.asid_c.constraint_mode(1);
-    `uvm_info(`gfn, "Enabled ASID and DMA enabled memory buffer randomization", UVM_HIGH)
+  // Enable/disable randomization of ASID
+  // so that source and destination interfaces remain same address and other parameters get randomized
+  function void set_asid_buf_limit_randomization(ref dma_seq_item dma_config, input bit enable);
+    string action = enable ? "Enabled" : "Disabled";
+    dma_config.src_asid.rand_mode(enable);
+    dma_config.dst_asid.rand_mode(enable);
+    dma_config.asid_c.constraint_mode(enable);
+    `uvm_info(`gfn, $sformatf("%s ASID randomization", action), UVM_HIGH)
   endfunction
 
   task clear_errors(ref dma_seq_item dma_config);
     uvm_reg_data_t status;
     csr_rd(ral.status, status);
     if (get_field_val(ral.status.error, status)) begin
-      `DV_CHECK(!dma_config.check_config())
-      `uvm_info(`gfn, "Clear GO bit", UVM_MEDIUM)
+      // TODO: There are other causes of errors in more complex tests
+      bit valid = dma_config.check_config("clear_errors");
+      `DV_CHECK(!valid);
       ral.control.go.set(1'b0);
       csr_update(ral.control);
       `uvm_info(`gfn, "Clear error status", UVM_MEDIUM)
       ral.status.error.set(1'b0);
       ral.status.error_code.set(0);
       csr_update(ral.status);
-      // Clear DMA state and GO bit only in case of error
-      clear();
     end
   endtask
 
@@ -103,7 +126,8 @@ class dma_generic_stress_vseq extends dma_generic_smoke_vseq;
         poll_status();
         stop_device();
         clear_errors(dma_config);
-        // Randomize DMA config except ASID and mem buffer registers
+        // We need to clear the outputs, especially `status.done`
+        clear();
         randomize_txn_config(dma_config);
       end
       apply_resets_concurrently();
