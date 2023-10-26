@@ -125,16 +125,17 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
           word_part_reset = 1'b1;
         end
       end
-    end else if (sha_en) begin // hash engine still enabled
-      // no new valid input, provide the last latched input so long as hash is enabled
+    end else if (sha_en) begin // hash engine still enabled but no new valid input
+      // provide the last latched input so long as hash is enabled
       full_word = word_buffer_q;
       if (word_part_count == 2'b00 && (hash_process || process_flag)) begin
-        sha_process = 1'b1; // wait on hash_process till latched word is fed
+        sha_process = 1'b1; // wait on hash_process
       end else if (word_part_count == 2'b01 && (hash_process || process_flag)) begin
-        // 384/512: msg ended but missing 32-bit word packing
+        // 384/512: msg ended: apply 32-bit word packing and push last word
         full_word.data [31:0] = 32'b0;
         full_word.mask [3:0]  = 4'h0;
         word_valid            = 1'b1;
+        sha_process           = 1'b1;
         if (sha_ready == 1'b1) begin // word has been consumed
           word_part_reset = 1'b1; // which will also reset word_valid in the next cycle
         end
@@ -142,7 +143,8 @@ module sha2_multimode32 import hmac_multimode_pkg::*; (
         word_valid = 1'b0;
       end else if (word_part_count == 2'b10 && (hash_process || process_flag)) begin
         // 384/512: msg ended but last word still waiting to be fed in
-        word_valid = 1'b1;
+        word_valid  = 1'b1;
+        sha_process = 1'b1;
         if (sha_ready == 1'b1) begin // word has been consumed
           word_part_reset = 1'b1; // which will also reset word_valid in the next cycle
         end
