@@ -678,7 +678,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           operation_in_progress = 1'b1;
           last_src_addr = dma_config.src_addr - 1;
           last_dst_addr = dma_config.dst_addr - 1;
-          dma_config.is_valid_config = dma_config.check_config();
+          dma_config.is_valid_config = dma_config.check_config("scoreboard starting transfer");
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
           exp_dma_err_intr = !dma_config.is_valid_config;
