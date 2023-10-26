@@ -30,8 +30,6 @@
 //
 // Most of the constraints in this file are primarily to limit randomization to
 // valid configurations based on valid_dma_config bit.
-// If align_address is set, all address variables are aligned to transfer_width
-// and the solve order of constraints are setup for this case.
 class dma_seq_item extends uvm_sequence_item;
 
   // Variables to configure DMA
@@ -71,9 +69,6 @@ class dma_seq_item extends uvm_sequence_item;
   rand lsio_trigger_t handshake_intr_en;
   // variable used to constrain randomization to only valid configs
   bit valid_dma_config;
-  // Variable used to constrain randomization of all addresses values
-  // to align with transfer_width
-  bit align_address;
   // Bit used to indicate if the configuration is valid
   bit is_valid_config;
   // LSIO trigger input value to be driven from testbench
@@ -96,7 +91,6 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
     `uvm_field_int(auto_inc_fifo, UVM_DEFAULT)
     `uvm_field_int(handshake, UVM_DEFAULT)
-    `uvm_field_int(align_address, UVM_DEFAULT)
     `uvm_field_int(is_valid_config, UVM_DEFAULT)
     `uvm_field_int(mem_buffer_almost_limit, UVM_DEFAULT)
     `uvm_field_int(mem_buffer_limit, UVM_DEFAULT)
@@ -138,15 +132,13 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   constraint mem_range_base_c {
-    // Set solve order to make sure mem_range_base is randomized correctly in
-    // case align_address is set
     solve src_asid, dst_asid, per_transfer_width, handshake, auto_inc_buffer, auto_inc_fifo,
           direction before mem_range_base;
   }
 
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
-    // valid_dma_config or align_address is set
+    // valid_dma_config is set
     solve mem_range_base, mem_range_limit before src_addr;
     if (valid_dma_config) {
       // If OT internal address space is the source then source address must be
@@ -169,16 +161,11 @@ class dma_seq_item extends uvm_sequence_item;
       }
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
     }
-    // Address alignment constraint
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> src_addr % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> src_addr % 4 == 0;
-    }
   }
 
   constraint dst_addr_c {
     // Set solve order to make sure destination address is randomized correctly in case
-    // valid_dma_config or align_address is set.
+    // valid_dma_config is set.
     //
     // Ensure that the the source buffer has been decided already, so that we can prevent this
     // destination buffer overlapping it.
@@ -211,12 +198,10 @@ class dma_seq_item extends uvm_sequence_item;
         per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
         per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
       }
+      // For valid configurations, Address must be aligned to transfer width but must further have
+      // the same alignment as the source.
+      dst_addr[1:0] == src_addr[1:0];
       dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
-    }
-    // Address alignment constraint
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> dst_addr % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> dst_addr % 4 == 0;
     }
   }
 
@@ -260,7 +245,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint mem_range_limit_c {
     // Set solver order to make sure mem range limit is randomized correctly in case
-    // valid_dma_config or align_address is set
+    // valid_dma_config is set
     solve mem_range_base before mem_range_limit;
     // For valid DMA config, [mem_range_base, mem_range_limit) describes the addressable memory
     // window.
@@ -271,7 +256,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint mem_buffer_limit_c {
     // Set solver order to make sure mem buffer limit is randomized correctly in case
-    // valid_dma_config or align_address is set
+    // valid_dma_config is set
     solve mem_buffer_almost_limit before mem_buffer_limit;
     // For valid dma config, mem buffer limit must be greater than destination address
     // in order to detect passing the limit
@@ -280,15 +265,11 @@ class dma_seq_item extends uvm_sequence_item;
           mem_buffer_limit > mem_buffer_almost_limit;
        }
     }
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> mem_buffer_limit % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> mem_buffer_limit % 4 == 0;
-    }
   }
 
   constraint mem_buffer_almost_limit_c {
     // Set solver order to make sure mem buffer almost limit is randomized correctly
-    // in case valid_dma_config or align_address is set
+    // in case valid_dma_config is set
     solve dst_addr before mem_buffer_almost_limit;
     // For valid dma config, mem buffer almost limit must not be
     // less than destination address
@@ -296,10 +277,6 @@ class dma_seq_item extends uvm_sequence_item;
        if (handshake && direction == DmaRcvData) {
           mem_buffer_almost_limit > dst_addr;
        }
-    }
-    if (align_address) {
-      per_transfer_width == DmaXfer2BperTxn -> mem_buffer_almost_limit % 2 == 0;
-      per_transfer_width == DmaXfer4BperTxn -> mem_buffer_almost_limit % 4 == 0;
     }
   }
 
@@ -325,7 +302,6 @@ class dma_seq_item extends uvm_sequence_item;
   function new(string name = "");
     super.new(name);
     valid_dma_config = 0;
-    align_address = 0;
   endfunction : new
 
   // Function to disable randomization of memory range register and lock register.
@@ -390,7 +366,7 @@ class dma_seq_item extends uvm_sequence_item;
     if (is_valid_config) begin
       is_valid_config = check_config();
     end
-    `uvm_info(`gfn, $sformatf("[DMA] dma_seq_item:%s", convert2string()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("[DMA] randomized dma_seq_item:%s", convert2string()), UVM_MEDIUM)
   endfunction : post_randomize
 
   // Function to check if provided address and size is in DMA memory region
@@ -494,7 +470,6 @@ class dma_seq_item extends uvm_sequence_item;
     handshake = 0;
     // reset non random variables
     valid_dma_config = 0;
-    align_address = 0;
     mem_range_lock = MuBi4True;
   endfunction
 
