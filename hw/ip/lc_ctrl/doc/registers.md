@@ -496,8 +496,8 @@ The encoding is straightforward replication: [val, val, ... val]."
 | Value      | Name         | Description                               |
 |:-----------|:-------------|:------------------------------------------|
 | 0x00000000 | BLANK        | The device has not yet been personalized. |
-| 0x11111111 | PERSONALIZED | The device has been personalized.         |
-| 0x22222222 | INVALID      | The state is not valid.                   |
+| 0x55555555 | PERSONALIZED | The device has been personalized.         |
+| 0xaaaaaaaa | INVALID      | The state is not valid.                   |
 
 Other values are reserved.
 
