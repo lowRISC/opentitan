@@ -35,8 +35,6 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
     addr_space_id_t valid_combination = valid_combinations[index];
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
-    // Align address to transfer_width
-    dma_config.align_address = 1;
     // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
