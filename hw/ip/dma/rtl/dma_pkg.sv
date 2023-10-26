@@ -21,10 +21,10 @@ package dma_pkg;
   } dma_error_e;
 
   // DMAC Transfer width as encoded in `transfer_width` register
-  typedef enum {
-    DmaXfer1BperTxn = 0,
-    DmaXfer2BperTxn = 1,
-    DmaXfer4BperTxn = 2
+  typedef enum logic [1:0] {
+    DmaXfer1BperTxn = 2'h0,
+    DmaXfer2BperTxn = 2'h1,
+    DmaXfer4BperTxn = 2'h2
   } dma_transfer_width_e;
 
   // ASID uses a 4-bit FI protected encoding with a minimum Hamming distance of 2-bit
