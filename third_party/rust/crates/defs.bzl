@@ -296,7 +296,7 @@ _NORMAL_DEPENDENCIES = {
     "third_party/rust": {
         _COMMON_CONDITION: {
             "aes": "@crate_index__aes-0.8.3//:aes",
-            "ansi_term": "@crate_index__ansi_term-0.12.1//:ansi_term",
+            "anstyle": "@crate_index__anstyle-1.0.2//:anstyle",
             "anyhow": "@crate_index__anyhow-1.0.75//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.4//:arrayvec",
             "bitflags": "@crate_index__bitflags-2.4.0//:bitflags",
@@ -334,7 +334,6 @@ _NORMAL_DEPENDENCIES = {
             "pest": "@crate_index__pest-2.7.3//:pest",
             "pqcrypto-sphincsplus": "@crate_index__pqcrypto-sphincsplus-0.6.4//:pqcrypto_sphincsplus",
             "pqcrypto-traits": "@crate_index__pqcrypto-traits-0.3.4//:pqcrypto_traits",
-            "proc-macro-error": "@crate_index__proc-macro-error-1.0.4//:proc_macro_error",
             "proc-macro2": "@crate_index__proc-macro2-1.0.69//:proc_macro2",
             "quote": "@crate_index__quote-1.0.33//:quote",
             "rand": "@crate_index__rand-0.8.5//:rand",
@@ -353,7 +352,7 @@ _NORMAL_DEPENDENCIES = {
             "sha2": "@crate_index__sha2-0.10.7//:sha2",
             "shellwords": "@crate_index__shellwords-1.1.0//:shellwords",
             "strum": "@crate_index__strum-0.25.0//:strum",
-            "syn": "@crate_index__syn-1.0.109//:syn",
+            "syn": "@crate_index__syn-2.0.38//:syn",
             "tar": "@crate_index__tar-0.4.40//:tar",
             "tempfile": "@crate_index__tempfile-3.8.0//:tempfile",
             "thiserror": "@crate_index__thiserror-1.0.49//:thiserror",
@@ -578,16 +577,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/android_system_properties/0.1.5/download"],
         strip_prefix = "android_system_properties-0.1.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.android_system_properties-0.1.5.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__ansi_term-0.12.1",
-        sha256 = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/ansi_term/0.12.1/download"],
-        strip_prefix = "ansi_term-0.12.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ansi_term-0.12.1.bazel"),
     )
 
     maybe(
@@ -2542,26 +2531,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/proc-macro-crate/1.3.1/download"],
         strip_prefix = "proc-macro-crate-1.3.1",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.proc-macro-crate-1.3.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__proc-macro-error-1.0.4",
-        sha256 = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/proc-macro-error/1.0.4/download"],
-        strip_prefix = "proc-macro-error-1.0.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.proc-macro-error-1.0.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__proc-macro-error-attr-1.0.4",
-        sha256 = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/proc-macro-error-attr/1.0.4/download"],
-        strip_prefix = "proc-macro-error-attr-1.0.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.proc-macro-error-attr-1.0.4.bazel"),
     )
 
     maybe(

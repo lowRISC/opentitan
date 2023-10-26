@@ -32,8 +32,8 @@ alias(
 )
 
 alias(
-    name = "ansi_term",
-    actual = "@crate_index__ansi_term-0.12.1//:ansi_term",
+    name = "anstyle",
+    actual = "@crate_index__anstyle-1.0.2//:anstyle",
     tags = ["manual"],
 )
 
@@ -266,12 +266,6 @@ alias(
 )
 
 alias(
-    name = "proc-macro-error",
-    actual = "@crate_index__proc-macro-error-1.0.4//:proc_macro_error",
-    tags = ["manual"],
-)
-
-alias(
     name = "proc-macro2",
     actual = "@crate_index__proc-macro2-1.0.69//:proc_macro2",
     tags = ["manual"],
@@ -381,7 +375,7 @@ alias(
 
 alias(
     name = "syn",
-    actual = "@crate_index__syn-1.0.109//:syn",
+    actual = "@crate_index__syn-2.0.38//:syn",
     tags = ["manual"],
 )
 
