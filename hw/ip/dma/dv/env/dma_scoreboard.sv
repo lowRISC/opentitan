@@ -701,8 +701,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .clear (clear_via_reg_write));
         end
       end
+      "handshake_interrupt_enable": begin
+        dma_config.handshake_intr_en = `gmv(ral.handshake_interrupt_enable.mask);
+        `uvm_info(`gfn,
+                  $sformatf("Got handshake_intr_en = 0x%x", dma_config.handshake_intr_en), UVM_HIGH)
+      end
+      // TODO: we shall surely need to handle `status` register writes at some point
+      "intr_enable": /* Nothing to be done presently */;
       default: begin
-        `uvm_info(`gfn, $sformatf("%s not processed", csr.get_name()), UVM_MEDIUM)
+        // This message may indicate a failure to update the configuration in the scoreboard
+        // so that it matches the configuration programmed into the DUT
+        `uvm_info(`gfn, $sformatf("reg_write of `%s` not handled", csr.get_name()), UVM_MEDIUM)
       end
     endcase
   endfunction
