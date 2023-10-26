@@ -382,6 +382,7 @@ void *dmidpi_create(const char *display_name, int listen_port) {
 
   // Set up socket details
   ctx->sock = tcp_server_create(display_name, listen_port);
+  assert(ctx->sock);
 
   printf(
       "\n"

@@ -5,7 +5,8 @@
 module uartdpi #(
   parameter BAUD = 'x,
   parameter FREQ = 'x,
-  parameter string NAME = "uart0"
+  parameter string NAME = "uart0",
+  parameter int ListenPort = -1
 )(
   input  logic clk_i,
   input  logic rst_ni,
@@ -20,7 +21,8 @@ module uartdpi #(
   localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
-    chandle uartdpi_create(input string name, input string log_file_path);
+    chandle uartdpi_create(input string name, input int listen_port,
+                           input string log_file_path);
 
   import "DPI-C" function
     void uartdpi_close(input chandle ctx);
@@ -39,7 +41,7 @@ module uartdpi #(
 
   initial begin
     $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
-    ctx = uartdpi_create(NAME, log_file_path);
+    ctx = uartdpi_create(NAME, ListenPort, log_file_path);
   end
 
   final begin

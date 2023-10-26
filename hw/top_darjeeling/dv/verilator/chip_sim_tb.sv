@@ -10,6 +10,7 @@ module chip_sim_tb (
 
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic [31:0]  cio_gpio_pull_en, cio_gpio_pull_select;
+  logic cio_gpio_rst_n;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
   logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d;
@@ -18,7 +19,7 @@ module chip_sim_tb (
 
   chip_darjeeling_verilator u_dut (
     .clk_i,
-    .rst_ni,
+    .rst_ni(cio_gpio_rst_n),
 
     // communication with GPIO
     .cio_gpio_p2d_i(cio_gpio_p2d),
@@ -40,14 +41,18 @@ module chip_sim_tb (
   );
 
   // GPIO DPI
-  gpiodpi #(.N_GPIO(32)) u_gpiodpi (
+  gpiodpi #(
+    .ListenPort(44855),
+    .N_GPIO(32)
+  ) u_gpiodpi (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
     .gpio_p2d   (cio_gpio_p2d),
     .gpio_d2p   (cio_gpio_d2p),
     .gpio_en_d2p(cio_gpio_en_d2p),
     .gpio_pull_en(cio_gpio_pull_en),
-    .gpio_pull_sel(cio_gpio_pull_select)
+    .gpio_pull_sel(cio_gpio_pull_select),
+    .gpio_rst_n(cio_gpio_rst_n)
   );
 
   // UART DPI
@@ -55,6 +60,7 @@ module chip_sim_tb (
   // frequency must match the settings used in the on-chip software at
   // `sw/top_darjeeling/sw/device/arch/device_sim_verilator.c`.
   uartdpi #(
+    .ListenPort(44854),
     .BAUD('d7_200),
     .FREQ('d500_000)
   ) u_uart (
@@ -68,7 +74,7 @@ module chip_sim_tb (
   // OpenOCD direct DMI TAP
   bind rv_dm dmidpi u_dmidpi (
     .clk_i,
-    .rst_ni,
+    .rst_ni         (cio_gpio_rst_n),
     .dmi_req_valid,
     .dmi_req_ready,
     .dmi_req_addr   (dmi_req.addr),
@@ -88,7 +94,7 @@ module chip_sim_tb (
   //
   // jtagdpi u_jtagdpi (
   //   .clk_i,
-  //   .rst_ni,
+  //   .rst_ni      (cio_gpio_rst_n),
 
   //   .jtag_tck    (cio_jtag_tck),
   //   .jtag_tms    (cio_jtag_tms),
@@ -100,9 +106,11 @@ module chip_sim_tb (
 `endif
 
   // SPI DPI
-  spidpi u_spi (
+  spidpi #(
+    .ListenPort(44856)
+  ) u_spi (
     .clk_i  (clk_i),
-    .rst_ni (rst_ni),
+    .rst_ni (cio_gpio_rst_n),
     .spi_device_sck_o     (cio_spi_device_sck_p2d),
     .spi_device_csb_o     (cio_spi_device_csb_p2d),
     .spi_device_sdi_o     (cio_spi_device_sdi_p2d),
