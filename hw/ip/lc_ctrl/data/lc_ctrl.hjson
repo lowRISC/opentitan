@@ -1228,11 +1228,11 @@
               name:  "BLANK",
               desc:  "The device has not yet been personalized."
             }
-            { value: "0x11111111",
+            { value: "0x55555555",
               name:  "PERSONALIZED",
               desc:  "The device has been personalized."
             }
-            { value: "0x22222222",
+            { value: "0xAAAAAAAA",
               name:  "INVALID",
               desc:  "The state is not valid."
             }
