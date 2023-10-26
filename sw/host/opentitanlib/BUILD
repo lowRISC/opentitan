@@ -137,6 +137,7 @@ rust_library(
         "src/test_utils/rpc.rs",
         "src/test_utils/spi_passthru.rs",
         "src/test_utils/status.rs",
+        "src/test_utils/test_status.rs",
         "src/tpm/access.rs",
         "src/tpm/driver.rs",
         "src/tpm/mod.rs",

@@ -59,6 +59,11 @@ cc_library(
 )
 
 cc_library(
+    name = "status_headers",
+    hdrs = ["status.h"],
+)
+
+cc_library(
     name = "check",
     hdrs = ["check.h"],
     target_compatible_with = [OPENTITAN_CPU],
