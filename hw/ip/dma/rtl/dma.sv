@@ -627,77 +627,76 @@ module dma
       sha2_hash_done_d = sha2_hash_done_q | sha2_hash_done;
     end
 
-    unique case (ctrl_state_q)
-      DmaIdle: begin
-        chunk_byte_d       = '0;
-        capture_chunk_byte = 1'b1;
-        // Wait for go bit to be set to proceed with data movement
-        if (reg2hw.control.go.q && !cfg_abort_en) begin
-          // Clear the transferred bytes only on the very first iteration
-          if (reg2hw.control.initial_transfer.q) begin
-            transfer_byte_d       = '0;
-            capture_transfer_byte = 1'b1;
-            sha2_digest_clear     = 1'b1;
-          end
-          // if not handshake start transfer
-          if (!cfg_handshake_en) begin
-            ctrl_state_d = DmaAddrSetup;
-          end else if (cfg_handshake_en && |lsio_trigger) begin // if handshake wait for interrupt
-            if (|reg2hw.clear_int_src.q) begin
-              clear_index_en = 1'b1;
-              clear_index_d  = '0;
-              ctrl_state_d   = DmaClearIntrSrc;
-            end else begin
+    // Abort has the highest priority in the state machine. In all cases, if the abort is raised,
+    // the DMA is reset to the idle state. This includes the error state and the default state,
+    // which should never be reached during the normal operation. The abort condition has precedence
+    // over any outstanding TLUL transaction.
+    if (cfg_abort_en) begin
+      ctrl_state_d = DmaIdle;
+      clear_go     = 1'b1;
+    end else begin
+      unique case (ctrl_state_q)
+        DmaIdle: begin
+          chunk_byte_d       = '0;
+          capture_chunk_byte = 1'b1;
+          // Wait for go bit to be set to proceed with data movement
+          if (reg2hw.control.go.q) begin
+            // Clear the transferred bytes only on the very first iteration
+            if (reg2hw.control.initial_transfer.q) begin
+              transfer_byte_d       = '0;
+              capture_transfer_byte = 1'b1;
+              sha2_digest_clear     = 1'b1;
+            end
+            // if not handshake start transfer
+            if (!cfg_handshake_en) begin
               ctrl_state_d = DmaAddrSetup;
+            end else if (cfg_handshake_en && |lsio_trigger) begin // if handshake wait for interrupt
+              if (|reg2hw.clear_int_src.q) begin
+                clear_index_en = 1'b1;
+                clear_index_d  = '0;
+                ctrl_state_d   = DmaClearIntrSrc;
+              end else begin
+                ctrl_state_d = DmaAddrSetup;
+              end
             end
           end
         end
-        // else `go` bit will be cleared automatically by the 'control' update if `cfg_abort_en`
-        // is asserted.
-      end
 
-      DmaClearIntrSrc: begin
-        // Clear the interrupt by writing
-        if(reg2hw.clear_int_src.q[clear_index_q]) begin
-          // Send 'clear interrupt' write to the appropriate bus
-          dma_host_clear_int = reg2hw.clear_int_bus.q[clear_index_q];
-          dma_ctn_clear_int = !reg2hw.clear_int_bus.q[clear_index_q];
+        DmaClearIntrSrc: begin
+          // Clear the interrupt by writing
+          if(reg2hw.clear_int_src.q[clear_index_q]) begin
+            // Send 'clear interrupt' write to the appropriate bus
+            dma_host_clear_int = reg2hw.clear_int_bus.q[clear_index_q];
+            dma_ctn_clear_int = !reg2hw.clear_int_bus.q[clear_index_q];
 
-          if (int_clear_tlul_gnt) begin
-            ctrl_state_d = DmaWaitIntrSrcResponse;
-          end
+            if (int_clear_tlul_gnt) begin
+              ctrl_state_d = DmaWaitIntrSrcResponse;
+            end
 
-          // Writes also get a resp valid, but no data.
-          // Need to wait for this to not overrun TLUL adapter
-          // The response might come immediately
-          if (int_clear_tlul_rsp_valid) begin
-            if (cfg_abort_en) begin
-              ctrl_state_d = DmaIdle;
-            end else begin
+            // Writes also get a resp valid, but no data.
+            // Need to wait for this to not overrun TLUL adapter
+            // The response might come immediately
+            if (int_clear_tlul_rsp_valid) begin
               // Proceed if we handled all
               if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
                 ctrl_state_d = DmaAddrSetup;
               end
             end
-          end
-        end else begin
-          // Do nothing if no clearing requested
-          clear_index_en = 1'b1;
-          clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+          end else begin
+            // Do nothing if no clearing requested
+            clear_index_en = 1'b1;
+            clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
 
-          if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
-            ctrl_state_d = DmaAddrSetup;
+            if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
+              ctrl_state_d = DmaAddrSetup;
+            end
           end
         end
-      end
 
-      DmaWaitIntrSrcResponse: begin
-        // Writes also get a resp valid, but no data.
-        // Need to wait for this to not overrun TLUL adapter
-        if (int_clear_tlul_rsp_valid) begin
-          if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
-          end else begin
+        DmaWaitIntrSrcResponse: begin
+          // Writes also get a resp valid, but no data.
+          // Need to wait for this to not overrun TLUL adapter
+          if (int_clear_tlul_rsp_valid) begin
             if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
               clear_index_en = 1'b1;
               clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
@@ -707,291 +706,318 @@ module dma
             end
           end
         end
-      end
 
-      DmaAddrSetup: begin
-        capture_transfer_width = 1'b1;
-        capture_addr           = 1'b1;
-        capture_be             = 1'b1;
-        sha2_consumed_d        = 1'b0;
+        DmaAddrSetup: begin
+          capture_transfer_width = 1'b1;
+          capture_addr           = 1'b1;
+          capture_be             = 1'b1;
+          sha2_consumed_d        = 1'b0;
 
-        // Convert the `transfer_width` encoding to bytes per transaction
-        unique case (reg2hw.transfer_width.q)
-          DmaXfer1BperTxn: transfer_width_d = 3'b001; // 1 byte
-          DmaXfer2BperTxn: transfer_width_d = 3'b010; // 2 bytes
-          DmaXfer4BperTxn: transfer_width_d = 3'b100; // 4 bytes
-          // Value 3 is an invalid configuration value that leads to an error
-          default: bad_size = 1'b1;  // Invalid transfer_width
-        endcase
+          // Convert the `transfer_width` encoding to bytes per transaction
+          unique case (reg2hw.transfer_width.q)
+            DmaXfer1BperTxn: transfer_width_d = 3'b001; // 1 byte
+            DmaXfer2BperTxn: transfer_width_d = 3'b010; // 2 bytes
+            DmaXfer4BperTxn: transfer_width_d = 3'b100; // 4 bytes
+            // Value 3 is an invalid configuration value that leads to an error
+            default: bad_size = 1'b1;  // Invalid transfer_width
+          endcase
 
-        if ((transfer_byte_q == '0) ||
-            (cfg_handshake_en &&
-             // Does the source address need resetting to the configured base address?
-             (( cfg_data_direction && chunk_byte_q == '0 && !cfg_memory_buffer_auto_increment_en) ||
-              (!cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
-          src_addr_d = {reg2hw.source_address_hi.q, reg2hw.source_address_lo.q};
-        end else begin
-          // Advance from the previous transaction within this chunk
-          src_addr_d = src_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
-        end
-
-        if ((transfer_byte_q == '0) ||
-            (cfg_handshake_en    &&
-             // Does the destination address need resetting to the configured base address?
-             ((!cfg_data_direction && chunk_byte_q == '0 && !cfg_memory_buffer_auto_increment_en) ||
-              ( cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
-          dst_addr_d = {reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q};
-        end else begin
-          // Advance from the previous transaction within this chunk
-          dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
-        end
-
-        // Capture ASID values for use throughout the transfer.
-        if (transfer_byte_q == '0) begin
-          capture_asid = 1'b1;
-          src_asid_d = reg2hw.address_space_id.source_asid.q;
-          dst_asid_d = reg2hw.address_space_id.destination_asid.q;
-        end
-
-        unique case (transfer_width_d)
-          3'b001: begin
-            req_dst_be_d = top_pkg::TL_DBW'('b0001) << dst_addr_d[1:0];
-            req_src_be_d = top_pkg::TL_DBW'('b0001) << src_addr_d[1:0];
+          if ((transfer_byte_q == '0) ||
+              (cfg_handshake_en &&
+              // Does the source address need resetting to the configured base address?
+              ((cfg_data_direction && chunk_byte_q == '0 &&
+                !cfg_memory_buffer_auto_increment_en) ||
+               (!cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
+            src_addr_d = {reg2hw.source_address_hi.q, reg2hw.source_address_lo.q};
+          end else begin
+            // Advance from the previous transaction within this chunk
+            src_addr_d = src_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
           end
-          3'b010: begin
-            if (remaining_bytes >= TRANSFER_BYTES_WIDTH'(transfer_width_d)) begin
-              req_dst_be_d = top_pkg::TL_DBW'('b0011) << dst_addr_d[1:0];
-              req_src_be_d = top_pkg::TL_DBW'('b0011) << src_addr_d[1:0];
-            end else begin
+
+          if ((transfer_byte_q == '0) ||
+              (cfg_handshake_en    &&
+              // Does the destination address need resetting to the configured base address?
+              ((!cfg_data_direction && chunk_byte_q == '0 &&
+                !cfg_memory_buffer_auto_increment_en) ||
+               ( cfg_data_direction && (chunk_byte_q == '0 || !cfg_fifo_auto_increment_en))))) begin
+            dst_addr_d = {reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q};
+          end else begin
+            // Advance from the previous transaction within this chunk
+            dst_addr_d = dst_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
+          end
+
+          // Capture ASID values for use throughout the transfer.
+          if (transfer_byte_q == '0) begin
+            capture_asid = 1'b1;
+            src_asid_d = reg2hw.address_space_id.source_asid.q;
+            dst_asid_d = reg2hw.address_space_id.destination_asid.q;
+          end
+
+          unique case (transfer_width_d)
+            3'b001: begin
               req_dst_be_d = top_pkg::TL_DBW'('b0001) << dst_addr_d[1:0];
               req_src_be_d = top_pkg::TL_DBW'('b0001) << src_addr_d[1:0];
             end
-          end
-          3'b100: begin
-            if (remaining_bytes >= TRANSFER_BYTES_WIDTH'(transfer_width_d)) begin
-              req_dst_be_d = {top_pkg::TL_DBW{1'b1}};
-            end else begin
-              unique case (remaining_bytes)
-                TRANSFER_BYTES_WIDTH'('h1): req_dst_be_d = top_pkg::TL_DBW'('b0001);
-                TRANSFER_BYTES_WIDTH'('h2): req_dst_be_d = top_pkg::TL_DBW'('b0011);
-                TRANSFER_BYTES_WIDTH'('h3): req_dst_be_d = top_pkg::TL_DBW'('b0111);
-                default:                    req_dst_be_d = top_pkg::TL_DBW'('b1111);
-              endcase
+            3'b010: begin
+              if (remaining_bytes >= TRANSFER_BYTES_WIDTH'(transfer_width_d)) begin
+                req_dst_be_d = top_pkg::TL_DBW'('b0011) << dst_addr_d[1:0];
+                req_src_be_d = top_pkg::TL_DBW'('b0011) << src_addr_d[1:0];
+              end else begin
+                req_dst_be_d = top_pkg::TL_DBW'('b0001) << dst_addr_d[1:0];
+                req_src_be_d = top_pkg::TL_DBW'('b0001) << src_addr_d[1:0];
+              end
             end
+            3'b100: begin
+              if (remaining_bytes >= TRANSFER_BYTES_WIDTH'(transfer_width_d)) begin
+                req_dst_be_d = {top_pkg::TL_DBW{1'b1}};
+              end else begin
+                unique case (remaining_bytes)
+                  TRANSFER_BYTES_WIDTH'('h1): req_dst_be_d = top_pkg::TL_DBW'('b0001);
+                  TRANSFER_BYTES_WIDTH'('h2): req_dst_be_d = top_pkg::TL_DBW'('b0011);
+                  TRANSFER_BYTES_WIDTH'('h3): req_dst_be_d = top_pkg::TL_DBW'('b0111);
+                  default:                    req_dst_be_d = top_pkg::TL_DBW'('b1111);
+                endcase
+              end
 
-            req_src_be_d = req_dst_be_d;  // in the case of 4B src should always = dst
-          end
-          default: begin
-            req_dst_be_d = top_pkg::TL_DBW'('b0000);
-            req_src_be_d = top_pkg::TL_DBW'('b0000);
-          end
-        endcase
+              req_src_be_d = req_dst_be_d;  // in the case of 4B src should always = dst
+            end
+            default: begin
+              req_dst_be_d = top_pkg::TL_DBW'('b0000);
+              req_src_be_d = top_pkg::TL_DBW'('b0000);
+            end
+          endcase
 
-        // Error checking. An invalid configuration triggers one or more errors
-        // and does not start the DMA transfer
-        if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
-            (reg2hw.total_data_size.q == '0)) begin     // No empty transactions
-          bad_size = 1'b1;
-        end
-
-        if (!(reg2hw.control.opcode.q inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
-          bad_opcode = 1'b1;
-        end
-
-        // Inline hashing is only allowed for 32-bit transfer width
-        if (use_inline_hashing) begin
-          if (reg2hw.transfer_width.q != DmaXfer4BperTxn) begin
+          // Error checking. An invalid configuration triggers one or more errors
+          // and does not start the DMA transfer
+          if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
+              (reg2hw.total_data_size.q == '0)) begin     // No empty transactions
             bad_size = 1'b1;
           end
-        end
 
-        // Ensure that ASIDs have valid values
-        // SEC_CM: ASID.INTERSIG.MUBI
-        if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
-                                                            SocControlAddr,
-                                                            SocSystemAddr,
-                                                            OtExtFlashAddr})) begin
-          bad_asid = 1'b1;
-        end
-        if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
-                                                                 SocControlAddr,
-                                                                 SocSystemAddr,
-                                                                 OtExtFlashAddr})) begin
-          bad_asid = 1'b1;
-        end
+          if (!(reg2hw.control.opcode.q inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
+            bad_opcode = 1'b1;
+          end
 
-        // Check the validity of the restricted DMA-enabled memory range
-        // Note: both the base and the limit addresses are inclusive
-        if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
-          bad_base_limit = 1'b1;
-        end
+          // Inline hashing is only allowed for 32-bit transfer width
+          if (use_inline_hashing) begin
+            if (reg2hw.transfer_width.q != DmaXfer4BperTxn) begin
+              bad_size = 1'b1;
+            end
+          end
 
-        // In 4-byte transfers, source and destination address must be 4-byte aligned
-        if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-          (|reg2hw.source_address_lo.q[1:0])) begin
-          bad_src_addr = 1'b1;
-        end
-        if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-          (|reg2hw.destination_address_lo.q[1:0])) begin
-          bad_dst_addr = 1'b1;
-        end
+          // Ensure that ASIDs have valid values
+          // SEC_CM: ASID.INTERSIG.MUBI
+          if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
+                                                              SocControlAddr,
+                                                              SocSystemAddr,
+                                                              OtExtFlashAddr})) begin
+            bad_asid = 1'b1;
+          end
+          if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
+                                                                  SocControlAddr,
+                                                                  SocSystemAddr,
+                                                                  OtExtFlashAddr})) begin
+            bad_asid = 1'b1;
+          end
 
-        // In 2-byte transfers, source and destination address must be 2-byte aligned
-        if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.source_address_lo.q[0]) begin
-          bad_src_addr = 1'b1;
-        end
-        if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.destination_address_lo.q[0]) begin
-          bad_dst_addr = 1'b1;
-        end
+          // Check the validity of the restricted DMA-enabled memory range
+          // Note: both the base and the limit addresses are inclusive
+          if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
+            bad_base_limit = 1'b1;
+          end
 
-        // Source and destination must have the same alignment
-        if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
-          bad_src_addr = 1'b1;
-          bad_dst_addr = 1'b1;
-        end
-        // If data from the SOC system bus, the control bus, or the external flash is transferred to
-        // the OT internal memory, we must check if the destination address range falls into the DMA
-        // enabled memory region.
-        if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.source_asid.q == SocSystemAddr)  ||
-             (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) &&
-             (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
-             // Out-of-bound check
-             ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
-              (reg2hw.destination_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
-              ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
-                SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-          bad_dst_addr = 1'b1;
-        end
+          // In 4-byte transfers, source and destination address must be 4-byte aligned
+          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
+            (|reg2hw.source_address_lo.q[1:0])) begin
+            bad_src_addr = 1'b1;
+          end
+          if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
+            (|reg2hw.destination_address_lo.q[1:0])) begin
+            bad_dst_addr = 1'b1;
+          end
 
-        // If data from the OT internal memory is transferred  to the SOC system bus, the control
-        // bus, or the external flash, we must check if the source address range falls into the DMA
-        // enabled memory region.
-        if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)  ||
-             (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) &&
-             (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
+          // In 2-byte transfers, source and destination address must be 2-byte aligned
+          if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.source_address_lo.q[0]) begin
+            bad_src_addr = 1'b1;
+          end
+          if (reg2hw.transfer_width.q == DmaXfer2BperTxn &&
+              reg2hw.destination_address_lo.q[0]) begin
+            bad_dst_addr = 1'b1;
+          end
+
+          // Source and destination must have the same alignment
+          if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
+            bad_src_addr = 1'b1;
+            bad_dst_addr = 1'b1;
+          end
+          // If data from the SOC system bus, the control bus, or the external flash is transferred
+          // to the OT internal memory, we must check if the destination address range falls into
+          // the DMA enabled memory region.
+          if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
+              (reg2hw.address_space_id.source_asid.q == SocSystemAddr)  ||
+              (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) &&
+              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
               // Out-of-bound check
-              ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
-               (reg2hw.source_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
-               ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
-                SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-          bad_src_addr = 1'b1;
-        end
-
-        // If the source ASID is the SOC control port, the OT internal port, or the external flash,
-        //  we are accessing a 32-bit address space. Thus the upper bits of the source address must
-        // be zero
-        if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr) ||
-             (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
-            (|reg2hw.source_address_hi.q)) begin
-          bad_src_addr = 1'b1;
-        end
-
-        // If the destination ASID is the SOC control port, the OT internal port or the external
-        // flash, we are accessing a 32-bit address space. Thus the upper bits of the destination
-        // address must be zero
-        if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr) ||
-             (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
-            (|reg2hw.destination_address_hi.q)) begin
-          bad_dst_addr = 1'b1;
-        end
-
-        if (!reg2hw.range_valid.q) begin
-          bad_go_config = 1'b1;
-        end
-
-        config_error = bad_src_addr   ||
-                       bad_dst_addr   ||
-                       bad_size       ||
-                       bad_base_limit ||
-                       bad_opcode     ||
-                       bad_go_config  ||
-                       bad_asid;
-
-        if (config_error) begin
-          next_error[DmaSourceAddrErr]      = bad_src_addr;
-          next_error[DmaDestinationAddrErr] = bad_dst_addr;
-          next_error[DmaOpcodeErr]          = bad_opcode;
-          next_error[DmaSizeErr]            = bad_size;
-          next_error[DmaBaseLimitErr]       = bad_base_limit;
-          next_error[DmaGoConfigErr]        = bad_go_config;
-          next_error[DmaAsidErr]            = bad_asid;
-
-          ctrl_state_d = DmaError;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else begin
-          // Start the inline hashing if we are in the very first transfer. If we are in the first
-          // iteration of a transfer, which is not the very first transfer, only capture the
-          // transfer length to compute the final message length
-          if (reg2hw.control.initial_transfer.q) begin
-            if (use_inline_hashing) begin
-              sha2_hash_start = 1'b1;
-            end
+              ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
+                (reg2hw.destination_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+                ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
+                  SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
+                  SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+            bad_dst_addr = 1'b1;
           end
-          ctrl_state_d = DmaSendRead;
-        end
-      end
 
-      DmaSendRead,
-      DmaWaitReadResponse: begin
-        if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else if (read_rsp_valid) begin
-          if (read_rsp_error) begin
-            next_error[DmaCompletionErr] = 1'b1;
-            ctrl_state_d                 = DmaError;
-          end else begin
-            capture_return_data = 1'b1;
-            // We received data, feed it into the SHA2 engine
-            if (use_inline_hashing) begin
-              sha2_valid      = 1'b1;
-              sha2_consumed_d = sha2_ready;
-            end
-            ctrl_state_d = DmaSendWrite;
+          // If data from the OT internal memory is transferred  to the SOC system bus, the control
+          // bus, or the external flash, we must check if the source address range falls into the
+          // DMA enabled memory region.
+          if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
+              (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)  ||
+              (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) &&
+              (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
+                // Out-of-bound check
+                ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
+                (reg2hw.source_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+                ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
+                  SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
+                  SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+            bad_src_addr = 1'b1;
           end
-        end else if (read_gnt) begin
-          // Only Request handled
-          ctrl_state_d = DmaWaitReadResponse;
-        end
-      end
 
-      DmaSendWrite,
-      DmaWaitWriteResponse: begin
-        // If using inline hashing and data is not yet consumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
+          // If the source ASID is the SOC control port, the OT internal port, or the external
+          // flash, we are accessing a 32-bit address space. Thus the upper bits of the source
+          // address must be zero
+          if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
+              (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr) ||
+              (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
+              (|reg2hw.source_address_hi.q)) begin
+            bad_src_addr = 1'b1;
+          end
 
-        if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else if (write_rsp_valid) begin
+          // If the destination ASID is the SOC control port, the OT internal port or the external
+          // flash, we are accessing a 32-bit address space. Thus the upper bits of the destination
+          // address must be zero
+          if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
+              (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr) ||
+              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
+              (|reg2hw.destination_address_hi.q)) begin
+            bad_dst_addr = 1'b1;
+          end
 
-          if (write_rsp_error) begin
-            next_error[DmaCompletionErr] = 1'b1;
-            ctrl_state_d                 = DmaError;
+          if (!reg2hw.range_valid.q) begin
+            bad_go_config = 1'b1;
+          end
+
+          config_error = bad_src_addr   ||
+                        bad_dst_addr   ||
+                        bad_size       ||
+                        bad_base_limit ||
+                        bad_opcode     ||
+                        bad_go_config  ||
+                        bad_asid;
+
+          if (config_error) begin
+            next_error[DmaSourceAddrErr]      = bad_src_addr;
+            next_error[DmaDestinationAddrErr] = bad_dst_addr;
+            next_error[DmaOpcodeErr]          = bad_opcode;
+            next_error[DmaSizeErr]            = bad_size;
+            next_error[DmaBaseLimitErr]       = bad_base_limit;
+            next_error[DmaGoConfigErr]        = bad_go_config;
+            next_error[DmaAsidErr]            = bad_asid;
+
+            ctrl_state_d = DmaError;
           end else begin
-            // Advance by the number of bytes just transferred
-            transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-            chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-            capture_transfer_byte = 1'b1;
-            capture_chunk_byte    = 1'b1;
-
-            // Will there still be more to do _after_ this advance?
-            if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+            // Start the inline hashing if we are in the very first transfer. If we are in the first
+            // iteration of a transfer, which is not the very first transfer, only capture the
+            // transfer length to compute the final message length
+            if (reg2hw.control.initial_transfer.q) begin
               if (use_inline_hashing) begin
-                ctrl_state_d = DmaShaFinalize;
-              end else begin
-                clear_go     = 1'b1;
-                ctrl_state_d = DmaIdle;
+                sha2_hash_start = 1'b1;
               end
-            end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
+            end
+            ctrl_state_d = DmaSendRead;
+          end
+        end
+
+        DmaSendRead,
+        DmaWaitReadResponse: begin
+          if (read_rsp_valid) begin
+            if (read_rsp_error) begin
+              next_error[DmaCompletionErr] = 1'b1;
+              ctrl_state_d                 = DmaError;
+            end else begin
+              capture_return_data = 1'b1;
+              // We received data, feed it into the SHA2 engine
+              if (use_inline_hashing) begin
+                sha2_valid      = 1'b1;
+                sha2_consumed_d = sha2_ready;
+              end
+              ctrl_state_d = DmaSendWrite;
+            end
+          end else if (read_gnt) begin
+            // Only Request handled
+            ctrl_state_d = DmaWaitReadResponse;
+          end
+        end
+
+        DmaSendWrite,
+        DmaWaitWriteResponse: begin
+          // If using inline hashing and data is not yet consumed, apply it
+          if (use_inline_hashing && !sha2_consumed_q) begin
+            sha2_valid = 1'b1;
+            sha2_consumed_d = sha2_ready;
+          end
+
+          if (write_rsp_valid) begin
+            if (write_rsp_error) begin
+              next_error[DmaCompletionErr] = 1'b1;
+              ctrl_state_d                 = DmaError;
+            end else begin
+              // Advance by the number of bytes just transferred
+              transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+              chunk_byte_d          = chunk_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+              capture_transfer_byte = 1'b1;
+              capture_chunk_byte    = 1'b1;
+
+              // Will there still be more to do _after_ this advance?
+              if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+                if (use_inline_hashing) begin
+                  ctrl_state_d = DmaShaFinalize;
+                end else begin
+                  clear_go     = 1'b1;
+                  ctrl_state_d = DmaIdle;
+                end
+              end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
+                // Conditionally clear the go bit when not being in hardware handshake mode.
+                // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
+                // and done bit, and release the go bit for the next FW-controlled chunk.
+                clear_go     = !cfg_handshake_en;
+                ctrl_state_d = DmaIdle;
+              end else begin
+                ctrl_state_d = DmaAddrSetup;
+              end
+
+              // In all cases from above, if we are doing inline hashing and the data was not
+              // consumed yet, wait until it consumed by the SHA engine and then continue
+              if (use_inline_hashing) begin
+                if (!(sha2_ready || sha2_consumed_q)) begin
+                  ctrl_state_d = DmaShaWait;
+                end
+              end
+            end
+          end else if (write_gnt) begin
+            // Only Request handled
+            ctrl_state_d = DmaWaitWriteResponse;
+          end
+        end
+
+        DmaShaWait: begin
+          // Still waiting for the SHA engine to consume the data
+          sha2_valid = 1'b1;
+
+          if (sha2_ready) begin
+            // Byte count has already been updated for this transfer
+            if (transfer_byte_q >= reg2hw.total_data_size.q) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
               // Conditionally clear the go bit when not being in hardware handshake mode.
               // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
               // and done bit, and release the go bit for the next FW-controlled chunk.
@@ -1000,67 +1026,32 @@ module dma
             end else begin
               ctrl_state_d = DmaAddrSetup;
             end
-
-            // In all cases from above, if we are doing inline hashing and the data was not consumed
-            // yet, wait until it consumed by the SHA engine and then continue
-            if (use_inline_hashing) begin
-              if (!(sha2_ready || sha2_consumed_q)) begin
-                ctrl_state_d = DmaShaWait;
-              end
-            end
           end
-        end else if (write_gnt) begin
-          // Only Request handled
-          ctrl_state_d = DmaWaitWriteResponse;
         end
-      end
 
-      DmaShaWait: begin
-        // Still waiting for the SHA engine to consume the data
-        sha2_valid = 1'b1;
+        DmaShaFinalize: begin
+          if (sha2_hash_done_q) begin
+            // Digest is ready, capture it to the CSRs
+            sha2_digest_set = 1'b1;
+            ctrl_state_d   = DmaIdle;
+            clear_go       = 1'b1;
+          end
+        end
 
-        if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end else if (sha2_ready) begin
-          // Byte count has already been updated for this transfer
-          if (transfer_byte_q >= reg2hw.total_data_size.q) begin
-            ctrl_state_d = DmaShaFinalize;
-          end else if (chunk_byte_q >= reg2hw.chunk_data_size.q) begin
-            // Conditionally clear the go bit when not being in hardware handshake mode.
-            // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
-            // and done bit, and release the go bit for the next FW-controlled chunk.
-            clear_go     = !cfg_handshake_en;
+          // wait here until error is cleared
+        DmaError: begin
+          if (!reg2hw.status.error.q) begin
             ctrl_state_d = DmaIdle;
-          end else begin
-            ctrl_state_d = DmaAddrSetup;
+            clear_go     = 1'b1;
           end
         end
-      end
 
-      DmaShaFinalize: begin
-        if (sha2_hash_done_q) begin
-          // Digest is ready, capture it to the CSRs
-          sha2_digest_set = 1'b1;
-          ctrl_state_d   = DmaIdle;
-          clear_go       = 1'b1;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
+        default: begin
+          // Should not be reachable
+          dma_state_error = 1'b1;
         end
-      end
-
-        // wait here until error is cleared
-      DmaError: begin
-        if (!reg2hw.status.error.q) begin
-          ctrl_state_d = DmaIdle;
-          clear_go     = 1'b1;
-        end
-      end
-
-      default: begin
-        // Should not be reachable
-        dma_state_error = 1'b1;
-      end
-    endcase
+      endcase
+    end
   end
 
   always_comb begin
@@ -1267,7 +1258,7 @@ module dma
 
     // Clear the go bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.
-    hw2reg.control.go.de = clear_go || (cfg_abort_en && (ctrl_state_d == DmaIdle));
+    hw2reg.control.go.de = clear_go;
     hw2reg.control.go.d  = 1'b0;
 
     // Assert busy write enable on
