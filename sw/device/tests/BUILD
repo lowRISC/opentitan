@@ -2026,6 +2026,7 @@ opentitan_test(
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
