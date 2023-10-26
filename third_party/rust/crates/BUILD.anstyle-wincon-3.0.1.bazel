@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "wasi",
+    name = "anstyle_wincon",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,16 +28,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "std",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=wasi",
+        "crate-name=anstyle-wincon",
         "manual",
         "noclippy",
         "norustfmt",
@@ -76,5 +72,19 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.10.0+wasi-snapshot-preview1",
+    version = "3.0.1",
+    deps = [
+        "@crate_index__anstyle-1.0.4//:anstyle",
+    ] + select({
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
+            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:i686-pc-windows-msvc": [
+            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+        ],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
+            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+        ],
+        "//conditions:default": [],
+    }),
 )

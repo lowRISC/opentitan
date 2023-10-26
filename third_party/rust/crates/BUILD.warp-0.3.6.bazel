@@ -99,6 +99,6 @@ rust_library(
         "@crate_index__tokio-tungstenite-0.20.1//:tokio_tungstenite",
         "@crate_index__tokio-util-0.7.9//:tokio_util",
         "@crate_index__tower-service-0.3.2//:tower_service",
-        "@crate_index__tracing-0.1.39//:tracing",
+        "@crate_index__tracing-0.1.40//:tracing",
     ],
 )

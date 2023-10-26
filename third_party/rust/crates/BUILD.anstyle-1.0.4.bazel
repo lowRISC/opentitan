@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "linux_raw_sys",
+    name = "anstyle",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,17 +29,15 @@ rust_library(
         ],
     ),
     crate_features = [
-        "errno",
-        "general",
-        "ioctl",
-        "no_std",
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=linux-raw-sys",
+        "crate-name=anstyle",
         "manual",
         "noclippy",
         "norustfmt",
@@ -78,5 +76,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.8",
+    version = "1.0.4",
 )

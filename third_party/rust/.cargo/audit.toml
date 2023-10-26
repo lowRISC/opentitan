@@ -1,5 +1,4 @@
 [advisories]
 ignore = [
-    "RUSTSEC-2020-0071", # `time`, dependency of `chrono`, affected API is not used
     "RUSTSEC-2020-0168", # `mach`, dependency of `serialport`, only affects MacOS
 ]

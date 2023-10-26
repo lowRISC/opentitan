@@ -99,7 +99,7 @@ rust_library(
         "@crate_index__socket2-0.4.9//:socket2",
         "@crate_index__tokio-1.33.0//:tokio",
         "@crate_index__tower-service-0.3.2//:tower_service",
-        "@crate_index__tracing-0.1.39//:tracing",
+        "@crate_index__tracing-0.1.40//:tracing",
         "@crate_index__want-0.3.1//:want",
     ],
 )

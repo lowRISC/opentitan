@@ -89,7 +89,7 @@ rust_library(
         "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig",
         "@crate_index__num-integer-0.1.45//:num_integer",
         "@crate_index__num-iter-0.1.43//:num_iter",
-        "@crate_index__num-traits-0.2.16//:num_traits",
+        "@crate_index__num-traits-0.2.17//:num_traits",
         "@crate_index__pkcs1-0.7.5//:pkcs1",
         "@crate_index__pkcs8-0.10.2//:pkcs8",
         "@crate_index__rand_core-0.6.4//:rand_core",

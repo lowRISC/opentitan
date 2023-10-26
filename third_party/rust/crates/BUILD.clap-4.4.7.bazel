@@ -6,7 +6,6 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -16,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "libm",
+    name = "clap",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -30,14 +29,28 @@ rust_library(
         ],
     ),
     crate_features = [
+        "cargo",
+        "color",
         "default",
+        "deprecated",
+        "derive",
+        "env",
+        "error-context",
+        "help",
+        "std",
+        "suggestions",
+        "usage",
+        "wrap_help",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@crate_index__clap_derive-4.4.7//:clap_derive",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=libm",
+        "crate-name=clap",
         "manual",
         "noclippy",
         "norustfmt",
@@ -76,48 +89,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.7",
+    version = "4.4.7",
     deps = [
-        "@crate_index__libm-0.2.7//:build_script_build",
+        "@crate_index__clap_builder-4.4.7//:clap_builder",
     ],
-)
-
-cargo_build_script(
-    name = "libm_build_script",
-    srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-    ],
-    crate_name = "build_script_build",
-    crate_root = "build.rs",
-    data = glob(
-        include = ["**"],
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
-        ],
-    ),
-    edition = "2018",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=libm",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    version = "0.2.7",
-    visibility = ["//visibility:private"],
-)
-
-alias(
-    name = "build_script_build",
-    actual = "libm_build_script",
-    tags = ["manual"],
 )

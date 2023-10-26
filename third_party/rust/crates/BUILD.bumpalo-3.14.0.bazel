@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "clap",
+    name = "bumpalo",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,28 +29,14 @@ rust_library(
         ],
     ),
     crate_features = [
-        "cargo",
-        "color",
         "default",
-        "deprecated",
-        "derive",
-        "env",
-        "error-context",
-        "help",
-        "std",
-        "suggestions",
-        "usage",
-        "wrap_help",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@crate_index__clap_derive-4.4.0//:clap_derive",
-    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=clap",
+        "crate-name=bumpalo",
         "manual",
         "noclippy",
         "norustfmt",
@@ -89,9 +75,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "4.4.1",
-    deps = [
-        "@crate_index__clap_builder-4.4.1//:clap_builder",
-        "@crate_index__once_cell-1.18.0//:once_cell",
-    ],
+    version = "3.14.0",
 )

@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # MIT
 # ])
 
 rust_library(
-    name = "windows",
+    name = "tracing",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +28,16 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "log",
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=windows",
+        "crate-name=tracing",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,8 +76,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.48.0",
+    version = "0.1.40",
     deps = [
-        "@crate_index__windows-targets-0.48.5//:windows_targets",
+        "@crate_index__log-0.4.20//:log",
+        "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
+        "@crate_index__tracing-core-0.1.32//:tracing_core",
     ],
 )

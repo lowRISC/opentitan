@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "errno",
+    name = "iana_time_zone",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +28,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "fallback",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=errno",
+        "crate-name=iana-time-zone",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,82 +75,54 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.3",
+    version = "0.1.58",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__windows-core-0.51.1//:windows_core",  # cfg(target_os = "windows")
         ],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
+            "@crate_index__windows-core-0.51.1//:windows_core",  # cfg(target_os = "windows")
         ],
-        "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crate_index__js-sys-0.3.64//:js_sys",  # cfg(target_arch = "wasm32")
+            "@crate_index__wasm-bindgen-0.2.87//:wasm_bindgen",  # cfg(target_arch = "wasm32")
         ],
         "@rules_rust//rust/platform:wasm32-wasi": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(target_os = "wasi")
+            "@crate_index__js-sys-0.3.64//:js_sys",  # cfg(target_arch = "wasm32")
+            "@crate_index__wasm-bindgen-0.2.87//:wasm_bindgen",  # cfg(target_arch = "wasm32")
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-fuchsia": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__windows-sys-0.48.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__libc-0.2.149//:libc",  # cfg(unix)
+            "@crate_index__windows-core-0.51.1//:windows_core",  # cfg(target_os = "windows")
         ],
         "//conditions:default": [],
     }),
