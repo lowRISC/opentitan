@@ -43,12 +43,15 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
 
   // Randomize DMA enabled memory region registers
   virtual task randomize_dma_memory_registers();
+    bit        dma_memory_valid;
     bit [31:0] dma_memory_base;
     bit [31:0] dma_memory_limit;
+    `DV_CHECK_STD_RANDOMIZE_FATAL(dma_memory_valid)
     `DV_CHECK_STD_RANDOMIZE_FATAL(dma_memory_base)
     `DV_CHECK_STD_RANDOMIZE_FATAL(dma_memory_limit)
     set_dma_enabled_memory_range(.base(dma_memory_base),
                                  .limit(dma_memory_limit),
+                                 .valid(dma_memory_valid),
                                  .lock(MuBi4True));
  endtask
 

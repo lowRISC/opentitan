@@ -544,6 +544,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                     dma_config.mem_range_limit), UVM_HIGH)
         end
       end
+      "range_valid": begin
+        if (dma_config.mem_range_lock == MuBi4True) begin
+          dma_config.mem_range_valid = `gmv(ral.range_valid.range_valid);
+          `uvm_info(`gfn, $sformatf("Got mem_range_valid = %x",
+                                    dma_config.mem_range_valid), UVM_HIGH)
+        end
+      end
       "range_regwen": begin
         // Get mirrored field value and cast to associated enum in dma_config
         dma_config.mem_range_lock = mubi4_t'(`gmv(ral.range_regwen.regwen));
