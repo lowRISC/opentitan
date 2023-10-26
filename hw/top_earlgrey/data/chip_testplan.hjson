@@ -850,6 +850,7 @@
             work in DV as well.
             '''
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
@@ -869,6 +870,28 @@
               "chip_sw_uart_smoketest",
               "chip_sw_flash_scrambling_smoketest",
             ]
+      bazel: [
+        "//sw/device/tests:aes_smoketest",
+        "//sw/device/tests:aon_timer_smoketest",
+        "//sw/device/tests:clkmgr_smoketest",
+        "//sw/device/tests:csrng_smoketest",
+        "//sw/device/tests:entropy_src_smoketest",
+        "//sw/device/tests:gpio_smoketest",
+        "//sw/device/tests:hmac_smoketest",
+        "//sw/device/tests:kmac_smoketest",
+        "//sw/device/tests:otbn_smoketest",
+        "//sw/device/tests:otp_ctrl_smoketest",
+        "//sw/device/tests:pmp_smoketest_napot",
+        "//sw/device/tests:pmp_smoketest_tor",
+        "//sw/device/tests:pwrmgr_smoketest",
+        "//sw/device/tests:rstmgr_smoketest",
+        "//sw/device/tests:rv_plic_smoketest",
+        "//sw/device/tests:rv_timer_smoketest",
+        "//sw/device/tests:sim_dv/pwrmgr_usbdev_smoketest",
+        "//sw/device/tests:spi_host_smoketest",
+        "//sw/device/tests:sram_ctrl_smoketest",
+        "//sw/device/tests:uart_smoketest",
+      ]
     }
     {
       name: chip_sw_rom_functests
