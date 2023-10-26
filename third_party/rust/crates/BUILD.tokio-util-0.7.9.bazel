@@ -85,6 +85,6 @@ rust_library(
         "@crate_index__futures-sink-0.3.28//:futures_sink",
         "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
         "@crate_index__tokio-1.33.0//:tokio",
-        "@crate_index__tracing-0.1.39//:tracing",
+        "@crate_index__tracing-0.1.40//:tracing",
     ],
 )

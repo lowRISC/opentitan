@@ -33,7 +33,7 @@ alias(
 
 alias(
     name = "anstyle",
-    actual = "@crate_index__anstyle-1.0.2//:anstyle",
+    actual = "@crate_index__anstyle-1.0.4//:anstyle",
     tags = ["manual"],
 )
 
@@ -69,13 +69,13 @@ alias(
 
 alias(
     name = "chrono",
-    actual = "@crate_index__chrono-0.4.27//:chrono",
+    actual = "@crate_index__chrono-0.4.31//:chrono",
     tags = ["manual"],
 )
 
 alias(
     name = "clap",
-    actual = "@crate_index__clap-4.4.1//:clap",
+    actual = "@crate_index__clap-4.4.7//:clap",
     tags = ["manual"],
 )
 
@@ -207,7 +207,7 @@ alias(
 
 alias(
     name = "num-traits",
-    actual = "@crate_index__num-traits-0.2.16//:num_traits",
+    actual = "@crate_index__num-traits-0.2.17//:num_traits",
     tags = ["manual"],
 )
 

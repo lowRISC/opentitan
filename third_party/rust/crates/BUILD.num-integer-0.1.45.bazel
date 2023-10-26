@@ -80,7 +80,7 @@ rust_library(
     version = "0.1.45",
     deps = [
         "@crate_index__num-integer-0.1.45//:build_script_build",
-        "@crate_index__num-traits-0.2.16//:num_traits",
+        "@crate_index__num-traits-0.2.17//:num_traits",
     ],
 )
 

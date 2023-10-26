@@ -6,16 +6,17 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT/Apache-2.0
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "time",
+    name = "num_traits",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +29,18 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+        "i128",
+        "libm",
+        "std",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=time",
+        "crate-name=num-traits",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,22 +79,55 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.45",
+    version = "0.2.17",
     deps = [
-        "@crate_index__libc-0.2.149//:libc",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
+        "@crate_index__libm-0.2.8//:libm",
+        "@crate_index__num-traits-0.2.17//:build_script_build",
+    ],
+)
+
+cargo_build_script(
+    name = "num-traits_build_script",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "default",
+        "i128",
+        "libm",
+        "std",
+    ],
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
+    data = glob(
+        include = ["**"],
+        exclude = [
+            "**/* *",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
         ],
-        "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:wasm32-wasi": [
-            "@crate_index__wasi-0.10.0-wasi-snapshot-preview1//:wasi",  # cfg(target_os = "wasi")
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "//conditions:default": [],
-    }),
+    ),
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=num-traits",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "0.2.17",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@crate_index__autocfg-1.1.0//:autocfg",
+    ],
+)
+
+alias(
+    name = "build_script_build",
+    actual = "num-traits_build_script",
+    tags = ["manual"],
 )

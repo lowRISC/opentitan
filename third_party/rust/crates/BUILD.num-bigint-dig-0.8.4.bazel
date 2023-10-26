@@ -87,11 +87,11 @@ rust_library(
     deps = [
         "@crate_index__byteorder-1.5.0//:byteorder",
         "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__libm-0.2.7//:libm",
+        "@crate_index__libm-0.2.8//:libm",
         "@crate_index__num-bigint-dig-0.8.4//:build_script_build",
         "@crate_index__num-integer-0.1.45//:num_integer",
         "@crate_index__num-iter-0.1.43//:num_iter",
-        "@crate_index__num-traits-0.2.16//:num_traits",
+        "@crate_index__num-traits-0.2.17//:num_traits",
         "@crate_index__rand-0.8.5//:rand",
         "@crate_index__serde-1.0.189//:serde",
         "@crate_index__smallvec-1.11.0//:smallvec",

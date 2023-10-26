@@ -6,16 +6,17 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "tracing",
+    name = "libm",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,15 +30,14 @@ rust_library(
         ],
     ),
     crate_features = [
-        "log",
-        "std",
+        "default",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=tracing",
+        "crate-name=libm",
         "manual",
         "noclippy",
         "norustfmt",
@@ -76,10 +76,48 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.39",
+    version = "0.2.8",
     deps = [
-        "@crate_index__log-0.4.20//:log",
-        "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
-        "@crate_index__tracing-core-0.1.32//:tracing_core",
+        "@crate_index__libm-0.2.8//:build_script_build",
     ],
+)
+
+cargo_build_script(
+    name = "libm_build_script",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "default",
+    ],
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
+    data = glob(
+        include = ["**"],
+        exclude = [
+            "**/* *",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=libm",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "0.2.8",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "build_script_build",
+    actual = "libm_build_script",
+    tags = ["manual"],
 )
