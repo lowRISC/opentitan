@@ -1537,6 +1537,7 @@ module dma
   assign unused_signals = ^{reg2hw.clear_state.q,
                             reg2hw.enabled_memory_range_base.qe,
                             reg2hw.enabled_memory_range_limit.qe,
+                            reg2hw.range_regwen.q,
                             sys_resp_q.error_vec,
                             sys_resp_q.read_metadata,
                             sys_resp_q.grant_vec[0]};
