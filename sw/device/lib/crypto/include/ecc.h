@@ -19,20 +19,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Struct to handle ECDSA or EdDSA signatures.
- */
-typedef struct ecc_signature {
-  // Length of ECC signature R parameter, in bytes.
-  size_t len_r;
-  // ECC signature R parameter.
-  uint32_t *r;
-  // Length of ECC signature S parameter, in bytes.
-  size_t len_s;
-  // ECC signature S parameter.
-  uint32_t *s;
-} ecc_signature_t;
-
-/**
  * Enum to define EdDSA mode for signature.
  *
  * Values are hardened.
@@ -43,18 +29,6 @@ typedef enum eddsa_sign_mode {
   // Signature mode Hashed EdDSA.
   kEddsaSignModeHashEdDSA = 0x9a6,
 } eddsa_sign_mode_t;
-
-/**
- * Struct to handle ECDSA or ECDH public key type.
- *
- * Length of public key coordinates (x,y) follows len(p).
- */
-typedef struct ecc_public_key {
-  // ECC public key x coordinate.
-  crypto_unblinded_key_t x;
-  // ECC public key y coordinate.
-  crypto_unblinded_key_t y;
-} ecc_public_key_t;
 
 /**
  * Struct for domain parameters of a custom Weierstrass curve.
@@ -133,7 +107,7 @@ typedef struct ecc_curve {
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
-                                      ecc_public_key_t *public_key);
+                                      crypto_unblinded_key_t *public_key);
 
 /**
  * Performs the ECDSA digital signature generation.
@@ -158,7 +132,7 @@ OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     const hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
-                                    const ecc_signature_t *signature);
+                                    crypto_word32_buf_t signature);
 
 /**
  * Performs the ECDSA digital signature verification.
@@ -182,9 +156,9 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * @return Result of the ECDSA verification operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
+crypto_status_t otcrypto_ecdsa_verify(const crypto_unblinded_key_t *public_key,
                                       const hash_digest_t *message_digest,
-                                      const ecc_signature_t *signature,
+                                      crypto_const_word32_buf_t signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
 
@@ -214,7 +188,7 @@ crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
-                                     ecc_public_key_t *public_key);
+                                     crypto_unblinded_key_t *public_key);
 
 /**
  * Performs Elliptic Curve Diffie Hellman shared secret generation.
@@ -231,7 +205,7 @@ crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
-                              const ecc_public_key_t *public_key,
+                              const crypto_unblinded_key_t *public_key,
                               const ecc_curve_t *elliptic_curve,
                               crypto_blinded_key_t *shared_secret);
 
@@ -273,7 +247,7 @@ OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_byte_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
-                                      const ecc_signature_t *signature);
+                                      crypto_word32_buf_t signature);
 
 /**
  * Verifies an Ed25519 signature.
@@ -290,7 +264,7 @@ OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    const ecc_signature_t *signature, hardened_bool_t *verification_result);
+    crypto_const_word32_buf_t signature, hardened_bool_t *verification_result);
 
 /**
  * Generates a new key pair for X25519 key exchange.
@@ -376,7 +350,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
-    ecc_public_key_t *public_key);
+    crypto_unblinded_key_t *public_key);
 
 /**
  * Starts the asynchronous ECDSA digital signature generation.
@@ -413,7 +387,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(
-    const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature);
+    const ecc_curve_t *elliptic_curve, crypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.
@@ -431,8 +405,9 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    const ecc_public_key_t *public_key, const hash_digest_t *message_digest,
-    const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
+    const crypto_unblinded_key_t *public_key,
+    const hash_digest_t *message_digest, crypto_const_word32_buf_t signature,
+    const ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature verification.
@@ -454,7 +429,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_finalize(
-    const ecc_curve_t *elliptic_curve, const ecc_signature_t *signature,
+    const ecc_curve_t *elliptic_curve, crypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -503,7 +478,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
-    ecc_public_key_t *public_key);
+    crypto_unblinded_key_t *public_key);
 
 /**
  * Starts the asynchronous Elliptic Curve Diffie Hellman shared
@@ -520,7 +495,8 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdh_async_start(
-    const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
+    const crypto_blinded_key_t *private_key,
+    const crypto_unblinded_key_t *public_key,
     const ecc_curve_t *elliptic_curve);
 
 /**
@@ -597,7 +573,7 @@ OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    const ecc_signature_t *signature);
+    crypto_word32_buf_t signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
@@ -611,7 +587,7 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
-    const ecc_signature_t *signature);
+    crypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous Ed25519 digital signature verification.
@@ -629,7 +605,7 @@ OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    const ecc_signature_t *signature);
+    crypto_const_word32_buf_t signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.

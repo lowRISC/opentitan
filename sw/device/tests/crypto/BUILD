@@ -222,6 +222,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -16,6 +16,12 @@
 enum {
   /* Number of 32-bit words in a SHA256 digest. */
   kSha256DigestWords = 256 / 32,
+  /* Number of 32-bit words in a P-256 public key. */
+  kP256PublicKeyWords = 512 / 32,
+  /* Number of 32-bit words in a P-256 signature. */
+  kP256SignatureWords = 512 / 32,
+  /* Number of bytes in a P-256 private key. */
+  kP256PrivateKeyBytes = 256 / 8,
 };
 
 // Message
@@ -29,7 +35,7 @@ static const ecc_curve_t kCurveP256 = {
 static const crypto_key_config_t kPrivateKeyConfig = {
     .version = kCryptoLibVersion1,
     .key_mode = kKeyModeEcdsa,
-    .key_length = 258 / 8,
+    .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
 };
@@ -44,24 +50,12 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   };
 
   // Allocate space for a public key.
-  uint32_t pk_x[kP256CoordWords] = {0};
-  uint32_t pk_y[kP256CoordWords] = {0};
-  ecc_public_key_t public_key = {
-      .x =
-          {
-              .key_mode = kKeyModeEcdsa,
-              .key_length = sizeof(pk_x),
-              .key = pk_x,
-          },
-      .y =
-          {
-              .key_mode = kKeyModeEcdsa,
-              .key_length = sizeof(pk_y),
-              .key = pk_y,
-          },
+  uint32_t pk[kP256PublicKeyWords] = {0};
+  crypto_unblinded_key_t public_key = {
+      .key_mode = kKeyModeEcdsa,
+      .key_length = sizeof(pk),
+      .key = pk,
   };
-  public_key.x.checksum = integrity_unblinded_checksum(&public_key.x);
-  public_key.y.checksum = integrity_unblinded_checksum(&public_key.y);
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
@@ -82,24 +76,20 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   TRY(otcrypto_hash(msg, &msg_digest));
 
   // Allocate space for the signature.
-  uint32_t sigR[kP256ScalarWords] = {0};
-  uint32_t sigS[kP256ScalarWords] = {0};
-  ecc_signature_t signature = {
-      .len_r = sizeof(sigR),
-      .r = sigR,
-      .len_s = sizeof(sigS),
-      .s = sigS,
-  };
+  uint32_t sig[kP256SignatureWords] = {0};
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(
-      otcrypto_ecdsa_sign(&private_key, &msg_digest, &kCurveP256, &signature));
+  CHECK_STATUS_OK(otcrypto_ecdsa_sign(
+      &private_key, &msg_digest, &kCurveP256,
+      (crypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_verify(&public_key, &msg_digest, &signature,
-                                        &kCurveP256, verification_result));
+  CHECK_STATUS_OK(otcrypto_ecdsa_verify(
+      &public_key, &msg_digest,
+      (crypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
+      &kCurveP256, verification_result));
 
   return OTCRYPTO_OK;
 }
