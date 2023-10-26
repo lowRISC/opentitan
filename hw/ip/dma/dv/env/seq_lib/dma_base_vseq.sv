@@ -441,13 +441,14 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf(
                       "DMA: %s DMA Control Register OPCODE=%d FIRST=%d HS=%d BUF=%d FIFO=%d DIR=%d",
                       tmpstr, op, first, hs, buff, fifo, dir), UVM_HIGH)
-    // Configure all fields except GO bit
+    // Configure all fields except GO bit which shall initially be clear
     ral.control.opcode.set(int'(op));
     ral.control.initial_transfer.set(first);
     ral.control.hardware_handshake_enable.set(hs);
     ral.control.memory_buffer_auto_increment_enable.set(buff);
     ral.control.fifo_auto_increment_enable.set(fifo);
     ral.control.data_direction.set(dir);
+    ral.control.go.set(1'b0);
     csr_update(.csr(ral.control));
     // Set GO bit
     ral.control.go.set(go);
