@@ -14,6 +14,9 @@ class dma_base_vseq extends cip_base_vseq #(
 
   bit sim_fatal_exit_on_dma_error = 1;
 
+  // Waive testing of the system bus within this DV environment?
+  bit dma_dv_waive_system_bus = 0;
+
   // Valid address space ID conbinations
   addr_space_id_t valid_combinations[] = '{
     '{OtInternalAddr, SocControlAddr},
@@ -61,6 +64,13 @@ class dma_base_vseq extends cip_base_vseq #(
                                 .DataWidth(CTN_DATA_WIDTH))::type_id::create("mem_ctn");
     seq_sys.mem = mem_model#(.AddrWidth(SYS_ADDR_WIDTH),
                                .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
+
+    // System bus is currently unavailable and untestable withing this DV environment,
+    // so activate additional constraints to prevent it causing test failures.
+    void'($value$plusargs("dma_dv_waive_system_bus", dma_dv_waive_system_bus));
+    // Report the chosen setting and modify the configuration accordingly.
+    dma_config.dma_dv_waive_system_bus = dma_dv_waive_system_bus;
+    `uvm_info(`gfn, $sformatf("dma_dv_waive_system_bus = %d", dma_dv_waive_system_bus), UVM_LOW)
   endfunction: new
 
   function void init_model();
