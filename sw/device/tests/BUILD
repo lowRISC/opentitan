@@ -5661,3 +5661,34 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "sram_ctrl_lc_escalation_test",
+    srcs = ["sram_ctrl_lc_escalation_test.c"],
+    cw310 = cw310_params(
+        timeout = "moderate",
+        needs_jtag = True,
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_rma_manuf_personalized",
+        test_cmd = " ".join([
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/sram_ctrl:sram_ctrl_lc_escalation",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
