@@ -139,6 +139,25 @@ extern const uint32_t kUartNCOValue;
 extern const uint32_t kUartTxFifoCpuCycles;
 
 /**
+ * The frequency of the SPI_HOST peripheral (if such a thing is present).
+ */
+extern const uint64_t kSpiHostFreqHz;
+
+/**
+ * A helper macro to calculate SPI_HOST Divider values.
+ */
+#define CALCULATE_SPI_HOST_DIV(spi_clock, peripheral_clock) \
+  (((spi_clock)*2) >= (peripheral_clock)                    \
+       ? 0                                                  \
+       : (uint32_t)((((peripheral_clock) / (spi_clock)) / 2) - 1))
+
+/**
+ * The pre-calculated SPI_HOST Divider value based on the Frequency and
+ * Peripheral clock.
+ */
+extern const uint32_t kSpiHostDivValue;
+
+/**
  * Helper macro to calculate the maximum duration of the AST initialization
  * check poll in CPU cycles.
  *

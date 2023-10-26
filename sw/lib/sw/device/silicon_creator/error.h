@@ -41,6 +41,7 @@ enum module_ {
   kModuleLog =          MODULE_CODE('L', 'G'),
   kModuleBootData =     MODULE_CODE('B', 'D'),
   kModuleSpiDevice =    MODULE_CODE('S', 'P'),
+  kModuleSpiHost =      MODULE_CODE('S', 'H'),
   kModuleAst =          MODULE_CODE('A', 'S'),
   kModuleRstmgr =       MODULE_CODE('R', 'S'),
   KModuleRnd =          MODULE_CODE('R', 'N'),
@@ -136,6 +137,8 @@ enum module_ {
   X(kErrorBootDataInvalid,            ERROR_(3, kModuleBootData, kInternal)), \
   \
   X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
+  \
+  X(kErrorSpiHostInvalidArgument,     ERROR_(1, kModuleSpiHost, kInvalidArgument)), \
   \
   X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal)), \
   \
