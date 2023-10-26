@@ -68,8 +68,12 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [31:0] sha2_digest[];
   // Variable to control which trigger_i signals are active
   rand lsio_trigger_t handshake_intr_en;
+
   // variable used to constrain randomization to only valid configs
   bit valid_dma_config;
+  // Waive testing of the system bus within this DV environment?
+  bit dma_dv_waive_system_bus;
+
   // Bit used to indicate if the configuration is valid
   bit is_valid_config;
   // LSIO trigger input value to be driven from testbench
@@ -133,10 +137,12 @@ class dma_seq_item extends uvm_sequence_item;
 
   // Constrain source and destinatination address space ids for valid configurations
   constraint asid_c {
-    // TODO: at present there is no model of the SoC System bus, so attempting any transaction
-    // to that bus will result in the DMA controller stalling
-    src_asid != SocSystemAddr;
-    dst_asid != SocSystemAddr;
+    if (dma_dv_waive_system_bus) {
+      // There is no model of the SoC System bus, so attempting any transaction to that bus will
+      // result in the DMA controller stalling
+      src_asid != SocSystemAddr;
+      dst_asid != SocSystemAddr;
+    }
   }
 
   constraint src_addr_c {
@@ -450,8 +456,8 @@ class dma_seq_item extends uvm_sequence_item;
     // Each check is performed independently and reported, to produce a complete list of reasons
     // that the configuration is invalid.
 
-    // TODO: SocSystemAddr is presently unavailable
-    if (src_asid == SocSystemAddr || dst_asid == SocSystemAddr) begin
+    // Testing of the System bus may be waived in this DV environment
+    if (!dma_dv_waive_system_bus && (src_asid == SocSystemAddr || dst_asid == SocSystemAddr)) begin
       `uvm_info(`gfn, " - SoCSystemAddr is NOT yet implemented", UVM_MEDIUM)
       valid_config = 0;
     end
