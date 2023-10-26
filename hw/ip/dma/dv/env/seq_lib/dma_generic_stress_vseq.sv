@@ -29,7 +29,6 @@ class dma_generic_stress_vseq extends dma_generic_smoke_vseq;
       super.randomize_item(dma_config);
       // Reset constrain control bits after randomization
       dma_config.valid_dma_config = 0;
-      dma_config.align_address = 0;
     end else begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config, handshake == 0; opcode == OpcCopy;)
     end
