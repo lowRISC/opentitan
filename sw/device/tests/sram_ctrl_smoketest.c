@@ -9,6 +9,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -74,16 +75,20 @@ bool test_main(void) {
         "SRAM ret status error bits set, status = %08x.", status_ret);
 
   // Read and Write to/from SRAMs. Main SRAM will use the address of the
-  // buffer that has been allocated. Ret SRAM can start at the base address.
+  // buffer that has been allocated. Ret SRAM can start at the beginning
+  // of the owner section.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
+  uintptr_t sram_ret_buffer_addr =
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+      offsetof(retention_sram_t, owner);
 
   mmio_region_t sram_region_main_addr =
       mmio_region_from_addr(sram_main_buffer_addr);
-  mmio_region_t sram_region_ret_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
+  mmio_region_t sram_region_ret_addr =
+      mmio_region_from_addr(sram_ret_buffer_addr);
 
   // write / read checks
-  write_read_check(sram_region_ret_base_addr, "SRAM_RET");
+  write_read_check(sram_region_ret_addr, "SRAM_RET");
   write_read_check(sram_region_main_addr, "SRAM_MAIN");
 
   return true;
