@@ -28,7 +28,7 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
 
   constraint transactions_c {num_txns == valid_combinations.size();}
 
-  // Function : Rerandomization of address ranges
+  // Function : Re-randomization of address ranges
   function void randomize_item(ref dma_seq_item dma_config, input int iteration = 0);
     int num_valid_combinations = valid_combinations.size();
     int index = $urandom_range(0, num_valid_combinations - 1);

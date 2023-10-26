@@ -395,6 +395,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   // Function to check if provided address and size is in DMA memory region
   function bit is_address_in_dma_memory_region(bit [31:0] address);
+    // Note: both the base and the limit addresses are inclusive.
     return ((address >= mem_range_base) && (address <= mem_range_limit));
   endfunction
 

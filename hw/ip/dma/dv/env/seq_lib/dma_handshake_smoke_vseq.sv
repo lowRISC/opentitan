@@ -12,8 +12,8 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
 
   constraint transactions_c {num_txns == valid_combinations.size();}
 
-  // Function : Randomise dma_seq_item with valid and random asid combination
-  function void randomise_item(ref dma_seq_item dma_config);
+  // Function : Randomize dma_seq_item with valid and random asid combination
+  function void randomize_item(ref dma_seq_item dma_config);
     int index = $urandom_range(0, valid_combinations.size() - 1);
     addr_space_id_t valid_combination = valid_combinations[index];
     // Allow only valid DMA configurations
@@ -46,7 +46,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       int status;
 
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
-      randomise_item(dma_config);
+      randomize_item(dma_config);
       run_common_config(dma_config);
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
