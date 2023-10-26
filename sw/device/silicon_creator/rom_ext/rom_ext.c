@@ -218,31 +218,30 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_svc_next_boot_bl0_slot_handler(
-    boot_svc_msg_t *boot_svc_msg, const boot_data_t *boot_data) {
+    boot_svc_msg_t *boot_svc_msg, boot_data_t *boot_data) {
   uint32_t msg_bl0_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
-  const manifest_t *kNextSlot;
+  // We overwrite the RAM copy of the primary slot to the requested  next slot.
+  // This will cause a one-time boot of the requested side.
+  rom_error_t error = kErrorOk;
   switch (launder32(msg_bl0_slot)) {
     case kBootSvcNextBootBl0SlotA:
       HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotA);
-      kNextSlot = rom_ext_boot_policy_manifest_a_get();
+      boot_data->primary_bl0_slot = kBootDataSlotA;
       break;
     case kBootSvcNextBootBl0SlotB:
       HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotB);
-      kNextSlot = rom_ext_boot_policy_manifest_b_get();
+      boot_data->primary_bl0_slot = kBootDataSlotB;
       break;
     default:
-      HARDENED_TRAP();
+      error = kErrorBootSvcBadSlot;
   }
 
-  boot_svc_next_boot_bl0_slot_res_init(kErrorOk,
+  boot_svc_next_boot_bl0_slot_res_init(error,
                                        &boot_svc_msg->next_boot_bl0_slot_res);
-
-  HARDENED_RETURN_IF_ERROR(rom_ext_verify(kNextSlot, boot_data));
-  // Boot fails if a verified ROM_EXT cannot be booted.
-  HARDENED_RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
-  // `rom_ext_boot()` should never return `kErrorOk`, but if it does
-  // we must shut down the chip instead of trying the next ROM_EXT.
-  return kErrorRomExtBootFailed;
+  retention_sram_get()->creator.boot_svc_msg = *boot_svc_msg;
+  // We always return OK here because we've logged any error status in the boot
+  // services response message and we want the boot flow to continue.
+  return kErrorOk;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -345,6 +344,9 @@ static rom_error_t rom_ext_try_boot(void) {
         HARDENED_CHECK_EQ(msg_type, kBootSvcMinBl0SecVerReqType);
         HARDENED_RETURN_IF_ERROR(
             boot_svc_min_sec_ver_handler(&boot_svc_msg, &boot_data));
+        break;
+      case kBootSvcNextBl0SlotResType:
+        // For response messages left in ret-ram we do nothing.
         break;
       default:
         HARDENED_TRAP();
