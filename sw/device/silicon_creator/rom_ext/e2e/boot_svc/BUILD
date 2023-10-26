@@ -50,3 +50,59 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+opentitan_test(
+    name = "boot_svc_next_test",
+    srcs = ["boot_svc_next_test.c"],
+    cw310 = cw310_params(
+        assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
+        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
+        exit_failure = "BFV:.*|PASS|FAIL",
+        exit_success = "FinalBootLog: 3:ABA\r\n",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = "//sw/device/silicon_owner:manifest_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
+    name = "boot_svc_bad_next_test",
+    srcs = ["boot_svc_bad_next_test.c"],
+    cw310 = cw310_params(
+        assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
+        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
+        exit_failure = "BFV:.*|PASS|FAIL",
+        exit_success = "FinalBootLog: 3:AAA\r\n",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = "//sw/device/silicon_owner:manifest_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)

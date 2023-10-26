@@ -14,6 +14,8 @@ typedef enum boot_svc_test {
 typedef enum boot_svc_test_state {
   kBootSvcTestStateInit = 0,
   kBootSvcTestStateCheckEmpty,
+  kBootSvcTestStateNextSideB,
+  kBootSvcTestStateReturnSideA,
   kBootSvcTestStateFinal,
 } boot_svc_test_state_t;
 
@@ -24,6 +26,8 @@ typedef struct boot_svc_retram {
   boot_svc_test_state_t state;
   // The number of boots the test has performed.
   int boots;
+  // The side we're currently booted to.
+  char current_side;
   // The owner partition that was booted on each boot.
   char partition[10];
 } boot_svc_retram_t;
