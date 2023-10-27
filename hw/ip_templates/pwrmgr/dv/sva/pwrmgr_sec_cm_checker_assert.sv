@@ -19,9 +19,7 @@ module pwrmgr_sec_cm_checker_assert
   input slow_fsm_invalid,
   input fast_fsm_invalid,
   input prim_mubi_pkg::mubi4_t rom_intg_chk_dis,
-  input prim_mubi_pkg::mubi4_t rom_intg_chk_done,
-  input prim_mubi_pkg::mubi4_t rom_intg_chk_good,
-  input pwrmgr_pkg::fast_pwr_state_e fast_state,
+  input prim_mubi_pkg::mubi4_t rom_intg_chk_ok,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input slow_esc_rst_req,
@@ -40,63 +38,46 @@ module pwrmgr_sec_cm_checker_assert
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
 
+  `define ASYNC_ASSERT(_name, _prop, _sigs, _rst)                         \
+    _name: assert property (@(_sigs) disable iff ((_rst) !== '0) (_prop)) \
+           else begin                                                     \
+             `ASSERT_ERROR(_name)                                         \
+           end
+
+  // Assuming lc_dft_en_i and lc_hw_debug_en_i are asynchronous
   // rom_intg_chk_dis only allows two states.
-  // Note that lc_dft_en_i and lc_hw_debug_en_i are already synchronized to clk_i at this
-  // hierarchy level.
-  `ASSERT(RomIntgChkDisTrue_A,
-          rom_intg_chk_dis == prim_mubi_pkg::MuBi4True |->
-          (lc_dft_en_i == lc_ctrl_pkg::On &&
-           lc_hw_debug_en_i == lc_ctrl_pkg::On),
-          clk_i,
-          reset_or_disable)
+  `ASYNC_ASSERT(RomIntgChkDisTrue_A,
+                rom_intg_chk_dis == prim_mubi_pkg::MuBi4True |->
+                (lc_dft_en_i == lc_ctrl_pkg::On && lc_hw_debug_en_i == lc_ctrl_pkg::On),
+                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
 
-  `ASSERT(RomIntgChkDisFalse_A,
-          rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
-          (lc_dft_en_i !== lc_ctrl_pkg::On ||
-           lc_hw_debug_en_i !== lc_ctrl_pkg::On),
-          clk_i,
-          reset_or_disable)
+  `ASYNC_ASSERT(RomIntgChkDisFalse_A,
+                rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
+                (lc_dft_en_i !== lc_ctrl_pkg::On || lc_hw_debug_en_i !== lc_ctrl_pkg::On),
+                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
 
-  // For any assertions involving state transitions, also allow cases where the fsm
-  // transitions to an invalid state, since we inject invalid encodings at random.
+  // check rom_intg_chk_ok
+  // rom_ctrl_i go through cdc. So use synchronous assertion.
+  // rom_intg_chk_ok can be any values.
+  `ASYNC_ASSERT(RomIntgChkOkTrue_A,
+                rom_intg_chk_ok == prim_mubi_pkg::MuBi4True |->
+                (rom_intg_chk_dis == prim_mubi_pkg::MuBi4True &&
+                 rom_ctrl_done_i == prim_mubi_pkg::MuBi4True) ||
+                (rom_ctrl_done_i == prim_mubi_pkg::MuBi4True &&
+                 rom_ctrl_good_i == prim_mubi_pkg::MuBi4True),
+                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
+                reset_or_disable)
 
-  // Check that unless rom_intg_chk_done is mubi true the fast state machine will
-  // stay in FastPwrStateRomCheckDone.
-  `ASSERT(RomBlockCheckGoodState_A,
-          rom_intg_chk_done != prim_mubi_pkg::MuBi4True &&
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone ||
-          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
-          clk_i,
-          reset_or_disable)
+  `ASYNC_ASSERT(RomIntgChkOkFalse_A,
+                rom_intg_chk_ok != prim_mubi_pkg::MuBi4True |->
+                (rom_intg_chk_dis == prim_mubi_pkg::MuBi4False ||
+                 rom_ctrl_done_i != prim_mubi_pkg::MuBi4True) &&
+                (rom_ctrl_done_i != prim_mubi_pkg::MuBi4True ||
+                 rom_ctrl_good_i != prim_mubi_pkg::MuBi4True),
+                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
+                reset_or_disable)
 
-  `ASSERT(RomAllowCheckGoodState_A,
-          rom_intg_chk_done == prim_mubi_pkg::MuBi4True &&
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood ||
-          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
-          clk_i,
-          reset_or_disable)
-
-  // Check that unless rom_intg_chk_good is mubi true or rom_intg_chk_dis is mubi true
-  // the fast state machine will stay in FastPwrStateRomCheckGood.
-  `ASSERT(RomBlockActiveState_A,
-          rom_intg_chk_good != prim_mubi_pkg::MuBi4True &&
-          rom_intg_chk_dis != prim_mubi_pkg::MuBi4True &&
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood ||
-          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
-          clk_i,
-          reset_or_disable)
-
-  `ASSERT(RomAllowActiveState_A,
-          (rom_intg_chk_good == prim_mubi_pkg::MuBi4True ||
-           rom_intg_chk_dis == prim_mubi_pkg::MuBi4True) &&
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
-          fast_state == pwrmgr_pkg::FastPwrStateActive ||
-          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
-          clk_i,
-          reset_or_disable)
+  `undef ASYNC_ASSERT
 
   // pwr_rst_o.rstreqs checker
   // sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc

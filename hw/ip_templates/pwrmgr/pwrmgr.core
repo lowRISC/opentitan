@@ -10,7 +10,6 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:esc
-      - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
       - lowrisc:prim:all
       - lowrisc:ip:rom_ctrl_pkg
