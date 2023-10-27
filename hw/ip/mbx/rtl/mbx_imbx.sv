@@ -137,12 +137,6 @@ module mbx_imbx #(
   assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
   assign imbx_status_busy_o        = imbx_set_busy;
 
-  // Generate host interrupt
-  //   on sys_write go, when host enters state to process the received objects
-  //   on abort
-  assign imbx_irq_ready_o = mbx_read;
-  assign imbx_irq_abort_o = mbx_sys_abort;
-
   mbx_fsm #(
     .CfgOmbx ( 0 )
   ) u_mbxfsm(
@@ -163,6 +157,8 @@ module mbx_imbx #(
     .mbx_sys_abort_o           ( mbx_sys_abort                ),
     .mbx_ready_update_o        (                              ),
     .mbx_ready_o               (                              ),
+    .mbx_irq_ready_o           ( imbx_irq_ready_o             ),
+    .mbx_irq_abort_o           ( imbx_irq_abort_o             ),
     .mbx_state_error_o         ( imbx_state_error_o           )
   );
 
