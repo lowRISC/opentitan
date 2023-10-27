@@ -22,7 +22,7 @@ package(default_visibility = ["//visibility:public"])
 # Dummy partition used in `otp_image_consts` targets.
 otp_json(
     name = "otp_json_baseline",
-    seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+    seed = "94259314771464387",
 )
 
 # Create an overlay for the alert_handler digest.
