@@ -1093,6 +1093,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
     CONST.LCV.DEV,
     CONST.LCV.PROD,
     CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
 )
 
 [
@@ -1130,6 +1131,82 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
 test_suite(
     name = "flash_ctrl_info_access_lc_states",
     tests = ["flash_ctrl_info_access_lc_{}".format(lc_state.lower()) for lc_state, _ in _FLASH_CTRL_INFO_ACCESS_LC_STATES],
+)
+
+_FLASH_CTRL_INFO_ACCESS_PER = [
+    "dev",
+    "prod",
+    "prod_end",
+]
+
+otp_json(
+    name = "flash_info_access_otp_json_secret2_locked_overlay",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+[
+    otp_image(
+        name = "flash_info_access_otp_img_{}_secret2_locked".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":flash_info_access_otp_json_secret2_locked_overlay"],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in _FLASH_CTRL_INFO_ACCESS_PER
+]
+
+[
+    bitstream_splice(
+        name = "flash_ctrl_info_access_{}_secret2_locked_bitstream".format(lc_state),
+        src = "//hw/bitstream:test_rom",
+        data = ":flash_info_access_otp_img_{}_secret2_locked".format(lc_state),
+        meminfo = "//hw/bitstream:otp_mmi",
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in _FLASH_CTRL_INFO_ACCESS_PER
+]
+
+[
+    opentitan_test(
+        name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
+        srcs = ["flash_ctrl_info_access_lc.c"],
+        cw310 = new_cw310_params(
+            bitstream = ":flash_ctrl_info_access_{}_secret2_locked_bitstream".format(lc_state),
+        ),
+        dv = new_dv_params(
+            otp = ":flash_info_access_otp_img_{}_secret2_locked".format(lc_state),
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:isr_testutils",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rv_plic_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state in _FLASH_CTRL_INFO_ACCESS_PER
+]
+
+test_suite(
+    name = "flash_ctrl_info_access_lc_states_personalized",
+    tests = ["flash_ctrl_info_access_lc_{}_personalized".format(lc_state) for lc_state in _FLASH_CTRL_INFO_ACCESS_PER],
 )
 
 opentitan_test(
