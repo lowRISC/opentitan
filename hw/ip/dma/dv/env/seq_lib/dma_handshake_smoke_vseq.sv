@@ -23,7 +23,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
-      handshake == 1'b1; // Enable hardware handhake mode
+      handshake == 1'b1; // Enable hardware handshake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
       clear_int_src == 0;) // Disable clearing of FIFO interrupt
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
