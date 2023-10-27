@@ -976,6 +976,26 @@ interface chip_if;
                                    `TOP_HIER.soc_intr_async_i,
                                    soc_proxy_reg_pkg::NumExternalIrqs)
 
+  // Signal probe function for `soc_fatal_alert_req` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_req,
+                                   `TOP_HIER.soc_fatal_alert_req_i,
+                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
+
+  // Signal probe function for `soc_fatal_alert_rsp` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_rsp,
+                                   `TOP_HIER.soc_fatal_alert_rsp_o,
+                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
+
+  // Signal probe function for `soc_recov_alert_req` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_req,
+                                   `TOP_HIER.soc_recov_alert_req_i,
+                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
+
+  // Signal probe function for `soc_recov_alert_rsp` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_rsp,
+                                   `TOP_HIER.soc_recov_alert_rsp_o,
+                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
+
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,
                                    `TOP_HIER.soc_rst_req_async_i,

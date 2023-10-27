@@ -2557,7 +2557,7 @@
                  - In SW, ensure that the reset cause is an escalation by Alert Handler.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_soc_proxy_external_alerts"]
     }
     {
       name: chip_sw_soc_proxy_external_wakeup_requests

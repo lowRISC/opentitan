@@ -1679,6 +1679,20 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "soc_proxy_external_alerts",
+    srcs = ["soc_proxy_external_alerts.c"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:alert_handler",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:soc_proxy",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
