@@ -171,8 +171,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_bus_integ_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -198,8 +197,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_init_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -225,8 +223,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_escalated (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -252,8 +249,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_scr_key_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -279,8 +275,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_scr_key_seed_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -306,8 +301,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_status_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -334,8 +328,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_exec_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -365,8 +358,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .RESVAL  (4'h9)
   ) u_exec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -393,8 +385,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -436,8 +427,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_ctrl_renew_scr_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -464,8 +454,7 @@ module sram_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_ctrl_init (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

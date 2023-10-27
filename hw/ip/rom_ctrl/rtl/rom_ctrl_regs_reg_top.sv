@@ -171,8 +171,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_fatal_alert_cause_checker_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -198,8 +197,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_fatal_alert_cause_integrity_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -227,8 +225,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -256,8 +253,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -285,8 +281,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -314,8 +309,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -343,8 +337,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -372,8 +365,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -401,8 +393,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -430,8 +421,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_digest_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -459,8 +449,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -488,8 +477,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -517,8 +505,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -546,8 +533,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -575,8 +561,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -604,8 +589,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -633,8 +617,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -662,8 +645,7 @@ module rom_ctrl_regs_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_exp_digest_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

@@ -202,8 +202,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr0_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -229,8 +228,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr0_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -256,8 +254,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr0_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -283,8 +280,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (10'h0)
   ) u_csr0_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -310,8 +306,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (11'h0)
   ) u_csr0_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -339,8 +334,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (7'h0)
   ) u_csr1_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -366,8 +360,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr1_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -393,8 +386,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (7'h0)
   ) u_csr1_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -420,8 +412,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr1_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -447,8 +438,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_csr1_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -475,8 +465,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -504,8 +493,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h0)
   ) u_csr3_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -531,8 +519,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (10'h0)
   ) u_csr3_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -558,8 +545,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -585,8 +571,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -612,8 +597,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -639,8 +623,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -666,8 +649,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -693,8 +675,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -720,8 +701,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr3_field8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -749,8 +729,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (10'h0)
   ) u_csr4_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -776,8 +755,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr4_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -803,8 +781,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr4_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -830,8 +807,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr4_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -859,8 +835,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (6'h0)
   ) u_csr5_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -886,8 +861,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_csr5_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -913,8 +887,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr5_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -940,8 +913,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h0)
   ) u_csr5_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -967,8 +939,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr5_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -994,8 +965,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr5_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1021,8 +991,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_csr5_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1050,8 +1019,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (10'h0)
   ) u_csr6_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1077,8 +1045,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr6_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1104,8 +1071,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr6_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1131,8 +1097,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_csr6_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1160,8 +1125,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (6'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (6'h0)
   ) u_csr7_field0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1187,8 +1151,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h0)
   ) u_csr7_field1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1214,8 +1177,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr7_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1241,8 +1203,7 @@ module otp_ctrl_prim_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_csr7_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

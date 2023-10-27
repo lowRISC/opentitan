@@ -1558,8 +1558,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1585,8 +1584,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1612,8 +1610,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1639,8 +1636,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_rx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1666,8 +1662,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1693,8 +1688,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_generic_tx_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1720,8 +1714,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_upload_cmdfifo_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1747,8 +1740,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_upload_payload_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1774,8 +1766,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_upload_payload_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1801,8 +1792,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_readbuf_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1828,8 +1818,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_readbuf_flip (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1855,8 +1844,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_state_tpm_header_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1884,8 +1872,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1911,8 +1898,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1938,8 +1924,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1965,8 +1950,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_rx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1992,8 +1976,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2019,8 +2002,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_generic_tx_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2046,8 +2028,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_upload_cmdfifo_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2073,8 +2054,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_upload_payload_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2100,8 +2080,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_upload_payload_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2127,8 +2106,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_readbuf_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2154,8 +2132,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_readbuf_flip (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2181,8 +2158,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intr_enable_tpm_header_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2427,8 +2403,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_control_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2454,8 +2429,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h1)
   ) u_control_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2481,8 +2455,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_control_rst_txfifo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2508,8 +2481,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_control_rst_rxfifo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2535,8 +2507,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_control_sram_clk_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2564,8 +2535,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_cpol (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2591,8 +2561,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_cpha (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2618,8 +2587,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_tx_order (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2645,8 +2613,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_rx_order (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2672,8 +2639,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h7f),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h7f)
   ) u_cfg_timer_v (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2699,8 +2665,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_addr_4b_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2726,8 +2691,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cfg_mailbox_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2755,8 +2719,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h80),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h80)
   ) u_fifo_level_rxlvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2782,8 +2745,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_fifo_level_txlvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2950,8 +2912,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_rxf_ptr_rptr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2977,8 +2938,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_rxf_ptr_wptr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3006,8 +2966,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_txf_ptr_rptr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3033,8 +2992,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_txf_ptr_wptr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3062,8 +3020,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_rxf_addr_base (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3089,8 +3046,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h1fc),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h1fc)
   ) u_rxf_addr_limit (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3118,8 +3074,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h200),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h200)
   ) u_txf_addr_base (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3145,8 +3100,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h3fc),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h3fc)
   ) u_txf_addr_limit (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3174,8 +3128,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intercept_en_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3201,8 +3154,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intercept_en_jedec (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3228,8 +3180,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intercept_en_sfdp (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3255,8 +3206,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_intercept_en_mbx (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3337,8 +3287,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h7f),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h7f)
   ) u_jedec_cc_cc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3364,8 +3313,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_jedec_cc_num_cc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3393,8 +3341,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_jedec_id_id (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3420,8 +3367,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_jedec_id_mf (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3448,8 +3394,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (10'h0)
   ) u_read_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3476,8 +3421,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_mailbox_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3505,8 +3449,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (5'h0)
   ) u_upload_status_cmdfifo_depth (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3532,8 +3475,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_upload_status_cmdfifo_notempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3559,8 +3501,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (5'h0)
   ) u_upload_status_addrfifo_depth (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3586,8 +3527,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_upload_status_addrfifo_notempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3615,8 +3555,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (9'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (9'h0)
   ) u_upload_status2_payload_depth (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3642,8 +3581,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_upload_status2_payload_start_idx (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3704,8 +3642,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3731,8 +3668,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3758,8 +3694,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3785,8 +3720,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3812,8 +3746,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3839,8 +3772,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3866,8 +3798,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3893,8 +3824,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3920,8 +3850,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3947,8 +3876,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3974,8 +3902,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4001,8 +3928,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4028,8 +3954,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4055,8 +3980,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4082,8 +4006,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4109,8 +4032,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4136,8 +4058,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4163,8 +4084,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4190,8 +4110,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4217,8 +4136,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4244,8 +4162,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4271,8 +4188,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4298,8 +4214,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4325,8 +4240,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4352,8 +4266,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4379,8 +4292,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4406,8 +4318,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4433,8 +4344,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4460,8 +4370,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4487,8 +4396,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4514,8 +4422,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4541,8 +4448,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_0_filter_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4571,8 +4477,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4598,8 +4503,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4625,8 +4529,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4652,8 +4555,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4679,8 +4581,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4706,8 +4607,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4733,8 +4633,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4760,8 +4659,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4787,8 +4685,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4814,8 +4711,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4841,8 +4737,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4868,8 +4763,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4895,8 +4789,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4922,8 +4815,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4949,8 +4841,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4976,8 +4867,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5003,8 +4893,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5030,8 +4919,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5057,8 +4945,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5084,8 +4971,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5111,8 +4997,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5138,8 +5023,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5165,8 +5049,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5192,8 +5075,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5219,8 +5101,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5246,8 +5127,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5273,8 +5153,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5300,8 +5179,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5327,8 +5205,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5354,8 +5231,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5381,8 +5257,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5408,8 +5283,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_1_filter_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5438,8 +5312,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5465,8 +5338,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5492,8 +5364,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5519,8 +5390,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5546,8 +5416,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5573,8 +5442,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5600,8 +5468,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5627,8 +5494,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5654,8 +5520,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5681,8 +5546,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5708,8 +5572,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5735,8 +5598,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5762,8 +5624,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5789,8 +5650,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5816,8 +5676,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5843,8 +5702,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5870,8 +5728,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5897,8 +5754,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5924,8 +5780,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5951,8 +5806,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5978,8 +5832,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6005,8 +5858,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6032,8 +5884,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6059,8 +5910,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6086,8 +5936,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6113,8 +5962,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6140,8 +5988,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6167,8 +6014,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6194,8 +6040,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6221,8 +6066,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6248,8 +6092,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6275,8 +6118,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_2_filter_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6305,8 +6147,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6332,8 +6173,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6359,8 +6199,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6386,8 +6225,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6413,8 +6251,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6440,8 +6277,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6467,8 +6303,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6494,8 +6329,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_103 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6521,8 +6355,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_104 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6548,8 +6381,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_105 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6575,8 +6407,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_106 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6602,8 +6433,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_107 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6629,8 +6459,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_108 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6656,8 +6485,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_109 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6683,8 +6511,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_110 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6710,8 +6537,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_111 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6737,8 +6563,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_112 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6764,8 +6589,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_113 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6791,8 +6615,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_114 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6818,8 +6641,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_115 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6845,8 +6667,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_116 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6872,8 +6693,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_117 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6899,8 +6719,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_118 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6926,8 +6745,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_119 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6953,8 +6771,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_120 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6980,8 +6797,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_121 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7007,8 +6823,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_122 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7034,8 +6849,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_123 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7061,8 +6875,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_124 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7088,8 +6901,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_125 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7115,8 +6927,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_126 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7142,8 +6953,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_3_filter_127 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7172,8 +6982,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_128 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7199,8 +7008,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_129 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7226,8 +7034,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_130 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7253,8 +7060,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_131 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7280,8 +7086,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_132 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7307,8 +7112,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_133 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7334,8 +7138,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_134 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7361,8 +7164,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_135 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7388,8 +7190,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_136 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7415,8 +7216,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_137 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7442,8 +7242,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_138 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7469,8 +7268,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_139 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7496,8 +7294,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_140 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7523,8 +7320,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_141 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7550,8 +7346,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_142 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7577,8 +7372,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_143 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7604,8 +7398,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_144 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7631,8 +7424,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_145 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7658,8 +7450,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_146 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7685,8 +7476,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_147 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7712,8 +7502,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_148 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7739,8 +7528,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_149 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7766,8 +7554,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_150 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7793,8 +7580,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_151 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7820,8 +7606,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_152 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7847,8 +7632,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_153 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7874,8 +7658,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_154 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7901,8 +7684,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_155 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7928,8 +7710,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_156 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7955,8 +7736,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_157 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7982,8 +7762,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_158 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8009,8 +7788,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_4_filter_159 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8039,8 +7817,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_160 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8066,8 +7843,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_161 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8093,8 +7869,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_162 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8120,8 +7895,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_163 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8147,8 +7921,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_164 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8174,8 +7947,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_165 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8201,8 +7973,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_166 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8228,8 +7999,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_167 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8255,8 +8025,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_168 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8282,8 +8051,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_169 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8309,8 +8077,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_170 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8336,8 +8103,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_171 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8363,8 +8129,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_172 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8390,8 +8155,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_173 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8417,8 +8181,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_174 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8444,8 +8207,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_175 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8471,8 +8233,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_176 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8498,8 +8259,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_177 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8525,8 +8285,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_178 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8552,8 +8311,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_179 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8579,8 +8337,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_180 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8606,8 +8363,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_181 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8633,8 +8389,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_182 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8660,8 +8415,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_183 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8687,8 +8441,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_184 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8714,8 +8467,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_185 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8741,8 +8493,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_186 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8768,8 +8519,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_187 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8795,8 +8545,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_188 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8822,8 +8571,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_189 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8849,8 +8597,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_190 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8876,8 +8623,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_5_filter_191 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8906,8 +8652,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_192 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8933,8 +8678,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_193 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8960,8 +8704,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_194 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8987,8 +8730,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_195 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9014,8 +8756,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_196 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9041,8 +8782,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_197 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9068,8 +8808,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_198 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9095,8 +8834,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_199 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9122,8 +8860,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_200 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9149,8 +8886,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_201 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9176,8 +8912,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_202 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9203,8 +8938,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_203 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9230,8 +8964,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_204 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9257,8 +8990,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_205 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9284,8 +9016,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_206 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9311,8 +9042,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_207 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9338,8 +9068,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_208 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9365,8 +9094,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_209 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9392,8 +9120,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_210 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9419,8 +9146,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_211 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9446,8 +9172,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_212 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9473,8 +9198,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_213 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9500,8 +9224,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_214 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9527,8 +9250,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_215 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9554,8 +9276,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_216 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9581,8 +9302,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_217 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9608,8 +9328,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_218 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9635,8 +9354,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_219 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9662,8 +9380,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_220 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9689,8 +9406,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_221 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9716,8 +9432,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_222 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9743,8 +9458,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_6_filter_223 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9773,8 +9487,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_224 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9800,8 +9513,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_225 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9827,8 +9539,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_226 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9854,8 +9565,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_227 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9881,8 +9591,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_228 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9908,8 +9617,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_229 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9935,8 +9643,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_230 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9962,8 +9669,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_231 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9989,8 +9695,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_232 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10016,8 +9721,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_233 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10043,8 +9747,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_234 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10070,8 +9773,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_235 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10097,8 +9799,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_236 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10124,8 +9825,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_237 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10151,8 +9851,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_238 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10178,8 +9877,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_239 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10205,8 +9903,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_240 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10232,8 +9929,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_241 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10259,8 +9955,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_242 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10286,8 +9981,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_243 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10313,8 +10007,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_244 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10340,8 +10033,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_245 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10367,8 +10059,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_246 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10394,8 +10085,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_247 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10421,8 +10111,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_248 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10448,8 +10137,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_249 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10475,8 +10163,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_250 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10502,8 +10189,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_251 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10529,8 +10215,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_252 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10556,8 +10241,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_253 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10583,8 +10267,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_254 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10610,8 +10293,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_filter_7_filter_255 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10638,8 +10320,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_addr_swap_mask (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10666,8 +10347,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_addr_swap_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10694,8 +10374,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_payload_swap_mask (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10722,8 +10401,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_payload_swap_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10752,8 +10430,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_0_opcode_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10779,8 +10456,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_0_addr_mode_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10806,8 +10482,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_addr_swap_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10833,8 +10508,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_mbyte_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10860,8 +10534,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_0_dummy_size_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10887,8 +10560,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_dummy_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10914,8 +10586,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_0_payload_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10941,8 +10612,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_payload_dir_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10968,8 +10638,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_payload_swap_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10995,8 +10664,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_upload_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11022,8 +10690,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_busy_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11049,8 +10716,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_0_valid_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11079,8 +10745,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_1_opcode_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11106,8 +10771,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_1_addr_mode_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11133,8 +10797,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_addr_swap_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11160,8 +10823,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_mbyte_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11187,8 +10849,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_1_dummy_size_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11214,8 +10875,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_dummy_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11241,8 +10901,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_1_payload_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11268,8 +10927,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_payload_dir_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11295,8 +10953,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_payload_swap_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11322,8 +10979,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_upload_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11349,8 +11005,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_busy_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11376,8 +11031,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_1_valid_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11406,8 +11060,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_2_opcode_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11433,8 +11086,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_2_addr_mode_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11460,8 +11112,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_addr_swap_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11487,8 +11138,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_mbyte_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11514,8 +11164,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_2_dummy_size_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11541,8 +11190,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_dummy_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11568,8 +11216,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_2_payload_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11595,8 +11242,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_payload_dir_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11622,8 +11268,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_payload_swap_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11649,8 +11294,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_upload_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11676,8 +11320,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_busy_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11703,8 +11346,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_2_valid_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11733,8 +11375,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_3_opcode_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11760,8 +11401,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_3_addr_mode_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11787,8 +11427,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_addr_swap_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11814,8 +11453,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_mbyte_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11841,8 +11479,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_3_dummy_size_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11868,8 +11505,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_dummy_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11895,8 +11531,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_3_payload_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11922,8 +11557,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_payload_dir_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11949,8 +11583,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_payload_swap_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11976,8 +11609,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_upload_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12003,8 +11635,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_busy_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12030,8 +11661,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_3_valid_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12060,8 +11690,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_4_opcode_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12087,8 +11716,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_4_addr_mode_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12114,8 +11742,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_addr_swap_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12141,8 +11768,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_mbyte_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12168,8 +11794,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_4_dummy_size_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12195,8 +11820,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_dummy_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12222,8 +11846,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_4_payload_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12249,8 +11872,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_payload_dir_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12276,8 +11898,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_payload_swap_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12303,8 +11924,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_upload_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12330,8 +11950,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_busy_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12357,8 +11976,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_4_valid_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12387,8 +12005,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_5_opcode_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12414,8 +12031,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_5_addr_mode_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12441,8 +12057,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_addr_swap_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12468,8 +12083,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_mbyte_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12495,8 +12109,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_5_dummy_size_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12522,8 +12135,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_dummy_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12549,8 +12161,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_5_payload_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12576,8 +12187,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_payload_dir_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12603,8 +12213,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_payload_swap_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12630,8 +12239,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_upload_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12657,8 +12265,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_busy_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12684,8 +12291,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_5_valid_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12714,8 +12320,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_6_opcode_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12741,8 +12346,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_6_addr_mode_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12768,8 +12372,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_addr_swap_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12795,8 +12398,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_mbyte_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12822,8 +12424,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_6_dummy_size_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12849,8 +12450,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_dummy_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12876,8 +12476,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_6_payload_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12903,8 +12502,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_payload_dir_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12930,8 +12528,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_payload_swap_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12957,8 +12554,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_upload_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12984,8 +12580,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_busy_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13011,8 +12606,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_6_valid_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13041,8 +12635,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_7_opcode_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13068,8 +12661,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_7_addr_mode_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13095,8 +12687,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_addr_swap_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13122,8 +12713,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_mbyte_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13149,8 +12739,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_7_dummy_size_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13176,8 +12765,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_dummy_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13203,8 +12791,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_7_payload_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13230,8 +12817,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_payload_dir_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13257,8 +12843,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_payload_swap_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13284,8 +12869,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_upload_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13311,8 +12895,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_busy_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13338,8 +12921,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_7_valid_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13368,8 +12950,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_8_opcode_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13395,8 +12976,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_8_addr_mode_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13422,8 +13002,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_addr_swap_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13449,8 +13028,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_mbyte_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13476,8 +13054,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_8_dummy_size_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13503,8 +13080,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_dummy_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13530,8 +13106,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_8_payload_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13557,8 +13132,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_payload_dir_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13584,8 +13158,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_payload_swap_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13611,8 +13184,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_upload_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13638,8 +13210,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_busy_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13665,8 +13236,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_8_valid_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13695,8 +13265,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_9_opcode_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13722,8 +13291,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_9_addr_mode_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13749,8 +13317,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_addr_swap_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13776,8 +13343,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_mbyte_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13803,8 +13369,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_9_dummy_size_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13830,8 +13395,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_dummy_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13857,8 +13421,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_9_payload_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13884,8 +13447,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_payload_dir_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13911,8 +13473,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_payload_swap_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13938,8 +13499,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_upload_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13965,8 +13525,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_busy_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13992,8 +13551,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_9_valid_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14022,8 +13580,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_10_opcode_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14049,8 +13606,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_10_addr_mode_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14076,8 +13632,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_addr_swap_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14103,8 +13658,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_mbyte_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14130,8 +13684,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_10_dummy_size_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14157,8 +13710,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_dummy_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14184,8 +13736,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_10_payload_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14211,8 +13762,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_payload_dir_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14238,8 +13788,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_payload_swap_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14265,8 +13814,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_upload_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14292,8 +13840,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_busy_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14319,8 +13866,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_10_valid_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14349,8 +13895,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_11_opcode_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14376,8 +13921,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_11_addr_mode_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14403,8 +13947,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_addr_swap_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14430,8 +13973,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_mbyte_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14457,8 +13999,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_11_dummy_size_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14484,8 +14025,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_dummy_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14511,8 +14051,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_11_payload_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14538,8 +14077,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_payload_dir_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14565,8 +14103,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_payload_swap_en_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14592,8 +14129,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_upload_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14619,8 +14155,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_busy_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14646,8 +14181,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_11_valid_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14676,8 +14210,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_12_opcode_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14703,8 +14236,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_12_addr_mode_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14730,8 +14262,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_addr_swap_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14757,8 +14288,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_mbyte_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14784,8 +14314,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_12_dummy_size_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14811,8 +14340,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_dummy_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14838,8 +14366,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_12_payload_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14865,8 +14392,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_payload_dir_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14892,8 +14418,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_payload_swap_en_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14919,8 +14444,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_upload_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14946,8 +14470,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_busy_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14973,8 +14496,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_12_valid_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15003,8 +14525,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_13_opcode_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15030,8 +14551,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_13_addr_mode_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15057,8 +14577,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_addr_swap_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15084,8 +14603,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_mbyte_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15111,8 +14629,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_13_dummy_size_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15138,8 +14655,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_dummy_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15165,8 +14681,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_13_payload_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15192,8 +14707,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_payload_dir_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15219,8 +14733,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_payload_swap_en_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15246,8 +14759,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_upload_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15273,8 +14785,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_busy_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15300,8 +14811,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_13_valid_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15330,8 +14840,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_14_opcode_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15357,8 +14866,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_14_addr_mode_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15384,8 +14892,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_addr_swap_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15411,8 +14918,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_mbyte_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15438,8 +14944,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_14_dummy_size_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15465,8 +14970,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_dummy_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15492,8 +14996,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_14_payload_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15519,8 +15022,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_payload_dir_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15546,8 +15048,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_payload_swap_en_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15573,8 +15074,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_upload_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15600,8 +15100,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_busy_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15627,8 +15126,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_14_valid_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15657,8 +15155,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_15_opcode_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15684,8 +15181,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_15_addr_mode_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15711,8 +15207,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_addr_swap_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15738,8 +15233,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_mbyte_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15765,8 +15259,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_15_dummy_size_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15792,8 +15285,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_dummy_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15819,8 +15311,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_15_payload_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15846,8 +15337,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_payload_dir_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15873,8 +15363,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_payload_swap_en_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15900,8 +15389,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_upload_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15927,8 +15415,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_busy_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15954,8 +15441,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_15_valid_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15984,8 +15470,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_16_opcode_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16011,8 +15496,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_16_addr_mode_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16038,8 +15522,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_addr_swap_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16065,8 +15548,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_mbyte_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16092,8 +15574,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_16_dummy_size_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16119,8 +15600,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_dummy_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16146,8 +15626,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_16_payload_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16173,8 +15652,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_payload_dir_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16200,8 +15678,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_payload_swap_en_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16227,8 +15704,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_upload_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16254,8 +15730,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_busy_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16281,8 +15756,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_16_valid_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16311,8 +15785,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_17_opcode_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16338,8 +15811,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_17_addr_mode_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16365,8 +15837,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_addr_swap_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16392,8 +15863,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_mbyte_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16419,8 +15889,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_17_dummy_size_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16446,8 +15915,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_dummy_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16473,8 +15941,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_17_payload_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16500,8 +15967,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_payload_dir_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16527,8 +15993,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_payload_swap_en_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16554,8 +16019,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_upload_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16581,8 +16045,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_busy_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16608,8 +16071,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_17_valid_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16638,8 +16100,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_18_opcode_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16665,8 +16126,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_18_addr_mode_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16692,8 +16152,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_addr_swap_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16719,8 +16178,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_mbyte_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16746,8 +16204,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_18_dummy_size_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16773,8 +16230,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_dummy_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16800,8 +16256,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_18_payload_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16827,8 +16282,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_payload_dir_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16854,8 +16308,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_payload_swap_en_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16881,8 +16334,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_upload_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16908,8 +16360,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_busy_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16935,8 +16386,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_18_valid_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16965,8 +16415,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_19_opcode_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16992,8 +16441,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_19_addr_mode_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17019,8 +16467,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_addr_swap_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17046,8 +16493,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_mbyte_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17073,8 +16519,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_19_dummy_size_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17100,8 +16545,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_dummy_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17127,8 +16571,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_19_payload_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17154,8 +16597,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_payload_dir_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17181,8 +16623,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_payload_swap_en_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17208,8 +16649,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_upload_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17235,8 +16675,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_busy_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17262,8 +16701,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_19_valid_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17292,8 +16730,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_20_opcode_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17319,8 +16756,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_20_addr_mode_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17346,8 +16782,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_addr_swap_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17373,8 +16808,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_mbyte_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17400,8 +16834,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_20_dummy_size_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17427,8 +16860,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_dummy_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17454,8 +16886,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_20_payload_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17481,8 +16912,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_payload_dir_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17508,8 +16938,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_payload_swap_en_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17535,8 +16964,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_upload_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17562,8 +16990,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_busy_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17589,8 +17016,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_20_valid_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17619,8 +17045,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_21_opcode_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17646,8 +17071,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_21_addr_mode_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17673,8 +17097,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_addr_swap_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17700,8 +17123,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_mbyte_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17727,8 +17149,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_21_dummy_size_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17754,8 +17175,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_dummy_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17781,8 +17201,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_21_payload_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17808,8 +17227,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_payload_dir_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17835,8 +17253,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_payload_swap_en_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17862,8 +17279,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_upload_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17889,8 +17305,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_busy_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17916,8 +17331,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_21_valid_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17946,8 +17360,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_22_opcode_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17973,8 +17386,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_22_addr_mode_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18000,8 +17412,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_addr_swap_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18027,8 +17438,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_mbyte_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18054,8 +17464,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_22_dummy_size_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18081,8 +17490,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_dummy_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18108,8 +17516,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_22_payload_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18135,8 +17542,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_payload_dir_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18162,8 +17568,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_payload_swap_en_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18189,8 +17594,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_upload_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18216,8 +17620,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_busy_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18243,8 +17646,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_22_valid_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18273,8 +17675,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_23_opcode_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18300,8 +17701,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (2'h0)
   ) u_cmd_info_23_addr_mode_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18327,8 +17727,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_addr_swap_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18354,8 +17753,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_mbyte_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18381,8 +17779,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h7)
   ) u_cmd_info_23_dummy_size_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18408,8 +17805,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_dummy_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18435,8 +17831,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cmd_info_23_payload_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18462,8 +17857,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_payload_dir_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18489,8 +17883,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_payload_swap_en_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18516,8 +17909,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_upload_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18543,8 +17935,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_busy_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18570,8 +17961,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_23_valid_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18599,8 +17989,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_en4b_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18626,8 +18015,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_en4b_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18655,8 +18043,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_ex4b_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18682,8 +18069,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_ex4b_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18711,8 +18097,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_wren_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18738,8 +18123,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_wren_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18767,8 +18151,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_cmd_info_wrdi_opcode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18794,8 +18177,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cmd_info_wrdi_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18823,8 +18205,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_cap_rev (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18850,8 +18231,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_tpm_cap_locality (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18877,8 +18257,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h6),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h6)
   ) u_tpm_cap_max_wr_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18904,8 +18283,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h6),
-    .Mubi    (1'b0)
+    .RESVAL  (3'h6)
   ) u_tpm_cap_max_rd_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18933,8 +18311,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_cfg_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18960,8 +18337,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_cfg_tpm_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18987,8 +18363,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_cfg_hw_reg_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19014,8 +18389,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_cfg_tpm_reg_chk_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19041,8 +18415,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_cfg_invalid_locality (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19070,8 +18443,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_tpm_status_cmdaddr_notempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19097,8 +18469,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (7'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (7'h0)
   ) u_tpm_status_wrfifo_depth (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19127,8 +18498,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_access_0_access_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19154,8 +18524,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_access_0_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19181,8 +18550,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_access_0_access_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19208,8 +18576,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_access_0_access_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19237,8 +18604,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_access_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19265,8 +18631,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_tpm_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19293,8 +18658,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_tpm_intf_capability (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19321,8 +18685,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_tpm_int_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19349,8 +18712,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_int_vector (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19377,8 +18739,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_tpm_int_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19406,8 +18767,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_tpm_did_vid_vid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19433,8 +18793,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (16'h0)
   ) u_tpm_did_vid_did (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19461,8 +18820,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (8'h0)
   ) u_tpm_rid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

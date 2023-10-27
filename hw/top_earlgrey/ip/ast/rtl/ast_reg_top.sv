@@ -255,8 +255,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_rega0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -283,8 +282,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1)
   ) u_rega1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -311,8 +309,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h2),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h2)
   ) u_rega2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -339,8 +336,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h3),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h3)
   ) u_rega3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -367,8 +363,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h4),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h4)
   ) u_rega4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -395,8 +390,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h5),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h5)
   ) u_rega5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -423,8 +417,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h6),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h6)
   ) u_rega6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -451,8 +444,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h7),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h7)
   ) u_rega7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -479,8 +471,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h8),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h8)
   ) u_rega8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -507,8 +498,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h9),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h9)
   ) u_rega9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -535,8 +525,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'ha),
-    .Mubi    (1'b0)
+    .RESVAL  (32'ha)
   ) u_rega10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -563,8 +552,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hb),
-    .Mubi    (1'b0)
+    .RESVAL  (32'hb)
   ) u_rega11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -591,8 +579,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hc),
-    .Mubi    (1'b0)
+    .RESVAL  (32'hc)
   ) u_rega12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -619,8 +606,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hd),
-    .Mubi    (1'b0)
+    .RESVAL  (32'hd)
   ) u_rega13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -647,8 +633,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'he),
-    .Mubi    (1'b0)
+    .RESVAL  (32'he)
   ) u_rega14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -675,8 +660,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'hf),
-    .Mubi    (1'b0)
+    .RESVAL  (32'hf)
   ) u_rega15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -703,8 +687,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h10),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h10)
   ) u_rega16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -731,8 +714,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h11),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h11)
   ) u_rega17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -759,8 +741,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h12),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h12)
   ) u_rega18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -787,8 +768,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h13),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h13)
   ) u_rega19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -815,8 +795,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h14),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h14)
   ) u_rega20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -843,8 +822,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h15),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h15)
   ) u_rega21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -871,8 +849,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h16),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h16)
   ) u_rega22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -899,8 +876,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h17),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h17)
   ) u_rega23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -927,8 +903,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h18),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h18)
   ) u_rega24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -955,8 +930,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h19),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h19)
   ) u_rega25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -983,8 +957,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1a),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1a)
   ) u_rega26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1011,8 +984,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1b),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1b)
   ) u_rega27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1039,8 +1011,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h1c),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1c)
   ) u_rega28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1067,8 +1038,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1d),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1d)
   ) u_rega29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1095,8 +1065,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1e),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1e)
   ) u_rega30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1123,8 +1092,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1f),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h1f)
   ) u_rega31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1151,8 +1119,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h20),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h20)
   ) u_rega32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1179,8 +1146,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h21),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h21)
   ) u_rega33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1207,8 +1173,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h22),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h22)
   ) u_rega34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1235,8 +1200,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h23),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h23)
   ) u_rega35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1263,8 +1227,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h24),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h24)
   ) u_rega36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1291,8 +1254,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h25),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h25)
   ) u_rega37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1340,8 +1302,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_regb_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1369,8 +1330,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_regb_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1398,8 +1358,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_regb_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1427,8 +1386,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_regb_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1456,8 +1414,7 @@ module ast_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (32'h0)
   ) u_regb_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

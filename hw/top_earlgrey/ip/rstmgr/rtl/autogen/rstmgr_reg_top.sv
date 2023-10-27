@@ -261,8 +261,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .RESVAL  (4'h9)
   ) u_reset_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -290,8 +289,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_reset_info_por (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -318,8 +316,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -346,8 +343,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_reset_info_sw_reset (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -374,8 +370,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (5'h0)
   ) u_reset_info_hw_req (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -403,8 +398,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_alert_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -435,8 +429,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -463,8 +456,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -524,8 +516,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_cpu_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -556,8 +547,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_cpu_info_ctrl_en (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -584,8 +574,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h0)
   ) u_cpu_info_ctrl_index (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -646,8 +635,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -675,8 +663,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -704,8 +691,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -733,8 +719,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -762,8 +747,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -791,8 +775,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -820,8 +803,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -849,8 +831,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -881,8 +862,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -913,8 +893,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -945,8 +924,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -977,8 +955,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1009,8 +986,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1041,8 +1017,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1073,8 +1048,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1105,8 +1079,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1134,8 +1107,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_err_code_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1161,8 +1133,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_err_code_reset_consistency_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1188,8 +1159,7 @@ module rstmgr_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (1'h0)
   ) u_err_code_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
