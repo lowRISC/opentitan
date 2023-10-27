@@ -1079,9 +1079,11 @@ module dma
 
   // Mux the data for the SHA2 engine. When capturing the data we
   // can use the data from the bus, otherwise the captured data from the flop
-  assign sha2_data.data = capture_return_data? read_return_data_d :
-                                               read_return_data_q;
-  assign sha2_data.mask = req_dst_be_q;
+  //
+  // Note: the SHA2 logic expects the `data` and `mask` fields to be populated from the MSBs down.
+  assign sha2_data.data = {<<8{capture_return_data ? read_return_data_d :
+                                                     read_return_data_q}};
+  assign sha2_data.mask = {<<1{req_dst_be_q}};
 
   // Interrupt logic
   logic test_done_interrupt;
