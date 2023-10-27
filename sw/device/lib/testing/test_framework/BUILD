@@ -225,6 +225,20 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_debugger",
+    srcs = ["ottf_debugger.c"],
+    hdrs = ["ottf_debugger.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+    ],
+)
+
+cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
@@ -246,6 +260,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_debugger",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
     ],
