@@ -556,7 +556,7 @@
         desc: '''
           Software fatal error
         ''',
-        swaccess: "rw1s",
+        swaccess: "rw0c",
         hwaccess: "hro",
         fields: [
           { bits: "3:0",
