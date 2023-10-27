@@ -118,11 +118,22 @@ class dma_seq_item extends uvm_sequence_item;
     if (valid_dma_config) {
       opcode inside {OpcSha256, OpcSha384, OpcSha512} -> per_transfer_width == DmaXfer4BperTxn;
     }
+
+    // TODO: FIFO model and TL-UL adapter are together unable to support partial word reads at
+    // present
+    handshake & direction == DmaRcvData -> per_transfer_width == DmaXfer4BperTxn;
   }
 
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
   constraint sha2_digest_c {
     sha2_digest.size() == 16;
+  }
+
+  // TODO: This is temporary, because presently the DV test bench does not support the clearing
+  // of interrupts. The scoreboard will trigger because it sees TL-UL traffic even for invalid
+  // configurations.
+  constraint clear_int_src_c {
+    handshake -> clear_int_src == 0;
   }
 
   // Constrain array size to number of handshake interrupt signals
@@ -242,11 +253,15 @@ class dma_seq_item extends uvm_sequence_item;
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
     }
 
-    // SHA2 can accept a partial 32-bit word only at the very end of the message being hashed,
-    // so non-final transfers must have a size of 4n. Since 4B/txn mode demands 4n alignment
-    // already, constraining the chunk size is enough to guarantee 4n alignment of the chunk end.
     if (chunk_data_size < total_transfer_size) {
+      // SHA2 can accept a partial 32-bit word only at the very end of the message being hashed,
+      // so non-final transfers must have a size of 4n. Since 4B/txn mode demands 4n alignment
+      // already, constraining the chunk size is enough to guarantee 4n alignment of the chunk end.
       opcode inside {OpcSha256, OpcSha384, OpcSha512} -> chunk_data_size[1:0] == 2'b00;
+
+      // Source and destination addresses must have the same alignment at the start of non-initial
+      // chunks when addresses advance
+      !handshake || auto_inc_buffer -> chunk_data_size[1:0] == 2'b00;
     }
   }
 

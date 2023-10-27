@@ -160,7 +160,7 @@ class dma_generic_vseq extends dma_base_vseq;
 
               // Delay until the chosen number of additional bytes have been transferred
               if (|wait_bytes) begin
-                wait_num_bytes_transfer(bytes_moved + wait_bytes);
+                wait_num_bytes_transfer(bytes_moved + wait_bytes, stop);
               end else begin
                 // Processing still ongoing; parallel task `wait_for_completion` handles termination
                 delay(1);
