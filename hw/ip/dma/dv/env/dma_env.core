@@ -34,6 +34,7 @@ filesets:
       - seq_lib/dma_intr_vseq.sv: {is_include_file: true}
       - seq_lib/dma_memory_stress_vseq.sv: {is_include_file: true}
       - seq_lib/dma_handshake_stress_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
