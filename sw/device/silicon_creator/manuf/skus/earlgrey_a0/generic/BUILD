@@ -175,6 +175,36 @@ opentitan_binary(
     ],
 )
 
+opentitan_binary(
+    name = "ft_personalize_2",
+    testonly = True,
+    srcs = ["ft_personalize_2.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
+    ],
+)
+
 # This is the same as //hw/ip/otp_ctrl/data:img_test_locked* but with *_SW_CFG
 # partitions unprovisioned (and as a result, ROM execution also disabled).
 otp_image(
@@ -199,12 +229,17 @@ opentitan_test(
     cw310 = cw310_jtag_params(
         binaries = {
             ":sram_ft_individualize": "sram_ft_individualize",
+            ":ft_personalize_2": "ft_personalize_2",
         },
         bitstream = ":bitstream_post_cp_test_locked0",
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """
-            --bootstrap={firmware}
             --elf={sram_ft_individualize}
+            --bootstrap={firmware}
+            --secondary-bootstrap={ft_personalize_2}
+            --target-mission-mode-lc-state="prod"
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
             --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
@@ -217,20 +252,13 @@ opentitan_test(
         CONST.LCV.PROD,
     ),
     deps = [
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//sw/device/silicon_creator/manuf/lib:otp_fields",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
