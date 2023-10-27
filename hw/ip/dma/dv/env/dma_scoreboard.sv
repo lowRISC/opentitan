@@ -682,6 +682,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
           exp_dma_err_intr = !dma_config.is_valid_config;
+          // Expect digest to be cleared even if for rejected configurations
+          exp_digest = '{default:0};
           if (cfg.en_cov) begin
             // Sample dma configuration
             cov.config_cg.sample(.dma_config (dma_config),
@@ -895,8 +897,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
 
     for (int i = 0; i < dma_config.total_transfer_size; i++) begin
-      // Convert endianness on 32-bit word from little endian to big endian
-      msg_q[i ^ 3] = get_model_data(asid, addr);
+      msg_q[i] = get_model_data(asid, addr);
       addr++;
     end
 
