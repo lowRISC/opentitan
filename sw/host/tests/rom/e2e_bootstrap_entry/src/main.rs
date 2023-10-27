@@ -39,7 +39,7 @@ struct Opts {
     jedec_id: u8,
 
     /// JEDEC manufacturer product ID.
-    #[arg(long, value_parser = u8::from_str, default_value = "0x29")]
+    #[arg(long, value_parser = u8::from_str, default_value = "0x19")]
     jedec_product: u8,
 
     /// Size of the internal flash.
