@@ -17,18 +17,6 @@ class dma_base_vseq extends cip_base_vseq #(
   // Waive testing of the system bus within this DV environment?
   bit dma_dv_waive_system_bus = 0;
 
-  // Valid address space ID conbinations
-  addr_space_id_t valid_combinations[] = '{
-    '{OtInternalAddr, SocControlAddr},
-    '{OtInternalAddr, SocControlAddr},
-    // TODO remove once SYS support is enabled'{OtInternalAddr, SocSystemAddr},
-    '{OtInternalAddr, OtExtFlashAddr},
-    '{SocControlAddr, OtInternalAddr},
-    '{SocControlAddr, OtInternalAddr},
-    // TODO remove once SYS support is enabled '{SocSystemAddr, OtInternalAddr},
-    '{OtExtFlashAddr, OtInternalAddr},
-    '{OtInternalAddr, OtInternalAddr}
-  };
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
   dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH)) seq_ctn;
@@ -89,6 +77,14 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.fifo_host.init();
     cfg.fifo_ctn.init();
     cfg.fifo_sys.init();
+  endfunction
+
+  // Randomization of DMA configuration and transfer properties; to be overridden in those
+  // derived classes where further constraints are required.
+  virtual function void randomize_item(ref dma_seq_item dma_config);
+    `DV_CHECK_RANDOMIZE_FATAL(dma_config)
+    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
+                              dma_config.convert2string()), UVM_HIGH)
   endfunction
 
   // randomise data in source memory model based on source address space id setting

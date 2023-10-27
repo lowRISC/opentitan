@@ -10,27 +10,24 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_handshake_smoke_vseq)
   `uvm_object_new
 
-  constraint transactions_c {num_txns == valid_combinations.size();}
+  // Limit the number of transfers to keep the smoke test fairly short.
+  constraint transactions_c {num_txns == 8;}
 
-  // Function : Randomize dma_seq_item with valid and random asid combination
-  function void randomize_item(ref dma_seq_item dma_config);
-    int index = $urandom_range(0, valid_combinations.size() - 1);
-    addr_space_id_t valid_combination = valid_combinations[index];
+  // Randomization of DMA configuration and transfer properties
+  virtual function void randomize_item(ref dma_seq_item dma_config);
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
     // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
-      src_asid == valid_combination.src_id;
-      dst_asid == valid_combination.dst_id;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; // Enable hardware handhake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
       clear_int_src == 0;) // Disable clearing of FIFO interrupt
-    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
-                              dma_config.sprint()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
+                              dma_config.convert2string()), UVM_HIGH)
   endfunction
 
   virtual task body();

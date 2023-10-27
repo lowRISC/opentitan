@@ -26,38 +26,33 @@ class dma_memory_smoke_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_memory_smoke_vseq)
   `uvm_object_new
 
-  constraint transactions_c {num_txns == valid_combinations.size();}
+  // Limit the number of transfers to keep the smoke test fairly short.
+  constraint transactions_c {num_txns == 8;}
 
-  // Function : Re-randomization of address ranges
-  function void randomize_item(ref dma_seq_item dma_config, input int iteration = 0);
-    int num_valid_combinations = valid_combinations.size();
-    int index = $urandom_range(0, num_valid_combinations - 1);
-    addr_space_id_t valid_combination = valid_combinations[index];
+  // Randomization of DMA configuration and transfer properties
+  virtual function void randomize_item(ref dma_seq_item dma_config);
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
     // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
-      src_asid == valid_combination.src_id;
-      dst_asid == valid_combination.dst_id;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b0;) //disable hardware handhake mode
-    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
-                              dma_config.sprint()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
+                              dma_config.convert2string()), UVM_HIGH)
   endfunction
 
   virtual task body();
     `uvm_info(`gfn, "DMA: Starting memory smoke Sequence", UVM_LOW)
-    valid_combinations.shuffle();
     super.body();
 
     `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns), UVM_LOW)
 
     for (int i = 0; i < num_txns; i++) begin
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
-      randomize_item(dma_config, i);
+      randomize_item(dma_config);
       run_common_config(dma_config);
       start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE

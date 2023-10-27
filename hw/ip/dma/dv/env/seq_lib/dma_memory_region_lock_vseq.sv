@@ -68,7 +68,7 @@ class dma_memory_region_lock_vseq extends dma_memory_smoke_vseq;
     set_csr_assert_en(0);
     for (int i = 0; i < num_txns; i++) begin
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
-      randomize_item(dma_config, i);
+      randomize_item(dma_config);
       run_common_config(dma_config);
       start_device(dma_config);
       // Write random data in to DMA enabled memory region registers
