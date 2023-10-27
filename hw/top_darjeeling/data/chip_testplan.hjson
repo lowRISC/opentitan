@@ -2568,7 +2568,7 @@
                - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_soc_proxy_external_wakeup"]
     }
     {
       name: chip_sw_soc_proxy_gpios

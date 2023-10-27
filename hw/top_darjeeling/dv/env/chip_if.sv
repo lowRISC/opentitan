@@ -1001,6 +1001,11 @@ interface chip_if;
                                    `TOP_HIER.soc_rst_req_async_i,
                                    1)
 
+  // Signal probe function for `soc_wkup_async_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_wkup_async,
+                                   `TOP_HIER.soc_wkup_async_i,
+                                   1)
+
 `undef TOP_HIER
 `undef AES_HIER
 `undef AES_CONTROL_HIER
