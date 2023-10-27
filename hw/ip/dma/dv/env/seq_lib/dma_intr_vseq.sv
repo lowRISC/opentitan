@@ -24,7 +24,7 @@ class dma_intr_vseq extends dma_base_vseq;
 
     // Interrupt Patterns
     //    dma_status.done
-    //      - requirement:  Generic Mode
+    //      - requirement:  'Memory-to-memory' mode
     //      - condition:    WRITE_ST -> IDLE_ST
     `uvm_info(`gfn, "[DMA] Step 1. DMA Done Interrupt", UVM_HIGH)
     do_dma_op( , , , 1);

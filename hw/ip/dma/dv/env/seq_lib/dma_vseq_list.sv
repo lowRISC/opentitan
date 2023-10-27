@@ -4,9 +4,9 @@
 
 `include "dma_base_vseq.sv"
 `include "dma_common_vseq.sv"
-`include "dma_generic_smoke_vseq.sv"
+`include "dma_memory_smoke_vseq.sv"
 `include "dma_handshake_smoke_vseq.sv"
-`include "dma_generic_dma_memory_region_lock_vseq.sv"
-`include "dma_generic_stress_vseq.sv"
+`include "dma_memory_region_lock_vseq.sv"
+`include "dma_memory_stress_vseq.sv"
 //`include "dma_short_transfer_vseq.sv"
 //`include "dma_intr_vseq.sv"

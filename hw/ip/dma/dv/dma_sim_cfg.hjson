@@ -45,8 +45,8 @@
   // List of test specifications.
   tests: [
     {
-      name: dma_generic_smoke
-      uvm_test_seq: dma_generic_smoke_vseq
+      name: dma_memory_smoke
+      uvm_test_seq: dma_memory_smoke_vseq
       reseed: 1
     }
     {
@@ -55,13 +55,13 @@
       reseed: 1
     }
     {
-      name: dma_generic_dma_memory_region_lock
-      uvm_test_seq: dma_generic_dma_memory_region_lock_vseq
+      name: dma_memory_region_lock
+      uvm_test_seq: dma_memory_region_lock_vseq
       reseed: 5
     }
     {
-      name: dma_generic_stress
-      uvm_test_seq: dma_generic_stress_vseq
+      name: dma_memory_stress
+      uvm_test_seq: dma_memory_stress_vseq
       run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
       reseed: 50
     }
@@ -71,7 +71,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["dma_smoke"]
+      tests: ["dma_memory_smoke", "dma_handshake_smoke"]
     }
   ]
 }

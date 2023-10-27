@@ -8,13 +8,13 @@
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
     testpoints: [
-      //-------------------------------------------------------
-      // Tests for DMA DUT generic and hardware handshake modes
-      //-------------------------------------------------------
+      //--------------------------------------------------------------------
+      // Tests for DMA DUT 'memory-to-memory' and 'hardware handshake' modes
+      //--------------------------------------------------------------------
       {
-        name: dma_generic_smoke
+        name: dma_memory_smoke
         desc: '''
-              Smoke test in which random DMA operations are performed with generic mode
+              Smoke test in which random DMA operations are performed with 'memory-to-memory' mode
 
               Stimulus:
                 - Configure DMA
@@ -36,19 +36,19 @@
                 - Check if DMAC.busy bit is set throughout the operation in each iteration
               '''
         stage: V1
-        tests: ["dma_generic_smoke"]
+        tests: ["dma_memory_smoke"]
       }
       {
-        name: dma_hardware_handshake_smoke
+        name: dma_handshake_smoke
         desc: '''
-              Smoke test in which hardware handshake DMA operations are performed
+              Smoke test in which 'hardware handshake' DMA operations are performed
 
               Stimulus:
                 - Configure DMA
                   * Randomize DMA memory region base and limit
                   * Randomize source and destination address space IDs and address pointers such that all valid source and destination combinations are covered at least once
                   * Randomize total transfer width and transaction sizes
-                  * Program DMAC.op_code and enable hardware handshake mode
+                  * Program DMAC.op_code and enable 'hardware handshake' mode
                 - Start DMA operation by setting DMAC.GO bit
               - Assert Low Speed IO (LSIO) interrupt
               - Wait for TLUL transaction on the output interface
@@ -62,14 +62,14 @@
                 * Check that the data presented at the source TLUL interface appears unchanged on the destination TLUL interface
                 * Check for assertion of PLIC interrupt if INTR_ENABLE.int_enable else check for DMAC.DONE after every iteration
                 * Check if the number of requests on TLUL agent matches the expected data size
-              - Check if STATUS.busy bit is set until hardware handshake mode is disabled
+              - Check if STATUS.busy bit is set until 'hardware handshake' mode is disabled
               - Check if STATUS.done is set after LSIO interrupt is deasserted
               '''
         stage: V1
         tests: ["dma_handshake_smoke"]
       }
       {
-        name: dma_generic_dma_memory_region_lock
+        name: dma_memory_region_lock
         desc:'''
               Test to check DMA memory region lock functionality
 
@@ -79,7 +79,7 @@
                   * Randomize source and destination address space IDs and address pointers such that all valid source and destination combinations are covered at least once
                   * Randomize Total transfer width and transaction size
                   * Lock DMA memory configuration registers
-                  * Program DMAC register with OP code and randomize hardware handshake mode enable bit
+                  * Program DMAC register with OP code and randomize 'hardware handshake' mode enable bit
                 - Start DMA operation by setting DMAC.GO bit
               - Randomly change the DMA memory region base and limit
               - Wait for the operation to complete
@@ -93,15 +93,15 @@
               - Check if the range_regwen.regwen is set to MuBi4True after deassertion of reset
               '''
         stage: V2
-        tests: ["dma_generic_dma_memory_region_lock"]
+        tests: ["dma_memory_region_lock"]
       }
       {
-        name: dma_generic_tl_error
+        name: dma_memory_tl_error
         desc: '''
               Test to check TLUL error behavior on DMA interfaces
 
               Stimulus:
-              - Configure DMA to perform a copy operation with different source and destination parameters in generic mode
+              - Configure DMA to perform a copy operation with different source and destination parameters in 'memory-to-memory' mode
               - Start DMA operation by setting DMAC.GO bit
               - Respond with an error on either source or destination TLUL interface reqeust
               - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for DMAC.ABORTED bit
@@ -112,12 +112,12 @@
               - Check if DMA generates an alert
               '''
         stage: V2
-        tests: ["dma_generic_tl_error"]
+        tests: ["dma_memory_tl_error"]
       }
       {
-        name: dma_hardware_handshake_tl_error
+        name: dma_handshake_tl_error
         desc: '''
-              Test to check TLUL error behavior on DMA interfaces with hardware handshake mode
+              Test to check TLUL error behavior on DMA interfaces with 'hardware handshake' mode
 
               Stimulus:
               - Configure DMA to perform a copy operation with different source and destination parameters in hardware_handshake mode
@@ -131,12 +131,12 @@
               - Check if DMA generates an alert
               '''
         stage: V2
-        tests: ["dma_hardware_handshake_tl_error"]
+        tests: ["dma_handshake_tl_error"]
       }
       {
-        name: dma_hardware_handshake_stress
+        name: dma_handshake_stress
         desc: '''
-              Stress test in which hardware handshake DMA operations are performed. Goal is to achieve maximum possible coverage of DMA configuration space in hardware handshake mode
+              Stress test in which hardware handshake DMA operations are performed. Goal is to achieve maximum possible coverage of DMA configuration space in 'hardware handshake' mode
 
               Stimulus:
                 - Configure DMA
@@ -146,7 +146,7 @@
                   * Randomize total transfer width and transaction size
                   * Randomize DMAC.data_direction
                   * Randomize DMAC.FIFO_address_auto_increment_enable and DMAC.memory_address_auto_increment_enable
-                  * Program DMAC register with OP code and enable hardware handshake mode
+                  * Program DMAC register with OP code and enable 'hardware handshake' mode
                 - Start DMA operation by setting DMAC.GO bit
               - Start DMA operation by setting DMAC.GO bit
               - Assert Low Speed IO (LSIO) interrupt
@@ -158,23 +158,23 @@
               Checking:
               - Check if DMA operation is completed successfully in each iteration
                 * Check if DMAC.GO bit is not set until the DMA operation is complete
-                * Check if STATUS.busy bit is set until hardware handshake mode is disabled
+                * Check if STATUS.busy bit is set until 'hardware handshake' mode is disabled
                 * Check if STATUS.done is set after LSIO interrupt is deasserted
               '''
         stage: V2
-        tests: ["dma_hardware_handshake_stress"]
+        tests: ["dma_handshake_stress"]
       }
       {
-        name: dma_generic_stress
+        name: dma_memory_stress
         desc:'''
-             Stress test in which random DMA operations are performed with generic mode. Goal is to achieve maximum possible coverage of DMA configuration space in generic mode
+             Stress test in which random DMA operations are performed with 'memory-to-memory' mode. Goal is to achieve maximum possible coverage of DMA configuration space in 'memory-to-memory' mode
 
              Stimulus:
               - Configure DMA
                 * Randomize DMA memory region base and limit
                 * Randomize source and destination address space IDs and address pointers
                 * Randomize Total transfer width and transaction size
-                * Program DMAC register with OP code and disable hardware handshake mode
+                * Program DMAC register with OP code and disable 'hardware handshake' mode
               - Start DMA operation by setting DMAC.GO bit
               - Wait for the operation to complete
               - Repeat operation with different source and destination addresses
@@ -187,15 +187,15 @@
                 * Check if STATUS.done bit is set after the copy operation
              '''
         stage: V2
-        tests: ["dma_generic_stress"]
+        tests: ["dma_memory_stress"]
       }
       {
-        name: dma_hardware_handshake_mem_buffer_overflow
+        name: dma_handshake_mem_buffer_overflow
         desc: '''
-              Test to check DMA memory buffer threshold and limit behavior with hardware handshake mode
+              Test to check DMA memory buffer threshold and limit behavior with 'hardware handshake' mode
 
               Stimulus:
-              - Configure DMA for hardware handshake mode
+              - Configure DMA for 'hardware handshake' mode
               - Set memory_buffer_address_auto_increment
               - Set memory_buffer_threshold and memory_buffer_limit such that
                 * Threshold is less than the limit and
@@ -211,12 +211,12 @@
               Checking:
               - Check if DMA operation is completed successfully in each iteration
                 * Check if DMAC.GO bit is set until the DMA operation is complete
-                * Check if STATUS.busy bit is set until hardware handshake mode is disabled
+                * Check if STATUS.busy bit is set until 'hardware handshake' mode is disabled
                 * Check if STATUS.done is set after LSIO interrupt is deasserted
               - Check if PLIC interrupt is asserted when memory_buffer_auto_increment is enabled
               '''
         stage: V2
-        tests: ["dma_hardware_handshake_mem_buffer_overflow"]
+        tests: ["dma_handshake_mem_buffer_overflow"]
       }
       {
         name: dma_abort
@@ -236,7 +236,7 @@
               - Check if there all outstanding transactions on OT internal TLUL interface are complete
               '''
         stage: V2
-        tests: ["dma_generic_abort"]
+        tests: ["dma_memory_abort"]
       }
       {
         name: dma_illegal_transfer
@@ -248,7 +248,7 @@
                 * Randomize DMA memory region base and limit
                 * Randomize source and destination address pointers and address space IDs such that the transfer happens between CTN and SYS address spaces
                 * Randomize total transfer width and transaction size
-                * Enable hardware handshake mode and set DMAC.direction randomly
+                * Enable 'hardware handshake' mode and set DMAC.direction randomly
                 * Update the OPcode in DMAC register
               - Start DMA operation
               - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for STATUS.abort bit
@@ -270,7 +270,7 @@
                 * Update DMA memory region base and limit
                 * Update Source and Destination address pointers and address space IDs such that the address source or destination address is outside the DMA memory region
               - Configure DMA with total transfer width and transaction size
-              - Enable hardware handshake mode and direction randomly
+              - Enable 'hardware handshake' mode and direction randomly
               - Start DMA operation
               - Wait for interrupt assertion if INTR_ENABLE.int_enable is set else poll for STATUS.abort bit
 
@@ -284,7 +284,7 @@
     ]
     covergroups: [
       {
-        name: dma_generic_cg
+        name: dma_memory_cg
         desc: '''
                - Cover DMA operating mode
                - Cover Source and destination address space ID
@@ -321,9 +321,9 @@
               '''
       }
       {
-        name: dma_hardware_handshake_cg
+        name: dma_handshake_cg
         desc: '''
-              Cover the following crosses only in hardware handshake mode
+              Cover the following crosses only in 'hardware handshake' mode
               - Cross Destination address, memory buffer limit (if memory_buffer_auto_increment is set)
               - Cross Destination address, memory buffer threshold (if memory_buffer_auto_increment is set)
               - Cross fifo_address_auto_increment_enable and source_address_space_id

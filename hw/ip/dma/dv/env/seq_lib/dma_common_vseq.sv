@@ -5,7 +5,7 @@
 // This sequence is used to run register tests. The type of register test to be run can
 // be selected via run args.
 // run_common_vseq_wrapper is inherited from cip_base_vseq which has all the common sequences
-// that can be run for a CIP complaint IP.
+// that can be run for a CIP compliant IP.
 class dma_common_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_common_vseq)
   `uvm_object_new
