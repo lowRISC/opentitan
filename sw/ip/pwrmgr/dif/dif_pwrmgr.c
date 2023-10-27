@@ -81,6 +81,12 @@ static_assert(kDifPwrmgrWakeupRequestSourceThree ==
 static_assert(kDifPwrmgrWakeupRequestSourceFour ==
                   (1u << PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceFive ==
+                  (1u << PWRMGR_PARAM_SOC_PROXY_WKUP_INTERNAL_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
+static_assert(kDifPwrmgrWakeupRequestSourceSix ==
+                  (1u << PWRMGR_PARAM_SOC_PROXY_WKUP_EXTERNAL_REQ_IDX),
+              "Layout of WAKE_INFO register changed.");
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
@@ -126,7 +132,9 @@ static const request_reg_info_t request_reg_infos[2] = {
                     .mask = kDifPwrmgrWakeupRequestSourceOne |
                             kDifPwrmgrWakeupRequestSourceTwo |
                             kDifPwrmgrWakeupRequestSourceThree |
-                            kDifPwrmgrWakeupRequestSourceFour,
+                            kDifPwrmgrWakeupRequestSourceFour |
+                            kDifPwrmgrWakeupRequestSourceFive |
+                            kDifPwrmgrWakeupRequestSourceSix,
                     .index = 0,
                 },
         },
