@@ -230,6 +230,7 @@ status_t aes_testutils_setup_encryption(dif_aes_transaction_t transaction,
   memcpy(key.share0, key_share0, sizeof(key.share0));
   memcpy(key.share1, kKeyShare1, sizeof(key.share1));
 
+  AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusIdle, true, TIMEOUT);
   CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
