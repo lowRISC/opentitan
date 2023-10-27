@@ -308,8 +308,7 @@ module flash_phy
   logic tdo;
   lc_ctrl_pkg::lc_tx_t [FlashLcDftLast-1:0] lc_nvm_debug_en;
 
-  assign flash_ctrl_o.jtag_rsp.tdo = tdo &
-      lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTdoSel]);
+  assign flash_ctrl_o.jtag_rsp.tdo = tdo & (lc_nvm_debug_en[FlashLcTdoSel] == lc_ctrl_pkg::On);
 
   prim_lc_sync #(
     .NumCopies(int'(FlashLcDftLast))

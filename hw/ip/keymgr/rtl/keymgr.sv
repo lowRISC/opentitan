@@ -81,8 +81,6 @@ module keymgr
 
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_strict;
-  import lc_ctrl_pkg::lc_tx_test_true_strict;
-  import lc_ctrl_pkg::lc_tx_t;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -154,7 +152,7 @@ module keymgr
   //  Synchronize lc_ctrl control inputs
   //  Data inputs are not synchronized and assumed quasi-static
   /////////////////////////////////////
-  lc_tx_t [KeyMgrEnLast-1:0] lc_keymgr_en;
+  lc_ctrl_pkg::lc_tx_t [KeyMgrEnLast-1:0] lc_keymgr_en;
 
   prim_lc_sync #(
     .NumCopies(int'(KeyMgrEnLast))
@@ -277,7 +275,7 @@ module keymgr
   ) u_ctrl (
     .clk_i,
     .rst_ni,
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnCtrl])),
+    .en_i(lc_keymgr_en[KeyMgrEnCtrl] == lc_ctrl_pkg::On),
     .regfile_intg_err_i(regfile_intg_err),
     .shadowed_update_err_i(shadowed_update_err),
     .shadowed_storage_err_i(shadowed_storage_err),
@@ -335,7 +333,7 @@ module keymgr
     .clk_i,
     .rst_ni,
     .init_i(1'b1), // cfg_regwen does not care about init
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnCfgEn])),
+    .en_i(lc_keymgr_en[KeyMgrEnCfgEn] == lc_ctrl_pkg::On),
     .set_i(op_start & op_done),
     .clr_i(op_start),
     .out_o(cfg_regwen)
@@ -358,7 +356,7 @@ module keymgr
     .clk_i,
     .rst_ni,
     .init_i(init),
-    .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeyMgrEnSwBindingEn])),
+    .en_i(lc_keymgr_en[KeyMgrEnSwBindingEn] == lc_ctrl_pkg::On),
     .set_i(sw_binding_unlock),
     .clr_i(sw_binding_clr),
     .out_o(sw_binding_regwen)
