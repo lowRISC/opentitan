@@ -18,9 +18,9 @@
 // 9. Reset design
 // 10. Check if DMA enabled memory region registers are unlocked
 // 11. Repeat sequence for different combinations of Address space IDs
-class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
+class dma_memory_region_lock_vseq extends dma_memory_smoke_vseq;
 
-  `uvm_object_utils(dma_generic_dma_memory_region_lock_vseq)
+  `uvm_object_utils(dma_memory_region_lock_vseq)
   `uvm_object_new
 
   // Check that memory region registers still match expectations, because they have been locked
@@ -110,5 +110,4 @@ class dma_generic_dma_memory_region_lock_vseq extends dma_generic_smoke_vseq;
 
     `uvm_info(`gfn, "DMA: Completed dma_memory region lock sequence", UVM_LOW)
   endtask : body
-
-endclass: dma_generic_dma_memory_region_lock_vseq
+endclass

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Stress Generic mode of DMA Operation
-class dma_generic_stress_vseq extends dma_base_vseq;
+// Stress 'memory-to-memory' DMA transfers
+class dma_memory_stress_vseq extends dma_base_vseq;
   rand int num_txns;
 
-  `uvm_object_utils(dma_generic_stress_vseq)
+  `uvm_object_utils(dma_memory_stress_vseq)
   `uvm_object_new
 
   rand uint num_iter; // Number of configurations of DMA
@@ -104,7 +104,7 @@ class dma_generic_stress_vseq extends dma_base_vseq;
   endtask
 
   virtual task body();
-    `uvm_info(`gfn, "DMA: Starting generic stress Sequence", UVM_LOW)
+    `uvm_info(`gfn, "DMA: Starting memory stress Sequence", UVM_LOW)
     init_model();
     enable_interrupt();
     for (uint i = 0; i < num_iter; i++) begin
@@ -137,6 +137,6 @@ class dma_generic_stress_vseq extends dma_base_vseq;
       clear_memory();
       enable_interrupt();
     end
-    `uvm_info(`gfn, "DMA: Completed generic stress Sequence", UVM_LOW)
+    `uvm_info(`gfn, "DMA: Completed memory stress Sequence", UVM_LOW)
   endtask : body
 endclass

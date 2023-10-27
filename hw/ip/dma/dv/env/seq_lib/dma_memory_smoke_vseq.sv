@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
-  DMA Smoke - Generic DMA Operation
+  DMA 'memory-to-memory' smoke test
     - Generic operation through Mailbox initiated via FW
     - FW parses CMD object in Mailbox
     - FW sanitizes the said Object
@@ -20,10 +20,10 @@
     - Reset memory contents at the end of iteration
 */
 
-class dma_generic_smoke_vseq extends dma_base_vseq;
+class dma_memory_smoke_vseq extends dma_base_vseq;
   rand int num_txns;
 
-  `uvm_object_utils(dma_generic_smoke_vseq)
+  `uvm_object_utils(dma_memory_smoke_vseq)
   `uvm_object_new
 
   constraint transactions_c {num_txns == valid_combinations.size();}
@@ -49,7 +49,7 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
   endfunction
 
   virtual task body();
-    `uvm_info(`gfn, "DMA: Starting Generic smoke Sequence", UVM_LOW)
+    `uvm_info(`gfn, "DMA: Starting memory smoke Sequence", UVM_LOW)
     valid_combinations.shuffle();
     super.body();
 
@@ -79,6 +79,6 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
       `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
-    `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_LOW)
+    `uvm_info(`gfn, "DMA: Completed memory smoke Sequence", UVM_LOW)
   endtask : body
 endclass

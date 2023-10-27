@@ -279,7 +279,8 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_update(ral.handshake_interrupt_enable);
   endtask: set_handshake_int_regs
 
-  // Task: Run above configurations common to both Generic and Handshake Mode of operations
+  // Task: Configure DMA controller to perform a transfer
+  // (common to both 'memory-to-memory' and 'hardware handshaking' modes of operation)
   task run_common_config(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
     set_source_address(dma_config.src_addr);
@@ -480,28 +481,27 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Wait for Completion
   task wait_for_completion(output int status);
     int timeout = 1000000;
-    // Case 1.    Timeout due to simulation hang
-    // Case 2.    Generic Mode - Completion
-    // Case 3.    Generic Mode - Error
-    // Case 4.    Handshake Mode - dma_plic_interrupt asserts
     fork
       begin
-        // Case 1: Timeout condition
+        // Case 1: Timeout condition due to simulation hang
         delay(timeout);
         status = -1;
         `uvm_fatal(`gfn, $sformatf("ERROR: Timeout Condition Reached at %d cycles", timeout))
       end
       poll_status();
+      // Case 2: Test completion via 'status.done' bit
       begin
         wait(e_complete.triggered);
         status = 0;
         `uvm_info(`gfn, "DMA: Completion Seen", UVM_HIGH)
       end
+      // Case 3: Response to 'control.abort' request, leaving to 'status.abort' set
       begin
         wait(e_aborted.triggered);
         status = 1;
         `uvm_info(`gfn, "DMA: Aborted Seen", UVM_HIGH)
       end
+      // Case 4: Error raised, leading to 'status.error' set
       begin
         wait(e_errored.triggered);
         if (sim_fatal_exit_on_dma_error) begin
@@ -512,6 +512,7 @@ class dma_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, "DMA: Error Seen", UVM_HIGH)
         end
       end
+      // Collect SHA digest in response to 'status.sha2_digest_valid' being asserted
       begin
         wait(e_sha2_digest_valid.triggered);
         status = 0;
