@@ -21,7 +21,8 @@ class dma_memory_stress_vseq extends dma_base_vseq;
     return valid_config;
   endfunction
 
-  function void randomize_config(ref dma_seq_item dma_config);
+  // Randomization of DMA configuration and transfer properties
+  virtual function void randomize_config(ref dma_seq_item dma_config);
     dma_config.valid_dma_config = pick_if_config_valid();
     if (dma_config.valid_dma_config) begin
       // Allow only valid DMA configurations
