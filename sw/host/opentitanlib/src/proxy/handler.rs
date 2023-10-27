@@ -89,6 +89,15 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
                     }
+                    GpioRequest::MultiSet {
+                        mode,
+                        value,
+                        pull,
+                        analog_value,
+                    } => {
+                        instance.set(*mode, *value, *pull, *analog_value)?;
+                        Ok(Response::Gpio(GpioResponse::MultiSet))
+                    }
                 }
             }
             Request::GpioMonitoring { command } => {

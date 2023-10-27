@@ -59,10 +59,22 @@ pub enum Response {
 
 #[derive(Serialize, Deserialize)]
 pub enum GpioRequest {
-    Write { logic: bool },
+    Write {
+        logic: bool,
+    },
     Read,
-    SetMode { mode: PinMode },
-    SetPullMode { pull: PullMode },
+    SetMode {
+        mode: PinMode,
+    },
+    SetPullMode {
+        pull: PullMode,
+    },
+    MultiSet {
+        mode: Option<PinMode>,
+        value: Option<bool>,
+        pull: Option<PullMode>,
+        analog_value: Option<f32>,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -71,6 +83,7 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+    MultiSet,
 }
 
 #[derive(Serialize, Deserialize)]

@@ -72,6 +72,24 @@ impl GpioPin for ProxyGpioPin {
         }
     }
 
+    fn set(
+        &self,
+        mode: Option<PinMode>,
+        value: Option<bool>,
+        pull: Option<PullMode>,
+        analog_value: Option<f32>,
+    ) -> Result<()> {
+        match self.execute_command(GpioRequest::MultiSet {
+            mode,
+            value,
+            pull,
+            analog_value,
+        })? {
+            GpioResponse::MultiSet => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn get_internal_pin_name(&self) -> Option<&str> {
         Some(&self.pinname)
     }
