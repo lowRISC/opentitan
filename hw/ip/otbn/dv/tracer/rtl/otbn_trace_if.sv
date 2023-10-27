@@ -382,6 +382,7 @@ interface otbn_trace_if
   controller_bad_int_t controller_bad_int_i, controller_bad_int_d, controller_bad_int_q;
   missed_gnt_t missed_gnt_i, missed_gnt_d, missed_gnt_q;
   logic scramble_state_err_i, scramble_state_err_d, scramble_state_err_q;
+  logic ext_mubi_err_i, ext_mubi_err_d, ext_mubi_err_q;
   logic urnd_all_zero_d, urnd_all_zero_q;
   logic insn_addr_err_d, insn_addr_err_q;
   logic rf_base_spurious_we_err_d, rf_base_spurious_we_err_q;
@@ -394,6 +395,7 @@ interface otbn_trace_if
   assign start_stop_bad_int_d = (locking_o) ? '0 : (start_stop_bad_int_q | start_stop_bad_int_i);
   assign controller_bad_int_d = (locking_o) ? '0 : (controller_bad_int_q | controller_bad_int_i);
   assign scramble_state_err_d = (locking_o) ? '0 : (scramble_state_err_q | scramble_state_err_i);
+  assign ext_mubi_err_d = (locking_o) ? '0 : (ext_mubi_err_q| ext_mubi_err_i);
   assign rf_base_spurious_we_err_d = (locking_o) ? '0 :
    (rf_base_spurious_we_err_q | rf_base_spurious_we_err);
   assign rf_bignum_spurious_we_err_d = (locking_o) ? '0 :
@@ -401,6 +403,7 @@ interface otbn_trace_if
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      ext_mubi_err_q <= '0;
       missed_gnt_q <= '0;
       predec_err_q <= '0;
       urnd_all_zero_q <= '0;
@@ -411,6 +414,7 @@ interface otbn_trace_if
       rf_bignum_spurious_we_err_q <= '0;
       rf_base_spurious_we_err_q <= '0;
     end else begin
+      ext_mubi_err_q <= ext_mubi_err_d;
       missed_gnt_q <= missed_gnt_d;
       predec_err_q <= predec_err_d;
       urnd_all_zero_q <= urnd_all_zero_d;
