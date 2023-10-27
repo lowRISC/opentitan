@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Handshake mode smoke sequence
+// 'Hardware handshaking' mode smoke sequence
 // testing the basic operation of DMA in hardware handshake mode
 class dma_handshake_smoke_vseq extends dma_base_vseq;
   rand int num_txns;
