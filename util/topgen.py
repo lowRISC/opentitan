@@ -30,7 +30,7 @@ from reggen.lib import check_list
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
-from topgen import merge_top, search_ips, secure_prng, validate_top
+from topgen import secure_prng, merge_top, search_ips, strong_random, validate_top
 from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
@@ -56,6 +56,14 @@ GENCMD = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson\n"
 SRCTREE_TOP = Path(__file__).parents[1].resolve()
 
 TOPGEN_TEMPLATE_PATH = SRCTREE_TOP / "util" / "topgen" / "templates"
+
+# Size and path to the entropy buffer.
+# This buffer is generated using Mersenne Twister PRNG seeded with rnd_cnst_seed
+# and deleted in the end."
+# This buffer will not be created If a different one is provided by args.entropy_buffer.
+# Module strong_random fetches entropy from the buffer to generate random bit-vectors
+# and permutations.
+ENTROPY_BUFFER_SIZE_BYTES = 20000
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
@@ -1071,6 +1079,11 @@ def main():
         type=int,
         metavar="<seed>",
         help="Custom seed for RNG to compute netlist constants.")
+    parser.add_argument(
+        "--entropy-buffer",
+        type=str,
+        metavar="<entropy buffer file path>",
+        help="A file with entropy.")
     # Miscellaneous: only return the list of blocks and exit.
     parser.add_argument("--get_blocks",
                         default=False,
@@ -1138,16 +1151,25 @@ def main():
             raise SystemExit(sys.exc_info()[1])
 
     # Initialize RNG for compile-time netlist constants.
-    # If specified, override the seed for random netlist constant computation.
-    if args.rnd_cnst_seed:
-        log.warning("Commandline override of rnd_cnst_seed with {}.".format(
-            args.rnd_cnst_seed))
-        topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
-    # Otherwise we make sure a seed exists in the HJSON config file.
-    elif "rnd_cnst_seed" not in topcfg:
-        log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
-        exit(1)
-    secure_prng.reseed(topcfg["rnd_cnst_seed"])
+    if args.entropy_buffer:
+        if args.rnd_cnst_seed:
+            log.error("'entropy-buffer' option cannot be used with 'rnd_cnst_seed option'")
+            # error out
+            raise SystemExit(sys.exc_info()[1])
+        else:
+            # generate entropy from a buffer
+            strong_random.load(SRCTREE_TOP / args.entropy_buffer)
+    else:
+        # If specified, override the seed for random netlist constant computation.
+        if args.rnd_cnst_seed:
+            log.warning("Commandline override of rnd_cnst_seed with {}.".format(
+                args.rnd_cnst_seed))
+            topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
+        # Otherwise we make sure a seed exists in the HJSON config file.
+        elif "rnd_cnst_seed" not in topcfg:
+            log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
+            exit(1)
+        secure_prng.reseed(topcfg["rnd_cnst_seed"])
 
     # TODO, long term, the levels of dependency should be automatically
     # determined instead of hardcoded.  The following are a few examples:
@@ -1230,7 +1252,14 @@ def main():
     genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
     # Header for HJSON
-    gencmd = """//
+    if args.entropy_buffer:
+        gencmd = """//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                -o hw/top_{topname}/ \\
+//                --entropy-buffer {path}
+""".format(topname=topname, path = args.entropy_buffer)
+    else:
+        gencmd = """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed {seed}
@@ -1258,7 +1287,14 @@ def main():
                 fout.write(template_contents)
 
         # Header for SV files
-        gencmd = warnhdr + """//
+        if args.entropy_buffer:
+            gencmd = warnhdr + """//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                -o hw/top_{topname}/ \\
+//                --entropy-buffer {path}
+""".format(topname=topname, path = args.entropy_buffer)
+        else:
+            gencmd = warnhdr + """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed \\

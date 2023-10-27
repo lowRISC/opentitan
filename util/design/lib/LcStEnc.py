@@ -8,6 +8,7 @@ import logging as log
 from collections import OrderedDict
 
 from Crypto.Hash import cSHAKE128
+from topgen import strong_random
 from topgen import secure_prng as sp
 
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
@@ -23,6 +24,8 @@ LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
     'lc_cnt': ['0', 'C{}', 'D{}']
 }
+
+ENTROPY_BUFFER_SIZE_BYTES = 1000
 
 
 def _is_incremental_codeword(word1, word2):
@@ -285,7 +288,12 @@ class LcStEnc():
         log.info('Seed: {0:x}'.format(config['seed']))
         log.info('')
 
-        sp.reseed(LC_SEED_DIVERSIFIER + int(config['seed']))
+        if 'entropy_buffer' in config:
+            # Load entropy from a file, if the file exists.
+            strong_random.load(config['entropy_buffer'])
+        else:
+            # Re-initialize with seed to make results reproducible.
+            sp.reseed(LC_SEED_DIVERSIFIER + int(config['seed']))
 
         log.info('Checking SECDED.')
         _validate_secded(config)
