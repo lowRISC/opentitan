@@ -192,7 +192,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
       // check if a_mask matches the data size
       `DV_CHECK_EQ(num_bytes_this_txn, exp_a_mask_count_ones,
-                   $sformatf("unexpected a_mask: %x for %0d byte transfer",
+                   $sformatf("unexpected write a_mask: %x for %0d byte transfer",
                            item.a_mask, expected_per_txn_bytes))
 
       // Check destination ASID for write transaction
