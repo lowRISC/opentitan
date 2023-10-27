@@ -6,15 +6,14 @@ name: "lowrisc:dv_dpi:jtagdpi:0.1"
 description: "JTAG DPI for OpenOCD remote_bitbang driver (JTAG over TCP)"
 
 filesets:
-  files_rtl:
+  files_c:
     depend:
       - lowrisc:dv_dpi:tcp_server
     files:
-      - jtagdpi.sv: { file_type: systemVerilogSource }
       - jtagdpi.c: { file_type: cSource }
       - jtagdpi.h: { file_type: cSource, is_include_file: true }
 
 targets:
   default:
     filesets:
-      - files_rtl
+      - files_c

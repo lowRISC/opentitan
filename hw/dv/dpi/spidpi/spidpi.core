@@ -6,9 +6,8 @@ name: "lowrisc:dv_dpi:spidpi:0.1"
 description: "SPI-DPI"
 
 filesets:
-  files_rtl:
+  files_c:
     files:
-      - spidpi.sv: { file_type: systemVerilogSource }
       - spidpi.c: { file_type: cppSource }
       - monitor_spi.c: { file_type: cppSource }
       - spidpi.h: { file_type: cppSource, is_include_file: true }
@@ -17,4 +16,4 @@ filesets:
 targets:
   default:
     filesets:
-      - files_rtl
+      - files_c

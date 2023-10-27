@@ -10,11 +10,17 @@ filesets:
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:topgen
       - lowrisc:dv_dpi:uartdpi
+      - lowrisc:dv_verilator:uartdpi
       - lowrisc:dv_dpi:gpiodpi
+      - lowrisc:dv_verilator:gpiodpi
       - lowrisc:dv_dpi:jtagdpi
+      - lowrisc:dv_verilator:jtagdpi
       - lowrisc:dv_dpi:dmidpi
+      - lowrisc:dv_verilator:dmidpi
       - lowrisc:dv_dpi:spidpi
+      - lowrisc:dv_verilator:spidpi
       - lowrisc:dv_dpi:usbdpi
+      - lowrisc:dv_sv:usbdpi
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:ibex:ibex_tracer

@@ -6,9 +6,8 @@ name: "lowrisc:dv_dpi:gpiodpi:0.1"
 description: "GPIO-DPI"
 
 filesets:
-  files_rtl:
+  files_c:
     files:
-      - gpiodpi.sv: { file_type: systemVerilogSource }
       - gpiodpi.c: { file_type: cppSource }
       - gpiodpi.h: { file_type: cppSource, is_include_file: true }
 
@@ -16,4 +15,4 @@ filesets:
 targets:
   default:
     filesets:
-      - files_rtl
+      - files_c
