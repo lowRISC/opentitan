@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -31,6 +32,10 @@ pub struct ManufFtProvisioningDataInput {
     /// LC state to transition to from TEST_UNLOCKED*.
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "prod")]
     target_mission_mode_lc_state: DifLcCtrlState,
+
+    /// Host (HSM) generated ECC (P256) private key DER file.
+    #[arg(long)]
+    host_ecc_sk: PathBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -46,6 +51,10 @@ struct Opts {
 
     #[command(flatten)]
     provisioning_actions: ManufFtProvisioningActions,
+
+    /// Second personalization binary to bootstrap.
+    #[arg(long)]
+    secondary_bootstrap: PathBuf,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -76,7 +85,7 @@ fn main() -> Result<()> {
         )?;
     }
     if opts.provisioning_actions.all_steps
-        || opts.provisioning_actions.otp_creator_sw_cfg
+        || opts.provisioning_actions.otp_creator_sw_cfg_start
         || opts.provisioning_actions.otp_owner_sw_cfg
         || opts.provisioning_actions.otp_hw_cfg
     {
@@ -99,7 +108,13 @@ fn main() -> Result<()> {
         )?;
     }
     if opts.provisioning_actions.all_steps || opts.provisioning_actions.personalize {
-        run_ft_personalize(&transport, &opts.init, opts.timeout)?;
+        run_ft_personalize(
+            &transport,
+            &opts.init,
+            opts.secondary_bootstrap,
+            opts.provisioning_data.host_ecc_sk,
+            opts.timeout,
+        )?;
     }
 
     Ok(())

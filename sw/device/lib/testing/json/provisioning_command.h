@@ -30,10 +30,6 @@ UJSON_SERDE_ENUM(CpProvisioningCommand, cp_provisioning_command_t, ENUM_CP_PROVI
     value(_, Done)
 UJSON_SERDE_ENUM(FtIndividualizeCommand, ft_individualize_command_t, ENUM_FT_INDIVIDUALIZE_COMMAND);
 
-#define ENUM_FT_PERSONALIZE_COMMAND(_, value) \
-    value(_, Done)
-UJSON_SERDE_ENUM(FtPersonalizeCommand, ft_personalize_command_t, ENUM_FT_PERSONALIZE_COMMAND);
-
 // clang-format on
 #ifdef __cplusplus
 }
