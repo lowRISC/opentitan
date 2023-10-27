@@ -25,6 +25,8 @@ module mbx_fsm #(
   output logic mbx_sys_abort_o,
   output logic mbx_ready_update_o,
   output logic mbx_ready_o,
+  output logic mbx_irq_ready_o,
+  output logic mbx_irq_abort_o,
   output logic mbx_state_error_o
 );
   typedef enum logic [2:0] {
@@ -53,11 +55,15 @@ module mbx_fsm #(
 
   // Control signals for external usage
   logic mbx_idle;
-  assign  mbx_idle        = (ctrl_state_q == MbxIdle);
-  assign  mbx_empty_o     = mbx_idle & mbx_range_valid_i;
-  assign  mbx_write_o     = (ctrl_state_q == MbxWrite);
-  assign  mbx_read_o      = (ctrl_state_q == MbxRead);
-  assign  mbx_sys_abort_o = (ctrl_state_q == MbxSysAbortHost);
+  assign mbx_idle        = (ctrl_state_q == MbxIdle);
+  assign mbx_empty_o     = mbx_idle & mbx_range_valid_i;
+  assign mbx_write_o     = (ctrl_state_q == MbxWrite);
+  assign mbx_read_o      = (ctrl_state_q == MbxRead);
+  assign mbx_sys_abort_o = (ctrl_state_q == MbxSysAbortHost);
+  // The transition to the abort state marks the abort interrupt generation
+  assign mbx_irq_abort_o = (ctrl_state_d == MbxSysAbortHost);
+  // The transition to the read state marks the ready interrupt generation
+  assign mbx_irq_ready_o  = (ctrl_state_d == MbxRead);
 
   logic ombx_set_ready, ombx_clear_ready;
   // Outbound mailbox is ready

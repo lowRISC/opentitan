@@ -249,6 +249,8 @@ module mbx_ombx #(
     .mbx_sys_abort_o           ( mbx_sys_abort                ),
     .mbx_ready_update_o        ( ombx_status_ready_update_o   ),
     .mbx_ready_o               ( ombx_status_ready_o          ),
+    .mbx_irq_ready_o           (                              ),
+    .mbx_irq_abort_o           (                              ),
     .mbx_state_error_o         ( ombx_state_error_o           )
   );
 
