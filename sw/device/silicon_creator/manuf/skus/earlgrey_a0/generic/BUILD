@@ -225,7 +225,7 @@ bitstream_splice(
 
 opentitan_test(
     name = "ft_provision",
-    srcs = ["ft_personalize.c"],
+    srcs = ["ft_personalize_1.c"],
     cw310 = cw310_jtag_params(
         binaries = {
             ":sram_ft_individualize": "sram_ft_individualize",
