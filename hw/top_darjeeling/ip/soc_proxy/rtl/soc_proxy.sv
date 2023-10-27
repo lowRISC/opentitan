@@ -278,7 +278,7 @@ module soc_proxy
 
   // Generate internal wakeup signal combinatorially from asynchronous signals
   logic async_wkup;
-  assign async_wkup = |{fatal_alert_external, recov_alert_external};
+  assign async_wkup = |{fatal_alert_external, recov_alert_external, soc_intr_async_i};
 
   // Synchronize wakeup signal onto AON domain and filter out potential glitches
   prim_filter #(
