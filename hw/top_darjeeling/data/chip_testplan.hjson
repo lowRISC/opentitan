@@ -2563,7 +2563,6 @@
       name: chip_sw_soc_proxy_external_wakeup_requests
       desc: '''Verify that external wakeup requests are forwarded to Power Manager.
 
-               For each of the external wakeup requests:
                - In SW, enable the wakeup in Power Manager.
                - In DV env, trigger the wakeup request.
                - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
