@@ -20,16 +20,21 @@
     - Reset memory contents at the end of iteration
 */
 
-class dma_memory_smoke_vseq extends dma_base_vseq;
-  rand int num_txns;
-
+class dma_memory_smoke_vseq extends dma_memory_vseq;
   `uvm_object_utils(dma_memory_smoke_vseq)
   `uvm_object_new
 
-  // Limit the number of transfers to keep the smoke test fairly short.
+  // Limit the number of iterations and transactions to keep the smoke test fairly short.
+  constraint iters_c {num_iters == 1;}
   constraint transactions_c {num_txns == 8;}
 
-  // Randomization of DMA configuration and transfer properties
+  // Permit only valid configurations for this simple smoke test
+  virtual function bit pick_if_config_valid();
+    return 1'b1;
+  endfunction
+
+  // Randomization of DMA configuration and transfer properties; here we are restricting the
+  // permissible configuration and transfers to just very basic memory-to-memory copy operations.
   virtual function void randomize_item(ref dma_seq_item dma_config);
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
@@ -39,41 +44,17 @@ class dma_memory_smoke_vseq extends dma_base_vseq;
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
       total_transfer_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
-      handshake == 1'b0;) //disable hardware handhake mode
+      handshake == 1'b0; // Disable hardware handshake mode
+      opcode == OpcCopy;) // Avoid any involved operations such as SHA2 hashing
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
                               dma_config.convert2string()), UVM_HIGH)
   endfunction
 
+  // The functionality of this vseq is implemented in `dma_generic_vseq` and restricted
+  // to 'memory-to-memory' transfers in `dma_memory_vseq`
   virtual task body();
     `uvm_info(`gfn, "DMA: Starting memory smoke Sequence", UVM_LOW)
     super.body();
-
-    `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns), UVM_LOW)
-
-    for (int i = 0; i < num_txns; i++) begin
-      `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
-      randomize_item(dma_config);
-      run_common_config(dma_config);
-      start_device(dma_config);
-      set_control_register(dma_config.opcode, // OPCODE
-                           1'b1,              // Initial transfer
-                           dma_config.handshake, // Handshake Enable
-                           dma_config.auto_inc_buffer, // Auto-increment Buffer Address
-                           dma_config.auto_inc_fifo, // Auto-increment FIFO Address
-                           dma_config.direction, // Direction
-                           1'b1); // Go
-      poll_status();
-      clear();
-      stop_device();
-      apply_resets_concurrently();
-      delay(10);
-      // Reset config
-      dma_config.reset_config();
-      clear_memory();
-      enable_interrupt();
-      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
-    end
-
     `uvm_info(`gfn, "DMA: Completed memory smoke Sequence", UVM_LOW)
   endtask : body
 endclass
