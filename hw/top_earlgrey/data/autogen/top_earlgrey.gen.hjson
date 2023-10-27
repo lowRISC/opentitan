@@ -4350,7 +4350,7 @@
       }
     }
     {
-      name: sensor_ctrl_aon
+      name: sensor_ctrl
       type: sensor_ctrl
       clock_srcs:
       {
@@ -4392,7 +4392,7 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           default: ""
           external: true
           top_signame: sensor_ctrl_ast_alert
@@ -4406,7 +4406,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           default: ""
           external: true
           top_signame: sensor_ctrl_ast_status
@@ -4421,7 +4421,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi4True
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           external: true
           top_signame: ast_init_done
           conn_type: false
@@ -4433,7 +4433,7 @@
           type: uni
           act: rcv
           width: 9
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           default: ""
           package: ""
           external: true
@@ -4447,7 +4447,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
@@ -4460,10 +4460,10 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: sensor_ctrl_aon
+          inst_name: sensor_ctrl
           default: ""
           end_idx: -1
-          top_signame: sensor_ctrl_aon_tl
+          top_signame: sensor_ctrl_tl
           index: -1
         }
       ]
@@ -8393,7 +8393,7 @@
         pinmux_aon.pin_wkup_req
         pinmux_aon.usb_wkup_req
         aon_timer_aon.wkup_req
-        sensor_ctrl_aon.wkup_req
+        sensor_ctrl.wkup_req
       ]
       pwrmgr_aon.rstreqs:
       [
@@ -8584,9 +8584,9 @@
       [
         peri.tl_lc_ctrl
       ]
-      sensor_ctrl_aon.tl:
+      sensor_ctrl.tl:
       [
-        peri.tl_sensor_ctrl_aon
+        peri.tl_sensor_ctrl
       ]
       alert_handler.tl:
       [
@@ -8670,10 +8670,10 @@
       otp_ctrl.otp_obs: otp_obs
       rstmgr_aon.por_n: por_n
       rv_core_ibex.fpga_info: fpga_info
-      sensor_ctrl_aon.ast_alert: sensor_ctrl_ast_alert
-      sensor_ctrl_aon.ast_status: sensor_ctrl_ast_status
-      sensor_ctrl_aon.ast2pinmux: ast2pinmux
-      sensor_ctrl_aon.ast_init_done: ast_init_done
+      sensor_ctrl.ast_alert: sensor_ctrl_ast_alert
+      sensor_ctrl.ast_status: sensor_ctrl_ast_status
+      sensor_ctrl.ast2pinmux: ast2pinmux
+      sensor_ctrl.ast_init_done: ast_init_done
       spi_device.sck_monitor: sck_monitor
       usbdev.usb_rx_d: ""
       usbdev.usb_tx_d: ""
@@ -9679,7 +9679,7 @@
           otp_ctrl.core
           otp_ctrl.prim
           lc_ctrl
-          sensor_ctrl_aon
+          sensor_ctrl
           alert_handler
           ast
           sram_ctrl_ret_aon.ram
@@ -10047,7 +10047,7 @@
           req_fifo_pass: true
         }
         {
-          name: sensor_ctrl_aon
+          name: sensor_ctrl
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -10436,7 +10436,7 @@
           index: -1
         }
         {
-          name: tl_sensor_ctrl_aon
+          name: tl_sensor_ctrl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -10444,7 +10444,7 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: sensor_ctrl_aon_tl
+          top_signame: sensor_ctrl_tl
           index: -1
         }
         {
@@ -11392,7 +11392,7 @@
         attr: ""
       }
       {
-        instance: sensor_ctrl_aon
+        instance: sensor_ctrl
         port: ""
         connection: muxed
         pad: ""
@@ -12465,7 +12465,7 @@
         glob_idx: 52
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 0
@@ -12476,7 +12476,7 @@
         glob_idx: 53
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 1
@@ -12487,7 +12487,7 @@
         glob_idx: 54
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 2
@@ -12498,7 +12498,7 @@
         glob_idx: 55
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 3
@@ -12509,7 +12509,7 @@
         glob_idx: 56
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 4
@@ -12520,7 +12520,7 @@
         glob_idx: 57
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 5
@@ -12531,7 +12531,7 @@
         glob_idx: 58
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 6
@@ -12542,7 +12542,7 @@
         glob_idx: 59
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 7
@@ -12553,7 +12553,7 @@
         glob_idx: 60
       }
       {
-        name: sensor_ctrl_aon_ast_debug_out
+        name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
         idx: 8
@@ -13200,7 +13200,7 @@
     {
       name: wkup_req
       width: "1"
-      module: sensor_ctrl_aon
+      module: sensor_ctrl
     }
   ]
   reset_requests:
@@ -13264,7 +13264,7 @@
     sysrst_ctrl_aon
     adc_ctrl_aon
     aon_timer_aon
-    sensor_ctrl_aon
+    sensor_ctrl
     flash_ctrl
     hmac
     kmac
@@ -14028,16 +14028,16 @@
       module_name: aon_timer_aon
     }
     {
-      name: sensor_ctrl_aon_io_status_change
+      name: sensor_ctrl_io_status_change
       width: 1
       type: interrupt
-      module_name: sensor_ctrl_aon
+      module_name: sensor_ctrl
     }
     {
-      name: sensor_ctrl_aon_init_status_change
+      name: sensor_ctrl_init_status_change
       width: 1
       type: interrupt
-      module_name: sensor_ctrl_aon
+      module_name: sensor_ctrl
     }
     {
       name: flash_ctrl_prog_empty
@@ -14222,7 +14222,7 @@
     pwm_aon
     pinmux_aon
     aon_timer_aon
-    sensor_ctrl_aon
+    sensor_ctrl
     sram_ctrl_ret_aon
     flash_ctrl
     rv_dm
@@ -14531,20 +14531,20 @@
       lpg_idx: 14
     }
     {
-      name: sensor_ctrl_aon_recov_alert
+      name: sensor_ctrl_recov_alert
       width: 1
       type: alert
       async: "1"
-      module_name: sensor_ctrl_aon
+      module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
       lpg_idx: 12
     }
     {
-      name: sensor_ctrl_aon_fatal_alert
+      name: sensor_ctrl_fatal_alert
       width: 1
       type: alert
       async: "1"
-      module_name: sensor_ctrl_aon
+      module_name: sensor_ctrl
       lpg_name: secure_lc_io_div4_Aon
       lpg_idx: 12
     }
@@ -17821,7 +17821,7 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         default: ""
         external: true
         top_signame: sensor_ctrl_ast_alert
@@ -17835,7 +17835,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         default: ""
         external: true
         top_signame: sensor_ctrl_ast_status
@@ -17850,7 +17850,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi4True
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         external: true
         top_signame: ast_init_done
         conn_type: false
@@ -17862,7 +17862,7 @@
         type: uni
         act: rcv
         width: 9
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         default: ""
         package: ""
         external: true
@@ -17876,7 +17876,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
@@ -17889,10 +17889,10 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: sensor_ctrl_aon
+        inst_name: sensor_ctrl
         default: ""
         end_idx: -1
-        top_signame: sensor_ctrl_aon_tl
+        top_signame: sensor_ctrl_tl
         index: -1
       }
       {
@@ -20211,7 +20211,7 @@
         index: -1
       }
       {
-        name: tl_sensor_ctrl_aon
+        name: tl_sensor_ctrl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -20219,7 +20219,7 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: sensor_ctrl_aon_tl
+        top_signame: sensor_ctrl_tl
         index: -1
       }
       {
@@ -23141,7 +23141,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: sensor_ctrl_aon_tl_req
+        signame: sensor_ctrl_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -23152,7 +23152,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: sensor_ctrl_aon_tl_rsp
+        signame: sensor_ctrl_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -37,7 +37,7 @@
       {
         name: wkup_req
         width: "1"
-        module: sensor_ctrl_aon
+        module: sensor_ctrl
       }
     ]
     rst_reqs:

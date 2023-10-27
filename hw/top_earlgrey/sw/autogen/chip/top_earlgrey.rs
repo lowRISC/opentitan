@@ -399,19 +399,19 @@ pub const AST_BASE_ADDR: usize = 0x40480000;
 /// `AST_BASE_ADDR + AST_SIZE_BYTES`.
 pub const AST_SIZE_BYTES: usize = 0x400;
 
-/// Peripheral base address for sensor_ctrl_aon in top earlgrey.
+/// Peripheral base address for sensor_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
+pub const SENSOR_CTRL_BASE_ADDR: usize = 0x40490000;
 
-/// Peripheral size for sensor_ctrl_aon in top earlgrey.
+/// Peripheral size for sensor_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SENSOR_CTRL_AON_BASE_ADDR and
-/// `SENSOR_CTRL_AON_BASE_ADDR + SENSOR_CTRL_AON_SIZE_BYTES`.
-pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x40;
+/// address between #SENSOR_CTRL_BASE_ADDR and
+/// `SENSOR_CTRL_BASE_ADDR + SENSOR_CTRL_SIZE_BYTES`.
+pub const SENSOR_CTRL_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
 ///
@@ -794,8 +794,8 @@ pub enum PlicPeripheral {
     AdcCtrlAon = 19,
     /// aon_timer_aon
     AonTimerAon = 20,
-    /// sensor_ctrl_aon
-    SensorCtrlAon = 21,
+    /// sensor_ctrl
+    SensorCtrl = 21,
     /// flash_ctrl
     FlashCtrl = 22,
     /// hmac
@@ -841,7 +841,7 @@ impl TryFrom<u32> for PlicPeripheral {
             18 => Ok(Self::SysrstCtrlAon),
             19 => Ok(Self::AdcCtrlAon),
             20 => Ok(Self::AonTimerAon),
-            21 => Ok(Self::SensorCtrlAon),
+            21 => Ok(Self::SensorCtrl),
             22 => Ok(Self::FlashCtrl),
             23 => Ok(Self::Hmac),
             24 => Ok(Self::Kmac),
@@ -1177,10 +1177,10 @@ pub enum PlicIrqId {
     AonTimerAonWkupTimerExpired = 155,
     /// aon_timer_aon_wdog_timer_bark
     AonTimerAonWdogTimerBark = 156,
-    /// sensor_ctrl_aon_io_status_change
-    SensorCtrlAonIoStatusChange = 157,
-    /// sensor_ctrl_aon_init_status_change
-    SensorCtrlAonInitStatusChange = 158,
+    /// sensor_ctrl_io_status_change
+    SensorCtrlIoStatusChange = 157,
+    /// sensor_ctrl_init_status_change
+    SensorCtrlInitStatusChange = 158,
     /// flash_ctrl_prog_empty
     FlashCtrlProgEmpty = 159,
     /// flash_ctrl_prog_lvl
@@ -1396,8 +1396,8 @@ impl TryFrom<u32> for PlicIrqId {
             154 => Ok(Self::AdcCtrlAonMatchDone),
             155 => Ok(Self::AonTimerAonWkupTimerExpired),
             156 => Ok(Self::AonTimerAonWdogTimerBark),
-            157 => Ok(Self::SensorCtrlAonIoStatusChange),
-            158 => Ok(Self::SensorCtrlAonInitStatusChange),
+            157 => Ok(Self::SensorCtrlIoStatusChange),
+            158 => Ok(Self::SensorCtrlInitStatusChange),
             159 => Ok(Self::FlashCtrlProgEmpty),
             160 => Ok(Self::FlashCtrlProgLvl),
             161 => Ok(Self::FlashCtrlRdFull),
@@ -1495,8 +1495,8 @@ pub enum AlertPeripheral {
     PinmuxAon = 22,
     /// aon_timer_aon
     AonTimerAon = 23,
-    /// sensor_ctrl_aon
-    SensorCtrlAon = 24,
+    /// sensor_ctrl
+    SensorCtrl = 24,
     /// sram_ctrl_ret_aon
     SramCtrlRetAon = 25,
     /// flash_ctrl
@@ -1602,10 +1602,10 @@ pub enum AlertId {
     PinmuxAonFatalFault = 30,
     /// aon_timer_aon_fatal_fault
     AonTimerAonFatalFault = 31,
-    /// sensor_ctrl_aon_recov_alert
-    SensorCtrlAonRecovAlert = 32,
-    /// sensor_ctrl_aon_fatal_alert
-    SensorCtrlAonFatalAlert = 33,
+    /// sensor_ctrl_recov_alert
+    SensorCtrlRecovAlert = 32,
+    /// sensor_ctrl_fatal_alert
+    SensorCtrlFatalAlert = 33,
     /// sram_ctrl_ret_aon_fatal_error
     SramCtrlRetAonFatalError = 34,
     /// flash_ctrl_recov_err
@@ -1706,8 +1706,8 @@ impl TryFrom<u32> for AlertId {
             29 => Ok(Self::PwmAonFatalFault),
             30 => Ok(Self::PinmuxAonFatalFault),
             31 => Ok(Self::AonTimerAonFatalFault),
-            32 => Ok(Self::SensorCtrlAonRecovAlert),
-            33 => Ok(Self::SensorCtrlAonFatalAlert),
+            32 => Ok(Self::SensorCtrlRecovAlert),
+            33 => Ok(Self::SensorCtrlFatalAlert),
             34 => Ok(Self::SramCtrlRetAonFatalError),
             35 => Ok(Self::FlashCtrlRecovErr),
             36 => Ok(Self::FlashCtrlFatalStdErr),
@@ -2063,10 +2063,10 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 185] = [
     PlicPeripheral::AonTimerAon,
     // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
     PlicPeripheral::AonTimerAon,
-    // SensorCtrlAonIoStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
-    // SensorCtrlAonInitStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
+    // SensorCtrlIoStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
+    // SensorCtrlInitStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
     // FlashCtrlProgEmpty -> PlicPeripheral::FlashCtrl
     PlicPeripheral::FlashCtrl,
     // FlashCtrlProgLvl -> PlicPeripheral::FlashCtrl
@@ -2190,10 +2190,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 65] = [
     AlertPeripheral::PinmuxAon,
     // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
     AlertPeripheral::AonTimerAon,
-    // SensorCtrlAonRecovAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
-    // SensorCtrlAonFatalAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
+    // SensorCtrlRecovAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
+    // SensorCtrlFatalAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
     // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
     AlertPeripheral::SramCtrlRetAon,
     // FlashCtrlRecovErr -> AlertPeripheral::FlashCtrl
@@ -2887,23 +2887,23 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 52
     FlashCtrlTdo = 55,
     /// Peripheral Output 53
-    SensorCtrlAonAstDebugOut0 = 56,
+    SensorCtrlAstDebugOut0 = 56,
     /// Peripheral Output 54
-    SensorCtrlAonAstDebugOut1 = 57,
+    SensorCtrlAstDebugOut1 = 57,
     /// Peripheral Output 55
-    SensorCtrlAonAstDebugOut2 = 58,
+    SensorCtrlAstDebugOut2 = 58,
     /// Peripheral Output 56
-    SensorCtrlAonAstDebugOut3 = 59,
+    SensorCtrlAstDebugOut3 = 59,
     /// Peripheral Output 57
-    SensorCtrlAonAstDebugOut4 = 60,
+    SensorCtrlAstDebugOut4 = 60,
     /// Peripheral Output 58
-    SensorCtrlAonAstDebugOut5 = 61,
+    SensorCtrlAstDebugOut5 = 61,
     /// Peripheral Output 59
-    SensorCtrlAonAstDebugOut6 = 62,
+    SensorCtrlAstDebugOut6 = 62,
     /// Peripheral Output 60
-    SensorCtrlAonAstDebugOut7 = 63,
+    SensorCtrlAstDebugOut7 = 63,
     /// Peripheral Output 61
-    SensorCtrlAonAstDebugOut8 = 64,
+    SensorCtrlAstDebugOut8 = 64,
     /// Peripheral Output 62
     PwmAonPwm0 = 65,
     /// Peripheral Output 63
@@ -2992,15 +2992,15 @@ impl TryFrom<u32> for PinmuxOutsel {
             53 => Ok(Self::SpiHost1Sck),
             54 => Ok(Self::SpiHost1Csb),
             55 => Ok(Self::FlashCtrlTdo),
-            56 => Ok(Self::SensorCtrlAonAstDebugOut0),
-            57 => Ok(Self::SensorCtrlAonAstDebugOut1),
-            58 => Ok(Self::SensorCtrlAonAstDebugOut2),
-            59 => Ok(Self::SensorCtrlAonAstDebugOut3),
-            60 => Ok(Self::SensorCtrlAonAstDebugOut4),
-            61 => Ok(Self::SensorCtrlAonAstDebugOut5),
-            62 => Ok(Self::SensorCtrlAonAstDebugOut6),
-            63 => Ok(Self::SensorCtrlAonAstDebugOut7),
-            64 => Ok(Self::SensorCtrlAonAstDebugOut8),
+            56 => Ok(Self::SensorCtrlAstDebugOut0),
+            57 => Ok(Self::SensorCtrlAstDebugOut1),
+            58 => Ok(Self::SensorCtrlAstDebugOut2),
+            59 => Ok(Self::SensorCtrlAstDebugOut3),
+            60 => Ok(Self::SensorCtrlAstDebugOut4),
+            61 => Ok(Self::SensorCtrlAstDebugOut5),
+            62 => Ok(Self::SensorCtrlAstDebugOut6),
+            63 => Ok(Self::SensorCtrlAstDebugOut7),
+            64 => Ok(Self::SensorCtrlAstDebugOut8),
             65 => Ok(Self::PwmAonPwm0),
             66 => Ok(Self::PwmAonPwm1),
             67 => Ok(Self::PwmAonPwm2),
@@ -3184,7 +3184,7 @@ pub enum PowerManagerWakeUps {
     PinmuxAonPinWkupReq = 2,
     PinmuxAonUsbWkupReq = 3,
     AonTimerAonWkupReq = 4,
-    SensorCtrlAonWkupReq = 5,
+    SensorCtrlWkupReq = 5,
 }
 
 /// Reset Manager Software Controlled Resets

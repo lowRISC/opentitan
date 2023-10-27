@@ -116,11 +116,11 @@
     { name: "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST"
       desc: "Wakeup request wkup_req from aon_timer_aon."
     }
-    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_req from sensor_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_WKUP_REQ_WAKEUP_ENABLE"
+      desc: "Enable wakeup request wkup_req from sensor_ctrl."
     }
-    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_req from sensor_ctrl_aon."
+    { name: "PWRMGR.LOW_POWER.SENSOR_CTRL_WKUP_REQ_WAKEUP_REQUEST"
+      desc: "Wakeup request wkup_req from sensor_ctrl."
     }
     { name: "PWRMGR.LOW_POWER.WAKE_INFO"
       desc: "Record what caused the chip to wakeup from low power."
@@ -339,8 +339,8 @@
       local: "true"
     },
 
-    { name: "SENSOR_CTRL_AON_WKUP_REQ_IDX",
-      desc: "Vector index for sensor_ctrl_aon wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
+    { name: "SENSOR_CTRL_WKUP_REQ_IDX",
+      desc: "Vector index for sensor_ctrl wkup_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
       default: "5",
       local: "true"
