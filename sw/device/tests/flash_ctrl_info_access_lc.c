@@ -149,12 +149,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
     compare_and_clear_irq_variables();
+    LOG_INFO("partition:%1d write done", partition_number);
   } else {
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
+    LOG_INFO("partition:%1d write not allowed", partition_number);
   }
-  LOG_INFO("partition:%1d write done", partition_number);
 
   // Read task:
   // Read page and compared with test_data.
@@ -168,13 +169,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
     compare_and_clear_irq_variables();
     CHECK_ARRAYS_EQ(readback_data, test_data, kInfoSize);
-
+    LOG_INFO("partition:%1d read done", partition_number);
   } else {
     CHECK_STATUS_NOT_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
+    LOG_INFO("partition:%1d read not allowed", partition_number);
   }
-  LOG_INFO("partition:%1d read done", partition_number);
 }
 
 bool test_main(void) {
@@ -198,8 +199,12 @@ bool test_main(void) {
   dif_lc_ctrl_state_t lc_state;
   bool personalized = false;
   // Check if device is personalized.
+  uint32_t reg =
+      mmio_region_read32(lc_ctrl.base_addr, LC_CTRL_LC_ID_STATE_REG_OFFSET);
+  LOG_INFO("id_state: %x", reg);
+
   CHECK_DIF_OK(dif_lc_ctrl_get_id_state(&lc_ctrl, &lc_id_state));
-  personalized = (lc_id_state == LC_CTRL_LC_ID_STATE_STATE_VALUE_PERSONALIZED);
+  personalized = (lc_id_state == kDifLcCtrlIdStatePersonalized);
   LOG_INFO("test: personalized : %d", personalized);
 
   // Read lc state and execute info part access test.
