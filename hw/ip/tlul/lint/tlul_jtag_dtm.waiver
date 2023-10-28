@@ -1,0 +1,19 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+
+waive -rules {RESET_USE} \
+      -location {tlul_jtag_dtm.sv} \
+      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at tlul_jtag_dtm} \
+      -comment "This is a reset signal."
+
+waive -rules {CLOCK_MUX} \
+      -location {tlul_jtag_dtm.sv} \
+      -msg {Clock 'tck_muxed' is driven by a multiplexer here} \
+      -comment "This mux is needed for scanmode."
+
+waive -rules {RESET_MUX} \
+      -location {tlul_jtag_dtm.sv} \
+      -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here} \
+      -comment "This mux is needed for scanmode."
