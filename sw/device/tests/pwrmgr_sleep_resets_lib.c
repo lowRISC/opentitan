@@ -279,6 +279,10 @@ void enter_sleep_for_sysrst(bool deep_sleep) {
                        kDifPwrmgrDomainOptionMainPowerInLowPower;
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
       pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
+  // Log message to synchronize with host side: emit it as close as
+  // possible before WFI so the host has no chance of sending the reset
+  // before it is enabled.
+  LOG_INFO("Sysrst reset in %s sleep mode", deep_sleep ? "deep" : "normal");
   // Enter in low power mode.
   wait_for_interrupt();
 

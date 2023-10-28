@@ -76,7 +76,6 @@ bool test_main(void) {
 
   switch (reset_case) {
     case 0:
-      LOG_INFO("Sysrst reset in normal sleep mode");
       config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
                                                 : kTopEarlgreyPinmuxInselIoc0);
       enter_sleep_for_sysrst(/*deep_sleep=*/false);
