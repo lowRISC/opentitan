@@ -194,8 +194,7 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
       sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopEarlgreyPinmuxInselIor13));
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In, pad_pin));
 }
 
 void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
