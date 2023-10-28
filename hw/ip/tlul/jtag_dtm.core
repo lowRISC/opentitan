@@ -29,7 +29,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      # - lint/tlul_jtag_dtm.waiver
+      - lint/tlul_jtag_dtm.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
