@@ -392,10 +392,10 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_ctrl_core_hw2reg_t named_reg_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest);
-    logic unused;
     otp_ctrl_core_hw2reg_t hw2reg;
+    logic unused_sigs;
+    unused_sigs = ^part_digest;
     hw2reg = '0;
-    unused = 1'b0;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
@@ -403,7 +403,6 @@ package otp_ctrl_part_pkg;
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
-    unused ^= ^part_digest[LifeCycleIdx];
     return hw2reg;
   endfunction : named_reg_assign
 
