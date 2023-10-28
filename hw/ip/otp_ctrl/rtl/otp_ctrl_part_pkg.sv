@@ -678,14 +678,13 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_ctrl_core_hw2reg_t named_reg_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest);
-    logic unused;
     otp_ctrl_core_hw2reg_t hw2reg;
+    logic unused_sigs;
+    unused_sigs = ^part_digest;
     hw2reg = '0;
-    unused = 1'b0;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
-    unused ^= ^part_digest[OwnershipSlotStateIdx];
     hw2reg.rot_creator_auth_digest = part_digest[RotCreatorAuthIdx];
     hw2reg.rot_owner_auth_slot0_digest = part_digest[RotOwnerAuthSlot0Idx];
     hw2reg.rot_owner_auth_slot1_digest = part_digest[RotOwnerAuthSlot1Idx];
@@ -695,7 +694,6 @@ package otp_ctrl_part_pkg;
     hw2reg.plat_owner_auth_slot1_digest = part_digest[PlatOwnerAuthSlot1Idx];
     hw2reg.plat_owner_auth_slot2_digest = part_digest[PlatOwnerAuthSlot2Idx];
     hw2reg.plat_owner_auth_slot3_digest = part_digest[PlatOwnerAuthSlot3Idx];
-    unused ^= ^part_digest[ExtNvmIdx];
     hw2reg.rom_patch_digest = part_digest[RomPatchIdx];
     hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
     hw2reg.hw_cfg1_digest = part_digest[HwCfg1Idx];
@@ -703,7 +701,6 @@ package otp_ctrl_part_pkg;
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
     hw2reg.secret3_digest = part_digest[Secret3Idx];
-    unused ^= ^part_digest[LifeCycleIdx];
     return hw2reg;
   endfunction : named_reg_assign
 
