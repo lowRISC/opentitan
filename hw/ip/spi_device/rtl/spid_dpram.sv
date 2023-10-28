@@ -58,15 +58,15 @@ module spid_dpram
   // Only allow software to write to the write-only locations. Filter by
   // address.
   logic sys2spi_wr_req;
-  logic [Sys2SpiAw-1:0] sys2spi_wr_addr;
+  sram_addr_t sys2spi_wr_addr;
   assign sys2spi_wr_req = (sys_addr_i < Sys2SpiEnd) & sys_req_i & sys_write_i;
-  assign sys2spi_wr_addr = Sys2SpiAw'(sys_addr_i - Sys2SpiOffset);
+  assign sys2spi_wr_addr = sys_addr_i - Sys2SpiOffset;
 
   // SPI reads from only the Sys2Spi memory.
   logic sys2spi_rd_req;
-  logic [Sys2SpiAw-1:0] sys2spi_rd_addr;
+  sram_addr_t sys2spi_rd_addr;
   assign sys2spi_rd_req = spi_req_i & !spi_write_i;
-  assign sys2spi_rd_addr = Sys2SpiAw'(spi_addr_i - Sys2SpiOffset);
+  assign sys2spi_rd_addr = spi_addr_i - Sys2SpiOffset;
 
   prim_ram_1r1w_async_adv #(
     .Depth                     (Sys2SpiDepth),
@@ -83,12 +83,12 @@ module spid_dpram
     .rst_a_ni                  (rst_sys_ni),
     .rst_b_ni                  (rst_spi_ni),
     .a_req_i                   (sys2spi_wr_req),
-    .a_addr_i                  (sys2spi_wr_addr),
+    .a_addr_i                  (Sys2SpiAw'(sys2spi_wr_addr)),
     .a_wdata_i                 (sys_wdata_i),
     .a_wmask_i                 (sys_wmask_i),
 
     .b_req_i                   (sys2spi_rd_req),
-    .b_addr_i                  (sys2spi_rd_addr),
+    .b_addr_i                  (Sys2SpiAw'(sys2spi_rd_addr)),
     .b_rdata_o                 (spi_rdata_o),
     .b_rvalid_o                (spi_rvalid_o),
     .b_rerror_o                (spi_rerror_o),
@@ -104,17 +104,17 @@ module spid_dpram
 
   // SPI writes to only the Spi2Sys memory.
   logic spi2sys_wr_req;
-  logic [Spi2SysAw-1:0] spi2sys_wr_addr;
+  sram_addr_t spi2sys_wr_addr;
   assign spi2sys_wr_req = spi_req_i & spi_write_i;
-  assign spi2sys_wr_addr = Spi2SysAw'(spi_addr_i - Spi2SysOffset);
+  assign spi2sys_wr_addr = spi_addr_i - Spi2SysOffset;
 
   // SYS reads only read from the Spi2Sys memory.
   // Allow all reads to complete, so the bus always gets a response, even if
   // software chooses to read from write-only addresses.
   logic spi2sys_rd_req;
-  logic [Spi2SysAw-1:0] spi2sys_rd_addr;
+  sram_addr_t spi2sys_rd_addr;
   assign spi2sys_rd_req = sys_req_i & !sys_write_i;
-  assign spi2sys_rd_addr = Spi2SysAw'(sys_addr_i - Spi2SysOffset);
+  assign spi2sys_rd_addr = sys_addr_i - Spi2SysOffset;
 
   prim_ram_1r1w_async_adv #(
     .Depth                     (Spi2SysDepth),
@@ -131,12 +131,12 @@ module spid_dpram
     .rst_a_ni                  (rst_spi_ni),
     .rst_b_ni                  (rst_sys_ni),
     .a_req_i                   (spi2sys_wr_req),
-    .a_addr_i                  (spi2sys_wr_addr),
+    .a_addr_i                  (Spi2SysAw'(spi2sys_wr_addr)),
     .a_wdata_i                 (spi_wdata_i),
     .a_wmask_i                 (spi_wmask_i),
 
     .b_req_i                   (spi2sys_rd_req),
-    .b_addr_i                  (spi2sys_rd_addr),
+    .b_addr_i                  (Spi2SysAw'(spi2sys_rd_addr)),
     .b_rdata_o                 (sys_rdata_o),
     .b_rvalid_o                (sys_rvalid_o),
     .b_rerror_o                (sys_rerror_o),

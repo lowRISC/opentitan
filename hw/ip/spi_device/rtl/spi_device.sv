@@ -210,8 +210,6 @@ module spi_device
 
   logic sys_csb_syncd;
 
-  logic rst_txfifo_reg, rst_rxfifo_reg;
-
   //spi_addr_size_e addr_size; // Not used in fwmode
   spi_mode_e spi_mode;
   //spi_byte_t fw_dummy_byte;
@@ -406,8 +404,10 @@ module spi_device
   assign txorder = reg2hw.cfg.tx_order.q;
   assign rxorder = reg2hw.cfg.rx_order.q;
 
-  assign rst_txfifo_reg = reg2hw.control.rst_txfifo.q;
-  assign rst_rxfifo_reg = reg2hw.control.rst_rxfifo.q;
+  // Tied off due to removal of fwmode.
+  logic unused_regs;
+  assign unused_regs = ^{reg2hw.control.rst_txfifo.q,
+                         reg2hw.control.rst_rxfifo.q};
 
   assign sram_clk_en = reg2hw.control.sram_clk_en.q;
 

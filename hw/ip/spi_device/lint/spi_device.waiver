@@ -121,6 +121,12 @@ waive -rules RESET_MUX -location {spi_device.sv} \
 waive -rules RESET_DRIVER -location {spi_device.sv} \
       -regexp {'tpm_rst_n' is driven} \
       -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'rst_(sys|spi)_ni' is connected to 'prim_ram_1r1w_async_adv' port 'rst_a_ni', and used as an asynchronous reset or set 'rst_b_ni' at prim_ram_1r1w_async_adv} \
+      -comment "These reset signals are each connected to both a rst_a_ni and rst_b_ni port of two different 1r1w memories."
+waive -rules RESET_USE -location {spid_dpram.sv} \
+      -regexp {'rst_(sys|spi)_ni' is connected to 'prim_ram_1r1w_async_adv' port} \
+      -comment "These reset signals are each connected to both a rst_a_ni and rst_b_ni port of two different 1r1w memories."
 
 # clock inverter and muxes
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_(out|src)_i'} \
@@ -131,7 +137,7 @@ waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_in_buf'
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in|out)' is driven by a multiplexer here, used as a clock 'clk_src_i'} \
       -comment "These multiplexers are needed to select between inverted and non-inverted clock based on configuration"
 
-waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_spi_(in_muxed|out_muxed|csb_muxed)' is driven by a multiplexer here, used as a clock 'clk_src_i'} \
+waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'clk_(spi_in_muxed|spi_out_muxed|csb_muxed)' is driven by a multiplexer here, used as a clock} \
       -comment "These multiplexers are needed to select the scan clock"
 
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock '(cio_sck_i|sck_n)' reaches a multiplexer here, used as a clock 'clk_src_i'} \
@@ -158,7 +164,7 @@ waive -rules CASE_INC -location {spi_fwm_*xf_ctrl.sv} -regexp {Case statement ta
 #### NOT used
 ####   For the convenience of the design, below signals are intentionally unused
 waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
-      -regexp {'sub_(sram|p2s|iomode)_.*\[(0|0:1)\]' is not (used|read)} \
+      -regexp {'sub_(sram|p2s|iomode).*\[(0|0:1)\]' is not (used|read)} \
       -comment "CmdParse does not have SRAM intf and Fwmode has been tied off"
 
 #### Intented Terminal States
@@ -195,7 +201,7 @@ waive -rules {CLOCK_USE} -location {spi_device.sv} \
       -comment "This clock mux is required."
 
 waive -rules {CLOCK_USE} -location {spi_device.sv} \
-      -regexp {'(sys|sck)_csb' is connected to 'prim_edge_detector' port 'd_i[0]', and used as a clock} \
+      -regexp {'(sys|sck)_csb' is connected to 'prim_edge_detector' port 'd_i\[0\]', and used as a clock} \
       -comment "The clock is sampled here by a prim edge detector."
 
 waive -rules {CLOCK_USE} -location {spi_device.sv} \
