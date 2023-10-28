@@ -685,8 +685,8 @@ module chip_${top["name"]}_${target["name"]} #(
   assign ext_clk = mio_in_raw[MioPadMio11];
 
   wire unused_t0, unused_t1;
-  assign unused_t0 = 1'bz;
-  assign unused_t1 = 1'bz;
+  assign unused_t0 = 1'b0;
+  assign unused_t1 = 1'b0;
 % endif
 
   // AST does not use all clocks / resets forwarded to it
