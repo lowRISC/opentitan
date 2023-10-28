@@ -30,3 +30,8 @@ py_test(
     ],
     deps = [":bitstream_bisect_support"],
 )
+
+py_binary(
+    name = "splice",
+    srcs = ["splice.py"],
+)
