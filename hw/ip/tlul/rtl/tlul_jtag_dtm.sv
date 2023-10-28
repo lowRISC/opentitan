@@ -136,8 +136,9 @@ module tlul_jtag_dtm #(
   assign dmi_resp.resp = (dmi_error) ? dm::DTM_ERR : dm::DTM_SUCCESS;
 
   // These signals are unused
-  logic unused_tap_tl_d2h;
-  assign unused_tap_tl_d2h = ^{
+  logic unused_sigs;
+  assign unused_sigs = ^{
+    dmi_req.addr[31:30],
     tl_d2h_i.d_opcode,
     tl_d2h_i.d_param,
     tl_d2h_i.d_size,
