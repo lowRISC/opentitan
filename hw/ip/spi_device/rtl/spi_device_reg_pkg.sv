@@ -10,7 +10,7 @@ package spi_device_reg_pkg;
   parameter int unsigned SramDepth = 1024;
   parameter int unsigned SramOffset = 4096;
   parameter int unsigned SramEgressDepth = 832;
-  parameter int unsigned SramIngressDepth = 104;
+  parameter int unsigned SramIngressDepth = 96;
   parameter int unsigned NumCmdInfo = 24;
   parameter int unsigned NumLocality = 5;
   parameter int unsigned TpmWrFifoPtrW = 7;
@@ -857,7 +857,7 @@ package spi_device_reg_pkg;
   parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_SIZE   = 'h d00;
   parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_IDX    = 0;
   parameter logic [BlockAw-1:0] SPI_DEVICE_INGRESS_BUFFER_OFFSET = 13'h 1e00;
-  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_SIZE   = 'h 1a0;
+  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_SIZE   = 'h 180;
   parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_IDX    = 1;
 
   // Register index

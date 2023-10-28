@@ -14,6 +14,18 @@ package spi_device_env_pkg;
   import cip_base_pkg::*;
   import mem_model_pkg::*;
   import spi_device_ral_pkg::*;
+  import spi_device_pkg::SramReadBufferIdx;
+  import spi_device_pkg::SramReadBufferSize;
+  import spi_device_pkg::SramMailboxIdx;
+  import spi_device_pkg::SramMailboxSize;
+  import spi_device_pkg::SramSfdpIdx;
+  import spi_device_pkg::SramSfdpSize;
+  import spi_device_pkg::SramPayloadIdx;
+  import spi_device_pkg::SramPayloadSize;
+  import spi_device_pkg::SramCmdFifoIdx;
+  import spi_device_pkg::SramCmdFifoSize;
+  import spi_device_pkg::SramAddrFifoIdx;
+  import spi_device_pkg::SramAddrFifoSize;
   import dv_base_reg_pkg::*;
 
   // macro includes
@@ -77,30 +89,30 @@ package spi_device_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   // SPI SRAM is 2kB
-  parameter uint SRAM_OFFSET                     = 'h1000;
-  parameter uint SRAM_SIZE                       = 4096; // 672 depth
-  parameter uint SRAM_EGRESS_SIZE                = 2048 + 1024 + 256; // 832 depth
-  parameter uint SRAM_INGRESS_SIZE               = 256 + 64 + 64; // 96 depth
-  parameter uint SRAM_MSB                        = $clog2(SRAM_SIZE) - 1;
-  parameter uint SRAM_PTR_PHASE_BIT              = SRAM_MSB + 1;
-  parameter uint SRAM_WORD_SIZE                  = 4;
-  parameter uint ASYNC_FIFO_SIZE                 = 8;
-  parameter uint READ_BUFFER_START_ADDR          = SRAM_OFFSET;
-  parameter uint READ_BUFFER_SIZE                = 2048;
-  parameter uint READ_BUFFER_HALF_SIZE           = READ_BUFFER_SIZE / 2;
+  parameter uint SRAM_OFFSET              = spi_device_reg_pkg::SramOffset;
+  parameter uint SRAM_WORD_SIZE           = spi_device_pkg::SramStrbW;
+  parameter uint SRAM_SIZE                = spi_device_reg_pkg::SramDepth * SRAM_WORD_SIZE;
+  parameter uint SRAM_EGRESS_SIZE         = spi_device_reg_pkg::SramEgressDepth * SRAM_WORD_SIZE;
+  parameter uint SRAM_INGRESS_SIZE        = spi_device_reg_pkg::SramIngressDepth * SRAM_WORD_SIZE;
+  parameter uint SRAM_MSB                 = $clog2(SRAM_SIZE) - 1;
+  parameter uint SRAM_PTR_PHASE_BIT       = SRAM_MSB + 1;
+  parameter uint ASYNC_FIFO_SIZE          = 8;
+  parameter uint READ_BUFFER_START_ADDR   = uint'(SramReadBufferIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint READ_BUFFER_SIZE         = uint'(SramReadBufferSize) * SRAM_WORD_SIZE;
+  parameter uint READ_BUFFER_HALF_SIZE    = READ_BUFFER_SIZE / 2;
   // MAILBOX_START_ADDR is 0x800
-  parameter uint MAILBOX_START_ADDR              = READ_BUFFER_START_ADDR + READ_BUFFER_SIZE;
-  parameter uint MAILBOX_BUFFER_SIZE             = 1024;
+  parameter uint MAILBOX_START_ADDR       = uint'(SramMailboxIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint MAILBOX_BUFFER_SIZE      = uint'(SramMailboxSize) * SRAM_WORD_SIZE;
   // SFDP_START_ADDR is 0xc00
-  parameter uint SFDP_START_ADDR                 = MAILBOX_START_ADDR + MAILBOX_BUFFER_SIZE;
-  parameter uint SFDP_SIZE                       = 256;
-  parameter uint PAYLOAD_FIFO_START_ADDR         = SFDP_START_ADDR + SFDP_SIZE; // 0xd00
-  parameter uint PAYLOAD_FIFO_SIZE               = 256;
+  parameter uint SFDP_START_ADDR          = uint'(SramSfdpIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint SFDP_SIZE                = uint'(SramSfdpSize) * SRAM_WORD_SIZE;
+  parameter uint PAYLOAD_FIFO_START_ADDR  = uint'(SramPayloadIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint PAYLOAD_FIFO_SIZE        = uint'(SramPayloadSize) * SRAM_WORD_SIZE;
   // CMD_FIFO_START_ADDR is 0xe00
-  parameter uint CMD_FIFO_START_ADDR             = PAYLOAD_FIFO_START_ADDR + PAYLOAD_FIFO_SIZE;
-  parameter uint CMD_FIFO_SIZE                   = 32;
-  parameter uint ADDR_FIFO_START_ADDR            = CMD_FIFO_START_ADDR + CMD_FIFO_SIZE; // 0xe20
-  parameter uint ADDR_FIFO_SIZE                  = 32;
+  parameter uint CMD_FIFO_START_ADDR      = uint'(SramCmdFifoIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint CMD_FIFO_SIZE            = uint'(SramCmdFifoSize) * SRAM_WORD_SIZE;
+  parameter uint ADDR_FIFO_START_ADDR     = uint'(SramAddrFifoIdx) * SRAM_WORD_SIZE + SRAM_OFFSET;
+  parameter uint ADDR_FIFO_SIZE           = uint'(SramAddrFifoSize) * SRAM_WORD_SIZE;
 
   parameter uint FW_FLASH_CSB_ID                 = 0; // for both FW and flash/passthrough mode
   parameter uint TPM_CSB_ID                      = 1;

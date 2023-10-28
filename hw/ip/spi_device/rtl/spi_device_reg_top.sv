@@ -134,7 +134,7 @@ module spi_device_reg_top (
   always_comb begin
     reg_steer =
         tl_i.a_address[AW-1:0] inside {[4096:7423]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[7680:8095]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[7680:8063]} ? 2'd1 :
         // Default set to register
         2'd2;
 

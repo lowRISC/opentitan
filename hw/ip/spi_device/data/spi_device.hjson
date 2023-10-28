@@ -149,7 +149,7 @@
     { name:    "SramIngressDepth"
       desc:    "Sram Ingress Entries. Word size is 32bit width."
       type:    "int unsigned"
-      default: "104"
+      default: "96"
       local:   "true"
     }
     { name:    "NumCmdInfo"

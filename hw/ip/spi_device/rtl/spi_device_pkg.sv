@@ -480,13 +480,13 @@ package spi_device_pkg;
 
   parameter sram_addr_t SramIngressIdx =
     sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
-  parameter sram_addr_t SramPayloadIdx  = SramIngressByteOffset;
+  parameter sram_addr_t SramPayloadIdx  = SramIngressIdx;
   parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
 
-  parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize ;
+  parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize;
   parameter sram_addr_t SramCmdFifoSize = sram_addr_t'(SramCmdFifoDepth);
 
-  parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize ;
+  parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize;
   parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
 
   // Max BitCount in a transaction

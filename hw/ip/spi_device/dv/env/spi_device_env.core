@@ -3,13 +3,14 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:spi_device_env:0.1"
-description: "RISC-V Timer DV UVM environmnt"
+description: "SPI Device DV UVM environmnt"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:spi_agent
+      - lowrisc:ip:spi_device
     files:
       - spi_device_env_pkg.sv
       - spi_device_env_cfg.sv: {is_include_file: true}
