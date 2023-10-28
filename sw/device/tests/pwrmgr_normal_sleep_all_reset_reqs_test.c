@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -76,7 +77,8 @@ bool test_main(void) {
   switch (reset_case) {
     case 0:
       LOG_INFO("Sysrst reset in normal sleep mode");
-      config_sysrst(kTopEarlgreyPinmuxInselIor13);
+      config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
+                                                : kTopEarlgreyPinmuxInselIoc0);
       enter_sleep_for_sysrst(/*deep_sleep=*/false);
       break;
     case 1:
