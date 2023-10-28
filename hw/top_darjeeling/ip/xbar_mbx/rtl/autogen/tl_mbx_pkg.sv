@@ -6,15 +6,15 @@
 
 package tl_mbx_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_MBX0__SOC      = 32'h 00005000;
-  localparam logic [31:0] ADDR_SPACE_MBX1__SOC      = 32'h 00005100;
-  localparam logic [31:0] ADDR_SPACE_MBX2__SOC      = 32'h 00005200;
-  localparam logic [31:0] ADDR_SPACE_MBX3__SOC      = 32'h 00005300;
+  localparam logic [31:0] ADDR_SPACE_MBX0__SOC      = 32'h 01465000;
+  localparam logic [31:0] ADDR_SPACE_MBX1__SOC      = 32'h 01465100;
+  localparam logic [31:0] ADDR_SPACE_MBX2__SOC      = 32'h 01465200;
+  localparam logic [31:0] ADDR_SPACE_MBX3__SOC      = 32'h 01465300;
   localparam logic [31:0] ADDR_SPACE_MBX4__SOC      = 32'h 00005400;
-  localparam logic [31:0] ADDR_SPACE_MBX5__SOC      = 32'h 00005500;
-  localparam logic [31:0] ADDR_SPACE_MBX6__SOC      = 32'h 00005600;
-  localparam logic [31:0] ADDR_SPACE_MBX_PCIE0__SOC = 32'h 00000100;
-  localparam logic [31:0] ADDR_SPACE_MBX_PCIE1__SOC = 32'h 00000200;
+  localparam logic [31:0] ADDR_SPACE_MBX5__SOC      = 32'h 01465400;
+  localparam logic [31:0] ADDR_SPACE_MBX6__SOC      = 32'h 01465600;
+  localparam logic [31:0] ADDR_SPACE_MBX_PCIE0__SOC = 32'h 01460100;
+  localparam logic [31:0] ADDR_SPACE_MBX_PCIE1__SOC = 32'h 01460200;
 
   localparam logic [31:0] ADDR_MASK_MBX0__SOC      = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_MBX1__SOC      = 32'h 0000001f;

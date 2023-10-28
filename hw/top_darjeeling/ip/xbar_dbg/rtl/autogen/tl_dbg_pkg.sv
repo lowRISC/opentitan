@@ -6,7 +6,7 @@
 
 package tl_dbg_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_MBX_JTAG__SOC = 32'h 00000200;
+  localparam logic [31:0] ADDR_SPACE_MBX_JTAG__SOC = 32'h 01460200;
 
   localparam logic [31:0] ADDR_MASK_MBX_JTAG__SOC = 32'h 0000001f;
 

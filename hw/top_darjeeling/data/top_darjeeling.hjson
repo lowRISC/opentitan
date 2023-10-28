@@ -786,7 +786,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000000"},
-        soc:  {soc_mbx: "0x00005000"},
+        soc:  {soc_mbx: "0x01465000"},
       },
     },
     { name: "mbx1",
@@ -796,7 +796,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000100"},
-        soc:  {soc_mbx: "0x00005100"},
+        soc:  {soc_mbx: "0x01465100"},
       },
     },
     { name: "mbx2",
@@ -806,7 +806,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000200"},
-        soc:  {soc_mbx: "0x00005200"},
+        soc:  {soc_mbx: "0x01465200"},
       },
     },
     { name: "mbx3",
@@ -816,7 +816,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000300"},
-        soc:  {soc_mbx: "0x00005300"},
+        soc:  {soc_mbx: "0x01465300"},
       },
     },
     { name: "mbx4",
@@ -836,7 +836,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000500"},
-        soc:  {soc_mbx: "0x00005500"},
+        soc:  {soc_mbx: "0x01465400"},
       },
     },
     { name: "mbx6",
@@ -846,7 +846,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000600"},
-        soc:  {soc_mbx: "0x00005600"},
+        soc:  {soc_mbx: "0x01465600"},
       },
     },
     { name: "mbx_jtag",
@@ -856,7 +856,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000800"},
-        soc:  {soc_dbg: "0x00000200"},
+        soc:  {soc_dbg: "0x01460200"},
       },
     },
     { name: "mbx_pcie0",
@@ -866,7 +866,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22040000"},
-        soc:  {soc_mbx: "0x00000100"},
+        soc:  {soc_mbx: "0x01460100"},
       },
     },
     { name: "mbx_pcie1",
@@ -876,7 +876,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22040100"},
-        soc:  {soc_mbx: "0x00000200"},
+        soc:  {soc_mbx: "0x01460200"},
       },
     },
     { name: "rv_core_ibex",

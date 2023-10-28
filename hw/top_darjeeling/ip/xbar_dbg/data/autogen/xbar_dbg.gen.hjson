@@ -65,7 +65,7 @@
         {
           base_addrs:
           {
-            soc_dbg: 0x200
+            soc_dbg: 0x1460200
           }
           size_byte: 0x20
         }

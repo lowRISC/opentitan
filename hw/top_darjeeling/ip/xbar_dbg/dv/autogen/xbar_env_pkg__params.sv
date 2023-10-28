@@ -8,7 +8,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
     '{"mbx_jtag__soc", '{
-        '{32'h00000200, 32'h0000021f}
+        '{32'h01460200, 32'h0146021f}
 }}};
 
   // List of Xbar hosts
