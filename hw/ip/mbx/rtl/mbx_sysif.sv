@@ -27,6 +27,7 @@ module mbx_sysif
   input  logic                        sysif_status_busy_valid_i,
   input  logic                        sysif_status_busy_i,
   output logic                        sysif_status_busy_o,
+  output logic                        sysif_async_en_o,
   input  logic                        sysif_status_doe_intr_state_set_i,
   input  logic                        sysif_status_error_set_i,
   output logic                        sysif_status_error_o,
