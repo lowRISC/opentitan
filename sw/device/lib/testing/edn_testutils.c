@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 
 /**
  * Returns randomized seed material.
