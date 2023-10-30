@@ -1107,54 +1107,69 @@ module chip_earlgrey_cw310 #(
 
   // Capture trigger.
   // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
-  // GPIO[11:9] is used for selecting the IP of interest. The encoding is as follows (see
+  // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
   // hint_names_e enum in clkmgr_pkg.sv for details).
   //
-  // IP              - GPIO[11:9] - Index for clkmgr_aon_idle
-  // ------------------------------------------------------------
-  //  AES            -   000      -  0
-  //  HMAC           -   001      -  1 - not implemented on CW305
-  //  KMAC           -   010      -  2 - not implemented on CW305
-  //  OTBN (IO_DIV4) -   011      -  3 - not implemented on CW305
-  //  OTBN           -   100      -  4 - not implemented on CW305
+  // IP              - GPIO[11:10] - Index for clkmgr_aon_idle
+  // -------------------------------------------------------------
+  //  AES            -   00       -  0
+  //  HMAC           -   01       -  1 - not implemented on CW305
+  //  KMAC           -   10       -  2 - not implemented on CW305
+  //  OTBN           -   11       -  3 - not implemented on CW305
   //
-  // In addition, GPIO8 is used for gating the capture trigger in software.
-  // Note that GPIO[11:8] are connected to LED[3:0] on the CW310.
-  // On the CW305, GPIO[9,8] are connected to LED[5,7].
+  // GPIO9 is used for gating the selected capture trigger in software. Alternatively, GPIO8
+  // can be used to implement a less precise but fully software-controlled capture trigger
+  // similar to what can be done on ASIC.
+  //
+  // Note that on the CW305, GPIO[9,8] are connected to LED[5(Green),7(Red)].
 
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10], mio_out[MioOutGpioGpio9]})
-      3'b000:  trigger_sel = clkmgr_pkg::HintMainAes;
-      3'b001:  trigger_sel = clkmgr_pkg::HintMainHmac;
-      3'b010:  trigger_sel = clkmgr_pkg::HintMainKmac;
-      3'b100:  trigger_sel = clkmgr_pkg::HintMainOtbn;
+    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
+      2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
+      2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
+      2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
+      2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
   assign clk_trans_idle = top_earlgrey.clkmgr_aon_idle[trigger_sel];
 
-  logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
-  logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
-  assign clk_io_div4_trigger_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
+  logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
+  logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
+  logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
+  logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
-    .Width ($bits(clk_trans_idle) + 2)
+    .Width ($bits(clk_trans_idle) + 4)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
     .rst_ni(manual_in_por_n),
-    .d_i   ({clk_trans_idle,        clk_io_div4_trigger_en,      clk_io_div4_trigger_oe}),
-    .q_o   ({manual_in_io_clk_idle, manual_in_io_clk_trigger_en, manual_in_io_clk_trigger_oe})
+    .d_i   ({clk_trans_idle,
+             clk_io_div4_trigger_hw_en,
+             clk_io_div4_trigger_hw_oe,
+             clk_io_div4_trigger_sw_en,
+             clk_io_div4_trigger_sw_oe}),
+    .q_o   ({manual_in_io_clk_idle,
+             manual_in_io_clk_trigger_hw_en,
+             manual_in_io_clk_trigger_hw_oe,
+             manual_in_io_clk_trigger_sw_en,
+             manual_in_io_clk_trigger_sw_oe})
   );
 
-  // Generate the actual trigger signal.
+  // Generate the actual trigger signal as trigger_sw OR trigger_hw.
   assign manual_attr_io_trigger = '0;
-  assign manual_oe_io_trigger  = manual_in_io_clk_trigger_oe;
-  assign manual_out_io_trigger = manual_in_io_clk_trigger_en &
-      prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle);
+  assign manual_oe_io_trigger  =
+      manual_in_io_clk_trigger_sw_oe | manual_in_io_clk_trigger_hw_oe;
+  assign manual_out_io_trigger =
+      manual_in_io_clk_trigger_sw_en | (manual_in_io_clk_trigger_hw_en &
+          prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle));
 
 endmodule : chip_earlgrey_cw310
