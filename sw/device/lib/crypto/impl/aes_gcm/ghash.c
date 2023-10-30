@@ -233,25 +233,63 @@ static void galois_mul_state_key(ghash_context_t *ctx) {
   memcpy(ctx->state.data, result.data, kGhashBlockNumBytes);
 }
 
+/**
+ * Single-block update function for GHASH.
+ *
+ * @param ctx GHASH context.
+ * @param block Block to incorporate.
+ */
+static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
+  // XOR `state` with the next input block.
+  block_xor(&ctx->state, block, &ctx->state);
+  // Multiply state by H in-place.
+  galois_mul_state_key(ctx);
+}
+
+void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                               ghash_block_t *partial, size_t input_len,
+                               const uint8_t *input) {
+  if (input_len < kGhashBlockNumBytes - partial_len) {
+    // Not enough data for a full block; copy into the partial block.
+    unsigned char *partial_bytes = (unsigned char *)partial->data;
+    memcpy(partial_bytes + partial_len, input, input_len);
+  } else {
+    // Construct a block from the partial data and the start of the new data.
+    unsigned char *partial_bytes = (unsigned char *)partial->data;
+    memcpy(partial_bytes + partial_len, input,
+           kGhashBlockNumBytes - partial_len);
+    input += kGhashBlockNumBytes - partial_len;
+    input_len -= kGhashBlockNumBytes - partial_len;
+
+    // Process the block.
+    ghash_process_block(ctx, partial);
+
+    // Process any remaining full blocks of input.
+    while (input_len >= kGhashBlockNumBytes) {
+      memcpy(partial->data, input, kGhashBlockNumBytes);
+      ghash_process_block(ctx, partial);
+      input += kGhashBlockNumBytes;
+      input_len -= kGhashBlockNumBytes;
+    }
+
+    // Copy any remaining input into the partial block.
+    memcpy(partial->data, input, input_len);
+  }
+}
+
 void ghash_update(ghash_context_t *ctx, size_t input_len,
                   const uint8_t *input) {
-  while (input_len > 0) {
-    // Construct block i of the input.
-    ghash_block_t input_block;
-    size_t nbytes = kGhashBlockNumBytes;
-    if (input_len < kGhashBlockNumBytes) {
-      // Last block may be partial; pad with zeroes.
-      memset(input_block.data, 0, kGhashBlockNumBytes);
-      nbytes = input_len;
-    }
-    memcpy(input_block.data, input, nbytes);
-    input_len -= nbytes;
-    input += nbytes;
+  // Process all full blocks and write the remaining non-full data into
+  // `partial`.
+  ghash_block_t partial = {.data = {0}};
+  ghash_process_full_blocks(ctx, 0, &partial, input_len, input);
 
-    // XOR `state` with the next input block.
-    block_xor(&ctx->state, &input_block, &ctx->state);
-    // Multiply state by H in-place.
-    galois_mul_state_key(ctx);
+  // Check if there is data remaining, and process it if so.
+  size_t partial_len = input_len % kGhashBlockNumBytes;
+  if (partial_len != 0) {
+    unsigned char *partial_bytes = (unsigned char *)partial.data;
+    memset(partial_bytes + partial_len, 0, kGhashBlockNumBytes - partial_len);
+    ghash_process_block(ctx, &partial);
   }
 }
 
