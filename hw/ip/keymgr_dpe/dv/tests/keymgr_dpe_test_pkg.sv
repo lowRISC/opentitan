@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package keymgr_test_pkg;
+package keymgr_dpe_test_pkg;
   // dep packages
   import uvm_pkg::*;
   import cip_base_pkg::*;
-  import keymgr_env_pkg::*;
+  import keymgr_dpe_env_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,6 +17,6 @@ package keymgr_test_pkg;
   // functions
 
   // package sources
-  `include "keymgr_base_test.sv"
+  `include "keymgr_dpe_base_test.sv"
 
 endpackage

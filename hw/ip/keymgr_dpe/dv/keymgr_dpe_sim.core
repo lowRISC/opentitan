@@ -2,20 +2,20 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:keymgr_sim:0.1"
-description: "KEYMGR DV sim target"
+name: "lowrisc:dv:keymgr_dpe_sim:0.1"
+description: "KEYMGR_DPE DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe
 
   files_dv:
     depend:
-      - lowrisc:dv:keymgr_test
-      - lowrisc:dv:keymgr_sva
+      - lowrisc:dv:keymgr_dpe_test
+      - lowrisc:dv:keymgr_dpe_sva
     files:
       - tb.sv
-      - cov/keymgr_cov_bind.sv
+      - cov/keymgr_dpe_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:

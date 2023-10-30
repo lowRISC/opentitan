@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_base_vseq extends cip_base_vseq #(
-    .RAL_T               (keymgr_reg_block),
-    .CFG_T               (keymgr_env_cfg),
-    .COV_T               (keymgr_env_cov),
-    .VIRTUAL_SEQUENCER_T (keymgr_virtual_sequencer)
+class keymgr_dpe_base_vseq extends cip_base_vseq #(
+    .RAL_T               (keymgr_dpe_reg_block),
+    .CFG_T               (keymgr_dpe_env_cfg),
+    .COV_T               (keymgr_dpe_env_cov),
+    .VIRTUAL_SEQUENCER_T (keymgr_dpe_virtual_sequencer)
   );
-  `uvm_object_utils(keymgr_base_vseq)
+  `uvm_object_utils(keymgr_dpe_base_vseq)
 
   // various knobs to enable certain routines
   bit do_keymgr_init = 1'b1;
@@ -56,10 +56,10 @@ class keymgr_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
 
-    cfg.keymgr_vif.update_edn_toleranc_cycs(cfg.edn_clk_freq_mhz, cfg.clk_freq_mhz);
+    cfg.keymgr_dpe_vif.update_edn_toleranc_cycs(cfg.edn_clk_freq_mhz, cfg.clk_freq_mhz);
     op_before_enable_keymgr();
 
-    cfg.keymgr_vif.init(do_rand_otp_key, do_invalid_otp_key);
+    cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key);
     delay_after_reset_before_access_csr();
 
     if (do_keymgr_init) keymgr_init();
@@ -305,7 +305,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   // when reset occurs or keymgr_en = Off, disable checks in seq and check in scb only
   virtual function bit get_check_en();
-    return cfg.keymgr_vif.get_keymgr_en() && !cfg.under_reset;
+    return cfg.keymgr_dpe_vif.get_keymgr_en() && !cfg.under_reset;
   endfunction
 
   task wait_and_check_fatal_alert(bit check_invalid_state_enterred = 1);
@@ -338,4 +338,4 @@ class keymgr_base_vseq extends cip_base_vseq #(
     keymgr_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
                       .wait_done(wait_done));
   endtask
-endclass : keymgr_base_vseq
+endclass : keymgr_dpe_base_vseq

@@ -2,26 +2,26 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:keymgr_sva:0.1"
-description: "KEYMGR assertion modules and bind file."
+name: "lowrisc:dv:keymgr_dpe_sva:0.1"
+description: "keymgr_dpe assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
-      - keymgr_bind.sv
+      - keymgr_dpe_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
     depend:
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/keymgr.hjson
+      spec: ../../data/keymgr_dpe.hjson
 
 targets:
   default: &default_target
@@ -35,4 +35,4 @@ targets:
     filesets:
       - files_formal
       - files_dv
-    toplevel: keymgr
+    toplevel: keymgr_dpe

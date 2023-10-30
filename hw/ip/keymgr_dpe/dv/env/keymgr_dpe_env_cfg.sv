@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
+class keymgr_dpe_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_dpe_reg_block));
 
   rand kmac_app_agent_cfg m_keymgr_kmac_agent_cfg;
 
-  keymgr_scoreboard scb;
+  keymgr_dpe_scoreboard scb;
   // interface for input data from LC, OTP and flash
-  keymgr_vif keymgr_vif;
+  keymgr_dpe_vif keymgr_dpe_vif;
 
-  `uvm_object_utils_begin(keymgr_env_cfg)
+  `uvm_object_utils_begin(keymgr_dpe_env_cfg)
   `uvm_object_utils_end
 
   `uvm_object_new
