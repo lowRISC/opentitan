@@ -316,7 +316,7 @@ typedef enum test_phases {
 } test_phases_t;
 
 // Test phase written by testbench.
-static volatile const uint8_t kTestPhase[1] = {kTestPhaseSetup};
+static volatile const uint8_t kTestPhase = kTestPhaseSetup;
 const uint32_t kTestPhaseTimeoutUsec = 2500;
 
 static void sync_testbench(uint8_t prior_phase) {
@@ -326,13 +326,13 @@ static void sync_testbench(uint8_t prior_phase) {
   test_status_set(kTestStatusInTest);
 
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
-  LOG_INFO("Test phase = %d", kTestPhase[0]);
+      &kTestPhase, prior_phase, kTestPhaseTimeoutUsec));
+  LOG_INFO("Test phase = %d", kTestPhase);
 }
 
 /**
  * Executes the MAIN SRAM and RET SRAM scrambling test.
- * 
+ *
  * - Set the retention SRAM address to the Owner space range.
  * - Set a random address to the main SRAM in between the heap and stack.
  * - Set the reference memory as the retention SRAM and the scrambling as the
@@ -408,19 +408,19 @@ bool test_main(void) {
   reference_frame = (scramble_test_frame *)ret_sram_addr;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
-  uint8_t current_phase = kTestPhase[0];
+  uint8_t current_phase = kTestPhase;
   if (info == kDifRstmgrResetInfoPor) {
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseMainSramScramble);
+    CHECK(kTestPhase == kTestPhaseMainSramScramble);
     LOG_INFO("First boot, testing main sram");
     // First boot, start with ret sram.
     execute_main_sram_test();
 
   } else if (info == kDifRstmgrResetInfoSw) {
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseMainSramCheck);
+    CHECK(kTestPhase == kTestPhaseMainSramCheck);
     LOG_INFO("Second boot, checking main sram");
 
     check_sram_data(reference_frame);
@@ -431,7 +431,7 @@ bool test_main(void) {
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseRetSramScramble);
+    CHECK(kTestPhase == kTestPhaseRetSramScramble);
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
@@ -439,7 +439,7 @@ bool test_main(void) {
     execute_retention_sram_test();
 
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseRetSramCheck);
+    CHECK(kTestPhase == kTestPhaseRetSramCheck);
     LOG_INFO("Checking retention sram");
 
     // Reset the Ecc error count that lies on the main sram.
