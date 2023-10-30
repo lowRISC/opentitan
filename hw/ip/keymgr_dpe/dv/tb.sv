@@ -24,11 +24,11 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_dpe_if keymgr_dpe_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_intf keymgr_kmac_intf(.clk(clk), .rst_n(rst_n));
+  kmac_app_intf keymgr_dpe_kmac_intf(.clk(clk), .rst_n(rst_n));
 
   // connect KDF interface for assertion check
-  assign keymgr_dpe_if.kmac_data_req = keymgr_kmac_intf.kmac_data_req;
-  assign keymgr_dpe_if.kmac_data_rsp = keymgr_kmac_intf.kmac_data_rsp;
+  assign keymgr_dpe_if.kmac_data_req = keymgr_dpe_kmac_intf.kmac_data_req;
+  assign keymgr_dpe_if.kmac_data_rsp = keymgr_dpe_kmac_intf.kmac_data_rsp;
 
   `DV_ALERT_IF_CONNECT()
 
@@ -54,11 +54,11 @@ module tb;
     .aes_key_o            (keymgr_dpe_if.aes_key),
     .otbn_key_o           (keymgr_dpe_if.otbn_key),
     .kmac_key_o           (keymgr_dpe_if.kmac_key),
-    .kmac_data_o          (keymgr_kmac_intf.kmac_data_req),
-    .kmac_data_i          (keymgr_kmac_intf.kmac_data_rsp),
+    .kmac_data_o          (keymgr_dpe_kmac_intf.kmac_data_req),
+    .kmac_data_i          (keymgr_dpe_kmac_intf.kmac_data_rsp),
     .kmac_en_masking_i    (1'b1),
-    .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_en),
-    .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_div),
+    .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
+    .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),
     .otp_key_i            (keymgr_dpe_if.otp_key),
     .otp_device_id_i      (keymgr_dpe_if.otp_device_id),
     .rom_digest_i         (keymgr_dpe_if.rom_digests),
@@ -81,9 +81,9 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual keymgr_dpe_if)::set(null, "*.env", "keymgr_vif", keymgr_dpe_if);
+    uvm_config_db#(virtual keymgr_dpe_if)::set(null, "*.env", "keymgr_dpe_vif", keymgr_dpe_if);
     uvm_config_db#(virtual kmac_app_intf)::set(null,
-                   "*env.m_keymgr_kmac_agent*", "vif", keymgr_kmac_intf);
+                   "*env.m_keymgr_dpe_kmac_agent*", "vif", keymgr_dpe_kmac_intf);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

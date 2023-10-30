@@ -9,15 +9,15 @@ interface keymgr_dpe_if(input clk, input rst_n);
   import keymgr_env_pkg::*;
   import keymgr_reg_pkg::NumRomDigestInputs;
 
-  // Represents the keymgr sideload state for each sideload interface.
+  // Represents the keymgr_dpe sideload state for each sideload interface.
   //
   // The initial status is SideLoadNotAvail. After the sideload key is generated, it becomes
   // SideLoadAvail.
   // Status can't be directly changed from SideLoadClear to SideLoadAvail.
   // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
-  lc_ctrl_pkg::lc_tx_t                                keymgr_en;
-  lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_div;
+  lc_ctrl_pkg::lc_tx_t                                keymgr_dpe_en;
+  lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_dpe_div;
   otp_ctrl_pkg::otp_device_id_t                       otp_device_id;
   otp_ctrl_pkg::otp_keymgr_key_t                      otp_key;
   flash_ctrl_pkg::keymgr_flash_t                      flash;
@@ -38,38 +38,38 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // connect EDN for assertion check
   wire edn_clk, edn_rst_n, edn_req, edn_ack;
 
-  // keymgr_en is async, create a sync one for use in scb
-  lc_ctrl_pkg::lc_tx_t keymgr_en_sync1, keymgr_en_sync2;
+  // keymgr_dpe_en is async, create a sync one for use in scb
+  lc_ctrl_pkg::lc_tx_t keymgr_dpe_en_sync1, keymgr_dpe_en_sync2;
 
   // indicate if check the key is same as expected or shouldn't match to any meaningful key
   // when a good KDF is ongoing or kmac sideload key is available, this flag is set to 1
   bit is_kmac_key_good;
 
-  // KMAC data is checked in scb, but when keymgr is in disabled/invalid state or LC is off, KMAC
+  // KMAC data is checked in scb, but when keymgr_dpe is in disabled/invalid state or LC is off, KMAC
   // data will be driven with constantly changed entropy data, which violate
   // H_DataStableWhenValidAndNotReady_A. Use this flag to disable it
   bit is_kmac_data_good;
 
   // sideload status
-  keymgr_sideload_status_e aes_sideload_status;
-  keymgr_sideload_status_e otbn_sideload_status;
+  keymgr_dpe_sideload_status_e aes_sideload_status;
+  keymgr_dpe_sideload_status_e otbn_sideload_status;
 
   // When kmac sideload key is generated, `kmac_key` becomes valid with the generated digest data.
-  // If SW requests keymgr to do another operation, kmac_key will be updated to the internal key
+  // If SW requests keymgr_dpe to do another operation, kmac_key will be updated to the internal key
   // to perform a KMAC KDF operation.
   // Once the operation is done, `kmac_key` is expected to switch automatically to the previous KMAC
   // sideload key.
-  keymgr_sideload_status_e kmac_sideload_status;
+  keymgr_dpe_sideload_status_e kmac_sideload_status;
   keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
-  // or any name at keymgr_key_dest_e
+  // or any name at keymgr_dpe_key_dest_e
   keymgr_env_pkg::key_shares_t keys_a_array[keymgr_pkg::keymgr_working_state_e][keymgr_cdi_type_e][
                                string];
 
   // set this flag when design enters init state, edn req will start periodically
   bit start_edn_req;
-  // keymgr will request edn twice for 64 bit data each time, use this to indicate if it's first or
+  // keymgr_dpe will request edn twice for 64 bit data each time, use this to indicate if it's first or
   // second req. 0: wait for 1st req, 1: for 2nd
   bit edn_req_cnt;
   int edn_wait_cnt;
@@ -93,14 +93,14 @@ interface keymgr_dpe_if(input clk, input rst_n);
   int edn_tolerance_cycs = 20;
 
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
-    // Keymgr only latches OTP key once, so this scb does not support change OTP key on the
+    // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
     otp_ctrl_pkg::otp_keymgr_key_t local_otp_key;
 
     // async delay as these signals are from different clock domain
     #($urandom_range(1000, 0) * 1ns);
-    keymgr_en = lc_ctrl_pkg::On;
-    keymgr_div = 64'h5CFBD765CE33F34E;
+    keymgr_dpe_en = lc_ctrl_pkg::On;
+    keymgr_dpe_div = 64'h5CFBD765CE33F34E;
     otp_device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
@@ -127,7 +127,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   // reset local exp variables when reset is issued
   function automatic void reset();
-    keymgr_en = lc_ctrl_pkg::lc_tx_t'($urandom);
+    keymgr_dpe_en = lc_ctrl_pkg::lc_tx_t'($urandom);
     kmac_key_exp = '0;
     aes_key_exp  = '0;
     otbn_key_exp = '0;
@@ -142,12 +142,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
     start_edn_req = 0;
   endfunction
 
-  // Set the keymgr_div signal to a random value. If is_invalid is true, this value is constrained
+  // Set the keymgr_dpe_div signal to a random value. If is_invalid is true, this value is constrained
   // to be all-zero or all-one.
-  function automatic void set_random_keymgr_div(bit is_invalid);
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(keymgr_div, !(keymgr_div inside {0, '1});, , msg_id)
+  function automatic void set_random_keymgr_dpe_div(bit is_invalid);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(keymgr_dpe_div, !(keymgr_dpe_div inside {0, '1});, , msg_id)
     if (is_invalid) begin
-      keymgr_div = ($urandom & 1) ? '0 : '1;
+      keymgr_dpe_div = ($urandom & 1) ? '0 : '1;
     end
   endfunction
 
@@ -191,14 +191,14 @@ interface keymgr_dpe_if(input clk, input rst_n);
   task automatic drive_random_hw_input_data(int num_invalid_input = 0);
     // Firstly, decide which signals should be driven with invalid data. Store the choices we make
     // as a set of flags / counters.
-    bit bad_keymgr_div = 1'b0;
+    bit bad_keymgr_dpe_div = 1'b0;
     bit bad_otp_device_id = 1'b0;
     int bad_flash_seeds = 0;
     bit [NumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
 
     repeat (num_invalid_input) begin
       randcase
-        1: bad_keymgr_div = 1'b1;
+        1: bad_keymgr_dpe_div = 1'b1;
         1: bad_otp_device_id = 1'b1;
         1: bad_flash_seeds++;
         1: bad_rom_data[$urandom % NumRomDigestInputs] = 1'b1;
@@ -209,10 +209,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
     // Drive each signal, starting each signal's drive at a randomised time, not synchronised with
     // any clock. This models the fact that the signals are from different clock domains.
     fork
-      // keymgr_div
+      // keymgr_dpe_div
       begin
         #($urandom_range(1000, 0) * 1ns);
-        set_random_keymgr_div(bad_keymgr_div);
+        set_random_keymgr_dpe_div(bad_keymgr_dpe_div);
       end
 
       // otp_device_id
@@ -339,8 +339,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
     endcase
   endfunction
 
-  function automatic bit get_keymgr_en();
-    return keymgr_en_sync2 === lc_ctrl_pkg::On;
+  function automatic bit get_keymgr_dpe_en();
+    return keymgr_dpe_en_sync2 === lc_ctrl_pkg::On;
   endfunction
 
   function automatic void wipe_sideload_keys();
@@ -422,9 +422,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
         // set `done` to 1, force the other fields to a random value to avoid X propagation
         invalid_kmac_rsp.done = 1;
-        force tb.keymgr_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        force tb.keymgr_dpe_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.keymgr_kmac_intf.kmac_data_rsp;
+        release tb.keymgr_dpe_kmac_intf.kmac_data_rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
@@ -524,24 +524,24 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
   endtask
 
-  // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
-  // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
+  // Disable h_data stability assertion when keymgr_dpe is in disabled/invalid state or LC turns off as
+  // keymgr_dpe will sent constantly changed entropy data to KMAC for KDF operation.
   always_comb begin
-    if (!is_kmac_data_good || keymgr_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+    if (!is_kmac_data_good || keymgr_dpe_en_sync1 != lc_ctrl_pkg::On) begin
+      $assertoff(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
     end else begin
-      $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+      $asserton(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
     end
   end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      keymgr_en_sync1 <= lc_ctrl_pkg::Off;
-      keymgr_en_sync2 <= lc_ctrl_pkg::Off;
+      keymgr_dpe_en_sync1 <= lc_ctrl_pkg::Off;
+      keymgr_dpe_en_sync2 <= lc_ctrl_pkg::Off;
     end else begin
-      keymgr_en_sync1 <= keymgr_en;
+      keymgr_dpe_en_sync1 <= keymgr_dpe_en;
       // avoid race condtion in the driver
-      keymgr_en_sync2 <= #1ps keymgr_en_sync1;
+      keymgr_dpe_en_sync2 <= #1ps keymgr_dpe_en_sync1;
     end
   end
 
@@ -601,23 +601,23 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endfunction
 
   // Create a macro to skip checking key values when LC is off or fault error occurs
-  `define ASSERT_IFF_KEYMGR_LEGAL(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
+  `define ASSERT_IFF_KEYMGR_DPE_LEGAL(NAME, SEQ) \
+    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_dpe_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
                            (kmac_key.key[0] ^ kmac_key.key[1]) ==
                            (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
                            kmac_key_exp.valid == kmac_key.valid)
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
                            aes_key == aes_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
                            aes_key_exp.valid == aes_key.valid)
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
                            -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
                            otbn_key_exp.valid == otbn_key.valid)
 
   // for EDN assertion
@@ -683,5 +683,5 @@ interface keymgr_dpe_if(input clk, input rst_n);
           edn_wait_cnt < edn_tolerance_cycs,
           clk, !rst_n || !en_chk)
 
-  `undef ASSERT_IFF_KEYMGR_LEGAL
+  `undef ASSERT_IFF_KEYMGR_DPE_LEGAL
 endinterface

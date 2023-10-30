@@ -62,7 +62,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key);
     delay_after_reset_before_access_csr();
 
-    if (do_keymgr_init) keymgr_init();
+    if (do_keymgr_dpe_init) keymgr_dpe_init();
   endtask
 
   // callback task before LC enables keymgr
@@ -81,11 +81,11 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask
 
   // setup basic keymgr features
-  virtual task keymgr_init();
+  virtual task keymgr_dpe_init();
     // Any OP except advance at StReset will trigger OP error, test these OPs here
     if (do_op_before_init) begin
       repeat ($urandom_range(1, 5)) begin
-        keymgr_invalid_op_at_reset_state();
+        keymgr_dpe_invalid_op_at_reset_state();
       end
     end
 
@@ -98,16 +98,16 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
                                                [101:1000] :/ 1,
                                                [1001:$]   :/ 1};)
     csr_update(.csr(ral.reseed_interval_shadowed));
-  endtask : keymgr_init
+  endtask : keymgr_dpe_init
 
   // advance to next state and generate output, clear output
-  virtual task keymgr_operations(bit advance_state = $urandom_range(0, 1),
+  virtual task keymgr_dpe_operations(bit advance_state = $urandom_range(0, 1),
                                  int num_gen_op    = $urandom_range(1, 4),
                                  bit clr_output    = $urandom_range(0, 1),
                                  bit wait_done     = 1);
-    `uvm_info(`gfn, "Start keymgr_operations", UVM_MEDIUM)
+    `uvm_info(`gfn, "Start keymgr_dpe_operations", UVM_MEDIUM)
 
-    if (advance_state) keymgr_advance(wait_done);
+    if (advance_state) keymgr_dpe_advance(wait_done);
 
     repeat (num_gen_op) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
@@ -115,10 +115,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(key_dest)
-      keymgr_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
-      if (clr_output) keymgr_rd_clr();
+      keymgr_dpe_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
+      if (clr_output) keymgr_dpe_rd_clr();
     end
-  endtask : keymgr_operations
+  endtask : keymgr_dpe_operations
 
   // update key_version to match knob `is_key_version_err` and current_state value
   task update_key_version();
@@ -193,7 +193,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
 
-    // if keymgr_en is set to off during OP, status is checked in scb. hard to predict the result
+    // if keymgr_dpe_en is set to off during OP, status is checked in scb. hard to predict the result
     // in seq
     if (get_check_en()) begin
       `DV_CHECK_EQ(`gmv(ral.op_status.status), exp_status)
@@ -237,7 +237,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     end
   endtask : read_current_state
 
-  virtual task keymgr_advance(bit wait_done = 1);
+  virtual task keymgr_dpe_advance(bit wait_done = 1);
     keymgr_pkg::keymgr_working_state_e exp_next_state = get_next_state(current_state);
     sema_update_control_csr.get();
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
@@ -252,10 +252,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       // randomly program to 0, which should not affect anything
       if ($urandom_range(0, 1)) csr_wr(.ptr(ral.start), .value(0));
     end
-  endtask : keymgr_advance
+  endtask : keymgr_dpe_advance
 
   // by default generate for software
-  virtual task keymgr_generate(keymgr_pkg::keymgr_ops_e operation,
+  virtual task keymgr_dpe_generate(keymgr_pkg::keymgr_ops_e operation,
                                keymgr_pkg::keymgr_key_dest_e key_dest,
                                bit wait_done = 1);
     sema_update_control_csr.get();
@@ -269,9 +269,9 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.start), .value(1));
 
     if (wait_done) wait_op_done();
-  endtask : keymgr_generate
+  endtask : keymgr_dpe_generate
 
-  virtual task keymgr_rd_clr();
+  virtual task keymgr_dpe_rd_clr();
     bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
 
     read_sw_shares(sw_share_output);
@@ -281,7 +281,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       read_sw_shares(sw_share_output);
       if (get_check_en()) `DV_CHECK_EQ(sw_share_output, '0)
     end
-  endtask : keymgr_rd_clr
+  endtask : keymgr_dpe_rd_clr
 
   virtual task read_sw_shares(
         output bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
@@ -299,11 +299,11 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : read_sw_shares
 
   // issue any invalid operation at reset state to trigger op error
-  virtual task keymgr_invalid_op_at_reset_state();
-    keymgr_operations(.advance_state(0));
+  virtual task keymgr_dpe_invalid_op_at_reset_state();
+    keymgr_dpe_operations(.advance_state(0));
   endtask
 
-  // when reset occurs or keymgr_en = Off, disable checks in seq and check in scb only
+  // when reset occurs or keymgr_dpe_en = Off, disable checks in seq and check in scb only
   virtual function bit get_check_en();
     return cfg.keymgr_dpe_vif.get_keymgr_en() && !cfg.under_reset;
   endfunction
@@ -335,7 +335,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   virtual task issue_a_random_op(bit wait_done);
     bit issue_adv_or_gen = $urandom;
     // issue any operation
-    keymgr_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
+    keymgr_dpe_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
                       .wait_done(wait_done));
   endtask
 endclass : keymgr_dpe_base_vseq
