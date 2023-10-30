@@ -166,10 +166,6 @@ class dma_generic_vseq extends dma_base_vseq;
                 // Model the FirmWare running on the OT side, responding to the Done interrupt and
                 // nudging the controller to perform the next chunk of a multi-chunk transfer
 
-                // TODO: clear the Done bit; PR #660 is aimed at obviating this
-                ral.status.done.set(1'b1);
-                csr_update(ral.status);
-
                 // Supply the next chunk of input data
                 void'(configure_mem_model(dma_config, num_bytes_supplied));
                 num_bytes_supplied += dma_config.chunk_size(num_bytes_supplied);

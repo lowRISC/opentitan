@@ -576,7 +576,8 @@
         { bits: "0"
           name: "busy"
           resval: 0x0
-          hwaccess: "hwo"
+          hwaccess: "hrw"
+          swaccess: "ro"
           desc: '''
                 DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
@@ -587,7 +588,10 @@
           name: "done"
           resval: 0x0
           hwaccess: "hrw"
-          desc: "Configured DMA operation is complete."
+          desc: '''
+                Configured DMA operation is complete.
+                Cleared automatically by the hardware when starting a new transfer.
+                '''
         }
         { bits: "2"
           name: "aborted"
