@@ -58,7 +58,7 @@ module mbx
   logic sysif_control_abort_set;
 
   // Status signal inputs from the sysif to the hostif
-  logic sysif_status_busy, sysif_status_error;
+  logic sysif_status_busy, sysif_status_error, sysif_async_en;
 
   // Setter signals from the hostif to the sysif
   logic hostif_control_abort_clear, hostif_control_error_set;
@@ -110,6 +110,7 @@ module mbx
     // Access to the status register
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_sys_intr_en_i         ( doe_intr_en_o                      ),
+    .hostif_status_sys_async_en_i        ( sysif_async_en                     ),
     .hostif_status_sys_intr_state_i      ( doe_intr_o                         ),
     // Access to the IB/OB RD/WR Pointers
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
@@ -188,6 +189,7 @@ module mbx
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
+    .sysif_status_async_en_o             ( sysif_async_en                     ),
     .sysif_status_doe_intr_state_set_i   ( ombx_doe_intr_state_set            ),
     .sysif_status_error_set_i            ( hostif_control_error_set           ),
     .sysif_status_error_o                ( sysif_status_error                 ),
