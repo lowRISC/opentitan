@@ -24,27 +24,42 @@ typedef enum sca_trigger_source {
   /**
    * Use AES for capture trigger.
    *
-   * The trigger signal will go high 40 cycles after `dif_aes_trigger()` is
+   * The trigger signal will go high 320 cycles after `dif_aes_trigger()` is
    * called and remain high until the operation is complete.
    */
-  kScaTriggerSourceAes,
+  kScaTriggerSourceAes = 0,
   /**
    * Use HMAC for capture trigger.
    */
-  kScaTriggerSourceHmac,
+  kScaTriggerSourceHmac = 1,
   /**
    * Use KMAC for capture trigger.
    */
-  kScaTriggerSourceKmac,
-  /**
-   * Use OTBN (IO_DIV4 clock) for capture trigger.
-   */
-  kScaTriggerSourceOtbnIoDiv4,
+  kScaTriggerSourceKmac = 2,
   /**
    * Use OTBN for capture trigger.
    */
-  kScaTriggerSourceOtbn,
+  kScaTriggerSourceOtbn = 3,
 } sca_trigger_source_t;
+
+/**
+ * Trigger type.
+ */
+typedef enum sca_trigger_type {
+  /**
+   * Use the precise hardware capture trigger gateable by software. If selected,
+   * the actual capture trigger is generated based on the clkmgr_aon_idle signal
+   * of the peripheral corresponding to selected trigger source.
+   *
+   * Note that this is available on FPGA only.
+   */
+  kScaTriggerTypeHwGated = 0,
+  /**
+   * Use the fully software controlled capture trigger. If selected, the
+   * configured trigger source is not relevant.
+   */
+  kScaTriggerTypeSw = 1,
+} sca_trigger_type_t;
 
 /**
  * Peripherals.
@@ -123,6 +138,13 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable);
  * @return Handle to the initialized UART device.
  */
 const dif_uart_t *sca_get_uart(void);
+
+/**
+ * Select the capture trigger type.
+ *
+ * @param trigger_type The trigger type to select.
+ */
+void sca_select_trigger_type(sca_trigger_type_t trigger_type);
 
 /**
  * Sets capture trigger high.
