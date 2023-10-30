@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // smoke test vseq
-class keymgr_smoke_vseq extends keymgr_base_vseq;
-  `uvm_object_utils(keymgr_smoke_vseq)
+class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
+  `uvm_object_utils(keymgr_dpe_smoke_vseq)
   `uvm_object_new
 
   // limit to SW operations
@@ -24,4 +24,4 @@ class keymgr_smoke_vseq extends keymgr_base_vseq;
 
   endtask : body
 
-endclass : keymgr_smoke_vseq
+endclass : keymgr_dpe_smoke_vseq

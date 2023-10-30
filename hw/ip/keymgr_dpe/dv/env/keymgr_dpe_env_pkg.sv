@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package keymgr_env_pkg;
+package keymgr_dpe_env_pkg;
   // dep packages
   import uvm_pkg::*;
   import top_pkg::*;
@@ -12,7 +12,7 @@ package keymgr_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
-  import keymgr_ral_pkg::*;
+  import keymgr_dpe_ral_pkg::*;
   import kmac_app_agent_pkg::*;
   import sec_cm_pkg::*;
 
@@ -26,7 +26,7 @@ package keymgr_env_pkg;
   parameter uint NUM_EDN = 1;
   parameter uint DIGEST_SHARE_WORD_NUM = keymgr_pkg::KeyWidth / TL_DW;
 
-  typedef virtual keymgr_if keymgr_vif;
+  typedef virtual keymgr_dpe_if keymgr_dpe_vif;
   typedef bit [keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0] key_shares_t;
   typedef bit [keymgr_pkg::Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_digests_t;
   typedef enum {
@@ -80,13 +80,13 @@ package keymgr_env_pkg;
   endfunction
 
   // forward declaration
-  typedef class keymgr_scoreboard;
+  typedef class keymgr_dpe_scoreboard;
   // package sources
-  `include "keymgr_env_cfg.sv"
-  `include "keymgr_env_cov.sv"
-  `include "keymgr_virtual_sequencer.sv"
-  `include "keymgr_scoreboard.sv"
-  `include "keymgr_env.sv"
-  `include "keymgr_vseq_list.sv"
+  `include "keymgr_dpe_env_cfg.sv"
+  `include "keymgr_dpe_env_cov.sv"
+  `include "keymgr_dpe_virtual_sequencer.sv"
+  `include "keymgr_dpe_scoreboard.sv"
+  `include "keymgr_dpe_env.sv"
+  `include "keymgr_dpe_vseq_list.sv"
 
 endpackage

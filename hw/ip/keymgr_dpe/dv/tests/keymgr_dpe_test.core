@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:keymgr_test:0.1"
-description: "KEYMGR DV UVM test"
+name: "lowrisc:dv:keymgr_dpe_test:0.1"
+description: "KEYMGR_DPE DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:keymgr_env
+      - lowrisc:dv:keymgr_dpe_env
     files:
-      - keymgr_test_pkg.sv
-      - keymgr_base_test.sv: {is_include_file: true}
+      - keymgr_dpe_test_pkg.sv
+      - keymgr_dpe_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

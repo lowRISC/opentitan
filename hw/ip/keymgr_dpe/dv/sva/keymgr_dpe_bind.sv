@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module keymgr_bind;
+module keymgr_dpe_bind;
 
   bind keymgr tlul_assert #(
     .EndpointType("Device")
