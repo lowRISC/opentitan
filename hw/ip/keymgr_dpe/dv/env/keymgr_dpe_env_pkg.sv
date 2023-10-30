@@ -31,13 +31,13 @@ package keymgr_dpe_env_pkg;
   typedef bit [keymgr_pkg::Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_digests_t;
   typedef enum {
     IntrOpDone,
-    NumKeyMgrIntr
-  } keymgr_intr_e;
+    NumKeyMgrDpeIntr
+  } keymgr_dpe_intr_e;
 
   typedef enum {
     Sealing,
     Attestation
-  } keymgr_cdi_type_e;
+  } keymgr_dpe_cdi_type_e;
 
   typedef enum {
     OtpRootKeyInvalid,
@@ -48,13 +48,13 @@ package keymgr_dpe_env_pkg;
     RomDigestValidLow,
     FlashCreatorSeedInvalid,
     FlashOwnerSeedInvalid
-  } keymgr_invalid_hw_input_type_e;
+  } keymgr_dpe_invalid_hw_input_type_e;
 
   typedef enum bit[1:0] {
     SideLoadNotAvail,
     SideLoadAvail,
     SideLoadClear
-  } keymgr_sideload_status_e;
+  } keymgr_dpe_sideload_status_e;
 
   typedef enum int {
     FaultOpNotOnehot,
@@ -63,17 +63,17 @@ package keymgr_dpe_env_pkg;
     FaultKmacDoneError,
     FaultSideloadNotConsistent,
     FaultKeyIntgError
-  } keymgr_fault_inject_type_e;
+  } keymgr_dpe_fault_inject_type_e;
 
   string msg_id = "keymgr_dpe_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled
-  function automatic keymgr_pkg::keymgr_working_state_e get_next_state(
-      keymgr_pkg::keymgr_working_state_e current_state);
+  function automatic keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state);
 
     uint next_state = int'(current_state) + 1;
-    if (next_state >= int'(keymgr_pkg::StDisabled)) begin
-      return keymgr_pkg::StDisabled;
+    if (next_state >= int'(keymgr_dpe_pkg::StWorkDpeDisabled)) begin
+      return keymgr_dpe_pkg::StWorkDpeDisabled;
     end else begin
       `downcast(get_next_state, next_state, , , msg_id);
     end

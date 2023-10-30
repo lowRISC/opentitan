@@ -6,8 +6,8 @@
 interface keymgr_dpe_if(input clk, input rst_n);
 
   import uvm_pkg::*;
-  import keymgr_env_pkg::*;
-  import keymgr_reg_pkg::NumRomDigestInputs;
+  import keymgr_dpe_env_pkg::*;
+  import keymgr_dpe_reg_pkg::NumRomDigestInputs;
 
   // Represents the keymgr_dpe sideload state for each sideload interface.
   //
@@ -45,7 +45,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // when a good KDF is ongoing or kmac sideload key is available, this flag is set to 1
   bit is_kmac_key_good;
 
-  // KMAC data is checked in scb, but when keymgr_dpe is in disabled/invalid state or LC is off, KMAC
+  // KMAC data is checked in scb, but when keymgr_dpe is in
+  // disabled/invalid state or LC is off, KMAC
   // data will be driven with constantly changed entropy data, which violate
   // H_DataStableWhenValidAndNotReady_A. Use this flag to disable it
   bit is_kmac_data_good;
@@ -60,16 +61,18 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // Once the operation is done, `kmac_key` is expected to switch automatically to the previous KMAC
   // sideload key.
   keymgr_dpe_sideload_status_e kmac_sideload_status;
-  keymgr_env_pkg::key_shares_t kmac_sideload_key_shares;
+  keymgr_dpe_env_pkg::key_shares_t kmac_sideload_key_shares;
 
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
-  // or any name at keymgr_dpe_key_dest_e
-  keymgr_env_pkg::key_shares_t keys_a_array[keymgr_pkg::keymgr_working_state_e][keymgr_cdi_type_e][
-                               string];
+  // or any name at keymgr_key_dest_e
+  keymgr_dpe_env_pkg::key_shares_t keys_a_array[
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e][
+    keymgr_dpe_cdi_type_e][string];
 
   // set this flag when design enters init state, edn req will start periodically
   bit start_edn_req;
-  // keymgr_dpe will request edn twice for 64 bit data each time, use this to indicate if it's first or
+  // keymgr_dpe will request edn twice for 64 bit data each time,
+  // use this to indicate if it's first or
   // second req. 0: wait for 1st req, 1: for 2nd
   bit edn_req_cnt;
   int edn_wait_cnt;
@@ -142,7 +145,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
     start_edn_req = 0;
   endfunction
 
-  // Set the keymgr_dpe_div signal to a random value. If is_invalid is true, this value is constrained
+  // Set the keymgr_dpe_div signal to a random value.
+  // If is_invalid is true, this value is constrained
   // to be all-zero or all-one.
   function automatic void set_random_keymgr_dpe_div(bit is_invalid);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(keymgr_dpe_div, !(keymgr_dpe_div inside {0, '1});, , msg_id)
@@ -245,8 +249,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endtask
 
   // update kmac key for comparison during KDF
-  function automatic void update_kdf_key(keymgr_env_pkg::key_shares_t key_shares,
-                                         keymgr_pkg::keymgr_working_state_e state,
+  function automatic void update_kdf_key(keymgr_dpe_env_pkg::key_shares_t key_shares,
+                                         keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
                                          bit good_key, bit good_data);
 
     kmac_key_exp <= '{1'b1, key_shares};
@@ -255,21 +259,24 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endfunction
 
   // store internal key once it's available and use to compare if future OP is invalid
-  function automatic void store_internal_key(keymgr_env_pkg::key_shares_t key_shares,
-                                             keymgr_pkg::keymgr_working_state_e state,
-                                             keymgr_cdi_type_e cdi_type);
+  function automatic void store_internal_key(
+      keymgr_dpe_env_pkg::key_shares_t key_shares,
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_cdi_type_e cdi_type
+    );
 
     keys_a_array[state][cdi_type]["Internal"] = key_shares;
   endfunction
 
   // update sideload key for comparison
   // if it's good key, store it to compare for future invalid OP
-  function automatic void update_sideload_key(keymgr_env_pkg::kmac_digests_t key_shares,
-                                              keymgr_pkg::keymgr_working_state_e state,
-                                              keymgr_cdi_type_e cdi_type,
-                                              keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac
-                                              );
-    keymgr_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
+  function automatic void update_sideload_key(
+      keymgr_dpe_env_pkg::kmac_digests_t key_shares,
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_cdi_type_e cdi_type,
+      keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac
+  );
+    keymgr_dpe_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
                                                     key_shares[0][keymgr_pkg::KeyWidth-1:0]};
     case (dest)
       keymgr_pkg::Kmac: begin
@@ -379,7 +386,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   logic [2:0] force_sideload_valids, pre_sideload_valids;
   logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
         force_internal_key, pre_internal_key;
-  task automatic inject_fault(keymgr_fault_inject_type_e fi_type);
+  task automatic inject_fault(keymgr_dpe_fault_inject_type_e fi_type);
     @(posedge clk);
     `uvm_info(msg_id, $sformatf("injecting fault: %s", fi_type.name), UVM_LOW)
     case (fi_type)
@@ -524,7 +531,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
   endtask
 
-  // Disable h_data stability assertion when keymgr_dpe is in disabled/invalid state or LC turns off as
+  // Disable h_data stability assertion when keymgr_dpe is in
+  // disabled/invalid state or LC turns off as
   // keymgr_dpe will sent constantly changed entropy data to KMAC for KDF operation.
   always_comb begin
     if (!is_kmac_data_good || keymgr_dpe_en_sync1 != lc_ctrl_pkg::On) begin
@@ -604,21 +612,38 @@ interface keymgr_dpe_if(input clk, input rst_n);
   `define ASSERT_IFF_KEYMGR_DPE_LEGAL(NAME, SEQ) \
     `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_dpe_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
-                           (kmac_key.key[0] ^ kmac_key.key[1]) ==
-                           (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
-                           kmac_key_exp.valid == kmac_key.valid)
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckKmacKey,
+    is_kmac_key_good && kmac_key_exp.valid ->
+    (kmac_key.key[0] ^ kmac_key.key[1]) ==
+    (kmac_key_exp.key[0] ^ kmac_key_exp.key[1])
+  )
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckKmacKeyValid,
+    is_kmac_key_good -> kmac_key_exp.valid == kmac_key.valid
+  )
 
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
-                           aes_key == aes_key_exp)
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
-                           aes_key_exp.valid == aes_key.valid)
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckAesKey,
+    aes_sideload_status == SideLoadAvail &&
+    aes_key_exp.valid -> aes_key == aes_key_exp
+  )
 
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
-                           -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_DPE_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
-                           otbn_key_exp.valid == otbn_key.valid)
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckAesKeyValid,
+    aes_sideload_status != SideLoadClear ->
+    aes_key_exp.valid == aes_key.valid
+  )
+
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckOtbnKey, otbn_sideload_status == SideLoadAvail &&
+    otbn_key_exp.valid -> otbn_key == otbn_key_exp
+  )
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckOtbnKeyValid,
+    otbn_sideload_status != SideLoadClear ->
+    otbn_key_exp.valid == otbn_key.valid
+  )
 
   // for EDN assertion
   // sync req/ack to core clk domain
