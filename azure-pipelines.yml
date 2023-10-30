@@ -509,7 +509,9 @@ jobs:
 
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
@@ -533,7 +535,9 @@ jobs:
 
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
@@ -557,7 +561,9 @@ jobs:
 
 - job: execute_hyperdebug_tests_cw310
   displayName: Hyperdebug CW310 Tests (Experimental)
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310_hyperdebug
@@ -621,7 +627,9 @@ jobs:
 
 - job: execute_fpga_manuf_tests_cw310
   displayName: CW310 Manufacturing Tests
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw310
