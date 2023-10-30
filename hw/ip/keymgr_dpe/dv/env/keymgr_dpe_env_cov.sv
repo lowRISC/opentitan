@@ -9,7 +9,7 @@
  */
 
 // covergroup to sample all SW input bits are toggled and gated by regwen
-class keymgr_sw_input_cg_wrap;
+class keymgr_dpe_sw_input_cg_wrap;
   localparam int Width = bus_params_pkg::BUS_DW;
   covergroup keymgr_sw_input_cg (string name)
       with function sample(bit [Width-1:0] sw_input,
@@ -33,8 +33,8 @@ class keymgr_sw_input_cg_wrap;
   endfunction : sample
 endclass
 
-class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
-  `uvm_component_utils(keymgr_env_cov)
+class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
+  `uvm_component_utils(keymgr_dpe_env_cov)
   keymgr_sw_input_cg_wrap sw_input_cg_wrap[string];
 
   // covergroup for keymgr state and operation with op_status and CDI sel, sideload destination

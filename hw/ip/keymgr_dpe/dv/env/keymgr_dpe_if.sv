@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // interface for input data from LC, OTP and flash
-interface keymgr_if(input clk, input rst_n);
+interface keymgr_dpe_if(input clk, input rst_n);
 
   import uvm_pkg::*;
   import keymgr_env_pkg::*;
@@ -88,7 +88,7 @@ interface keymgr_if(input clk, input rst_n);
   // internal FSM is changed or internal error is triggered
   bit en_chk = 1;
 
-  string msg_id = "keymgr_if";
+  string msg_id = "keymgr_dpe_if";
 
   int edn_tolerance_cycs = 20;
 
@@ -293,7 +293,7 @@ interface keymgr_if(input clk, input rst_n);
           otbn_sideload_status <= SideLoadAvail;
         end
       end
-      default: `uvm_fatal("keymgr_if", $sformatf("Unexpect dest type %0s", dest.name))
+      default: `uvm_fatal("keymgr_dpe_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
     keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
