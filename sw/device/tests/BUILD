@@ -810,6 +810,34 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "edn_boot_mode",
+    srcs = ["edn_boot_mode.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:otbn_randomness_impl",
+    ],
+)
+
+opentitan_test(
     name = "edn_sw_mode",
     srcs = ["edn_sw_mode.c"],
     exec_env = EARLGREY_TEST_ENVS,

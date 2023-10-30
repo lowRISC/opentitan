@@ -64,7 +64,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       bazel: []
-      tests: []
+      tests: ["chip_sw_edn_boot_mode"]
     },
     {
       name: chip_sw_edn_auto_mode
