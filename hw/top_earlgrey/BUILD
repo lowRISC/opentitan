@@ -47,9 +47,11 @@ fpga_cw310(
     name = "fpga_cw310",
     design = "earlgrey",
     exec_env = "fpga_cw310",
+    gen_mem_img = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
     lib = "//sw/device/lib/arch:fpga_cw310",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    splice_tool = "//util/fpga:splice",
     test_cmd = "testing-not-supported",
 )
 
@@ -65,13 +67,16 @@ fpga_cw310(
         "//conditions:default": [],
     }),
     base = ":fpga_cw310",
-    bitstream = "//hw/bitstream:test_rom",
+    bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
+    otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    rom_mmi = "//hw/bitstream:rom_mmi",
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
         --exec="transport init"
@@ -85,9 +90,12 @@ fpga_cw310(
     name = "fpga_cw310_rom_with_fake_keys",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    otp_mmi = "//hw/bitstream:otp_mmi",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom_mmi = "//hw/bitstream:rom_mmi",
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
 )
 
@@ -95,17 +103,20 @@ fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_rom_ext",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rom_mmi = "//hw/bitstream:rom_mmi",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
 

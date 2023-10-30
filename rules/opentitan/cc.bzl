@@ -201,7 +201,7 @@ def _build_binary(ctx, exec_env, name, deps):
             spx_key = spx_key,
             manifest = manifest,
             # FIXME: will need to supply hsmtool when we add NitroKey signing.
-            _tool = exec_env._opentitantool,
+            _tool = exec_env._opentitantool.files_to_run,
         )
     else:
         signed = {}

@@ -16,8 +16,10 @@ _FIELDS = {
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
+    "rom_mmi": ("file.rom_mmi", False),
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
+    "otp_mmi": ("file.otp_mmi", False),
     "bitstream": ("file.bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
@@ -29,7 +31,9 @@ _FIELDS = {
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "rom_scramble_config": ("file.rom_scramble_config", False),
-    "_opentitantool": ("executable._opentitantool", True),
+    "gen_mem_img": ("attr.gen_mem_img", False),
+    "splice_tool": ("attr.splice_tool", False),
+    "_opentitantool": ("attr._opentitantool", True),
 }
 
 ExecEnvInfo = provider(
@@ -133,6 +137,11 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "ROM image to use in this environment",
         ),
+        "rom_mmi": attr.label(
+            default = kwargs.get("rom_mmi"),
+            allow_single_file = True,
+            doc = "MMI file to use when splcing a ROM into a bitstream",
+        ),
         "rom_ext": attr.label(
             default = kwargs.get("rom_ext"),
             allow_files = True,
@@ -142,6 +151,11 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("otp"),
             allow_single_file = True,
             doc = "OTP image to use in this environment",
+        ),
+        "otp_mmi": attr.label(
+            default = kwargs.get("otp_mmi"),
+            allow_single_file = True,
+            doc = "MMI file to use when splcing an OTP image into a bitstream",
         ),
         "bitstream": attr.label(
             default = kwargs.get("bitstream"),
@@ -186,6 +200,16 @@ def exec_env_common_attrs(**kwargs):
         ),
         "flash_scramble_tool": attr.label(
             default = kwargs.get("flash_scramble_tool"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "gen_mem_img": attr.label(
+            default = kwargs.get("gen_mem_img"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "splice_tool": attr.label(
+            default = kwargs.get("splice_tool"),
             executable = True,
             cfg = "exec",
         ),
@@ -303,7 +327,7 @@ def common_test_setup(ctx, exec_env, firmware):
     # If there is no explicitly specified test_harness, then the harness is opentitantool.
     test_harness = ctx.executable.test_harness
     if test_harness == None:
-        test_harness = exec_env._opentitantool
+        test_harness = exec_env._opentitantool.files_to_run.executable
 
     # Get the files we'll need to run the test.
     data_labels = ctx.attr.data + exec_env.data

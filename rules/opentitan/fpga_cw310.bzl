@@ -7,6 +7,7 @@ load(
     "Cw305BinaryInfo",
     "Cw310BinaryInfo",
     "Cw340BinaryInfo",
+    "get_one_binary_file",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
@@ -30,6 +31,8 @@ load(
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
     "OPENTITANTOOL_OPENOCD_TEST_CMD",
 )
+load("@nonhermetic//:env.bzl", "ENV")
+load("//rules/opentitan:splice.bzl", "splice_bitstream")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -122,13 +125,61 @@ def _test_dispatch(ctx, exec_env, firmware):
             name = ctx.attr.name,
             spec = assemble.split(" "),
             data_files = data_files,
-            opentitantool = exec_env._opentitantool,
+            opentitantool = exec_env._opentitantool.files_to_run,
         )
         param["firmware"] = image.short_path
         action_param["firmware"] = image.path
         data_files.append(image)
 
-    # FIXME: maybe splice a bitstream here
+    # Splice a bitstream for this test target.
+    splice_data = []
+    splice_mmi = []
+    rom = get_fallback(ctx, "attr.rom", exec_env)
+    if rom:
+        if not exec_env.rom_mmi:
+            fail("Cannot splice a rom without a `rom_mmi` in the exec_env")
+        splice_mmi.append(exec_env.rom_mmi)
+        rom = get_one_binary_file(rom, "rom", [exec_env.provider])
+        splice_data.append(rom)
+
+    otp = get_fallback(ctx, "file.otp", exec_env)
+    if otp:
+        if not exec_env.otp_mmi:
+            fail("Cannot splice an OTP without a `otp_mmi` in the exec_env")
+        splice_mmi.append(exec_env.otp_mmi)
+        splice_data.append(otp)
+
+    if splice_data:
+        if ctx.attr.bitstream:
+            # If the rule provides a bitstream then we assume the caller wants
+            # that exact bitstream and no splice is required.
+            #
+            # FIXME(cfrantz): The condition should really be
+            # (bitstream and not rom and not otp).  This would allow a caller
+            # to specify a bitstream and a rom or otp and get a custom splice that
+            # doesn't come from the exec_env parameters.  However, there are several
+            # rules that currently erroneously use cw310_params.bitstream and
+            # cw310_params.otp and those rules don't want a custom-splice of the
+            # provided bitstream -- it's already the splice they want.
+            #
+            # After cleaning up all such cases, we can use the proper `if` condition.
+            print(ctx.attr.name, "skipping splice because a bitstream is explicitly provided.")
+        else:
+            bitstream = get_fallback(ctx, "file.bitstream", exec_env)
+            new_bitstream = splice_bitstream(
+                ctx,
+                ENV,
+                ctx.attr.name,
+                bitstream,
+                splice_mmi,
+                splice_data,
+                exec_env.gen_mem_img.files_to_run,
+                exec_env._opentitantool.files_to_run,
+                exec_env.splice_tool.files_to_run,
+            )
+            data_files.append(new_bitstream)
+            param["bitstream"] = new_bitstream.short_path
+            action_param["bitstream"] = new_bitstream.path
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)

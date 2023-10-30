@@ -65,7 +65,6 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         src,
         manifest,
         rsa_key.file,
-        opentitantool,
     ]
     spx_args = []
     if spx_key:
@@ -93,7 +92,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
     digest = ctx.actions.declare_file("{}.digest".format(basename))
     ctx.actions.run(
         outputs = [digest],
-        inputs = [pre, opentitantool],
+        inputs = [pre],
         arguments = [
             "--rcfile=",
             "--quiet",
@@ -112,7 +111,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         spxmsg = ctx.actions.declare_file("{}.spx-message".format(basename))
         ctx.actions.run(
             outputs = [spxmsg],
-            inputs = [pre, opentitantool],
+            inputs = [pre],
             arguments = [
                 "--rcfile=",
                 "--quiet",
@@ -141,7 +140,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
     rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa_sig"))
     ctx.actions.run(
         outputs = [rsa_sig],
-        inputs = [digest, rsa_key.file, opentitantool],
+        inputs = [digest, rsa_key.file],
         arguments = [
             "--rcfile=",
             "--quiet",
@@ -160,7 +159,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx_sig"))
         ctx.actions.run(
             outputs = [spx_sig],
-            inputs = [spxmsg, spx_key.file, opentitantool],
+            inputs = [spxmsg, spx_key.file],
             arguments = [
                 "--rcfile=",
                 "--quiet",
@@ -189,7 +188,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
       file: The signed binary.
     """
     signed = ctx.actions.declare_file(paths.replace_extension(pre.basename, ".signed.bin"))
-    inputs = [opentitantool, pre, rsa_sig]
+    inputs = [pre, rsa_sig]
     args = [
         "--rcfile=",
         "--quiet",

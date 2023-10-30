@@ -67,7 +67,6 @@ filegroup(
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
     }),
     tags = ["manual"],
-    visibility = ["//visibility:private"],
 )
 
 filegroup(
