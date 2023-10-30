@@ -71,6 +71,25 @@ void ghash_init_subkey(const uint32_t *hash_subkey, ghash_context_t *ctx);
 void ghash_init(ghash_context_t *ctx);
 
 /**
+ * Given a partial GHASH block and some new input, process full blocks.
+ *
+ * Concatenates the new input to the partial data and processes any full blocks
+ * with GHASH. Updates the partial block with the new, leftover partial data
+ * after processing the new input.
+ *
+ * The partial block may be empty, but should never be full; `partial_len`
+ * should always be less than `kGhashBlockNumBytes`.
+ *
+ * @param ctx Context object.
+ * @param partial_len Length of the partial block.
+ * @param partial Partial GHASH block.
+ * @param input_len Length of the input data in bytes.
+ * @param input Input data.
+ */
+void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                               ghash_block_t *partial, size_t input_len,
+                               const uint8_t *input);
+/**
  * Update the state of a GHASH operation.
  *
  * Pads the input with 0s on the right-hand side if needed so that the input

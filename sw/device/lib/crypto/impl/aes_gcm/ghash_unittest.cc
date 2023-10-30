@@ -39,6 +39,37 @@ TEST(Ghash, McGrawViegaTestCase1) {
   EXPECT_THAT(result, testing::ElementsAreArray(exp_result));
 }
 
+TEST(Ghash, ProcessFullBlocksOneByte) {
+  // H: 66e94bd4ef8a2c3b884cfa59ca342b2e
+  std::array<uint32_t, 4> H = {
+      0xd44be966,
+      0x3b2c8aef,
+      0x59fa4c88,
+      0x2e2b34ca,
+  };
+  // Partial block (empty).
+  ghash_block_t partial = {.data = {0}};
+  size_t partial_len = 0;
+  // Input data (too short for a full block).
+  uint32_t input_word = 0xaabbccdd;
+  uint8_t *input = (unsigned char *)&input_word;
+  size_t input_len = sizeof(input_word);
+  // All-zero block for comparison.
+  std::array<uint32_t, 4> zero_block = {0, 0, 0, 0};
+
+  // Initialize context.
+  ghash_context_t ctx;
+  ghash_init_subkey(H.data(), &ctx);
+  ghash_init(&ctx);
+  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero_block));
+  ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input);
+  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero_block));
+  EXPECT_EQ(partial.data[0], input_word);
+  EXPECT_EQ(partial.data[1], 0);
+  EXPECT_EQ(partial.data[2], 0);
+  EXPECT_EQ(partial.data[3], 0);
+}
+
 TEST(Ghash, Mul1) {
   // Multiply the hash subkey by 1.
   // H: 66e94bd4ef8a2c3b884cfa59ca342b2e
@@ -49,13 +80,26 @@ TEST(Ghash, Mul1) {
       0x59fa4c88,
       0x2e2b34ca,
   };
+  std::array<uint32_t, 4> zero = {0, 0, 0, 0};
   // Big-endian form of 1.
   uint8_t one = 0x80;
 
   ghash_context_t ctx;
   ghash_init_subkey(H.data(), &ctx);
   ghash_init(&ctx);
+  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero));
+
+  ghash_block_t partial = {.data = {0}};
+  size_t partial_len = 0;
+  size_t input_len = 1;
+  uint8_t *input = &one;
+  ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input);
+  EXPECT_LT(input_len, kGhashBlockNumBytes - partial_len);
+  EXPECT_EQ(partial.data[0], one);
+  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(zero));
+
   ghash_update(&ctx, 1, &one);
+  EXPECT_THAT(ctx.state.data, testing::ElementsAreArray(H));
   uint32_t result[kGhashBlockNumWords];
   ghash_final(&ctx, result);
 
