@@ -332,35 +332,53 @@ static void sync_testbench(uint8_t prior_phase) {
 
 /**
  * Executes the MAIN SRAM and RET SRAM scrambling test.
- *   This test:
+ * 
  * - Set the retention SRAM address to the Owner space range.
  * - Set a random address to the main SRAM in between the heap and stack.
  * - Set the reference memory as the retention SRAM and the scrambling as the
- * main SRAM.
+ *   main SRAM.
  * - Inform the address to the testbench using `INFO_LOG`.
  * - Prepare the main and retention memory for the test by writing a pattern to
- * them. In both cases, we write two patterns and double check that only the
- * second pattern is actually stored in the memory.
+ *   them. In both cases, we write two patterns and double check that only the
+ *   second pattern is actually stored in the memory.
  * - Save the reference and scrambling frames pointers from the registers.
  * - Request a new scrambling key for the main memory. This will only
- * re-scramble the main memory - the retention memory will remain intact!
+ *   re-scramble the main memory - the retention memory will remain intact!
  * - Restore the reference and scrambling frames pointers to registers.
  * - The backdoor sequence triggers once the new scrambling key becomes valid,
- * and writes random, but correctly scrambled and ECC encoded data to the main
- * memory.
+ *   and writes random, but correctly scrambled and ECC encoded data to the main
+ *   memory.
  * - Copy the contents of the `scrambling_frame` to the `reference_frame` except
- * the `ecc_error_counter` to be verified later.
+ *   the `ecc_error_counter` to be verified later.
  * - Reset the chip to restore the c runtime.
  * - We check that the `reference_frame` does not match any of the test
- * patterns.
+ *   patterns.
  * - Check the ECC error counter.
  * - Check that the backdoor written data in the `reference_frame`, matches with
- * the data supplied by the testbench.
+ *   the data supplied by the testbench.
  * - Pick a random address in the retention SRAM range.
  * - Set the reference memory as the main SRAM and the scrambling as the ret
- * SRAM and repeat the test except that it is neither necessary to copy the
- * `scrambling_frame` to the `reference_frame` nor reset the chip before the
- * checking.
+ *   SRAM and repeat the test except that it is neither necessary to copy the
+ *   `scrambling_frame` to the `reference_frame` nor reset the chip before the
+ *   checking.
+ *
+ * The control flow between this test software and the testbench is:
+ *
+ * +-----------------------------+------------------------------+
+ * | Software                    | Testbench                    |
+ * |-----------------------------|------------------------------|
+ * | Send addresses over UART  ---> Receive addresses over UART |
+ * |---------------------------SYNC-----------------------------|
+ * | Execute main SRAM test      | Write expected data          |
+ * | Reset                       |                              |
+ * |---------------------------SYNC-----------------------------|
+ * | Check main against expected |                              |
+ * | Send addresses over UART  ---> Receive addresses over UART |
+ * |---------------------------SYNC-----------------------------|
+ * | Execute ret SRAM test       | Write expected data          |
+ * |---------------------------SYNC-----------------------------|
+ * | Check ret against expected  |                              |
+ * +-----------------------------+------------------------------+
  */
 uint32_t main_sram_addr;
 uint32_t ret_sram_addr;
