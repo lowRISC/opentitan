@@ -25,6 +25,7 @@ cc_library(
     hdrs = ["simple_serial.h"],
     deps = [
         ":prng",
+        ":sca",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/arch:device",

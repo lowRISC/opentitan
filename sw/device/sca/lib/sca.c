@@ -32,27 +32,37 @@
 /**
  * Bitfield for the trigger source.
  *
- * Bits 9 to 11 are used to select the trigger source. See chiplevel.sv.tpl for
- * details.
+ * Bits 10 and 11 are used to select the trigger source. See chiplevel.sv.tpl
+ * for details.
  */
 static const bitfield_field32_t kTriggerSourceBitfield = {
-    .index = 9,
-    .mask = 0x7,
+    .index = 10,
+    .mask = 0x3,
 };
 
 enum {
   /**
-   * Bit index of the trigger gate signal for gating the trigger from software.
+   * Bit index of the hardware trigger gate signal for gating the hardware
+   * trigger from software.
    *
    * See chiplevel.sv.tpl for details.
    */
-  kTriggerGateBitIndex = 8,
+  kTriggerHwGateBitIndex = 9,
+  /**
+   * Bit index of the software trigger signal.
+   *
+   * See chiplevel.sv.tpl for details.
+   */
+  kTriggerSwBitIndex = 8,
   /**
    * RV timer settings.
    */
   kRvTimerComparator = 0,
   kRvTimerHart = kTopDarjeelingPlicTargetIbex0,
 };
+
+// By default, we use the precise, hardware-gated capture trigger.
+static unsigned int trigger_bit_index = kTriggerHwGateBitIndex;
 
 static dif_uart_t uart0;
 static dif_gpio_t gpio;
@@ -98,7 +108,8 @@ static void sca_init_gpio(sca_trigger_source_t trigger) {
 
   uint32_t select_mask =
       bitfield_field32_write(0, kTriggerSourceBitfield, UINT32_MAX);
-  uint32_t enable_mask = bitfield_bit32_write(0, kTriggerGateBitIndex, true);
+  uint32_t enable_mask = bitfield_bit32_write(0, kTriggerHwGateBitIndex, true);
+  enable_mask = bitfield_bit32_write(enable_mask, kTriggerSwBitIndex, true);
 
   OT_DISCARD(dif_gpio_output_set_enabled_all(&gpio, select_mask | enable_mask));
 
@@ -245,12 +256,20 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
 
 const dif_uart_t *sca_get_uart(void) { return &uart0; }
 
+void sca_select_trigger_type(sca_trigger_type_t trigger_type) {
+  if (trigger_type == kScaTriggerTypeHwGated) {
+    trigger_bit_index = kTriggerHwGateBitIndex;
+  } else if (trigger_type == kScaTriggerTypeSw) {
+    trigger_bit_index = kTriggerSwBitIndex;
+  }
+}
+
 void sca_set_trigger_high(void) {
-  OT_DISCARD(dif_gpio_write(&gpio, kTriggerGateBitIndex, true));
+  OT_DISCARD(dif_gpio_write(&gpio, trigger_bit_index, true));
 }
 
 void sca_set_trigger_low(void) {
-  OT_DISCARD(dif_gpio_write(&gpio, kTriggerGateBitIndex, false));
+  OT_DISCARD(dif_gpio_write(&gpio, trigger_bit_index, false));
 }
 
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
