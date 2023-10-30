@@ -9,12 +9,12 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
   // limit to SW operations
   constraint gen_operation_c {
-    gen_operation inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut};
+    gen_operation inside {keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut};
   }
 
   task body();
-    keymgr_pkg::keymgr_working_state_e state;
-    `uvm_info(`gfn, "Key manager seq start", UVM_HIGH)
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state;
+    `uvm_info(`gfn, "Key manager dpe seq start", UVM_HIGH)
     // Advance from StReset to last state StDisabled and advance one extra time,
     // then it should stay at StDisabled
     // In each state check SW/HW output

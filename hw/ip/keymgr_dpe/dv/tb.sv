@@ -6,8 +6,8 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import keymgr_env_pkg::*;
-  import keymgr_test_pkg::*;
+  import keymgr_dpe_env_pkg::*;
+  import keymgr_dpe_test_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

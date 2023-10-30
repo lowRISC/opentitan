@@ -38,28 +38,38 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   keymgr_dpe_sw_input_cg_wrap sw_input_cg_wrap[string];
 
   // covergroup for keymgr_dpe state and operation with op_status and CDI sel, sideload destination
-  covergroup state_and_op_cg with function sample(keymgr_pkg::keymgr_working_state_e state,
-                                                  keymgr_pkg::keymgr_ops_e op,
-                                                  keymgr_pkg::keymgr_op_status_e op_status,
-                                                  keymgr_cdi_type_e cdi,
-                                                  keymgr_pkg::keymgr_key_dest_e dest);
+  covergroup state_and_op_cg with function sample(
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op,
+      keymgr_pkg::keymgr_op_status_e op_status,
+      keymgr_dpe_cdi_type_e cdi,
+      keymgr_pkg::keymgr_key_dest_e dest
+  );
     state_cp:     coverpoint state;
     op_cp:        coverpoint op;
     op_status_cp: coverpoint op_status {
       // only sample when op is done
       ignore_bins illegal = {keymgr_pkg::OpIdle, keymgr_pkg::OpWip};
     }
-    cdi_cp:       coverpoint cdi iff (!(op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}));
-    dest_cp:      coverpoint dest iff (op inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut});
+    cdi_cp:       coverpoint cdi iff (!(op inside {
+      keymgr_dpe_pkg::OpDpeAdvance,
+      keymgr_dpe_pkg::OpDpeDisable})
+    );
+    dest_cp:      coverpoint dest iff (op inside {
+      keymgr_dpe_pkg::OpDpeGenSwOut,
+      keymgr_dpe_pkg::OpDpeGenHwOut}
+    );
 
     op_x_state_cross:  cross op_cp, cdi_cp, dest_cp, state_cp;
     op_x_status_cross: cross op_cp, cdi_cp, dest_cp, op_status_cp;
   endgroup
 
   // Covergroup to sample LC disable occurs at all the states or during operations
-  covergroup lc_disable_cg with function sample(keymgr_pkg::keymgr_working_state_e state,
-                                                keymgr_pkg::keymgr_ops_e op,
-                                                bit wip);
+  covergroup lc_disable_cg with function sample(
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op,
+      bit wip
+  );
     state_cp: coverpoint state;
     op_cp: coverpoint op iff (wip == 1);
     wip_cp: coverpoint wip;
@@ -71,13 +81,15 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   endgroup
 
   // Covergroup to sample sideload_clear in all the states and followed by all the operations
-  covergroup sideload_clear_cg with function sample(bit [2:0] sideload_clear,
-                                                    keymgr_pkg::keymgr_working_state_e state,
-                                                    keymgr_pkg::keymgr_ops_e op,
-                                                    bit aes_sl_avail,
-                                                    bit kmac_sl_avail,
-                                                    bit otbn_sl_avail,
-                                                    bit regwen);
+  covergroup sideload_clear_cg with function sample(
+      bit [2:0] sideload_clear,
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op,
+      bit aes_sl_avail,
+      bit kmac_sl_avail,
+      bit otbn_sl_avail,
+      bit regwen
+  );
     sideload_clear_cp: coverpoint sideload_clear {
       bins clear_none  = {0};
       bins clear_one[] = {[1:3]};
@@ -139,11 +151,12 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     }
   endgroup
 
-  // Covergroup to sample key version comparion with OpGenSwOut and OpGenHwOut in legal states
+  // Covergroup to sample key version comparion with OpDpeGenSwOut and OpDpeGenHwOut in legal states
   // When comparison is CompareOpGt, it's SW invalid input
-  covergroup key_version_compare_cg with function sample(compare_op_e key_version_cmp,
-                                                         keymgr_pkg::keymgr_working_state_e state,
-                                                         keymgr_pkg::keymgr_ops_e op);
+  covergroup key_version_compare_cg with function sample(
+      compare_op_e key_version_cmp,
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op);
     key_version_cmp_cp: coverpoint key_version_cmp {
       bins legal_values[]  = {CompareOpEq, CompareOpGt, CompareOpLt};
     }
@@ -152,7 +165,7 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
                               keymgr_pkg::StOwnerKey};
     }
     op_cp: coverpoint op {
-      bins legal_states[]  = {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut};
+      bins legal_states[]  = {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut};
     }
     key_ver_x_state_x_op_cross: cross key_version_cmp_cp, state_cp, op_cp;
   endgroup
