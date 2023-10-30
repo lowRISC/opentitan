@@ -5,4 +5,5 @@
 `include "mbx_tl_reg_seq.sv"
 `include "mbx_tl_device_seq.sv"
 `include "mbx_base_vseq.sv"
+`include "mbx_common_vseq.sv"
 `include "mbx_smoke_vseq.sv"
