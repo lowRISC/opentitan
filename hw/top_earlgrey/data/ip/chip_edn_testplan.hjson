@@ -30,15 +30,30 @@
             - Enable ENTROPY_SRC in boot-time mode, e.g., by setting CONF.FIPS_ENABLE to kMultiBitBool4False.
             - Enable CSRNG.
             - Enable EDN1 (the one connected to OTBN RND) in boot-time request mode.
+            - Disable ENTROPY_SRC.
+            - Since EDN1 provides entropy only to the OTBN, CSRNG will be idle.
+            - Enable ENTROPY_SRC in FIPS mode.
             - Enable EDN0 (the one connected to OTBN URND and other endpoints) in auto request mode.
             - Launch an OTBN program consuming entropy via both the RND and the URND interface.
-            - Verify that the OTBN program completes (entropy available) and that OTBN signals a recoverable alert and sets ERR_BITS.RND_FIPS_CHK_FAIL to indicate the reception of non-FIPS/CC-compliant entropy over the RND interface.
+            - Verify that the OTBN program completes (entropy available) and that OTBN sets ERR_BITS.RND_FIPS_CHK_FAIL to indicate the reception of non-FIPS/CC-compliant entropy over the RND interface.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 (the one connected to OTBN RND) in auto request mode.
+            - Disable ENTROPY_SRC.
+            - Enable ENTROPY_SRC in boot-time mode.
+            - Enable EDN0 (the one connected to OTBN URND and other endpoints) in boot-time request mode.
+            - Launch an OTBN program consuming entropy via both the RND and the URND interface.
+            - Verify that the OTBN program completes (entropy available) and that OTBN does not set ERR_BITS.RND_FIPS_CHK_FAIL.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS NON-compliant.
             - Disable the entropy complex.
             - Enable ENTROPY_SRC in FIPS mode.
             - Enable CSRNG.
             - Enable EDN1 and EDN0 in auto request mode and with non-deterministic seeds (flag0 = kMultiBitBool4False for Instantiate and Reseed commands).
             - Re-launch the OTBN program.
-            - Verify that the OTBN program completes (entropy available) and that OTBN does not signal a recoverable alert and does not set ERR_BITS.RND_FIPS_CHK_FAIL.
+            - Verify that the OTBN program completes (entropy available) and that OTBN does not set ERR_BITS.RND_FIPS_CHK_FAIL.
+            - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
             '''
       features: [
         EDN.MODE.BOOT,
