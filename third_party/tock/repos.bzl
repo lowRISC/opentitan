@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-3a0527d586702b8ae8cb242391fa72eb3a412f49",
-        url = "https://github.com/tock/tock/archive/3a0527d586702b8ae8cb242391fa72eb3a412f49.tar.gz",
-        sha256 = "8108d5b2bf8bc5c6b8c1ca09940c96b0b8c2541a8215293234f32803464cd748",
+        strip_prefix = "tock-8b28201bce7dd7b832de469b34a83457b2cc4ceb",
+        url = "https://github.com/tock/tock/archive/8b28201bce7dd7b832de469b34a83457b2cc4ceb.tar.gz",
+        sha256 = "91d00204db504d191a6bf4edaa4520f465a57547971b472f80583f45c3f1c4a5",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
@@ -152,9 +152,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "libtock",
         local = libtock,
-        strip_prefix = "libtock-rs-49779965a9575b03ef96df703bd2fc4b2f080a0c",
-        url = "https://github.com/tock/libtock-rs/archive/49779965a9575b03ef96df703bd2fc4b2f080a0c.tar.gz",
-        sha256 = "51355f3fd2361b10d37c7af0af0635ecb9645c1f03a19024f9f8427471d31971",
+        strip_prefix = "libtock-rs-cda873797a4a2937ccc13da75d0c74c04fab0a23",
+        url = "https://github.com/tock/libtock-rs/archive/cda873797a4a2937ccc13da75d0c74c04fab0a23.tar.gz",
+        sha256 = "a7c164ae64b5557ad0e21d400ba1ade58ed112cbecc4e545a69b3f7ff125bb94",
         additional_files_content = {
             "BUILD": crate_build(
                 name = "libtock",
@@ -251,6 +251,11 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
+            "build_scripts/BUILD": crate_build(
+                name = "build_scripts",
+                crate_name = "libtock_{name}",
+                additional_build_file_content = _LIBTOCK_LAYOUT,
+            ),
             "panic_handlers/debug_panic/BUILD": crate_build(
                 name = "debug_panic",
                 crate_name = "libtock_{name}",
@@ -277,11 +282,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
             "runtime/BUILD": crate_build(
                 name = "runtime",
                 crate_name = "libtock_{name}",
-                crate_features = ["no_auto_layout"],
                 deps = [
                     "//platform",
                 ],
-                additional_build_file_content = _LIBTOCK_LAYOUT,
             ),
         },
     )
