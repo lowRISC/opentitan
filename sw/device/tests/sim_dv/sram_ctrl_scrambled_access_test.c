@@ -295,11 +295,6 @@ static void execute_retention_sram_test(void) {
 
   LOG_INFO("Scrambling...");
   CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
-
-  // Reset the Ecc error count that lies on the main sram.
-  LOG_INFO("Checking memory...");
-  reference_frame->ecc_error_counter = 0;
-  check_sram_data(scrambling_frame);
 }
 
 /**
@@ -313,8 +308,10 @@ void ottf_internal_isr(void) {
 
 typedef enum test_phases {
   kTestPhaseSetup = 0,
-  kTestPhaseMainSram,
-  kTestPhaseRetSram,
+  kTestPhaseMainSramScramble,
+  kTestPhaseMainSramCheck,
+  kTestPhaseRetSramScramble,
+  kTestPhaseRetSramCheck,
   kTestPhaseDone,
 } test_phases_t;
 
@@ -398,13 +395,16 @@ bool test_main(void) {
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseMainSram);
+    CHECK(kTestPhase[0] == kTestPhaseMainSramScramble);
     LOG_INFO("First boot, testing main sram");
     // First boot, start with ret sram.
     execute_main_sram_test();
 
   } else if (info == kDifRstmgrResetInfoSw) {
+    sync_testbench(current_phase);
+    CHECK(kTestPhase[0] == kTestPhaseMainSramCheck);
     LOG_INFO("Second boot, checking main sram");
+
     check_sram_data(reference_frame);
 
     LOG_INFO("Testing Retention sram");
@@ -413,12 +413,21 @@ bool test_main(void) {
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
     sync_testbench(current_phase);
-    CHECK(kTestPhase[0] == kTestPhaseRetSram);
+    CHECK(kTestPhase[0] == kTestPhaseRetSramScramble);
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
 
     execute_retention_sram_test();
+
+    sync_testbench(current_phase);
+    CHECK(kTestPhase[0] == kTestPhaseRetSramCheck);
+    LOG_INFO("Checking retention sram");
+
+    // Reset the Ecc error count that lies on the main sram.
+    reference_frame->ecc_error_counter = 0;
+    check_sram_data(scrambling_frame);
+
     return true;
   }
 
