@@ -135,6 +135,88 @@ typedef enum dif_edn_status {
 } dif_edn_status_t;
 
 /**
+ * EDN SM states as defined in the EDN state machine RTL.
+ */
+typedef enum dif_edn_sm_state {
+  /**
+   * Device is idle.
+   */
+  kDifEdnSmStateIdle = 389,
+  /**
+   * Boot mode: load the instantiate command.
+   */
+  kDifEdnSmStateBootLoadIns = 439,
+  /**
+   * Boot mode: load the generate command.
+   */
+  kDifEdnSmStateBootLoadGen = 3,
+  /**
+   * Boot mode: wait for instantiate command ack.
+   */
+  kDifEdnSmStateBootInsAckWait = 210,
+  /**
+   * Boot mode: capture the gen fifo count.
+   */
+  kDifEdnSmStateBootCaptGenCnt = 186,
+  /**
+   * Boot mode: send the generate command.
+   */
+  kDifEdnSmStateBootSendGenCmd = 228,
+  /**
+   * Boot mode: wait for generate command ack.
+   */
+  kDifEdnSmStateBootGenAckWait = 364,
+  /**
+   * Boot mode: signal a done pulse.
+   */
+  kDifEdnSmStateBootPulse = 266,
+  /**
+   * Boot mode: stay in done state until reset.
+   */
+  kDifEdnSmStateBootDone = 223,
+  /**
+   * Auto mode: load the instantiate command.
+   */
+  kDifEdnSmStateAutoLoadIns = 112,
+  /**
+   * Auto mode: wait for first instantiate command ack.
+   */
+  kDifEdnSmStateAutoFirstAckWait = 77,
+  /**
+   * Auto mode: wait for instantiate command ack.
+   */
+  kDifEdnSmStateAutoAckWait = 355,
+  /**
+   * Auto mode: determine next command to be sent.
+   */
+  kDifEdnSmStateAutoDispatch = 430,
+  /**
+   * Auto mode: capture the gen fifo count.
+   */
+  kDifEdnSmStateAutoCaptGenCnt = 53,
+  /**
+   * Auto mode: send the generate command.
+   */
+  kDifEdnSmStateAutoSendGenCmd = 504,
+  /**
+   * Auto mode: capture the reseed fifo count.
+   */
+  kDifEdnSmStateAutoCaptReseedCnt = 38,
+  /**
+   * Auto mode: send the reseed command.
+   */
+  kDifEdnSmStateAutoSendReseedCmd = 342,
+  /**
+   * Sw port: no hw request mode.
+   */
+  kDifEdnSmStateSWPortMode = 313,
+  /**
+   * Illegal state reached and hang.
+   */
+  kDifEdnSmStateError = 145,
+} dif_edn_sm_state_t;
+
+/**
  * Enumeration of EDN FIFOs, which indicates which part of the hardware
  * produced an error.
  */
