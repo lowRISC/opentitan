@@ -61,10 +61,12 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   bit [  sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_main_key;
 
   typedef enum byte {
-    PhaseSetup           = 0,
-    kTestPhaseMainSram   = 1,
-    kTestPhaseRetSram    = 2,
-    PhaseDone            = 3
+    PhaseSetup                   = 0,
+    kTestPhaseMainSramScramble   = 1,
+    kTestPhaseMainSramCheck      = 2,
+    kTestPhaseRetSramScramble    = 3,
+    kTestPhaseRetSramCheck       = 4,
+    PhaseDone                    = 5
   } test_phases_e;
 
   virtual task check_hdl_paths();
@@ -232,24 +234,28 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
-    sync_with_sw(kTestPhaseMainSram);
+    sync_with_sw(kTestPhaseMainSramScramble);
 
     `uvm_info(`gfn, $sformatf("Testing main sram addr: %x", main_sram_offset), UVM_LOW);
     fork
       get_main_keys();
-      main_backdoor_write(main_sram_offset);
     join_none
+
+    main_backdoor_write(main_sram_offset);
+    sync_with_sw(kTestPhaseMainSramCheck);
 
     `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
-    sync_with_sw(kTestPhaseRetSram);
+    sync_with_sw(kTestPhaseRetSramScramble);
 
     `uvm_info(`gfn, $sformatf("Testing ret sram addr: %x", ret_sram_offset), UVM_LOW);
     fork
       get_ret_keys();
-      ret_backdoor_write(ret_sram_offset);
     join_none
+
+    ret_backdoor_write(ret_sram_offset);
+    sync_with_sw(kTestPhaseRetSramCheck);
 
   endtask
 
