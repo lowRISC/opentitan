@@ -19,7 +19,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     // then it should stay at StDisabled
     // In each state check SW/HW output
     repeat (state.num() + 1) begin
-      keymgr_operations(.advance_state(1), .num_gen_op(1), .clr_output(1));
+      keymgr_dpe_operations(.advance_state(1), .num_gen_op(1), .clr_output(1));
     end
 
   endtask : body
