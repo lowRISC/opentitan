@@ -11,24 +11,25 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(keymgr_dpe_base_vseq)
 
   // various knobs to enable certain routines
-  bit do_keymgr_init = 1'b1;
+  bit do_keymgr_dpe_init = 1'b1;
   bit do_wait_for_init_done = 1'b1;
   bit seq_check_en = 1'b1;
 
   // avoid multiple thread accessign this CSR at the same time, which causes UVM_WARNING
   semaphore sema_update_control_csr;
 
-  // do operations at StReset
+  // do operations at StWorkDpeReset
   rand bit do_op_before_init;
-  rand keymgr_pkg::keymgr_ops_e gen_operation;
+  rand keymgr_dpe_pkg::keymgr_dpe_ops_e gen_operation;
   rand keymgr_pkg::keymgr_key_dest_e key_dest;
 
   rand bit do_rand_otp_key;
   rand bit do_invalid_otp_key;
 
-  // save DUT returned current state here, rather than using it from RAL, it's needed info to
-  // predict operation result in seq
-  keymgr_pkg::keymgr_working_state_e current_state = keymgr_pkg::StReset;
+  // save DUT returned current state here, rather than using it from RAL,
+  // it's needed info to predict operation result in seq
+  keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state =
+    keymgr_dpe_pkg::StWorkDpeReset;
 
   rand bit is_key_version_err;
 
@@ -42,7 +43,11 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   }
 
   constraint gen_operation_c {
-    gen_operation inside {keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut};
+    gen_operation inside {
+      keymgr_dpe_pkg::OpDpeGenId,
+      keymgr_dpe_pkg::OpDpeGenSwOut,
+      keymgr_dpe_pkg::OpDpeGenHwOut
+    };
   }
 
   `uvm_object_new
@@ -82,7 +87,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   // setup basic keymgr features
   virtual task keymgr_dpe_init();
-    // Any OP except advance at StReset will trigger OP error, test these OPs here
+    // Any OP except advance at StWorkDpeReset will trigger OP error, test these OPs here
     if (do_op_before_init) begin
       repeat ($urandom_range(1, 5)) begin
         keymgr_dpe_invalid_op_at_reset_state();
@@ -132,9 +137,9 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver_shadowed);
     max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver_shadowed);
     max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver_shadowed);
-    max_key_ver_val = (current_state == keymgr_pkg::StCreatorRootKey)
-        ? max_creator_key_ver_val : (current_state == keymgr_pkg::StOwnerIntKey)
-        ? max_owner_int_key_ver_val : (current_state == keymgr_pkg::StOwnerKey)
+    max_key_ver_val = (current_state == keymgr_dpe_pkg::StWorkDpeCreatorRootKey)
+        ? max_creator_key_ver_val : (current_state == keymgr_dpe_pkg::StWorkDpeOwnerIntKey)
+        ? max_owner_int_key_ver_val : (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey)
         ? max_owner_key_ver_val : 0;
 
     // if current key_version already match to what we need, return without updating it
@@ -159,30 +164,36 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     bit is_good_op = 1;
     int key_verion = `gmv(ral.key_version[0]);
     logic [2:0] operation = `gmv(ral.control_shadowed.operation);
-    keymgr_pkg::keymgr_ops_e cast_operation = keymgr_pkg::keymgr_ops_e'(operation);
+    keymgr_dpe_pkg::keymgr_dpe_ops_e cast_operation = keymgr_dpe_pkg::keymgr_dpe_ops_e'(operation);
     bit[TL_DW-1:0] rd_val;
 
-    if (operation inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut}) begin
+    if (operation inside {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut}) begin
       // only when it's in 3 working state and key_verion less than max version
       case (current_state)
-        keymgr_pkg::StCreatorRootKey: begin
+        keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
           is_good_op = key_verion <= ral.max_creator_key_ver_shadowed.get_mirrored_value();
         end
-        keymgr_pkg::StOwnerIntKey: begin
+        keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
           is_good_op = key_verion <= ral.max_owner_int_key_ver_shadowed.get_mirrored_value();
         end
-        keymgr_pkg::StOwnerKey: begin
+        keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
           is_good_op = key_verion <= ral.max_owner_key_ver_shadowed.get_mirrored_value();
         end
         default: is_good_op = 0;
       endcase
-    end else if (operation == keymgr_pkg::OpGenId) begin
-      is_good_op = current_state inside {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
-                                         keymgr_pkg::StOwnerKey};
-    end else if (operation == keymgr_pkg::OpAdvance) begin
-      is_good_op = current_state != keymgr_pkg::StDisabled;
+    end else if (operation == keymgr_dpe_pkg::OpDpeGenId) begin
+      is_good_op = current_state inside {
+        keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
+        keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
+        keymgr_dpe_pkg::StWorkDpeOwnerKey
+      };
+    end else if (operation == keymgr_dpe_pkg::OpDpeAdvance) begin
+      is_good_op = current_state != keymgr_dpe_pkg::StWorkDpeDisabled;
     end else begin
-      is_good_op = !(current_state inside {keymgr_pkg::StReset, keymgr_pkg::StDisabled});
+      is_good_op = !(current_state inside {
+        keymgr_dpe_pkg::StWorkDpeReset,
+        keymgr_dpe_pkg::StWorkDpeDisabled}
+      );
     end
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
                               current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
@@ -193,7 +204,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
 
-    // if keymgr_dpe_en is set to off during OP, status is checked in scb. hard to predict the result
+    // if keymgr_dpe_en is set to off during OP,
+    // status is checked in scb. hard to predict the result
     // in seq
     if (get_check_en()) begin
       `DV_CHECK_EQ(`gmv(ral.op_status.status), exp_status)
@@ -238,10 +250,11 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : read_current_state
 
   virtual task keymgr_dpe_advance(bit wait_done = 1);
-    keymgr_pkg::keymgr_working_state_e exp_next_state = get_next_state(current_state);
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state =
+      get_next_state(current_state);
     sema_update_control_csr.get();
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
-    ral.control_shadowed.operation.set(keymgr_pkg::OpAdvance);
+    ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
     csr_update(.csr(ral.control_shadowed));
     csr_wr(.ptr(ral.start), .value(1));
     sema_update_control_csr.put();
@@ -255,7 +268,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : keymgr_dpe_advance
 
   // by default generate for software
-  virtual task keymgr_dpe_generate(keymgr_pkg::keymgr_ops_e operation,
+  virtual task keymgr_dpe_generate(keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
                                keymgr_pkg::keymgr_key_dest_e key_dest,
                                bit wait_done = 1);
     sema_update_control_csr.get();
@@ -305,7 +318,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   // when reset occurs or keymgr_dpe_en = Off, disable checks in seq and check in scb only
   virtual function bit get_check_en();
-    return cfg.keymgr_dpe_vif.get_keymgr_en() && !cfg.under_reset;
+    return cfg.keymgr_dpe_vif.get_keymgr_dpe_en() && !cfg.under_reset;
   endfunction
 
   task wait_and_check_fatal_alert(bit check_invalid_state_enterred = 1);
@@ -316,20 +329,20 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks($urandom_range(1, 500));
 
     if (check_invalid_state_enterred) begin
-      csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+      csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StWorkDpeInvalid));
     end
   endtask
 
   virtual task check_after_fi();
     bit issue_adv_or_gen = $urandom;
     // after FI, keymgr should enter StInvalid state immediately
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StWorkDpeInvalid));
     // issue any operation
     issue_a_random_op(.wait_done(0));
     // waiting for done is called separately as this one expects to be failed
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
                  .spinwait_delay_ns($urandom_range(0, 100)));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_dpe_pkg::StWorkDpeInvalid));
   endtask
 
   virtual task issue_a_random_op(bit wait_done);

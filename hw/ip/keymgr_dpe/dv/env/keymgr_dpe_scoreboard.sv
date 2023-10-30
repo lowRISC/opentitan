@@ -12,30 +12,30 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     str = $sformatf("%0s\n %0s act: 0x%0h, exp: 0x%0h", str, `"VAR`", act.``VAR, exp.``VAR);
 
   typedef struct packed {
-    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]                   SoftwareBinding;
+    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
     bit [keymgr_pkg::KeyWidth-1:0]                                         HardwareRevisionSecret;
     bit [keymgr_pkg::DevIdWidth-1:0]                                       DeviceIdentifier;
     bit [keymgr_pkg::HealthStateWidth-1:0]                                 HealthMeasurement;
-    bit [keymgr_reg_pkg::NumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
+    bit [keymgr_dpe_reg_pkg::NumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
     bit [keymgr_pkg::KeyWidth-1:0]                                         DiversificationKey;
   } adv_creator_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
-    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
-    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
   } adv_owner_data_t;
 
   typedef struct packed {
     bit [TL_DW-1:0]      KeyVersion;
-    bit [keymgr_reg_pkg::NumSaltReg-1:0][TL_DW-1:0] Salt;
+    bit [keymgr_dpe_reg_pkg::NumSaltReg-1:0][TL_DW-1:0] Salt;
     keymgr_pkg::seed_t   KeyID;
     keymgr_pkg::seed_t   SoftwareExportConstant;
   } gen_out_data_t;
@@ -52,20 +52,20 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   int adv_cnt = 0;
 
   // local variables
-  keymgr_pkg::keymgr_working_state_e current_state;
+  keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state;
   keymgr_pkg::keymgr_op_status_e     current_op_status;
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
-  key_shares_t current_internal_key[keymgr_cdi_type_e];
-  keymgr_cdi_type_e current_cdi;
+  key_shares_t current_internal_key[keymgr_dpe_cdi_type_e];
+  keymgr_dpe_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
   keymgr_pkg::keymgr_op_status_e     addr_phase_op_status;
   bit                                addr_phase_cfg_regwen;
-  keymgr_pkg::keymgr_working_state_e addr_phase_working_state;
+  keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e addr_phase_working_state;
   bit                                addr_phase_is_sw_share_corrupted;
 
   // TLM agent fifos
@@ -74,11 +74,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
-  bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[keymgr_cdi_type_e][
-                                     keymgr_pkg::keymgr_working_state_e];
-  bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[keymgr_pkg::keymgr_working_state_e];
-  bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[keymgr_pkg::keymgr_working_state_e];
-  bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[keymgr_pkg::keymgr_working_state_e];
+  bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[
+    keymgr_dpe_cdi_type_e][
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
+  bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
+  bit [keymgr_pkg::GenDataWidth-1:0] sw_data_a_array[
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
+  bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
 
   `uvm_component_new
 
@@ -86,10 +90,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     super.build_phase(phase);
     req_fifo = new("req_fifo", this);
     rsp_fifo = new("rsp_fifo", this);
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -115,7 +115,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                    current_op_status == keymgr_pkg::OpWip);
         end
 
-        if (current_state != keymgr_pkg::StReset || current_op_status == keymgr_pkg::OpWip) begin
+        if (current_state != keymgr_dpe_pkg::StWorkDpeReset ||
+            current_op_status == keymgr_pkg::OpWip
+        ) begin
           if (cfg.en_scb) wipe_hw_keys();
         end
 
@@ -125,7 +127,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual function void process_kmac_data_req(kmac_app_item item);
-    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
@@ -137,27 +139,29 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
 
     case (op)
-      keymgr_pkg::OpAdvance: begin
+      keymgr_dpe_pkg::OpDpeAdvance: begin
         bit is_err = get_hw_invalid_input();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
 
         case (current_state)
-          keymgr_pkg::StInit: begin
+          keymgr_dpe_pkg::StWorkDpeInit: begin
             compare_adv_creator_data(.cdi_type(current_cdi),
                                      .exp_match(!is_err),
                                      .byte_data_q(item.byte_data_q));
           end
-          keymgr_pkg::StCreatorRootKey: begin
+          keymgr_dpe_pkg::StCreatorRootKey: begin
             compare_adv_owner_int_data(.cdi_type(current_cdi),
                                        .exp_match(!is_err),
                                        .byte_data_q(item.byte_data_q));
           end
-          keymgr_pkg::StOwnerIntKey: begin
+          keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
             compare_adv_owner_data(.cdi_type(current_cdi),
                                    .exp_match(!is_err),
                                    .byte_data_q(item.byte_data_q));
           end
-          keymgr_pkg::StOwnerKey, keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
+          keymgr_dpe_pkg::StWorkDpeOwnerKey,
+          keymgr_dpe_pkg::StWorkDpeDisabled,
+          keymgr_dpe_pkg::StWorkDpeInvalid: begin
             // set to 1 to check invalid data is used
             is_err = 1;
           end
@@ -165,15 +169,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         endcase
         if (is_err) compare_invalid_data(item.byte_data_q);
       end
-      keymgr_pkg::OpGenId: begin
+      keymgr_dpe_pkg::OpDpeGenId: begin
         if (get_is_kmac_data_correct()) compare_id_data(item.byte_data_q);
         else                            compare_invalid_data(item.byte_data_q);
       end
-      keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
+      keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
         if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
         else                            compare_invalid_data(item.byte_data_q);
       end
-      keymgr_pkg::OpDisable: begin
+      keymgr_dpe_pkg::OpDpeDisable: begin
         compare_invalid_data(item.byte_data_q);
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
@@ -231,8 +235,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       default: `uvm_info(`gfn, "KMAC result isn't updated to any output", UVM_MEDIUM)
     endcase
 
-    if (current_state != keymgr_pkg::StReset &&
-        get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
+    if (current_state != keymgr_dpe_pkg::StWorkDpeReset &&
+        get_operation() inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) begin
       current_cdi = get_adv_cdi_type();
       if (current_cdi > 0 && current_internal_key[current_cdi] > 0) begin
         bit good_key = get_is_kmac_key_correct();
@@ -247,16 +251,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // internal key, HW/SW output
   virtual function update_result_e process_update_after_op_done();
     update_result_e update_result;
-    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit is_final_kdf;
 
     // Update state to Invalid earlier so that we can get InvalidOp error, as LC disable in the
     // middle of OP will trigger this error
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) current_state = get_next_state();
 
-    // for advance after StReset, it needs 2 KDF. Only update opt_status after the last one
-    if (!(op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) ||
-        current_state == keymgr_pkg::StReset) begin
+    // for advance after StWorkDpeReset, it needs 2 KDF. Only update opt_status after the last one
+    if (!(op inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) ||
+        current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
       is_final_kdf = 1;
     end else begin
       is_final_kdf = (adv_cnt == keymgr_pkg::CDIs - 1);
@@ -297,28 +301,30 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
 
     if (get_fault_err() || !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-      if (op inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable}) begin
+      if (op inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) begin
         if (adv_cnt != keymgr_pkg::CDIs - 1) begin
           adv_cnt++;
           is_sw_share_corrupted = 1;
           cfg.keymgr_dpe_vif.wipe_sideload_keys();
         end else begin
           adv_cnt = 0;
-          update_state(keymgr_pkg::StInvalid);
+          update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
         end
       end else begin // other non-advance OP
-        update_state(keymgr_pkg::StInvalid);
+        update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
       end
       return NotUpdate;
     end
     case (current_state)
-      keymgr_pkg::StInit, keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
-          keymgr_pkg::StOwnerKey: begin
+      keymgr_dpe_pkg::StWorkDpeInit,
+      keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
+      keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
+      keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
 
         case (op)
-          keymgr_pkg::OpAdvance: begin
-            // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
-            if (current_state == keymgr_pkg::StOwnerKey || get_op_err()) begin
+          keymgr_dpe_pkg::OpDpeAdvance: begin
+            // if it's StOwnerKey, it advacens to OpDpeDisable. Key is just random value
+            if (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey || get_op_err()) begin
               update_result = NotUpdate;
             end else begin
               update_result = UpdateInternalKey;
@@ -336,20 +342,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               end
             end
           end
-          keymgr_pkg::OpDisable: begin
+          keymgr_dpe_pkg::OpDpeDisable: begin
             update_result = NotUpdate;
             if (adv_cnt != keymgr_pkg::CDIs - 1) begin
               adv_cnt++;
             end else begin
               adv_cnt = 0;
-              update_state(keymgr_pkg::StDisabled);
+              update_state(keymgr_dpe_pkg::StWorkDpeDisabled);
             end
           end
-          keymgr_pkg::OpGenId, keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut: begin
+          keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut,
+          keymgr_dpe_pkg::OpDpeGenHwOut: begin
             // If only op error but no fault error, no update for output
             if (get_op_err()) begin
               update_result = NotUpdate;
-            end else if (op == keymgr_pkg::OpGenHwOut) begin
+            end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
               update_result = UpdateHwOut;
             end else begin
               update_result = UpdateSwOut;
@@ -358,9 +365,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
-      keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
+      keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
         case (op)
-          keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable: begin
+          keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable: begin
             update_result = NotUpdate;
             if (adv_cnt != keymgr_pkg::CDIs - 1) begin
               adv_cnt++;
@@ -368,10 +375,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               adv_cnt = 0;
             end
           end
-          keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenId: begin
+          keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenId: begin
             update_result = UpdateSwOut;
           end
-          keymgr_pkg::OpGenHwOut: begin
+          keymgr_dpe_pkg::OpDpeGenHwOut: begin
             update_result = UpdateHwOut;
           end
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
@@ -447,8 +454,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
 
     if (data_phase_write && csr.get_name() == "sw_binding_regwen" &&
-        current_state == keymgr_pkg::StReset) begin
-      // in StReset, can't change sw_binding_regwen value
+        current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
+      // in StWorkDpeReset, can't change sw_binding_regwen value
       // set related locked reg back to original_access as this is updated automatic in post_write
       #0; // push below update to be done after post_write
       ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
@@ -462,10 +469,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       "intr_state": begin
         if (data_phase_read) begin
           bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
-          bit [NumKeyMgrIntr-1:0] intr_exp = `gmv(ral.intr_state);
+          bit [NumKeyMgrDpeIntr-1:0] intr_exp = `gmv(ral.intr_state);
 
           foreach (intr_exp[i]) begin
-            keymgr_intr_e intr = keymgr_intr_e'(i);
+            keymgr_dpe_intr_e intr = keymgr_dpe_intr_e'(i);
 
             `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
                            $sformatf("Interrupt_pin: %0s", intr.name));
@@ -493,7 +500,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           // skip checking ErrShadowUpdate as it's done in common direct sequence where we disable
           // the scb
 
-          // when op error occurs with keymgr_dpe_en = 0, input is meaningless. Design may or may not
+          // when op error occurs with keymgr_dpe_en = 0,
+          // input is meaningless. Design may or may not
           // assert ErrInvalidIn, which doesn't matter
           if (!err_code[keymgr_pkg::ErrInvalidOp] && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
             `DV_CHECK_EQ(item.d_data[keymgr_pkg::ErrInvalidIn],
@@ -513,7 +521,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       "intr_test": begin
         if (write && channel == AddrChannel) begin
           bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
-          bit [NumKeyMgrIntr-1:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
+          bit [NumKeyMgrDpeIntr-1:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
 
           void'(ral.intr_state.predict(.value(intr_exp)));
           if (cfg.en_cov) begin
@@ -527,9 +535,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // Check in this block
         do_read_check = 1'b0;
 
-        // skip checking cfg_regwen value when it's advance OP in Reset, as it's hard to know what exact
+        // skip checking cfg_regwen value when it's advance OP in Reset,
+        // as it's hard to know what exact
         // time OP will complete
-        if (current_state != keymgr_pkg::StReset || current_op_status != keymgr_pkg::OpWip) begin
+        if (current_state != keymgr_dpe_pkg::StWorkDpeReset ||
+            current_op_status != keymgr_pkg::OpWip) begin
           if (addr_phase_read) begin
             addr_phase_cfg_regwen = current_op_status != keymgr_pkg::OpWip &&
                                cfg.keymgr_dpe_vif.get_keymgr_dpe_en();
@@ -543,20 +553,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           bit start = `gmv(ral.start.en);
 
           if (start) begin
-            keymgr_pkg::keymgr_ops_e op = get_operation();
+            keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
             current_op_status = keymgr_pkg::OpWip;
 
             `uvm_info(`gfn, $sformatf("At %s, %s is issued", current_state.name, op.name), UVM_LOW)
 
-            // In StReset, OP doesn't trigger KDF, update result here for InvalidOp and update
+            // In StWorkDpeReset, OP doesn't trigger KDF,
+            // update result here for InvalidOp and update
             // status at `op_status`
             // For other states, update result after KDF is done at process_kmac_data_rsp
             case (current_state)
-              keymgr_pkg::StReset: begin
-                if (op == keymgr_pkg::OpAdvance) begin
+              keymgr_dpe_pkg::StWorkDpeReset: begin
+                if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
                   // expect no EDN request is issued. After this advance is done, will have 2 reqs
                   `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
-                end else begin // !OpAdvance
+                end else begin // !OpDpeAdvance
                   current_op_status = keymgr_pkg::OpDoneFail;
                   // No KDF issued, done interrupt/alert is triggered in next cycle
                   void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
@@ -577,13 +588,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 end
                 void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
               end
-              default: begin // other than StReset and StDisabled
+              default: begin // other than StWorkDpeReset and StDisabled
                 bit good_key;
                 bit good_data;
 
-                if (op == keymgr_pkg::OpAdvance) begin
+                if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
                   current_cdi = get_adv_cdi_type();
-                  if (current_state == keymgr_pkg::StInit) latch_otp_key();
+                  if (current_state == keymgr_dpe_pkg::StWorkDpeInit) latch_otp_key();
                 end else begin
                   int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
                   `downcast(current_cdi, cdi_sel)
@@ -604,14 +615,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
                 // update kmac key for check
                 if (current_internal_key[current_cdi] > 0) begin
-                  cfg.keymgr_dpe_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
-                                                good_key, good_data);
+                  cfg.keymgr_dpe_vif.update_kdf_key(
+                    current_internal_key[current_cdi],
+                    current_state,
+                    good_key,
+                    good_data
+                  );
                 end
               end
             endcase
           end // start
-        end // addr_phase_write
-        else if (addr_phase_read) begin
+        end else if (addr_phase_read) begin
           // start drops when op is done.
           void'(csr.predict(.value(current_op_status == keymgr_pkg::OpWip),
                             .kind(UVM_PREDICT_READ)));
@@ -624,10 +638,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_read) begin
           addr_phase_working_state = current_state;
         end else if (data_phase_read) begin
-          // scb can't predict when advance from stReset is done, as it's updated internally and no
+          // scb can't predict when advance from StWorkDpeReset is done,
+          // as it's updated internally and no
           // output to indicate that, skip checking it
-          if (current_state != keymgr_pkg::StReset || current_op_status != keymgr_pkg::OpWip) begin
-            keymgr_pkg::keymgr_working_state_e act_state;
+          if (current_state != keymgr_dpe_pkg::StWorkDpeReset ||
+              current_op_status != keymgr_pkg::OpWip) begin
+            keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e act_state;
 
             `downcast(act_state, item.d_data)
             `DV_CHECK_EQ(act_state, addr_phase_working_state)
@@ -644,8 +660,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end else if (addr_phase_read) begin
           addr_phase_op_status = current_op_status;
         end else if (data_phase_read) begin
-          if (current_state == keymgr_pkg::StReset) begin
-            // when advance from StReset to StInit, we don't know how long it will take, it's ok
+          if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
+            // when advance from StWorkDpeReset to StWorkDpeInit,
+            // we don't know how long it will take, it's ok
             // when status is WIP or success
             if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
               `DV_CHECK_EQ(item.d_data inside {current_op_status, keymgr_pkg::OpDoneSuccess}, 1)
@@ -666,7 +683,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               current_state = get_next_state(current_state);
               void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
 
-              // keymgr_dpe should request 2 EDN data during advancing from StReset
+              // keymgr_dpe should request 2 EDN data during advancing from StWorkDpeReset
               // function `used` returns the number of entries put into the FIFO
               `DV_CHECK_EQ(edn_fifos[0].used(), 2)
             end
@@ -739,7 +756,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end else begin // Not sw_share
           // ICEBOX(#18344): explicitly list all the unchecked regs here.
           do_read_check = 1'b0;
-          $display("cindydebygljakljel %0s", csr.get_name());
+          $display("process_tl_access: a csr %0s was received that isn't handled", csr.get_name());
         end
       end
     endcase
@@ -772,14 +789,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit [TL_DW-1:0] get_current_max_version(
-        keymgr_pkg::keymgr_working_state_e state = current_state);
+        keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state = current_state);
     // design change this to 0 if LC turns off keymgr_dpe.
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) return 0;
 
     case (state)
-      keymgr_pkg::StCreatorRootKey: return `gmv(ral.max_creator_key_ver_shadowed);
-      keymgr_pkg::StOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver_shadowed);
-      keymgr_pkg::StOwnerKey:       return `gmv(ral.max_owner_key_ver_shadowed);
+      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: return `gmv(ral.max_creator_key_ver_shadowed);
+      keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver_shadowed);
+      keymgr_dpe_pkg::StWorkDpeOwnerKey:       return `gmv(ral.max_owner_key_ver_shadowed);
       // for the other state, max is 0
       default: return 0;
     endcase
@@ -838,20 +855,25 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function bit get_invalid_op();
     `uvm_info(`gfn, $sformatf("current_state: %s", current_state), UVM_MEDIUM)
     case (current_state)
-      keymgr_pkg::StReset: begin
-        if (get_operation() != keymgr_pkg::OpAdvance) begin
+      keymgr_dpe_pkg::StWorkDpeReset: begin
+        if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) begin
           return 1;
         end
       end
-      keymgr_pkg::StInit: begin
-        if (!(get_operation() inside {keymgr_pkg::OpAdvance, keymgr_pkg::OpDisable})) begin
+      keymgr_dpe_pkg::StWorkDpeInit: begin
+        if (!(get_operation() inside {
+          keymgr_dpe_pkg::OpDpeAdvance,
+          keymgr_dpe_pkg::OpDpeDisable})) begin
           return 1;
         end
       end
-      keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey, keymgr_pkg::StOwnerKey: begin
+      keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
+      keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
+      keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
         // no operation error
       end
-      keymgr_pkg::StDisabled, keymgr_pkg::StInvalid: begin
+      keymgr_dpe_pkg::StWorkDpeDisabled,
+      keymgr_dpe_pkg::StWorkDpeInvalid: begin
         return 1;
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
@@ -860,9 +882,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit get_sw_invalid_input();
-    if (get_operation() inside {keymgr_pkg::OpGenSwOut, keymgr_pkg::OpGenHwOut} &&
-        current_state != keymgr_pkg::StReset &&
-        get_current_max_version() < `gmv(ral.key_version[0])) begin
+    if (get_operation() inside {
+      keymgr_dpe_pkg::OpDpeGenSwOut,
+      keymgr_dpe_pkg::OpDpeGenHwOut} &&
+      current_state != keymgr_dpe_pkg::StWorkDpeReset &&
+      get_current_max_version() < `gmv(ral.key_version[0])) begin
       void'(ral.debug.invalid_key_version.predict(1));
       return 1;
     end else begin
@@ -884,11 +908,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     keymgr_dpe_invalid_hw_input_type_e invalid_hw_input_type;
 
     // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
-    if (get_invalid_op() || get_operation() == keymgr_pkg::OpDisable) return 0;
+    if (get_invalid_op() || get_operation() == keymgr_dpe_pkg::OpDpeDisable) return 0;
 
     if ((current_internal_key[current_cdi][0] inside {0, '1} ||
          current_internal_key[current_cdi][1] inside {0, '1}) &&
-         current_state != keymgr_pkg::StReset) begin
+         current_state != keymgr_dpe_pkg::StWorkDpeReset) begin
       invalid_hw_input_type = OtpRootKeyInvalid;
       void'(ral.debug.invalid_key.predict(1));
       err_cnt++;
@@ -896,10 +920,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 UVM_LOW)
     end
 
-    if (get_operation() != keymgr_pkg::OpAdvance) return err_cnt > 0;
+    if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) return err_cnt > 0;
 
     case (current_state)
-      keymgr_pkg::StInit: begin
+      keymgr_dpe_pkg::StWorkDpeInit: begin
         if (cfg.keymgr_dpe_vif.keymgr_dpe_div inside {0, '1}) begin
           invalid_hw_input_type = LcStateInvalid;
           void'(ral.debug.invalid_health_state.predict(1));
@@ -914,7 +938,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
         end
 
-        for (int i = 0; i < keymgr_reg_pkg::NumRomDigestInputs; ++i) begin
+        for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
           if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
             invalid_hw_input_type = RomDigestInvalid;
             void'(ral.debug.invalid_digest.predict(1));
@@ -939,7 +963,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
         end
       end
-      keymgr_pkg::StCreatorRootKey: begin
+      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
         if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
           invalid_hw_input_type = FlashOwnerSeedInvalid;
           void'(ral.debug.invalid_owner_seed.predict(1));
@@ -961,10 +985,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // in normal operational states, invalid command etc lead to random data for gen-out OP
   virtual function bit get_is_kmac_data_correct();
     bit [TL_DW-1:0] err_code = get_err_code();
-    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
-    if (current_state inside {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
-                              keymgr_pkg::StOwnerKey}) begin
+    if (current_state inside {
+        keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
+        keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
+        keymgr_dpe_pkg::StWorkDpeOwnerKey}
+    ) begin
       return !(get_fault_err() |
                err_code[keymgr_pkg::ErrInvalidIn]  |
                !cfg.keymgr_dpe_vif.get_keymgr_dpe_en());
@@ -976,17 +1003,20 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // Entering StDisable or invalid op leads to random key
   virtual function bit get_is_kmac_key_correct();
     bit [TL_DW-1:0] err_code = get_err_code();
-    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
-    if ((current_state == keymgr_pkg::StOwnerKey && op == keymgr_pkg::OpAdvance) ||
-        op == keymgr_pkg::OpDisable || !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
+    if ((current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey &&
+         op == keymgr_dpe_pkg::OpDpeAdvance) ||
+         op == keymgr_dpe_pkg::OpDpeDisable  ||
+         !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()
+   ) begin
       return 0;
     end else begin
       return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
     end
   endfunction
 
-  virtual function void compare_adv_creator_data(keymgr_cdi_type_e cdi_type,
+  virtual function void compare_adv_creator_data(keymgr_dpe_cdi_type_e cdi_type,
                                                  bit exp_match,
                                                  const ref byte byte_data_q[$]);
     adv_creator_data_t exp, act;
@@ -996,7 +1026,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    for (int i = 0; i < keymgr_reg_pkg::NumRomDigestInputs; ++i) begin
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
       exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
     end
     exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
@@ -1019,10 +1049,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StCreatorRootKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeCreatorRootKey] = act;
   endfunction
 
-  virtual function void compare_adv_owner_int_data(keymgr_cdi_type_e cdi_type,
+  virtual function void compare_adv_owner_int_data(keymgr_dpe_cdi_type_e cdi_type,
                                                    bit exp_match,
                                                    const ref byte byte_data_q[$]);
     adv_owner_int_data_t exp, act;
@@ -1035,7 +1065,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     `CREATE_CMP_STR(unused)
     `CREATE_CMP_STR(OwnerRootSecret)
-    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
@@ -1045,10 +1075,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StOwnerIntKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerIntKey] = act;
   endfunction
 
-  virtual function void compare_adv_owner_data(keymgr_cdi_type_e cdi_type,
+  virtual function void compare_adv_owner_data(keymgr_dpe_cdi_type_e cdi_type,
                                                bit exp_match,
                                                const ref byte byte_data_q[$]);
     adv_owner_data_t exp, act;
@@ -1059,7 +1089,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
-    for (int i=0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
@@ -1069,7 +1099,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, exp, str)
     end
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_pkg::StOwnerKey] = act;
+    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerKey] = act;
   endfunction
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
@@ -1101,9 +1131,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     bit [keymgr_pkg::IdDataWidth-1:0] act, exp;
 
     case (current_state)
-      keymgr_pkg::StCreatorRootKey: exp = keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
-      keymgr_pkg::StOwnerIntKey:    exp = keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
-      keymgr_pkg::StOwnerKey:       exp = keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
+      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: exp = keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
+      keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    exp = keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
+      keymgr_dpe_pkg::StWorkDpeOwnerKey:       exp = keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
       default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
     endcase
     act = {<<8{byte_data_q}};
@@ -1115,7 +1145,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
     gen_out_data_t exp, act;
-    keymgr_pkg::keymgr_ops_e op = get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control_shadowed.dest_sel));
     string str;
@@ -1123,7 +1153,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.KeyVersion = `gmv(ral.key_version[0]);
-    for (int i = 0; i < keymgr_reg_pkg::NumSaltReg; i++) begin
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSaltReg; i++) begin
       uvm_reg rg = ral.get_reg_by_name($sformatf("salt_%0d", i));
       exp.Salt[i] = `gmv(rg);
     end
@@ -1137,11 +1167,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     endcase
 
     case (op)
-      keymgr_pkg::OpGenSwOut: begin
+      keymgr_dpe_pkg::OpDpeGenSwOut: begin
         exp.SoftwareExportConstant = keymgr_pkg::RndCnstSoftOutputSeedDefault;
         sw_data_a_array[current_state] = act;
       end
-      keymgr_pkg::OpGenHwOut: begin
+      keymgr_dpe_pkg::OpDpeGenHwOut: begin
         exp.SoftwareExportConstant = keymgr_pkg::RndCnstHardOutputSeedDefault;
         hw_data_a_array[current_state] = act;
       end
@@ -1156,15 +1186,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(act, exp, str)
   endfunction
 
-  virtual function keymgr_cdi_type_e get_adv_cdi_type();
+  virtual function keymgr_dpe_cdi_type_e get_adv_cdi_type();
     `downcast(get_adv_cdi_type, adv_cnt)
   endfunction
 
   virtual function void get_sw_binding_mirrored_value(
-        input keymgr_cdi_type_e cdi_type,
-        output bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
+        input keymgr_dpe_cdi_type_e cdi_type,
+        output bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
 
-    for (int i = 0; i < keymgr_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
       case (cdi_type)
         Sealing: sw_binding[i] = `gmv(ral.sealing_sw_binding[i]);
         Attestation: sw_binding[i] = `gmv(ral.attest_sw_binding[i]);
@@ -1173,23 +1203,23 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // if it's not defined operation, treat as OpDisable
-  virtual function keymgr_pkg::keymgr_ops_e get_operation();
-    keymgr_pkg::keymgr_ops_e op;
+  // if it's not defined operation, treat as OpDpeDisable
+  virtual function keymgr_dpe_pkg::keymgr_dpe_ops_e get_operation();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op;
     int op_int_val = `gmv(ral.control_shadowed.operation);
 
-    if (!$cast(op, op_int_val)) op = keymgr_pkg::OpDisable;
+    if (!$cast(op, op_int_val)) op = keymgr_dpe_pkg::OpDpeDisable;
     return op;
   endfunction
 
-  virtual function keymgr_pkg::keymgr_working_state_e get_next_state(
-      keymgr_pkg::keymgr_working_state_e cur = current_state);
-    if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) return keymgr_pkg::StInvalid;
-    else                                 return keymgr_env_pkg::get_next_state(cur);
+  virtual function keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e cur = current_state);
+    if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) return keymgr_dpe_pkg::StWorkDpeInvalid;
+    else                                 return keymgr_dpe_env_pkg::get_next_state(cur);
   endfunction
 
   virtual function void update_state(
-      keymgr_pkg::keymgr_working_state_e new_state = get_next_state(),
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e new_state = get_next_state(),
       int cyc_dly = 1);
     fork
       begin
@@ -1212,18 +1242,19 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // And we will check that hw key is wiped no matter whether InvalidOp is set or not.
         csr_rd(.ptr(ral.working_state), .value(current_design_state), .backdoor(1'b1));
 
-        // LC-disable happens during advancing to StInit
+        // LC-disable happens during advancing to StWorkDpeInit
         // If LC-disable happens during an operation in other states, KDF will occur.
         // err_code/alert is updated when KDF is done
-        if (current_design_state == keymgr_pkg::StReset) begin
+        if (current_design_state == keymgr_dpe_pkg::StWorkDpeReset) begin
           bit [TL_DW-1:0] err_code = get_err_code();
           err_code[keymgr_pkg::ErrInvalidOp] = 1;
-          // if it's StReset, the Advance OP is ongoing. alert will be sent after the OP
+          // if it's StWorkDpeReset, the Advance OP is ongoing. alert will be sent after the OP
           set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
           void'(ral.err_code.predict(err_code));
           `uvm_info(`gfn,
-              "keymgr_dpe_en is Off when advancing to StInit, wipe secret and move state to Invalid",
-              UVM_LOW)
+              "keymgr_dpe_en is Off when advancing to StWorkDpeInit,\
+              wipe secret and move state to Invalid",
+                UVM_LOW)
         end
         else if (current_op_status != keymgr_pkg::OpWip) begin
           update_state(.cyc_dly(2));
@@ -1243,7 +1274,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    current_state         = keymgr_pkg::StReset;
+    current_state         = keymgr_dpe_pkg::StWorkDpeReset;
     current_op_status     = keymgr_pkg::OpIdle;
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;

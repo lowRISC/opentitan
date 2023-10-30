@@ -16,7 +16,7 @@ class keymgr_dpe_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_dpe_reg_block)
   `uvm_object_new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    list_of_alerts = keymgr_env_pkg::LIST_OF_ALERTS;
+    list_of_alerts = keymgr_dpe_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault_err";
     sec_cm_alert_name  = tl_intg_alert_name;
     num_edn = 1;
@@ -25,10 +25,12 @@ class keymgr_dpe_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_dpe_reg_block)
     shadow_update_err_status_fields[ral.err_code.invalid_shadow_update] = 1;
     shadow_storage_err_status_fields[ral.fault_status.shadow] = 1;
 
-    m_keymgr_dpe_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_keymgr_dpe_kmac_agent_cfg");
+    m_keymgr_dpe_kmac_agent_cfg =
+      kmac_app_agent_cfg::type_id::create("m_keymgr_dpe_kmac_agent_cfg");
     m_keymgr_dpe_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
 
-    // keymgr_dpe requests entropy periodically, if seq is done, don't need to add any delay due to
+    // keymgr_dpe requests entropy periodically, if seq is done,
+    // don't need to add any delay due to
     // activity from EDN interface
     m_edn_pull_agent_cfgs[0].ok_to_end_delay_ns = 0;
 
