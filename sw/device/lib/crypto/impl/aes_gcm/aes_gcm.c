@@ -233,7 +233,7 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
  * @param aad_len Length of the associated data in bytes
  * @param aad Associated data value
  * @param j0 Counter block (J0 in the NIST specification)
- * @param tag_len Tag length in bytes
+ * @param tag_len Tag length in 32-bit words
  * @param[out] tag Buffer for output tag (128 bits)
  */
 OT_WARN_UNUSED_RESULT
@@ -242,7 +242,7 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
                                     const uint8_t *ciphertext,
                                     const size_t aad_len, const uint8_t *aad,
                                     const aes_block_t *j0, size_t tag_len,
-                                    uint8_t *tag) {
+                                    uint32_t *tag) {
   // Compute S = GHASH(H, expand(A) || expand(C) || len64(A) || len64(C))
   // where:
   //   * A is the aad, C is the ciphertext
@@ -276,7 +276,7 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
   // Truncate the tag if needed. NIST requires we take the most significant
   // bits in big-endian representation, which corresponds to the least
   // significant bits in Ibex's little-endian representation.
-  memcpy(tag, full_tag, tag_len);
+  hardened_memcpy(tag, full_tag, tag_len);
 
   return OTCRYPTO_OK;
 }
@@ -284,8 +284,8 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
-                         const uint8_t *aad, const size_t tag_len, uint8_t *tag,
-                         uint8_t *ciphertext) {
+                         const uint8_t *aad, const size_t tag_len,
+                         uint32_t *tag, uint8_t *ciphertext) {
   // Check that the input parameter sizes are valid.
   HARDENED_TRY(check_buffer_lengths(iv_len, plaintext_len, aad_len));
 
@@ -315,17 +315,10 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
-                         const uint8_t *tag, uint8_t *plaintext,
+                         const uint32_t *tag, uint8_t *plaintext,
                          hardened_bool_t *success) {
   // Check that the input parameter sizes are valid.
   HARDENED_TRY(check_buffer_lengths(iv_len, ciphertext_len, aad_len));
-
-  // Get the tag length in words.
-  if (tag_len % sizeof(uint32_t) != 0) {
-    // Tag length must be a multiple of 32 bits.
-    return OTCRYPTO_BAD_ARGS;
-  }
-  size_t tag_len_words = tag_len / sizeof(uint32_t);
 
   // Initialize the hash subkey H.
   ghash_context_t ctx;
@@ -336,18 +329,12 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
   HARDENED_TRY(aes_gcm_counter(iv_len, iv, &ctx, &j0));
 
   // Compute the expected authentication tag T.
-  uint32_t expected_tag[tag_len_words];
+  uint32_t expected_tag[tag_len];
   HARDENED_TRY(aes_gcm_compute_tag(key, &ctx, ciphertext_len, ciphertext,
-                                   aad_len, aad, &j0, tag_len,
-                                   (unsigned char *)expected_tag));
-
-  // Copy actual tag to word-size buffers to ensure it is aligned for
-  // `hardened_memeq`.
-  uint32_t tag_words[tag_len_words];
-  memcpy(tag_words, tag, tag_len);
+                                   aad_len, aad, &j0, tag_len, expected_tag));
 
   // Compare the expected tag to the actual tag (in constant time).
-  *success = hardened_memeq(expected_tag, tag_words, tag_len_words);
+  *success = hardened_memeq(expected_tag, tag, tag_len);
   if (*success != kHardenedBoolTrue) {
     // If authentication fails, do not proceed to decryption; simply exit
     // with success = False. We still use `OTCRYPTO_OK` because there was no

@@ -10,23 +10,41 @@
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
 #include "sw/device/tests/crypto/aes_gcm_testvectors.h"
 
+// Global pointer to the current test vector.
+const aes_gcm_test_t *current_test = NULL;
+
+static status_t encrypt_test(void) {
+  uint32_t cycles;
+  TRY(aes_gcm_testutils_encrypt(current_test, &cycles));
+  LOG_INFO("Encrypt cycles: %d", cycles);
+  return OK_STATUS();
+}
+
+static status_t decrypt_test(void) {
+  uint32_t cycles;
+  hardened_bool_t tag_valid;
+  TRY(aes_gcm_testutils_decrypt(current_test, &tag_valid, &cycles));
+  LOG_INFO("Decrypt cycles: %d", cycles);
+  TRY_CHECK(tag_valid == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
+
 bool test_main(void) {
+  status_t result = OK_STATUS();
+
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     LOG_INFO("Starting AES-GCM test %d of %d...", i + 1,
              ARRAYSIZE(kAesGcmTestvectors));
-    const aes_gcm_test_t test = kAesGcmTestvectors[i];
-
-    // Call AES-GCM encrypt.
-    uint32_t encrypt_cycles = call_aes_gcm_encrypt(test);
-
-    // Call AES-GCM decrypt.
-    uint32_t decrypt_cycles = call_aes_gcm_decrypt(test, /*tag_valid=*/true);
-
-    LOG_INFO("Encrypt cycles: %d", encrypt_cycles);
-    LOG_INFO("Decrypt cycles: %d", decrypt_cycles);
-    LOG_INFO("Finished AES-GCM test %d.", i + 1);
+    current_test = &kAesGcmTestvectors[i];
+    LOG_INFO("Key length = %d", current_test->key_len * sizeof(uint32_t));
+    LOG_INFO("Aad length = %d", current_test->aad_len);
+    LOG_INFO("Encrypted data length = %d", current_test->plaintext_len);
+    LOG_INFO("Tag length = %d", current_test->tag_len);
+    EXECUTE_TEST(result, encrypt_test);
+    EXECUTE_TEST(result, decrypt_test);
   }
 
-  return true;
+  return status_ok(result);
 }

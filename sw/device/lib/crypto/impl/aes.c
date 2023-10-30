@@ -428,28 +428,16 @@ static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
 /**
  * Checks if the given byte-length matches the tag length enum value.
  *
- * @param byte_len Allocated tag length in bytes.
- * @param tag_len Allocated tag length in bytes.
+ * @param word_len Allocated tag length in 32-bit words.
+ * @param tag_len Tag length enum value.
  * @return OK if the tag length is acceptable, BAD_ARGS otherwise.
  */
-status_t aes_gcm_check_tag_length(size_t byte_len, aead_gcm_tag_len_t tag_len) {
+status_t aes_gcm_check_tag_length(size_t word_len, aead_gcm_tag_len_t tag_len) {
   size_t bit_len = 0;
   switch (launder32(tag_len)) {
     case kAeadGcmTagLen128:
       HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen128);
       bit_len = 128;
-      break;
-    case kAeadGcmTagLen120:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen120);
-      bit_len = 120;
-      break;
-    case kAeadGcmTagLen112:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen112);
-      bit_len = 112;
-      break;
-    case kAeadGcmTagLen104:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen104);
-      bit_len = 104;
       break;
     case kAeadGcmTagLen96:
       HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen96);
@@ -468,17 +456,17 @@ status_t aes_gcm_check_tag_length(size_t byte_len, aead_gcm_tag_len_t tag_len) {
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GT(bit_len, 0);
+  HARDENED_CHECK_EQ(bit_len % 32, 0);
 
-  if (launder32(byte_len) * 8 != bit_len) {
+  if (launder32(word_len) != bit_len / 32) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(byte_len * 8, bit_len);
+  HARDENED_CHECK_EQ(word_len, bit_len / 32);
 
-  // Extra hardening checks; the byte-length must be nonzero, a multiple of 2,
-  // and at most the size of an AES block.
-  HARDENED_CHECK_EQ(byte_len % 2, 0);
-  HARDENED_CHECK_LT(0, byte_len);
-  HARDENED_CHECK_LE(byte_len, kAesBlockNumBytes);
+  // Extra hardening checks; the word length must be nonzero and at most the
+  // size of an AES block.
+  HARDENED_CHECK_LT(0, word_len);
+  HARDENED_CHECK_LE(word_len, kAesBlockNumWords);
 
   return OTCRYPTO_OK;
 }
@@ -489,7 +477,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
                                          crypto_const_byte_buf_t aad,
                                          aead_gcm_tag_len_t tag_len,
                                          crypto_byte_buf_t *ciphertext,
-                                         crypto_byte_buf_t *auth_tag) {
+                                         crypto_word32_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
   if (key == NULL || iv.data == NULL || ciphertext == NULL ||
@@ -534,7 +522,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
 crypto_status_t otcrypto_aes_decrypt_gcm(
     const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
     crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
-    aead_gcm_tag_len_t tag_len, crypto_const_byte_buf_t auth_tag,
+    aead_gcm_tag_len_t tag_len, crypto_const_word32_buf_t auth_tag,
     crypto_byte_buf_t *plaintext, hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -568,127 +556,6 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
   HARDENED_TRY(aes_gcm_decrypt(aes_key, iv.len, iv.data, ciphertext.len,
                                ciphertext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, plaintext->data, success));
-
-  // If the key was sideloaded, clear it.
-  if (key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_TRY(keymgr_sideload_clear_aes());
-  }
-
-  return OTCRYPTO_OK;
-}
-
-crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
-                                        gcm_ghash_context_t *ctx) {
-  if (hash_subkey == NULL || ctx == NULL || hash_subkey->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Key integrity check.
-  if (launder32(integrity_blinded_key_check(hash_subkey)) !=
-      kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(hash_subkey),
-                    kHardenedBoolTrue);
-
-  // Check the key mode.
-  if (launder32((uint32_t)hash_subkey->config.key_mode) != kKeyModeAesGcm) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(hash_subkey->config.key_mode, kKeyModeAesGcm);
-
-  // The hash subkey cannot be sideloaded, since GHASH is implemented in
-  // software.
-  if (hash_subkey->config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Get pointers to the individual shares of the blinded key.
-  uint32_t *share0;
-  uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(hash_subkey, &share0, &share1));
-
-  // Combine the shares; the underlying GHASH operation is not yet hardened, so
-  // we need to unmask the key.
-  uint32_t unmasked_key[kGhashBlockNumWords];
-  for (size_t i = 0; i < kGhashBlockNumWords; i++) {
-    unmasked_key[i] = share0[i] ^ share1[i];
-  }
-
-  // Set the key for the GHASH context and start a GHASH operation.
-  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
-  ghash_init_subkey(unmasked_key, gctx);
-  ghash_init(gctx);
-
-  return OTCRYPTO_OK;
-}
-
-crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
-                                          crypto_const_byte_buf_t input) {
-  if (ctx == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (input.len != 0 && input.data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
-  ghash_update(gctx, input.len, input.data);
-
-  return OTCRYPTO_OK;
-}
-
-crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
-                                         crypto_word32_buf_t digest) {
-  if (ctx == NULL || digest.data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (launder32(digest.len) != kGhashBlockNumBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(digest.len, kGhashBlockNumBytes);
-
-  ghash_context_t *gctx = (ghash_context_t *)ctx->ctx;
-  ghash_final(gctx, digest.data);
-
-  return OTCRYPTO_OK;
-}
-
-crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
-                                      crypto_const_word32_buf_t icb,
-                                      crypto_const_byte_buf_t input,
-                                      crypto_byte_buf_t output) {
-  if (key == NULL || icb.data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if ((input.len != 0 && input.data == NULL) ||
-      (output.len != 0 && output.data == NULL)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (launder32(icb.len) != kAesBlockNumWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(icb.len, kAesBlockNumWords);
-
-  if (launder32(input.len) != output.len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(input.len, output.len);
-
-  // Construct the AES key.
-  aes_key_t aes_key;
-  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
-
-  // Construct the initial counter block.
-  aes_block_t aes_icb;
-  hardened_memcpy(aes_icb.data, icb.data, kAesBlockNumWords);
-
-  HARDENED_TRY(
-      aes_gcm_gctr(aes_key, &aes_icb, input.len, input.data, output.data));
 
   // If the key was sideloaded, clear it.
   if (key->config.hw_backed == kHardenedBoolTrue) {

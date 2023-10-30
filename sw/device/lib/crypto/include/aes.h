@@ -24,12 +24,6 @@ extern "C" {
 typedef enum aead_gcm_tag_len {
   // Tag length 128 bits.
   kAeadGcmTagLen128 = 0x167,
-  // Tag length 120 bits.
-  kAeadGcmTagLen120 = 0xabd,
-  // Tag length 112 bits.
-  kAeadGcmTagLen112 = 0xc1b,
-  // Tag length 104 bits.
-  kAeadGcmTagLen104 = 0xbe0,
   // Tag length 96 bits.
   kAeadGcmTagLen96 = 0x35a,
   // Tag length 64 bits.
@@ -173,7 +167,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
                                          crypto_const_byte_buf_t aad,
                                          aead_gcm_tag_len_t tag_len,
                                          crypto_byte_buf_t *ciphertext,
-                                         crypto_byte_buf_t *auth_tag);
+                                         crypto_word32_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -205,91 +199,8 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
 crypto_status_t otcrypto_aes_decrypt_gcm(
     const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
     crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
-    aead_gcm_tag_len_t tag_len, crypto_const_byte_buf_t auth_tag,
+    aead_gcm_tag_len_t tag_len, crypto_const_word32_buf_t auth_tag,
     crypto_byte_buf_t *plaintext, hardened_bool_t *success);
-
-/**
- * Internal GHASH operation of Galois Counter Mode (GCM).
- *
- * GHASH is an operation internal to GCM. It can be used to create
- * custom implementations that do not adhere to the AES-GCM encryption
- * and decryption API provided here. However, custom GCM constructs
- * can be dangerous; for most use cases, prefer the provided
- * encryption and decryption operations.
- *
- * This function initializes the GHASH context and must be called
- * to create a context object.
- *
- * @param hash_subkey Hash subkey (H), 16 bytes.
- * @param[out] ctx Output GHASH context object, caller-allocated.
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
-                                        gcm_ghash_context_t *ctx);
-
-/**
- * Internal GHASH operation of Galois Counter Mode (GCM).
- *
- * GHASH is an operation internal to GCM. It can be used to create
- * custom implementations that do not adhere to the AES-GCM encryption
- * and decryption API provided here. However, custom GCM constructs
- * can be dangerous; for most use cases, prefer the provided
- * encryption and decryption operations.
- *
- * This operation adds the input buffer to the message that will
- * be hashed and updates the GHASH context. If the input length is
- * not a multiple of 128 bits, it will be right-padded with zeros.
- * The input length must not be zero.
- *
- * @param ctx GHASH context object.
- * @param input Input buffer.
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
-                                          crypto_const_byte_buf_t input);
-
-/**
- * Internal GHASH operation of Galois Counter Mode (GCM).
- *
- * GHASH is an operation internal to GCM. It can be used to create
- * custom implementations that do not adhere to the AES-GCM encryption
- * and decryption API provided here. However, custom GCM constructs
- * can be dangerous; for most use cases, prefer the provided
- * encryption and decryption operations.
- *
- * This operation signals that all input has been provided and
- * extracts the digest from the GHASH context. The digest buffer must
- * be 16 bytes.
- *
- * @param ctx GHASH context object.
- * @param[out] digest Output buffer for digest, 16 bytes.
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
-                                         crypto_word32_buf_t digest);
-
-/**
- * Internal AES-GCTR operation of AES Galois Counter Mode (AES-GCM).
- *
- * GCTR is an operation internal to AES-GCM and is based on AES-CTR.
- * It can be used to create custom implementations that do not adhere
- * to the AES-GCM encryption and decryption API provided here.
- * However, custom GCM constructs can be dangerous; for most use
- * cases, prefer the provided encryption and decryption operations.
- *
- * The caller-allocated output buffer must be the same length as the
- * input.
- *
- * @param key AES key for the GCTR operation.
- * @param icb Initial counter block.
- * @param input Input buffer.
- * @param[out] output Output buffer (same length as input).
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
-                                      crypto_const_word32_buf_t icb,
-                                      crypto_const_byte_buf_t input,
-                                      crypto_byte_buf_t output);
 
 /**
  * Returns the length that the blinded key will have once wrapped.
