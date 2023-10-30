@@ -34,6 +34,7 @@ module mbx_hostif
   // Access to the status register
   input  logic                          hostif_status_busy_i,
   input  logic                          hostif_status_sys_intr_en_i,
+  input  logic                          hostif_status_sys_async_en_i,
   input  logic                          hostif_status_sys_intr_state_i,
   // Access to the IB/OB RD/WR pointers
   input  logic [CfgSramAddrWidth-1:0]   hostif_imbx_write_ptr_i,
@@ -166,8 +167,9 @@ module mbx_hostif
 
   // External read logic
   assign hw2reg.status.busy.d            = hostif_status_busy_i;
-  assign hw2reg.status.sys_intr_enable.d = hostif_status_sys_intr_en_i;
   assign hw2reg.status.sys_intr_state.d  = hostif_status_sys_intr_state_i;
+  assign hw2reg.status.sys_intr_enable.d = hostif_status_sys_intr_en_i;
+  assign hw2reg.status.sys_async_en.d    = hostif_status_sys_async_en_i;
 
   // Address config valid
   assign hostif_address_range_valid_write_o = reg2hw.address_range_valid.qe;

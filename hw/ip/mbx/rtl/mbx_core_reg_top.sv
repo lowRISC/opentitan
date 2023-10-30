@@ -147,6 +147,7 @@ module mbx_core_reg_top (
   logic status_busy_qs;
   logic status_sys_intr_state_qs;
   logic status_sys_intr_enable_qs;
+  logic status_sys_async_en_qs;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -445,6 +446,21 @@ module mbx_core_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_sys_intr_enable_qs)
+  );
+
+  //   F[sys_async_en]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_sys_async_en (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.sys_async_en.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_sys_async_en_qs)
   );
 
 
@@ -908,6 +924,7 @@ module mbx_core_reg_top (
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_sys_intr_state_qs;
         reg_rdata_next[2] = status_sys_intr_enable_qs;
+        reg_rdata_next[3] = status_sys_async_en_qs;
       end
 
       addr_hit[6]: begin
