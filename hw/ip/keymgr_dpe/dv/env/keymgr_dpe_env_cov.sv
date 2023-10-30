@@ -11,7 +11,7 @@
 // covergroup to sample all SW input bits are toggled and gated by regwen
 class keymgr_dpe_sw_input_cg_wrap;
   localparam int Width = bus_params_pkg::BUS_DW;
-  covergroup keymgr_sw_input_cg (string name)
+  covergroup keymgr_dpe_sw_input_cg (string name)
       with function sample(bit [Width-1:0] sw_input,
                            bit regwen);
     option.per_instance = 1;
@@ -25,19 +25,19 @@ class keymgr_dpe_sw_input_cg_wrap;
   endgroup
 
   function new(string name);
-    keymgr_sw_input_cg = new(name);
+    keymgr_dpe_sw_input_cg = new(name);
   endfunction : new
 
   function void sample(bit [Width-1:0] sw_input, bit regwen);
-    keymgr_sw_input_cg.sample(sw_input, regwen);
+    keymgr_dpe_sw_input_cg.sample(sw_input, regwen);
   endfunction : sample
 endclass
 
 class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   `uvm_component_utils(keymgr_dpe_env_cov)
-  keymgr_sw_input_cg_wrap sw_input_cg_wrap[string];
+  keymgr_dpe_sw_input_cg_wrap sw_input_cg_wrap[string];
 
-  // covergroup for keymgr state and operation with op_status and CDI sel, sideload destination
+  // covergroup for keymgr_dpe state and operation with op_status and CDI sel, sideload destination
   covergroup state_and_op_cg with function sample(keymgr_pkg::keymgr_working_state_e state,
                                                   keymgr_pkg::keymgr_ops_e op,
                                                   keymgr_pkg::keymgr_op_status_e op_status,
@@ -107,7 +107,7 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   endgroup
 
   covergroup invalid_hw_input_cg with function sample(
-      keymgr_invalid_hw_input_type_e invalid_hw_input);
+      keymgr_dpe_invalid_hw_input_type_e invalid_hw_input);
     invalid_hw_input_cp: coverpoint invalid_hw_input;
   endgroup
 

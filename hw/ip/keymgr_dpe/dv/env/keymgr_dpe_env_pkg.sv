@@ -65,7 +65,7 @@ package keymgr_dpe_env_pkg;
     FaultKeyIntgError
   } keymgr_fault_inject_type_e;
 
-  string msg_id = "keymgr_env_pkg";
+  string msg_id = "keymgr_dpe_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled
   function automatic keymgr_pkg::keymgr_working_state_e get_next_state(
