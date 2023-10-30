@@ -11,10 +11,73 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+/**
+ * Stage of a streaming AES-GCM operation.
+ */
+typedef enum aes_gcm_state {
+  kAesGcmStateUpdateAad,
+  kAesGcmStateUpdateEncryptedData,
+} aes_gcm_state_t;
+
+/**
+ * AES-GCM context object for streaming operations.
+ */
+typedef struct aes_gcm_context {
+  /**
+   * State of the ongoing operation.
+   */
+  aes_gcm_state_t state;
+  /**
+   * Whether this is an encryption operation (false indicates decryption).
+   */
+  hardened_bool_t is_encrypt;
+  /**
+   * Underlying AES-CTR key.
+   */
+  aes_key_t key;
+  /**
+   * Initial counter block (J0 in the spec).
+   */
+  aes_block_t initial_counter_block;
+  /**
+   * Current counter block for the main GCTR operation over the plaintext.
+   */
+  aes_block_t gctr_iv;
+  /**
+   * Length of the associated data received so far, in bytes.
+   */
+  size_t aad_len;
+  /**
+   * Length of the input so far, in bytes.
+   */
+  size_t input_len;
+  /**
+   * Partial GHASH block.
+   *
+   * Length is always equal to `aad_len % kGhashBlockNumBytes` if the state is
+   * `kAesGcmStateUpdateAad`, and is always 0 if the state
+   * is `kAesGcmStateUpdateEncryptedData` (since ciphertext gets accumulated in
+   * full-block increments). The block may be empty, but will never be full.
+   */
+  ghash_block_t partial_ghash_block;
+  /**
+   * Partial input block.
+   *
+   * Length is always equal to `input_len % kAesBlockNumBytes`; the block may
+   * be empty, but will never be full.
+   */
+  aes_block_t partial_aes_block;
+  /**
+   * Current context for the tag's ongoing GHASH computation.
+   */
+  ghash_context_t ghash_ctx;
+} aes_gcm_context_t;
 
 /**
  * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.
@@ -87,24 +150,144 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          hardened_bool_t *success);
 
 /**
- * Implements the GCTR function as specified in SP800-38D, section 6.5.
+ * Starts an AES-GCM authenticated encryption operation.
  *
- * The block cipher is fixed to AES. Note that the GCTR function is a modified
- * version of the AES-CTR mode of encryption.
+ * Populates the `ctx` parameter with initial values.
  *
- * Input must be less than 2^32 blocks long; that is, `len` < 2^36, since each
- * block is 16 bytes.
+ * Typical usage looks like this (the `update_encrypted_data` and `update_aad`
+ * calls cannot be interleaved with each other; you must pass all the
+ * associated data before adding encrypted data):
+ *   aes_gcm_encrypt_init(...)
+ *   aes_gcm_update_aad(...) // call 0 or more times
+ *   aes_gcm_update_encrypted_data(...) // call 0 or more times
+ *   aes_gcm_encrypt_final(...)
  *
- * @param key The AES key
- * @param icb Initial counter block, 128 bits
- * @param len Number of bytes for input and output
- * @param input Pointer to input buffer (may be NULL if `len` is 0)
- * @param[out] output Pointer to output buffer (same size as input, may be the
- * same buffer)
+ * @param key AES key
+ * @param iv_len length of IV in 32-bit words
+ * @param iv IV value (may be NULL if iv_len is 0)
+ * @param[out] ctx AES-GCM context object.
+ * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb, size_t len,
-                      const uint8_t *input, uint8_t *output);
+status_t aes_gcm_encrypt_init(const aes_key_t key, const size_t iv_len,
+                              const uint32_t *iv, aes_gcm_context_t *ctx);
+
+/**
+ * Updates the associated data for an AES-GCM operation.
+ *
+ * @param ctx AES-GCM context object.
+ * @param aad_len length of aad in bytes
+ * @param aad aad value (may be NULL if aad_len is 0)
+ * @return Error status; OK if no errors
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
+                            const uint8_t *aad);
+
+/**
+ * Updates the encrypted input for an AES-GCM operation.
+ *
+ * For encryption, this updates the plaintext. For decryption, it updates the
+ * ciphertext.
+ *
+ * Updates the context and returns output that corresponds to (full blocks
+ * of) the new chunk of input. The output buffer must have enough space to
+ * hold all full blocks that could be produced; rounding the input length up
+ * to the next full block is always enough, but if there is definitely no
+ * partial data present then it is acceptable to round down. The output
+ * buffer may be NULL if `input_len` is 0.
+ *
+ * Returns the number of output bytes written in `output_len`.
+ *
+ * @param ctx AES-GCM context object.
+ * @param input_len length of input in bytes
+ * @param input input value (may be NULL if input_len is 0)
+ * @param[out] output_len number of output bytes written
+ * @param[out] output resulting output data
+ * @return Error status; OK if no errors
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
+                                       const size_t input_len,
+                                       const uint8_t *input, size_t *output_len,
+                                       uint8_t *output);
+
+/**
+ * Finishes an AES-GCM encryption operation.
+ *
+ * Finishes processing the data and computes the tag. If there is partial data
+ * present, `output` must have at least `kAesBlockNumBytes` bytes of space
+ * available. If there is definitely no partial data present, `output` will be
+ * unused and may be NULL.
+ *
+ * Returns the number of output bytes written in `output_len`.
+ *
+ * @param ctx AES-GCM context object.
+ * @param tag_len Tag length in 32-bit words
+ * @param[out] tag Output buffer for tag
+ * @param[out] output_len number of output bytes written
+ * @param[out] output resulting output data
+ * @return Error status; OK if no errors
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
+                               uint32_t *tag, size_t *output_len,
+                               uint8_t *output);
+
+/**
+ * Starts an AES-GCM authenticated decryption operation.
+ *
+ * Populates the `ctx` parameter with initial values.
+ *
+ * Typical usage looks like this (the `update_encrypted_data` and `update_aad`
+ * calls cannot be interleaved with each other; you must pass all the
+ * associated data before adding encrypted data):
+ *   aes_gcm_decrypt_init(...)
+ *   aes_gcm_update_aad(...) // call 0 or more times
+ *   aes_gcm_update_encrypted_data(...) // call 0 or more times
+ *   aes_gcm_encrypt_final(...)
+ *
+ * @param key AES key
+ * @param iv_len length of IV in 32-bit words
+ * @param iv IV value (may be NULL if iv_len is 0)
+ * @param[out] ctx AES-GCM context object.
+ * @return Error status; OK if no errors
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_decrypt_init(const aes_key_t key, const size_t iv_len,
+                              const uint32_t *iv, aes_gcm_context_t *ctx);
+
+/**
+ * Finishes an AES-GCM decryption operation.
+ *
+ * Finishes processing the data and computes the tag, then compares it to the
+ * actual tag. If there is partial data present, `output` must have at least
+ * `kAesBlockNumBytes` bytes of space available. If there is definitely no
+ * partial data present, `output` will be unused and may be NULL.
+ *
+ * Returns the number of output bytes written in `output_len`.
+ *
+ * If authentication fails, this function will return `kHardenedBoolFalse` for
+ * the `success` output parameter, and the plaintext should be ignored. Note
+ * the distinction between the `success` output parameter and the return value
+ * (type `status_t`): the return value indicates whether there was an
+ * internal error while processing the function, and `success` indicates
+ * whether the authentication check passed. If the return value is anything
+ * other than OK, all output from this function should be discarded, including
+ * `success`.
+ *
+ * @param ctx AES-GCM context object.
+ * @param tag_len Tag length in 32-bit words
+ * @param[out] tag Output buffer for tag
+ * @param[out] output_len number of output bytes written
+ * @param[out] output resulting output data
+ * @param[out] success True if authentication was successful, otherwise false
+ * @return Error status; OK if no errors
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
+                               const uint32_t *tag, size_t *output_len,
+                               uint8_t *output, hardened_bool_t *success);
 
 #ifdef __cplusplus
 }  // extern "C"
