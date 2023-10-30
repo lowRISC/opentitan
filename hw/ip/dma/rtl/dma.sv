@@ -272,6 +272,8 @@ module dma
   );
 
   logic [TRANSFER_BYTES_WIDTH-1:0] transfer_byte_q, transfer_byte_d;
+  logic [TRANSFER_BYTES_WIDTH-1:0] transfer_remaining_bytes;
+  logic [TRANSFER_BYTES_WIDTH-1:0] chunk_remaining_bytes;
   logic [TRANSFER_BYTES_WIDTH-1:0] remaining_bytes;
   logic                            capture_transfer_byte;
   prim_generic_flop_en #(
@@ -1190,8 +1192,14 @@ module dma
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
       SYS_ADDR_WIDTH'(transfer_width_q));
 
-  // Calculate remaining amount of data
-  assign remaining_bytes = reg2hw.chunk_data_size.q - chunk_byte_q;
+  // Calculate the number of bytes remaining until the end of the current chunk.
+  // Note that the total transfer size may be a non-integral multiple of the programmed chunk size,
+  // so we must consider the `total_data_size` here too; this is important in determining the
+  // correct write strobes for the final word of the transfer.
+  assign transfer_remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
+  assign chunk_remaining_bytes = reg2hw.chunk_data_size.q - chunk_byte_q;
+  assign remaining_bytes = (transfer_remaining_bytes < chunk_remaining_bytes) ?
+                            transfer_remaining_bytes : chunk_remaining_bytes;
 
   always_comb begin
     hw2reg = '0;
