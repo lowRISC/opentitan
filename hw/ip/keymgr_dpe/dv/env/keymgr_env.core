@@ -1,0 +1,40 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:keymgr_env:0.1"
+description: "KEYMGR DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:kmac_app_agent
+      - lowrisc:ip:keymgr
+      - lowrisc:ip:kmac_pkg
+    files:
+      - keymgr_env_pkg.sv
+      - keymgr_if.sv
+      - keymgr_env_cfg.sv: {is_include_file: true}
+      - keymgr_env_cov.sv: {is_include_file: true}
+      - keymgr_virtual_sequencer.sv: {is_include_file: true}
+      - keymgr_scoreboard.sv: {is_include_file: true}
+      - keymgr_env.sv: {is_include_file: true}
+      - seq_lib/keymgr_vseq_list.sv: {is_include_file: true}
+      - seq_lib/keymgr_base_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_smoke_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: keymgr
+      ip_hjson: ../../data/keymgr.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral
