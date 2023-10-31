@@ -24,7 +24,7 @@
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
         "OTBN.ISA",
-        "OTBN.SECUREWIPE
+        "OTBN.SECUREWIPE"
       ]
     }
     {
