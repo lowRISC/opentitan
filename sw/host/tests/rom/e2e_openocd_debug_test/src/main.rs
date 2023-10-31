@@ -471,8 +471,7 @@ fn main() -> Result<()> {
     log::info!("Loading symbols from ELF {}", opts.elf.display());
     dbg.load_elf(&opts.elf)?;
 
-    dbg.reset(false)?;
-    let result = dbg.remove_all_breakpoints();
+    let result = dbg.reset(false);
     assert_eq!(result.is_err(), opts.expect_fail);
     if opts.expect_fail {
         return Ok(());
