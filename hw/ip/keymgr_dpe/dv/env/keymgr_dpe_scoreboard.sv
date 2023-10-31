@@ -175,10 +175,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         endcase
         if (is_err) compare_invalid_data(item.byte_data_q);
       end
-      keymgr_dpe_pkg::OpDpeGenId: begin
-        if (get_is_kmac_data_correct()) compare_id_data(item.byte_data_q);
-        else                            compare_invalid_data(item.byte_data_q);
-      end
       keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
         if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
         else                            compare_invalid_data(item.byte_data_q);
@@ -362,7 +358,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       //        update_state(keymgr_dpe_pkg::StWorkDpeDisabled);
       //      end
       //    end
-      //    keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut,
+      //    keymgr_dpe_pkg::OpDpeGenSwOut,
       //    keymgr_dpe_pkg::OpDpeGenHwOut: begin
       //      // If only op error but no fault error, no update for output
       //      if (get_op_err()) begin
@@ -386,7 +382,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               adv_cnt = 0;
             end
           end
-          keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenId: begin
+          keymgr_dpe_pkg::OpDpeGenSwOut: begin
             update_result = UpdateSwOut;
           end
           keymgr_dpe_pkg::OpDpeGenHwOut: begin
@@ -1132,26 +1128,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE(act, cfg.keymgr_dpe_vif.keys_a_array[state][cdi][dest],
                    $sformatf("key at state %0d for %s %s", state, cdi.name, dest))
     end
-  endfunction
-
-  virtual function void compare_id_data(const ref byte byte_data_q[$]);
-    //bit [keymgr_pkg::IdDataWidth-1:0] act, exp;
-    // TODO(bobby, issue #667): re-evaluate function is still viable for keymgr_dpe, if so adapt
-    //case (current_state)
-    //  keymgr_dpe_pkg::StWorkDpeCreatorRootKey: exp = 
-    //    keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
-    //  keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    exp =
-    //    keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
-    //  keymgr_dpe_pkg::StWorkDpeOwnerKey:       exp =
-    //    keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
-    //  default: `uvm_fatal(`gfn,
-    //    $sformatf("unexpected state %s", current_state.name))
-    //endcase
-    //act = {<<8{byte_data_q}};
-
-    //`DV_CHECK_EQ(act, exp, $sformatf("Gen ID at %0s", current_state.name))
-
-    //id_data_a_array[current_state] = act;
   endfunction
 
   virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
