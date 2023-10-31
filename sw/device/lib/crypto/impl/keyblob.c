@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -51,10 +52,7 @@ static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
 
 size_t keyblob_share_num_words(const crypto_key_config_t config) {
   size_t len_bytes = keyblob_share_num_bytes(config);
-  if (len_bytes % sizeof(uint32_t) == 0) {
-    return len_bytes / sizeof(uint32_t);
-  }
-  return (len_bytes / sizeof(uint32_t)) + 1;
+  return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
 size_t keyblob_num_words(const crypto_key_config_t config) {

@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -32,10 +33,7 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
 
   // Calculate the number of semiblocks needed for the plaintext (round up to
   // the next semiblock).
-  size_t plaintext_semiblocks = plaintext_len / kSemiblockBytes;
-  if (plaintext_len % kSemiblockBytes != 0) {
-    plaintext_semiblocks++;
-  }
+  size_t plaintext_semiblocks = ceil_div(plaintext_len, kSemiblockBytes);
   size_t pad_len = kSemiblockBytes * plaintext_semiblocks - plaintext_len;
 
   if (plaintext_semiblocks < 2) {
@@ -57,10 +55,7 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
   };
 
   // Initialize the output buffer with (A || plaintext || padding).
-  size_t plaintext_words = plaintext_len / sizeof(uint32_t);
-  if (plaintext_len % sizeof(uint32_t) != 0) {
-    plaintext_words++;
-  }
+  size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
   hardened_memcpy(ciphertext, block.data, kSemiblockWords);
   hardened_memcpy(ciphertext + kSemiblockWords, plaintext, plaintext_words);
   unsigned char *pad_start =
@@ -178,10 +173,7 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   }
 
   // Copy the plaintext into the destination buffer.
-  size_t plaintext_words = plaintext_len / sizeof(uint32_t);
-  if (plaintext_len % sizeof(uint32_t) != 0) {
-    plaintext_words++;
-  }
+  size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
   hardened_memcpy(plaintext, r, plaintext_words);
 
   // Return success.
