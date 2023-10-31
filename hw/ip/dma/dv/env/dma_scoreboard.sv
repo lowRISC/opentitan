@@ -383,6 +383,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // DMA memory buffer limit interrupt check
       forever begin
         @(posedge cfg.intr_vif.pins[DMA_MEMORY_BUFFER_LIMIT_INTR]);
+        if (!cfg.en_scb) continue;
         if (!cfg.under_reset) begin
           `DV_CHECK_EQ(exp_buffer_limit_intr, 1,
                        "Unexpected assertion of dma_memory_buffer_limit interrupt")
@@ -391,6 +392,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // DMA Error interrupt check
       forever begin
         @(posedge cfg.intr_vif.pins[DMA_ERROR]);
+        if (!cfg.en_scb) continue;
         if (!cfg.under_reset) begin
           `DV_CHECK_EQ(exp_dma_err_intr, 1, "Unexpected assertion of dma_error interrupt")
         end
@@ -398,6 +400,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // DMA done interrupt check
       forever begin
         @(posedge cfg.intr_vif.pins[DMA_DONE]);
+        if (!cfg.en_scb) continue;
         if (!cfg.under_reset) begin
           `DV_CHECK_EQ(exp_dma_done_intr, 1, "Unexpected assertion of DMA_DONE interrupt")
         end
@@ -430,12 +433,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
   endtask
 
   function void check_phase(uvm_phase phase);
-    // Check if there are unprocessed source items
-    uint size = src_queue.size();
-    `DV_CHECK_EQ(size, 0, $sformatf("%0d unhandled source interface transactions",size))
-    // Check if there are unprocessed destination items
-    size = dst_queue.size();
-    `DV_CHECK_EQ(size, 0, $sformatf("%0d unhandled destination interface transactions",size))
+    if (!cfg.en_scb) return;
+    begin // Check if there are unprocessed source items
+      uint size = src_queue.size();
+      `DV_CHECK_EQ(size, 0, $sformatf("%0d unhandled source interface transactions",size))
+      // Check if there are unprocessed destination items
+      size = dst_queue.size();
+      `DV_CHECK_EQ(size, 0, $sformatf("%0d unhandled destination interface transactions",size))
+    end
     // Check if DMA operation is in progress
     `DV_CHECK_EQ(operation_in_progress, 0, "DMA operation imcomplete")
   endfunction

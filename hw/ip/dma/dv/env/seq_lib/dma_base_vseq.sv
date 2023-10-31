@@ -14,9 +14,6 @@ class dma_base_vseq extends cip_base_vseq #(
 
   bit sim_fatal_exit_on_dma_error = 1;
 
-  // Waive testing of the system bus within this DV environment?
-  bit dma_dv_waive_system_bus = 0;
-
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
   dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH)) seq_ctn;
@@ -55,10 +52,10 @@ class dma_base_vseq extends cip_base_vseq #(
 
     // System bus is currently unavailable and untestable withing this DV environment,
     // so activate additional constraints to prevent it causing test failures.
-    void'($value$plusargs("dma_dv_waive_system_bus", dma_dv_waive_system_bus));
-    // Report the chosen setting and modify the configuration accordingly.
-    dma_config.dma_dv_waive_system_bus = dma_dv_waive_system_bus;
-    `uvm_info(`gfn, $sformatf("dma_dv_waive_system_bus = %d", dma_dv_waive_system_bus), UVM_LOW)
+    void'($value$plusargs("dma_dv_waive_system_bus=%0b", dma_config.dma_dv_waive_system_bus));
+    `uvm_info(`gfn,
+              $sformatf("dma_dv_waive_system_bus = %d", dma_config.dma_dv_waive_system_bus),
+              UVM_LOW)
   endfunction: new
 
   function void init_model();

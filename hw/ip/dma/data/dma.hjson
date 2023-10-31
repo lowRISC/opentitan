@@ -263,6 +263,7 @@
           desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
         }
       ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "ENABLED_MEMORY_RANGE_LIMIT"
       desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
@@ -277,6 +278,7 @@
           desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
         }
       ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "RANGE_VALID"
       desc: "Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space."
@@ -290,6 +292,7 @@
           resval: "0"
         }
       ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
     { name: "RANGE_REGWEN"
       desc: "Used to lock the DMA enabled memory range configuration registers."
