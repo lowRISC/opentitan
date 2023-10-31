@@ -129,7 +129,7 @@
     },
     {
       name: "RV_DM.JTAG.DTM",
-      descr: '''
+      desc: '''
                 A RISC-V DTM (debug transport module) is implemented accessible
                 via JTAG. In particular implements the dtmcs and dmi registers
                 specified in the RISC-V debug spec (along with standard JTAG TAP
@@ -138,13 +138,13 @@
     },
     {
       name: "RV_DM.DBG.DATA_REGS",
-      descr: '''
+      desc: '''
                  The DMI regs data0 and data1 are implemented.
              '''
     },
     {
       name: "RV_DM.DBG.DMCONTROL_REG",
-      descr: '''
+      desc: '''
                  The DMI register dmcontrol is implemented. The following
                  optional fields have limited function or are not implemented:
                   - hartreset - Not implemented, writes ignored read zero
@@ -155,26 +155,26 @@
     },
     {
       name: "RV_DM.DBG.DMSTATUS_REG",
-      descr: '''
+      desc: '''
                  The DMI register dmstatus is implemented. As HART masks are not
                  supported the various allX/anyX register pairs are identical.
              '''
     },
     {
       name: "RV_DM.DBG.HARTINFO_REG",
-      descr: '''
+      desc: '''
                 The DMI register hartinfo is implemented.
              '''
     },
     {
       name: "RV_DM.DBG.HALTSUM0_REG",
-      descr: '''
+      desc: '''
                 The DMI register haltsum0 is implemented.
              '''
     },
     {
       name: "RV_DM.DBG.ABSTRACT_COMMAND",
-      descr: '''
+      desc: '''
                 The DMI registers abstractcs/command/abstractauto are
                 implemented.
 
@@ -183,14 +183,14 @@
     },
     {
       name: "RV_DM.DBG.PROGBUF",
-      descr: '''
+      desc: '''
                 The DMI implements the program buffer, with all registers
                 progbuf0 - progbuf15 usable
              '''
     },
     {
       name: "RV_DM.DBG.SBA",
-      descr: '''
+      desc: '''
                 The DMI implements system bus access. sbdata0/sbdata1 and
                 sbaddress0/sbaddress1 are implemented. However as the data and
                 address bus with is 32-bits the second register of each has no
@@ -199,7 +199,7 @@
     },
     {
       name: "RV_DM.DBG.NDM_RESET",
-      descr: '''
+      desc: '''
                 The debug module implements a non-debug reset, that resets the
                 whole system other than the debug module. It is controlled via
                 the DMI DMCONTROL register
@@ -207,7 +207,7 @@
     }
     {
       name: "RV_DM.DBG.GDB",
-      descr: '''
+      desc: '''
                 The debug module will work with GDB connected via OpenOCD over
                 JTAG. In particular the following features will be functional
                 from GDB:

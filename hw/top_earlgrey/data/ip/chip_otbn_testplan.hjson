@@ -6,7 +6,7 @@
   testpoints: [
     {
       name: chip_sw_otbn_isa
-      descr: '''Run every OTBN instruction and check final state.
+      desc: '''Run every OTBN instruction and check final state.
 
                 Utilizing the existing OTBN smoke test which uses every instruction
                 (hw/ip/otbn/dv/smoke/smoke_test.s). Check the final register state matches the

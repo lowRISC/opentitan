@@ -125,7 +125,7 @@
     }
     {
       name: chip_sw_rv_core_ibex_smoke
-      descr: '''Execute each instruction implemented by Ibex at least once. Then check the register
+      desc: '''Execute each instruction implemented by Ibex at least once. Then check the register
                 state against expected values.
 
                 The core of this test will be written in assembler and at least partially
@@ -143,7 +143,7 @@
     }
     {
       name: chip_sw_rv_core_ibex_epmp_smoke
-      descr: '''Setup and test a few epmp regions
+      desc: '''Setup and test a few epmp regions
 
                 Check a range of ePMP access modes, ensure these include:
                   - Shared execute, read and write
@@ -167,7 +167,7 @@
     }
     {
       name: chip_sw_rv_core_ibex_mem_smoke
-      descr: '''Check access to each kind of memory from Ibex
+      desc: '''Check access to each kind of memory from Ibex
 
                 Read a known value from each of the following and check it
                 matches the expected value:
