@@ -428,14 +428,14 @@
     }
     {
       name: "RV_CORE_IBEX.CPU.MEMORY"
-      descr: '''
+      desc: '''
         The RISC-V core can send transactions on the TL-UL interconnect and access all of the
         address space that is available
       '''
     }
     {
       name: "RV_CORE_IBEX.CPU.INTERRUPTS"
-      descr: '''
+      desc: '''
         The RISC-V core has a number of interrupt sources:
           - Software interrupt, controlled by a memory mapped PLIC register
           - External interrupt, from interrupts prioritise by the PLIC
@@ -445,21 +445,21 @@
     }
     {
       name: "RV_CORE_IBEX.RND"
-      descr: '''
+      desc: '''
         The core wrapper has a connection to the EDN that provides 32-bit random numbers via a
         memory mapped register.
       '''
     }
     {
       name: "RV_CORE_IBEX.ADDRESS_TRANSLATION"
-      descr: '''
+      desc: '''
         The core wrapper implements address translation. RISC-V core memory accesses that match a
         given range will have an offset applied before being sent to the memory system
       '''
     }
     {
       name: "RV_CORE_IBEX.CRASH_DUMP"
-      descr: '''
+      desc: '''
         The core wrapper provides a 'crash dump' to rstmgr providing information on what was being
         executed and most recent exception taken on a reset event. Where the RISC-V core has
         detected a double fault a crash dump will be stored for when the double fault was detect as

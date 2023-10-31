@@ -213,16 +213,16 @@
         OTBN has a connection to the EDN allowing it to receive 256-bits of entropy.
       '''
       name: "OTBN.KEYMGR"
-      descr: '''
+      desc: '''
         OTBN has a connection to the keymgr and it can receive key material from it.
       '''
       name: "OTBN.SECUREWIPE"
-      descr: '''
+      desc: '''
         OTBN has a secure wipe facility that can target the internal state as well as the
         instruction and data memories.
       '''
       name: "OTBN.MEM_SCRAMBLE"
-      descr: '''
+      desc: '''
         OTBN scrambles its instruction and data memories using keys received from OTP.
       '''
     }
