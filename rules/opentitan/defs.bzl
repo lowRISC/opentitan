@@ -63,6 +63,8 @@ rsa_key_for_lc_state = _rsa_key_for_lc_state
 EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
 }
@@ -88,6 +90,8 @@ def _parameter_name(env, pname):
         (_, suffix) = env.split(":")
         if "cw310" in suffix:
             pname = "cw310"
+        elif "cw340" in suffix:
+            pname = "cw340"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -123,6 +127,7 @@ def opentitan_test(
         manifest = None,
         exec_env = {},
         cw310 = _cw310_params(),
+        cw340 = _cw310_params(),
         dv = _dv_params(),
         verilator = _verilator_params(),
         **kwargs):
@@ -148,12 +153,14 @@ def opentitan_test(
                 of the exec_env override or None.  If None, the default parameter
                 names of `cw310`, `dv` or `verilator` will be guessed.
       cw310: Execution overrides for a CW310-based test.
+      cw340: Execution ovverrides for a CW340-based test.
       dv: Execution overrides for a DV-based test.
       verilator: Execution overrides for a verilator-based test.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
         "cw310": cw310,
+        "cw340": cw340,
         "dv": dv,
         "verilator": verilator,
     }
