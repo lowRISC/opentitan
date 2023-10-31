@@ -402,6 +402,86 @@ TEST_F(StatusTest, GetErrorBadArg) {
   EXPECT_DIF_BADARG(dif_dma_error_code_get(&dma_, nullptr));
 }
 
+typedef struct status_poll_reg {
+  uint32_t reg;
+  dif_dma_status_code_t status;
+} status_poll_reg_t;
+
+class StatusPollTest : public DmaTestInitialized,
+                       public testing::WithParamInterface<status_poll_reg_t> {};
+
+TEST_P(StatusPollTest, GetSuccess) {
+  status_poll_reg_t status_arg = GetParam();
+
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, 0);
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, status_arg.reg);
+
+  EXPECT_DIF_OK(dif_dma_status_poll(&dma_, status_arg.status));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    StatusPollTest, StatusPollTest,
+    testing::ValuesIn(std::vector<status_poll_reg_t>{{
+        {1 << DMA_STATUS_BUSY_BIT, kDifDmaStatusBusy},
+        {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone},
+        {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 0) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError},
+        {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid},
+    }}));
+
+TEST_F(StatusPollTest, BadArg) {
+  dif_dma_error_code_t dummy;
+  EXPECT_DIF_BADARG(dif_dma_status_poll(nullptr, kDifDmaStatusDone));
+}
+
+typedef struct digest_reg {
+  dif_dma_transaction_opcode_t opcode;
+  uint32_t num_digest_regs;
+} digest_reg_t;
+
+class GetDigestTest : public DmaTestInitialized,
+                      public testing::WithParamInterface<digest_reg_t> {};
+
+TEST_P(GetDigestTest, GetSuccess) {
+  digest_reg_t digest_arg = GetParam();
+  uint32_t digest[16] = {0};
+
+  for (uint32_t i = 0; i < digest_arg.num_digest_regs; ++i) {
+    EXPECT_READ32(DMA_SHA2_DIGEST_0_REG_OFFSET +
+                      (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+                  i * 1024 + i);
+  }
+
+  EXPECT_DIF_OK(dif_dma_sha2_digest_get(&dma_, digest_arg.opcode, digest));
+
+  for (uint32_t i = 0; i < 16; ++i) {
+    if (i < digest_arg.num_digest_regs) {
+      EXPECT_EQ(digest[i], i * 1024 + i);
+    } else {
+      EXPECT_EQ(digest[i], 0);
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(GetDigestTest, GetDigestTest,
+                         testing::ValuesIn(std::vector<digest_reg_t>{{
+                             {kDifDmaSha256Opcode, 8},
+                             {kDifDmaSha384Opcode, 12},
+                             {kDifDmaSha512Opcode, 16},
+                             {kDifDmaCopyOpcode, 0},
+                         }}));
+
+TEST_F(GetDigestTest, BadArg) {
+  uint32_t digest[16];
+  EXPECT_DIF_BADARG(
+      dif_dma_sha2_digest_get(nullptr, kDifDmaSha256Opcode, digest));
+  EXPECT_DIF_BADARG(
+      dif_dma_sha2_digest_get(&dma_, kDifDmaSha256Opcode, nullptr));
+}
+
 // DMA clear state tests
 class ClearStateTest : public DmaTestInitialized {};
 
@@ -416,17 +496,113 @@ TEST_F(ClearStateTest, BadArg) {
 }
 
 // DMA handshake irq enable tests
-class HandshakeIrqTest : public DmaTestInitialized {};
+class HandshakeEnableIrqTest : public DmaTestInitialized {};
 
-TEST_F(HandshakeIrqTest, Success) {
-  EXPECT_WRITE32(DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET,
-                 std::numeric_limits<uint32_t>::max());
+TEST_F(HandshakeEnableIrqTest, Success) {
+  EXPECT_WRITE32(DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET, 0x3);
 
-  EXPECT_DIF_OK(dif_dma_handshake_irq_enable(&dma_));
+  EXPECT_DIF_OK(dif_dma_handshake_irq_enable(&dma_, 0x3));
 }
 
-TEST_F(HandshakeIrqTest, BadArg) {
-  EXPECT_DIF_BADARG(dif_dma_handshake_irq_enable(nullptr));
+TEST_F(HandshakeEnableIrqTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_handshake_irq_enable(nullptr, 0x3));
+}
+
+// DMA handshake irq clear tests
+class HandshakeClearIrqTest : public DmaTestInitialized {};
+
+TEST_F(HandshakeClearIrqTest, Success) {
+  EXPECT_WRITE32(DMA_CLEAR_INT_SRC_REG_OFFSET, 0x3);
+
+  EXPECT_DIF_OK(dif_dma_handshake_clear_irq(&dma_, 0x3));
+}
+
+TEST_F(HandshakeClearIrqTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq(nullptr, 0x3));
+}
+
+// DMA handshake irq clear bus tests
+class HandshakeClearBusTest : public DmaTestInitialized {};
+
+TEST_F(HandshakeClearBusTest, Success) {
+  EXPECT_WRITE32(DMA_CLEAR_INT_BUS_REG_OFFSET, 0x2);
+
+  EXPECT_DIF_OK(dif_dma_handshake_clear_irq_bus(&dma_, 0x2));
+}
+
+TEST_F(HandshakeClearBusTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_bus(nullptr, 0x2));
+}
+
+typedef struct dma_clear_irq_reg {
+  uint32_t reg;
+  dif_dma_int_idx_t idx;
+} dma_clear_irq_reg_t;
+
+class HandshakeClearAddressTest
+    : public DmaTestInitialized,
+      public testing::WithParamInterface<dma_clear_irq_reg_t> {};
+
+TEST_P(HandshakeClearAddressTest, GetSuccess) {
+  dma_clear_irq_reg_t clear_irq_reg = GetParam();
+
+  EXPECT_WRITE32(clear_irq_reg.reg, 0x123456);
+
+  EXPECT_DIF_OK(dif_dma_int_src_addr(&dma_, clear_irq_reg.idx, 0x123456));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    HandshakeClearAddressTest, HandshakeClearAddressTest,
+    testing::ValuesIn(std::vector<dma_clear_irq_reg_t>{{
+        {DMA_INT_SOURCE_ADDR_0_REG_OFFSET, kDifDmaIntClearIdx0},
+        {DMA_INT_SOURCE_ADDR_1_REG_OFFSET, kDifDmaIntClearIdx1},
+        {DMA_INT_SOURCE_ADDR_2_REG_OFFSET, kDifDmaIntClearIdx2},
+        {DMA_INT_SOURCE_ADDR_3_REG_OFFSET, kDifDmaIntClearIdx3},
+        {DMA_INT_SOURCE_ADDR_4_REG_OFFSET, kDifDmaIntClearIdx4},
+        {DMA_INT_SOURCE_ADDR_5_REG_OFFSET, kDifDmaIntClearIdx5},
+        {DMA_INT_SOURCE_ADDR_6_REG_OFFSET, kDifDmaIntClearIdx6},
+        {DMA_INT_SOURCE_ADDR_7_REG_OFFSET, kDifDmaIntClearIdx7},
+        {DMA_INT_SOURCE_ADDR_8_REG_OFFSET, kDifDmaIntClearIdx8},
+        {DMA_INT_SOURCE_ADDR_9_REG_OFFSET, kDifDmaIntClearIdx9},
+        {DMA_INT_SOURCE_ADDR_10_REG_OFFSET, kDifDmaIntClearIdx10},
+    }}));
+
+TEST_F(HandshakeClearAddressTest, BadArg) {
+  EXPECT_DIF_BADARG(
+      dif_dma_int_src_addr(nullptr, kDifDmaIntClearIdx0, 0x12345));
+}
+
+class HandshakeClearValueTest
+    : public DmaTestInitialized,
+      public testing::WithParamInterface<dma_clear_irq_reg_t> {};
+
+TEST_P(HandshakeClearValueTest, GetSuccess) {
+  dma_clear_irq_reg_t clear_irq_reg = GetParam();
+
+  EXPECT_WRITE32(clear_irq_reg.reg, 0x123456);
+
+  EXPECT_DIF_OK(dif_dma_int_write_value(&dma_, clear_irq_reg.idx, 0x123456));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    HandshakeClearValueTest, HandshakeClearValueTest,
+    testing::ValuesIn(std::vector<dma_clear_irq_reg_t>{{
+        {DMA_INT_SOURCE_WR_VAL_0_REG_OFFSET, kDifDmaIntClearIdx0},
+        {DMA_INT_SOURCE_WR_VAL_1_REG_OFFSET, kDifDmaIntClearIdx1},
+        {DMA_INT_SOURCE_WR_VAL_2_REG_OFFSET, kDifDmaIntClearIdx2},
+        {DMA_INT_SOURCE_WR_VAL_3_REG_OFFSET, kDifDmaIntClearIdx3},
+        {DMA_INT_SOURCE_WR_VAL_4_REG_OFFSET, kDifDmaIntClearIdx4},
+        {DMA_INT_SOURCE_WR_VAL_5_REG_OFFSET, kDifDmaIntClearIdx5},
+        {DMA_INT_SOURCE_WR_VAL_6_REG_OFFSET, kDifDmaIntClearIdx6},
+        {DMA_INT_SOURCE_WR_VAL_7_REG_OFFSET, kDifDmaIntClearIdx7},
+        {DMA_INT_SOURCE_WR_VAL_8_REG_OFFSET, kDifDmaIntClearIdx8},
+        {DMA_INT_SOURCE_WR_VAL_9_REG_OFFSET, kDifDmaIntClearIdx9},
+        {DMA_INT_SOURCE_WR_VAL_10_REG_OFFSET, kDifDmaIntClearIdx10},
+    }}));
+
+TEST_F(HandshakeClearValueTest, BadArg) {
+  EXPECT_DIF_BADARG(
+      dif_dma_int_write_value(nullptr, kDifDmaIntClearIdx0, 0x4567));
 }
 
 }  // namespace dif_dma_test

@@ -281,10 +281,10 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
 
 /**
- * Poll the DMA status util a given flag in the register is set.
+ * Poll the DMA status util a given bit in the register is set.
  *
  * @param dma A DMA Controller handle.
- * @param flag The flag that needs to bet set.
+ * @param flag The status that needs to bet set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -344,13 +344,85 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_state_clear(const dif_dma_t *dma);
 
 /**
- * Enable DMA controller handshack interrupt.
+ * Enable DMA controller handshake interrupt.
  *
  * @param dma A DMA Controller handle.
+ * @param enable_state Enable state. The bit position corresponds to the IRQ
+ * index.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma);
+dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma,
+                                          uint32_t enable_state);
+
+/**
+ * Enable the corresponding DME handshake interrupt clearing mechanism.
+ *
+ * @param dma A DMA Controller handle.
+ * @param clear_state Enable interrupt clearing mechanism. The bit position
+ *                    corresponds to the IRQ index.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_handshake_clear_irq(const dif_dma_t *dma,
+                                         uint32_t clear_state);
+
+/**
+ * Select the bus interface for the interrupt clearing mechanism.
+ * 0: CTN/System fabric
+ * 1: OT-internal crossbar
+ *
+ * @param dma A DMA Controller handle.
+ * @param clear_irq_bus Bus selection for the clearing mechanism. The bit
+ * position corresponds to the IRQ index.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
+                                             uint32_t clear_irq_bus);
+
+/**
+ * Address index for every interrupt. Used to configure the write address and
+ * write value for the interrupt clearing mechanism.
+ */
+typedef enum dif_dma_int_idx {
+  kDifDmaIntClearIdx0 = 0x0,
+  kDifDmaIntClearIdx1 = 0x4,
+  kDifDmaIntClearIdx2 = 0x8,
+  kDifDmaIntClearIdx3 = 0xC,
+  kDifDmaIntClearIdx4 = 0x10,
+  kDifDmaIntClearIdx5 = 0x14,
+  kDifDmaIntClearIdx6 = 0x18,
+  kDifDmaIntClearIdx7 = 0x1C,
+  kDifDmaIntClearIdx8 = 0x20,
+  kDifDmaIntClearIdx9 = 0x24,
+  kDifDmaIntClearIdx10 = 0x28,
+} dif_dma_int_idx_t;
+
+/**
+ * Set the write address for the interrupt clearing mechanism.
+ *
+ * @param dma A DMA Controller handle.
+ * @param idx Index of the selected interrupt.
+ * @param int_src_addr Address to write the interrupt clearing value to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_int_src_addr(const dif_dma_t *dma, dif_dma_int_idx_t idx,
+                                  uint32_t int_src_addr);
+
+/**
+ * Set the write value for the interrupt clearing mechanism.
+ *
+ * @param dma A DMA Controller handle.
+ * @param idx Index of the selected interrupt.
+ * @param int_src_value Value to write the interrupt clearing value to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_int_write_value(const dif_dma_t *dma,
+                                     dif_dma_int_idx_t idx,
+                                     uint32_t int_src_value);
 
 #ifdef __cplusplus
 }  // extern "C"

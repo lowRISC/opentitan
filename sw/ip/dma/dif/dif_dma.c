@@ -245,13 +245,12 @@ dif_result_t dif_dma_status_poll(const dif_dma_t *dma,
                                  dif_dma_status_code_t flag) {
   while (true) {
     dif_dma_status_t status;
-    if (dif_dma_status_get(dma, &status) != kDifOk) {
-      return kDifError;
-    }
-    if (bitfield_bit32_read(status, flag)) {
+    DIF_RETURN_IF_ERROR(dif_dma_status_get(dma, &status));
+
+    if (status & flag) {
       break;
     }
-    if (bitfield_bit32_read(status, kDifDmaStatusError)) {
+    if (status & kDifDmaStatusError) {
       return kDifError;
     }
   }
@@ -309,12 +308,58 @@ dif_result_t dif_dma_state_clear(const dif_dma_t *dma) {
   return kDifOk;
 }
 
-dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma) {
+dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma,
+                                          uint32_t enable_state) {
   if (dma == NULL) {
     return kDifBadArg;
   }
   mmio_region_write32(dma->base_addr, DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET,
-                      UINT32_MAX);
+                      enable_state);
 
+  return kDifOk;
+}
+
+dif_result_t dif_dma_handshake_clear_irq(const dif_dma_t *dma,
+                                         uint32_t clear_state) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr, DMA_CLEAR_INT_SRC_REG_OFFSET,
+                      clear_state);
+
+  return kDifOk;
+}
+
+dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
+                                             uint32_t clear_irq_bus) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr, DMA_CLEAR_INT_BUS_REG_OFFSET,
+                      clear_irq_bus);
+
+  return kDifOk;
+}
+
+dif_result_t dif_dma_int_src_addr(const dif_dma_t *dma, dif_dma_int_idx_t idx,
+                                  uint32_t int_src_addr) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr,
+                      DMA_INT_SOURCE_ADDR_0_REG_OFFSET + (ptrdiff_t)idx,
+                      int_src_addr);
+  return kDifOk;
+}
+
+dif_result_t dif_dma_int_write_value(const dif_dma_t *dma,
+                                     dif_dma_int_idx_t idx,
+                                     uint32_t int_src_value) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr,
+                      DMA_INT_SOURCE_WR_VAL_0_REG_OFFSET + (ptrdiff_t)idx,
+                      int_src_value);
   return kDifOk;
 }
