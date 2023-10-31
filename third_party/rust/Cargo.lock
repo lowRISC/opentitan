@@ -310,6 +310,7 @@ dependencies = [
  "rsa-der",
  "rusb",
  "rustix",
+ "scopeguard",
  "secrecy",
  "serde",
  "serde_bytes",

@@ -21,7 +21,7 @@ use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::openocd::OpenOcdServer;
+use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::parse_int::ParseInt;
 use board::Board;
 
@@ -185,9 +185,11 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut inner = self.inner.borrow_mut();
         if inner.jtag.is_none() {
-            inner.jtag = Some(Rc::new(OpenOcdServer::new(
-                self.openocd_adapter_config.clone(),
-                None,
+            inner.jtag = Some(Rc::new(OpenOcdJtagChain::new(
+                match self.openocd_adapter_config {
+                    Some(ref path) => std::fs::read_to_string(path)?,
+                    None => String::new(),
+                },
                 opts,
             )?));
         }
