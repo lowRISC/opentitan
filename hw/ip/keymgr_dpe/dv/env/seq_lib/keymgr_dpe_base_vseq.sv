@@ -128,19 +128,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   // update key_version to match knob `is_key_version_err` and current_state value
   task update_key_version();
     bit [TL_DW-1:0] key_version_val;
-    bit [TL_DW-1:0] max_creator_key_ver_val;
-    bit [TL_DW-1:0] max_owner_int_key_ver_val;
-    bit [TL_DW-1:0] max_owner_key_ver_val;
     bit [TL_DW-1:0] max_key_ver_val;
 
-    key_version_val           = `gmv(ral.key_version[0]);
-    max_creator_key_ver_val   = `gmv(ral.max_creator_key_ver_shadowed);
-    max_owner_int_key_ver_val = `gmv(ral.max_owner_int_key_ver_shadowed);
-    max_owner_key_ver_val     = `gmv(ral.max_owner_key_ver_shadowed);
-    max_key_ver_val = (current_state == keymgr_dpe_pkg::StWorkDpeCreatorRootKey)
-        ? max_creator_key_ver_val : (current_state == keymgr_dpe_pkg::StWorkDpeOwnerIntKey)
-        ? max_owner_int_key_ver_val : (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey)
-        ? max_owner_key_ver_val : 0;
+    key_version_val = `gmv(ral.key_version[0]);
+    max_key_ver_val = `gmv(ral.max_key_ver_shadowed);
 
     // if current key_version already match to what we need, return without updating it
     if (is_key_version_err && key_version_val > max_key_ver_val ||
@@ -167,34 +158,35 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     keymgr_dpe_pkg::keymgr_dpe_ops_e cast_operation = keymgr_dpe_pkg::keymgr_dpe_ops_e'(operation);
     bit[TL_DW-1:0] rd_val;
 
-    if (operation inside {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut}) begin
-      // only when it's in 3 working state and key_verion less than max version
-      case (current_state)
-        keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
-          is_good_op = key_verion <= ral.max_creator_key_ver_shadowed.get_mirrored_value();
-        end
-        keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
-          is_good_op = key_verion <= ral.max_owner_int_key_ver_shadowed.get_mirrored_value();
-        end
-        keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
-          is_good_op = key_verion <= ral.max_owner_key_ver_shadowed.get_mirrored_value();
-        end
-        default: is_good_op = 0;
-      endcase
-    end else if (operation == keymgr_dpe_pkg::OpDpeGenId) begin
-      is_good_op = current_state inside {
-        keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
-        keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
-        keymgr_dpe_pkg::StWorkDpeOwnerKey
-      };
-    end else if (operation == keymgr_dpe_pkg::OpDpeAdvance) begin
-      is_good_op = current_state != keymgr_dpe_pkg::StWorkDpeDisabled;
-    end else begin
-      is_good_op = !(current_state inside {
-        keymgr_dpe_pkg::StWorkDpeReset,
-        keymgr_dpe_pkg::StWorkDpeDisabled}
-      );
-    end
+
+    case (operation)
+      keymgr_dpe_pkg::OpDpeAdvance: begin
+        is_good_op = !(current_state inside {
+          keymgr_dpe_pkg::StWorkDpeInvalid,
+          keymgr_dpe_pkg::StWorkDpeDisabled
+        });
+      end
+      keymgr_dpe_pkg::OpDpeGenSwOut,
+      keymgr_dpe_pkg::OpDpeGenHwOut: begin
+        // only when key_verion less than  or equal to max version
+        is_good_op = key_verion <= ral.max_key_ver_shadowed.get_mirrored_value();
+      end
+      keymgr_dpe_pkg::OpDpeErase: begin
+        is_good_op = !(current_state inside {
+          keymgr_dpe_pkg::StWorkDpeInvalid,
+          keymgr_dpe_pkg::StWorkDpeDisabled
+        });
+      end
+      keymgr_dpe_pkg::OpDpeDisable: begin
+        is_good_op = !(current_state inside {
+          keymgr_dpe_pkg::StWorkDpeInvalid,
+          keymgr_dpe_pkg::StWorkDpeDisabled
+        });
+      end
+      default: begin
+      end
+    endcase
+
     `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
                               current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
 

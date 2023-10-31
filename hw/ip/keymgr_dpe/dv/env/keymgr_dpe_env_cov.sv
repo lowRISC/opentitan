@@ -161,8 +161,7 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
       bins legal_values[]  = {CompareOpEq, CompareOpGt, CompareOpLt};
     }
     state_cp: coverpoint state {
-      bins legal_states[]  = {keymgr_pkg::StCreatorRootKey, keymgr_pkg::StOwnerIntKey,
-                              keymgr_pkg::StOwnerKey};
+      bins legal_states[]  = {keymgr_dpe_pkg::StWorkDpeAvailable};
     }
     op_cp: coverpoint op {
       bins legal_states[]  = {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut};
