@@ -21,10 +21,6 @@ pub struct JtagParams {
     #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
 
-    /// Timeout when waiting for OpenOCD to start.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "3s")]
-    pub openocd_timeout: Duration,
-
     #[arg(long, default_value = "200")]
     pub adapter_speed_khz: u64,
 }
