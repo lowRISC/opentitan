@@ -241,7 +241,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_stages: ["TEST_UNLOCKED0"]
+      lc_states: ["TEST_UNLOCKED0"]
       features: [
         "CLKMGR.JITTER.REGWEN",
         "CLKMGR.JITTER.ENABLE",
