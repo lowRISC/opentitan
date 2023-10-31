@@ -142,24 +142,30 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       keymgr_dpe_pkg::OpDpeAdvance: begin
         bit is_err = get_hw_invalid_input();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
-
+         // TODO(opentitan-integrated/issues/667):
+         // re-evaluate function process kmac_data_req()
+         // for OpDpeAdvance cases for new keymgr_dpe states, and remove no longer
+         // valid states
         case (current_state)
-          keymgr_dpe_pkg::StWorkDpeInit: begin
-            compare_adv_creator_data(.cdi_type(current_cdi),
-                                     .exp_match(!is_err),
-                                     .byte_data_q(item.byte_data_q));
+          keymgr_dpe_pkg::StWorkDpeReset: begin
           end
-          keymgr_dpe_pkg::StCreatorRootKey: begin
-            compare_adv_owner_int_data(.cdi_type(current_cdi),
-                                       .exp_match(!is_err),
-                                       .byte_data_q(item.byte_data_q));
+          keymgr_dpe_pkg::StWorkDpeAvailable: begin
           end
-          keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
-            compare_adv_owner_data(.cdi_type(current_cdi),
-                                   .exp_match(!is_err),
-                                   .byte_data_q(item.byte_data_q));
-          end
-          keymgr_dpe_pkg::StWorkDpeOwnerKey,
+          //keymgr_dpe_pkg::StWorkDpeInit: begin
+          //  compare_adv_creator_data(.cdi_type(current_cdi),
+          //                           .exp_match(!is_err),
+          //                           .byte_data_q(item.byte_data_q));
+          //end
+          //keymgr_dpe_pkg::StCreatorRootKey: begin
+          //  compare_adv_owner_int_data(.cdi_type(current_cdi),
+          //                             .exp_match(!is_err),
+          //                             .byte_data_q(item.byte_data_q));
+          //end
+          //keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
+          //  compare_adv_owner_data(.cdi_type(current_cdi),
+          //                         .exp_match(!is_err),
+          //                         .byte_data_q(item.byte_data_q));
+          //end
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeInvalid: begin
             // set to 1 to check invalid data is used
@@ -316,55 +322,60 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       return NotUpdate;
     end
     case (current_state)
-      keymgr_dpe_pkg::StWorkDpeInit,
-      keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
-      keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
-      keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
+      // TODO(opentitan-integrated/issues/667):
+      // re-evalute the behavior for
+      // StWorkDpeReset and StWorkDpeAvailable cases
+      // which will replace no longer valid keymgr states
 
-        case (op)
-          keymgr_dpe_pkg::OpDpeAdvance: begin
-            // if it's StOwnerKey, it advacens to OpDpeDisable. Key is just random value
-            if (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey || get_op_err()) begin
-              update_result = NotUpdate;
-            end else begin
-              update_result = UpdateInternalKey;
-            end
+      //keymgr_dpe_pkg::StWorkDpeInit,
+      //keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
+      //keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
+      //keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
 
-            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-              adv_cnt++;
-            end else begin
-              adv_cnt = 0;
-              if (!get_op_err()) begin
-                update_state(get_next_state(current_state));
-                // set sw_binding_regwen after advance OP
-                void'(ral.sw_binding_regwen.predict(.value(1)));
-                ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
-              end
-            end
-          end
-          keymgr_dpe_pkg::OpDpeDisable: begin
-            update_result = NotUpdate;
-            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-              adv_cnt++;
-            end else begin
-              adv_cnt = 0;
-              update_state(keymgr_dpe_pkg::StWorkDpeDisabled);
-            end
-          end
-          keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut,
-          keymgr_dpe_pkg::OpDpeGenHwOut: begin
-            // If only op error but no fault error, no update for output
-            if (get_op_err()) begin
-              update_result = NotUpdate;
-            end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
-              update_result = UpdateHwOut;
-            end else begin
-              update_result = UpdateSwOut;
-            end
-          end
-          default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
-        endcase
-      end
+      //  case (op)
+      //    keymgr_dpe_pkg::OpDpeAdvance: begin
+      //      // if it's StOwnerKey, it advacens to OpDpeDisable. Key is just random value
+      //      if (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey || get_op_err()) begin
+      //        update_result = NotUpdate;
+      //      end else begin
+      //        update_result = UpdateInternalKey;
+      //      end
+
+      //      if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+      //        adv_cnt++;
+      //      end else begin
+      //        adv_cnt = 0;
+      //        if (!get_op_err()) begin
+      //          update_state(get_next_state(current_state));
+      //          // set sw_binding_regwen after advance OP
+      //          void'(ral.sw_binding_regwen.predict(.value(1)));
+      //          ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
+      //        end
+      //      end
+      //    end
+      //    keymgr_dpe_pkg::OpDpeDisable: begin
+      //      update_result = NotUpdate;
+      //      if (adv_cnt != keymgr_pkg::CDIs - 1) begin
+      //        adv_cnt++;
+      //      end else begin
+      //        adv_cnt = 0;
+      //        update_state(keymgr_dpe_pkg::StWorkDpeDisabled);
+      //      end
+      //    end
+      //    keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut,
+      //    keymgr_dpe_pkg::OpDpeGenHwOut: begin
+      //      // If only op error but no fault error, no update for output
+      //      if (get_op_err()) begin
+      //        update_result = NotUpdate;
+      //      end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
+      //        update_result = UpdateHwOut;
+      //      end else begin
+      //        update_result = UpdateSwOut;
+      //      end
+      //    end
+      //    default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
+      //  endcase
+      //end
       keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
         case (op)
           keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable: begin
@@ -594,7 +605,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
                 if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
                   current_cdi = get_adv_cdi_type();
-                  if (current_state == keymgr_dpe_pkg::StWorkDpeInit) latch_otp_key();
+                  // OTP key is latched when advancing from StWorkDpeReset to StWorkDpeAvailable
+                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) latch_otp_key();
                 end else begin
                   int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
                   `downcast(current_cdi, cdi_sel)
@@ -661,7 +673,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           addr_phase_op_status = current_op_status;
         end else if (data_phase_read) begin
           if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
-            // when advance from StWorkDpeReset to StWorkDpeInit,
+            // when advance from StWorkDpeReset to StWorkDpeAvailable
             // we don't know how long it will take, it's ok
             // when status is WIP or success
             if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
@@ -789,17 +801,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit [TL_DW-1:0] get_current_max_version(
-        keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state = current_state);
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state = current_state);
     // design change this to 0 if LC turns off keymgr_dpe.
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) return 0;
-
-    case (state)
-      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: return `gmv(ral.max_creator_key_ver_shadowed);
-      keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    return `gmv(ral.max_owner_int_key_ver_shadowed);
-      keymgr_dpe_pkg::StWorkDpeOwnerKey:       return `gmv(ral.max_owner_key_ver_shadowed);
-      // for the other state, max is 0
-      default: return 0;
-    endcase
+    return `gmv(ral.max_key_ver_shadowed);
   endfunction
 
   virtual function void process_error_n_alert();
@@ -853,27 +858,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit get_invalid_op();
-    `uvm_info(`gfn, $sformatf("current_state: %s", current_state), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("get_invalid_op: current_state: %s", current_state.name), UVM_MEDIUM)
     case (current_state)
-      keymgr_dpe_pkg::StWorkDpeReset: begin
+      keymgr_dpe_pkg::StWorkDpeReset : begin
         if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) begin
           return 1;
         end
       end
-      keymgr_dpe_pkg::StWorkDpeInit: begin
-        if (!(get_operation() inside {
-          keymgr_dpe_pkg::OpDpeAdvance,
-          keymgr_dpe_pkg::OpDpeDisable})) begin
-          return 1;
-        end
+      keymgr_dpe_pkg::StWorkDpeAvailable: begin
+        return 0;
       end
-      keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
-      keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
-      keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
-        // no operation error
-      end
-      keymgr_dpe_pkg::StWorkDpeDisabled,
-      keymgr_dpe_pkg::StWorkDpeInvalid: begin
+      keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
         return 1;
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
@@ -923,54 +918,64 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) return err_cnt > 0;
 
     case (current_state)
-      keymgr_dpe_pkg::StWorkDpeInit: begin
-        if (cfg.keymgr_dpe_vif.keymgr_dpe_div inside {0, '1}) begin
-          invalid_hw_input_type = LcStateInvalid;
-          void'(ral.debug.invalid_health_state.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input on keymgr_dpe_div", UVM_LOW)
-        end
+      // TODO(opentitan-integrated/issues/667):
+      //re-evaluate get_hw_invalid_input() function for the state StInit
+      // which is no longer valid for keymgr_dpe
 
-        if (cfg.keymgr_dpe_vif.otp_device_id inside {0, '1}) begin
-          invalid_hw_input_type = OtpDevIdInvalid;
-          void'(ral.debug.invalid_dev_id.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
-        end
+      //keymgr_dpe_pkg::StWorkDpeInit: begin
+      //  if (cfg.keymgr_dpe_vif.keymgr_dpe_div inside {0, '1}) begin
+      //    invalid_hw_input_type = LcStateInvalid;
+      //    void'(ral.debug.invalid_health_state.predict(1));
+      //    err_cnt++;
+      //    `uvm_info(`gfn, "HW invalid input on keymgr_dpe_div", UVM_LOW)
+      //  end
 
-        for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
-          if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
-            invalid_hw_input_type = RomDigestInvalid;
-            void'(ral.debug.invalid_digest.predict(1));
-            err_cnt++;
-            `uvm_info(`gfn, $sformatf("HW invalid input on rom_digests[%0d]", i), UVM_LOW)
-          end
+      //  if (cfg.keymgr_dpe_vif.otp_device_id inside {0, '1}) begin
+      //    invalid_hw_input_type = OtpDevIdInvalid;
+      //    void'(ral.debug.invalid_dev_id.predict(1));
+      //    err_cnt++;
+      //    `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
+      //  end
 
-          if (!cfg.keymgr_dpe_vif.rom_digests[i].valid) begin
-            invalid_hw_input_type = RomDigestValidLow;
-            void'(ral.debug.invalid_digest.predict(1));
-            err_cnt++;
-            `uvm_info(`gfn,
-                      $sformatf("HW invalid input, rom_digests[%0d].valid is low", i),
-                      UVM_LOW)
-          end
-        end
+      //  for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
+      //    if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
+      //      invalid_hw_input_type = RomDigestInvalid;
+      //      void'(ral.debug.invalid_digest.predict(1));
+      //      err_cnt++;
+      //      `uvm_info(`gfn, $sformatf("HW invalid input on rom_digests[%0d]", i), UVM_LOW)
+      //    end
 
-        if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
-          invalid_hw_input_type = FlashCreatorSeedInvalid;
-          void'(ral.debug.invalid_creator_seed.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
-        end
-      end
-      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
-        if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
-          invalid_hw_input_type = FlashOwnerSeedInvalid;
-          void'(ral.debug.invalid_owner_seed.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input on flash.seeds[OwnerSeedIdx]", UVM_LOW)
-        end
-      end
+      //    if (!cfg.keymgr_dpe_vif.rom_digests[i].valid) begin
+      //      invalid_hw_input_type = RomDigestValidLow;
+      //      void'(ral.debug.invalid_digest.predict(1));
+      //      err_cnt++;
+      //      `uvm_info(`gfn,
+      //                $sformatf("HW invalid input, rom_digests[%0d].valid is low", i),
+      //                UVM_LOW)
+      //    end
+      //  end
+
+      //  if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
+      //    invalid_hw_input_type = FlashCreatorSeedInvalid;
+      //    void'(ral.debug.invalid_creator_seed.predict(1));
+      //    err_cnt++;
+      //    `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
+      //  end
+      //end
+
+      // TODO(opentitan-integrated/issues/667):
+      // re-evaluate get_hw_invalid_input()
+      // function for the state StCreatorRootKey
+      // which is no longer valid for keymgr_dpe
+
+      //keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
+      //  if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
+      //    invalid_hw_input_type = FlashOwnerSeedInvalid;
+      //    void'(ral.debug.invalid_owner_seed.predict(1));
+      //    err_cnt++;
+      //    `uvm_info(`gfn, "HW invalid input on flash.seeds[OwnerSeedIdx]", UVM_LOW)
+      //  end
+      //end
       default: ;
     endcase
 
@@ -987,11 +992,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] err_code = get_err_code();
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
-    if (current_state inside {
-        keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
-        keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
-        keymgr_dpe_pkg::StWorkDpeOwnerKey}
-    ) begin
+    if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
       return !(get_fault_err() |
                err_code[keymgr_pkg::ErrInvalidIn]  |
                !cfg.keymgr_dpe_vif.get_keymgr_dpe_en());
@@ -1005,13 +1006,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     bit [TL_DW-1:0] err_code = get_err_code();
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
-    if ((current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey &&
-         op == keymgr_dpe_pkg::OpDpeAdvance) ||
-         op == keymgr_dpe_pkg::OpDpeDisable  ||
-         !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()
-   ) begin
-      return 0;
-    end else begin
+    // TODO(opentitan-integrated/issues/667):
+    // re-evalute function get_is_kmac_data_correct for how to
+    // handle the current_state condition for the no longer valid state StOwnerKey
+
+    //if ((current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey &&
+    //     op == keymgr_dpe_pkg::OpDpeAdvance) ||
+    //     op == keymgr_dpe_pkg::OpDpeDisable  ||
+    //     !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()
+    //) begin
+    //  return 0;
+    //end else begin
       return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
     end
   endfunction
@@ -1019,87 +1024,99 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function void compare_adv_creator_data(keymgr_dpe_cdi_type_e cdi_type,
                                                  bit exp_match,
                                                  const ref byte byte_data_q[$]);
-    adv_creator_data_t exp, act;
-    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    // TODO(opentitan-integrated/issues/667):
+    // re-evalute compare_adv_*_data functions now that these states
+    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
 
-    if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
-    act = {<<8{byte_data_q}};
+    //adv_creator_data_t exp, act;
+    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
-    exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
-      exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
-    end
-    exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
-    exp.DeviceIdentifier   = cfg.keymgr_dpe_vif.otp_device_id;
-    exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
+    //if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
+    //act = {<<8{byte_data_q}};
 
-    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    //exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+    //for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
+    //  exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
+    //end
+    //exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
+    //exp.DeviceIdentifier   = cfg.keymgr_dpe_vif.otp_device_id;
+    //exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
 
-    // The order of the string creation must match the design
-    `CREATE_CMP_STR(DiversificationKey)
-    `CREATE_CMP_STR(RomDigests)
-    `CREATE_CMP_STR(HealthMeasurement)
-    `CREATE_CMP_STR(DeviceIdentifier)
-    `CREATE_CMP_STR(HardwareRevisionSecret)
-    `CREATE_CMP_STR(SoftwareBinding)
+    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
-    if (exp_match) begin
-      `DV_CHECK_EQ(act, exp, str)
-    end else begin
-      `DV_CHECK_NE(act, exp, str)
-    end
+    //// The order of the string creation must match the design
+    //`CREATE_CMP_STR(DiversificationKey)
+    //`CREATE_CMP_STR(RomDigests)
+    //`CREATE_CMP_STR(HealthMeasurement)
+    //`CREATE_CMP_STR(DeviceIdentifier)
+    //`CREATE_CMP_STR(HardwareRevisionSecret)
+    //`CREATE_CMP_STR(SoftwareBinding)
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeCreatorRootKey] = act;
+    //if (exp_match) begin
+    //  `DV_CHECK_EQ(act, exp, str)
+    //end else begin
+    //  `DV_CHECK_NE(act, exp, str)
+    //end
+
+    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeCreatorRootKey] = act;
   endfunction
 
   virtual function void compare_adv_owner_int_data(keymgr_dpe_cdi_type_e cdi_type,
                                                    bit exp_match,
                                                    const ref byte byte_data_q[$]);
-    adv_owner_int_data_t exp, act;
-    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    // TODO(opentitan-integrated/issues/667):
+    // re-evalute compare_adv_*_data functions now that these states
+    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
 
-    act = {<<8{byte_data_q}};
+    //adv_owner_int_data_t exp, act;
+    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
-    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    //act = {<<8{byte_data_q}};
 
-    `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(OwnerRootSecret)
-    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
-      `CREATE_CMP_STR(SoftwareBinding[i])
-    end
+    //exp.OwnerRootSecret = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
-    if (exp_match) begin
-      `DV_CHECK_EQ(act, exp, str)
-    end else begin
-      `DV_CHECK_NE(act, exp, str)
-    end
+    //`CREATE_CMP_STR(unused)
+    //`CREATE_CMP_STR(OwnerRootSecret)
+    //for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    //  `CREATE_CMP_STR(SoftwareBinding[i])
+    //end
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerIntKey] = act;
+    //if (exp_match) begin
+    //  `DV_CHECK_EQ(act, exp, str)
+    //end else begin
+    //  `DV_CHECK_NE(act, exp, str)
+    //end
+
+    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerIntKey] = act;
   endfunction
 
   virtual function void compare_adv_owner_data(keymgr_dpe_cdi_type_e cdi_type,
                                                bit exp_match,
                                                const ref byte byte_data_q[$]);
-    adv_owner_data_t exp, act;
-    string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    // TODO(opentitan-integrated/issues/667):
+    // re-evalute compare_adv_*_data functions now that these states
+    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
 
-    act = {<<8{byte_data_q}};
+    //adv_owner_data_t exp, act;
+    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
 
-    get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    //act = {<<8{byte_data_q}};
 
-    `CREATE_CMP_STR(unused)
-    for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
-      `CREATE_CMP_STR(SoftwareBinding[i])
-    end
+    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
 
-    if (exp_match) begin
-      `DV_CHECK_EQ(act, exp, str)
-    end else begin
-      `DV_CHECK_NE(act, exp, str)
-    end
+    //`CREATE_CMP_STR(unused)
+    //for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    //  `CREATE_CMP_STR(SoftwareBinding[i])
+    //end
 
-    if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerKey] = act;
+    //if (exp_match) begin
+    //  `DV_CHECK_EQ(act, exp, str)
+    //end else begin
+    //  `DV_CHECK_NE(act, exp, str)
+    //end
+
+    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerKey] = act;
   endfunction
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
@@ -1128,19 +1145,23 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void compare_id_data(const ref byte byte_data_q[$]);
-    bit [keymgr_pkg::IdDataWidth-1:0] act, exp;
+    //bit [keymgr_pkg::IdDataWidth-1:0] act, exp;
+    // TODO(bobby, issue #667): re-evaluate function is still viable for keymgr_dpe, if so adapt
+    //case (current_state)
+    //  keymgr_dpe_pkg::StWorkDpeCreatorRootKey: exp = 
+    //    keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
+    //  keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    exp =
+    //    keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
+    //  keymgr_dpe_pkg::StWorkDpeOwnerKey:       exp =
+    //    keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
+    //  default: `uvm_fatal(`gfn,
+    //    $sformatf("unexpected state %s", current_state.name))
+    //endcase
+    //act = {<<8{byte_data_q}};
 
-    case (current_state)
-      keymgr_dpe_pkg::StWorkDpeCreatorRootKey: exp = keymgr_pkg::RndCnstCreatorIdentitySeedDefault;
-      keymgr_dpe_pkg::StWorkDpeOwnerIntKey:    exp = keymgr_pkg::RndCnstOwnerIntIdentitySeedDefault;
-      keymgr_dpe_pkg::StWorkDpeOwnerKey:       exp = keymgr_pkg::RndCnstOwnerIdentitySeedDefault;
-      default: `uvm_fatal(`gfn, $sformatf("unexpected state %s", current_state.name))
-    endcase
-    act = {<<8{byte_data_q}};
+    //`DV_CHECK_EQ(act, exp, $sformatf("Gen ID at %0s", current_state.name))
 
-    `DV_CHECK_EQ(act, exp, $sformatf("Gen ID at %0s", current_state.name))
-
-    id_data_a_array[current_state] = act;
+    //id_data_a_array[current_state] = act;
   endfunction
 
   virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
@@ -1242,24 +1263,28 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // And we will check that hw key is wiped no matter whether InvalidOp is set or not.
         csr_rd(.ptr(ral.working_state), .value(current_design_state), .backdoor(1'b1));
 
+        // TODO(opentitan-integrated/issues/667):
+        // re-evaluate wipe_hw_keys() function for the state StInit
+        // which is no longer valid for keymgr_dpe
+
         // LC-disable happens during advancing to StWorkDpeInit
         // If LC-disable happens during an operation in other states, KDF will occur.
         // err_code/alert is updated when KDF is done
-        if (current_design_state == keymgr_dpe_pkg::StWorkDpeReset) begin
-          bit [TL_DW-1:0] err_code = get_err_code();
-          err_code[keymgr_pkg::ErrInvalidOp] = 1;
-          // if it's StWorkDpeReset, the Advance OP is ongoing. alert will be sent after the OP
-          set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
-          void'(ral.err_code.predict(err_code));
-          `uvm_info(`gfn,
-              "keymgr_dpe_en is Off when advancing to StWorkDpeInit,\
-              wipe secret and move state to Invalid",
-                UVM_LOW)
-        end
-        else if (current_op_status != keymgr_pkg::OpWip) begin
-          update_state(.cyc_dly(2));
-          `uvm_info(`gfn, "keymgr_dpe_en is Off, wipe secret and move state to Invalid", UVM_LOW)
-        end
+        //if (current_design_state == keymgr_dpe_pkg::StWorkDpeInit) begin
+        //  bit [TL_DW-1:0] err_code = get_err_code();
+        //  err_code[keymgr_pkg::ErrInvalidOp] = 1;
+        //  // if it's StWorkDpeInit, the Advance OP is ongoing. alert will be sent after the OP
+        //  set_exp_alert("recov_operation_err", .max_delay(RESET_ADV_CYCLES));
+        //  void'(ral.err_code.predict(err_code));
+        //  `uvm_info(`gfn,
+        //      "keymgr_dpe_en is Off when advancing to StWorkDpeInit,\
+        //      wipe secret and move state to Invalid",
+        //        UVM_LOW)
+        //end
+        //else if (current_op_status != keymgr_pkg::OpWip) begin
+        //  update_state(.cyc_dly(2));
+        //  `uvm_info(`gfn, "keymgr_dpe_en is Off, wipe secret and move state to Invalid", UVM_LOW)
+        //end
       end
       begin
         // it takes 2 cycle to wipe sw_share. add one more negedge to avoid race condition
