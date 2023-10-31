@@ -31,7 +31,7 @@
 // without --waves,
 // 38.072m | 39.484ms
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
