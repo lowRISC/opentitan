@@ -44,7 +44,6 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   constraint gen_operation_c {
     gen_operation inside {
-      keymgr_dpe_pkg::OpDpeGenId,
       keymgr_dpe_pkg::OpDpeGenSwOut,
       keymgr_dpe_pkg::OpDpeGenHwOut
     };
