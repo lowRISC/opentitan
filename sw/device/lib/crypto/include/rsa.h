@@ -24,7 +24,9 @@ extern "C" {
 typedef enum rsa_padding {
   // Pads input data according to the PKCS#1 (v1.5) scheme.
   kRsaPaddingPkcs = 0x94e,
-  // Pads input data according to the PKCS#1-PSS scheme.
+  // Pads input data according to the PKCS#1-PSS scheme. The mask generation
+  // function is MGF1 with the same hash function as the input message
+  // (supported SHA2 or SHA3 hash functions only).
   kRsaPaddingPss = 0x6b1,
 } rsa_padding_t;
 

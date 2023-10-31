@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -316,12 +317,54 @@ status_t pkcs1v15_verify_invalid_test(void) {
   return OK_STATUS();
 }
 
+status_t pss_sign_test(void) {
+  // PSS signatures are not deterministic, so we need to sign-then-verify.
+  uint32_t sig[kRsa4096NumWords];
+  TRY(run_rsa_4096_sign(kTestMessage, kTestMessageLen, kRsaPaddingPss, sig));
+
+  // Try to verify the signature.
+  hardened_bool_t verification_result;
+  TRY(run_rsa_4096_verify(kTestMessage, kTestMessageLen, sig, kRsaPaddingPss,
+                          &verification_result));
+
+  // Expect the signature to pass verification.
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
+status_t pss_verify_valid_test(void) {
+  // Try to verify a valid signature.
+  hardened_bool_t verification_result;
+  TRY(run_rsa_4096_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
+                          kRsaPaddingPss, &verification_result));
+
+  // Expect the signature to pass verification.
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
+status_t pss_verify_invalid_test(void) {
+  // Try to verify an invalid signature (wrong padding mode).
+  hardened_bool_t verification_result;
+  TRY(run_rsa_4096_verify(kTestMessage, kTestMessageLen,
+                          kValidSignaturePkcs1v15, kRsaPaddingPss,
+                          &verification_result));
+
+  // Expect the signature to fail verification.
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, pkcs1v15_sign_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_valid_test);
   EXECUTE_TEST(test_result, pkcs1v15_verify_invalid_test);
+  EXECUTE_TEST(test_result, pss_sign_test);
+  EXECUTE_TEST(test_result, pss_verify_valid_test);
+  EXECUTE_TEST(test_result, pss_verify_invalid_test);
   return status_ok(test_result);
 }
