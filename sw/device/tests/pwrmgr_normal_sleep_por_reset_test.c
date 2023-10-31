@@ -23,7 +23,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 /**
  * Objects to access the peripherals used in this test via dif API.
