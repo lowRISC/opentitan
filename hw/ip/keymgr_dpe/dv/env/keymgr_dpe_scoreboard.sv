@@ -608,8 +608,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   // OTP key is latched when advancing from StWorkDpeReset to StWorkDpeAvailable
                   if (current_state == keymgr_dpe_pkg::StWorkDpeReset) latch_otp_key();
                 end else begin
-                  int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
-                  `downcast(current_cdi, cdi_sel)
+                  // TODO(opentitan-integrated/issues/667):
+                  // need to replace cdi with src/dst key slots
+                  //int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
+                  //`downcast(current_cdi, cdi_sel)
                 end
                 // call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
                 // need to know what key is used for this OP.
@@ -722,22 +724,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           join_none
         end
       end
-      "max_creator_key_ver_shadowed": begin
+      "max_key_ver_shadowed": begin
         if (cfg.en_cov && addr_phase_write) begin
-          cov.sw_input_cg_wrap["max_creator_key_ver_shadowed"].sample(item.a_data,
-              `gmv(ral.max_creator_key_ver_regwen));
-        end
-      end
-      "max_owner_int_key_ver_shadowed": begin
-        if (cfg.en_cov && addr_phase_write) begin
-          cov.sw_input_cg_wrap["max_owner_int_key_ver_shadowed"].sample(item.a_data,
-              `gmv(ral.max_owner_int_key_ver_regwen));
-        end
-      end
-      "max_owner_key_ver_shadowed": begin
-        if (cfg.en_cov && addr_phase_write) begin
-          cov.sw_input_cg_wrap["max_owner_key_ver_shadowed"].sample(item.a_data,
-              `gmv(ral.max_owner_key_ver_regwen));
+          cov.sw_input_cg_wrap["max_key_ver_shadowed"].sample(item.a_data,
+              `gmv(ral.max_key_ver_regwen));
         end
       end
       "fault_status": begin
@@ -1017,8 +1007,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     //) begin
     //  return 0;
     //end else begin
-      return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
-    end
+    //  return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
+    //end
   endfunction
 
   virtual function void compare_adv_creator_data(keymgr_dpe_cdi_type_e cdi_type,
@@ -1216,11 +1206,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         output bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
 
     for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
-      case (cdi_type)
-        Sealing: sw_binding[i] = `gmv(ral.sealing_sw_binding[i]);
-        Attestation: sw_binding[i] = `gmv(ral.attest_sw_binding[i]);
-        default: `uvm_fatal(`gfn, $sformatf("Unsupported CDI type %s", cdi_type.name))
-      endcase
+      sw_binding[i] = `gmv(ral.sw_binding[i]);
     end
   endfunction
 

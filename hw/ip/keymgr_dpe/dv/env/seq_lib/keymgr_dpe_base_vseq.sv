@@ -267,7 +267,6 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(int'(operation));
-    `DV_CHECK_RANDOMIZE_FATAL(ral.control_shadowed.cdi_sel)
     ral.control_shadowed.dest_sel.set(int'(key_dest));
     csr_update(.csr(ral.control_shadowed));
     sema_update_control_csr.put();
