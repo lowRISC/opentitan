@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::cell::Cell;
-use std::io::{Read, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
 use std::net::TcpStream;
 use std::path::Path;
@@ -26,8 +26,10 @@ use crate::util::printer;
 pub struct OpenOcd {
     /// OpenOCD child process.
     server_process: Child,
-    /// Stream to the telnet interface of OpenOCD.
-    stream: TcpStream,
+    /// Receiving side of the stream to the telnet interface of OpenOCD.
+    reader: BufReader<TcpStream>,
+    /// Sending side of the stream to the telnet interface of OpenOCD.
+    writer: TcpStream,
 }
 
 impl Drop for OpenOcd {
@@ -42,44 +44,31 @@ impl OpenOcd {
 
     /// Wait until we see a particular message on the output.
     fn wait_until_regex_match<'a>(
-        stderr: &mut impl Read,
+        stderr: &mut impl BufRead,
         regex: &Regex,
         timeout: Duration,
-        s: &'a mut Vec<u8>,
+        s: &'a mut String,
     ) -> Result<regex::Captures<'a>> {
         let start = Instant::now();
         loop {
-            let mut byte = 0u8;
             // NOTE the read could block indefinitely, a proper solution would involved spawning
             // a thread or using async.
-            let n = stderr.read(std::slice::from_mut(&mut byte))?;
-            if n != 1 {
+            let n = stderr.read_line(s)?;
+            if n == 0 {
                 bail!("OpenOCD stopped before being ready?");
             }
-            if byte == b'\n' {
-                let string = std::str::from_utf8(&s[..])?;
-                log::info!(target: concat!(module_path!(), "::stderr"), "{}", string);
-                if regex.is_match(string) {
-                    // I would have wanted to return here, but doing so causes the Rust compiler
-                    // to complain that returning a value, which needs to immutably borrow for 'a
-                    // lifetime somehow conflicts with the mutable borrowing in other branches
-                    // further down this loop.  Moving the return statement outside the loop
-                    // eliminates the error, but requires duplicate invocation of the regex
-                    // method.  Jonathan Van Why has found that the "Polonius" borrow checker
-                    // would allow returning from this if statement, so once that becomes part of
-                    // the mainstream Rust compiler, we can improve this code.
-                    break;
-                }
-                s.clear();
-            } else {
-                s.push(byte);
+            log::info!(target: concat!(module_path!(), "::stderr"), "{}", s);
+            if regex.is_match(s) {
+                // This is not a `if let Some(capture) = regex.captures(s) {}` to to Rust
+                // borrow checker limitations. Can be modified if Polonius lands.
+                return Ok(regex.captures(s).unwrap());
             }
+            s.clear();
+
             if start.elapsed() >= timeout {
                 bail!("OpenOCD did not become ready to accept a TCL connection");
             }
         }
-        // Perform same regex match as inside the loop above.
-        return Ok(regex.captures(std::str::from_utf8(&s[..])?).unwrap());
     }
 
     /// Spawn an OpenOCD server with given path.
@@ -104,14 +93,14 @@ impl OpenOcd {
             .spawn()
             .with_context(|| format!("failed to spawn openocd: {cmd:?}",))?;
         let stdout = child.stdout.take().unwrap();
-        let mut stderr = child.stderr.take().unwrap();
+        let mut stderr = BufReader::new(child.stderr.take().unwrap());
         // Wait until we see 'Info : Listening on port XXX for tcl connections' before knowing
         // which port to connect to.
         log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
         static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
             Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
         });
-        let mut buf = Vec::new();
+        let mut buf = String::new();
         let regex_captures = Self::wait_until_regex_match(
             &mut stderr,
             &READY_REGEX,
@@ -147,7 +136,8 @@ impl OpenOcd {
 
         let mut connection = Self {
             server_process: scopeguard::ScopeGuard::into_inner(kill_guard),
-            stream,
+            reader: BufReader::new(stream.try_clone()?),
+            writer: stream,
         };
 
         // Test the connection by asking for OpenOCD's version.
@@ -167,27 +157,24 @@ impl OpenOcd {
             bail!("TCL command string should be contained inside the text to send");
         }
 
-        self.stream
+        self.writer
             .write_all(cmd.as_bytes())
             .context("failed to send a command to OpenOCD server")?;
-        self.stream
+        self.writer
             .write_all(&[0x1a])
             .context("failed to send the command terminator to OpenOCD server")?;
-        self.stream.flush().context("failed to flush stream")?;
+        self.writer.flush().context("failed to flush stream")?;
         Ok(())
     }
 
     fn recv(&mut self) -> Result<String> {
-        let answer = (&mut self.stream)
-            .bytes()
-            .take_while(|x| match x {
-                Ok(x) => *x != 0x1a,
-                _ => false,
-            })
-            .collect::<Result<_, _>>()
-            .context("failed to read the result of a command from OpenOCD server")?;
-
-        String::from_utf8(answer).context("failed to parse OpenOCD response as UTF-8")
+        let mut buf = Vec::new();
+        self.reader.read_until(0x1A, &mut buf)?;
+        if !buf.ends_with(b"\x1A") {
+            bail!(OpenOcdError::PrematureExit);
+        }
+        buf.pop();
+        String::from_utf8(buf).context("failed to parse OpenOCD response as UTF-8")
     }
 
     pub fn shutdown(mut self) -> Result<()> {
@@ -223,6 +210,8 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD server is not running")]
     OpenOcdNotRunning,
+    #[error("OpenOCD server exists prematurely")]
+    PrematureExit,
     #[error("Generic error {0}")]
     Generic(String),
 }
