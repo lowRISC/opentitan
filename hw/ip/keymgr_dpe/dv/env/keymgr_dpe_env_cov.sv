@@ -186,11 +186,8 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    foreach (cfg.ral.sealing_sw_binding[i]) begin
-      create_sw_input_cg_obj(cfg.ral.sealing_sw_binding[i].get_name());
-    end
-    foreach (cfg.ral.attest_sw_binding[i]) begin
-      create_sw_input_cg_obj(cfg.ral.attest_sw_binding[i].get_name());
+    foreach (cfg.ral.sw_binding[i]) begin
+      create_sw_input_cg_obj(cfg.ral.sw_binding[i].get_name());
     end
     foreach (cfg.ral.salt[i]) begin
       create_sw_input_cg_obj(cfg.ral.salt[i].get_name());
@@ -199,9 +196,7 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
       create_sw_input_cg_obj(cfg.ral.key_version[i].get_name());
     end
 
-    create_sw_input_cg_obj(cfg.ral.max_creator_key_ver_shadowed.get_name());
-    create_sw_input_cg_obj(cfg.ral.max_owner_int_key_ver_shadowed.get_name());
-    create_sw_input_cg_obj(cfg.ral.max_owner_key_ver_shadowed.get_name());
+    create_sw_input_cg_obj(cfg.ral.max_key_ver_shadowed.get_name());
     create_sw_input_cg_obj(cfg.ral.start.get_name());
   endfunction
 
