@@ -384,8 +384,12 @@
       "mbx2.core", "mbx3.core", "mbx4.core", "mbx5.core", "mbx6.core",
       "mbx_jtag.core", "mbx_pcie0.core", "mbx_pcie1.core",
     ],
+    // This is the same set of devices that rv_core_ibex.cored is connected to,
+    // but without ROM0/1 and RV_DM.
     dma.host: [
-      "sram_ctrl_main.ram", "peri",
+      "sram_ctrl_main.ram", "sram_ctrl_mbox.ram",
+      "aes", "hmac", "otbn", "keymgr_dpe", "kmac",
+      "soc_proxy.ctn", "peri"
     ],
     mbx0.sram: [
       "sram_ctrl_mbox.ram",

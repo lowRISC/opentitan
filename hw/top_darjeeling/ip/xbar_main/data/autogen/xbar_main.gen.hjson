@@ -131,6 +131,13 @@
     dma.host:
     [
       sram_ctrl_main.ram
+      sram_ctrl_mbox.ram
+      aes
+      hmac
+      otbn
+      keymgr_dpe
+      kmac
+      soc_proxy.ctn
       peri
     ]
     mbx0.sram:

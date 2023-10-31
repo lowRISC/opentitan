@@ -313,6 +313,13 @@ tl_host_t xbar_hosts[$] = '{
     ,
     '{"dma__host", 3, '{
         "sram_ctrl_main__ram",
+        "sram_ctrl_mbox__ram",
+        "aes",
+        "hmac",
+        "otbn",
+        "keymgr_dpe",
+        "kmac",
+        "soc_proxy__ctn",
         "uart0",
         "i2c0",
         "gpio",
