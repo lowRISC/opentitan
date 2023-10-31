@@ -11,6 +11,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
     ],

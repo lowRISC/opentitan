@@ -6,6 +6,11 @@
 
 #include <stddef.h>
 
+/**
+ * Extern declaration of inline function.
+ */
+extern size_t ceil_div(size_t a, size_t b);
+
 uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out) {
   uint64_t quot = 0, rem = 0;
 

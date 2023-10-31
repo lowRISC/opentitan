@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/drbg.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -30,7 +31,7 @@ static crypto_status_t seed_material_construct(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  size_t nwords = (value.len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
   seed_material->len = nwords;
 
   // Initialize the set words to zero.
@@ -70,7 +71,7 @@ static crypto_status_t seed_material_xor(
 
   // Copy into a word-aligned buffer. Using a word-wise XOR is slightly safer
   // from a side channel perspective than byte-wise.
-  size_t nwords = (value.len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
   uint32_t value_words[nwords];
   value_words[nwords - 1] = 0;
   memcpy(value_words, value.data, value.len);

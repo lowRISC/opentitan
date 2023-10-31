@@ -36,6 +36,7 @@ cc_library(
     deps = [
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -102,6 +103,7 @@ cc_library(
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/include:datatypes",
     ],

@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -836,7 +837,7 @@ status_t entropy_csrng_generate_start(
     const entropy_seed_material_t *seed_material, size_t len) {
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
-  const uint32_t num_128bit_blocks = (len + 3) / 4;
+  const uint32_t num_128bit_blocks = ceil_div(len, 4);
   return csrng_send_app_cmd(kBaseCsrng + CSRNG_CMD_REQ_REG_OFFSET,
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpGenerate,
@@ -850,7 +851,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
                                          hardened_bool_t fips_check) {
   static_assert(kEntropyCsrngBitsBufferNumWords == 4,
                 "kEntropyCsrngBitsBufferNumWords must be 4.");
-  size_t nblocks = (len + 3) / 4;
+  size_t nblocks = ceil_div(len, 4);
   status_t res = OTCRYPTO_OK;
   for (size_t block_idx = 0; block_idx < nblocks; ++block_idx) {
     // Block until there is more data available in the genbits buffer. CSRNG
