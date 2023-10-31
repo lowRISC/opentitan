@@ -52,8 +52,7 @@ static status_t rsa_mode_check(const key_mode_t mode) {
     case kKeyModeRsaSignPkcs:
       return OTCRYPTO_OK;
     case kKeyModeRsaSignPss:
-      // TODO: PSS padding mode is not yet implemented.
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      return OTCRYPTO_OK;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
