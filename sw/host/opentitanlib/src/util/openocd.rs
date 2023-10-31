@@ -2,20 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use once_cell::sync::Lazy;
-use regex::Regex;
 use std::borrow::BorrowMut;
 use std::cell::{Cell, RefCell};
-use std::io::{self, ErrorKind, Read, Write};
+use std::io::{Read, Write};
 use std::mem::size_of;
-use std::net::{TcpStream, ToSocketAddrs};
+use std::net::TcpStream;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::{Duration, Instant};
 
 use anyhow::{bail, ensure, Context, Result};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -55,8 +54,6 @@ pub enum OpenOcdServerError {
 impl_serializable_error!(OpenOcdServerError);
 
 impl OpenOcdServer {
-    /// Delay between polls to the OpenOCD server to prevent thrashing.
-    const POLL_DELAY: Duration = Duration::from_millis(100);
     /// How long to wait for OpenOCD to get ready to accept a TCL connection.
     const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(30);
 
@@ -204,8 +201,7 @@ impl OpenOcdServer {
 
         log::info!("Connecting to OpenOCD tcl interface...");
 
-        let addr = format!("localhost:{}", openocd_port);
-        let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
+        let stream = TcpStream::connect(("localhost", openocd_port))
             .context("failed to connect to OpenOCD socket")?;
 
         self.openocd_socket_stream.set(Some(stream));
@@ -333,37 +329,6 @@ impl OpenOcdServer {
         }
 
         Ok(())
-    }
-
-    /// Poll `addr` until it is bound and a socket can connect.
-    fn wait_for_socket<A: ToSocketAddrs>(addr: A, timeout: Duration) -> io::Result<TcpStream> {
-        let start = Instant::now();
-        loop {
-            log::warn!("Attempting to make tcp connection...");
-            match TcpStream::connect(&addr) {
-                // This is the error for addresses that aren't bound
-                Err(e) if e.kind() == ErrorKind::ConnectionRefused => (),
-                // This is error has been observed in CQ.
-                Err(e) if e.kind() == ErrorKind::AddrNotAvailable => {
-                    log::warn!("Got ErrorKind::AddrInUse on client socket, odd...");
-                }
-                // All other errors (and `Ok`s) we want to know about
-                Err(e) => {
-                    log::warn!("Error: {:?}", e.kind());
-
-                    return Err(e);
-                }
-                socket => return socket,
-            }
-
-            // Delay between loops if there's enough time before timeout.
-            if start.elapsed() + Self::POLL_DELAY < timeout {
-                thread::sleep(Self::POLL_DELAY);
-            } else {
-                log::warn!("timeout");
-                return Err(ErrorKind::TimedOut.into());
-            }
-        }
     }
 
     /// Read a register: this function does not attempt to translate the
