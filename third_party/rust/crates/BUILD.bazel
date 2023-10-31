@@ -326,6 +326,12 @@ alias(
 )
 
 alias(
+    name = "scopeguard",
+    actual = "@crate_index__scopeguard-1.2.0//:scopeguard",
+    tags = ["manual"],
+)
+
+alias(
     name = "secrecy",
     actual = "@crate_index__secrecy-0.8.0//:secrecy",
     tags = ["manual"],

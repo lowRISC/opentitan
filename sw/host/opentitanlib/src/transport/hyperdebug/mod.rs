@@ -31,7 +31,7 @@ use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, Seri
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
-use crate::util::openocd::OpenOcdServer;
+use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
@@ -637,15 +637,14 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
         // HyperDebug device that we are.
         let usb_device = self.inner.usb_device.borrow();
-        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdServer::new(
-            None,
-            Some(format!(
+        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdJtagChain::new(
+            format!(
                 "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
                 include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
                 usb_device.get_vendor_id(),
                 usb_device.get_product_id(),
                 usb_device.get_serial_number(),
-            )),
+            ),
             opts,
         )?);
         *jtag = Some(Rc::clone(&new_jtag));
