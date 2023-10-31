@@ -52,7 +52,9 @@ jobs:
   displayName: "ROM E2E Tests"
   timeoutInMinutes: 180
   dependsOn: checkout
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
@@ -72,7 +74,9 @@ jobs:
   displayName: "BoB: SPI and I2C Tests"
   timeoutInMinutes: 30
   dependsOn: checkout
-  pool: FPGA
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
