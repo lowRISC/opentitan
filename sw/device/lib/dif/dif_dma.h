@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 
+#include "dma_regs.h"  // Generated.
 #include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
 
 #ifdef __cplusplus
@@ -255,16 +256,16 @@ dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
 
 typedef enum dif_dma_status_code {
   // DMA operation is active.
-  kDifDmaStatusBusy = 0x01 << 0,
+  kDifDmaStatusBusy = 0x01 << DMA_STATUS_BUSY_BIT,
   // Configured DMA operation is complete.
-  kDifDmaStatusDone = 0x01 << 1,
+  kDifDmaStatusDone = 0x01 << DMA_STATUS_DONE_BIT,
   // Set once aborted operation drains.
-  kDifDmaStatusAborted = 0x01 << 2,
+  kDifDmaStatusAborted = 0x01 << DMA_STATUS_ABORTED_BIT,
   // Error occurred during the operation.
   // Check the error_code for information about the source of the error.
-  kDifDmaStatusError = 0x01 << 3,
+  kDifDmaStatusError = 0x01 << DMA_STATUS_ERROR_BIT,
   // Set once the SHA2 digest is valid after finishing a transfer
-  kDifDmaStatusSha2DigestValid = 0x01 << 12,
+  kDifDmaStatusSha2DigestValid = 0x01 << DMA_STATUS_SHA2_DIGEST_VALID_BIT,
 } dif_dma_status_code_t;
 
 /**
@@ -282,10 +283,30 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
 
 /**
+ * Writes the DMA status register and clears the corrsponding status bits.
+ *
+ * @param dma A DMA Controller handle.
+ * @param status Status bits to be cleared.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_write(const dif_dma_t *dma,
+                                  dif_dma_status_t status);
+
+/**
+ * Clear all status bits of the status register.
+ *
+ * @param dma A DMA Controller handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_clear(const dif_dma_t *dma);
+
+/**
  * Poll the DMA status util a given flag in the register is set.
  *
  * @param dma A DMA Controller handle.
- * @param flag The flag that needs to bet set.
+ * @param flag The status that needs to bet set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -303,12 +324,12 @@ typedef enum dif_dma_error_code {
   kDifDmaErrorOpcode = 0x01 << 2,
   // Size error.
   kDifDmaErrorSize = 0x01 << 3,
-  // Completion error.
-  kDifDmaErrorCompletion = 0x01 << 4,
+  // Bus transaction error.
+  kDifDmaErrorBus = 0x01 << 4,
   // DMA enable memory config error.
   kDifDmaErrorEnableMemoryConfig = 0x01 << 5,
-  // Register config error.
-  kDifDmaErrorRegisterConfig = 0x01 << 6,
+  // Register range valid error.
+  kDifDmaErrorRangeValid = 0x01 << 6,
   // Invalid ASID error.
   kDifDmaErrorInvalidAsid = 0x01 << 7,
 } dif_dma_error_code_t;
@@ -336,22 +357,85 @@ dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
                                      uint32_t digest[]);
 
 /**
- * Clear the DMA controller state.
+ * Enable DMA controller handshake interrupt.
  *
  * @param dma A DMA Controller handle.
+ * @param enable_state Enable state. The bit position corresponds to the IRQ
+ * index.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_state_clear(const dif_dma_t *dma);
+dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma,
+                                          uint32_t enable_state);
 
 /**
- * Enable DMA controller handshack interrupt.
+ * Enable the corresponding DME handshake interrupt clearing mechanism.
  *
  * @param dma A DMA Controller handle.
+ * @param clear_state Enable interrupt clearing mechanism. The bit position
+ *                    corresponds to the IRQ index.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma);
+dif_result_t dif_dma_handshake_clear_irq(const dif_dma_t *dma,
+                                         uint32_t clear_state);
+
+/**
+ * Select the bus interface for the interrupt clearing mechanism.
+ * 0: CTN/System fabric
+ * 1: OT-internal crossbar
+ *
+ * @param dma A DMA Controller handle.
+ * @param clear_irq_bus Bus selection for the clearing mechanism. The bit
+ * position corresponds to the IRQ index.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
+                                             uint32_t clear_irq_bus);
+
+/**
+ * Address index for every interrupt. Used to configure the write address and
+ * write value for the interrupt clearing mechanism.
+ */
+typedef enum dif_dma_int_idx {
+  kDifDmaIntClearIdx0 = 0x0,
+  kDifDmaIntClearIdx1 = 0x4,
+  kDifDmaIntClearIdx2 = 0x8,
+  kDifDmaIntClearIdx3 = 0xC,
+  kDifDmaIntClearIdx4 = 0x10,
+  kDifDmaIntClearIdx5 = 0x14,
+  kDifDmaIntClearIdx6 = 0x18,
+  kDifDmaIntClearIdx7 = 0x1C,
+  kDifDmaIntClearIdx8 = 0x20,
+  kDifDmaIntClearIdx9 = 0x24,
+  kDifDmaIntClearIdx10 = 0x28,
+} dif_dma_int_idx_t;
+
+/**
+ * Set the write address for the interrupt clearing mechanism.
+ *
+ * @param dma A DMA Controller handle.
+ * @param idx Index of the selected interrupt.
+ * @param int_src_addr Address to write the interrupt clearing value to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_int_src_addr(const dif_dma_t *dma, dif_dma_int_idx_t idx,
+                                  uint32_t int_src_addr);
+
+/**
+ * Set the write value for the interrupt clearing mechanism.
+ *
+ * @param dma A DMA Controller handle.
+ * @param idx Index of the selected interrupt.
+ * @param int_src_value Value to write the interrupt clearing value to.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_int_write_value(const dif_dma_t *dma,
+                                     dif_dma_int_idx_t idx,
+                                     uint32_t int_src_value);
 
 #ifdef __cplusplus
 }  // extern "C"
