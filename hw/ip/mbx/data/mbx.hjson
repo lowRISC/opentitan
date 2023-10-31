@@ -190,6 +190,7 @@
             resval: "0x0"
           }
         ]
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_WRITE_PTR"
         desc: '''Write pointer for the next inbound data write.
