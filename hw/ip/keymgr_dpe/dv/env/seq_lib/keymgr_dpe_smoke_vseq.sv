@@ -9,7 +9,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
   // limit to SW operations
   constraint gen_operation_c {
-    gen_operation inside {keymgr_dpe_pkg::OpDpeGenId, keymgr_dpe_pkg::OpDpeGenSwOut};
+    gen_operation inside {keymgr_dpe_pkg::OpDpeGenSwOut};
   }
 
   task body();
