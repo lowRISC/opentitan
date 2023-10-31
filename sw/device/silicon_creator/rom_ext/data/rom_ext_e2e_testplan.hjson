@@ -3,126 +3,218 @@
 // SPDX-License-Identifier: Apache-2.0
 
 {
-  name: "rom_ext_e2e"
-
-  testpoints: [
+  name: rom_ext_e2e
+  github_issue_template:
+  {
+    labels:
+    [
+      Type:Task
+      Component:RomExt/E2e/Test
+    ]
+    project: OpenTitan
+    milestone: "Earlgrey ES ROM_EXT"
+    priority: P1
+  }
+  testpoints:
+  [
     {
       name: rom_ext_e2e_verified_boot_positions
-      desc: '''Verify that ROM_EXT can boot an owner stage test program in various locations.
+      desc:
+        '''
+        Verify that ROM_EXT can boot an owner stage test program in various locations.
 
-            - The test program should be launched via the OTTF.
-            - The test program should print out the `boot_log` data.
-            - The test program should be tested in the A slot, the B slot and the virtual slot.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - The test program should print out the `boot_log` data.
+        - The test program should be tested in the A slot, the B slot and the virtual slot.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20240
+      }
     }
-
     {
       name: rom_ext_e2e_verified_boot_keys
-      desc: '''Verify that ROM_EXT can boot an owner stage signed with different keys.
+      desc:
+        '''
+        Verify that ROM_EXT can boot an owner stage signed with different keys.
 
-            - The test program should be launched via the OTTF.
-            - The test program should print out the `boot_log` data.
-            - The test program should be signed with the fake `test` key, the fake `dev` key and an invalid key.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - The test program should print out the `boot_log` data.
+        - The test program should be signed with the fake `test` key, the fake `dev` key and an invalid key.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20241
+      }
     }
-
     {
       name: rom_ext_e2e_handoff_expectations
-      desc: '''Verify that ROM_EXT checks and verifies expectations.
+      desc:
+        '''
+        Verify that ROM_EXT checks and verifies expectations.
 
-            - Use JTAG to halt the CPU upon ROM_EXT entry.
-            - Use JTAG to corrupt registers known to the sec_mmio expectations.
-            - Resume execution and verify the ROM_EXT faults.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - Use JTAG to halt the CPU upon ROM_EXT entry.
+        - Use JTAG to corrupt registers known to the sec_mmio expectations.
+        - Resume execution and verify the ROM_EXT faults.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20242
+      }
     }
-
     {
       name: rom_ext_e2e_handoff_fault
-      desc: '''Verify that ROM_EXT goes to shutdown if there is a CPU fault.
+      desc:
+        '''
+        Verify that ROM_EXT goes to shutdown if there is a CPU fault.
 
-            - Write a bare-metal program that does not install its own interrupt vector.
-            - Cause CPU faults (e.g. alignment fault, invalid address, hardware interrupt).
-            - Verify that the ROM_EXT shutdown handler reports the fault.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - Write a bare-metal program that does not install its own interrupt vector.
+        - Cause CPU faults (e.g. alignment fault, invalid address, hardware interrupt).
+        - Verify that the ROM_EXT shutdown handler reports the fault.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20243
+      }
     }
-
     {
       name: rom_ext_e2e_bootsvc_empty
-      desc: '''Verify that ROM_EXT processes the BootSvcEmpty message.
+      desc:
+        '''
+        Verify that ROM_EXT processes the BootSvcEmpty message.
 
-            - The test program should be launched via the OTTF.
-            - Create a boot services empty message.
-            - Reboot.
-            - Verify the ROM_EXT response to the empty message.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - Create a boot services empty message.
+        - Reboot.
+        - Verify the ROM_EXT response to the empty message.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20244
+      }
     }
-
     {
       name: rom_ext_e2e_bootsvc_next_bl0
-      desc: '''Verify that ROM_EXT processes the BootSvcNextBl0SlotReq message.
+      desc:
+        '''
+        Verify that ROM_EXT processes the BootSvcNextBl0SlotReq message.
 
-            - The test program should be launched via the OTTF.
-            - The test program should log the side it booted over several boots.
-            - Boot on side A
-            - Create a boot services next BL0 slot request message requesting side B.
-            - Reboot.
-            - Verify the ROM_EXT booted the owner stage on side B.
-            - Reboot.
-            - Verify the ROM_EXT booted the owner stage on side A.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - The test program should log the side it booted over several boots.
+        - Boot on side A
+        - Create a boot services next BL0 slot request message requesting side B.
+        - Reboot.
+        - Verify the ROM_EXT booted the owner stage on side B.
+        - Reboot.
+        - Verify the ROM_EXT booted the owner stage on side A.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20245
+      }
     }
-
     {
       name: rom_ext_e2e_bootsvc_primary_bl0
-      desc: '''Verify that ROM_EXT processes the BootSvcPrimaryBl0SlotReq message.
+      desc:
+        '''
+        Verify that ROM_EXT processes the BootSvcPrimaryBl0SlotReq message.
 
-            - The test program should be launched via the OTTF.
-            - The test program should log the side it booted over several boots.
-            - Boot on side A
-            - Create a boot services primary BL0 slot request message requesting side B.
-            - Reboot.
-            - Verify the ROM_EXT booted the owner stage on side B.
-            - Reboot.
-            - Verify the ROM_EXT booted the owner stage on side B again.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - The test program should log the side it booted over several boots.
+        - Boot on side A
+        - Create a boot services primary BL0 slot request message requesting side B.
+        - Reboot.
+        - Verify the ROM_EXT booted the owner stage on side B.
+        - Reboot.
+        - Verify the ROM_EXT booted the owner stage on side B again.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20246
+      }
     }
-
     {
       name: rom_ext_e2e_bootsvc_bl0_sec_ver
-      desc: '''Verify that ROM_EXT processes the BootSvcMinBl0SecVerReq message.
+      desc:
+        '''
+        Verify that ROM_EXT processes the BootSvcMinBl0SecVerReq message.
 
-            - The test program should be launched via the OTTF.
-            - The test program should be signed twice: once with securtiy version N and once with version N+1.
-            - Assemble the image such that version N and N+1 are in slots A and B.
-            - Verify the ROM_EXT can boot both sides.
-            - Create a boot services minimum BL0 version message setting the version to N+1.
-            - Reboot.
-            - Verify the ROM_EXT will only boot side B.
-            '''
-      tags: ["rom_ext", "fpga", "silicon"]
+        - The test program should be launched via the OTTF.
+        - The test program should be signed twice: once with securtiy version N and once with version N+1.
+        - Assemble the image such that version N and N+1 are in slots A and B.
+        - Verify the ROM_EXT can boot both sides.
+        - Create a boot services minimum BL0 version message setting the version to N+1.
+        - Reboot.
+        - Verify the ROM_EXT will only boot side B.
+        '''
+      tags:
+      [
+        rom_ext
+        fpga
+        silicon
+      ]
       stage: V3
       tests: []
+      github:
+      {
+        url: https://github.com/lowRISC/opentitan/issues/20247
+      }
     }
   ]
 }
