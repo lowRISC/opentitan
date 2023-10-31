@@ -1,0 +1,12 @@
+{
+    "includes": [
+        "/__builtin__/opentitan.json"
+    ],
+    "interface": "qemu",
+    "spi": [
+        {
+            "name": "BOOTSTRAP",
+            "alias_of": "0"
+        }
+    ]
+}

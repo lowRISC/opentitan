@@ -14,6 +14,7 @@ use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{
     C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
 };
+use crate::transport::qemu::QEMU;
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
@@ -120,6 +121,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
                 args.usb_serial.as_deref(),
             )?);
             (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
+        }
+        "qemu" => {
+            let qemu: Box<dyn Transport> = Box::new(QEMU::new()?);
+            (qemu, Some(Path::new("/__builtin__/qemu.json")))
         }
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };

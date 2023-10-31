@@ -170,6 +170,8 @@ rust_library(
         "src/transport/proxy/mod.rs",
         "src/transport/proxy/spi.rs",
         "src/transport/proxy/uart.rs",
+        "src/transport/qemu/mod.rs",
+        "src/transport/qemu/spi.rs",
         "src/transport/ti50emulator/emu.rs",
         "src/transport/ti50emulator/gpio.rs",
         "src/transport/ti50emulator/i2c.rs",
