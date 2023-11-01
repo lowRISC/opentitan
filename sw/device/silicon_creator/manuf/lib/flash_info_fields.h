@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 typedef struct flash_info_field {
@@ -29,6 +30,9 @@ extern const flash_info_field_t kFlashInfoFieldManufState;
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;
 extern const flash_info_field_t kFlashInfoFieldOwnerSeed;
 extern const flash_info_field_t kFlashInfoFieldWaferAuthSecret;
+extern const flash_info_field_t kFlashInfoFieldUdsAttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldCdi0AttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed;
 
 /**
  * Reads info flash page field.

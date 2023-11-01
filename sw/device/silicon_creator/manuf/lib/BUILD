@@ -53,6 +53,7 @@ cc_library(
     hdrs = ["flash_info_fields.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/silicon_creator/lib:attestation",
@@ -219,6 +220,7 @@ cc_library(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:attestation",
     ],
 )
 
@@ -240,6 +242,7 @@ opentitan_test(
     },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
+        ":flash_info_fields",
         ":personalize",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
@@ -255,6 +258,7 @@ opentitan_test(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )

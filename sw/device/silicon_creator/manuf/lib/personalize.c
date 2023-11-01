@@ -19,6 +19,7 @@
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
@@ -171,22 +172,75 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
   }
   return found_error ? INTERNAL() : OK_STATUS();
 }
-
 /**
- * Writes a device-generated secret to a flash info page.
+ * Writes device-generated secret attestation key seeds to a flash info page.
  *
  * Entropy is extracted from the CSRNG instance and programmed into the target
  * flash info page.
  *
  * @param flash_state Flash controller instance.
  * @param field Info flash field location information.
- * @param len The number of uint32_t words to program starting at the begining
- * of the target flash info page.
+ * @param len The number of uint32_t words to program starting at the beginning
+ *            of the target flash info field.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
-static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
-                                        flash_info_field_t field, size_t len) {
+static status_t flash_attestation_key_seed_write(
+    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
+  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
+                                /*seed_material=*/NULL));
+
+  uint32_t seed[kAttestationSeedWords];
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
+                             /*fips_check=*/kHardenedBoolTrue));
+  TRY(entropy_csrng_uninstantiate());
+
+  // Since all seeds are on stored consecutively on the same flash info page,
+  // we only need to set up the permissions on the page, and erase it once.
+  uint32_t byte_address = 0;
+  if (field.byte_offset == 0) {
+    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+        flash_state, field.page, field.bank, field.partition, &byte_address));
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        flash_state, byte_address, field.partition, seed,
+        kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+  } else {
+    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    byte_address =
+        (field.page * device_info.bytes_per_page) + field.byte_offset;
+    TRY(flash_ctrl_testutils_write(flash_state, byte_address, field.partition,
+                                   seed, kDifFlashCtrlPartitionTypeInfo,
+                                   kAttestationSeedWords));
+  }
+
+  uint32_t seed_result[kAttestationSeedWords];
+  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
+                                seed_result, kDifFlashCtrlPartitionTypeInfo,
+                                len,
+                                /*delay=*/0));
+  bool found_error = false;
+  for (size_t i = 0; i < len; ++i) {
+    found_error |=
+        seed[i] == 0 || seed[i] == UINT32_MAX || seed[i] != seed_result[i];
+  }
+  return found_error ? INTERNAL() : OK_STATUS();
+}
+
+/**
+ * Writes a device-generated keymgr seed to the corresponding flash info page.
+ *
+ * Entropy is extracted from the CSRNG instance and programmed into the target
+ * flash info page.
+ *
+ * @param flash_state Flash controller instance.
+ * @param field Info flash field location information.
+ * @param len The number of uint32_t words to program starting at the beginning
+ *            of the target flash info field.
+ * @return OK_STATUS on success.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t flash_keymgr_secret_seed_write(
+    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
@@ -326,13 +380,24 @@ status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
-  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoFieldCreatorSeed,
-                              kFlashInfoKeySeedSizeIn32BitWords));
+  TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldCreatorSeed,
+                                     kFlashInfoKeySeedSizeIn32BitWords));
   // Provision preliminary OwnerSeed into target flash info page (with
   // expectation that SiliconOwner will rotate this value during ownership
   // transfer).
-  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoFieldOwnerSeed,
-                              kFlashInfoKeySeedSizeIn32BitWords));
+  TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldOwnerSeed,
+                                     kFlashInfoKeySeedSizeIn32BitWords));
+
+  // Provision attestation key seeds.
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldUdsAttestationKeySeed,
+                                       kAttestationSeedWords));
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldCdi0AttestationKeySeed,
+                                       kAttestationSeedWords));
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldCdi1AttestationKeySeed,
+                                       kAttestationSeedWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl,
