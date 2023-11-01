@@ -5,6 +5,15 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "aes",
+    srcs = ["aes.c"],
+    hdrs = ["aes.h"],
+    deps = [
+        "//sw/lib/sw/device/base:memory",
+    ],
+)
+
+cc_library(
     name = "prng",
     srcs = ["prng.c"],
     hdrs = ["prng.h"],

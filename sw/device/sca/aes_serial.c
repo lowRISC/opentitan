@@ -5,6 +5,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/sca/lib/aes.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
@@ -31,9 +32,14 @@
  *   - FvsR batch encrypt and generate ('e')*,
  *   - Batch encrypt alternative routine ('a')*,
  *   - Batch encrypt alternative routine, initial plaintext input ('i')*.
+ *   - Set default values for AES-based data generation ('d')*,
  * Commands marked with * are implemented in this file. Those marked with + are
  * implemented in the simple serial library. Encryption is done in AES-ECB-128
  * mode. See https://wiki.newae.com/SimpleSerial for details on the protocol.
+ *
+ * Data for running batch capture is generated according to:
+ * [DTR] Test Vector Leakage Assessment (TVLA) Derived Test Requirements (DTR)
+ * with AES
  */
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -86,14 +92,57 @@ uint8_t batch_plaintexts[kNumBatchOpsMax][kAesTextLength];
 bool sample_fixed = true;
 
 /**
- * Fixed key for fvsr key TVLA batch capture.
+ * An array to store pre-computed round keys derived from the generation key.
+ * The generation key (key_gen) is specified in [DTR] Section 5.1.
+ * This key is used for generating all pseudo-random data for batch captures.
+ * kKeyGen[kAesKeyLength] = {0x12, 0x34, 0x56, 0x78,
+ *                           0x9a, 0xbc, 0xde, 0xf1,
+ *                           0x23, 0x45, 0x67, 0x89,
+ *                           0xab, 0xcd, 0xe0, 0xf0};
  */
-uint8_t key_fixed[kAesKeyLength];
+static const uint32_t kKeyGenRoundKeys[(kAesKeyLength / 4) * 11] = {
+    0xab239a12, 0xcd45bc34, 0xe067de56, 0xf089f178, 0xbc1734ae, 0xe12c69d5,
+    0x836304da, 0x9262eb1a, 0xcb776054, 0x9d7c5039, 0x71f29195, 0x64f6947f,
+    0xd2196e0e, 0x2bb6ca9a, 0xc4b547d6, 0x6602f460, 0x528099f7, 0xd1fa4c86,
+    0xd317a2e5, 0x452321d5, 0x92c040d9, 0x8756ace0, 0xed3e298b, 0x92d7f4d5,
+    0xfc6eaeee, 0xc84f19b5, 0x3ed3edc4, 0x2bb96e9a, 0x7a86e846, 0x99511e07,
+    0x350bd835, 0xd6fd442a, 0x3c46c028, 0x47de8f91, 0x25101bc3, 0x9f49b4f0,
+    0x29155393, 0xb8ff21ae, 0x36130318, 0x79e6af1b, 0xa68f9ac9, 0xcd758aab,
+    0x88beadae, 0x8ef711be};
+
+/**
+ * Plaintext of the fixed set of fixed-vs-random-key TVLA
+ */
+static uint8_t plaintext_fixed[kAesTextLength] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+/**
+ * Key of the of the fixed set of fixed-vs-random-key TVLA
+ */
+static uint8_t key_fixed[kAesTextLength] = {0x81, 0x1E, 0x37, 0x31, 0xB0, 0x12,
+                                            0x0A, 0x78, 0x42, 0x78, 0x1E, 0x22,
+                                            0xB2, 0x5C, 0xDD, 0xF9};
+/**
+ * Plaintext of the random set of fixed-vs-random-key TVLA
+ */
+static uint8_t plaintext_random[kAesTextLength] = {
+    0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+    0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc};
+/**
+ * Key of the random set of fixed-vs-random-key TVLA
+ */
+static uint8_t key_random[kAesTextLength] = {0x53, 0x53, 0x53, 0x53, 0x53, 0x53,
+                                             0x53, 0x53, 0x53, 0x53, 0x53, 0x53,
+                                             0x53, 0x53, 0x53, 0x53};
+/**
+ * Temp ciphertext variable
+ */
+static uint8_t ciphertext_temp[kAesTextLength];
 
 /**
  * batch_plaintext for batch capture to initially set it using command.
  */
-uint8_t batch_plaintext[kAesTextLength];
+static uint8_t batch_plaintext[kAesTextLength];
 
 /**
  * Block counter variable for manually handling reseeding operations of the
@@ -249,6 +298,30 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
 }
 
 /**
+ * Advances data for fvsr-key TVLA - fixed set
+ *
+ * This function updates plaintext_fixed for fvsr-key TVLA, according
+ * to DTR recommendations.
+ */
+static void aes_serial_advance_fixed(void) {
+  aes_sw_encrypt_block(plaintext_fixed, kKeyGenRoundKeys, ciphertext_temp);
+  memcpy(plaintext_fixed, ciphertext_temp, kAesTextLength);
+}
+
+/**
+ * Advances data for fvsr-key TVLA - random set
+ *
+ * This function updates plaintext_random and key_random for fvsr-key and
+ * random TVLA, according to DTR recommendations.
+ */
+static void aes_serial_advance_random(void) {
+  aes_sw_encrypt_block(plaintext_random, kKeyGenRoundKeys, ciphertext_temp);
+  memcpy(plaintext_random, ciphertext_temp, kAesTextLength);
+  aes_sw_encrypt_block(key_random, kKeyGenRoundKeys, ciphertext_temp);
+  memcpy(key_random, ciphertext_temp, kAesTextLength);
+}
+
+/**
  * Simple serial 'b' (batch encrypt) command handler.
  *
  * This command is designed to maximize the capture rate for side-channel
@@ -289,9 +362,8 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
 
   sca_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    uint8_t plaintext[kAesTextLength];
-    prng_rand_bytes(plaintext, kAesTextLength);
-    aes_encrypt(plaintext, kAesTextLength);
+    aes_encrypt(plaintext_random, kAesTextLength);
+    aes_serial_advance_random();
   }
   sca_set_trigger_low();
 
@@ -432,14 +504,13 @@ static void aes_serial_fvsr_key_batch_generate(const uint8_t *data,
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (sample_fixed) {
       memcpy(batch_keys[i], key_fixed, kAesKeyLength);
+      memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
+      aes_serial_advance_fixed();
     } else {
-      prng_rand_bytes(batch_keys[i], kAesKeyLength);
+      memcpy(batch_keys[i], key_random, kAesKeyLength);
+      memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
+      aes_serial_advance_random();
     }
-    // Note: To decrease memory usage, plaintexts may be generated before use in
-    // every encryption operation instead of generating and storing them for all
-    // encyrption operation in a batch. Also, a new method should be selected
-    // to set sample_fixed variable.
-    prng_rand_bytes(batch_plaintexts[i], kAesTextLength);
     sample_fixed = batch_plaintexts[i][0] & 0x1;
   }
 }
@@ -521,6 +592,40 @@ static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
 }
 
 /**
+ * Simple serial 'd' (set starting values) command handler.
+ *
+ * This function sets starting values for FvsR data generation
+ * if the received value is 1.
+ * These values are specified in DTR for AES TVLA
+ *
+ * @param data Input command. For now only data == 1 resets values.
+ */
+static void aes_serial_set_default_values(const uint8_t *data,
+                                          size_t data_len) {
+  SS_CHECK(data_len == sizeof(uint32_t));
+  uint32_t command = 0;
+  command = read_32(data);
+  static const uint8_t kPlaintextFixedStart[kAesTextLength] = {
+      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+  static const uint8_t kKeyFixedStart[kAesTextLength] = {
+      0x81, 0x1E, 0x37, 0x31, 0xB0, 0x12, 0x0A, 0x78,
+      0x42, 0x78, 0x1E, 0x22, 0xB2, 0x5C, 0xDD, 0xF9};
+  static const uint8_t kPlaintextRandomStart[kAesTextLength] = {
+      0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+      0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc};
+  static const uint8_t kKeyRandomStart[kAesTextLength] = {
+      0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53,
+      0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53};
+  if (command == 1) {
+    memcpy(plaintext_fixed, kPlaintextFixedStart, kAesTextLength);
+    memcpy(key_fixed, kKeyFixedStart, kAesKeyLength);
+    memcpy(plaintext_random, kPlaintextRandomStart, kAesTextLength);
+    memcpy(key_random, kKeyRandomStart, kAesKeyLength);
+  }
+}
+
+/**
  * Initializes the AES peripheral.
  */
 static void init_aes(void) {
@@ -551,6 +656,7 @@ bool test_main(void) {
   simple_serial_register_handler('l', aes_serial_seed_lfsr);
   simple_serial_register_handler('a', aes_serial_batch_alternative_encrypt);
   simple_serial_register_handler('i', aes_serial_batch_plaintext_set);
+  simple_serial_register_handler('d', aes_serial_set_default_values);
 
   LOG_INFO("Initializing AES unit.");
   init_aes();
