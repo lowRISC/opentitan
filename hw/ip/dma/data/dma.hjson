@@ -550,7 +550,7 @@
         { bits: "27"
           name: "abort"
           swaccess: "wo"
-          hwaccess: "hro"
+          hwaccess: "hrw"
           resval: 0x0
           desc: '''
                 Aborts the DMA operation if this bit is set.

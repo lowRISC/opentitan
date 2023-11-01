@@ -237,6 +237,10 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } abort;
+    struct packed {
+      logic        d;
+      logic        de;
     } go;
   } dma_hw2reg_control_reg_t;
 
@@ -308,12 +312,12 @@ package dma_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [688:683]
-    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [682:650]
-    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [649:617]
-    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [616:584]
-    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [583:551]
-    dma_hw2reg_control_reg_t control; // [550:547]
+    dma_hw2reg_intr_state_reg_t intr_state; // [690:685]
+    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [684:652]
+    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [651:619]
+    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [618:586]
+    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [585:553]
+    dma_hw2reg_control_reg_t control; // [552:547]
     dma_hw2reg_status_reg_t status; // [546:528]
     dma_hw2reg_sha2_digest_mreg_t [15:0] sha2_digest; // [527:0]
   } dma_hw2reg_t;
