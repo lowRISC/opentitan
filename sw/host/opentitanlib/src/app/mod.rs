@@ -664,7 +664,7 @@ impl TransportWrapper {
     }
 
     /// Returns a [`Jtag`] implementation.
-    pub fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+    pub fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
         self.transport.jtag(opts)
     }
 

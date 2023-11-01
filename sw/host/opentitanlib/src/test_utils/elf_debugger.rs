@@ -5,9 +5,8 @@
 use std::collections::HashMap;
 use std::fmt::{Debug, Display};
 use std::fs;
-use std::ops::{Deref, Range};
+use std::ops::{Deref, DerefMut, Range};
 use std::path::Path;
-use std::rc::Rc;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -15,16 +14,23 @@ use object::{Object, ObjectSymbol};
 
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 
-pub struct ElfDebugger {
+pub struct ElfDebugger<'a> {
     symbols: HashMap<String, u32>,
-    jtag: Rc<dyn Jtag>,
+    jtag: Box<dyn Jtag + 'a>,
 }
 
-impl Deref for ElfDebugger {
-    type Target = dyn Jtag;
+impl<'a> Deref for ElfDebugger<'a> {
+    type Target = dyn Jtag + 'a;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
+        &*self.jtag
+    }
+}
+
+impl<'a> DerefMut for ElfDebugger<'a> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
         self.jtag()
     }
 }
@@ -118,8 +124,8 @@ impl Display for ResolvedAddress {
     }
 }
 
-impl ElfDebugger {
-    pub fn attach(jtag: Rc<dyn Jtag>) -> Self {
+impl<'a> ElfDebugger<'a> {
+    pub fn attach(jtag: Box<dyn Jtag + 'a>) -> Self {
         Self {
             symbols: HashMap::new(),
             jtag,
@@ -136,10 +142,14 @@ impl ElfDebugger {
         Ok(())
     }
 
+    pub fn disconnect(&mut self) -> Result<()> {
+        self.jtag.disconnect()
+    }
+
     /// Get the underlying JTAG interface.
     #[inline]
-    pub fn jtag(&self) -> &(dyn Jtag + 'static) {
-        &*self.jtag
+    pub fn jtag(&mut self) -> &mut (dyn Jtag + 'a) {
+        &mut *self.jtag
     }
 
     /// Resolve a symbolic address.
@@ -163,21 +173,21 @@ impl ElfDebugger {
     /// Read a RISC-V register.
     ///
     /// This is a convience wrapper around `read_riscv_reg` provided by the JTAG trait.
-    pub fn read_reg(&self, reg: impl Into<RiscvReg>) -> Result<u32> {
+    pub fn read_reg(&mut self, reg: impl Into<RiscvReg>) -> Result<u32> {
         self.read_riscv_reg(&reg.into())
     }
 
     /// Write a RISC-V register.
     ///
     /// This is a convience wrapper around `write_riscv_reg` provided by the JTAG trait.
-    pub fn write_reg(&self, reg: impl Into<RiscvReg>, value: u32) -> Result<()> {
+    pub fn write_reg(&mut self, reg: impl Into<RiscvReg>, value: u32) -> Result<()> {
         self.write_riscv_reg(&reg.into(), value)
     }
 
     /// Read a 32-bit word from memory.
     ///
     /// This is a convience wrapper around `read_memory32` provided by the JTAG trait.
-    pub fn read_u32(&self, addr: u32) -> Result<u32> {
+    pub fn read_u32(&mut self, addr: u32) -> Result<u32> {
         let mut ret = [0];
         self.read_memory32(addr, &mut ret)?;
         Ok(ret[0])
@@ -186,17 +196,17 @@ impl ElfDebugger {
     /// Write a 32-bit word to memory.
     ///
     /// This is a convience wrapper around `write_memory32` provided by the JTAG trait.
-    pub fn write_u32(&self, addr: u32, value: u32) -> Result<()> {
+    pub fn write_u32(&mut self, addr: u32, value: u32) -> Result<()> {
         self.write_memory32(addr, &[value])
     }
 
     /// Read the program counter.
-    pub fn get_pc(&self) -> Result<u32> {
+    pub fn get_pc(&mut self) -> Result<u32> {
         self.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))
     }
 
     /// Set the program counter to the given address.
-    pub fn set_pc(&self, address: impl Into<SymbolicAddress>) -> Result<()> {
+    pub fn set_pc(&mut self, address: impl Into<SymbolicAddress>) -> Result<()> {
         let resolved = self.resolve(address)?;
         log::info!("Set PC to {}", resolved);
         self.write_reg(RiscvCsr::DPC, resolved.resolution)?;
@@ -204,7 +214,7 @@ impl ElfDebugger {
     }
 
     /// Set a breakpoint at the given address.
-    pub fn set_breakpoint(&self, address: impl Into<SymbolicAddress>) -> Result<()> {
+    pub fn set_breakpoint(&mut self, address: impl Into<SymbolicAddress>) -> Result<()> {
         let resolved = self.resolve(address)?;
         log::info!("Set breakpoint at {}", resolved);
         self.jtag.set_breakpoint(resolved.resolution, true)?;
@@ -212,7 +222,7 @@ impl ElfDebugger {
     }
 
     /// Assert the current program counter is at the given address.
-    pub fn expect_pc(&self, address: impl Into<SymbolicAddress>) -> Result<()> {
+    pub fn expect_pc(&mut self, address: impl Into<SymbolicAddress>) -> Result<()> {
         let resolved = self.resolve(address)?;
         let pc = self.get_pc()?;
         log::info!("PC = {:#x}, expected PC = {}", pc, resolved);
@@ -223,7 +233,7 @@ impl ElfDebugger {
     }
 
     /// Assert the current program counter is within the given range.
-    pub fn expect_pc_range(&self, range: Range<impl Into<SymbolicAddress>>) -> Result<()> {
+    pub fn expect_pc_range(&mut self, range: Range<impl Into<SymbolicAddress>>) -> Result<()> {
         let start = self.resolve(range.start)?;
         let end = self.resolve(range.end)?;
         let pc = self.get_pc()?;
@@ -241,7 +251,11 @@ impl ElfDebugger {
     ///
     /// This function will also fail if a pre-existing breakpoint is hit before the target
     /// address is hit.
-    pub fn run_until(&self, address: impl Into<SymbolicAddress>, timeout: Duration) -> Result<()> {
+    pub fn run_until(
+        &mut self,
+        address: impl Into<SymbolicAddress>,
+        timeout: Duration,
+    ) -> Result<()> {
         let resolved = self.resolve(address)?;
         log::info!("Run until {}", resolved);
         self.jtag.set_breakpoint(resolved.resolution, true)?;
@@ -256,14 +270,14 @@ impl ElfDebugger {
     ///
     /// This implementation does not use the debugging information from ELF files, and only uses the RA register,
     /// so it only works when RA has not been overriden, e.g. at the preamble of the function.
-    pub fn finish(&self, timeout: Duration) -> Result<()> {
+    pub fn finish(&mut self, timeout: Duration) -> Result<()> {
         let ra = self.read_reg(RiscvGpr::RA)?;
         self.run_until(ra, timeout)
     }
 
     /// Call a function with the given arguments.
     pub fn call(
-        &self,
+        &mut self,
         address: impl Into<SymbolicAddress>,
         args: &[u32],
         timeout: Duration,

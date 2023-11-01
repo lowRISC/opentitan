@@ -34,7 +34,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -46,7 +46,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         true,

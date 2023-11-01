@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use crate::app::TransportWrapper;
@@ -26,7 +25,7 @@ pub struct JtagParams {
 }
 
 impl JtagParams {
-    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Jtag>> {
+    pub fn create<'t>(&self, transport: &'t TransportWrapper) -> Result<Box<dyn Jtag + 't>> {
         let jtag = transport.jtag(self)?;
         Ok(jtag)
     }
@@ -49,19 +48,19 @@ impl_serializable_error!(JtagError);
 /// A trait which represents a JTAG interface.
 pub trait Jtag {
     /// Connect to the given JTAG TAP.
-    fn connect(&self, tap: JtagTap) -> Result<()>;
+    fn connect(&mut self, tap: JtagTap) -> Result<()>;
     /// Disconnect from the TAP.
-    fn disconnect(&self) -> Result<()>;
+    fn disconnect(&mut self) -> Result<()>;
     /// Get TAP we are currently connected too.
     fn tap(&self) -> Option<JtagTap>;
 
     // Commands
 
     /// Read a lifecycle controller register.
-    fn read_lc_ctrl_reg(&self, reg: &LcCtrlReg) -> Result<u32>;
+    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32>;
 
     /// Write a value to a lifecycle controller register.
-    fn write_lc_ctrl_reg(&self, reg: &LcCtrlReg, value: u32) -> Result<()>;
+    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()>;
 
     /// Read bytes/words from memory into the provided buffer.
     /// When reading bytes, each memory access is 8 bits.
@@ -69,42 +68,42 @@ pub trait Jtag {
     /// does not support unaligned memory accesses, this function will fail.
     ///
     /// On success, returns the number of bytes/words read.
-    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<usize>;
-    fn read_memory32(&self, addr: u32, buf: &mut [u32]) -> Result<usize>;
+    fn read_memory(&mut self, addr: u32, buf: &mut [u8]) -> Result<usize>;
+    fn read_memory32(&mut self, addr: u32, buf: &mut [u32]) -> Result<usize>;
 
     /// Write bytes/words to memory.
-    fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()>;
-    fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()>;
+    fn write_memory(&mut self, addr: u32, buf: &[u8]) -> Result<()>;
+    fn write_memory32(&mut self, addr: u32, buf: &[u32]) -> Result<()>;
 
     /// Halt execution.
-    fn halt(&self) -> Result<()>;
+    fn halt(&mut self) -> Result<()>;
 
     /// Wait until the target halt. This does NOT halt the target on timeout.
-    fn wait_halt(&self, timeout: Duration) -> Result<()>;
+    fn wait_halt(&mut self, timeout: Duration) -> Result<()>;
 
     /// Resume execution at its current code position.
-    fn resume(&self) -> Result<()>;
+    fn resume(&mut self) -> Result<()>;
     /// Resume execution at the specified address.
-    fn resume_at(&self, addr: u32) -> Result<()>;
+    fn resume_at(&mut self, addr: u32) -> Result<()>;
 
     /// Single-step the target at its current code position.
-    fn step(&self) -> Result<()>;
+    fn step(&mut self) -> Result<()>;
     /// Single-step the target at the specified address.
-    fn step_at(&self, addr: u32) -> Result<()>;
+    fn step_at(&mut self, addr: u32) -> Result<()>;
 
     /// Reset the target as hard as possible.
     /// If run is true, the target will start running code immediately
     /// after reset, otherwise it will be halted immediately.
-    fn reset(&self, run: bool) -> Result<()>;
+    fn reset(&mut self, run: bool) -> Result<()>;
 
     /// Read/write a RISC-V register
-    fn read_riscv_reg(&self, reg: &RiscvReg) -> Result<u32>;
-    fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()>;
+    fn read_riscv_reg(&mut self, reg: &RiscvReg) -> Result<u32>;
+    fn write_riscv_reg(&mut self, reg: &RiscvReg, val: u32) -> Result<()>;
 
     /// Set a breakpoint at the given address.
-    fn set_breakpoint(&self, addr: u32, hw: bool) -> Result<()>;
-    fn remove_breakpoint(&self, addr: u32) -> Result<()>;
-    fn remove_all_breakpoints(&self) -> Result<()>;
+    fn set_breakpoint(&mut self, addr: u32, hw: bool) -> Result<()>;
+    fn remove_breakpoint(&mut self, addr: u32) -> Result<()>;
+    fn remove_all_breakpoints(&mut self) -> Result<()>;
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.

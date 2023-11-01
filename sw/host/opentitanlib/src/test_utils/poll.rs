@@ -18,9 +18,9 @@ use anyhow::bail;
 /// or `None` to continue polling.
 ///
 /// `delay` can be used to prevent retrying the operation too frequently.
-pub fn poll_until<F>(timeout: Duration, delay: Duration, f: F) -> anyhow::Result<()>
+pub fn poll_until<F>(timeout: Duration, delay: Duration, mut f: F) -> anyhow::Result<()>
 where
-    F: Fn() -> anyhow::Result<bool>,
+    F: FnMut() -> anyhow::Result<bool>,
 {
     let start = Instant::now();
 

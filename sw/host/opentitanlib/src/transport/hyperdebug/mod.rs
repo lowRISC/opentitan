@@ -261,7 +261,6 @@ impl<T: Flavor> Hyperdebug<T> {
                 selected_spi: Cell::new(0),
                 i2cs: Default::default(),
                 uarts: Default::default(),
-                jtag: Default::default(),
             }),
             current_firmware_version,
             phantom: PhantomData,
@@ -342,7 +341,6 @@ pub struct Inner {
     selected_spi: Cell<u8>,
     i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
-    jtag: RefCell<Option<Rc<dyn Jtag>>>,
 }
 
 impl Inner {
@@ -625,11 +623,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
-    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
-        let mut jtag = self.inner.jtag.borrow_mut();
-        if let Some(existing_jtag) = jtag.as_ref() {
-            return Ok(Rc::clone(existing_jtag));
-        }
+    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
         ensure!(
             self.cmsis_interface.is_some(),
             TransportError::InvalidInterface(TransportInterfaceType::Jtag),
@@ -637,7 +631,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
         // HyperDebug device that we are.
         let usb_device = self.inner.usb_device.borrow();
-        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdJtagChain::new(
+        let new_jtag: Box<dyn Jtag> = Box::new(OpenOcdJtagChain::new(
             format!(
                 "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
                 include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
@@ -647,7 +641,6 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             ),
             opts,
         )?);
-        *jtag = Some(Rc::clone(&new_jtag));
         Ok(new_jtag)
     }
 }

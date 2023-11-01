@@ -43,17 +43,22 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
-    ExternalClock::enable(&*jtag, ClockSpeed::High).context("failed to enable external clock")?;
+    ExternalClock::enable(&mut *jtag, ClockSpeed::High)
+        .context("failed to enable external clock")?;
 
     // Read and write memory to verify connection.
 
     // Check we can read the MMIO system memory region by reading the LC state.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
+    wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED,
+    )?;
     let mut encoded_lc_state = [0u32];
     jtag.read_memory32(
         top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,

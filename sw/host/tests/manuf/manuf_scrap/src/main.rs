@@ -30,7 +30,7 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, and connect to it.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check the initial LC state.
@@ -44,7 +44,7 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::Scrap,
         None,
         /*use_external_clk=*/ false,

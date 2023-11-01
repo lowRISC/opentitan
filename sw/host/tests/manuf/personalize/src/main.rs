@@ -122,12 +122,16 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     }
 
     // Connect to JTAG LC TAP.
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check the current LC state is Dev or Prod.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
+    wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED,
+    )?;
     let valid_lc_states = HashSet::from([
         DifLcCtrlState::Dev.redundant_encoding(),
         DifLcCtrlState::Prod.redundant_encoding(),
@@ -143,7 +147,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     // reconnect to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::Rma,
         Some(rma_unlock_token),
         /*use_external_clk=*/ false,
@@ -153,7 +157,11 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     // Check the LC state is RMA.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
+    wait_for_status(
+        &mut *jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::INITIALIZED,
+    )?;
     assert_eq!(
         jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
         DifLcCtrlState::Rma.redundant_encoding(),

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::cell::Cell;
 use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
 use std::net::TcpStream;
@@ -214,9 +213,9 @@ pub struct OpenOcdJtagChain {
     /// JTAG parameters.
     opts: JtagParams,
     /// OpenOCD server instance.
-    openocd_server: Cell<Option<OpenOcd>>,
+    openocd_server: Option<OpenOcd>,
     /// JTAG TAP OpenOCD is connected to.
-    jtag_tap: Cell<Option<JtagTap>>,
+    jtag_tap: Option<JtagTap>,
 }
 
 /// Errors related to the OpenOCD server.
@@ -243,9 +242,9 @@ impl OpenOcdJtagChain {
     }
 
     /// Spawn the OpenOCD server and connect to it.
-    fn start(&self, tap: JtagTap) -> Result<()> {
+    fn start(&mut self, tap: JtagTap) -> Result<()> {
         // Check if a server was already started.
-        if self.openocd_server.take().is_some() {
+        if self.openocd_server.is_some() {
             bail!("OpenOCD server already running");
         }
 
@@ -261,18 +260,18 @@ impl OpenOcdJtagChain {
             JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
             JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
         };
-        self.jtag_tap.set(Some(tap));
+        self.jtag_tap = Some(tap);
         openocd.execute(target)?;
 
         // Finish initialisation.
         openocd.execute("init")?;
 
-        self.openocd_server.replace(Some(openocd));
+        self.openocd_server = Some(openocd);
 
         Ok(())
     }
 
-    fn stop(&self) -> Result<()> {
+    fn stop(&mut self) -> Result<()> {
         log::info!("Stopping OpenOCD...");
 
         let Some(server) = self.openocd_server.take() else {
@@ -281,7 +280,7 @@ impl OpenOcdJtagChain {
         };
 
         // Cleanup TAP selection.
-        self.jtag_tap.set(None);
+        self.jtag_tap = None;
 
         server.shutdown()?;
 
@@ -289,7 +288,7 @@ impl OpenOcdJtagChain {
     }
 
     /// Send a TCL command to OpenOCD and wait for its response.
-    fn send_tcl_cmd(&self, cmd: &str) -> Result<String> {
+    fn send_tcl_cmd(&mut self, cmd: &str) -> Result<String> {
         // Take the server. The server will not be replaced on communication
         // errors, causing future commands to also fail.
         let Some(mut server) = self.openocd_server.take() else {
@@ -297,11 +296,11 @@ impl OpenOcdJtagChain {
         };
 
         let ret = server.execute(cmd)?;
-        self.openocd_server.replace(Some(server));
+        self.openocd_server = Some(server);
         Ok(ret)
     }
 
-    fn read_memory_impl<T: ParseInt>(&self, addr: u32, buf: &mut [T]) -> Result<usize> {
+    fn read_memory_impl<T: ParseInt>(&mut self, addr: u32, buf: &mut [T]) -> Result<usize> {
         // Ibex does not have a MMU so always tell OpenOCD that we are using physical addresses
         // otherwise it will try to translate the address through the (non-existent) MMU
         let cmd = format!(
@@ -322,7 +321,7 @@ impl OpenOcdJtagChain {
         })
     }
 
-    fn write_memory_impl<T: ToString>(&self, addr: u32, bigbuf: &[T]) -> Result<()> {
+    fn write_memory_impl<T: ToString>(&mut self, addr: u32, bigbuf: &[T]) -> Result<()> {
         const CHUNK_SIZE: usize = 1024;
         for (idx, buf) in bigbuf.chunks(CHUNK_SIZE).enumerate() {
             // Convert data to space-separated strings.
@@ -346,7 +345,7 @@ impl OpenOcdJtagChain {
     /// Read a register: this function does not attempt to translate the
     /// name or number of the register. If force is set, bypass OpenOCD's
     /// register cache.
-    fn read_register<T: ParseInt>(&self, reg_name: &str, force: bool) -> Result<T> {
+    fn read_register<T: ParseInt>(&mut self, reg_name: &str, force: bool) -> Result<T> {
         let cmd = format!(
             "get_reg {} {{ {} }}",
             if force { "-force" } else { "" },
@@ -367,7 +366,7 @@ impl OpenOcdJtagChain {
         ))
     }
 
-    fn write_register<T: ToString>(&self, reg_name: &str, value: T) -> Result<()> {
+    fn write_register<T: ToString>(&mut self, reg_name: &str, value: T) -> Result<()> {
         let cmd = format!("set_reg {{ {reg_name} {} }}", T::to_string(&value));
         let response = self.send_tcl_cmd(cmd.as_str())?;
         if !response.is_empty() {
@@ -379,22 +378,22 @@ impl OpenOcdJtagChain {
 }
 
 impl Jtag for OpenOcdJtagChain {
-    fn connect(&self, tap: JtagTap) -> Result<()> {
+    fn connect(&mut self, tap: JtagTap) -> Result<()> {
         self.start(tap)
     }
 
-    fn disconnect(&self) -> Result<()> {
+    fn disconnect(&mut self) -> Result<()> {
         self.stop()
     }
 
     fn tap(&self) -> Option<JtagTap> {
-        self.jtag_tap.get()
+        self.jtag_tap
     }
 
-    fn read_lc_ctrl_reg(&self, reg: &LcCtrlReg) -> Result<u32> {
+    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::LcTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::LcTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_read 0x{reg_offset:x}");
@@ -407,10 +406,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(value)
     }
 
-    fn write_lc_ctrl_reg(&self, reg: &LcCtrlReg, value: u32) -> Result<()> {
+    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::LcTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::LcTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_write 0x{reg_offset:x} 0x{value:x}");
@@ -423,42 +422,42 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn read_memory(&self, addr: u32, buf: &mut [u8]) -> Result<usize> {
+    fn read_memory(&mut self, addr: u32, buf: &mut [u8]) -> Result<usize> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.read_memory_impl(addr, buf)
     }
 
-    fn read_memory32(&self, addr: u32, buf: &mut [u32]) -> Result<usize> {
+    fn read_memory32(&mut self, addr: u32, buf: &mut [u32]) -> Result<usize> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.read_memory_impl(addr, buf)
     }
 
-    fn write_memory(&self, addr: u32, buf: &[u8]) -> Result<()> {
+    fn write_memory(&mut self, addr: u32, buf: &[u8]) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.write_memory_impl(addr, buf)
     }
 
-    fn write_memory32(&self, addr: u32, buf: &[u32]) -> Result<()> {
+    fn write_memory32(&mut self, addr: u32, buf: &[u32]) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.write_memory_impl(addr, buf)
     }
 
-    fn halt(&self) -> Result<()> {
+    fn halt(&mut self) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let response = self.send_tcl_cmd("halt")?;
         if !response.is_empty() {
@@ -468,10 +467,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn wait_halt(&self, timeout: Duration) -> Result<()> {
+    fn wait_halt(&mut self, timeout: Duration) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let cmd = format!("wait_halt {}", timeout.as_millis());
         let response = self.send_tcl_cmd(cmd.as_str())?;
@@ -481,10 +480,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn resume(&self) -> Result<()> {
+    fn resume(&mut self) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let response = self.send_tcl_cmd("resume")?;
         if !response.is_empty() {
@@ -494,10 +493,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn resume_at(&self, addr: u32) -> Result<()> {
+    fn resume_at(&mut self, addr: u32) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let cmd = format!("resume 0x{:x}", addr);
         let response = self.send_tcl_cmd(&cmd)?;
@@ -508,10 +507,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn reset(&self, run: bool) -> Result<()> {
+    fn reset(&mut self, run: bool) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let cmd = format!("reset {}", if run { "run" } else { "halt" });
         let response = self.send_tcl_cmd(&cmd)?;
@@ -522,10 +521,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn step(&self) -> Result<()> {
+    fn step(&mut self) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let response = self.send_tcl_cmd("step")?;
         if !response.is_empty() {
@@ -535,10 +534,10 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn step_at(&self, addr: u32) -> Result<()> {
+    fn step_at(&mut self, addr: u32) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         let cmd = format!("step 0x{:x}", addr);
         let response = self.send_tcl_cmd(&cmd)?;
@@ -549,23 +548,23 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn read_riscv_reg(&self, reg: &RiscvReg) -> Result<u32> {
+    fn read_riscv_reg(&mut self, reg: &RiscvReg) -> Result<u32> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.read_register::<u32>(reg.name(), true)
     }
 
-    fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()> {
+    fn write_riscv_reg(&mut self, reg: &RiscvReg, val: u32) -> Result<()> {
         ensure!(
-            matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
-            JtagError::Tap(self.jtag_tap.get().unwrap())
+            matches!(self.jtag_tap.unwrap(), JtagTap::RiscvTap),
+            JtagError::Tap(self.jtag_tap.unwrap())
         );
         self.write_register(reg.name(), val)
     }
 
-    fn set_breakpoint(&self, address: u32, hw: bool) -> Result<()> {
+    fn set_breakpoint(&mut self, address: u32, hw: bool) -> Result<()> {
         let cmd = format!("bp {:#x} 2{}", address, if hw { " hw" } else { "" });
         let response = self.send_tcl_cmd(&cmd)?;
         if !response.starts_with("breakpoint set at ") {
@@ -574,7 +573,7 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn remove_breakpoint(&self, addr: u32) -> Result<()> {
+    fn remove_breakpoint(&mut self, addr: u32) -> Result<()> {
         let cmd = format!("rbp {:#x}", addr);
         let response = self.send_tcl_cmd(&cmd)?;
         if !response.is_empty() {
@@ -583,7 +582,7 @@ impl Jtag for OpenOcdJtagChain {
         Ok(())
     }
 
-    fn remove_all_breakpoints(&self) -> Result<()> {
+    fn remove_all_breakpoints(&mut self) -> Result<()> {
         let response = self.send_tcl_cmd("rbp all")?;
         if !response.is_empty() {
             bail!("unexpected response: '{response}'");

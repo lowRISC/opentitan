@@ -35,14 +35,14 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
     log::info!("Halting core");
     jtag.halt()?;
 
     // Load program on the device.
-    let sram_prog_info = opts.sram_program.load(&jtag)?;
+    let sram_prog_info = opts.sram_program.load(&mut *jtag)?;
 
     // Corrupt program if asked to: mModify a random word in the code, not too close to the
     // starting point so that the CRT can still verify the CRC.
@@ -57,7 +57,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
 
     // Execute and check execution status.
     let exec_res = execute_sram_program(
-        &jtag,
+        &mut *jtag,
         &sram_prog_info,
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
     )?;
