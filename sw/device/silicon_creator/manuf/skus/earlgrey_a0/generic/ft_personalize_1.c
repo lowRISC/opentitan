@@ -31,22 +31,28 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
+/**
+ * Provision OTP Secret1 partition and complete provisioning of OTP CreatorSwCfg
+ * partition.
+ */
+static status_t provision(void) {
+  if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
+    TRY(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
+  }
+  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
+    TRY(manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
+  }
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
   // Check we are in a mission mode LC state (i.e., DEV, PROD, or PROD_END).
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
 
-  // Provision OTP Secret1 partition and keymgr and complete provisioning of OTP
-  // CreatorSwCfg partition.
-  if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
-  }
-  if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(
-        manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
-    CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
-  }
+  CHECK_STATUS_OK(provision());
 
   return true;
 }

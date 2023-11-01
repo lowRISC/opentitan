@@ -48,8 +48,14 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
+/**
+ * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg partitions.
+ *
+ * Note: CreatorSwCfg partition is not locked yet, as the flash scrambling OTP
+ * field is not provisioned until after the Secret1 partition is provisioned
+ * during personalization.
+ */
 static status_t provision(void) {
-  LOG_INFO("FT SRAM provisioning start.");
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
@@ -67,7 +73,6 @@ bool sram_main(void) {
   CHECK_STATUS_OK(
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
-  // Process provisioning commands.
   CHECK_STATUS_OK(provision());
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission

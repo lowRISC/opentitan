@@ -54,14 +54,14 @@ static void sw_reset(void) {
 }
 
 /**
- * Provision OTP Secret1 & 2 partitions and keymgr flash info pages.
+ * Provision OTP Secret2 partition and keymgr flash info pages (1, 2, and 4).
  */
-status_t personalize(ujson_t *uj) {
+static status_t personalize(ujson_t *uj) {
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     LOG_INFO("Waiting for FT provisioning data ...");
-    CHECK_STATUS_OK(ujson_deserialize_manuf_perso_data_in_t(uj, &in_data));
-    CHECK_STATUS_OK(manuf_personalize_device_secrets(
-        &flash_ctrl_state, &lc_ctrl, &otp_ctrl, &in_data, &out_data));
+    TRY(ujson_deserialize_manuf_perso_data_in_t(uj, &in_data));
+    TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
+                                         &in_data, &out_data));
     LOG_INFO("Exporting FT provisioning data ...");
     RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, &out_data);
     // We need to reset the chip here to activate the keymgr seeds.

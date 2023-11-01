@@ -116,13 +116,13 @@ static status_t wafer_auth_secret_flash_info_page_write(
   return OK_STATUS();
 }
 
+/**
+ * Provision flash info pages 0 and 3, and OTP Secret0 partition.
+ */
 static status_t provision(ujson_t *uj) {
-  // Get provisioning data over console.
   LOG_INFO("Waiting for CP provisioning data ...");
   manuf_cp_provisioning_data_t provisioning_data;
   TRY(ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
-
-  // Provision flash info pages 0 and 3, and OTP SECRET1 partition.
   TRY(device_id_and_manuf_state_flash_info_page_erase(&provisioning_data));
   TRY(wafer_auth_secret_flash_info_page_erase(&provisioning_data));
   TRY(device_id_and_manuf_state_flash_info_page_write(&provisioning_data));
@@ -130,7 +130,6 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
                                          &provisioning_data));
   LOG_INFO("CP provisioning done.");
-
   return OK_STATUS();
 }
 
