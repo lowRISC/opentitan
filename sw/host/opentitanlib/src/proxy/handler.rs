@@ -304,6 +304,14 @@ impl<'a> TransportCommandHandler<'a> {
             Request::I2c { id, command } => {
                 let instance = self.transport.i2c(id)?;
                 match command {
+                    I2cRequest::SetModeHost => {
+                        instance.set_mode(i2c::Mode::Host)?;
+                        Ok(Response::I2c(I2cResponse::SetModeHost))
+                    }
+                    I2cRequest::SetModeDevice { addr } => {
+                        instance.set_mode(i2c::Mode::Device(*addr))?;
+                        Ok(Response::I2c(I2cResponse::SetModeDevice))
+                    }
                     I2cRequest::GetMaxSpeed => {
                         let speed = instance.get_max_speed()?;
                         Ok(Response::I2c(I2cResponse::GetMaxSpeed { speed }))
@@ -353,6 +361,15 @@ impl<'a> TransportCommandHandler<'a> {
                         Ok(Response::I2c(I2cResponse::RunTransaction {
                             transaction: resps,
                         }))
+                    }
+                    I2cRequest::GetDeviceStatus { timeout_millis } => {
+                        let status = instance
+                            .get_device_status(Duration::from_millis(*timeout_millis as u64))?;
+                        Ok(Response::I2c(I2cResponse::GetDeviceStatus { status }))
+                    }
+                    I2cRequest::PrepareReadData { data, sticky } => {
+                        instance.prepare_read_data(data, *sticky)?;
+                        Ok(Response::I2c(I2cResponse::PrepareReadData))
                     }
                 }
             }

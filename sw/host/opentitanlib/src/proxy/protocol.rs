@@ -10,6 +10,7 @@ use crate::io::emu::{EmuState, EmuValue};
 use crate::io::gpio::{
     ClockNature, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
+use crate::io::i2c::DeviceStatus;
 use crate::io::spi::{MaxSizes, TransferMode};
 use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
@@ -229,6 +230,10 @@ pub enum I2cTransferResponse {
 
 #[derive(Serialize, Deserialize)]
 pub enum I2cRequest {
+    SetModeHost,
+    SetModeDevice {
+        addr: u8,
+    },
     GetMaxSpeed,
     SetMaxSpeed {
         value: u32,
@@ -237,10 +242,19 @@ pub enum I2cRequest {
         address: Option<u8>,
         transaction: Vec<I2cTransferRequest>,
     },
+    GetDeviceStatus {
+        timeout_millis: u32,
+    },
+    PrepareReadData {
+        data: Vec<u8>,
+        sticky: bool,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
 pub enum I2cResponse {
+    SetModeHost,
+    SetModeDevice,
     GetMaxSpeed {
         speed: u32,
     },
@@ -248,6 +262,10 @@ pub enum I2cResponse {
     RunTransaction {
         transaction: Vec<I2cTransferResponse>,
     },
+    GetDeviceStatus {
+        status: DeviceStatus,
+    },
+    PrepareReadData,
 }
 
 #[derive(Serialize, Deserialize)]
