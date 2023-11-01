@@ -378,9 +378,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   end
 
   localparam int AdvOpIdx = 0;
-  localparam int IdOpIdx  = 1;
-  localparam int GenOpIdx = 2;
-  wire [2:0] op_enables = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o,
+  localparam int GenOpIdx = 1;
+  wire [1:0] op_enables = {tb.dut.u_ctrl.gen_en_o,
                            tb.dut.u_ctrl.adv_en_o};
   kmac_pkg::app_rsp_t invalid_kmac_rsp;
   logic [2:0] force_sideload_valids, pre_sideload_valids;
@@ -413,7 +412,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds,
                                            $countones(force_cmds) == 1;
                                            // this CM only applies to adv or gen.
-                                           force_cmds[IdOpIdx] == 0;
                                            force_cmds != op_enables;, , msg_id)
         inject_cmd_err(force_cmds);
       end
@@ -448,20 +446,24 @@ interface keymgr_dpe_if(input clk, input rst_n);
         release tb.dut.u_sideload_ctrl.valids;
       end
       FaultKeyIntgError: begin
-        pre_internal_key = tb.dut.u_ctrl.key_state_q;
-        // flip up to 2 bits
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_internal_key,
-                                           $countones(force_internal_key) inside {1, 2};, , msg_id)
-        force_internal_key = force_internal_key ^ pre_internal_key;
+        // TODO(opentitan-integrated/issues/669):
+        // re-evalute this key logic, as key_state_q does not exist
+        // in keymgr_dpe
 
-        force tb.dut.u_ctrl.key_state_q = force_internal_key;
-        @(posedge clk);
+        //pre_internal_key = tb.dut.u_ctrl.key_state_q;
+        //// flip up to 2 bits
+        //`DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_internal_key,
+        //                                   $countones(force_internal_key) inside {1, 2};, , msg_id)
+        //force_internal_key = force_internal_key ^ pre_internal_key;
 
-        if ($urandom_range(0, 1)) begin
-          force tb.dut.u_ctrl.key_state_q = pre_internal_key;
-          @(posedge clk);
-        end
-        release tb.dut.u_ctrl.key_state_q;
+        //force tb.dut.u_ctrl.key_state_q = force_internal_key;
+        //@(posedge clk);
+
+        //if ($urandom_range(0, 1)) begin
+        //  force tb.dut.u_ctrl.key_state_q = pre_internal_key;
+        //  @(posedge clk);
+        //end
+        //release tb.dut.u_ctrl.key_state_q;
       end
       default: `uvm_fatal(msg_id, "impossible value")
     endcase
@@ -474,7 +476,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
                                 prev_cmds, force_cmds), UVM_LOW)
     // these signals are wires, need force and then release at reset
     if (force_cmds[AdvOpIdx]) force tb.dut.u_ctrl.adv_en_o = 1;
-    if (force_cmds[IdOpIdx])  force tb.dut.u_ctrl.id_en_o  = 1;
     if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = 1;
     // if in current cycle, kmac_data_rsp is unknown, assign it with a random value to
     // avoid X propagation, because forcing *en_o may cause design to read `kmac_data_i`.
@@ -492,13 +493,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
     if ($urandom_range(0, 1)) begin
       if (force_cmds[AdvOpIdx]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
-      if (force_cmds[IdOpIdx])  force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
-      if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
+      if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[1];
       @(posedge clk);
     end
 
     if (force_cmds[AdvOpIdx]) release tb.dut.u_ctrl.adv_en_o;
-    if (force_cmds[IdOpIdx])  release tb.dut.u_ctrl.id_en_o;
     if (force_cmds[GenOpIdx]) release tb.dut.u_ctrl.gen_en_o;
   endtask
 
