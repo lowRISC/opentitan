@@ -23,7 +23,7 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
-#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/consts.h"
+#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/flash_info_permissions.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
