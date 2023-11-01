@@ -196,6 +196,7 @@ module dma
 
   // Adapter from the DMA to Host
   tlul_adapter_host #(
+    .MAX_REQS(NUM_MAX_OUTSTANDING_REQS),
     .EnableDataIntgGen(EnableDataIntgGen)
   ) u_dma_host_tlul_host (
     .clk_i          ( gated_clk                        ),
@@ -221,6 +222,7 @@ module dma
 
   // Adapter from the DMA to the CTN
   tlul_adapter_host #(
+    .MAX_REQS(NUM_MAX_OUTSTANDING_REQS),
     .EnableDataIntgGen(EnableDataIntgGen)
   ) u_dma_ctn_tlul_host (
     .clk_i          ( gated_clk                        ),
@@ -1296,6 +1298,10 @@ module dma
 
     hw2reg.status.aborted.de = cfg_abort_en && (ctrl_state_d == DmaIdle);
     hw2reg.status.aborted.d  = 1'b1;
+
+    // Clear the control.abort bit once we have handled the abort request
+    hw2reg.control.abort.de = hw2reg.status.aborted.de;
+    hw2reg.control.abort.d  = 1'b0;
 
     // interrupt management
     hw2reg.intr_state.dma_done.de = reg2hw.status.done.q | test_done_interrupt;

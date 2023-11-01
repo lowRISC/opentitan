@@ -73,15 +73,15 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
 
     // TL Agent Configuration objects - Non RAL
     `uvm_create_obj(tl_agent_cfg, tl_agent_dma_host_cfg)
-    tl_agent_dma_host_cfg.max_outstanding_req = dma_env_pkg::NUM_MAX_OUTSTANDING_REQS;
+    tl_agent_dma_host_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
     tl_agent_dma_host_cfg.if_mode = dv_utils_pkg::Device;
 
     `uvm_create_obj(tl_agent_cfg, tl_agent_dma_ctn_cfg)
-    tl_agent_dma_ctn_cfg.max_outstanding_req = dma_env_pkg::NUM_MAX_OUTSTANDING_REQS;
+    tl_agent_dma_ctn_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
     tl_agent_dma_ctn_cfg.if_mode = dv_utils_pkg::Device;
 
     `uvm_create_obj(tl_agent_cfg, tl_agent_dma_sys_cfg)
-    tl_agent_dma_sys_cfg.max_outstanding_req = dma_env_pkg::NUM_MAX_OUTSTANDING_REQS;
+    tl_agent_dma_sys_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
     tl_agent_dma_sys_cfg.if_mode = dv_utils_pkg::Device;
 
     // TL Agent Configuration - RAL based

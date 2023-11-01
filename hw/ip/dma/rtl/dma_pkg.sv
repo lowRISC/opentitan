@@ -59,6 +59,9 @@ package dma_pkg;
     DmaShaWait               = 4'b1010
   } dma_ctrl_state_e;
 
+  // Maximum number of outstanding TL-UL requests per host post
+  parameter int unsigned NUM_MAX_OUTSTANDING_REQS = 1;
+
   ////////////////////////////
   // System Port Interfaces //
   ////////////////////////////
