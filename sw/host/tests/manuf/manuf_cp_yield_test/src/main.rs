@@ -75,6 +75,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
+    jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 

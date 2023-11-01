@@ -126,13 +126,16 @@ impl CommandDispatch for RawUnlock {
         // the LC TAP after the transition without risking the chip resetting.
         trigger_lc_transition(
             transport,
-            &mut *jtag,
+            jtag,
             DifLcCtrlState::TestUnlocked0,
             Some(token_words),
             /*use_external_clk=*/ true,
             self.reset_delay,
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
+
+        jtag = self.jtag_params.create(transport)?;
+        jtag.connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
         let lc_state =
@@ -275,12 +278,16 @@ impl CommandDispatch for VolatileRawUnlock {
         // the LC TAP after the transition without risking the chip resetting.
         trigger_volatile_raw_unlock(
             transport,
-            &mut *jtag,
+            jtag,
             DifLcCtrlState::TestUnlocked0,
             Some(token_words),
             /*use_external_clk=*/ true,
             /*post_transition_tap=*/ JtagTap::LcTap,
+            &self.jtag_params,
         )?;
+
+        jtag = self.jtag_params.create(transport)?;
+        jtag.connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
         let lc_state =

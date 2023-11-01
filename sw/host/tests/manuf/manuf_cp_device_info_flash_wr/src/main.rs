@@ -75,6 +75,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Issue an LC transition.
@@ -85,7 +86,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // was done correctly.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         opts.target_lc_state,
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,

@@ -382,7 +382,7 @@ impl Jtag for OpenOcdJtagChain {
         self.start(tap)
     }
 
-    fn disconnect(&mut self) -> Result<()> {
+    fn disconnect(mut self: Box<Self>) -> Result<()> {
         self.stop()
     }
 

@@ -91,7 +91,7 @@ fn test_unlock(
     // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked1,
         Some(
             provisioning_data
@@ -104,6 +104,9 @@ fn test_unlock(
         opts.init.bootstrap.options.reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

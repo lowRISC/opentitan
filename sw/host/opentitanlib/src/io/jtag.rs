@@ -50,7 +50,7 @@ pub trait Jtag {
     /// Connect to the given JTAG TAP.
     fn connect(&mut self, tap: JtagTap) -> Result<()>;
     /// Disconnect from the TAP.
-    fn disconnect(&mut self) -> Result<()>;
+    fn disconnect(self: Box<Self>) -> Result<()>;
     /// Get TAP we are currently connected too.
     fn tap(&self) -> Option<JtagTap>;
 

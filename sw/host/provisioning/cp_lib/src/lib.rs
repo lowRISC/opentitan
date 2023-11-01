@@ -82,7 +82,7 @@ pub fn unlock_raw(
     // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/
@@ -91,6 +91,9 @@ pub fn unlock_raw(
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0.")?;
+
+    jtag = jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -167,7 +170,7 @@ pub fn reset_and_lock(
     // after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestLocked0,
         None,
         /*use_external_clk=*/
@@ -176,6 +179,9 @@ pub fn reset_and_lock(
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_LOCKED0.")?;
+
+    jtag = jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

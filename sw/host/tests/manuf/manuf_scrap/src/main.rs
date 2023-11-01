@@ -44,13 +44,16 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::Scrap,
         None,
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check the LC state is SCRAP.
     assert_eq!(
