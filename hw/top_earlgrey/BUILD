@@ -107,6 +107,7 @@ fpga_cw310(
     exec_env = "fpga_cw310_rom_ext",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",

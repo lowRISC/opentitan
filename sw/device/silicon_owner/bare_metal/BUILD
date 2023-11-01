@@ -131,7 +131,6 @@ opentitan_test(
         binaries = {
             ":bare_metal_slot_virtual": "firmware",
         },
-        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
         exit_success = BOOT_SUCCESS_MSG,
     ),
     exec_env = {
@@ -147,9 +146,6 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_virtual_ottf_bl0_virtual",
     srcs = ["empty_test.c"],
-    cw310 = cw310_params(
-        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
-    ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },

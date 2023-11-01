@@ -31,19 +31,11 @@ otp_json(
     visibility = ["//visibility:private"],
 )
 
+# The fpga_cw310_rom_ext exec_env defaults to the following OTP configuration.
 otp_image(
     name = "otp_img_secret2_locked_rma",
     src = "//hw/ip/otp_ctrl/data:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
     ],
-    visibility = ["//visibility:private"],
-)
-
-bitstream_splice(
-    name = "bitstream_secret2_locked",
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_secret2_locked_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
 )
