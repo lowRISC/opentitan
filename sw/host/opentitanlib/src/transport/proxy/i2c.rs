@@ -5,9 +5,10 @@
 use anyhow::{bail, ensure, Result};
 use std::cell::Cell;
 use std::rc::Rc;
+use std::time::Duration;
 
 use super::ProxyError;
-use crate::io::i2c::{Bus, Transfer};
+use crate::io::i2c::{Bus, DeviceStatus, Mode, Transfer};
 use crate::proxy::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
@@ -42,6 +43,21 @@ impl ProxyI2c {
 }
 
 impl Bus for ProxyI2c {
+    fn set_mode(&self, mode: Mode) -> Result<()> {
+        match mode {
+            Mode::Host => match self.execute_command(I2cRequest::SetModeHost)? {
+                I2cResponse::SetModeHost => Ok(()),
+                _ => bail!(ProxyError::UnexpectedReply()),
+            },
+            Mode::Device(addr) => {
+                match self.execute_command(I2cRequest::SetModeDevice { addr })? {
+                    I2cResponse::SetModeDevice => Ok(()),
+                    _ => bail!(ProxyError::UnexpectedReply()),
+                }
+            }
+        }
+    }
+
     fn get_max_speed(&self) -> Result<u32> {
         match self.execute_command(I2cRequest::GetMaxSpeed)? {
             I2cResponse::GetMaxSpeed { speed } => Ok(speed),
@@ -93,6 +109,25 @@ impl Bus for ProxyI2c {
                 }
                 Ok(())
             }
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn get_device_status(&self, timeout: Duration) -> Result<DeviceStatus> {
+        match self.execute_command(I2cRequest::GetDeviceStatus {
+            timeout_millis: timeout.as_millis() as u32,
+        })? {
+            I2cResponse::GetDeviceStatus { status } => Ok(status),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn prepare_read_data(&self, data: &[u8], sticky: bool) -> Result<()> {
+        match self.execute_command(I2cRequest::PrepareReadData {
+            data: data.to_vec(),
+            sticky,
+        })? {
+            I2cResponse::PrepareReadData => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
