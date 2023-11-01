@@ -117,64 +117,23 @@ static status_t wafer_auth_secret_flash_info_page_write(
   return OK_STATUS();
 }
 
-status_t command_processor(ujson_t *uj,
-                           manuf_cp_provisioning_data_t *provisioning_data) {
-  LOG_INFO("CP provisioning start. Waiting for command ...");
-  while (true) {
-    cp_provisioning_command_t command;
-    TRY(ujson_deserialize_cp_provisioning_command_t(uj, &command));
-    switch (command) {
-      case kCpProvisioningCommandEraseAndWriteAll:
-        // Write DeviceId, ManufState, & WaferAuthSecret to flash info pages 0
-        // & 3, and write Test Unlock/Exit tokens to OTP secret0 partition.
-        LOG_INFO("Performing all CP provisioning steps ...");
-        CHECK_STATUS_OK(
-            device_id_and_manuf_state_flash_info_page_erase(provisioning_data));
-        CHECK_STATUS_OK(
-            wafer_auth_secret_flash_info_page_erase(provisioning_data));
-        CHECK_STATUS_OK(
-            device_id_and_manuf_state_flash_info_page_write(provisioning_data));
-        CHECK_STATUS_OK(
-            wafer_auth_secret_flash_info_page_write(provisioning_data));
-        CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
-                                                           provisioning_data));
-        break;
-      case kCpProvisioningCommandFlashInfoEraseDeviceIdAndManufState:
-        LOG_INFO("Erasing device ID and manuf state flash info page ...");
-        CHECK_STATUS_OK(
-            device_id_and_manuf_state_flash_info_page_erase(provisioning_data));
-        break;
-      case kCpProvisioningCommandFlashInfoEraseWaferAuthSecret:
-        LOG_INFO("Erasing wafer auth secret flash info page ...");
-        CHECK_STATUS_OK(
-            wafer_auth_secret_flash_info_page_erase(provisioning_data));
-        break;
-      case kCpProvisioningCommandFlashInfoWriteDeviceIdAndManufState:
-        LOG_INFO("Writing device ID and manuf state flash info page ...");
-        CHECK_STATUS_OK(
-            device_id_and_manuf_state_flash_info_page_write(provisioning_data));
-        break;
-      case kCpProvisioningCommandFlashInfoWriteWaferAuthSecret:
-        LOG_INFO("Writing wafer auth secret flash info page ...");
-        CHECK_STATUS_OK(
-            wafer_auth_secret_flash_info_page_write(provisioning_data));
-        break;
-      case kCpProvisioningCommandOtpSecret0WriteAndLock:
-        LOG_INFO("Writing and locking OTP secret0 partition ...");
-        CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
-                                                           provisioning_data));
-        break;
-      case kCpProvisioningCommandDone:
-        LOG_INFO("CP provisioning done.");
-        return RESP_OK_STATUS(uj);
-      default:
-        LOG_ERROR("Unrecognized command: %d", command);
-        RESP_ERR(uj, INVALID_ARGUMENT());
-    }
-    RESP_OK_STATUS(uj);
-  }
-  // We should never reach here.
-  return INTERNAL();
+static status_t provision(ujson_t *uj) {
+  // Get provisioning data over console.
+  LOG_INFO("Waiting for CP provisioning data ...");
+  manuf_cp_provisioning_data_t provisioning_data;
+  CHECK_STATUS_OK(
+      ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
+
+  // Provision flash info pages 0 and 3, and OTP SECRET1 partition.
+  TRY(device_id_and_manuf_state_flash_info_page_erase(&provisioning_data));
+  TRY(wafer_auth_secret_flash_info_page_erase(&provisioning_data));
+  TRY(device_id_and_manuf_state_flash_info_page_write(&provisioning_data));
+  TRY(wafer_auth_secret_flash_info_page_write(&provisioning_data));
+  TRY(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
+                                         &provisioning_data));
+  LOG_INFO("CP provisioning done.");
+
+  return OK_STATUS();
 }
 
 bool sram_main(void) {
@@ -187,19 +146,7 @@ bool sram_main(void) {
   CHECK_STATUS_OK(
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked0));
 
-  LOG_INFO("Waiting for CP provisioning data ...");
-
-  // Get provisioning data over console.
-  manuf_cp_provisioning_data_t provisioning_data;
-  CHECK_STATUS_OK(
-      ujson_deserialize_manuf_cp_provisioning_data_t(&uj, &provisioning_data));
-
-  // TODO(#19453): Provision AST configuration. This will most likely need to be
-  // done before provisioning the test unlock/exit tokens below, as these write
-  // to a scrambled (SECRET0) partition, which requires entropy.
-
-  // Process provisioning commands.
-  CHECK_STATUS_OK(command_processor(&uj, &provisioning_data));
+  CHECK_STATUS_OK(provision(&uj));
 
   return true;
 }
