@@ -9,12 +9,12 @@
 //! templates on-disk (in Hjson) can change without the API of the template
 //! structs changing.
 
-use hex::FromHex;
+use hex::{FromHex, ToHex};
 use num_bigint_dig::BigUint as InnerBigUint;
 use num_traits::{FromPrimitive, Num, ToPrimitive};
 use serde::de;
-use serde::{Deserialize, Deserializer};
-use serde_with::DeserializeAs;
+use serde::{Deserialize, Deserializer, Serializer};
+use serde_with::{DeserializeAs, SerializeAs};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BigUint {
@@ -54,6 +54,16 @@ impl<'de> DeserializeAs<'de, InnerBigUint> for BigUint {
         deserializer
             .deserialize_any(BigUintVisitor)
             .map(InnerBigUint::from)
+    }
+}
+
+// Serialize BigUint.
+impl SerializeAs<InnerBigUint> for BigUint {
+    fn serialize_as<S>(bigint: &InnerBigUint, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&bigint.to_str_radix(10))
     }
 }
 
@@ -136,6 +146,16 @@ impl<'de> DeserializeAs<'de, Vec<u8>> for HexString {
         let s = String::deserialize(deserializer)?;
         Vec::<u8>::from_hex(s)
             .map_err(|err| de::Error::custom(format!("could not parse hexstring: {}", err)))
+    }
+}
+
+/// Serialization of a `Value<Vec<u8>>` as a string of hex digits.
+impl SerializeAs<Vec<u8>> for HexString {
+    fn serialize_as<S>(val: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&val.encode_hex::<String>())
     }
 }
 
