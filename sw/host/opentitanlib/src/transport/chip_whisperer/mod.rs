@@ -35,7 +35,6 @@ struct Inner {
     spi: Option<Rc<dyn Target>>,
     gpio: HashMap<String, Rc<dyn GpioPin>>,
     uart: HashMap<u32, Rc<dyn Uart>>,
-    jtag: Option<Rc<dyn Jtag>>,
 }
 
 pub struct ChipWhisperer<B: Board> {
@@ -182,18 +181,14 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         }
     }
 
-    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
-        let mut inner = self.inner.borrow_mut();
-        if inner.jtag.is_none() {
-            inner.jtag = Some(Rc::new(OpenOcdJtagChain::new(
-                match self.openocd_adapter_config {
-                    Some(ref path) => std::fs::read_to_string(path)?,
-                    None => String::new(),
-                },
-                opts,
-            )?));
-        }
-        Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
+    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
+        Ok(Box::new(OpenOcdJtagChain::new(
+            match self.openocd_adapter_config {
+                Some(ref path) => std::fs::read_to_string(path)?,
+                None => String::new(),
+            },
+            opts,
+        )?))
     }
 }
 

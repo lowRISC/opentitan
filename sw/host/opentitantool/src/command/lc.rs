@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::any::Any;
-use std::rc::Rc;
 use std::time::Duration;
 
 use anyhow::{bail, Result};
@@ -24,8 +23,9 @@ pub struct LcStateReadResult {
 }
 
 /// Read, decode, and check the LC state is Raw.
-fn check_lc_state_is_raw(jtag: Rc<dyn Jtag>) -> Result<()> {
-    let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
+fn check_lc_state_is_raw(jtag: &mut dyn Jtag) -> Result<()> {
+    let lc_state =
+        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
     if lc_state != DifLcCtrlState::Raw {
         bail!("Device must be in Raw LC state. It is in: {}", lc_state);
     }
@@ -78,7 +78,7 @@ impl CommandDispatch for LcStateRead {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let jtag = self.jtag_params.create(transport)?;
+        let mut jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
@@ -116,22 +116,22 @@ impl CommandDispatch for RawUnlock {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let jtag = self.jtag_params.create(transport)?;
+        let mut jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
 
-        check_lc_state_is_raw(jtag.clone())?;
+        check_lc_state_is_raw(&mut *jtag)?;
         let token_words = parse_unlock_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
         trigger_lc_transition(
             transport,
-            jtag.clone(),
+            &mut *jtag,
             DifLcCtrlState::TestUnlocked0,
             Some(token_words),
             /*use_external_clk=*/ true,
             self.reset_delay,
-            /*reconnect_jtag_tap=*/ Some(JtagTap::LcTap),
+            /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
 
         // Read and decode the LC state.
@@ -181,7 +181,7 @@ impl CommandDispatch for Status {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let jtag = self.jtag_params.create(transport)?;
+        let mut jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
         let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
         jtag.disconnect()?;
@@ -230,7 +230,7 @@ impl CommandDispatch for TransitionCount {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let jtag = self.jtag_params.create(transport)?;
+        let mut jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
         let transition_count = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?;
         jtag.disconnect()?;
@@ -265,17 +265,17 @@ impl CommandDispatch for VolatileRawUnlock {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let jtag = self.jtag_params.create(transport)?;
+        let mut jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
 
-        check_lc_state_is_raw(jtag.clone())?;
+        check_lc_state_is_raw(&mut *jtag)?;
         let token_words = parse_unlock_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
         trigger_volatile_raw_unlock(
             transport,
-            jtag.clone(),
+            &mut *jtag,
             DifLcCtrlState::TestUnlocked0,
             Some(token_words),
             /*use_external_clk=*/ true,

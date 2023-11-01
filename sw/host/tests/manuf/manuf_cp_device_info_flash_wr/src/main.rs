@@ -41,7 +41,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -53,7 +53,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // Load and execute the SRAM program that contains the test code.
     match opts
         .sram_program
-        .load_and_execute(&jtag, ExecutionMode::JumpAndWait(opts.timeout))?
+        .load_and_execute(&mut *jtag, ExecutionMode::JumpAndWait(opts.timeout))?
     {
         ExecutionResult::ExecutionDone => {
             log::info!("SRAM program loaded and executed successfully.")
@@ -85,12 +85,12 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // was done correctly.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         opts.target_lc_state,
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,
         opts.init.bootstrap.options.reset_delay,
-        /*reconnect_jtag_tap=*/ None,
+        /*reset_tap_straps=*/ None,
     )?;
 
     // Bootstrap test program into flash and wait for test status pass over the UART.

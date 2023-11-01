@@ -131,13 +131,13 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     log::info!("Connecting to JTAG interface");
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to JTAG")?;
 
     // Wait for the lifecycle controller to enter the `READY` state from
     // which it accepts transition commands.
-    lc_transition::wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::READY)
+    lc_transition::wait_for_status(&mut *jtag, Duration::from_secs(3), LcCtrlStatus::READY)
         .context("failed to wait for lifecycle controller to be ready")?;
 
     // Check we're in the `PROD` state with 5 transitions registered.
@@ -212,7 +212,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     // Poll until status register reports a successful transition.
     lc_transition::wait_for_status(
-        &jtag,
+        &mut *jtag,
         Duration::from_secs(3),
         LcCtrlStatus::TRANSITION_SUCCESSFUL,
     )

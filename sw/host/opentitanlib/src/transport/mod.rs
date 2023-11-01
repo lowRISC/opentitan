@@ -112,7 +112,7 @@ pub trait Transport {
     }
 
     /// Returns a [`Jtag`] implementation.
-    fn jtag(&self, _opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+    fn jtag(&self, _opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Jtag).into())
     }
     /// Returns a SPI [`Target`] implementation.

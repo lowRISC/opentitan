@@ -27,7 +27,11 @@ use crate::test_utils::poll;
 pub struct OtpParam;
 impl OtpParam {
     /// Read a parameter from OTP into an output buffer.
-    pub fn read_param(jtag: &dyn Jtag, param: DaiParam, out_buf: &mut [u32]) -> OtpDaiResult<()> {
+    pub fn read_param(
+        jtag: &mut dyn Jtag,
+        param: DaiParam,
+        out_buf: &mut [u32],
+    ) -> OtpDaiResult<()> {
         let OtpParamMmap { byte_addr, size } = param.mmap();
 
         if mem::size_of_val(out_buf) < size as usize {
@@ -64,7 +68,7 @@ impl OtpParam {
     }
 
     /// Write a value from a buffer to an OTP parameter.
-    pub fn write_param(jtag: &dyn Jtag, param: DaiParam, data: &[u32]) -> OtpDaiResult<()> {
+    pub fn write_param(jtag: &mut dyn Jtag, param: DaiParam, data: &[u32]) -> OtpDaiResult<()> {
         let OtpParamMmap { byte_addr, size } = param.mmap();
 
         // Check if the word has been written already.
@@ -115,14 +119,14 @@ impl OtpParam {
 pub struct OtpPartition;
 impl OtpPartition {
     /// Lock the given partition by calculating its digest.
-    pub fn lock(jtag: &dyn Jtag, partition: Partition) -> OtpDaiResult<()> {
+    pub fn lock(jtag: &mut dyn Jtag, partition: Partition) -> OtpDaiResult<()> {
         OtpDai::lock(jtag, partition.byte_addr)
     }
 
     /// Read back this partition's digest from the OTP.
     ///
     /// This goes via the DAI, but partitions are also exposed via CSRs after reset.
-    pub fn read_digest(jtag: &dyn Jtag, partition: Partition) -> OtpDaiResult<[u32; 2]> {
+    pub fn read_digest(jtag: &mut dyn Jtag, partition: Partition) -> OtpDaiResult<[u32; 2]> {
         let OtpParamMmap { byte_addr, size } = partition.digest;
         assert_eq!(size, 8, "OTP partition digests should be 2 words in size");
 
@@ -144,7 +148,11 @@ impl OtpDai {
     ///
     /// On success, returns an array of words `[lower, upper]` where `upper` is non-zero
     /// for 64-bit granularity reads.
-    pub fn read(jtag: &dyn Jtag, byte_addr: u32, granule: Granularity) -> OtpDaiResult<[u32; 2]> {
+    pub fn read(
+        jtag: &mut dyn Jtag,
+        byte_addr: u32,
+        granule: Granularity,
+    ) -> OtpDaiResult<[u32; 2]> {
         Self::wait_for_idle(jtag)?;
 
         // Set the DAI address to read from.
@@ -177,7 +185,7 @@ impl OtpDai {
 
     /// Perform a single write over the Direct Access Interface.
     pub fn write(
-        jtag: &dyn Jtag,
+        jtag: &mut dyn Jtag,
         byte_addr: u32,
         granule: Granularity,
         values: [u32; 2],
@@ -211,7 +219,7 @@ impl OtpDai {
     }
 
     /// Lock the partition starting at offset `byte_addr`.
-    pub fn lock(jtag: &dyn Jtag, byte_addr: u32) -> OtpDaiResult<()> {
+    pub fn lock(jtag: &mut dyn Jtag, byte_addr: u32) -> OtpDaiResult<()> {
         if byte_addr == Partition::CREATOR_SW_CFG.byte_addr
             || byte_addr == Partition::OWNER_SW_CFG.byte_addr
         {
@@ -236,7 +244,7 @@ impl OtpDai {
 
     /// Wait for the OTP controller's status to read `DAI_IDLE`, showing it's
     /// ready to accept commands.
-    pub fn wait_for_idle(jtag: &dyn Jtag) -> Result<(), OtpDaiError> {
+    pub fn wait_for_idle(jtag: &mut dyn Jtag) -> Result<(), OtpDaiError> {
         let otp_status_addr = Self::OTP_CTRL_BASE_ADDR + OtpCtrlReg::Status as u32;
 
         poll::poll_until(Self::POLL_TIMEOUT, Self::POLL_DELAY, || {

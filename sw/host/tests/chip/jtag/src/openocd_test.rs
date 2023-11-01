@@ -59,7 +59,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
     jtag.halt()?;
     // Definitions for hardware registers
@@ -184,7 +184,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Test reads by checking the LC_STATE register

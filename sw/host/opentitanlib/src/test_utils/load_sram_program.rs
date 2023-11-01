@@ -4,7 +4,6 @@
 
 use std::fs;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -67,13 +66,13 @@ impl SramProgramParams {
         }
     }
 
-    pub fn load(&self, jtag: &Rc<dyn Jtag>) -> Result<SramProgramInfo> {
+    pub fn load(&self, jtag: &mut dyn Jtag) -> Result<SramProgramInfo> {
         load_sram_program(jtag, &self.get_file())
     }
 
     pub fn load_and_execute(
         &self,
-        jtag: &Rc<dyn Jtag>,
+        jtag: &mut dyn Jtag,
         exec_mode: ExecutionMode,
     ) -> Result<ExecutionResult> {
         load_and_execute_sram_program(jtag, &self.get_file(), exec_mode)
@@ -144,7 +143,7 @@ pub struct SramProgramInfo {
 
 /// Load a program into SRAM using JTAG (VMEM files).
 pub fn load_vmem_sram_program(
-    jtag: &Rc<dyn Jtag>,
+    jtag: &mut dyn Jtag,
     vmem_filename: &PathBuf,
     load_addr: u32,
 ) -> Result<SramProgramInfo> {
@@ -177,7 +176,7 @@ pub fn load_vmem_sram_program(
 
 /// Load a program into SRAM using JTAG (ELF files).
 pub fn load_elf_sram_program(
-    jtag: &Rc<dyn Jtag>,
+    jtag: &mut dyn Jtag,
     elf_filename: &PathBuf,
 ) -> Result<SramProgramInfo> {
     log::info!("Loading ELF file {}", elf_filename.display());
@@ -299,7 +298,7 @@ pub fn load_elf_sram_program(
 }
 
 /// Load a program into SRAM using JTAG. Returns the address of the entry point.
-pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<SramProgramInfo> {
+pub fn load_sram_program(jtag: &mut dyn Jtag, file: &SramProgramFile) -> Result<SramProgramInfo> {
     match file {
         SramProgramFile::Vmem { path, load_addr } => load_vmem_sram_program(jtag, path, *load_addr),
         SramProgramFile::Elf(path) => load_elf_sram_program(jtag, path),
@@ -342,7 +341,7 @@ pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<
 /// [1]: https://github.com/lowRISC/opentitan/issues/14978
 /// [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
 /// [3]: https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh
-pub fn prepare_epmp(jtag: &Rc<dyn Jtag>) -> Result<()> {
+pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     // Setup ePMP for SRAM execution.
     log::info!("Configure ePMP for SRAM execution.");
     let pmpcfg3 = jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3))?;
@@ -386,7 +385,7 @@ pub fn prepare_epmp(jtag: &Rc<dyn Jtag>) -> Result<()> {
 
 /// Execute an already loaded SRAM program. It takes care of setting up the ePMP.
 pub fn execute_sram_program(
-    jtag: &Rc<dyn Jtag>,
+    jtag: &mut dyn Jtag,
     prog_info: &SramProgramInfo,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
@@ -433,7 +432,7 @@ pub fn execute_sram_program(
 
 /// Loads and execute a SRAM program. It takes care of setting up the ePMP.
 pub fn load_and_execute_sram_program(
-    jtag: &Rc<dyn Jtag>,
+    jtag: &mut dyn Jtag,
     file: &SramProgramFile,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {

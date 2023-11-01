@@ -80,7 +80,7 @@ fn test_unlock(
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_LOCKED0`.
@@ -91,7 +91,7 @@ fn test_unlock(
     // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked1,
         Some(
             provisioning_data
@@ -102,7 +102,7 @@ fn test_unlock(
         ),
         /*use_external_clk=*/ true,
         opts.init.bootstrap.options.reset_delay,
-        /*reconnect_jtag_tap=*/ Some(JtagTap::LcTap),
+        /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
@@ -130,7 +130,7 @@ fn check_cp_provisioning(
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Connect to the RISCV TAP via JTAG.
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -140,7 +140,7 @@ fn check_cp_provisioning(
     uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    let result = test_sram_program.load_and_execute(&jtag, ExecutionMode::Jump)?;
+    let result = test_sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
     match result {
         ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
         _ => panic!("SRAM program load/execution failed: {:?}.", result),

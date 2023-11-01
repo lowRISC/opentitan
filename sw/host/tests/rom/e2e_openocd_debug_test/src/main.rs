@@ -48,7 +48,7 @@ fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duratio
 
 const BP_TIMEOUT: Duration = Duration::from_secs(5);
 
-fn asm_interrupt_handler(dbg: &ElfDebugger) -> Result<()> {
+fn asm_interrupt_handler(dbg: &mut ElfDebugger) -> Result<()> {
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -60,7 +60,7 @@ fn asm_interrupt_handler(dbg: &ElfDebugger) -> Result<()> {
     Ok(())
 }
 
-fn shutdown_execution_asm(dbg: &ElfDebugger) -> Result<()> {
+fn shutdown_execution_asm(dbg: &mut ElfDebugger) -> Result<()> {
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -73,7 +73,7 @@ fn shutdown_execution_asm(dbg: &ElfDebugger) -> Result<()> {
     Ok(())
 }
 
-fn asm_watchdog_bark(dbg: &ElfDebugger) -> Result<()> {
+fn asm_watchdog_bark(dbg: &mut ElfDebugger) -> Result<()> {
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -100,7 +100,7 @@ fn asm_watchdog_bark(dbg: &ElfDebugger) -> Result<()> {
     Ok(())
 }
 
-fn asm_watchdog_bite(dbg: &ElfDebugger) -> Result<()> {
+fn asm_watchdog_bite(dbg: &mut ElfDebugger) -> Result<()> {
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -121,7 +121,8 @@ fn asm_watchdog_bite(dbg: &ElfDebugger) -> Result<()> {
     )?;
 
     // Double the bite timeout. The current timeout is too short, causing this test to be flaky.
-    dbg.write_reg(RiscvGpr::T1, dbg.read_reg(RiscvGpr::T1)? * 2)?;
+    let orig_timeout = dbg.read_reg(RiscvGpr::T1)?;
+    dbg.write_reg(RiscvGpr::T1, orig_timeout * 2)?;
 
     // Clear RESET_INFO.
     dbg.write_u32(
@@ -161,7 +162,7 @@ fn asm_watchdog_bite(dbg: &ElfDebugger) -> Result<()> {
     Ok(())
 }
 
-fn debug_test(dbg: &ElfDebugger, uart: &dyn Uart) -> Result<()> {
+fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -464,9 +465,9 @@ fn main() -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let jtag = opts.init.jtag_params.create(&transport)?;
+    let mut jtag = opts.init.jtag_params.create(&transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
-    let mut dbg = ElfDebugger::attach(jtag.clone());
+    let mut dbg = ElfDebugger::attach(jtag);
 
     log::info!("Loading symbols from ELF {}", opts.elf.display());
     dbg.load_elf(&opts.elf)?;
@@ -477,13 +478,13 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    execute_test!(asm_interrupt_handler, &dbg);
-    execute_test!(shutdown_execution_asm, &dbg);
-    execute_test!(asm_watchdog_bark, &dbg);
-    execute_test!(asm_watchdog_bite, &dbg);
-    execute_test!(debug_test, &dbg, &*uart);
+    execute_test!(asm_interrupt_handler, &mut dbg);
+    execute_test!(shutdown_execution_asm, &mut dbg);
+    execute_test!(asm_watchdog_bark, &mut dbg);
+    execute_test!(asm_watchdog_bite, &mut dbg);
+    execute_test!(debug_test, &mut dbg, &*uart);
 
-    jtag.disconnect()?;
+    dbg.disconnect()?;
 
     Ok(())
 }

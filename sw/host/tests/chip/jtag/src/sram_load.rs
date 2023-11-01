@@ -34,14 +34,14 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
     log::info!("Halting core");
     jtag.halt()?;
 
     opts.sram_program
-        .load_and_execute(&jtag, ExecutionMode::Jump)?;
+        .load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
     let mut console = UartConsole {

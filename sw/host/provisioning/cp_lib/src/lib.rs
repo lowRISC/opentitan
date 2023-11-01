@@ -70,7 +70,7 @@ pub fn unlock_raw(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -82,7 +82,7 @@ pub fn unlock_raw(
     // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/
@@ -112,7 +112,7 @@ pub fn run_sram_cp_provision(
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(reset_delay, true)?;
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -122,7 +122,7 @@ pub fn run_sram_cp_provision(
     uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    let result = sram_program.load_and_execute(&jtag, ExecutionMode::Jump)?;
+    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
     match result {
         ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
@@ -159,7 +159,7 @@ pub fn reset_and_lock(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -167,7 +167,7 @@ pub fn reset_and_lock(
     // after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestLocked0,
         None,
         /*use_external_clk=*/

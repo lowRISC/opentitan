@@ -40,7 +40,7 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -48,7 +48,7 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
     // the transition without risking the chip resetting.
     lc_transition::trigger_volatile_raw_unlock(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/ true,
@@ -81,7 +81,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -89,7 +89,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
     // the transition without risking the chip resetting.
     lc_transition::trigger_volatile_raw_unlock(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/ true,

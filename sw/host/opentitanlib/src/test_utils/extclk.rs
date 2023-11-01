@@ -42,7 +42,7 @@ impl ExternalClock {
     const POLL_DELAY: Duration = Duration::from_millis(5);
 
     /// Enable the external clock at the given speed.
-    pub fn enable(jtag: &dyn Jtag, speed: ClockSpeed) -> Result<(), ExternalClockError> {
+    pub fn enable(jtag: &mut dyn Jtag, speed: ClockSpeed) -> Result<(), ExternalClockError> {
         if !Self::write_enabled(jtag)? {
             return Err(ExternalClockError::WriteDisabled);
         }
@@ -72,7 +72,7 @@ impl ExternalClock {
     }
 
     /// Disable the external clock.
-    pub fn disable(jtag: &dyn Jtag) -> Result<(), ExternalClockError> {
+    pub fn disable(jtag: &mut dyn Jtag) -> Result<(), ExternalClockError> {
         if !Self::write_enabled(jtag)? {
             return Err(ExternalClockError::WriteDisabled);
         }
@@ -89,7 +89,7 @@ impl ExternalClock {
 
     /// Returns the CLKMGR_EXTCLK_REGWEN setting which shows whether the
     /// `EXTCLK_CTRL` register can be written.
-    fn write_enabled(jtag: &dyn Jtag) -> Result<bool, ExternalClockError> {
+    fn write_enabled(jtag: &mut dyn Jtag) -> Result<bool, ExternalClockError> {
         let mut buf = [0];
         jtag.read_memory32(Self::EXTCLK_CTRL_REGWEN_ADDR, &mut buf)
             .map_err(|source| ExternalClockError::Jtag { source })?;
@@ -98,7 +98,7 @@ impl ExternalClock {
     }
 
     /// Wait until the clock manager reports that the clock has changed to the external source.
-    fn wait_for_ack(jtag: &dyn Jtag) -> Result<(), ExternalClockError> {
+    fn wait_for_ack(jtag: &mut dyn Jtag) -> Result<(), ExternalClockError> {
         poll::poll_until(Self::POLL_TIMEOUT, Self::POLL_DELAY, || {
             // Check the status register.
             let mut status_buf = [0];

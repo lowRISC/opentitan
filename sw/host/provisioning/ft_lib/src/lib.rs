@@ -32,7 +32,7 @@ pub fn test_unlock(
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(reset_delay, true)?;
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_LOCKED0`.
@@ -43,13 +43,13 @@ pub fn test_unlock(
     // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         DifLcCtrlState::TestUnlocked1,
         Some(test_unlock_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
         reset_delay,
-        /*reconnect_jtag_tap=*/ Some(JtagTap::LcTap),
+        /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
@@ -72,7 +72,7 @@ pub fn run_sram_ft_individualize(
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(reset_delay, true)?;
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
@@ -82,7 +82,7 @@ pub fn run_sram_ft_individualize(
     uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    let result = sram_program.load_and_execute(&jtag, ExecutionMode::Jump)?;
+    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
     match result {
         ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
@@ -113,7 +113,7 @@ pub fn test_exit(
     // transition to a mission mode state. We do not need to reset the chip to switch TAPs because
     // TAP straps are continuously sampled in TEST_UNLOCKED* LC state.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    let jtag = jtag_params.create(transport)?;
+    let mut jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_UNLOCKED1`.
@@ -125,13 +125,13 @@ pub fn test_exit(
     // flash program that is subsequently bootstrapped / run to check the LC state is as expected.
     trigger_lc_transition(
         transport,
-        jtag.clone(),
+        &mut *jtag,
         target_mission_mode_lc_state,
         Some(test_exit_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
         reset_delay,
-        /*reconnect_jtag_tap=*/ None,
+        /*reset_tap_straps=*/ None,
     )?;
 
     jtag.disconnect()?;

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use regex::Regex;
-use std::rc::Rc;
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
@@ -38,7 +37,10 @@ const EXPECTED_DEVICE_ID: [u32; 8] = [
     0xdeadbeef, 0x12345678, 0xabcdef12, 0xcafebeef, 0x87654321, 0x21fedcba, 0xa1b2c3d4, 0xacdc4321,
 ];
 
-fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dyn Jtag>> {
+fn connect_riscv_jtag<'t>(
+    opts: &Opts,
+    transport: &'t TransportWrapper,
+) -> Result<Box<dyn Jtag + 't>> {
     // Set straps for the CPU TAP and reset.
     transport
         .pin_strapping("PINMUX_TAP_RISCV")?
@@ -48,7 +50,7 @@ fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dy
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset")?;
 
-    let jtag = opts.init.jtag_params.create(transport)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
     jtag.connect(JtagTap::RiscvTap)?;
 
@@ -61,7 +63,7 @@ fn connect_riscv_jtag(opts: &Opts, transport: &TransportWrapper) -> Result<Rc<dy
 }
 
 fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let jtag = connect_riscv_jtag(opts, transport)?;
+    let mut jtag = connect_riscv_jtag(opts, transport)?;
 
     // Make sure to remove any messages from the ROM.
     let uart = transport.uart("console")?;
@@ -70,7 +72,7 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
     // Load SRAM program to write the OTP.
     match opts
         .sram_program
-        .load_and_execute(&jtag, ExecutionMode::Jump)?
+        .load_and_execute(&mut *jtag, ExecutionMode::Jump)?
     {
         ExecutionResult::Executing => log::info!("program successfully started"),
         res => bail!("program execution failed: {:?}", res),
@@ -120,7 +122,7 @@ fn manuf_cp_ast_text_execution_write_otp(opts: &Opts, transport: &TransportWrapp
 }
 
 fn manuf_cp_ast_text_execution_read_otp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let jtag = connect_riscv_jtag(opts, transport)?;
+    let mut jtag = connect_riscv_jtag(opts, transport)?;
 
     // Make sure to remove any messages from the ROM.
     let uart = transport.uart("console")?;
@@ -131,7 +133,7 @@ fn manuf_cp_ast_text_execution_read_otp(opts: &Opts, transport: &TransportWrappe
     // the SRAM program.
     let mut device_id =
         [0xffffffffu32; DaiParam::DEVICE_ID.size as usize / std::mem::size_of::<u32>()];
-    OtpParam::read_param(&*jtag, DaiParam::DeviceId, &mut device_id)
+    OtpParam::read_param(&mut *jtag, DaiParam::DeviceId, &mut device_id)
         .context("failed to read back DEVICE_ID from OTP")?;
     assert_eq!(device_id, EXPECTED_DEVICE_ID);
 
