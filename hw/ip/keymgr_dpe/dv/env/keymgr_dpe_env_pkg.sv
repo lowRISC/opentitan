@@ -67,16 +67,40 @@ package keymgr_dpe_env_pkg;
 
   string msg_id = "keymgr_dpe_env_pkg";
   // functions
-  // state is incremental, if it's not in defined enum, consider as StDisabled
+  /* exposed working states are  StWorkDpeReset, StWorkDpeAvailable, StWorkDpeDisabled, StWorkDpeInvalid
+    1st advance call brings state from StWorkDpeReset to StWorkDpeAvailable, where it will remain until a
+    OpDpeDisable operation which then it will transition to OpDpeDisable state,
+    or a fault transitions the fsm to StWorkDpeInvalid state
+  */
   function automatic keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
-      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state);
-
-    uint next_state = int'(current_state) + 1;
-    if (next_state >= int'(keymgr_dpe_pkg::StWorkDpeDisabled)) begin
-      return keymgr_dpe_pkg::StWorkDpeDisabled;
-    end else begin
-      `downcast(get_next_state, next_state, , , msg_id);
-    end
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op
+    );
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e next_state;
+    case (current_state)
+      keymgr_dpe_pkg::StWorkDpeReset: begin
+        if (op == keymgr_dpe_pkg::OpDpeDisable)
+          next_state = keymgr_dpe_pkg::StWorkDpeDisabled;
+        if (op == keymgr_dpe_pkg::OpDpeAdvance)
+          next_state = keymgr_dpe_pkg::StWorkDpeAvailable;
+        else
+          next_state = current_state;
+      end
+      keymgr_dpe_pkg::StWorkDpeInvalid, keymgr_dpe_pkg::StWorkDpeDisabled: begin
+          next_state = current_state;
+      end
+      keymgr_dpe_pkg::StWorkDpeAvailable: begin
+        if (op == keymgr_dpe_pkg::OpDpeDisable)
+          next_state = keymgr_dpe_pkg::StWorkDpeDisabled;
+        else
+          next_state = current_state;
+      end
+      default: begin
+        `uvm_error("keymgr_dpe_env_pkg",
+          $sformatf("unrecognized keymgr_dpe state %s", current_state.name))
+      end
+    endcase
+    return next_state;
   endfunction
 
   // forward declaration
