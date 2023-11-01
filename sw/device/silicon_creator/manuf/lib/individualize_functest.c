@@ -58,7 +58,15 @@ bool test_main(void) {
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
   if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(&flash_state, &otp_ctrl));
+    dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
+        .ecc_en = kMultiBitBool4True,
+        .high_endurance_en = kMultiBitBool4False,
+        .erase_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .rd_en = kMultiBitBool4True,
+        .scramble_en = kMultiBitBool4False};
+    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
+        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions));
     sw_reset();
   }
 

@@ -29,4 +29,15 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
     .rd_en = kMultiBitBool4False,
     .scramble_en = kMultiBitBool4False};
 
+/**
+ * Access permissions for flash info page 4 (holds attestation key seeds).
+ */
+dif_flash_ctrl_region_properties_t kFlashInfoPage4Permissions = {
+    .ecc_en = kMultiBitBool4True,
+    .high_endurance_en = kMultiBitBool4False,
+    .erase_en = kMultiBitBool4True,
+    .prog_en = kMultiBitBool4True,
+    .rd_en = kMultiBitBool4True,
+    .scramble_en = kMultiBitBool4True};
+
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_SKUS_EARLGREY_A0_GENERIC_CONSTS_H_

@@ -51,7 +51,11 @@ cc_library(
     name = "flash_info_fields",
     srcs = ["flash_info_fields.c"],
     hdrs = ["flash_info_fields.h"],
-    deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+    ],
 )
 
 cc_library(

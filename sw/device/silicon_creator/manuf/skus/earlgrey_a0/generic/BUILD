@@ -142,7 +142,10 @@ opentitan_test(
 opentitan_binary(
     name = "sram_ft_individualize",
     testonly = True,
-    srcs = ["sram_ft_individualize.c"],
+    srcs = [
+        "consts.h",
+        "sram_ft_individualize.c",
+    ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },

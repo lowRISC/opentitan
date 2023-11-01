@@ -23,6 +23,7 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
+#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/consts.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -59,8 +60,8 @@ status_t command_processor(ujson_t *uj) {
         LOG_INFO("Writing both *_SW_CFG and HW_CFG OTP partitions ...");
         CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
         CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-        CHECK_STATUS_OK(
-            manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
+        CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
+            &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions));
         break;
       case kFtIndividualizeCommandOtpCreatorSwCfgWrite:
         LOG_INFO("Writing the CREATOR_SW_CFG OTP partition ...");
@@ -72,8 +73,8 @@ status_t command_processor(ujson_t *uj) {
         break;
       case kFtIndividualizeCommandOtpHwCfgWrite:
         LOG_INFO("Writing the HW_CFG OTP partition ...");
-        CHECK_STATUS_OK(
-            manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl));
+        CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
+            &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions));
         break;
       case kFtIndividualizeCommandDone:
         LOG_INFO("FT SRAM provisioning done.");
