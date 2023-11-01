@@ -26,7 +26,6 @@ package dma_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
-  parameter uint NUM_MAX_OUTSTANDING_REQS = 2;   // Max Outstanding TL Requests
   parameter uint CTN_ADDR_WIDTH = 32;
   parameter uint CTN_DATA_WIDTH = 32;
   parameter uint HOST_ADDR_WIDTH = 32;
