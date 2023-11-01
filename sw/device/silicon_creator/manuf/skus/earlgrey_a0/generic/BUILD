@@ -19,19 +19,23 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "flash_info_permissions",
+    srcs = ["flash_info_permissions.h"],
+    deps = ["//sw/device/lib/dif:flash_ctrl"],
+)
+
 opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
-    srcs = [
-        "consts.h",
-        "sram_cp_provision.c",
-    ],
+    srcs = ["sram_cp_provision.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":flash_info_permissions",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -62,16 +66,14 @@ opentitan_binary(
 opentitan_binary(
     name = "sram_cp_provision_functest",
     testonly = True,
-    srcs = [
-        "consts.h",
-        "sram_cp_provision_functest.c",
-    ],
+    srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":flash_info_permissions",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -142,16 +144,14 @@ opentitan_test(
 opentitan_binary(
     name = "sram_ft_individualize",
     testonly = True,
-    srcs = [
-        "consts.h",
-        "sram_ft_individualize.c",
-    ],
+    srcs = ["sram_ft_individualize.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
