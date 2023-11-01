@@ -82,59 +82,9 @@ static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   return OK_STATUS();
 }
 
-/**
- * Reads info flash page.
- *
- * Note: This function assumes that the data stored in info flash is unscrambled
- * and ECC enabled.
- *
- * @param flash_state Flash controller instance.
- * @param field Info flash field location information.
- * @param[out] data_out Output buffer.
- * @param word_count Number of words to read from flash and write to `data_out`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
-                                flash_info_field_t field, uint32_t *data_out,
-                                uint32_t word_count) {
-  uint32_t byte_address = 0;
-
-  // Enable read access and calculate the `byte_address` with respect to the
-  // flash bank.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, field.page, field.bank, field.partition,
-      (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
-          .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
-          .prog_en = kMultiBitBool4False,
-          .rd_en = kMultiBitBool4True,
-          .scramble_en = kMultiBitBool4False},
-      &byte_address));
-
-  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
-                                data_out, kDifFlashCtrlPartitionTypeInfo,
-                                word_count,
-                                /*delay=*/0));
-
-  // Disable all access after done.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, field.page, field.bank, field.partition,
-      (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
-          .high_endurance_en = kMultiBitBool4False,
-          .erase_en = kMultiBitBool4False,
-          .prog_en = kMultiBitBool4False,
-          .rd_en = kMultiBitBool4False,
-          .scramble_en = kMultiBitBool4False},
-      &byte_address));
-
-  return OK_STATUS();
-}
-
-status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_otp_ctrl_t *otp_ctrl) {
+status_t manuf_individualize_device_hw_cfg(
+    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
+    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                       &is_locked));
@@ -145,18 +95,26 @@ status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
   // Configure byte-sized hardware enable knobs.
   TRY(hw_cfg_enable_knobs_set(otp_ctrl));
 
+  // Configure flash info page permissions in case we started from a cold boot.
+  // Note: device_id and manuf_state are on the same flash info page.
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      flash_state, kFlashInfoFieldDeviceId.page, kFlashInfoFieldDeviceId.bank,
+      kFlashInfoFieldDeviceId.partition, flash_info_page_0_permissions,
+      /*offset=*/NULL));
+
   // Configure DeviceID
   uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
-  TRY(flash_info_read(flash_state, kFlashInfoFieldDeviceId, device_id,
-                      kHwCfgDeviceIdSizeIn32BitWords));
+  TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldDeviceId,
+                                  device_id, kHwCfgDeviceIdSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgDeviceIdOffset, device_id,
                                      kHwCfgDeviceIdSizeIn32BitWords));
 
   // Configure ManufState
   uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
-  TRY(flash_info_read(flash_state, kFlashInfoFieldManufState, manuf_state,
-                      kHwCfgManufStateSizeIn32BitWords));
+  TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldManufState,
+                                  manuf_state,
+                                  kHwCfgManufStateSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgManufStateOffset, manuf_state,
                                      kHwCfgManufStateSizeIn32BitWords));

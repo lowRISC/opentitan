@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+
 #include "otp_ctrl_regs.h"  // Generated.
 
 /**
@@ -47,3 +50,16 @@ const flash_info_field_t kFlashInfoFieldWaferAuthSecret = {
     .page = 3,
     .byte_offset = 0,
 };
+
+static status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
+                                            flash_info_field_t field,
+                                            uint32_t *data_out,
+                                            size_t num_words) {
+  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+  uint32_t byte_address = field.page * device_info.bytes_per_page;
+  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
+                                data_out, kDifFlashCtrlPartitionTypeInfo,
+                                num_words,
+                                /*delay=*/0));
+  return OK_STATUS();
+}

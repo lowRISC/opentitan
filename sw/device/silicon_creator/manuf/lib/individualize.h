@@ -30,11 +30,16 @@
  * `manuf_individualize_device_hw_cfg_check()` afterwards to confirm that the
  * OTP partition was successfully locked.
  *
+ * @param flash_state Flash controller handle and state.
  * @param otp_ctrl OTP controller instance.
+ * @param flash_info_page_0_permissions Access permissions to set on flash info
+ *                                      page 0 (which temporarily holds
+ *                                      device_id and manuf_state).
  * @return OK_STATUS on success.
  */
-status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_otp_ctrl_t *otp_ctrl);
+status_t manuf_individualize_device_hw_cfg(
+    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
+    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions);
 
 /**
  * Checks the HW_CFG OTP partition end state.
