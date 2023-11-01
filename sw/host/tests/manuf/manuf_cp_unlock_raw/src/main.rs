@@ -46,7 +46,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         true,
@@ -54,6 +54,9 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

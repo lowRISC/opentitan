@@ -46,13 +46,14 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
 
     // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
     // the transition without risking the chip resetting.
-    lc_transition::trigger_volatile_raw_unlock(
+    jtag = lc_transition::trigger_volatile_raw_unlock(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/ true,
         JtagTap::LcTap,
+        &opts.init.jtag_params,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
@@ -87,13 +88,14 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
 
     // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
     // the transition without risking the chip resetting.
-    lc_transition::trigger_volatile_raw_unlock(
+    jtag = lc_transition::trigger_volatile_raw_unlock(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         /*use_external_clk=*/ true,
         JtagTap::RiscvTap,
+        &opts.init.jtag_params,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 

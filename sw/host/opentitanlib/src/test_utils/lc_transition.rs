@@ -15,7 +15,7 @@ use crate::dif::lc_ctrl::{
     DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
 };
 use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagTap};
+use crate::io::jtag::{Jtag, JtagParams, JtagTap};
 use crate::test_utils::poll;
 
 use top_earlgrey::top_earlgrey;
@@ -112,7 +112,7 @@ fn setup_lc_transition(
 /// Requires the `jtag` to be already connected to the LC TAP.
 /// The device will be reset into the new lifecycle state.
 /// The `jtag` will be disconnected before resetting the device.
-/// Optionally, the function will reconnect `jtag` to the requested interface.
+/// Optionally, the function will setup JTAG straps to the requested interface.
 ///
 /// # Examples
 ///
@@ -135,12 +135,16 @@ fn setup_lc_transition(
 ///
 /// lc_transition::trigger_lc_transition(
 ///     &transport,
-///     &mut jtag,
+///     jtag,
 ///     DifLcCtrlState::Prod,
 ///     Some(test_exit_token.into_register_values()),
 ///     true,
 ///     init.bootstrap.options.reset_delay,
+///     Some(JtagTap::LcTap),
 /// ).expect("failed to trigger transition to prod");
+///
+/// jtag = transport.jtag(jtag_opts).unwrap();
+/// jtag.connect(JtagTap::LcTap).expect("failed to reconnect to LC TAP");
 ///
 /// assert_eq!(
 ///     jtag.read_lc_ctrl_reg(&LcCtrlReg::LCState).unwrap(),
@@ -149,7 +153,7 @@ fn setup_lc_transition(
 /// ```
 pub fn trigger_lc_transition(
     transport: &TransportWrapper,
-    jtag: &mut dyn Jtag,
+    mut jtag: Box<dyn Jtag + '_>,
     target_lc_state: DifLcCtrlState,
     token: Option<[u32; 4]>,
     use_external_clk: bool,
@@ -158,7 +162,7 @@ pub fn trigger_lc_transition(
 ) -> Result<()> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
     // and token CSRs.
-    setup_lc_transition(jtag, target_lc_state, token)?;
+    setup_lc_transition(&mut *jtag, target_lc_state, token)?;
 
     // Configure external clock.
     if use_external_clk {
@@ -174,7 +178,7 @@ pub fn trigger_lc_transition(
     jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCmd, LcCtrlTransitionCmd::START.bits())?;
 
     wait_for_status(
-        jtag,
+        &mut *jtag,
         Duration::from_secs(3),
         LcCtrlStatus::TRANSITION_SUCCESSFUL,
     )
@@ -196,9 +200,6 @@ pub fn trigger_lc_transition(
         }
     }
     transport.reset_target(reset_delay, true)?;
-    if let Some(tap) = reconnect_jtag_tap {
-        jtag.connect(tap)?;
-    }
 
     Ok(())
 }
@@ -209,17 +210,18 @@ pub fn trigger_lc_transition(
 /// provided (a pre-requisite of the volatile operation. The device will NOT be reset into the
 /// new lifecycle state as TAP straps are sampled again on a successfull transition. However,
 /// the TAP can be switched from LC to RISCV on a successfull transition.
-pub fn trigger_volatile_raw_unlock(
-    transport: &TransportWrapper,
-    jtag: &mut dyn Jtag,
+pub fn trigger_volatile_raw_unlock<'t>(
+    transport: &'t TransportWrapper,
+    mut jtag: Box<dyn Jtag + 't>,
     target_lc_state: DifLcCtrlState,
     hashed_token: Option<[u32; 4]>,
     use_external_clk: bool,
     post_transition_tap: JtagTap,
-) -> Result<()> {
+    jtag_params: &JtagParams,
+) -> Result<Box<dyn Jtag + 't>> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
     // and token CSRs.
-    setup_lc_transition(jtag, target_lc_state, hashed_token)?;
+    setup_lc_transition(&mut *jtag, target_lc_state, hashed_token)?;
 
     // Configure external clock and set volatile raw unlock bit.
     let mut ctrl = LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK;
@@ -247,17 +249,18 @@ pub fn trigger_volatile_raw_unlock(
     // because a volatile unlock will trigger a TAP strap resampling immediately upon success.
     if post_transition_tap == JtagTap::RiscvTap {
         jtag.disconnect()?;
+        jtag = transport.jtag(jtag_params)?;
         jtag.connect(JtagTap::RiscvTap)?;
     }
 
     wait_for_status(
-        jtag,
+        &mut *jtag,
         Duration::from_secs(3),
         LcCtrlStatus::TRANSITION_SUCCESSFUL,
     )
     .context("failed waiting for TRANSITION_SUCCESSFUL status.")?;
 
-    Ok(())
+    Ok(jtag)
 }
 
 pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlStatus) -> Result<()> {

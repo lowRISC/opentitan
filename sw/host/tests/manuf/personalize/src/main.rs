@@ -147,13 +147,16 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     // reconnect to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::Rma,
         Some(rma_unlock_token),
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check the LC state is RMA.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.

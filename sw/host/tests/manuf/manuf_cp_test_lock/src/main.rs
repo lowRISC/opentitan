@@ -101,7 +101,7 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
     // the chip to be resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestLocked0,
         None,
         true,
@@ -109,6 +109,9 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
         Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_LOCKED0")?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -132,7 +135,7 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
     // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked1,
         Some(TEST_UNLOCK_TOKEN_PREIMAGE),
         true,
@@ -140,6 +143,9 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
         Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_UNLOCKED1")?;
+
+    jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

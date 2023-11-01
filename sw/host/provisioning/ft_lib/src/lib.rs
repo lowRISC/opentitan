@@ -43,7 +43,7 @@ pub fn test_unlock(
     // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         DifLcCtrlState::TestUnlocked1,
         Some(test_unlock_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
@@ -51,6 +51,9 @@ pub fn test_unlock(
         reset_delay,
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
+
+    jtag = jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -125,7 +128,7 @@ pub fn test_exit(
     // flash program that is subsequently bootstrapped / run to check the LC state is as expected.
     trigger_lc_transition(
         transport,
-        &mut *jtag,
+        jtag,
         target_mission_mode_lc_state,
         Some(test_exit_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
@@ -134,7 +137,6 @@ pub fn test_exit(
         /*reset_tap_straps=*/ None,
     )?;
 
-    jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
 
     Ok(())
