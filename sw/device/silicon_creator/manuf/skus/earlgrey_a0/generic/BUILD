@@ -36,7 +36,6 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":flash_info_permissions",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -111,7 +110,6 @@ opentitan_test(
         tags = ["manuf"],
         test_cmd = """
             --elf={sram_cp_provision}
-            --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
@@ -132,7 +130,6 @@ opentitan_test(
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
-            --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
     ),

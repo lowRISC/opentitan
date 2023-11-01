@@ -10,10 +10,7 @@ use arrayvec::ArrayVec;
 use clap::Parser;
 use rand::RngCore;
 
-use cp_lib::{
-    reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningActions,
-    ManufCpProvisioningDataInput,
-};
+use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::JtagTap;
@@ -40,9 +37,6 @@ pub struct Opts {
     #[command(flatten)]
     pub provisioning_data: ManufCpProvisioningDataInput,
 
-    #[command(flatten)]
-    pub provisioning_actions: ManufCpProvisioningActions,
-
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     pub timeout: Duration,
@@ -67,7 +61,6 @@ fn cp_provision(
         &opts.init.jtag_params,
         opts.init.bootstrap.options.reset_delay,
         &provisioning_sram_program,
-        &opts.provisioning_actions,
         provisioning_data,
         opts.timeout,
     )?;

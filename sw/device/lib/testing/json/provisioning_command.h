@@ -12,16 +12,6 @@ extern "C" {
 #endif
 // clang-format off
 
-#define ENUM_CP_PROVISIONING_COMMAND(_, value) \
-    value(_, EraseAndWriteAll) \
-    value(_, FlashInfoEraseDeviceIdAndManufState) \
-    value(_, FlashInfoWriteDeviceIdAndManufState) \
-    value(_, FlashInfoEraseWaferAuthSecret) \
-    value(_, FlashInfoWriteWaferAuthSecret) \
-    value(_, OtpSecret0WriteAndLock) \
-    value(_, Done)
-UJSON_SERDE_ENUM(CpProvisioningCommand, cp_provisioning_command_t, ENUM_CP_PROVISIONING_COMMAND);
-
 #define ENUM_FT_INDIVIDUALIZE_COMMAND(_, value) \
     value(_, OtpCreatorSwCfgWrite) \
     value(_, OtpOwnerSwCfgWrite) \
