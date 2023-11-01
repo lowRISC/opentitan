@@ -212,6 +212,9 @@ jobs:
       #   because //... effectively asks to build //hw:verilator_real and other
       #   targets in //hw:all that depend on it. Note that this is only a
       #   shallow exclusion; tests deeper under //hw will still be found.
+      # * It excludes opentitan_binary/test rules because they are meant to run
+      #   on the device.  opentitan_test rules also have an implicit bitstream
+      #   splice operation.
       # * It excludes targets that depend on bitstream_splice rules, since the
       #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
@@ -226,7 +229,7 @@ jobs:
         --output=starlark \
         --starlark:expr='"-{}".format(target.label)' \
         --define DISABLE_VERILATOR_BUILD=true \
-        -- "rdeps(//..., kind(bitstream_splice, //...))" \
+        -- "rdeps(//..., kind(bitstream_splice, //...)) union kind('opentitan_(binary|test)', //...)" \
         >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh build \
         --build_tests_only=false \
