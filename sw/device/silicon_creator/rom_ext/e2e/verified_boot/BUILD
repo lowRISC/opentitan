@@ -61,6 +61,7 @@ _POSITIONS = {
 
 test_suite(
     name = "positions",
+    tags = ["manual"],
     tests = ["position_{}".format(name) for name in _POSITIONS],
 )
 
@@ -112,5 +113,6 @@ _KEYS = {
 
 test_suite(
     name = "keys",
+    tags = ["manual"],
     tests = ["key_{}".format(name) for name in _KEYS],
 )

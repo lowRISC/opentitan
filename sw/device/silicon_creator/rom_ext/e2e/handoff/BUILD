@@ -86,5 +86,6 @@ _FAULT_TEST_CASES = {
 
 test_suite(
     name = "faults",
+    tags = ["manual"],
     tests = ["fault_{}".format(name) for name in _FAULT_TEST_CASES],
 )
