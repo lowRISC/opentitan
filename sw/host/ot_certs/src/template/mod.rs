@@ -33,15 +33,15 @@
 
 use anyhow::Result;
 use num_bigint_dig::BigUint;
-use serde::{Deserialize, Deserializer, Serialize};
-use serde_with::{serde_as, As, DeserializeAs, Same};
-use std::collections::HashMap;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde_with::{serde_as, As, DeserializeAs, Same, SerializeAs};
+use std::{collections::HashMap, marker::PhantomData};
 
 mod hjson;
 
 /// Full template file, including variable declarations and certificate spec.
 #[serde_as]
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct Template {
     /// Name of the certificate.
     pub name: String,
@@ -53,7 +53,7 @@ pub struct Template {
 
 /// Certificate specification.
 #[serde_as]
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Certificate {
     /// X509 certificate's serial number
     #[serde_as(as = "Value<hjson::BigUint>")]
@@ -90,7 +90,7 @@ pub struct Certificate {
     pub signature: Signature,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AttributeType {
     #[serde(alias = "c")]
@@ -108,7 +108,7 @@ pub enum AttributeType {
 }
 
 /// Value which may either be a variable name or literal.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum Value<T> {
     /// This value will be populated on the device when variables are set.
     Variable(Variable),
@@ -117,7 +117,7 @@ pub enum Value<T> {
 }
 
 /// Value which may either be a variable name or literal.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Variable {
     /// Name of the variable.
     pub name: String,
@@ -150,6 +150,14 @@ impl<T> Value<T> {
     /// Return true if the value is a literal
     pub fn is_literal(&self) -> bool {
         matches!(self, Self::Literal(_))
+    }
+
+    /// Return true if this value is a variable that refers to `var_name`.
+    pub fn refers_to(&self, var_name: &str) -> bool {
+        match self {
+            Value::Literal(_) => false,
+            Value::Variable(Variable { name, .. }) => name == var_name,
+        }
     }
 }
 
@@ -202,6 +210,40 @@ where
     }
 }
 
+// Manual implementation for serializer.
+impl<T, U> SerializeAs<Value<T>> for Value<U>
+where
+    U: SerializeAs<T>,
+{
+    fn serialize_as<'a, S>(val: &'a Value<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(bound = "U: SerializeAs<T>")]
+        #[serde(untagged)]
+        pub enum LocalValue<'a, U, T> {
+            Variable {
+                var: &'a str,
+                convert: Option<Conversion>,
+                #[serde(skip)]
+                _phantom: std::marker::PhantomData<U>,
+            },
+            #[serde(with = "As::<U>")]
+            Literal(&'a T),
+        }
+        let local_val: LocalValue<'a, U, T> = match val {
+            Value::Literal(x) => LocalValue::Literal(x),
+            Value::Variable(Variable { name, convert }) => LocalValue::Variable {
+                var: name,
+                convert: *convert,
+                _phantom: PhantomData,
+            },
+        };
+        local_val.serialize(serializer)
+    }
+}
+
 // Convenience implementation to avoid using
 // `serde_as(as = "Same<_>)` everywhere.
 impl<'de, T> Deserialize<'de> for Value<T>
@@ -232,7 +274,7 @@ pub enum Conversion {
 }
 
 /// Representation of the signature of the certificate.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "algorithm", rename_all = "kebab-case")]
 pub enum Signature {
     EcdsaWithSha256 { value: Option<EcdsaSignature> },
@@ -243,7 +285,7 @@ pub enum Signature {
 /// The signature consists of two integers "r" and "s".
 /// See X9.62
 #[serde_as]
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EcdsaSignature {
     #[serde_as(as = "Value<hjson::BigUint>")]
     pub r: Value<BigUint>,
@@ -252,14 +294,14 @@ pub struct EcdsaSignature {
 }
 
 /// Representation of the `SubjectPublicKeyInfo` field.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "algorithm", rename_all = "kebab-case")]
 pub enum SubjectPublicKeyInfo {
     EcPublicKey(EcPublicKeyInfo),
 }
 
 /// Representation of an elliptic curve public key information.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EcPublicKeyInfo {
     pub curve: EcCurve,
     pub public_key: EcPublicKey,
@@ -268,7 +310,7 @@ pub struct EcPublicKeyInfo {
 /// Representation of an elliptic curve public key in uncompressed
 /// form.
 #[serde_as]
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EcPublicKey {
     #[serde_as(as = "Value<hjson::BigUint>")]
     pub x: Value<BigUint>,
@@ -277,14 +319,14 @@ pub struct EcPublicKey {
 }
 
 /// List of EC named curves.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum EcCurve {
     #[serde(rename = "prime256v1")]
     Prime256v1,
 }
 
 /// Flags that can be set for a certificate.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Flags {
     pub not_configured: bool,
     pub not_secure: bool,
@@ -294,7 +336,7 @@ pub struct Flags {
 
 /// Firmware ID (fwid) field.
 #[serde_as]
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct FirmwareId {
     /// Algorithm used for the has of the firmware.
     pub hash_algorithm: HashAlgorithm,
@@ -304,7 +346,7 @@ pub struct FirmwareId {
 }
 
 /// Possible algorithms for computing hashes.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum HashAlgorithm {
     #[serde(rename = "sha256")]
     Sha256,
