@@ -55,6 +55,7 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/silicon_creator/lib:attestation",
     ],
 )
 
