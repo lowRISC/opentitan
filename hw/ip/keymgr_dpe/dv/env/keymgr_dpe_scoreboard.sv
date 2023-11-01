@@ -1196,9 +1196,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
-      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e cur = current_state);
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e cur = current_state,
+      keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation()
+    );
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) return keymgr_dpe_pkg::StWorkDpeInvalid;
-    else                                 return keymgr_dpe_env_pkg::get_next_state(cur);
+    else return keymgr_dpe_env_pkg::get_next_state(cur, op);
   endfunction
 
   virtual function void update_state(
