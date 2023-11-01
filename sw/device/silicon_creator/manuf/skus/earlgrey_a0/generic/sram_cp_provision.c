@@ -11,7 +11,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/json/provisioning_command.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -121,8 +120,7 @@ static status_t provision(ujson_t *uj) {
   // Get provisioning data over console.
   LOG_INFO("Waiting for CP provisioning data ...");
   manuf_cp_provisioning_data_t provisioning_data;
-  CHECK_STATUS_OK(
-      ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
+  TRY(ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
 
   // Provision flash info pages 0 and 3, and OTP SECRET1 partition.
   TRY(device_id_and_manuf_state_flash_info_page_erase(&provisioning_data));
