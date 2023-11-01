@@ -13,7 +13,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -61,6 +63,15 @@ status_t export_data_over_console(ujson_t *uj,
   return OK_STATUS();
 }
 
+static status_t check_array_non_zero(uint32_t *array, size_t num_words) {
+  for (size_t i = 0; i < num_words; ++i) {
+    if (array[i] == 0) {
+      return INTERNAL();
+    }
+  }
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   ujson_t uj = ujson_ottf_console();
   CHECK_STATUS_OK(peripheral_handles_init());
@@ -99,7 +110,7 @@ bool test_main(void) {
     // always executed. This facilitates test-reruns.
     sw_reset();
   } else if (info == kDifRstmgrResetInfoSw) {
-    // Provision the OTP SECRET2 partition.
+    // Provision the OTP SECRET2 partition and flash info pages.
     if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
       // Wait for host ECC pubkey, used to generate a shared AES key to export
       // the RMA unlock token, to arrive over the console.
@@ -108,9 +119,31 @@ bool test_main(void) {
       CHECK_STATUS_OK(ujson_deserialize_manuf_perso_data_in_t(&uj, &in_data));
 
       // Perform OTP and flash info writes.
-      LOG_INFO("Provisioning OTP SECRET2 flash info pages 1 & 2 ...");
+      LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
       CHECK_STATUS_OK(manuf_personalize_device_secrets(
           &flash_state, &lc_ctrl, &otp_ctrl, &in_data, out_data));
+
+      // Read the attestation key seed fields to ensure they are non-zero.
+      uint32_t uds_attestation_key_seed[kAttestationSeedWords];
+      uint32_t cdi_0_attestation_key_seed[kAttestationSeedWords];
+      uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
+          uds_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
+          cdi_0_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
+          cdi_1_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
+                                           kAttestationSeedWords));
+
+      // Reset the chip to activate the OTP partitions and flash pages.
       sw_reset();
     }
 
