@@ -13,6 +13,16 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+void print_progress(const char *prefix, dif_aon_timer_t *aon_timer,
+                    ibex_timeout_t *timeout) {
+  uint32_t count;
+  CHECK_DIF_OK(dif_aon_timer_watchdog_get_count(aon_timer, &count));
+  uint64_t elapsed = ibex_timeout_elapsed(timeout);
+  elapsed = udiv64_slow(elapsed, 1000, NULL);
+  LOG_INFO("%s: after %d ms, watchdog count=%d", prefix, (uint32_t)elapsed,
+           count);
+}
+
 bool test_main(void) {
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
@@ -21,11 +31,13 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   ibex_timeout_t timeout = ibex_timeout_init(HANG_SECS * 1000000);
   while (!ibex_timeout_check(&timeout)) {
+    // Print a status message every 100ms.
+    ibex_timeout_t inter_tmo = ibex_timeout_init(100000);
+    while (!ibex_timeout_check(&inter_tmo)) {
+    }
+    print_progress("Status", &aon_timer, &timeout);
   }
-  /* Get the watchdog count value */
-  uint32_t count;
-  CHECK_DIF_OK(dif_aon_timer_watchdog_get_count(&aon_timer, &count));
-  LOG_INFO("Returning after %d seconds", HANG_SECS);
-  LOG_INFO("Watchdog count: %d", count);
+  // Print final status.
+  print_progress("Wait done", &aon_timer, &timeout);
   return true;
 }
