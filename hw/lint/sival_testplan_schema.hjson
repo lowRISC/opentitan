@@ -1,0 +1,65 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "additionalProperties": false,
+    "testpoints": {
+      "type": "array",
+      "items": {
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "stage": {
+            "enum": ["V1", "V2", "V2S", "V3"]
+          },
+          "si_stage": {
+            "enum": ["SV1", "SV2", "SV3", "SV4", "SV5", "NA", "None"]
+          },
+          "bazel": {
+            "type": "array"
+          },
+          "boot_stages": {
+            "type": "array",
+            "items": {
+              "enum": ["rom_ext", "silicon_owner"]
+            }
+          },
+          "lc_states": {
+            "type": "array",
+            "items": {
+              "enum": ["PROD", "TEST_UNLOCKED", "RAW", "SCRAP", "TEST_LOCKED",
+                "TEST_LOCKED0", "DEV", "RMA", "TEST_UNLOCKED0", "PROD_END"]
+            }
+          },
+          "features": {
+            "type": "array"
+          },
+          "tests": {
+            "type": "array"
+          },
+          "otp_mutate": {
+            "type": "boolean"
+          },
+          "host_support": {
+            "type": "boolean"
+          },
+          "tags": {
+            "type": "array"
+          }
+        },
+        "required": ["name", "desc", "stage", "si_stage", "tests"]
+      }
+    }
+  }
+}
