@@ -164,7 +164,6 @@ However, they are essentially scratchpad space for the underlying implementation
 
 {{#header-snippet sw/device/lib/crypto/include/hash.h hash_context }}
 {{#header-snippet sw/device/lib/crypto/include/mac.h hmac_context }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h gcm_ghash_context }}
 
 ## AES
 
@@ -180,6 +179,7 @@ Because the crypto library uses the hardware AES block, it does not expose an in
 
 A one-shot API initializes the required block cipher mode of operation (ECB, CBC, CFB, OFB or CTR) and performs the required encryption/decryption.
 
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padded_plaintext_length }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes }}
 
 ### AES-GCM
@@ -199,18 +199,12 @@ Additionally, the GHASH operation can be used to construct GCM with block cipher
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_encrypt_gcm }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_decrypt_gcm }}
 
-#### GCM - GHASH and GCTR
-
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_gcm_ghash_init }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_gcm_ghash_update }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_gcm_ghash_final }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_gctr }}
-
 ### AES-KWP
 
 Key Wrap with Padding (KWP) mode is used for the protection of cryptographic keys.
 AES-KWP is specified in [NIST SP800-38F][kwp-spec].
 
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrapped_len }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrap }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_unwrap }}
 
