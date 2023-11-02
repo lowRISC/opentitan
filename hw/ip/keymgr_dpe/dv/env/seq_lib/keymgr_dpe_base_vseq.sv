@@ -169,13 +169,20 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       end
       keymgr_dpe_pkg::OpDpeGenSwOut,
       keymgr_dpe_pkg::OpDpeGenHwOut: begin
-        // only when key_verion less than  or equal to max version
-        is_good_op = key_verion <= ral.max_key_ver_shadowed.get_mirrored_value();
+        // generating versioned key's is only valid
+        // during available state and it's a good op if
+        // max_key_ver <= max_key_version
+        is_good_op = (!(current_state inside {
+          keymgr_dpe_pkg::StWorkDpeInvalid,
+          keymgr_dpe_pkg::StWorkDpeDisabled,
+          keymgr_dpe_pkg::StWorkDpeReset
+        })) ? key_verion <= ral.max_key_ver_shadowed.get_mirrored_value() : 0;
       end
       keymgr_dpe_pkg::OpDpeErase: begin
         is_good_op = !(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
-          keymgr_dpe_pkg::StWorkDpeDisabled
+          keymgr_dpe_pkg::StWorkDpeDisabled,
+          keymgr_dpe_pkg::StWorkDpeReset
         });
       end
       keymgr_dpe_pkg::OpDpeDisable: begin
