@@ -372,6 +372,39 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       //    default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
       //  endcase
       //end
+      keymgr_dpe_pkg::StWorkDpeReset: begin
+        case (op)
+          keymgr_dpe_pkg::OpDpeAdvance: begin
+          end
+          keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
+          end
+          keymgr_dpe_pkg::OpDpeErase: begin
+          end
+          keymgr_dpe_pkg::OpDpeDisable: begin
+          end
+        endcase
+      end
+      keymgr_dpe_pkg::StWorkDpeAvailable: begin
+        case (op)
+          keymgr_dpe_pkg::OpDpeAdvance: begin
+          end
+          keymgr_dpe_pkg::OpDpeGenSwOut,
+          keymgr_dpe_pkg::OpDpeGenHwOut: begin
+            // If only op error but no fault error, no update for output
+            if (get_op_err()) begin
+              update_result = NotUpdate;
+            end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
+              update_result = UpdateHwOut;
+            end else begin
+              update_result = UpdateSwOut;
+            end
+          end
+          keymgr_dpe_pkg::OpDpeErase: begin
+          end
+          keymgr_dpe_pkg::OpDpeDisable: begin
+          end
+        endcase
+      end
       keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
         case (op)
           keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable: begin
