@@ -158,6 +158,8 @@
               will be implemented in a translation 'shim'.
             - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
               When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
+            - For sival, this test can only run on opensource rtl in test_unlocked or rma state.
+              Do random csr write and read back for RW type registers.
             '''
       stage: V2
       si_stage: SV3
