@@ -228,5 +228,20 @@
       si_stage: None
       tests: []
     }
+    {
+      name: otp_ctrl_check_timeout
+      desc: '''Verify check_tiemout feature.
+
+            - Program otp_ctrl.check_timeout value small value (e.g. 1000 cycles).
+            - Write 1 to otp_ctrl.check_trigger.integrity.
+            - After timeout cycle, check otp_ctrl.status.timeout_error = 1.
+            - Write 1 to otp_ctrl.check_trigger.consistency.
+            - After timeout cycle, check otp_ctrl.status.timeout_error = 1.
+      '''
+      features: ["OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT"]
+      stage: V3
+      si_stage: None
+      tests: []
+    }
   ]
 }
