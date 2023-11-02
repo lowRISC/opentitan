@@ -14,8 +14,12 @@ use object::{Object, ObjectSymbol};
 
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 
-pub struct ElfDebugger<'a> {
+pub struct ElfSymbols {
     symbols: HashMap<String, u32>,
+}
+
+pub struct ElfDebugger<'a> {
+    symbols: &'a ElfSymbols,
     jtag: Box<dyn Jtag + 'a>,
 }
 
@@ -31,7 +35,7 @@ impl<'a> Deref for ElfDebugger<'a> {
 impl<'a> DerefMut for ElfDebugger<'a> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
-        self.jtag()
+        &mut *self.jtag
     }
 }
 
@@ -124,32 +128,15 @@ impl Display for ResolvedAddress {
     }
 }
 
-impl<'a> ElfDebugger<'a> {
-    pub fn attach(jtag: Box<dyn Jtag + 'a>) -> Self {
-        Self {
-            symbols: HashMap::new(),
-            jtag,
-        }
-    }
-
-    pub fn load_elf(&mut self, path: impl AsRef<Path>) -> Result<()> {
+impl ElfSymbols {
+    pub fn load_elf(path: impl AsRef<Path>) -> Result<Self> {
         let elf_binary = fs::read(path)?;
         let elf_file = object::File::parse(&*elf_binary)?;
+        let mut symbols = HashMap::new();
         for sym in elf_file.symbols() {
-            self.symbols
-                .insert(sym.name()?.to_owned(), sym.address() as u32);
+            symbols.insert(sym.name()?.to_owned(), sym.address() as u32);
         }
-        Ok(())
-    }
-
-    pub fn disconnect(&mut self) -> Result<()> {
-        self.jtag.disconnect()
-    }
-
-    /// Get the underlying JTAG interface.
-    #[inline]
-    pub fn jtag(&mut self) -> &mut (dyn Jtag + 'a) {
-        &mut *self.jtag
+        Ok(Self { symbols })
     }
 
     /// Resolve a symbolic address.
@@ -168,6 +155,24 @@ impl<'a> ElfDebugger<'a> {
             address,
             resolution,
         })
+    }
+
+    /// Attach to a JTAG interface for debugging.
+    pub fn attach<'a>(&'a self, jtag: Box<dyn Jtag + 'a>) -> ElfDebugger<'a> {
+        ElfDebugger {
+            symbols: self,
+            jtag,
+        }
+    }
+}
+
+impl<'a> ElfDebugger<'a> {
+    pub fn disconnect(self) -> Result<()> {
+        self.jtag.disconnect()
+    }
+
+    pub fn resolve(&self, address: impl Into<SymbolicAddress>) -> Result<ResolvedAddress> {
+        self.symbols.resolve(address)
     }
 
     /// Read a RISC-V register.
