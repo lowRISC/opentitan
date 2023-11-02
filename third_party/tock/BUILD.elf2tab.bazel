@@ -33,6 +33,7 @@ rust_library(
     deps = [
         "@crate_index//:chrono",
         "@crate_index//:clap",
+        "@crate_index//:clap-num",
         "@crate_index//:elf",
         "@crate_index//:ring",
         "@crate_index//:rsa-der",

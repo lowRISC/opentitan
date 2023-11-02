@@ -80,6 +80,12 @@ alias(
 )
 
 alias(
+    name = "clap-num",
+    actual = "@crate_index__clap-num-1.0.2//:clap_num",
+    tags = ["manual"],
+)
+
+alias(
     name = "crc",
     actual = "@crate_index__crc-3.0.1//:crc",
     tags = ["manual"],

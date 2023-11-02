@@ -304,6 +304,7 @@ _NORMAL_DEPENDENCIES = {
             "byteorder": "@crate_index__byteorder-1.5.0//:byteorder",
             "chrono": "@crate_index__chrono-0.4.31//:chrono",
             "clap": "@crate_index__clap-4.4.7//:clap",
+            "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
@@ -797,6 +798,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/clap/4.4.7/download"],
         strip_prefix = "clap-4.4.7",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.clap-4.4.7.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__clap-num-1.0.2",
+        sha256 = "488557e97528174edaa2ee268b23a809e0c598213a4bbcb4f34575a46fda147e",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/clap-num/1.0.2/download"],
+        strip_prefix = "clap-num-1.0.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.clap-num-1.0.2.bazel"),
     )
 
     maybe(

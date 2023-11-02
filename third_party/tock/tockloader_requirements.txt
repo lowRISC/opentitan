@@ -5,7 +5,6 @@ pycryptodome==3.18.0
 pyserial==3.5
 questionary==1.10.0
 siphash==0.0.1
-# tockloader==1.10.0
-tockloader@git+https://github.com/tock/tockloader.git@823e21bb4ae6ff9bbb30393f48ce5b23feb9f023
+tockloader@git+https://github.com/tock/tockloader.git@f3b2033693266557403b06f61a14888aa81cff60
 toml==0.10.2
 tqdm==4.65.0
