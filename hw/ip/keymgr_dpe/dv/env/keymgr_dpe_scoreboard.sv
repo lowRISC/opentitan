@@ -59,7 +59,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit                                is_sw_share_corrupted;
 
   // HW internal key, used for OP in current state
-  key_shares_t current_internal_key[keymgr_dpe_cdi_type_e];
+  keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
+  keymgr_dpe_env_pkg::keymgr_dpe_key_slot_entry_t current_internal_key[
+	keymgr_dpe_pkg::DpeNumSlots];
   keymgr_dpe_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
@@ -199,13 +201,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     case (update_result)
       UpdateInternalKey: begin
         // digest is 384 bits wide while internal key is only 256, need to truncate it
-        current_internal_key[current_cdi] = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
-        cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_cdi], current_state,
-                                          current_cdi);
+        current_internal_key[current_key_slot.dst_slot].key = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
+                                  item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+        cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_key_slot.dst_slot].key, current_state);
 
         `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for state %s %s",
-             current_internal_key[current_cdi], current_state.name, current_cdi.name), UVM_MEDIUM)
+             current_internal_key[current_key_slot.dst_slot].key, current_state.name, current_cdi.name), UVM_MEDIUM)
       end
       UpdateSwOut: begin
         if (!get_fault_err) begin
@@ -229,7 +230,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             `gmv(ral.control_shadowed.dest_sel));
 
         if (dest != keymgr_pkg::None && !get_fault_err()) begin
-          cfg.keymgr_dpe_vif.update_sideload_key(key_shares, current_state, current_cdi, dest);
+          cfg.keymgr_dpe_vif.update_sideload_key(key_shares, current_state, dest);
           `uvm_info(`gfn, $sformatf("Update sideload key 0x%0h for %s", key_shares, dest.name),
                     UVM_MEDIUM)
         end
@@ -239,13 +240,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (current_state != keymgr_dpe_pkg::StWorkDpeReset &&
         get_operation() inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) begin
-      current_cdi = get_adv_cdi_type();
-      if (current_cdi > 0 && current_internal_key[current_cdi] > 0) begin
         bit good_key = get_is_kmac_key_correct();
         bit good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
-        cfg.keymgr_dpe_vif.update_kdf_key(current_internal_key[current_cdi], current_state,
+        cfg.keymgr_dpe_vif.update_kdf_key(current_internal_key[current_key_slot.dst_slot].key, current_state,
                                       good_key, good_data);
-      end
     end
   endfunction
 
@@ -650,16 +648,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   // if invalid key is used, design will switch to use random data for the
                   // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
                   // doesn't lead to an invalid_key error
-                  current_internal_key[Sealing][0] = 1;
-                  current_internal_key[Sealing][1] = 1;
-                  current_internal_key[Attestation][0] = 1;
-                  current_internal_key[Attestation][1] = 1;
+                  current_internal_key[current_key_slot.dst_slot].key[0] = 1;
+                  current_internal_key[current_key_slot.dst_slot].key[1] = 1;
                 end
 
                 // update kmac key for check
-                if (current_internal_key[current_cdi] > 0) begin
+                if (current_internal_key[current_key_slot.dst_slot].key > 0) begin
                   cfg.keymgr_dpe_vif.update_kdf_key(
-                    current_internal_key[current_cdi],
+                    current_internal_key[current_key_slot.dst_slot].key,
                     current_state,
                     good_key,
                     good_data
@@ -813,11 +809,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
-    // for advance to OwnerRootSecret, both KDF use same otp_key
-    current_internal_key[Sealing] = otp_key;
-    current_internal_key[Attestation] = otp_key;
-    cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[Sealing], current_state,
-                                      current_cdi);
+    current_internal_key[current_key_slot.dst_slot].key = otp_key;
+    current_internal_key[current_key_slot.dst_slot].policy = '0;
+    current_internal_key[current_key_slot.dst_slot].policy.allow_child = 1;
+    cfg.keymgr_dpe_vif.store_internal_key(
+      current_internal_key[current_key_slot.dst_slot].key,
+      current_state
+    );
   endfunction
 
   virtual function bit [TL_DW-1:0] get_current_max_version(
@@ -925,8 +923,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
     if (get_invalid_op() || get_operation() == keymgr_dpe_pkg::OpDpeDisable) return 0;
 
-    if ((current_internal_key[current_cdi][0] inside {0, '1} ||
-         current_internal_key[current_cdi][1] inside {0, '1}) &&
+    if ((current_internal_key[current_key_slot.dst_slot].key[0] inside {0, '1} ||
+         current_internal_key[current_key_slot.dst_slot].key[1] inside {0, '1}) &&
          current_state != keymgr_dpe_pkg::StWorkDpeReset) begin
       invalid_hw_input_type = OtpRootKeyInvalid;
       void'(ral.debug.invalid_key.predict(1));
@@ -1158,9 +1156,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     foreach (hw_data_a_array[i]) begin
       `DV_CHECK_NE(act, hw_data_a_array[i], $sformatf("HW data at state %0s", i.name))
     end
-    foreach (cfg.keymgr_dpe_vif.keys_a_array[state, cdi, dest]) begin
-      `DV_CHECK_NE(act, cfg.keymgr_dpe_vif.keys_a_array[state][cdi][dest],
-                   $sformatf("key at state %0d for %s %s", state, cdi.name, dest))
+    foreach (cfg.keymgr_dpe_vif.keys_a_array[state, dest]) begin
+      `DV_CHECK_NE(act, cfg.keymgr_dpe_vif.keys_a_array[state][dest],
+                   $sformatf("key at state %0d for%s", state, dest))
     end
   endfunction
 
@@ -1304,7 +1302,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_sw_share_corrupted = 0;
     req_fifo.flush();
     rsp_fifo.flush();
-    current_internal_key.delete;
+    foreach (current_internal_key[slot]) begin
+      current_internal_key[slot].key = '0;
+      current_internal_key[slot].policy = '0;
+    end
     adv_data_a_array.delete();
     id_data_a_array.delete();
     sw_data_a_array.delete();
