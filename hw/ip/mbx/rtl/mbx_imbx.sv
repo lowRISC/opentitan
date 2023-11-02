@@ -192,7 +192,7 @@ module mbx_imbx #(
 
   // Ready IRQ to core should not be asserted whilst there is still pending write traffic
   `ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
-               hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
+                hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
 
   // The write pointer should not be advanced if the request has not yet been granted.
   `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
