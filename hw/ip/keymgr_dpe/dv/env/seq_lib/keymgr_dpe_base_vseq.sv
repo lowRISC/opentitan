@@ -153,6 +153,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
     int key_verion = `gmv(ral.key_version[0]);
+    bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
     logic [2:0] operation = `gmv(ral.control_shadowed.operation);
     keymgr_dpe_pkg::keymgr_dpe_ops_e cast_operation = keymgr_dpe_pkg::keymgr_dpe_ops_e'(operation);
     bit[TL_DW-1:0] rd_val;
