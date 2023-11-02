@@ -34,6 +34,9 @@
             - chip_sw_flash_scramble
             - chip_sw_keymgr_key_derivation
             - chip_sw_otbn_mem_scramble
+            For sival, this test can be done by
+            - manuf_ft_sku_individualization
+            - manuf_ft_provision_rma_token_and_personalization
             '''
       features: ["OTP_CTRL.KEY_DERIVATION", "OTP_CTRL.PARTITION.SECRET1"]
       stage: V2
@@ -52,6 +55,9 @@
 
             This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
+            For sival, this test can be done by
+            - manuf_ft_sku_individualization
+            - manuf_ft_provision_rma_token_and_personalization
             '''
       features: ["OTP_CTRL.ENTROPY_READ"]
       stage: V2
@@ -74,11 +80,13 @@
             - Ensure that the whole operation does not raise any interrupts or alerts or errors.
             - After reset, verify that the LC state transition completed successfully by reading the
               LC state and LC count CSRs.
+            For sival, this test can be done by
+            - manuf_ft_sku_individualization_preop
             '''
       features: ["OTP_CTRL.PROGRAM", "OTP_CTRL.PARTITION.SECRET0",
                  "OTP_CTRL.PARTITION.LIFE_CYCLE", "OTP_CTRL.PARTITION.SECRET2"]
       stage: V2
-      si_stage: None
+      si_stage: SV1
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -109,6 +117,8 @@
             consumers of the hardware configuration bits are receiving the correct values.
 
             Xref'ed with corresponding IP tests that receive these bits.
+            For sival, this test can be done by
+            - manuf_ft_sku_individualization_preop
             '''
       features: ["OTP_CTRL.ENTROPY_READ"]
       stage: V2
@@ -207,7 +217,10 @@
     }
     {
       name: otp_ctrl_calibration
-      desc: "Verify all calibrated parameters are programmed during manufacturing stage calibration test phase."
+      desc: '''Verify all calibrated parameters are programmed during manufacturing stage calibration test phase.
+            For sival this test can be done by
+            - manuf_cp_ast_test_execution
+      '''
       features: ["OTP_CTRL.PARTITION.CREATOR_SW_CFG"]
       stage: V3
       si_stage: SV1
