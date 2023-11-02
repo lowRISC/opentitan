@@ -65,6 +65,16 @@ package keymgr_dpe_env_pkg;
     FaultKeyIntgError
   } keymgr_dpe_fault_inject_type_e;
 
+  typedef struct{
+    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot;
+    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot;
+  } keymgr_dpe_key_slot_t;
+
+  typedef struct {
+    key_shares_t key;
+    keymgr_dpe_pkg::keymgr_dpe_policy_t policy;
+  } keymgr_dpe_key_slot_entry_t;
+
   string msg_id = "keymgr_dpe_env_pkg";
   // functions
   /* exposed working states are  StWorkDpeReset, StWorkDpeAvailable, StWorkDpeDisabled, StWorkDpeInvalid

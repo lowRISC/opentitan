@@ -66,8 +66,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
   // or any name at keymgr_key_dest_e
   keymgr_dpe_env_pkg::key_shares_t keys_a_array[
-    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e][
-    keymgr_dpe_cdi_type_e][string];
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e][string];
 
   // set this flag when design enters init state, edn req will start periodically
   bit start_edn_req;
@@ -261,11 +260,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // store internal key once it's available and use to compare if future OP is invalid
   function automatic void store_internal_key(
       keymgr_dpe_env_pkg::key_shares_t key_shares,
-      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
-      keymgr_dpe_cdi_type_e cdi_type
+      keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state
     );
 
-    keys_a_array[state][cdi_type]["Internal"] = key_shares;
+    keys_a_array[state]["Internal"] = key_shares;
   endfunction
 
   // update sideload key for comparison
@@ -273,7 +271,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
   function automatic void update_sideload_key(
       keymgr_dpe_env_pkg::kmac_digests_t key_shares,
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
-      keymgr_dpe_cdi_type_e cdi_type,
       keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::Kmac
   );
     keymgr_dpe_env_pkg::key_shares_t trun_key_shares = {key_shares[1][keymgr_pkg::KeyWidth-1:0],
@@ -303,7 +300,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
       default: `uvm_fatal("keymgr_dpe_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
-    keys_a_array[state][cdi_type][dest.name] = trun_key_shares;
+    keys_a_array[state][dest.name] = trun_key_shares;
   endfunction
 
   function automatic void clear_sideload_key(keymgr_pkg::keymgr_sideload_clr_e clear_dest);
@@ -595,13 +592,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   function automatic void check_invalid_key(keymgr_pkg::hw_key_req_t act_key, string key_name);
     if (rst_n && act_key.valid && en_chk) begin
-      foreach (keys_a_array[state, cdi, dest]) begin
-        `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][cdi][dest],
-            $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
+      foreach (keys_a_array[state, dest]) begin
+        `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][dest],
+            $sformatf("%s key at state %s for %s", key_name, state.name, dest), ,
             msg_id)
         // once key is wiped, 2 shares will be wiped to different values
         `DV_CHECK_CASE_NE(act_key.key[1], act_key.key[0],
-            $sformatf("%s key at state %s for %s %s", key_name, state.name, cdi.name, dest), ,
+            $sformatf("%s key at state %s for %s", key_name, state.name, dest), ,
             msg_id)
       end
     end
