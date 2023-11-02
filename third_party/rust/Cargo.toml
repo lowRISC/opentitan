@@ -93,6 +93,7 @@ pest_derive = "2.2"
 mdbook = "0.4.31"
 
 # elf2tab dependencies
+clap-num = "1.0.2"
 tar = "0.4.36"
 elf = "0.7.1"
 ring = "0.16.20"
