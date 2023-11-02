@@ -215,7 +215,7 @@ jobs:
       # * It excludes targets that depend on bitstream_splice rules, since the
       #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
-      TARGET_PATTERN_FILE=$(mktemp)
+      TARGET_PATTERN_FILE=target_pattern.txt
       echo //... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
@@ -236,6 +236,8 @@ jobs:
         --test_tag_filters=-broken,-cw310,-verilator,-dv \
         --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build SW
+  - publish: target_pattern.txt
+    artifact: target_pattern_file
   - bash: |
       set -x -e
       . util/build_consts.sh
@@ -252,6 +254,39 @@ jobs:
     parameters:
       includePatterns:
         - "/sw/***"
+
+- job: sw_test
+  displayName: Earl Grey SW Test
+  timeoutInMinutes: 120
+  dependsOn: sw_build
+  pool: ci-public
+  variables:
+    - name: bazelCacheGcpKeyPath
+      value: ''
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: bazelCacheGcpKey
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
+    # Set the remote cache GCP key path
+  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    displayName: GCP key path
+  - download: current
+    artifact: target_pattern_file
+  - bash: |
+      TARGET_PATTERN_FILE="$(Pipeline.Workspace)/target_pattern_file/target_pattern.txt"
+      ci/bazelisk.sh test \
+        --build_tests_only=false \
+        --test_output=errors \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --target_pattern_file="${TARGET_PATTERN_FILE}"
+    displayName: Build & test SW
+  - template: ci/publish-bazel-test-results.yml
 
 - job: chip_englishbreakfast_verilator
   displayName: Verilated English Breakfast (Build)
