@@ -13,7 +13,7 @@ use regex::Regex;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
-use opentitanlib::test_utils::elf_debugger::{ElfDebugger, SymbolicAddress};
+use opentitanlib::test_utils::elf_debugger::{ElfDebugger, ElfSymbols, SymbolicAddress};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
@@ -100,7 +100,15 @@ fn asm_watchdog_bark(dbg: &mut ElfDebugger) -> Result<()> {
     Ok(())
 }
 
-fn asm_watchdog_bite(dbg: &mut ElfDebugger) -> Result<()> {
+fn asm_watchdog_bite<'t>(
+    opt_dbg: &mut Option<ElfDebugger<'t>>,
+    opts: &Opts,
+    transport: &'t TransportWrapper,
+    sym: &'t ElfSymbols,
+) -> Result<()> {
+    // This test requires taking the ownershup of the debugger.
+    let mut dbg = opt_dbg.take().unwrap();
+
     dbg.reset(false)?;
     dbg.remove_all_breakpoints()?;
 
@@ -143,7 +151,9 @@ fn asm_watchdog_bite(dbg: &mut ElfDebugger) -> Result<()> {
     // Disconnect JTAG, wait for a sufficiently long period to allow reset to complete and reconnect.
     dbg.disconnect()?;
     std::thread::sleep(BP_TIMEOUT);
-    dbg.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::RiscvTap)?;
+    dbg = sym.attach(jtag);
 
     // Check that the execution has stuck after reset at the given known location.
     dbg.halt()?;
@@ -158,6 +168,8 @@ fn asm_watchdog_bite(dbg: &mut ElfDebugger) -> Result<()> {
     // Check that the reset is caused by watchdog.
     log::info!("RESET_INFO={:#x}", reset_info);
     assert!(reset_info & u32::from(opentitanlib::dif::rstmgr::DifRstmgrResetInfo::Watchdog) != 0);
+
+    *opt_dbg = Some(dbg);
 
     Ok(())
 }
@@ -457,6 +469,9 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
+    log::info!("Loading symbols from ELF {}", opts.elf.display());
+    let sym = ElfSymbols::load_elf(&opts.elf)?;
+
     let uart = transport.uart("console")?;
 
     reset(
@@ -467,24 +482,20 @@ fn main() -> Result<()> {
 
     let mut jtag = opts.init.jtag_params.create(&transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
-    let mut dbg = ElfDebugger::attach(jtag);
-
-    log::info!("Loading symbols from ELF {}", opts.elf.display());
-    dbg.load_elf(&opts.elf)?;
-
-    let result = dbg.reset(false);
+    let result = jtag.reset(false);
     assert_eq!(result.is_err(), opts.expect_fail);
     if opts.expect_fail {
         return Ok(());
     }
 
-    execute_test!(asm_interrupt_handler, &mut dbg);
-    execute_test!(shutdown_execution_asm, &mut dbg);
-    execute_test!(asm_watchdog_bark, &mut dbg);
-    execute_test!(asm_watchdog_bite, &mut dbg);
-    execute_test!(debug_test, &mut dbg, &*uart);
+    let mut dbg = Some(sym.attach(jtag));
+    execute_test!(asm_interrupt_handler, dbg.as_mut().unwrap());
+    execute_test!(shutdown_execution_asm, dbg.as_mut().unwrap());
+    execute_test!(asm_watchdog_bark, dbg.as_mut().unwrap());
+    execute_test!(asm_watchdog_bite, &mut dbg, &opts, &transport, &sym);
+    execute_test!(debug_test, dbg.as_mut().unwrap(), &*uart);
 
-    dbg.disconnect()?;
+    dbg.unwrap().disconnect()?;
 
     Ok(())
 }
