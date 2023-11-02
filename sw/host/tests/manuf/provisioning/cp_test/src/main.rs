@@ -80,8 +80,11 @@ fn test_unlock(
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -105,8 +108,11 @@ fn test_unlock(
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -133,8 +139,11 @@ fn check_cp_provisioning(
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Connect to the RISCV TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.

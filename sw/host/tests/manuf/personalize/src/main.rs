@@ -122,8 +122,11 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     }
 
     // Connect to JTAG LC TAP.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check the current LC state is Dev or Prod.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
@@ -155,8 +158,11 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         Some(JtagTap::LcTap),
     )?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check the LC state is RMA.
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.

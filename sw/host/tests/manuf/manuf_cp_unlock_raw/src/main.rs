@@ -34,8 +34,11 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // Provide the `RAW_UNLOCK` token
@@ -55,8 +58,11 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

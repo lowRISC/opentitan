@@ -59,8 +59,11 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
     jtag.halt()?;
     // Definitions for hardware registers
     let lc_ctrl_base_addr = top_earlgrey::LC_CTRL_BASE_ADDR as u32;
@@ -184,8 +187,11 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Test reads by checking the LC_STATE register
     assert_eq!(

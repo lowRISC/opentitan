@@ -14,7 +14,7 @@ use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
-use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
@@ -111,8 +111,8 @@ pub trait Transport {
         Ok(())
     }
 
-    /// Returns a [`Jtag`] implementation.
-    fn jtag(&self, _opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
+    /// Returns a [`JtagChain`] implementation.
+    fn jtag(&self, _opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Jtag).into())
     }
     /// Returns a SPI [`Target`] implementation.

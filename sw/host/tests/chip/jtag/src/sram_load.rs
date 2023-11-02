@@ -34,9 +34,12 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
     log::info!("Halting core");
     jtag.halt()?;
 

@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
-use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
@@ -181,9 +181,9 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         }
     }
 
-    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
+    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
         Ok(Box::new(OpenOcdJtagChain::new(
-            match self.openocd_adapter_config {
+            &match self.openocd_adapter_config {
                 Some(ref path) => std::fs::read_to_string(path)?,
                 None => String::new(),
             },

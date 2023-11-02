@@ -43,8 +43,11 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .apply()
         .context("failed to apply RISCV TAP strapping")?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
     ExternalClock::enable(&mut *jtag, ClockSpeed::High)
@@ -75,8 +78,11 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // Read and write LC state register to verify connection.

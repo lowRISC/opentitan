@@ -40,8 +40,11 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
@@ -82,8 +85,11 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after

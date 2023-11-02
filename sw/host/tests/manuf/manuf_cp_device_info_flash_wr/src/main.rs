@@ -41,8 +41,11 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
@@ -75,8 +78,11 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Issue an LC transition.
     const TEST_EXIT_TOKEN: [u32; 4] = [0x11111111, 0x11111111, 0x11111111, 0x11111111];

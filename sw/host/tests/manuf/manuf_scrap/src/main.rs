@@ -30,8 +30,11 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, and connect to it.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check the initial LC state.
     assert_eq!(
@@ -52,8 +55,11 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         Some(JtagTap::LcTap),
     )?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check the LC state is SCRAP.
     assert_eq!(

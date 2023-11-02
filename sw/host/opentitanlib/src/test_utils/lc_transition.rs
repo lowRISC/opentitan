@@ -128,8 +128,11 @@ fn setup_lc_transition(
 /// transport.reset_target(init.bootstrap.options.reset_delay, true).unwrap();
 ///
 /// // Connect to the LC controller TAP.
-/// let mut jtag = transport.jtag(jtag_opts).unwrap();
-/// jtag.connect(JtagTap::LcTap).expect("failed to connect to LC TAP");
+/// let mut jtag = transport
+///     .jtag(jtag_opts)
+///     .unwrap()
+///     .connect(JtagTap::LcTap)
+///     .expect("failed to connect to LC TAP");
 ///
 /// let test_exit_token = DifLcCtrlToken::from([0xff; 16]);
 ///
@@ -143,8 +146,11 @@ fn setup_lc_transition(
 ///     Some(JtagTap::LcTap),
 /// ).expect("failed to trigger transition to prod");
 ///
-/// jtag = transport.jtag(jtag_opts).unwrap();
-/// jtag.connect(JtagTap::LcTap).expect("failed to reconnect to LC TAP");
+/// jtag = transport
+///     .jtag(jtag_opts)
+///     .unwrap()
+///     .connect(JtagTap::LcTap)
+///     .expect("failed to reconnect to LC TAP");
 ///
 /// assert_eq!(
 ///     jtag.read_lc_ctrl_reg(&LcCtrlReg::LCState).unwrap(),
@@ -249,8 +255,7 @@ pub fn trigger_volatile_raw_unlock<'t>(
     // because a volatile unlock will trigger a TAP strap resampling immediately upon success.
     if post_transition_tap == JtagTap::RiscvTap {
         jtag.disconnect()?;
-        jtag = transport.jtag(jtag_params)?;
-        jtag.connect(JtagTap::RiscvTap)?;
+        jtag = transport.jtag(jtag_params)?.connect(JtagTap::RiscvTap)?;
     }
 
     wait_for_status(
@@ -264,7 +269,7 @@ pub fn trigger_volatile_raw_unlock<'t>(
 }
 
 pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlStatus) -> Result<()> {
-    let jtag_tap = jtag.tap().unwrap();
+    let jtag_tap = jtag.tap();
 
     // Wait for LC controller to be ready.
     poll::poll_until(timeout, Duration::from_millis(50), || {

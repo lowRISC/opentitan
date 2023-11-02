@@ -151,8 +151,11 @@ fn asm_watchdog_bite<'t>(
     // Disconnect JTAG, wait for a sufficiently long period to allow reset to complete and reconnect.
     dbg.disconnect()?;
     std::thread::sleep(BP_TIMEOUT);
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
     dbg = sym.attach(jtag);
 
     // Check that the execution has stuck after reset at the given known location.
@@ -480,8 +483,11 @@ fn main() -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let mut jtag = opts.init.jtag_params.create(&transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(&transport)?
+        .connect(JtagTap::RiscvTap)?;
     let result = jtag.reset(false);
     assert_eq!(result.is_err(), opts.expect_fail);
     if opts.expect_fail {

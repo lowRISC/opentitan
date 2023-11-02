@@ -131,8 +131,11 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
 
     log::info!("Connecting to JTAG interface");
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to JTAG")?;
 
     // Wait for the lifecycle controller to enter the `READY` state from

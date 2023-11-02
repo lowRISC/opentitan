@@ -110,8 +110,11 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
     )
     .context("failed to trigger transition to TEST_LOCKED0")?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -144,8 +147,11 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
     )
     .context("failed to trigger transition to TEST_UNLOCKED1")?;
 
-    jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -178,8 +184,11 @@ fn reset_to_tap<'t>(
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset")?;
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(tap)
+    let jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(tap)
         .with_context(|| format!("failed to connect to {tap:?} over JTAG"))?;
 
     Ok(jtag)

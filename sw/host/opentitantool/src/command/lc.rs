@@ -78,8 +78,10 @@ impl CommandDispatch for LcStateRead {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
         let lc_state =
@@ -116,8 +118,10 @@ impl CommandDispatch for RawUnlock {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
 
         check_lc_state_is_raw(&mut *jtag)?;
         let token_words = parse_unlock_token_str(self.token.as_str())?;
@@ -134,8 +138,10 @@ impl CommandDispatch for RawUnlock {
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
 
-        jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
         let lc_state =
@@ -184,8 +190,10 @@ impl CommandDispatch for Status {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let mut jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
         let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
         jtag.disconnect()?;
 
@@ -233,8 +241,10 @@ impl CommandDispatch for TransitionCount {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let mut jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
         let transition_count = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?;
         jtag.disconnect()?;
 
@@ -268,8 +278,10 @@ impl CommandDispatch for VolatileRawUnlock {
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
 
         check_lc_state_is_raw(&mut *jtag)?;
         let token_words = parse_unlock_token_str(self.token.as_str())?;
@@ -286,8 +298,10 @@ impl CommandDispatch for VolatileRawUnlock {
             &self.jtag_params,
         )?;
 
-        jtag = self.jtag_params.create(transport)?;
-        jtag.connect(JtagTap::LcTap)?;
+        jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
         let lc_state =
