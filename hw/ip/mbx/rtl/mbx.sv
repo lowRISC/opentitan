@@ -149,7 +149,7 @@ module mbx
 
   // Interface signals for SRAM host access to write the incoming data to memory
   logic imbx_sram_write_req, imbx_sram_write_gnt;
-  logic imbx_sram_write_resp_vld;
+  logic imbx_sram_all_vld_rcvd;
   logic [CfgSramDataWidth-1:0] sysif_write_data;
   logic sysif_write_data_write_valid;
 
@@ -238,6 +238,7 @@ module mbx
     // Host interface to access private SRAM
     .hostif_sram_write_req_o     ( imbx_sram_write_req              ),
     .hostif_sram_write_gnt_i     ( imbx_sram_write_gnt              ),
+    .hostif_sram_all_vld_rcvd_i  ( imbx_sram_all_vld_rcvd           ),
     .hostif_sram_write_ptr_o     ( imbx_sram_write_ptr              )
   );
 
@@ -299,7 +300,7 @@ module mbx
     .imbx_sram_write_req_i     ( imbx_sram_write_req      ),
     .imbx_sram_write_gnt_o     ( imbx_sram_write_gnt      ),
     .imbx_sram_write_ptr_i     ( imbx_sram_write_ptr      ),
-    .imbx_sram_write_resp_vld_o( imbx_sram_write_resp_vld ),
+    .imbx_sram_all_vld_rcvd_o  ( imbx_sram_all_vld_rcvd   ),
     .imbx_write_data_i         ( sysif_write_data         ),
     // Interface to the outbound mailbox
     .ombx_sram_read_req_i      ( ombx_sram_read_req       ),

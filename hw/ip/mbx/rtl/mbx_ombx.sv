@@ -240,6 +240,7 @@ module mbx_ombx #(
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( sys_read_all_o               ),
     .writer_close_mbx_i        ( writer_close_mbx             ),
+    .writer_last_word_written_i( 1'b0                         ),
     .writer_write_valid_i      ( 1'b0                         ),
     // Status signals
     .mbx_empty_o               ( mbx_empty                    ),

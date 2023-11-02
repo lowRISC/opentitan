@@ -34,6 +34,7 @@ module mbx_imbx #(
   // Host interface to the private SRAM
   output logic                        hostif_sram_write_req_o,
   input  logic                        hostif_sram_write_gnt_i,
+  input  logic                        hostif_sram_all_vld_rcvd_i,
   output logic [CfgSramAddrWidth-1:0] hostif_sram_write_ptr_o
 );
   localparam int unsigned LCFG_SRM_ADDRINC = CfgSramDataWidth / 8;
@@ -153,6 +154,7 @@ module mbx_imbx #(
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( sys_read_all_i               ),
     .writer_close_mbx_i        ( sysif_control_go_set_i       ),
+    .writer_last_word_written_i( hostif_sram_all_vld_rcvd_i   ),
     .writer_write_valid_i      ( sysif_data_write_valid_i     ),
     // Status signals
     .mbx_empty_o               ( mbx_empty                    ),
@@ -189,11 +191,8 @@ module mbx_imbx #(
 `endif
 
   // Ready IRQ to core should not be asserted whilst there is still pending write traffic
-  // TODO: this should wait until the write receives a response and not just a grent, and
-  //       presently it should be expected to fire because assertion of ibmx_irq_ready_o is not
-  //       even deferred until the final word write has been granted. (#476)
-  //`ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
-  //              hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
+  `ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
+               hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
 
   // The write pointer should not be advanced if the request has not yet been granted.
   `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,

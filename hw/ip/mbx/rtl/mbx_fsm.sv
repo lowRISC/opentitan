@@ -15,8 +15,9 @@ module mbx_fsm #(
   input  logic hostif_control_error_set_i,
   input  logic sysif_control_abort_set_i,
   input  logic sys_read_all_i,
-  input  logic writer_write_valid_i,
   input  logic writer_close_mbx_i,
+  input  logic writer_last_word_written_i,
+  input  logic writer_write_valid_i,
   // Status signals
   output logic mbx_empty_o,
   output logic mbx_write_o,
@@ -26,11 +27,12 @@ module mbx_fsm #(
   output logic mbx_ready_o,
   output logic mbx_state_error_o
 );
-  typedef enum logic [1:0] {
-    MbxIdle         = 2'b00,
-    MbxWrite        = 2'b01,
-    MbxRead         = 2'b10,
-    MbxSysAbortHost = 2'b11
+  typedef enum logic [2:0] {
+    MbxIdle          = 3'b000,
+    MbxWrite         = 3'b001,
+    MbxWaitFinalWord = 3'b010,
+    MbxRead          = 3'b011,
+    MbxSysAbortHost  = 3'b100
   } mbx_ctrl_state_e;
 
   mbx_ctrl_state_e ctrl_state_q, ctrl_state_d;
@@ -104,7 +106,23 @@ module mbx_fsm #(
         end else if (sysif_control_abort_set_i) begin         // System wants to abort
           ctrl_state_d = MbxSysAbortHost;
         end else if (writer_close_mbx_i) begin  // Writer decided to close the mailbox
-          ctrl_state_d = MbxRead;
+          if (writer_last_word_written_i) begin
+            ctrl_state_d = MbxRead;
+          end else begin
+            ctrl_state_d = MbxWaitFinalWord;
+          end
+        end
+      end
+
+      // Inbound mailbox being written by the system = writer
+      // Outbound mailbox: not applicable
+      MbxWaitFinalWord: begin
+        if (hostif_control_error_set_i) begin           // Host asserts an error
+          ctrl_state_d = MbxIdle;
+        end else if (sysif_control_abort_set_i) begin   // System wants to abort
+          ctrl_state_d = MbxSysAbortHost;
+        end else if (writer_last_word_written_i) begin
+         ctrl_state_d = MbxRead;
         end
       end
 

@@ -20,8 +20,8 @@ module mbx_sramrwarb
   input  logic                        imbx_sram_write_req_i,
   output logic                        imbx_sram_write_gnt_o,
   input  logic [CfgSramAddrWidth-1:0] imbx_sram_write_ptr_i,
-  output logic                        imbx_sram_write_resp_vld_o,
   input  logic [CfgSramDataWidth-1:0] imbx_write_data_i,
+  output logic                        imbx_sram_all_vld_rcvd_o,
   // Interface to the outpbound mailbox
   input  logic                        ombx_sram_read_req_i,
   output logic                        ombx_sram_read_gnt_o,
@@ -74,7 +74,9 @@ module mbx_sramrwarb
     .q_o    ( outstanding_req_count_q )
   );
   // Block SRAM requests if we reached the maximum outstanding number
-  assign  max_outstanding_reqs_reached = (outstanding_req_count_q == LCFG_MAX_REQS);
+  assign max_outstanding_reqs_reached = (outstanding_req_count_q == LCFG_MAX_REQS);
+  // All outstanding requests responded, thus all transfers are written or read
+  assign imbx_sram_all_vld_rcvd_o = (outstanding_req_count_q == '0);
 
   tlul_adapter_host #(
     .MAX_REQS              ( LCFG_MAX_REQS ),
@@ -108,9 +110,8 @@ module mbx_sramrwarb
   // We cannot differentiate on directly on the response signal of the TLUL adapter. We need
   // to look if the response was a response with data or not. It it's with data, it was a read
   // request and we serve ombx_sram_read_resp_vld_o. If it was a response without data
-  // it was a write request, so we serve imbx_sram_write_resp_vld_o
+  // it was a write request.
   assign  ombx_sram_read_resp_vld_o  = sram_valid & (tl_host_i.d_opcode == tlul_pkg::AccessAckData);
-  assign  imbx_sram_write_resp_vld_o = sram_valid & (tl_host_i.d_opcode == tlul_pkg::AccessAck);
 
   // Functional Coverage
   `COVER(MaxOutstandingRequetsReached_C, sram_req & max_outstanding_reqs_reached)
