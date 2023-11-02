@@ -341,6 +341,23 @@ otp_json(
     ],
 )
 
+otp_json(
+    name = "otp_json_fixed_secret2",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # We aren't testing keymgr for ROM_EXT tests and we want
+                # reproducible bitstreams for all tests.
+                "RMA_TOKEN": "0000000000000005",
+                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
+                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
+            },
+            lock = True,
+        ),
+    ],
+)
+
 # OTP LC STATE-SPECIFIC CONFIGS
 otp_json(
     name = "otp_json_raw",

@@ -2,7 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "//rules:opentitan.bzl",
+    "OPENTITAN_CPU",
+    "RSA_ONLY_KEY_STRUCTS",
+)
 load(
     "//rules:opentitan_test.bzl",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
@@ -19,20 +23,13 @@ load(
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
     "opentitan_test",
+    "rsa_key_for_lc_state",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
-load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-)
-load(
-    "//rules/opentitan:defs.bzl",
-    "rsa_key_for_lc_state",
-)
 load(
     "//rules:const.bzl",
     "CONST",
@@ -74,7 +71,14 @@ opentitan_test(
 opentitan_test(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

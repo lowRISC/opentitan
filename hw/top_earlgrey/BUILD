@@ -117,6 +117,7 @@ fpga_cw310(
     name = "fpga_cw310_sival",
     testonly = True,
     base = ":fpga_cw310_rom_with_fake_keys",
+    bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
     exec_env = "fpga_cw310_sival",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
@@ -131,7 +132,9 @@ fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
     base = ":fpga_cw310_rom_ext",
+    bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
     exec_env = "fpga_cw310_sival_rom_ext",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
 )
 
