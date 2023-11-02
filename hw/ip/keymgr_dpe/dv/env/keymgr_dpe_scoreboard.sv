@@ -670,7 +670,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end else if (addr_phase_read) begin
           addr_phase_op_status = current_op_status;
         end else if (data_phase_read) begin
-          if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
+          if (current_state inside {keymgr_dpe_pkg::StWorkDpeReset,
+                                    keymgr_dpe_pkg::StWorkDpeAvailable}) begin
             // when advance from StWorkDpeReset to StWorkDpeAvailable
             // we don't know how long it will take, it's ok
             // when status is WIP or success
@@ -678,7 +679,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               `DV_CHECK_EQ(item.d_data inside {current_op_status, keymgr_pkg::OpDoneSuccess}, 1)
             end
             // advance OP completes
-            if (current_op_status == keymgr_pkg::OpWip &&
+            if (current_op_status == keymgr_pkg::OpWip && 
                 item.d_data inside {keymgr_pkg::OpDoneSuccess, keymgr_pkg::OpDoneFail}) begin
               current_op_status = keymgr_pkg::keymgr_op_status_e'(item.d_data);
 
