@@ -106,17 +106,18 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   // advance to next state and generate output, clear output
   virtual task keymgr_dpe_operations(bit advance_state = $urandom_range(0, 1),
-                                 int num_gen_op    = $urandom_range(1, 4),
-                                 bit clr_output    = $urandom_range(0, 1),
-                                 bit wait_done     = 1);
-    `uvm_info(`gfn, "Start keymgr_dpe_operations", UVM_MEDIUM)
+                                     int num_gen_op    = $urandom_range(1, 4),
+                                     bit clr_output    = $urandom_range(0, 1),
+                                     bit wait_done     = 1);
+    `uvm_info(`gfn,
+      $sformatf("Start keymgr_dpe_operations num_gen_op %0d advance_state %0d",
+        num_gen_op, advance_state), UVM_MEDIUM)
 
     if (advance_state) keymgr_dpe_advance(wait_done);
 
     repeat (num_gen_op) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
       update_key_version();
-
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(key_dest)
       keymgr_dpe_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
