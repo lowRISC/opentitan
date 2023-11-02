@@ -295,15 +295,22 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     end
   endtask : keymgr_dpe_advance
 
-  // by default generate for software
-  virtual task keymgr_dpe_generate(keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
-                               keymgr_pkg::keymgr_key_dest_e key_dest,
-                               bit wait_done = 1);
+  virtual task keymgr_dpe_generate(
+      keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
+      keymgr_pkg::keymgr_key_dest_e key_dest,
+      bit [31:0] salt = 0,
+      int src_slot = 0,
+      int key_version = 0, 
+      bit wait_done = 1
+    );
     sema_update_control_csr.get();
-    `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Generate key manager output w/operation %s and dest %s", operation.name, key_dest.name), UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(int'(operation));
     ral.control_shadowed.dest_sel.set(int'(key_dest));
+    ral.control_shadowed.slot_src_sel.set(src_slot);
+    csr_wr(.ptr(ral.salt[0]), .value(salt));
+    csr_wr(.ptr(ral.key_version[0]), .value(key_version));
     csr_update(.csr(ral.control_shadowed));
     sema_update_control_csr.put();
     csr_wr(.ptr(ral.start), .value(1));
