@@ -17,6 +17,8 @@ module tb;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  assign interrupts[NUM_MAX_INTERRUPTS-1:1] = '0;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
