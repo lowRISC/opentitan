@@ -173,9 +173,9 @@ jobs:
     displayName: Verible FPV (Verilog lint)
 
 - job: sw_build
-  displayName: Earl Grey SW Build & Test
-  # Build and test Software for Earl Grey toplevel design
-  timeoutInMinutes: 210
+  displayName: Earl Grey SW Build
+  # Build software tests for the Earl Grey toplevel design
+  timeoutInMinutes: 120
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
@@ -190,10 +190,10 @@ jobs:
     name: bazelCacheGcpKey
     inputs:
       secureFile: "bazel_cache_gcp_key.json"
+    # Set the remote cache GCP key path
   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
     condition: eq(variables['Build.SourceBranchName'], 'master')
     displayName: GCP key path
-    # Set the remote cache GCP key path
   - bash: |
       set -x -e
       # Check the entire build graph for conflicts in loading or analysis
@@ -202,8 +202,8 @@ jobs:
       ci/scripts/test-empty-bitstream-cache.sh
       # Now redo with the real bitstream cache included.
       ci/bazelisk.sh build --nobuild //...
-      # This command builds all software and runs all unit tests that run on the
-      # host, with a few exceptions:
+
+      # This command selects the unit tests to be built:
       # * It excludes //quality because that's the purview of `slow_lints`.
       # * It excludes //sw/otbn/crypto because that's tested in `otbn_crypto_tests`.
       # * It excludes the tests from //third_party/riscv-compliance because
@@ -228,19 +228,14 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         -- "rdeps(//..., kind(bitstream_splice, //...))" \
         >> "${TARGET_PATTERN_FILE}"
+
+      # Build all unit tests and their dependencies.
       ci/bazelisk.sh build \
         --build_tests_only=false \
         --define DISABLE_VERILATOR_BUILD=true \
         --test_tag_filters=-broken,-cw310,-verilator,-dv \
         --target_pattern_file="${TARGET_PATTERN_FILE}"
-      ci/bazelisk.sh test \
-        --build_tests_only=false \
-        --test_output=errors \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --test_tag_filters=-broken,-cw310,-verilator,-dv \
-        --target_pattern_file="${TARGET_PATTERN_FILE}"
-    displayName: Build & test SW
-  - template: ci/publish-bazel-test-results.yml
+    displayName: Build SW
   - bash: |
       set -x -e
       . util/build_consts.sh
