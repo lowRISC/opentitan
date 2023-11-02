@@ -249,14 +249,42 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     end
   endtask : read_current_state
 
-  virtual task keymgr_dpe_advance(bit wait_done = 1);
-    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state =
-      get_next_state(current_state);
+  virtual task keymgr_dpe_advance(bit wait_done = 1,
+                                  int src_slot = 0,
+                                  int dst_slot = 0,
+                                  int sw_binding = $urandom(),
+                                  int max_key_ver = 0,
+                                  keymgr_dpe_pkg::keymgr_dpe_policy_t policy = 'h5
+                                );
+    keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state = get_next_state(
+      current_state, keymgr_dpe_pkg::OpDpeAdvance);
     sema_update_control_csr.get();
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
-    ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
-    csr_update(.csr(ral.control_shadowed));
-    csr_wr(.ptr(ral.start), .value(1));
+
+    /* When advancing from StWorkDpeReset - only required to set the dst_slot
+       and advance operation. 
+       Set src_slot anyway as it should have no effect
+    on the latching of the OTP key. */ 
+    if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
+      ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
+      ral.control_shadowed.slot_src_sel.set(src_slot); // should not affect latching of OTP key 
+      ral.control_shadowed.slot_dst_sel.set(dst_slot);
+      csr_update(.csr(ral.control_shadowed));
+      csr_wr(.ptr(ral.start), .value(1));
+    end else begin
+      //  all further advance calls
+      ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
+      ral.control_shadowed.slot_src_sel.set(src_slot);
+      ral.control_shadowed.slot_dst_sel.set(dst_slot);
+      csr_wr(.ptr(ral.sw_binding[0]), .value(sw_binding));
+      csr_wr(.ptr(ral.max_key_ver_shadowed), .value(max_key_ver));
+      ral.slot_policy.exportable.set(policy.exportable);
+      ral.slot_policy.allow_child.set(policy.allow_child);
+      ral.slot_policy.retain_parent.set(policy.retain_parent);
+      csr_update(.csr(ral.control_shadowed));
+      csr_update(.csr(ral.slot_policy));
+      csr_wr(.ptr(ral.start), .value(1));
+    end
     sema_update_control_csr.put();
 
     if (wait_done) begin
