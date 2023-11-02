@@ -21,7 +21,7 @@ use std::rc::Rc;
 
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
-use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::chip_whisperer::board::Board;
@@ -623,7 +623,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         }
     }
 
-    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
+    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
         ensure!(
             self.cmsis_interface.is_some(),
             TransportError::InvalidInterface(TransportInterfaceType::Jtag),
@@ -631,8 +631,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
         // HyperDebug device that we are.
         let usb_device = self.inner.usb_device.borrow();
-        let new_jtag: Box<dyn Jtag> = Box::new(OpenOcdJtagChain::new(
-            format!(
+        let new_jtag = Box::new(OpenOcdJtagChain::new(
+            &format!(
                 "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
                 include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
                 usb_device.get_vendor_id(),

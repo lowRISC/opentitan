@@ -45,8 +45,11 @@ fn program_readback(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to reset")?;
 
     // Connect to the RISCV TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
     // Program and then read back `MANUF_STATE`.
@@ -77,8 +80,11 @@ fn lock_partition(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<(
         .context("failed to reset")?;
 
     // Connect to the RISCV TAP via JTAG.
-    let mut jtag = opts.init.jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
     // Read the HW_CFG partition's digest, which should be 0 (unlocked):

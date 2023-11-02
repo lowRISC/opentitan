@@ -25,7 +25,7 @@ pub struct JtagParams {
 }
 
 impl JtagParams {
-    pub fn create<'t>(&self, transport: &'t TransportWrapper) -> Result<Box<dyn Jtag + 't>> {
+    pub fn create<'t>(&self, transport: &'t TransportWrapper) -> Result<Box<dyn JtagChain + 't>> {
         let jtag = transport.jtag(self)?;
         Ok(jtag)
     }
@@ -46,15 +46,21 @@ pub enum JtagError {
 impl_serializable_error!(JtagError);
 
 /// A trait which represents a JTAG interface.
+///
+/// JTAG lines form a daisy-chained topology and can connect multiple TAPs together in a chain.
+/// This trait represents an adaptor that has been configured to connect to a given JTAG chain,
+/// but have not yet been configured to only access a particular TAP.
+pub trait JtagChain {
+    /// Connect to the given JTAG TAP on this chain.
+    fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
+}
+
+/// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
-    /// Connect to the given JTAG TAP.
-    fn connect(&mut self, tap: JtagTap) -> Result<()>;
     /// Disconnect from the TAP.
     fn disconnect(self: Box<Self>) -> Result<()>;
     /// Get TAP we are currently connected too.
-    fn tap(&self) -> Option<JtagTap>;
-
-    // Commands
+    fn tap(&self) -> JtagTap;
 
     /// Read a lifecycle controller register.
     fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32>;

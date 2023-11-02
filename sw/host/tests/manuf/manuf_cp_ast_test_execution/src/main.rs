@@ -50,9 +50,12 @@ fn connect_riscv_jtag<'t>(
         .reset_target(opts.init.bootstrap.options.reset_delay, true)
         .context("failed to reset")?;
 
-    let mut jtag = opts.init.jtag_params.create(transport)?;
     log::info!("Connecting to RISC-V TAP");
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::RiscvTap)?;
 
     // This test is supposed to be run with ROM execution disabled but just in case
     // we reset the core to make sure we are in a known state. This disables the watchdog.

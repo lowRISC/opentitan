@@ -70,8 +70,9 @@ pub fn unlock_raw(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // Provide the `RAW_UNLOCK` token
@@ -92,8 +93,7 @@ pub fn unlock_raw(
     )
     .context("failed to transition to TEST_UNLOCKED0.")?;
 
-    jtag = jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -115,8 +115,7 @@ pub fn run_sram_cp_provision(
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(reset_delay, true)?;
-    let mut jtag = jtag_params.create(transport)?;
-    jtag.connect(JtagTap::RiscvTap)?;
+    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
@@ -162,8 +161,9 @@ pub fn reset_and_lock(
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)
+    let mut jtag = jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
     // CPU execution is not enabled in TEST_LOCKED0 so we can safely reconnect to the LC TAP
@@ -180,8 +180,7 @@ pub fn reset_and_lock(
     )
     .context("failed to transition to TEST_LOCKED0.")?;
 
-    jtag = jtag_params.create(transport)?;
-    jtag.connect(JtagTap::LcTap)?;
+    jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

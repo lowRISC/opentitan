@@ -14,7 +14,7 @@ use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::ioexpander::IoExpander;
-use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
@@ -663,8 +663,8 @@ impl TransportWrapper {
             })
     }
 
-    /// Returns a [`Jtag`] implementation.
-    pub fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn Jtag + '_>> {
+    /// Returns a [`JtagChain`] implementation.
+    pub fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
         self.transport.jtag(opts)
     }
 
