@@ -19,7 +19,7 @@ load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 
 package(default_visibility = ["//visibility:public"])
 
-# Dummy partition used in `otp_image_header` targets.
+# Dummy partition used in `otp_image_consts` targets.
 otp_json(
     name = "otp_json_baseline",
     seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
@@ -27,24 +27,24 @@ otp_json(
 
 # Create an overlay for the alert_handler digest.
 otp_alert_digest(
-    name = "generic_alert_digest_cfg",
+    name = "alert_digest_cfg",
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
 # OTP SW Configuration for Test SKU.
 otp_image_consts(
-    name = "generic_otp_sw_cfg_c_file",
+    name = "otp_sw_cfg_c_file",
     src = ":otp_json_baseline",
     overlays = [
-        ":generic_alert_digest_cfg",
+        ":alert_digest_cfg",
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
     ],
 )
 
 cc_library(
-    name = "generic_otp_sw_cfg",
-    srcs = [":generic_otp_sw_cfg_c_file"],
+    name = "otp_sw_cfg",
+    srcs = [":otp_sw_cfg_c_file"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",

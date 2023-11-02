@@ -163,7 +163,7 @@ cc_library(
     name = "individualize_sw_cfg_earlgrey_a0_sku_generic",
     deps = [
         ":individualize_sw_cfg",
-        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus:generic_otp_sw_cfg",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:otp_sw_cfg",
     ],
 )
 
