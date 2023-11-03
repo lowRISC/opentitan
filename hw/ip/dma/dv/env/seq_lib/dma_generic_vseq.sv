@@ -83,8 +83,7 @@ class dma_generic_vseq extends dma_base_vseq;
       ral.control.go.set(1'b0);
       csr_update(ral.control);
       `uvm_info(`gfn, "Clear error status", UVM_MEDIUM)
-      ral.status.error.set(1'b0);
-      ral.status.error_code.set(0);
+      ral.status.error.set(1'b1);
       csr_update(ral.status);
     end
   endtask

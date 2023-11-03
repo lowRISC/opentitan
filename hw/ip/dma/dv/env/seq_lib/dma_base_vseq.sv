@@ -548,7 +548,11 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Clear DMA Status
   task clear();
     `uvm_info(`gfn, "DMA: Clear DMA State", UVM_HIGH)
-    csr_wr(ral.clear_state, 32'd1);
+
+    ral.status.done.set(1'b1);
+    ral.status.aborted.set(1'b1);
+    ral.status.error.set(1'b1);
+    csr_update(.csr(ral.status));
   endtask : clear
 
   // Task: Wait for Completion
