@@ -518,7 +518,7 @@ bool test_main(void) {
   simple_serial_init(sca_get_uart());
   simple_serial_register_handler('p', sha3_serial_single_absorb);
   simple_serial_register_handler('b', sha3_serial_batch);
-  simple_serial_register_handler('t', sha3_serial_fixed_message_set);
+  simple_serial_register_handler('f', sha3_serial_fixed_message_set);
   simple_serial_register_handler('l', sha3_serial_seed_lfsr);
   simple_serial_register_handler('m', kmac_disable_masking);
 
