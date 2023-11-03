@@ -49,8 +49,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit exp_dma_err_intr;
   // bit to indicate if dma_done interrupt is asserted
   bit exp_dma_done_intr;
-  // bit to indicate dma config clear via register write
-  bit clear_via_reg_write;
   // True if in hardware handshake mode and the FIFO interrupt has been cleared
   bit fifo_intr_cleared;
   // Variable to indicate number of writes expected to clear FIFO interrupts
@@ -779,19 +777,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
       end
-      "clear_state": begin
-        uvm_reg_data_t status = `gmv(ral.status.busy);
-        clear_via_reg_write = get_field_val(ral.clear_state.clear, item.a_data);
-        if (cfg.en_cov) begin
-          // Sample dma configuration status
-          cov.status_cg.sample(.busy (get_field_val(ral.status.busy, status)),
-                               .done (get_field_val(ral.status.done, status)),
-                               .aborted (get_field_val(ral.status.aborted, status)),
-                               .error (get_field_val(ral.status.error, status)),
-                               .error_code (get_field_val(ral.status.error_code, status)),
-                               .clear (clear_via_reg_write));
-        end
-      end
       "handshake_interrupt_enable": begin
         dma_config.handshake_intr_en = `gmv(ral.handshake_interrupt_enable.mask);
         `uvm_info(`gfn,
@@ -820,14 +805,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "status": begin
         bit busy, done, aborted, error, sha2_digest_valid;
-        bit [6:0] error_code;
+        bit [7:0] error_code;
         bit exp_aborted = src_tl_error_detected || abort_via_reg_write;
         do_read_check = 1'b0;
         busy = get_field_val(ral.status.busy, item.d_data);
         done = get_field_val(ral.status.done, item.d_data);
         aborted = get_field_val(ral.status.aborted, item.d_data);
         error = get_field_val(ral.status.error, item.d_data);
-        error_code = get_field_val(ral.status.error_code, item.d_data);
+        error_code[0] = get_field_val(ral.error_code.src_address_error, item.d_data);
+        error_code[1] = get_field_val(ral.error_code.dst_address_error, item.d_data);
+        error_code[2] = get_field_val(ral.error_code.opcode_error, item.d_data);
+        error_code[3] = get_field_val(ral.error_code.size_error, item.d_data);
+        error_code[4] = get_field_val(ral.error_code.bus_error, item.d_data);
+        error_code[5] = get_field_val(ral.error_code.base_limit_error, item.d_data);
+        error_code[6] = get_field_val(ral.error_code.range_valid_error, item.d_data);
+        error_code[7] = get_field_val(ral.error_code.asid_error, item.d_data);
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
 
         if (done || aborted || error) begin
@@ -853,13 +845,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Check if aborted bit is set if there is a TL error
         `DV_CHECK_EQ(aborted, exp_aborted, "Aborted bit not set with TL error or DMA config err")
         if (cfg.en_cov) begin
-          // Sample dma configuration status
+          // Sample dma status and error code
           cov.status_cg.sample(.busy (busy),
                                .done (done),
                                .aborted (aborted),
-                               .error (error),
-                               .error_code (error_code),
-                               .clear (clear_via_reg_write));
+                               .error (error));
+          cov.error_code_cg.sample(.error_code (error_code));
         end
         // Check results after each chunk of the transfer (memory-to-memory) or after the complete
         // transfer (handshaking mode).

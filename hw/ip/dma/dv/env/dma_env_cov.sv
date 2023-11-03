@@ -159,9 +159,7 @@ covergroup dma_status_cg with function sample(
   bit busy,
   bit done,
   bit aborted,
-  bit error,
-  bit[6:0] error_code,
-  bit clear
+  bit error
 );
   option.per_instance = 1;
   option.name = "dma_status_cg";
@@ -169,8 +167,14 @@ covergroup dma_status_cg with function sample(
   cp_status_done: coverpoint done;
   cp_status_aborted: coverpoint aborted;
   cp_status_error: coverpoint error;
+endgroup
+
+covergroup dma_error_code_cg with function sample(
+  bit[7:0] error_code
+);
+  option.per_instance = 1;
+  option.name = "dma_error_code_cg";
   cp_status_errcode: coverpoint error_code;
-  cp_status_clear: coverpoint clear;
 endgroup
 
 class dma_env_cov extends cip_base_env_cov #(.CFG_T(dma_env_cfg));
@@ -178,11 +182,13 @@ class dma_env_cov extends cip_base_env_cov #(.CFG_T(dma_env_cfg));
 
   dma_config_cg config_cg;
   dma_status_cg status_cg;
+  dma_error_code_cg error_code_cg;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
     config_cg = new();
     status_cg = new();
+    error_code_cg = new();
   endfunction: new
 
 endclass
