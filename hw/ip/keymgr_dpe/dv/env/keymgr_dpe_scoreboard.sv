@@ -130,6 +130,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+    bit is_err;
 
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
@@ -142,34 +143,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_dpe_pkg::OpDpeAdvance: begin
-        bit is_err = get_hw_invalid_input();
+        is_err = get_hw_invalid_input();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
-         // TODO(opentitan-integrated/issues/667):
-         // re-evaluate function process kmac_data_req()
-         // for OpDpeAdvance cases for new keymgr_dpe states, and remove no longer
-         // valid states
         case (current_state)
-          keymgr_dpe_pkg::StWorkDpeReset: begin
-          end
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
+           // TODO(opentitan-integrated/issues/667):
+           // re-evaluate function process kmac_data_req()
+           // for OpDpeAdvance cases for new keymgr_dpe states, and remove no longer
+           // valid states
+           // Depending on boot_stage we need to invoke one of each
+           // compare_adv_creator_data, compare_adv_owner_int_data, or compare_adv_owner_data
           end
-          //keymgr_dpe_pkg::StWorkDpeInit: begin
-          //  compare_adv_creator_data(.cdi_type(current_cdi),
-          //                           .exp_match(!is_err),
-          //                           .byte_data_q(item.byte_data_q));
-          //end
-          //keymgr_dpe_pkg::StCreatorRootKey: begin
-          //  compare_adv_owner_int_data(.cdi_type(current_cdi),
-          //                             .exp_match(!is_err),
-          //                             .byte_data_q(item.byte_data_q));
-          //end
-          //keymgr_dpe_pkg::StWorkDpeOwnerIntKey: begin
-          //  compare_adv_owner_data(.cdi_type(current_cdi),
-          //                         .exp_match(!is_err),
-          //                         .byte_data_q(item.byte_data_q));
-          //end
+          keymgr_dpe_pkg::StWorkDpeReset,
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeInvalid: begin
+            // we'd expect that no kmac_data_req's would be issued in these states
             // set to 1 to check invalid data is used
             is_err = 1;
           end
@@ -178,8 +166,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         if (is_err) compare_invalid_data(item.byte_data_q);
       end
       keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
-        if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
-        else                            compare_invalid_data(item.byte_data_q);
+        case (current_state)
+        keymgr_dpe_pkg::StWorkDpeAvailable: begin
+          if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
+          else                            compare_invalid_data(item.byte_data_q);
+        end
+        keymgr_dpe_pkg::StWorkDpeReset,
+        keymgr_dpe_pkg::StWorkDpeDisabled,
+        keymgr_dpe_pkg::StWorkDpeInvalid: begin
+          // we'd expect that no kmac_data_req's would be issued in these states
+          // set to 1 to check invalid data is used
+          is_err = 1;
+        end
+        default: `uvm_error(`gfn, $sformatf("Unexpected current_state: %0d", current_state))
+        endcase
+        if (is_err) compare_invalid_data(item.byte_data_q);
       end
       keymgr_dpe_pkg::OpDpeDisable: begin
         compare_invalid_data(item.byte_data_q);
