@@ -216,13 +216,16 @@ module dma_reg_top (
   logic status_aborted_wd;
   logic status_error_qs;
   logic status_error_wd;
-  logic [7:0] status_error_code_qs;
-  logic [7:0] status_error_code_wd;
   logic status_sha2_digest_valid_qs;
   logic status_sha2_digest_valid_wd;
-  logic clear_state_we;
-  logic clear_state_qs;
-  logic clear_state_wd;
+  logic error_code_src_address_error_qs;
+  logic error_code_dst_address_error_qs;
+  logic error_code_opcode_error_qs;
+  logic error_code_size_error_qs;
+  logic error_code_bus_error_qs;
+  logic error_code_base_limit_error_qs;
+  logic error_code_range_valid_error_qs;
+  logic error_code_asid_error_qs;
   logic [31:0] sha2_digest_0_qs;
   logic [31:0] sha2_digest_1_qs;
   logic [31:0] sha2_digest_2_qs;
@@ -1082,7 +1085,7 @@ module dma_reg_top (
     .d_i(&control_flds_we),
     .q_o(control_qe)
   );
-  //   F[opcode]: 5:2
+  //   F[opcode]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1109,7 +1112,7 @@ module dma_reg_top (
     .qs     (control_opcode_qs)
   );
 
-  //   F[hardware_handshake_enable]: 6:6
+  //   F[hardware_handshake_enable]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1136,7 +1139,7 @@ module dma_reg_top (
     .qs     (control_hardware_handshake_enable_qs)
   );
 
-  //   F[memory_buffer_auto_increment_enable]: 7:7
+  //   F[memory_buffer_auto_increment_enable]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1163,7 +1166,7 @@ module dma_reg_top (
     .qs     (control_memory_buffer_auto_increment_enable_qs)
   );
 
-  //   F[fifo_auto_increment_enable]: 8:8
+  //   F[fifo_auto_increment_enable]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1190,7 +1193,7 @@ module dma_reg_top (
     .qs     (control_fifo_auto_increment_enable_qs)
   );
 
-  //   F[data_direction]: 9:9
+  //   F[data_direction]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1217,7 +1220,7 @@ module dma_reg_top (
     .qs     (control_data_direction_qs)
   );
 
-  //   F[initial_transfer]: 10:10
+  //   F[initial_transfer]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1301,6 +1304,17 @@ module dma_reg_top (
 
 
   // R[status]: V(False)
+  logic status_qe;
+  logic [4:0] status_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_status0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&status_flds_we),
+    .q_o(status_qe)
+  );
   //   F[busy]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1320,7 +1334,7 @@ module dma_reg_top (
     .d      (hw2reg.status.busy.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (status_flds_we[0]),
     .q      (),
     .ds     (),
 
@@ -1347,7 +1361,7 @@ module dma_reg_top (
     .d      (hw2reg.status.done.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (status_flds_we[1]),
     .q      (reg2hw.status.done.q),
     .ds     (),
 
@@ -1374,7 +1388,7 @@ module dma_reg_top (
     .d      (hw2reg.status.aborted.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (status_flds_we[2]),
     .q      (),
     .ds     (),
 
@@ -1401,42 +1415,16 @@ module dma_reg_top (
     .d      (hw2reg.status.error.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (status_flds_we[3]),
     .q      (reg2hw.status.error.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_error_qs)
   );
+  assign reg2hw.status.error.qe = status_qe;
 
-  //   F[error_code]: 11:4
-  prim_subreg #(
-    .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
-  ) u_status_error_code (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (status_we),
-    .wd     (status_error_code_wd),
-
-    // from internal hardware
-    .de     (hw2reg.status.error_code.de),
-    .d      (hw2reg.status.error_code.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (status_error_code_qs)
-  );
-
-  //   F[sha2_digest_valid]: 12:12
+  //   F[sha2_digest_valid]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1455,53 +1443,232 @@ module dma_reg_top (
     .d      (hw2reg.status.sha2_digest_valid.d),
 
     // to internal hardware
-    .qe     (),
-    .q      (),
+    .qe     (status_flds_we[4]),
+    .q      (reg2hw.status.sha2_digest_valid.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (status_sha2_digest_valid_qs)
   );
+  assign reg2hw.status.sha2_digest_valid.qe = status_qe;
 
 
-  // R[clear_state]: V(False)
-  logic clear_state_qe;
-  logic [0:0] clear_state_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_clear_state0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&clear_state_flds_we),
-    .q_o(clear_state_qe)
-  );
+  // R[error_code]: V(False)
+  //   F[src_address_error]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_clear_state (
+  ) u_error_code_src_address_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (clear_state_we),
-    .wd     (clear_state_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.error_code.src_address_error.de),
+    .d      (hw2reg.error_code.src_address_error.d),
 
     // to internal hardware
-    .qe     (clear_state_flds_we[0]),
-    .q      (reg2hw.clear_state.q),
+    .qe     (),
+    .q      (),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clear_state_qs)
+    .qs     (error_code_src_address_error_qs)
   );
-  assign reg2hw.clear_state.qe = clear_state_qe;
+
+  //   F[dst_address_error]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_dst_address_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.dst_address_error.de),
+    .d      (hw2reg.error_code.dst_address_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_dst_address_error_qs)
+  );
+
+  //   F[opcode_error]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_opcode_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.opcode_error.de),
+    .d      (hw2reg.error_code.opcode_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_opcode_error_qs)
+  );
+
+  //   F[size_error]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_size_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.size_error.de),
+    .d      (hw2reg.error_code.size_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_size_error_qs)
+  );
+
+  //   F[bus_error]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_bus_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.bus_error.de),
+    .d      (hw2reg.error_code.bus_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_bus_error_qs)
+  );
+
+  //   F[base_limit_error]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_base_limit_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.base_limit_error.de),
+    .d      (hw2reg.error_code.base_limit_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_base_limit_error_qs)
+  );
+
+  //   F[range_valid_error]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_range_valid_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.range_valid_error.de),
+    .d      (hw2reg.error_code.range_valid_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_range_valid_error_qs)
+  );
+
+  //   F[asid_error]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_error_code_asid_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.error_code.asid_error.de),
+    .d      (hw2reg.error_code.asid_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (error_code_asid_error_qs)
+  );
 
 
   // Subregister 0 of Multireg sha2_digest
@@ -2716,7 +2883,7 @@ module dma_reg_top (
     addr_hit[19] = (reg_addr == DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_OFFSET);
     addr_hit[20] = (reg_addr == DMA_CONTROL_OFFSET);
     addr_hit[21] = (reg_addr == DMA_STATUS_OFFSET);
-    addr_hit[22] = (reg_addr == DMA_CLEAR_STATE_OFFSET);
+    addr_hit[22] = (reg_addr == DMA_ERROR_CODE_OFFSET);
     addr_hit[23] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
     addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
     addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
@@ -2908,17 +3075,17 @@ module dma_reg_top (
   assign destination_address_almost_limit_hi_wd = reg_wdata[31:0];
   assign control_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign control_opcode_wd = reg_wdata[5:2];
+  assign control_opcode_wd = reg_wdata[3:0];
 
-  assign control_hardware_handshake_enable_wd = reg_wdata[6];
+  assign control_hardware_handshake_enable_wd = reg_wdata[4];
 
-  assign control_memory_buffer_auto_increment_enable_wd = reg_wdata[7];
+  assign control_memory_buffer_auto_increment_enable_wd = reg_wdata[5];
 
-  assign control_fifo_auto_increment_enable_wd = reg_wdata[8];
+  assign control_fifo_auto_increment_enable_wd = reg_wdata[6];
 
-  assign control_data_direction_wd = reg_wdata[9];
+  assign control_data_direction_wd = reg_wdata[7];
 
-  assign control_initial_transfer_wd = reg_wdata[10];
+  assign control_initial_transfer_wd = reg_wdata[8];
 
   assign control_abort_wd = reg_wdata[27];
 
@@ -2933,12 +3100,7 @@ module dma_reg_top (
 
   assign status_error_wd = reg_wdata[3];
 
-  assign status_error_code_wd = reg_wdata[11:4];
-
-  assign status_sha2_digest_valid_wd = reg_wdata[12];
-  assign clear_state_we = addr_hit[22] & reg_we & !reg_error;
-
-  assign clear_state_wd = reg_wdata[0];
+  assign status_sha2_digest_valid_wd = reg_wdata[4];
   assign handshake_interrupt_enable_we = addr_hit[39] & reg_we & !reg_error;
 
   assign handshake_interrupt_enable_wd = reg_wdata[10:0];
@@ -3040,7 +3202,7 @@ module dma_reg_top (
     reg_we_check[19] = destination_address_almost_limit_hi_we;
     reg_we_check[20] = control_we;
     reg_we_check[21] = status_we;
-    reg_we_check[22] = clear_state_we;
+    reg_we_check[22] = 1'b0;
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = 1'b0;
     reg_we_check[25] = 1'b0;
@@ -3176,12 +3338,12 @@ module dma_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[5:2] = control_opcode_qs;
-        reg_rdata_next[6] = control_hardware_handshake_enable_qs;
-        reg_rdata_next[7] = control_memory_buffer_auto_increment_enable_qs;
-        reg_rdata_next[8] = control_fifo_auto_increment_enable_qs;
-        reg_rdata_next[9] = control_data_direction_qs;
-        reg_rdata_next[10] = control_initial_transfer_qs;
+        reg_rdata_next[3:0] = control_opcode_qs;
+        reg_rdata_next[4] = control_hardware_handshake_enable_qs;
+        reg_rdata_next[5] = control_memory_buffer_auto_increment_enable_qs;
+        reg_rdata_next[6] = control_fifo_auto_increment_enable_qs;
+        reg_rdata_next[7] = control_data_direction_qs;
+        reg_rdata_next[8] = control_initial_transfer_qs;
         reg_rdata_next[27] = '0;
         reg_rdata_next[31] = control_go_qs;
       end
@@ -3191,12 +3353,18 @@ module dma_reg_top (
         reg_rdata_next[1] = status_done_qs;
         reg_rdata_next[2] = status_aborted_qs;
         reg_rdata_next[3] = status_error_qs;
-        reg_rdata_next[11:4] = status_error_code_qs;
-        reg_rdata_next[12] = status_sha2_digest_valid_qs;
+        reg_rdata_next[4] = status_sha2_digest_valid_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[0] = clear_state_qs;
+        reg_rdata_next[0] = error_code_src_address_error_qs;
+        reg_rdata_next[1] = error_code_dst_address_error_qs;
+        reg_rdata_next[2] = error_code_opcode_error_qs;
+        reg_rdata_next[3] = error_code_size_error_qs;
+        reg_rdata_next[4] = error_code_bus_error_qs;
+        reg_rdata_next[5] = error_code_base_limit_error_qs;
+        reg_rdata_next[6] = error_code_range_valid_error_qs;
+        reg_rdata_next[7] = error_code_asid_error_qs;
       end
 
       addr_hit[23]: begin
