@@ -47,6 +47,8 @@ enum {
   kPartitionId = 0,
   kRegionSize = 1,
   kNumWords = 128,
+  kAONBarkTh = 64,
+  kAONBiteTh = 256,
 };
 
 /**
@@ -128,7 +130,10 @@ bool test_main(void) {
         &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
 
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
-    CHECK_DIF_OK(dif_aon_timer_watchdog_start(&aon, 0x40, 0x80, false, false));
+    CHECK_DIF_OK(dif_aon_timer_watchdog_start(
+        &aon /* aon */, kAONBarkTh /* bark_threshold */,
+        kAONBiteTh /* bite_threshold */, false /* pause_in_sleep */,
+        false /* lock */));
 
     dif_flash_ctrl_transaction_t transaction = {
         .byte_address = address,
