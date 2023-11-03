@@ -11,25 +11,35 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   `define CREATE_CMP_STR(VAR) \
     str = $sformatf("%0s\n %0s act: 0x%0h, exp: 0x%0h", str, `"VAR`", act.``VAR, exp.``VAR);
 
+  // if boot_stage == 0
   typedef struct packed {
+    // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
+    // HW_REVISION_SEED 
     bit [keymgr_pkg::KeyWidth-1:0]                                         HardwareRevisionSecret;
+    // DEVICE_IDENTIFIER
     bit [keymgr_pkg::DevIdWidth-1:0]                                       DeviceIdentifier;
+    // HEALTH_ST_MEASUREMENT 
     bit [keymgr_pkg::HealthStateWidth-1:0]                                 HealthMeasurement;
+    // ROM_DESCRIPTORS
     bit [keymgr_dpe_reg_pkg::NumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
+    // CREATOR_SEED 
     bit [keymgr_pkg::KeyWidth-1:0]                                         DiversificationKey;
   } adv_creator_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
+    // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    // OWNER SEED
     bit [keymgr_pkg::KeyWidth-1:0] OwnerRootSecret;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
     bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
+    // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
   } adv_owner_data_t;
 
@@ -60,7 +70,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
-  keymgr_dpe_env_pkg::keymgr_dpe_key_slot_entry_t current_internal_key[
+  keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[
 	keymgr_dpe_pkg::DpeNumSlots];
   keymgr_dpe_cdi_type_e current_cdi;
 
@@ -77,7 +87,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
   bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[
-    keymgr_dpe_cdi_type_e][
+    keymgr_dpe_pkg::DpeNumSlots][
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
   bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
@@ -131,6 +141,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function void process_kmac_data_req(kmac_app_item item);
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit is_err;
+    logic [keymgr_dpe_pkg::DpeNumBootStagesWidth-1:0] boot_stage =
+      current_internal_key[current_key_slot.src_slot].boot_stage;
 
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
@@ -147,12 +159,28 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
         case (current_state)
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
-           // TODO(opentitan-integrated/issues/667):
-           // re-evaluate function process kmac_data_req()
-           // for OpDpeAdvance cases for new keymgr_dpe states, and remove no longer
-           // valid states
-           // Depending on boot_stage we need to invoke one of each
-           // compare_adv_creator_data, compare_adv_owner_int_data, or compare_adv_owner_data
+            if(boot_stage == 0) begin
+              `uvm_info(`gfn, $sformatf("process_kmac_data_req: boot_stage %0d is_err %0d compare_boot_stage_0_data",
+               boot_stage, is_err), UVM_LOW)
+              compare_boot_stage_0_data(
+                .exp_match(!is_err),
+                .byte_data_q(item.byte_data_q)
+              );
+            end else if (boot_stage == 1) begin
+              `uvm_info(`gfn, $sformatf("process_kmac_data_req: boot_stage %0d is_err %0d compare_boot_stage_1_data",
+               boot_stage, is_err), UVM_LOW)
+               compare_boot_stage_1_data(
+                .exp_match(!is_err),
+                .byte_data_q(item.byte_data_q)
+               );
+            end else begin
+              `uvm_info(`gfn, $sformatf("process_kmac_data_req: boot_stage %0d is_err %0d compare_boot_stage_gte2_data",
+               boot_stage, is_err), UVM_LOW)
+               compare_boot_stage_gte2_data(
+                .exp_match(!is_err),
+                .byte_data_q(item.byte_data_q)
+               );
+            end
           end
           keymgr_dpe_pkg::StWorkDpeReset,
           keymgr_dpe_pkg::StWorkDpeDisabled,
@@ -210,6 +238,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         current_internal_key[current_key_slot.dst_slot].key = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
                                   item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
         cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_key_slot.dst_slot].key, current_state);
+
+        // update boot_ctr
+        current_internal_key[current_key_slot.dst_slot].boot_stage =
+          current_internal_key[current_key_slot.src_slot].boot_stage + 1;
 
         `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for op %s in state %s",
              current_internal_key[current_key_slot.dst_slot].key, op.name, current_state.name), UVM_MEDIUM)
@@ -734,12 +766,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
-    current_internal_key[current_key_slot.dst_slot].policy = '0;
-    current_internal_key[current_key_slot.dst_slot].policy.allow_child = 1;
+    current_internal_key[current_key_slot.dst_slot].key_policy = '0;
+    current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = 1;
     `uvm_info(`gfn,
       $sformatf("latch_otp_key: key %p, policy %p",
       current_internal_key[current_key_slot.dst_slot].key,
-      current_internal_key[current_key_slot.dst_slot].policy),
+      current_internal_key[current_key_slot.dst_slot].key_policy),
       UVM_MEDIUM)
     cfg.keymgr_dpe_vif.store_internal_key(
       current_internal_key[current_key_slot.dst_slot].key,
@@ -955,102 +987,93 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
   endfunction
 
-  virtual function void compare_adv_creator_data(keymgr_dpe_cdi_type_e cdi_type,
-                                                 bit exp_match,
-                                                 const ref byte byte_data_q[$]);
-    // TODO(opentitan-integrated/issues/667):
-    // re-evalute compare_adv_*_data functions now that these states
-    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
+  virtual function void compare_boot_stage_0_data(
+      bit exp_match,
+      const ref byte byte_data_q[$]
+  );
+    adv_creator_data_t exp, act;
+    string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
-    //adv_creator_data_t exp, act;
-    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
+    act = {<<8{byte_data_q}};
 
-    //if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
-    //act = {<<8{byte_data_q}};
+    exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
+      exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
+    end
+    exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
+    exp.DeviceIdentifier   = cfg.keymgr_dpe_vif.otp_device_id;
+    exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
 
-    //exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    //for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
-    //  exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
-    //end
-    //exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
-    //exp.DeviceIdentifier   = cfg.keymgr_dpe_vif.otp_device_id;
-    //exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
+    get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
-    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    // The order of the string creation must match the design
+    `CREATE_CMP_STR(DiversificationKey)
+    `CREATE_CMP_STR(RomDigests)
+    `CREATE_CMP_STR(HealthMeasurement)
+    `CREATE_CMP_STR(DeviceIdentifier)
+    `CREATE_CMP_STR(HardwareRevisionSecret)
+    `CREATE_CMP_STR(SoftwareBinding)
 
-    //// The order of the string creation must match the design
-    //`CREATE_CMP_STR(DiversificationKey)
-    //`CREATE_CMP_STR(RomDigests)
-    //`CREATE_CMP_STR(HealthMeasurement)
-    //`CREATE_CMP_STR(DeviceIdentifier)
-    //`CREATE_CMP_STR(HardwareRevisionSecret)
-    //`CREATE_CMP_STR(SoftwareBinding)
+    if (exp_match) begin
+      `DV_CHECK_EQ(act, exp, str)
+    end else begin
+      `DV_CHECK_NE(act, exp, str)
+    end
 
-    //if (exp_match) begin
-    //  `DV_CHECK_EQ(act, exp, str)
-    //end else begin
-    //  `DV_CHECK_NE(act, exp, str)
-    //end
-
-    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeCreatorRootKey] = act;
+    if (exp_match) adv_data_a_array[current_key_slot.src_slot][current_state] = act;
   endfunction
 
-  virtual function void compare_adv_owner_int_data(keymgr_dpe_cdi_type_e cdi_type,
-                                                   bit exp_match,
-                                                   const ref byte byte_data_q[$]);
-    // TODO(opentitan-integrated/issues/667):
-    // re-evalute compare_adv_*_data functions now that these states
-    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
+  virtual function void compare_boot_stage_1_data(
+      bit exp_match,
+      const ref byte byte_data_q[$]
+    );
+    adv_owner_int_data_t exp, act;
+    string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
-    //adv_owner_int_data_t exp, act;
-    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    act = {<<8{byte_data_q}};
 
-    //act = {<<8{byte_data_q}};
+    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
-    //exp.OwnerRootSecret = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    `CREATE_CMP_STR(unused)
+    `CREATE_CMP_STR(OwnerRootSecret)
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+      `CREATE_CMP_STR(SoftwareBinding[i])
+    end
 
-    //`CREATE_CMP_STR(unused)
-    //`CREATE_CMP_STR(OwnerRootSecret)
-    //for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
-    //  `CREATE_CMP_STR(SoftwareBinding[i])
-    //end
+    if (exp_match) begin
+      `DV_CHECK_EQ(act, exp, str)
+    end else begin
+      `DV_CHECK_NE(act, exp, str)
+    end
 
-    //if (exp_match) begin
-    //  `DV_CHECK_EQ(act, exp, str)
-    //end else begin
-    //  `DV_CHECK_NE(act, exp, str)
-    //end
-
-    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerIntKey] = act;
+    if (exp_match) adv_data_a_array[current_key_slot.src_slot][current_state] = act;
   endfunction
 
-  virtual function void compare_adv_owner_data(keymgr_dpe_cdi_type_e cdi_type,
-                                               bit exp_match,
-                                               const ref byte byte_data_q[$]);
-    // TODO(opentitan-integrated/issues/667):
-    // re-evalute compare_adv_*_data functions now that these states
-    // StCreatorRootKey, StOwnerIntKey, StOwnerKey
+  virtual function void compare_boot_stage_gte2_data(
+     bit exp_match,
+     const ref byte byte_data_q[$]
+   );
+    adv_owner_data_t exp, act;
+    string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
-    //adv_owner_data_t exp, act;
-    //string str = $sformatf("cdi_type: %s\n", cdi_type.name);
+    act = {<<8{byte_data_q}};
 
-    //act = {<<8{byte_data_q}};
+    get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
-    //get_sw_binding_mirrored_value(cdi_type, exp.SoftwareBinding);
+    `CREATE_CMP_STR(unused)
+    for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+      `CREATE_CMP_STR(SoftwareBinding[i])
+    end
 
-    //`CREATE_CMP_STR(unused)
-    //for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
-    //  `CREATE_CMP_STR(SoftwareBinding[i])
-    //end
+    if (exp_match) begin
+      `DV_CHECK_EQ(act, exp, str)
+    end else begin
+      `DV_CHECK_NE(act, exp, str)
+    end
 
-    //if (exp_match) begin
-    //  `DV_CHECK_EQ(act, exp, str)
-    //end else begin
-    //  `DV_CHECK_NE(act, exp, str)
-    //end
-
-    //if (exp_match) adv_data_a_array[Sealing][keymgr_dpe_pkg::StWorkDpeOwnerKey] = act;
+    if (exp_match) adv_data_a_array[current_key_slot.src_slot][current_state] = act;
   endfunction
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
@@ -1060,8 +1083,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
     foreach (adv_data_a_array[i, j]) begin
-      `DV_CHECK_NE(act, adv_data_a_array[i][j], $sformatf("Adv data to state %0s for %0s", j.name,
-                                                          i.name))
+      `DV_CHECK_NE(act, adv_data_a_array[i][j], $sformatf("Adv data to state %0s for slot %0d", j.name,
+                                                          i))
     end
     foreach (id_data_a_array[i]) begin
       `DV_CHECK_NE(act, id_data_a_array[i], $sformatf("ID data at state %0s", i.name))
@@ -1126,8 +1149,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void get_sw_binding_mirrored_value(
-        input keymgr_dpe_cdi_type_e cdi_type,
-        output bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding);
+        output bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding
+      );
 
     for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
       sw_binding[i] = `gmv(ral.sw_binding[i]);
@@ -1226,9 +1249,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     rsp_fifo.flush();
     foreach (current_internal_key[slot]) begin
       current_internal_key[slot].key = '0;
-      current_internal_key[slot].policy = '0;
+      current_internal_key[slot].key_policy = '0;
+      current_internal_key[slot].boot_stage = '0;
+      current_internal_key[slot].max_key_version = '0;
+      current_internal_key[slot].valid = '0;
     end
-    adv_data_a_array.delete();
+    foreach (adv_data_a_array[slot, state]) begin
+      adv_data_a_array[slot][state] = '0;
+    end
     id_data_a_array.delete();
     sw_data_a_array.delete();
     hw_data_a_array.delete();
