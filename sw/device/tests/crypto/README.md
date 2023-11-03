@@ -11,6 +11,8 @@ The primary way of running crypto tests is to use the custom
 `autogen_cryptotest_...` Bazel rules, which create build targets specialized to
 different test sets.
 
+**Note: New crypto tests should be written using the [cryptotest framework](cryptotest/README.md).**
+
 ## Setup
 
 Each algorithm has a C test file (ending in `_functest.c`) which reads test
