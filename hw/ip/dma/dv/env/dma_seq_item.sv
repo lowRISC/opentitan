@@ -498,7 +498,7 @@ class dma_seq_item extends uvm_sequence_item;
       valid_config = 0;
     end
 
-    // TODO: The DMA-enabled memory range must have been set up, even though it may not be used
+    // The DMA-enabled memory range must have been set up, even though it may not be used
     if (!mem_range_valid) begin
       `uvm_info(`gfn, " - Valid DMA enabled memory range has not been set up", UVM_MEDIUM)
       valid_config = 0;
