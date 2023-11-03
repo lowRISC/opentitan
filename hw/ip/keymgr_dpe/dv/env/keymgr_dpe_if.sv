@@ -94,6 +94,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   int edn_tolerance_cycs = 20;
 
+  // assigned from the keymgr_dpe.keymgr_dpe_ctrl.key_slots_q signal, which should hold the
+  // current value of the keyslots in the dut.
+  keymgr_dpe_pkg::keymgr_dpe_slot_t [keymgr_dpe_pkg::DpeNumSlots-1:0] internal_key_slots;
+
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
@@ -246,6 +250,15 @@ interface keymgr_dpe_if(input clk, input rst_n);
     // the design to sync up these inputs before we start operations
     repeat ($urandom_range(3, 100)) @(posedge clk);
   endtask
+
+  function automatic void compare_internal_key_slot(
+    keymgr_dpe_pkg::keymgr_dpe_slot_t key_slot,
+    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e slot_index
+  );
+    `DV_CHECK_EQ(key_slot, internal_key_slots[slot_index],
+            $sformatf("exp_key_slot[%0d] vs internal_key_slot[%0d]", slot_index, slot_index), ,
+            msg_id)
+  endfunction
 
   // update kmac key for comparison during KDF
   function automatic void update_kdf_key(keymgr_dpe_env_pkg::key_shares_t key_shares,
