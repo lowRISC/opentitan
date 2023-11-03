@@ -463,6 +463,7 @@
   - [Top-Level Tests](./sw/device/tests/README.md)
     - [Manufacturer Test Hooks](./sw/device/tests/closed_source/README.md)
     - [Crypto Library Tests](./sw/device/tests/crypto/README.md)
+    - [Cryptotest](./sw/device/tests/crypto/cryptotest/README.md)
 
 - [Host Software](./sw/host/README.md)
   - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
