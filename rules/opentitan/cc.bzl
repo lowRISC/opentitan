@@ -321,11 +321,6 @@ common_binary_attrs = {
         executable = True,
         cfg = "exec",
     ),
-    "_cleanup_script": attr.label(
-        allow_single_file = True,
-        default = "@//rules/scripts:expand_tabs.sh",
-        doc = "Cleanup script for the disassembly",
-    ),
 }
 
 opentitan_binary = rv_rule(
