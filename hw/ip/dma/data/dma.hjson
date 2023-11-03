@@ -462,7 +462,7 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "5:2"
+        { bits: "3:0"
           name: "opcode"
           resval: 0x0
           desc: '''
@@ -487,7 +487,7 @@
             }
           ]
         }
-        { bits: "6"
+        { bits: "4"
           name: "hardware_handshake_enable"
           resval: 0x0
           desc: '''
@@ -501,7 +501,7 @@
                 No explicit clearing necessary.
                 '''
         }
-        { bits: "7"
+        { bits: "5"
           name: "memory_buffer_auto_increment_enable"
           resval: 0x0
           desc: '''
@@ -511,7 +511,7 @@
                 Enables firmware to take appropriate action prior to reaching the limit.
                 '''
         }
-        { bits: "8"
+        { bits: "6"
           name: "fifo_auto_increment_enable"
           resval: 0x0
           desc: '''
@@ -520,7 +520,7 @@
                 Else uses the same address for all transactions.
                 '''
         }
-        { bits: "9"
+        { bits: "7"
           name: "data_direction"
           resval: 0x0
           desc: '''
@@ -529,7 +529,7 @@
                 1: Send data from memory buffer to LSIO FIFO.
                 '''
         }
-        { bits: "10"
+        { bits: "8"
           name: "initial_transfer"
           resval: 0x0
           hwaccess: "hrw"
@@ -598,55 +598,70 @@
           name: "error"
           resval: 0x0
           hwaccess: "hrw"
+          hwqe: "true"
           desc: '''
                 Error occurred during the operation.
-                error_code denotes the source of the error.
+                ERROR_CODE register denotes the source of the error.
                 '''
         }
-        { bits: "11:4"
-          name: "error_code"
-          resval: 0x0
-          desc: '''
-                Denotes the source of the operational error.
-
-                Bit 0: Source address error.
-                Bit 1: Destination address error.
-                Bit 2: Opcode error.
-                Bit 3: Size error.
-                Bit 4: Completion error.
-                Bit 5: DMA enabled memory config error.
-                Bit 6: Register config unlocked.
-                Bit 7: Invalid ASID error.
-                '''
-        }
-        { bits: "12"
+        { bits: "4"
           name: "sha2_digest_valid"
           resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
           desc: '''Indicates whether the SHA2_DIGEST register contains a valid digest.
                 This value is cleared on the initial transfer and set when the digest is written.
                 '''
         }
       ]
     }
-    { name: "CLEAR_STATE"
-      desc: "Clear the DMA state."
-      swaccess: "rw"
-      hwaccess: "hro"
-      hwqe: "true"
+    { name: "ERROR_CODE"
+      desc: '''
+            Denotes the source of the operational error.
+            The error is cleared by writing the RW1C STATUS.error register.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
       fields: [
         { bits: "0"
-          name: "clear"
+          name: "src_address_error"
           resval: 0x0
-          desc: '''
-                A write to this register (value is a don't care) clears the following DMA controller state:
-
-                Done Status
-                Error Status
-                SHA2 Digest valid status
-                SHA2 Digest
-                Error Code
-                Done Interrupt
-                '''
+          desc: "Source address is invalid."
+        }
+        { bits: "1"
+          name: "dst_address_error"
+          resval: 0x0
+          desc: "Destination address is invalid."
+        }
+        { bits: "2"
+          name: "opcode_error"
+          resval: 0x0
+          desc: "Opcode is invalid."
+        }
+        { bits: "3"
+          name: "size_error"
+          resval: 0x0
+          desc: "TRANSFER_WIDTH encodes an invalid value, TOTAL_DATA_SIZE or CHUNK_SIZE are zero, or inline hashing is not using 32-bit transfer width"
+        }
+        { bits: "4"
+          name: "bus_error"
+          resval: 0x0
+          desc: "The bus transfer returned an error."
+        }
+        { bits: "5"
+          name: "base_limit_error"
+          resval: 0x0
+          desc: "The base and limit addresses contain an invalid value."
+        }
+        { bits: "6"
+          name: "range_valid_error"
+          resval: 0x0
+          desc: "The DMA enabled memory range is not configured."
+        }
+        { bits: "7"
+          name: "asid_error"
+          resval: 0x0
+          desc: "The source or destination ASID contains an invalid value."
         }
       ]
     }

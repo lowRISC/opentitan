@@ -82,14 +82,6 @@ module dma
   logic                               int_clear_tlul_gnt;
 
   logic [DmaErrLast-1:0] next_error;
-  logic bad_src_addr;
-  logic bad_dst_addr;
-  logic bad_opcode;
-  logic bad_size;
-  logic bad_base_limit;
-  logic bad_go_config;
-  logic bad_asid;
-  logic config_error;
 
   // Read request grant
   logic read_gnt;
@@ -581,16 +573,7 @@ module dma
     transfer_width_d       = '0;
     capture_return_data    = 1'b0;
 
-    next_error     = '0;
-    bad_src_addr   = 1'b0;
-    bad_dst_addr   = 1'b0;
-    bad_opcode     = 1'b0;
-    bad_size       = 1'b0;
-    bad_base_limit = 1'b0;
-    bad_go_config  = 1'b0;
-    bad_asid       = 1'b0;
-    config_error   = 1'b0;
-
+    next_error   = '0;
     capture_addr = 1'b0;
     src_addr_d   = '0;
     dst_addr_d   = '0;
@@ -721,7 +704,7 @@ module dma
             DmaXfer2BperTxn: transfer_width_d = 3'b010; // 2 bytes
             DmaXfer4BperTxn: transfer_width_d = 3'b100; // 4 bytes
             // Value 3 is an invalid configuration value that leads to an error
-            default: bad_size = 1'b1;  // Invalid transfer_width
+            default: next_error[DmaSizeErr] = 1'b1;  // Invalid transfer_width
           endcase
 
           if ((transfer_byte_q == '0) ||
@@ -793,17 +776,17 @@ module dma
           // and does not start the DMA transfer
           if ((reg2hw.chunk_data_size.q == '0) ||         // No empty transactions
               (reg2hw.total_data_size.q == '0)) begin     // No empty transactions
-            bad_size = 1'b1;
+            next_error[DmaSizeErr] = 1'b1;
           end
 
           if (!(reg2hw.control.opcode.q inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
-            bad_opcode = 1'b1;
+            next_error[DmaOpcodeErr] = 1'b1;
           end
 
           // Inline hashing is only allowed for 32-bit transfer width
           if (use_inline_hashing) begin
             if (reg2hw.transfer_width.q != DmaXfer4BperTxn) begin
-              bad_size = 1'b1;
+              next_error[DmaSizeErr] = 1'b1;
             end
           end
 
@@ -812,43 +795,43 @@ module dma
           if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
                                                               SocControlAddr,
                                                               SocSystemAddr})) begin
-            bad_asid = 1'b1;
+            next_error[DmaAsidErr] = 1'b1;
           end
           if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
                                                                   SocControlAddr,
                                                                   SocSystemAddr})) begin
-            bad_asid = 1'b1;
+            next_error[DmaAsidErr] = 1'b1;
           end
 
           // Check the validity of the restricted DMA-enabled memory range
           // Note: both the base and the limit addresses are inclusive
           if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
-            bad_base_limit = 1'b1;
+            next_error[DmaBaseLimitErr] = 1'b1;
           end
 
           // In 4-byte transfers, source and destination address must be 4-byte aligned
           if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
             (|reg2hw.source_address_lo.q[1:0])) begin
-            bad_src_addr = 1'b1;
+            next_error[DmaSourceAddrErr] = 1'b1;
           end
           if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
             (|reg2hw.destination_address_lo.q[1:0])) begin
-            bad_dst_addr = 1'b1;
+            next_error[DmaDestinationAddrErr] = 1'b1;
           end
 
           // In 2-byte transfers, source and destination address must be 2-byte aligned
           if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.source_address_lo.q[0]) begin
-            bad_src_addr = 1'b1;
+            next_error[DmaSourceAddrErr] = 1'b1;
           end
           if (reg2hw.transfer_width.q == DmaXfer2BperTxn &&
               reg2hw.destination_address_lo.q[0]) begin
-            bad_dst_addr = 1'b1;
+            next_error[DmaDestinationAddrErr] = 1'b1;
           end
 
           // Source and destination must have the same alignment
           if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
-            bad_src_addr = 1'b1;
-            bad_dst_addr = 1'b1;
+            next_error[DmaSourceAddrErr] = 1'b1;
+            next_error[DmaDestinationAddrErr] = 1'b1;
           end
           // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
@@ -862,7 +845,7 @@ module dma
                 ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                   SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-            bad_dst_addr = 1'b1;
+            next_error[DmaDestinationAddrErr] = 1'b1;
           end
 
           // If data from the OT internal memory is transferred  to the SOC system bus or the
@@ -877,7 +860,7 @@ module dma
                 ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                   SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-            bad_src_addr = 1'b1;
+            next_error[DmaSourceAddrErr] = 1'b1;
           end
 
           // If the source ASID is the SOC control port or the OT internal port, we are accessing a
@@ -885,7 +868,7 @@ module dma
           if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
               (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
               (|reg2hw.source_address_hi.q)) begin
-            bad_src_addr = 1'b1;
+            next_error[DmaSourceAddrErr] = 1'b1;
           end
 
           // If the destination ASID is the SOC control por or the OT internal port we are accessing
@@ -893,30 +876,15 @@ module dma
           if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
               (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
               (|reg2hw.destination_address_hi.q)) begin
-            bad_dst_addr = 1'b1;
+            next_error[DmaDestinationAddrErr] = 1'b1;
           end
 
           if (!reg2hw.range_valid.q) begin
-            bad_go_config = 1'b1;
+            next_error[DmaRangeValidErr] = 1'b1;
           end
 
-          config_error = bad_src_addr   ||
-                        bad_dst_addr   ||
-                        bad_size       ||
-                        bad_base_limit ||
-                        bad_opcode     ||
-                        bad_go_config  ||
-                        bad_asid;
-
-          if (config_error) begin
-            next_error[DmaSourceAddrErr]      = bad_src_addr;
-            next_error[DmaDestinationAddrErr] = bad_dst_addr;
-            next_error[DmaOpcodeErr]          = bad_opcode;
-            next_error[DmaSizeErr]            = bad_size;
-            next_error[DmaBaseLimitErr]       = bad_base_limit;
-            next_error[DmaGoConfigErr]        = bad_go_config;
-            next_error[DmaAsidErr]            = bad_asid;
-
+          // If one or more errors occurred, transition to the error state.
+          if (|next_error) begin
             ctrl_state_d = DmaError;
           end else begin
             // Start the inline hashing if we are in the very first transfer. If we are in the first
@@ -1300,11 +1268,27 @@ module dma
     hw2reg.status.error.d  = 1'b1;
     hw2reg.status.error.de = (ctrl_state_d == DmaError);
 
-    hw2reg.status.error_code.d  = next_error;
-    hw2reg.status.error_code.de = (ctrl_state_d == DmaError);
-
     hw2reg.status.aborted.de = cfg_abort_en && (ctrl_state_d == DmaIdle);
     hw2reg.status.aborted.d  = 1'b1;
+
+    // Fiddle out error signals
+    hw2reg.error_code.src_address_error.de = (ctrl_state_d == DmaError);
+    hw2reg.error_code.dst_address_error.de = (ctrl_state_d == DmaError);
+    hw2reg.error_code.opcode_error.de      = (ctrl_state_d == DmaError);
+    hw2reg.error_code.size_error.de        = (ctrl_state_d == DmaError);
+    hw2reg.error_code.bus_error.de         = (ctrl_state_d == DmaError);
+    hw2reg.error_code.base_limit_error.de  = (ctrl_state_d == DmaError);
+    hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError);
+    hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError);
+
+    hw2reg.error_code.src_address_error.d  = next_error[DmaSourceAddrErr];
+    hw2reg.error_code.dst_address_error.d  = next_error[DmaDestinationAddrErr];
+    hw2reg.error_code.opcode_error.d       = next_error[DmaOpcodeErr];
+    hw2reg.error_code.size_error.d         = next_error[DmaSizeErr];
+    hw2reg.error_code.bus_error.d          = next_error[DmaCompletionErr];
+    hw2reg.error_code.base_limit_error.d   = next_error[DmaBaseLimitErr];
+    hw2reg.error_code.range_valid_error.d  = next_error[DmaRangeValidErr];
+    hw2reg.error_code.asid_error.d         = next_error[DmaAsidErr];
 
     // Clear the control.abort bit once we have handled the abort request
     hw2reg.control.abort.de = hw2reg.status.aborted.de;
@@ -1321,37 +1305,34 @@ module dma
                                                    test_memory_buffer_limit_interrupt;
     hw2reg.intr_state.dma_memory_buffer_limit.d  = 1'b1;
 
-    // write to clear state register, value doesn't matter
-    // clearing overrides new setting, and needs to be the last thing in this always_comb
-    if (reg2hw.clear_state.qe) begin
-      hw2reg.status.done.de = 1'b1;
-      hw2reg.status.done.d  = 1'b0;
-
-      hw2reg.status.error.de = 1'b1;
-      hw2reg.status.error.d  = 1'b0;
-
-      hw2reg.status.error_code.de = 1'b1;
-      hw2reg.status.error_code.d  = {$bits(hw2reg.status.error_code.d){1'b0}};
-
-      hw2reg.status.aborted.de = 1'b1;
-      hw2reg.status.aborted.d  = 1'b0;
-
-      hw2reg.status.sha2_digest_valid.de = 1'b1;
-      hw2reg.status.sha2_digest_valid.d  = 1'b0;
-
+    // Clear the SHA2 digests if the SHA2 valid flag is cleared (RW1C)
+    if (reg2hw.status.sha2_digest_valid.qe & reg2hw.status.sha2_digest_valid.q) begin
       for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i++) begin
         hw2reg.sha2_digest[i].de = 1'b0;
         hw2reg.sha2_digest[i].d  = '0;
       end
+    end
 
-      hw2reg.intr_state.dma_done.de = 1'b1;
-      hw2reg.intr_state.dma_done.d  = 1'b0;
+    // Clear the error code if the error flag is cleared (RW1C)
+    if (reg2hw.status.error.qe & reg2hw.status.error.q) begin
+      // Clear all errors
+      hw2reg.error_code.src_address_error.de = 1'b1;
+      hw2reg.error_code.dst_address_error.de = 1'b1;
+      hw2reg.error_code.opcode_error.de      = 1'b1;
+      hw2reg.error_code.size_error.de        = 1'b1;
+      hw2reg.error_code.bus_error.de         = 1'b1;
+      hw2reg.error_code.base_limit_error.de  = 1'b1;
+      hw2reg.error_code.range_valid_error.de = 1'b1;
+      hw2reg.error_code.asid_error.de        = 1'b1;
 
-      hw2reg.intr_state.dma_error.de = 1'b1;
-      hw2reg.intr_state.dma_error.d  = 1'b0;
-
-      hw2reg.intr_state.dma_memory_buffer_limit.de = 1'b1;
-      hw2reg.intr_state.dma_memory_buffer_limit.d  = 1'b0;
+      hw2reg.error_code.src_address_error.d  = 1'b0;
+      hw2reg.error_code.dst_address_error.d  = 1'b0;
+      hw2reg.error_code.opcode_error.d       = 1'b0;
+      hw2reg.error_code.size_error.d         = 1'b0;
+      hw2reg.error_code.bus_error.d          = 1'b0;
+      hw2reg.error_code.base_limit_error.d   = 1'b0;
+      hw2reg.error_code.range_valid_error.d  = 1'b0;
+      hw2reg.error_code.asid_error.d         = 1'b0;
     end
   end
 
@@ -1548,8 +1529,7 @@ module dma
   // Unused signals
   //////////////////////////////////////////////////////////////////////////////
   logic unused_signals;
-  assign unused_signals = ^{reg2hw.clear_state.q,
-                            reg2hw.enabled_memory_range_base.qe,
+  assign unused_signals = ^{reg2hw.enabled_memory_range_base.qe,
                             reg2hw.enabled_memory_range_limit.qe,
                             reg2hw.range_regwen.q,
                             sys_resp_q.error_vec,
