@@ -831,8 +831,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
 
         if (done || aborted || error) begin
+          string reasons;
+          if (done)    reasons = "Done ";
+          if (aborted) reasons = {reasons, "Aborted "};
+          if (error)   reasons = {reasons, "Error" };
           operation_in_progress = 1'b0;
-          `uvm_info(`gfn, "Detected end of DMA operation", UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Detected end of DMA operation (%s)", reasons), UVM_MEDIUM)
           // Clear variables
           num_fifo_reg_write = 0;
         end
