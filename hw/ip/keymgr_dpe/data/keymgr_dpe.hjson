@@ -656,17 +656,17 @@ countermeasures: [
       regwen: "SLOT_POLICY_REGWEN",
       fields: [
         { bits: "0",
-          name: "EXPORTABLE",
-          resval: "0"
-          desc: '''
-            Set whether the key for the target slot is exportable.
-          '''
-        },
-        { bits: "1",
           name: "ALLOW_CHILD",
           resval: "0"
           desc: '''
             Set whether this context allows derivation of further children.
+          '''
+        },
+        { bits: "1",
+          name: "EXPORTABLE",
+          resval: "0"
+          desc: '''
+            Set whether the key for the target slot is exportable.
           '''
         },
         { bits: "2",
