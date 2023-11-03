@@ -15,6 +15,7 @@ steps:
 - template: ./install-package-dependencies.yml
 - bash: |
     ci/scripts/get-bitstream-strategy.sh "chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}" \
+      ':!/third_party/rust/' \
       ':!/sw/' \
       ':!/*.hjson' \
       ':!/*.tpl' \
