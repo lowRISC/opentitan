@@ -80,10 +80,10 @@ package keymgr_dpe_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } exportable;
+    } allow_child;
     struct packed {
       logic        q;
-    } allow_child;
+    } exportable;
     struct packed {
       logic        q;
     } retain_parent;
