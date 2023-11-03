@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module uartdpi #(
-  parameter BAUD = 'x,
-  parameter FREQ = 'x,
+  parameter integer BAUD = 'x,
+  parameter integer FREQ = 'x,
   parameter string NAME = "uart0"
 )(
   input  logic clk_i,

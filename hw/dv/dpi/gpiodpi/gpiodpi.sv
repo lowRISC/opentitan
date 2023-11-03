@@ -5,7 +5,7 @@
 module gpiodpi
 #(
   parameter string NAME = "gpio0",
-  parameter        N_GPIO = 32
+  parameter int    N_GPIO = 32
 )(
   input  logic              clk_i,
   input  logic              rst_ni,
@@ -20,17 +20,17 @@ module gpiodpi
      chandle gpiodpi_create(input string name, input int n_bits);
 
    import "DPI-C" function
-     void gpiodpi_device_to_host(input chandle ctx, input [N_GPIO-1:0] gpio_d2p,
-                                 input [N_GPIO-1:0] gpio_en_d2p);
+     void gpiodpi_device_to_host(input chandle ctx, input logic [N_GPIO-1:0] gpio_d2p,
+                                 input logic [N_GPIO-1:0] gpio_en_d2p);
 
    import "DPI-C" function
      void gpiodpi_close(input chandle ctx);
 
    import "DPI-C" function
      int gpiodpi_host_to_device_tick(input chandle ctx,
-                                     input [N_GPIO-1:0] gpio_en_d2p,
-                                     input [N_GPIO-1:0] gpio_pull_en,
-                                     input [N_GPIO-1:0] gpio_pull_sel);
+                                     input logic [N_GPIO-1:0] gpio_en_d2p,
+                                     input logic [N_GPIO-1:0] gpio_pull_en,
+                                     input logic [N_GPIO-1:0] gpio_pull_sel);
 
    chandle ctx;
 
