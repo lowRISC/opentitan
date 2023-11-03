@@ -1085,7 +1085,7 @@ module dma_reg_top (
     .d_i(&control_flds_we),
     .q_o(control_qe)
   );
-  //   F[opcode]: 5:2
+  //   F[opcode]: 3:0
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1112,7 +1112,7 @@ module dma_reg_top (
     .qs     (control_opcode_qs)
   );
 
-  //   F[hardware_handshake_enable]: 6:6
+  //   F[hardware_handshake_enable]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1139,7 +1139,7 @@ module dma_reg_top (
     .qs     (control_hardware_handshake_enable_qs)
   );
 
-  //   F[memory_buffer_auto_increment_enable]: 7:7
+  //   F[memory_buffer_auto_increment_enable]: 5:5
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1166,7 +1166,7 @@ module dma_reg_top (
     .qs     (control_memory_buffer_auto_increment_enable_qs)
   );
 
-  //   F[fifo_auto_increment_enable]: 8:8
+  //   F[fifo_auto_increment_enable]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1193,7 +1193,7 @@ module dma_reg_top (
     .qs     (control_fifo_auto_increment_enable_qs)
   );
 
-  //   F[data_direction]: 9:9
+  //   F[data_direction]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1220,7 +1220,7 @@ module dma_reg_top (
     .qs     (control_data_direction_qs)
   );
 
-  //   F[initial_transfer]: 10:10
+  //   F[initial_transfer]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2911,17 +2911,17 @@ module dma_reg_top (
   assign destination_address_almost_limit_hi_wd = reg_wdata[31:0];
   assign control_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign control_opcode_wd = reg_wdata[5:2];
+  assign control_opcode_wd = reg_wdata[3:0];
 
-  assign control_hardware_handshake_enable_wd = reg_wdata[6];
+  assign control_hardware_handshake_enable_wd = reg_wdata[4];
 
-  assign control_memory_buffer_auto_increment_enable_wd = reg_wdata[7];
+  assign control_memory_buffer_auto_increment_enable_wd = reg_wdata[5];
 
-  assign control_fifo_auto_increment_enable_wd = reg_wdata[8];
+  assign control_fifo_auto_increment_enable_wd = reg_wdata[6];
 
-  assign control_data_direction_wd = reg_wdata[9];
+  assign control_data_direction_wd = reg_wdata[7];
 
-  assign control_initial_transfer_wd = reg_wdata[10];
+  assign control_initial_transfer_wd = reg_wdata[8];
 
   assign control_abort_wd = reg_wdata[27];
 
@@ -3179,12 +3179,12 @@ module dma_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[5:2] = control_opcode_qs;
-        reg_rdata_next[6] = control_hardware_handshake_enable_qs;
-        reg_rdata_next[7] = control_memory_buffer_auto_increment_enable_qs;
-        reg_rdata_next[8] = control_fifo_auto_increment_enable_qs;
-        reg_rdata_next[9] = control_data_direction_qs;
-        reg_rdata_next[10] = control_initial_transfer_qs;
+        reg_rdata_next[3:0] = control_opcode_qs;
+        reg_rdata_next[4] = control_hardware_handshake_enable_qs;
+        reg_rdata_next[5] = control_memory_buffer_auto_increment_enable_qs;
+        reg_rdata_next[6] = control_fifo_auto_increment_enable_qs;
+        reg_rdata_next[7] = control_data_direction_qs;
+        reg_rdata_next[8] = control_initial_transfer_qs;
         reg_rdata_next[27] = '0;
         reg_rdata_next[31] = control_go_qs;
       end

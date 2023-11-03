@@ -462,7 +462,7 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "5:2"
+        { bits: "3:0"
           name: "opcode"
           resval: 0x0
           desc: '''
@@ -487,7 +487,7 @@
             }
           ]
         }
-        { bits: "6"
+        { bits: "4"
           name: "hardware_handshake_enable"
           resval: 0x0
           desc: '''
@@ -501,7 +501,7 @@
                 No explicit clearing necessary.
                 '''
         }
-        { bits: "7"
+        { bits: "5"
           name: "memory_buffer_auto_increment_enable"
           resval: 0x0
           desc: '''
@@ -511,7 +511,7 @@
                 Enables firmware to take appropriate action prior to reaching the limit.
                 '''
         }
-        { bits: "8"
+        { bits: "6"
           name: "fifo_auto_increment_enable"
           resval: 0x0
           desc: '''
@@ -520,7 +520,7 @@
                 Else uses the same address for all transactions.
                 '''
         }
-        { bits: "9"
+        { bits: "7"
           name: "data_direction"
           resval: 0x0
           desc: '''
@@ -529,7 +529,7 @@
                 1: Send data from memory buffer to LSIO FIFO.
                 '''
         }
-        { bits: "10"
+        { bits: "8"
           name: "initial_transfer"
           resval: 0x0
           hwaccess: "hrw"
