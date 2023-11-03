@@ -58,7 +58,6 @@ rust_binary(
         "@crate_index//:log",
         "@crate_index//:mio",
         "@crate_index//:mio-signals",
-        "@crate_index//:raw_tty",
         "@crate_index//:regex",
         "@crate_index//:serde",
         "@crate_index//:serde_bytes",

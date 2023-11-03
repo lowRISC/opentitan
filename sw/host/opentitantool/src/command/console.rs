@@ -4,13 +4,10 @@
 
 use anyhow::{anyhow, Result};
 use clap::Args;
-use raw_tty::TtyModeGuard;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
-use std::io::IsTerminal;
-use std::os::unix::io::AsRawFd;
 use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -18,6 +15,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
+use opentitanlib::util::raw_tty::RawTty;
 
 #[derive(Debug, Args)]
 pub struct Console {
@@ -63,8 +61,6 @@ impl CommandDispatch for Console {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // We need the UART for the console command to operate.
         transport.capabilities()?.request(Capability::UART).ok()?;
-        let mut stdout = std::io::stdout();
-        let mut stdin = std::io::stdin();
 
         // Set up resources specified by the command line parameters.
         let mut console = UartConsole {
@@ -88,20 +84,9 @@ impl CommandDispatch for Console {
         let status = {
             // Put the terminal into raw mode.  The tty guard will restore the
             // console settings when it goes out of scope.
-            let _stdin_guard = if stdin.is_terminal() {
-                let mut guard = TtyModeGuard::new(stdin.as_raw_fd())?;
-                guard.set_raw_mode()?;
-                Some(guard)
-            } else {
-                None
-            };
-            let _stdout_guard = if stdin.is_terminal() {
-                let mut guard = TtyModeGuard::new(stdout.as_raw_fd())?;
-                guard.set_raw_mode()?;
-                Some(guard)
-            } else {
-                None
-            };
+            let mut stdin = RawTty::new(std::io::stdin())?;
+            let mut stdout = std::io::stdout();
+
             let uart = self.params.create(transport)?;
             if let Some(send) = self.send.as_ref() {
                 log::info!("Sending: {:?}", send);
