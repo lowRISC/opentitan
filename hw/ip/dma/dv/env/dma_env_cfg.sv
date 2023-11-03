@@ -28,6 +28,11 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // Names of dir_channel_fifo
   string dma_dir_fifo[string];
 
+  // Source data for the entire transfer; this must be presented in chunks via the memory model
+  // or FIFO because chunks overlap each other when auto-increment is not being used with the
+  // memory address.
+  bit [7:0] src_data[];
+
   // For each TLUL interface declare a mem_model instance and a
   //  dma_handshake_mode_fifo instance to emulate either memory or a
   // FIFO depending on handshake_mode_en
