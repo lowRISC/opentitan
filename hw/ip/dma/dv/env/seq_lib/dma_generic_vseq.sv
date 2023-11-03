@@ -100,6 +100,7 @@ class dma_generic_vseq extends dma_base_vseq;
 
       // TODO: can/shall we re-randomize the transaction count on each iteration?
       for (uint j = 0; j < num_txns; j++) begin
+        bit [31:0] num_bytes_supplied;
         logic [511:0] digest;
         bit stop = 1'b0;
         int status;
@@ -117,14 +118,52 @@ class dma_generic_vseq extends dma_base_vseq;
                              dma_config.direction, // Direction
                              1'b1); // Go
         `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", dma_config.lsio_trigger_i), UVM_HIGH)
+
+        // Keep track of the number of bytes that we've supplied to the DMA controller
+        num_bytes_supplied = dma_config.chunk_size(0);
+
         fork
           // Wait for completion of the entire transfer
-          begin
+          // - all chunks have been completed and Done interrupt/Status bit detected
+          // - error has occurred (eg. configuration rejected, TL-UL error response)
+          // - aborted, in response to abort request
+          // - timeout
+          while (!stop) begin
             wait_for_completion(status);
-            stop = 1'b1;
+            if (status) begin
+              stop = 1'b1;
+            end else begin
+              // 'Done' but perhaps not yet finished
+              bit [31:0] num_written = get_bytes_written(dma_config);
+              `uvm_info(`gfn,
+                        $sformatf("STATUS.done bit set after 0x%0x bytes of 0x%0x-byte transfer",
+                        num_written, dma_config.total_transfer_size), UVM_MEDIUM)
+              // Has the entire transfer been completed yet?
+              if (num_written >= dma_config.total_transfer_size) begin
+                stop = 1'b1;
+              end else if (!dma_config.handshake) begin
+                // Model the FirmWare running on the OT side, responding to the Done interrupt and
+                // nudging the controller to perform the next chunk of a multi-chunk transfer
+
+                // TODO: clear the Done bit; PR #660 is aimed at obviating this
+                ral.status.done.set(1'b1);
+                csr_update(ral.status);
+
+                // Supply the next chunk of input data
+                void'(configure_mem_model(dma_config, num_bytes_supplied));
+                num_bytes_supplied += dma_config.chunk_size(num_bytes_supplied);
+
+                // Nudge the DMA controller to start processing the next chunk of data
+                ral.control.initial_transfer.set(1'b0);
+                ral.control.go.set(1'b1);
+                csr_update(ral.control);
+              end else begin
+                `uvm_fatal(`gfn,
+                      $sformatf("STATUS.done bit set prematurely (0x%x byte(s) of 0x%x transferred",
+                      num_written, dma_config.total_transfer_size))
+              end
+            end
           end
-          // Model the FirmWare running on the OT side, responding to the Done interrupt and
-          // nudging the controller to perform the next chunk of a multi-chunk transfer
           begin
             while (!dma_config.handshake && !stop) begin
               // TODO: implement me!

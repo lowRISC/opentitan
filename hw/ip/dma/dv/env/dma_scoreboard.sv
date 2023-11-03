@@ -29,8 +29,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit operation_in_progress;
   // Indicates if current DMA operation is valid or invalid
   bit current_operation_valid = 1;
+  // Expectation of how many bytes shall be transferred by the DMA controller before reporting Done
+  // (for handshake mode this is the entire transfer, but for memory-to-memory operation it tracks
+  //  the total size in bytes of the chunks thus far supplied).
+  uint exp_bytes_transferred;
   // Variable to keep track of number of bytes transferred in current operation
   uint num_bytes_transferred;
+  // Tracks the number of destination bytes checked against the source
+  uint num_bytes_checked;
   // Variable to indicate if TL error is detected on interface
   bit src_tl_error_detected;
   bit dst_tl_error_detected;
@@ -270,7 +276,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                               num_bytes_transferred, dma_config.total_transfer_size), UVM_HIGH);
 
     // Update expected value of dma_done interrupt
-    exp_dma_done_intr = (num_bytes_transferred >= dma_config.total_transfer_size);
+    exp_dma_done_intr = (num_bytes_transferred >= exp_bytes_transferred);
   endtask
 
   // Process items on Data channel
@@ -392,7 +398,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
     src_queue.delete();
     dst_queue.delete();
     operation_in_progress = 1'b0;
+    exp_bytes_transferred = 0;
     num_bytes_transferred = 0;
+    num_bytes_checked = 0;
     src_tl_error_detected = 0;
     dst_tl_error_detected = 0;
     abort_via_reg_write = 0;
@@ -487,7 +495,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Function to get the memory model data at provided address
   function bit [7:0] get_model_data(asid_encoding_e asid, bit [63:0] addr);
     case (asid)
-      OtInternalAddr : return cfg.mem_host.read_byte(addr);
+      OtInternalAddr: return cfg.mem_host.read_byte(addr);
       SocControlAddr: return cfg.mem_ctn.read_byte(addr);
       SocSystemAddr : return cfg.mem_sys.read_byte(addr);
       default: begin
@@ -496,19 +504,51 @@ class dma_scoreboard extends cip_base_scoreboard #(
     endcase
   endfunction
 
-  // Wrapper function to check the data and addresses in each memory model
-  function void check_data(ref dma_seq_item dma_config);
-    bit [63:0] src_addr = dma_config.src_addr;
-    bit [63:0] dst_addr = dma_config.dst_addr;
-    for (int i = 0; i < dma_config.total_transfer_size; i++) begin
+  // Function to retrieve the next byte written into the destination FIFO
+  // Note: that this is destructive in that it pops the data from the FIFO
+  function bit [7:0] get_fifo_data(asid_encoding_e asid, bit [63:0] addr);
+    case (asid)
+      OtInternalAddr: return cfg.fifo_host.read_byte(addr);
+      SocControlAddr: return cfg.fifo_ctn.read_byte(addr);
+      SocSystemAddr : return cfg.fifo_sys.read_byte(addr);
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
+  // Utility function to check the contents of the destination memory/FIFO against the
+  // corresponding reference source data.
+  function void check_data(ref dma_seq_item dma_config, bit [63:0] src_addr, bit [63:0] dst_addr,
+                           bit [31:0] src_offset, bit [31:0] size);
+    // Is the destination a FIFO?
+    bit dst_fifo = dma_config.get_write_fifo_en();
+
+    `uvm_info(`gfn, $sformatf("Checking output data [0x%0x,0x%0x) against 0%0x byte(s) of source",
+                              dst_addr, dst_addr + size, size), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("  (src_addr 0x%0x at reference offset 0x%0x)", src_addr, src_offset),
+                              UVM_MEDIUM)
+
+    for (int i = 0; i < size; i++) begin
+      // For the source data we access the original randomized data that we chose
+      bit [7:0] src_data = cfg.src_data[src_offset + i];
+      bit [7:0] dst_data;
+
+      if (dst_fifo) begin
+        dst_data = get_fifo_data(dma_config.dst_asid, dst_addr);
+      end else begin
+        dst_data = get_model_data(dma_config.dst_asid, dst_addr);
+      end
       `uvm_info(`gfn,
-                $sformatf("checking src_addr = %0x dst_addr = %0x", src_addr, dst_addr),
-                UVM_DEBUG)
-      `DV_CHECK_EQ(get_model_data(dma_config.src_asid, src_addr),
-                   get_model_data(dma_config.dst_asid, dst_addr),
-                   $sformatf("src_addr = %0x dst_addr = %0x", src_addr, dst_addr))
+                $sformatf("checking src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
+                          src_addr, src_data, dst_addr, dst_data), UVM_DEBUG)
+      `DV_CHECK_EQ(src_data, dst_data,
+                   $sformatf("src_addr = %0x data = %0x : dst_addr = %0x data = %0x",
+                             src_addr, src_data, dst_addr, dst_data))
       src_addr++;
-      dst_addr++;
+      if (!dst_fifo) begin
+        dst_addr++;
+      end
     end
   endfunction
 
@@ -722,12 +762,26 @@ class dma_scoreboard extends cip_base_scoreboard #(
           end
           // Clear status variables
           num_bytes_transferred = 0;
+          num_bytes_checked = 0;
           fifo_intr_cleared = 0;
+          // Expectation of bytes transferred before the first 'Done' signal
+          exp_bytes_transferred = dma_config.handshake ? dma_config.total_transfer_size
+                                                       : dma_config.chunk_size(0);
+        end else if (!dma_config.handshake && get_field_val(ral.control.go, item.a_data)) begin
+          operation_in_progress = 1'b1;
+          if (dma_config.direction == DmaSendData && !dma_config.auto_inc_buffer) begin
+            last_src_addr = dma_config.src_addr - 1;
+          end
+          if (dma_config.direction == DmaRcvData && !dma_config.auto_inc_buffer) begin
+            last_dst_addr = dma_config.dst_addr - 1;
+          end
+          // In memory-to-memory mode, DV/FW is advancing to the next chunk
+          exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
       end
       "clear_state": begin
         uvm_reg_data_t status = `gmv(ral.status.busy);
-        clear_via_reg_write = get_field_val(ral.clear_state.clear, item.d_data);
+        clear_via_reg_write = get_field_val(ral.clear_state.clear, item.a_data);
         if (cfg.en_cov) begin
           // Sample dma configuration status
           cov.status_cg.sample(.busy (get_field_val(ral.status.busy, status)),
@@ -787,10 +841,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
             !(aborted || error) && // no abort or error detected
            !(src_tl_error_detected || dst_tl_error_detected))
         begin // no TL error
-            // Check if number of bytes transferred is as expected
-            `DV_CHECK_EQ(dma_config.total_transfer_size, num_bytes_transferred,
-                         $sformatf("exp_data_size: %0d obs_data_size: %0d",
-                                   dma_config.total_transfer_size, num_bytes_transferred))
+            // Check if number of bytes transferred is as expected at this point in the transfer
+            `DV_CHECK_EQ(num_bytes_transferred, exp_bytes_transferred,
+                         $sformatf("act_data_size: %0d exp_data_size: %0d",
+                                   num_bytes_transferred, exp_bytes_transferred))
         end
         // Check if aborted bit is set if there is a TL error
         `DV_CHECK_EQ(aborted, exp_aborted, "Aborted bit not set with TL error or DMA config err")
@@ -803,34 +857,44 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .error_code (error_code),
                                .clear (clear_via_reg_write));
         end
-        // Check data and addresses in source and destination mem models
-        if (done && dma_config.is_valid_config) begin
-          // SHA digest (expecting zeros if unused)
-          if (dma_config.opcode == OpcCopy) begin
-            // TODO: When not using inline hashing mode `predict_digest` can access undefined
-            // memory contents because it is not yet compatible with multi-chunk transfers
-            exp_digest = '{default:0};
-          end else begin
+        // Check results after each chunk of the transfer (memory-to-memory) or after the complete
+        // transfer (handshaking mode).
+        if (dma_config.is_valid_config && done) begin
+          if (num_bytes_transferred >= dma_config.total_transfer_size) begin
+            // SHA digest (expecting zeros if unused)
+            // When using inline hashing, sha2_digest_valid must be raised at the end
+            if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
+              `DV_CHECK_EQ(sha2_digest_valid, 1, "Digest valid bit not set when done")
+            end
             predict_digest(dma_config);
           end
 
-          if (dma_config.handshake && !dma_config.auto_inc_buffer) begin
-            // TODO: Without `auto_inc_buffer` asserted the memory chunks overlap each other
-            `uvm_info(`gfn, "Unable to predict SHA digest from final memory contents", UVM_LOW)
-          end else begin
-            // When using inline hashing, sha2_digest_valid must be raised at the end
-            if (dma_config.handshake &&
-                (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512})) begin
-              `DV_CHECK_EQ(sha2_digest_valid, 1, "Digest valid bit not set when done")
-            end
-          end
+          // Has all of the output already been checked?
+          if (num_bytes_checked < num_bytes_transferred) begin
+            bit [31:0] check_bytes = num_bytes_transferred - num_bytes_checked;
+            bit [63:0] dst_addr = dma_config.dst_addr;
+            bit [63:0] src_addr = dma_config.src_addr;
 
-          // Checking of output data from DMA operation
-          if (dma_config.handshake) begin
-            // TODO: Check data only works for memory models now
-            `uvm_info(`gfn, "Checking of output data not performed on handshake tests", UVM_LOW)
-          end else begin
-            check_data(dma_config);
+            if (!dma_config.handshake ||
+                (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+              src_addr += num_bytes_checked;
+            end
+            if (!dma_config.handshake ||
+                (dma_config.direction == DmaRcvData && dma_config.auto_inc_buffer)) begin
+              dst_addr += num_bytes_checked;
+            end
+
+            // TODO: we are still unable to check the final output data after the transfer if
+            // overwriting has occurred; this will happen with a memory source/destination that
+            // doesn't auto increment after each chunk, _or_ with a FIFO target that is actually
+            // using a memory model because auto increment is enabled.
+            if (dma_config.handshake && (!dma_config.auto_inc_buffer ||
+                 (dma_config.direction == DmaSendData && dma_config.auto_inc_fifo))) begin
+              `uvm_info(`gfn, "Unable to check output data because of chunks overlapping", UVM_LOW)
+            end else begin
+              check_data(dma_config, src_addr, dst_addr, num_bytes_checked, check_bytes);
+              num_bytes_checked += check_bytes;
+            end
           end
         end
       end
