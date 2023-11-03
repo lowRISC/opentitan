@@ -5,10 +5,16 @@
 #ifndef OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 #define OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 
+#ifdef __linux__
+#include <linux/limits.h>
+#endif
+
 #include <limits.h>
 #include <svdpi.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #define MAX_TRANSACTION 4
 struct spidpi_ctx {
@@ -59,5 +65,9 @@ void spidpi_close(void *ctx_void);
 void monitor_spi(void *mon_void, FILE *mon_file, int loglevel, int tick,
                  int p2d, int d2p);
 void *monitor_spi_init(int mode);
-}
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
 #endif  // OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
