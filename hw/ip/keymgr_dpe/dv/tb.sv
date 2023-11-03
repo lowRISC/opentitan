@@ -74,6 +74,8 @@ module tb;
     .tl_o                 (tl_if.d2h  )
   );
 
+  assign keymgr_dpe_if.internal_key_slots = dut.u_ctrl.key_slots_q;
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
