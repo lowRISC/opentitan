@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #ifdef __linux__
+#include <linux/limits.h>
 #include <pty.h>
 #elif __APPLE__
 #include <util.h>
@@ -15,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <svdpi.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -23,6 +25,39 @@
 #ifdef VERILATOR
 #include "verilator_sim_ctrl.h"
 #endif
+
+// This holds the necessary SPI state.
+#define MAX_TRANSACTION 4
+struct spidpi_ctx {
+  int loglevel;
+  char ptyname[64];
+  int host;
+  int device;
+  FILE *mon_file;
+  char mon_pathname[PATH_MAX];
+  void *mon;
+  int tick;
+  int cpol;
+  int cpha;
+  int msbfirst;  // shift direction
+  int nout;
+  int bout;
+  int nin;
+  int bin;
+  int din;
+  int nmax;
+  char driving;
+  int state;
+  char buf[MAX_TRANSACTION];
+};
+
+// SPI Host States
+#define SP_IDLE 0
+#define SP_CSFALL 1
+#define SP_DMOVE 2
+#define SP_LASTBIT 3
+#define SP_CSRISE 4
+#define SP_FINISH 99
 
 // Enable this define to stop tracing at cycle 4
 // and resume at the first SPI packet
