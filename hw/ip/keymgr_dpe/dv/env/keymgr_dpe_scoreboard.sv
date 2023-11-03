@@ -72,6 +72,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
   keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[
 	keymgr_dpe_pkg::DpeNumSlots];
+  // bit used to flag a comparison of key slot is required
+  // it's set by the process_kmac_data_rsp() function, during an
+  // internal key update
+  bit compare_internal_key_slot;
   keymgr_dpe_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
@@ -95,6 +99,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
   bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
+  keymgr_dpe_pkg::keymgr_dpe_policy_t key_policy;
+  logic [keymgr_dpe_pkg::KeyVersionWidth-1:0] max_key_version;
 
   `uvm_component_new
 
@@ -234,14 +240,30 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     case (update_result)
       // Should occur when a valid OpDpeAdvance is issued in the StWorkDpeAvailable state
       UpdateInternalKey: begin
+        // flag a key slot comparison
+        compare_internal_key_slot = 1;
         // digest is 384 bits wide while internal key is only 256, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
                                   item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
         cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_key_slot.dst_slot].key, current_state);
 
-        // update boot_ctr
+        // boot stage should increment between advance calls
         current_internal_key[current_key_slot.dst_slot].boot_stage =
           current_internal_key[current_key_slot.src_slot].boot_stage + 1;
+        // valid is expected to be 1
+        current_internal_key[current_key_slot.dst_slot].valid = 1;
+        // key policy values should be set from the key_policy signal that was populated from the 
+        // last slot_policy csr write before the "start" operation was enabled
+        current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = key_policy.allow_child;
+        current_internal_key[current_key_slot.dst_slot].key_policy.exportable = key_policy.exportable;
+        current_internal_key[current_key_slot.dst_slot].key_policy.retain_parent = key_policy.retain_parent;
+        // max verssion should also be set from the max_version signal that was populated from the
+        // last max_key_ver_shadowed csr write before the "start" operation was enabled
+        current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+
+        `uvm_info(`gfn,
+           $sformatf("process_kmac_data_rsp: expected dst_keyslot = %p",
+             current_internal_key[current_key_slot.dst_slot]), UVM_MEDIUM)
 
         `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for op %s in state %s",
              current_internal_key[current_key_slot.dst_slot].key, op.name, current_state.name), UVM_MEDIUM)
@@ -466,6 +488,19 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         if (data_phase_read) begin
           bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
           bit [NumKeyMgrDpeIntr-1:0] intr_exp = `gmv(ral.intr_state);
+          // intr_state always occurs after the OpDpeAdvance operation has completed
+          // and the key slot has been updated. So we can use this state to check that
+          // if the operation was OpDoneSuccess, and the intr was triggered then the
+          // target key slot can be checked against our expected key slot values
+          `uvm_info(`gfn, $sformatf("intr_state: status is %s compare_internal_key_slot %0d",
+            current_op_status.name, compare_internal_key_slot), UVM_MEDIUM)
+          if (current_op_status == keymgr_pkg::OpDoneSuccess && compare_internal_key_slot) begin
+              cfg.keymgr_dpe_vif.compare_internal_key_slot(
+                current_internal_key[current_key_slot.dst_slot],
+                current_key_slot.dst_slot
+              );
+            compare_internal_key_slot = 0;
+          end
 
           foreach (intr_exp[i]) begin
             keymgr_dpe_intr_e intr = keymgr_dpe_intr_e'(i);
@@ -542,6 +577,18 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           end else if (data_phase_read) begin
             `DV_CHECK_EQ(item.d_data, addr_phase_cfg_regwen)
           end
+        end
+      end
+      "slot_policy": begin
+        // Capture the latest key policy write
+        // only valid when start is enabled
+        if (addr_phase_write) begin
+          key_policy.allow_child   = item.a_data[0];
+          key_policy.exportable    = item.a_data[1];
+          key_policy.retain_parent = item.a_data[2];
+          `uvm_info(`gfn,
+            $sformatf("key_policy write with item.a_data 'h%h, key_policy = %p",
+              item.a_data, key_policy), UVM_LOW)
         end
       end
       "start": begin
@@ -707,9 +754,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       "max_key_ver_shadowed": begin
-        if (cfg.en_cov && addr_phase_write) begin
-          cov.sw_input_cg_wrap["max_key_ver_shadowed"].sample(item.a_data,
-              `gmv(ral.max_key_ver_regwen));
+        if(addr_phase_write) begin
+          if (cfg.en_cov) 
+            cov.sw_input_cg_wrap["max_key_ver_shadowed"].sample(item.a_data,
+                `gmv(ral.max_key_ver_regwen));
+          max_key_version = item.a_data[31:0];
+          `uvm_info(`gfn, 
+            $sformatf("max_key_ver_shadowed was written with max_key_version value %0d",
+              max_key_version), UVM_LOW)
+
         end
       end
       "fault_status": begin
@@ -1268,6 +1321,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, req_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, rsp_fifo)
+    if (compare_internal_key_slot)
+      `uvm_error(`gfn,
+        $sformatf("outstanding compare_internal_key_slot left unchecked %0d",
+          compare_internal_key_slot))
   endfunction
 
   `undef CREATE_CMP_STR
