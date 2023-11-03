@@ -111,6 +111,26 @@ class dma_scoreboard extends cip_base_scoreboard #(
     return 1'b0;
   endfunction
 
+  // On-the-fly checking of write data against the pre-randomized source data
+  function void check_write_data(string if_name, ref tl_seq_item item);
+    bit [tl_agent_pkg::DataWidth-1:0] wdata = item.a_data;
+    bit [31:0] offset = num_bytes_transferred;
+
+    `uvm_info(`gfn, $sformatf("if_name %s: write addr 0x%0x mask 0x%0x data 0x%0x", if_name,
+                              item.a_addr, item.a_mask, item.a_data), UVM_HIGH)
+
+    // Check each of the bytes being written, Little Endian byte ordering
+    for (int i = 0; i < $bits(item.a_mask); i++) begin
+      if (item.a_mask[i]) begin
+        `uvm_info(`gfn, $sformatf("src_data %0x write data 0x%0x",
+                                  cfg.src_data[offset], wdata[7:0]), UVM_DEBUG)
+        `DV_CHECK_EQ(cfg.src_data[offset], wdata[7:0])
+        offset++;
+      end
+      wdata = wdata >> 8;
+    end
+  endfunction
+
   // Process items on Addr channel
   task process_tl_addr_txn(string if_name, ref tl_seq_item item);
     uint expected_txn_size = dma_config.transfer_width_to_a_size(
@@ -235,6 +255,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                 num_bytes_this_txn, clear_int), UVM_HIGH);
 
       if (!clear_int) begin
+        // On-the-fly checking of writing data
+        check_write_data(if_name, item);
+
         // Update last address
         last_dst_addr = item.a_addr;
         // Update number of bytes transferred only in case of write txn - refer #338
@@ -839,6 +862,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
         do_read_check = 1'b0;
         real_digest_val = {<<8{item.d_data}};
+        `uvm_info(`gfn, $sformatf("Checking SHA digest calulated 0x%0x expected 0x%0x",
+                                  real_digest_val, exp_digest[digest_idx]), UVM_MEDIUM)
         `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx]);
       end
       default: do_read_check = 1'b0;
@@ -881,42 +906,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // query the SHA model to get expected digest
   // update predicted digest to ral mirrored value
   virtual function void predict_digest(ref dma_seq_item dma_config);
-    bit [63:0] addr;
-    asid_encoding_e asid;
-    bit [7:0] msg_q[];
-
-    msg_q = new[dma_config.total_transfer_size];
-
-    addr = dma_config.src_addr;
-    asid = dma_config.src_asid;
-    // We cannot read from the FIFO. So depending direction, we need to read from the other
-    // side, which is the memory. In non-hardware handshake mode, we read from the source
-    if (dma_config.handshake) begin
-      if (dma_config.direction == DmaSendData) begin
-        addr = dma_config.src_addr;
-        asid = dma_config.src_asid;
-      end else begin
-        addr = dma_config.dst_addr;
-        asid = dma_config.dst_asid;
-      end
-    end
-
-    for (int i = 0; i < dma_config.total_transfer_size; i++) begin
-      msg_q[i] = get_model_data(asid, addr);
-      addr++;
-    end
-
     case (dma_config.opcode)
       OpcSha256: begin
-        cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest[0:7]);
+        cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(cfg.src_data, exp_digest[0:7]);
         exp_digest[8:15] = '{default:0};
       end
       OpcSha384: begin
-        cryptoc_dpi_pkg::sv_dpi_get_sha384_digest(msg_q, exp_digest[0:11]);
+        cryptoc_dpi_pkg::sv_dpi_get_sha384_digest(cfg.src_data, exp_digest[0:11]);
         exp_digest[12:15] = '{default:0};
       end
       OpcSha512: begin
-        cryptoc_dpi_pkg::sv_dpi_get_sha512_digest(msg_q, exp_digest[0:15]);
+        cryptoc_dpi_pkg::sv_dpi_get_sha512_digest(cfg.src_data, exp_digest[0:15]);
       end
       default: begin
         // When not using inline hashing mode
