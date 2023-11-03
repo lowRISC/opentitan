@@ -251,147 +251,71 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // update current_state, current_op_status, err_code, alert and return update_result for updating
-  // internal key, HW/SW output
+  // internal key, HW/SW output when processing_kmac_data_rsp().
   virtual function update_result_e process_update_after_op_done();
     update_result_e update_result;
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
-    bit is_final_kdf;
+
+    `uvm_info(`gfn,
+      $sformatf("process_update_after_op_done: op %0s state %s",
+        op.name, current_state.name), UVM_LOW)
 
     // Update state to Invalid earlier so that we can get InvalidOp error, as LC disable in the
     // middle of OP will trigger this error
-    if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) current_state = get_next_state();
+    if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) current_state = keymgr_dpe_pkg::StWorkDpeInvalid;
 
-    // for advance after StWorkDpeReset, it needs 2 KDF. Only update opt_status after the last one
-    if (!(op inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) ||
-        current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
-      is_final_kdf = 1;
-    end else begin
-      is_final_kdf = (adv_cnt == keymgr_pkg::CDIs - 1);
-    end
     // op_status is updated one cycle after done. If SW reads at this edge, still return old value
     // delay half cycle to push the update available in next cycle
     fork
       begin
         cfg.clk_rst_vif.wait_n_clks(1);
-        if (is_final_kdf) begin
-          if (get_err_code() || get_fault_err()) current_op_status = keymgr_pkg::OpDoneFail;
-          else                                   current_op_status = keymgr_pkg::OpDoneSuccess;
+        if (get_err_code() || get_fault_err()) current_op_status = keymgr_pkg::OpDoneFail;
+        else                                   current_op_status = keymgr_pkg::OpDoneSuccess;
 
-          if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en() && is_final_kdf) begin
-            keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-                `gmv(ral.control_shadowed.dest_sel));
-            cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
-          end
+        if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
+          keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+              `gmv(ral.control_shadowed.dest_sel));
+          cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
         end
       end
     join_none
 
-    if (is_final_kdf) begin
-      process_error_n_alert();
-      void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
-      if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-        compare_op_e key_version_cmp;
+    process_error_n_alert();
+    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+    if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
+      compare_op_e key_version_cmp;
 
-        if (`gmv(ral.key_version[0]) > get_current_max_version) begin
-          key_version_cmp = CompareOpGt;
-        end else if (`gmv(ral.key_version[0]) == get_current_max_version) begin
-          key_version_cmp = CompareOpEq;
-        end else begin
-          key_version_cmp = CompareOpLt;
-        end
+      if (`gmv(ral.key_version[0]) > get_current_max_version) begin
+        key_version_cmp = CompareOpGt;
+      end else if (`gmv(ral.key_version[0]) == get_current_max_version) begin
+        key_version_cmp = CompareOpEq;
+      end else begin
+        key_version_cmp = CompareOpLt;
         cov.key_version_compare_cg.sample(key_version_cmp, current_state, op);
-      end
+      end 
     end
 
+    // If we hit a fault error move to invalid state. 
+    // If keymgr_dpe_en is not true then move to invalid state
     if (get_fault_err() || !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-      if (op inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) begin
-        if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-          adv_cnt++;
-          is_sw_share_corrupted = 1;
-          cfg.keymgr_dpe_vif.wipe_sideload_keys();
-        end else begin
-          adv_cnt = 0;
-          update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
-        end
-      end else begin // other non-advance OP
-        update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
-      end
+      update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
       return NotUpdate;
     end
+
     case (current_state)
-      // TODO(opentitan-integrated/issues/667):
-      // re-evalute the behavior for
-      // StWorkDpeReset and StWorkDpeAvailable cases
-      // which will replace no longer valid keymgr states
-
-      //keymgr_dpe_pkg::StWorkDpeInit,
-      //keymgr_dpe_pkg::StWorkDpeCreatorRootKey,
-      //keymgr_dpe_pkg::StWorkDpeOwnerIntKey,
-      //keymgr_dpe_pkg::StWorkDpeOwnerKey: begin
-
-      //  case (op)
-      //    keymgr_dpe_pkg::OpDpeAdvance: begin
-      //      // if it's StOwnerKey, it advacens to OpDpeDisable. Key is just random value
-      //      if (current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey || get_op_err()) begin
-      //        update_result = NotUpdate;
-      //      end else begin
-      //        update_result = UpdateInternalKey;
-      //      end
-
-      //      if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-      //        adv_cnt++;
-      //      end else begin
-      //        adv_cnt = 0;
-      //        if (!get_op_err()) begin
-      //          update_state(get_next_state(current_state));
-      //          // set sw_binding_regwen after advance OP
-      //          void'(ral.sw_binding_regwen.predict(.value(1)));
-      //          ral.sw_binding_regwen.en.set_lockable_flds_access(.lock(0));
-      //        end
-      //      end
-      //    end
-      //    keymgr_dpe_pkg::OpDpeDisable: begin
-      //      update_result = NotUpdate;
-      //      if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-      //        adv_cnt++;
-      //      end else begin
-      //        adv_cnt = 0;
-      //        update_state(keymgr_dpe_pkg::StWorkDpeDisabled);
-      //      end
-      //    end
-      //    keymgr_dpe_pkg::OpDpeGenSwOut,
-      //    keymgr_dpe_pkg::OpDpeGenHwOut: begin
-      //      // If only op error but no fault error, no update for output
-      //      if (get_op_err()) begin
-      //        update_result = NotUpdate;
-      //      end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
-      //        update_result = UpdateHwOut;
-      //      end else begin
-      //        update_result = UpdateSwOut;
-      //      end
-      //    end
-      //    default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
-      //  endcase
-      //end
-      keymgr_dpe_pkg::StWorkDpeReset: begin
-        case (op)
-          keymgr_dpe_pkg::OpDpeAdvance: begin
-          end
-          keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
-          end
-          keymgr_dpe_pkg::OpDpeErase: begin
-          end
-          keymgr_dpe_pkg::OpDpeDisable: begin
-          end
-        endcase
-      end
       keymgr_dpe_pkg::StWorkDpeAvailable: begin
         case (op)
           keymgr_dpe_pkg::OpDpeAdvance: begin
+            // If there is an OP error then the internal key should not be updated
+            if (get_op_err()) begin
+              update_result = NotUpdate;
+            end else begin
+              update_result = UpdateInternalKey;
+            end
           end
           keymgr_dpe_pkg::OpDpeGenSwOut,
           keymgr_dpe_pkg::OpDpeGenHwOut: begin
-            // If only op error but no fault error, no update for output
+            // If there is an OP error then SW/HW key should not be updated
             if (get_op_err()) begin
               update_result = NotUpdate;
             end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
@@ -400,34 +324,33 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               update_result = UpdateSwOut;
             end
           end
-          keymgr_dpe_pkg::OpDpeErase: begin
-          end
-          keymgr_dpe_pkg::OpDpeDisable: begin
+          default: begin
+            // There should be nothing to update for StWorkDpeErase, StWorkDpeDisable
+            update_result = NotUpdate;
           end
         endcase
       end
-      keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
+      keymgr_dpe_pkg::StWorkDpeDisabled,
+      keymgr_dpe_pkg::StWorkDpeInvalid: begin
         case (op)
           keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable: begin
+            // Nothing should be updated for OpDpeAdvance in these states 
             update_result = NotUpdate;
-            if (adv_cnt != keymgr_pkg::CDIs - 1) begin
-              adv_cnt++;
-            end else begin
-              adv_cnt = 0;
-            end
           end
           keymgr_dpe_pkg::OpDpeGenSwOut: begin
+            // A OpDpeGenSwOut Op can potentially cause an update to the SW share
             update_result = UpdateSwOut;
           end
           keymgr_dpe_pkg::OpDpeGenHwOut: begin
+            // A OpDpeGenHwOut Op can potentially cause an update to the HW sideload
             update_result = UpdateHwOut;
           end
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
+      // StWorkDpeReset would be an unexpected state becuase no KMAC data request should occur.
       default: `uvm_fatal(`gfn, $sformatf("Unexpected current_state: %0s", current_state.name))
-    endcase
-
+    endcase // current_state
     return update_result;
   endfunction
 
