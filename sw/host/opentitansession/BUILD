@@ -19,7 +19,6 @@ rust_binary(
         "@crate_index//:hex",
         "@crate_index//:indicatif",
         "@crate_index//:log",
-        "@crate_index//:raw_tty",
         "@crate_index//:regex",
         "@crate_index//:rustix",
         "@crate_index//:serde",

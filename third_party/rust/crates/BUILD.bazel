@@ -284,12 +284,6 @@ alias(
 )
 
 alias(
-    name = "raw_tty",
-    actual = "@crate_index__raw_tty-0.1.0//:raw_tty",
-    tags = ["manual"],
-)
-
-alias(
     name = "regex",
     actual = "@crate_index__regex-1.9.4//:regex",
     tags = ["manual"],

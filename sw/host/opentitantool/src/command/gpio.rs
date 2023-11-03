@@ -4,14 +4,11 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use raw_tty::TtyModeGuard;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::borrow::Borrow;
 use std::fs::File;
-use std::io::IsTerminal;
 use std::io::{Read, Write};
-use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
@@ -21,6 +18,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::gpio::{ClockNature, Edge, GpioPin, PinMode, PullMode};
 use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
+use opentitanlib::util::raw_tty::RawTty;
 use opentitanlib::util::voltage::Voltage;
 
 #[derive(Debug, Args)]
@@ -397,14 +395,7 @@ impl CommandDispatch for GpioMonitoringVcd {
         // not ideal, it would have been better to catch the SIGINT signal, but the mio_signals
         // package is not compatible with the way that our rusb library uses background threads.)
         // The tty guard will restore the console settings when it goes out of scope.
-        let mut stdin = std::io::stdin();
-        let _stdin_guard = if stdin.is_terminal() {
-            let mut guard = TtyModeGuard::new(stdin.as_raw_fd())?;
-            guard.set_raw_mode()?;
-            Some(guard)
-        } else {
-            None
-        };
+        let mut stdin = RawTty::new(std::io::stdin())?;
 
         // Inform the transport that we want to monitor a set of pins, and write a file header
         // with the names of each of the monitored signals.
