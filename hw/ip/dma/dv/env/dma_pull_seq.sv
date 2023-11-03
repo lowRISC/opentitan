@@ -16,6 +16,10 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   bit [31:0] fifo_intr_clear_reg[bit [31:0]];
   // FIFO instance
   dma_handshake_mode_fifo #(AddrWidth) fifo;
+  // Bytes/transaction; because the `tlul_adapter_host` module always retrieves entire bus words,
+  // to track the number of bytes read by the DMA controller, this 'useful bytes per transaction'
+  // must be supplied.
+  uint txn_bytes;
 
   // Variables to keep track of number of bytes sent or received
   uint bytes_read;
@@ -28,6 +32,13 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     bytes_read = 0;
     bytes_written = 0;
   endfunction: new
+
+  // Specify the number of bytes/transaction on the bus, so that the number of bytes read may be
+  // tracked.
+  virtual function void set_txn_bytes(uint bytes);
+    `DV_CHECK(bytes inside {1, 2, 4}, $sformatf("Invalid txn_bytes 0x%x", bytes))
+    txn_bytes = bytes;
+  endfunction
 
   virtual function void set_fifo_clear(bit en);
     fifo_reg_clear_en = en;
@@ -55,6 +66,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
           `DV_CHECK_EQ(fifo_intr_clear_reg[rsp.a_addr], rsp.a_data,
                        "Invalid FIFO reg value detected")
         end else begin
+          // Write data to destination model
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
             if (rsp.a_mask[i]) begin
               bytes_written++;
@@ -68,15 +80,18 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
           end
         end
       end else begin
-        for (int i = 2**rsp.a_size - 1; i >= 0; i--) begin
-          bytes_read++;
-          rsp.d_data = rsp.d_data << 8;
-          if (read_fifo_en) begin
-            rsp.d_data[7:0] = fifo.read_byte(rsp.a_addr+i);
-          end else begin
-            rsp.d_data[7:0] = mem.read_byte(rsp.a_addr+i);
+        // Collect data from source model
+        if (read_fifo_en) begin
+          rsp.d_data = fifo.read_word_tlul(rsp.a_addr, rsp.a_mask);
+        end else begin
+          for (int i = 0; i < $bits(rsp.a_mask); i++) begin
+            rsp.d_data = rsp.d_data >> 8;
+            if (rsp.a_mask[i]) begin
+              rsp.d_data[tl_agent_pkg::DataWidth-1 -: 8] = mem.read_byte(rsp.a_addr+i);
+            end
           end
         end
+        bytes_read += txn_bytes;
       end
     end
     intg = prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0,

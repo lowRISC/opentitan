@@ -118,10 +118,6 @@ class dma_seq_item extends uvm_sequence_item;
     if (valid_dma_config) {
       opcode inside {OpcSha256, OpcSha384, OpcSha512} -> per_transfer_width == DmaXfer4BperTxn;
     }
-
-    // TODO: FIFO model and TL-UL adapter are together unable to support partial word reads at
-    // present
-    handshake & direction == DmaRcvData -> per_transfer_width == DmaXfer4BperTxn;
   }
 
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
