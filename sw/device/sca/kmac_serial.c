@@ -590,7 +590,7 @@ bool test_main(void) {
   simple_serial_register_handler('k', sha3_serial_set_key);
   simple_serial_register_handler('p', sha3_serial_single_absorb);
   simple_serial_register_handler('b', sha3_serial_batch);
-  simple_serial_register_handler('t', sha3_serial_fixed_key_set);
+  simple_serial_register_handler('f', sha3_serial_fixed_key_set);
   simple_serial_register_handler('l', sha3_serial_seed_lfsr);
 
   LOG_INFO("Initializing the KMAC peripheral.");

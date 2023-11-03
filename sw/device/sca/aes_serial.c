@@ -26,9 +26,9 @@
  *   - Version ('v')+,
  *   - Seed PRNG ('s')+,
  *   - Batch encrypt ('b')*,
- *   - FvsR batch fixed key set ('t')*,
+ *   - FvsR batch fixed key set ('f')*,
  *   - FvsR batch generate ('g')*,
- *   - FvsR batch encrypt and generate ('f')*,
+ *   - FvsR batch encrypt and generate ('e')*,
  * Commands marked with * are implemented in this file. Those marked with + are
  * implemented in the simple serial library. Encryption is done in AES-ECB-128
  * mode. See https://wiki.newae.com/SimpleSerial for details on the protocol.
@@ -141,7 +141,7 @@ static void aes_manual_trigger(void) {
 }
 
 /**
- * Simple serial 't' (key set) command handler.
+ * Simple serial 'k' (key set) command handler.
  *
  * This command is designed to set the fixed_key variable and in addition also
  * configures the key into the AES peripheral.
@@ -289,7 +289,7 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
 }
 
 /**
- * Simple serial 't' (fvsr key set) command handler.
+ * Simple serial 'f' (fvsr key set) command handler.
  *
  * This command is designed to set the fixed key which is used for fvsr key TVLA
  * captures.
@@ -352,7 +352,7 @@ static void aes_serial_fvsr_key_batch_generate(const uint8_t *data,
 }
 
 /**
- * Simple serial 'f' (fixed vs random key batch encrypt and generate) command
+ * Simple serial 'e' (fixed vs random key batch encrypt and generate) command
  * handler.
  *
  * This command is designed to maximize the capture rate for side-channel
@@ -443,9 +443,9 @@ bool test_main(void) {
   simple_serial_register_handler('k', aes_serial_key_set);
   simple_serial_register_handler('p', aes_serial_single_encrypt);
   simple_serial_register_handler('b', aes_serial_batch_encrypt);
-  simple_serial_register_handler('t', aes_serial_fvsr_key_set);
+  simple_serial_register_handler('f', aes_serial_fvsr_key_set);
   simple_serial_register_handler('g', aes_serial_fvsr_key_batch_generate);
-  simple_serial_register_handler('f', aes_serial_fvsr_key_batch_encrypt);
+  simple_serial_register_handler('e', aes_serial_fvsr_key_batch_encrypt);
   simple_serial_register_handler('l', aes_serial_seed_lfsr);
 
   LOG_INFO("Initializing AES unit.");
