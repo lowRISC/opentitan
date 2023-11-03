@@ -45,17 +45,20 @@ enum {
    * noise during AES operations. Caution: This number should be chosen to
    * provide enough time. Otherwise, Ibex might wake up while AES is still busy
    * and disturb the capture. Currently, we use a start trigger delay of 320
-   * clock cycles and the scope captures 60 clock cycles at kClockFreqCpuHz
-   * (1200 samples).
+   * clock cycles and the scope captures 60 clock cycles at kClockFreqCpuHz.
    */
   kIbexAesSleepCycles = 680,
   /**
-   * Max number of encryption that can be captured with the scope
-   * 81 is selected for AES with CW Husky
-   * Note: Maybe it would be better if we use dynamic memory allocation but I
-   * am not sure whether we are supporting it or not.
+   * The maximum number of encryptions to do per batch. The ChipWhisperer Husky
+   * scope determines how many encryptions (capture segments) it wants to record
+   * per batch based on the number of samples per segment. As the plaintexts
+   * and keys are generated in advance for fixed-vs-random batch captures, we
+   * need to make sure the corresponding buffers are sufficiently large. Note
+   * that on both CW305 and CW310, the main SRAM has a size of 128 kBytes. So it
+   * should be fine to allocate space for 256 segments (2 * 16 Bytes * 256 = 8
+   * kBytes).
    */
-  kNumBatchOpsMax = 81,
+  kNumBatchOpsMax = 256,
   /**
    * Max number of encryptions that can be captured before we rewrite the key to
    * reset the internal block counter. Otherwise, the AES peripheral might
