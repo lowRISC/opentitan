@@ -237,6 +237,9 @@
       stage: V2
       si_stage: SV3
       tests: []
+      bazel: [
+        "//sw/device/tests:rv_dm_jtag",
+      ],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [

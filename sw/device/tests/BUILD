@@ -3066,6 +3066,37 @@ _RV_DM_JTAG_LC_STATES = get_lc_items(
 
 [
     opentitan_test(
+        name = "rv_dm_jtag_{}".format(lc_state),
+        srcs = ["example_test_from_flash.c"],
+        cw310 = cw310_jtag_params(
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_harness = "//sw/host/tests/chip/rv_dm:jtag",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
+    name = "rv_dm_jtag",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_jtag_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    ],
+)
+
+[
+    opentitan_test(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = cw310_jtag_params(
