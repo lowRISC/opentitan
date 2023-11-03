@@ -56,7 +56,7 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn,
               $sformatf("dma_dv_waive_system_bus = %d", dma_config.dma_dv_waive_system_bus),
               UVM_LOW)
-  endfunction: new
+  endfunction : new
 
   function void init_model();
     // Assign mem_model instance handle to config object
@@ -205,14 +205,14 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", source_address), UVM_HIGH)
     csr_wr(ral.source_address_lo, source_address[31:0]);
     csr_wr(ral.source_address_hi, source_address[63:32]);
-  endtask: set_source_address
+  endtask : set_source_address
 
   // Task: Write to Destination Address CSR
   task set_destination_address(bit [63:0] destination_address);
     csr_wr(ral.destination_address_lo, destination_address[31:0]);
     csr_wr(ral.destination_address_hi, destination_address[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", destination_address), UVM_HIGH)
-  endtask: set_destination_address
+  endtask : set_destination_address
 
   task set_destination_address_range(bit[63:0] almost_limit,
                                      bit[63:0] limit);
@@ -222,7 +222,7 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.destination_address_almost_limit_lo, almost_limit[31:0]);
     csr_wr(ral.destination_address_almost_limit_hi, almost_limit[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", almost_limit), UVM_HIGH)
-  endtask: set_destination_address_range
+  endtask : set_destination_address_range
 
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
@@ -236,7 +236,7 @@ class dma_base_vseq extends cip_base_vseq #(
       csr_wr(ral.range_regwen, int'(lock));
       `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory lock = %s", lock.name()), UVM_HIGH)
     end
-  endtask: set_dma_enabled_memory_range
+  endtask : set_dma_enabled_memory_range
 
   // Task: Write to Source and Destination Address Space ID (ASID)
   task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
@@ -245,26 +245,26 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.address_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
-  endtask: set_address_space_id
+  endtask : set_address_space_id
 
   // Task: Set number of bytes to transfer
   task set_total_size(bit [31:0] total_data_size);
     csr_wr(ral.total_data_size, total_data_size);
     `uvm_info(`gfn, $sformatf("DMA: Total Data Size = %d", total_data_size), UVM_HIGH)
-  endtask: set_total_size
+  endtask : set_total_size
 
   // Task: Set number of bytes per chunk to transfer
   task set_chunk_data_size(bit [31:0] chunk_data_size);
     csr_wr(ral.chunk_data_size, chunk_data_size);
     `uvm_info(`gfn, $sformatf("DMA: Chunk Data Size = %d", chunk_data_size), UVM_HIGH)
-  endtask: set_chunk_data_size
+  endtask : set_chunk_data_size
 
   // Task: Set Byte size of each transfer (0:1B, 1:2B, 2:3B, 3:4B)
   task set_transfer_width(dma_transfer_width_e transfer_width);
     csr_wr(ral.transfer_width, transfer_width);
     `uvm_info(`gfn, $sformatf("DMA: Transfer Byte Size = %d",
                               transfer_width.name()), UVM_HIGH)
-  endtask: set_transfer_width
+  endtask : set_transfer_width
 
   // Task: Set handshake interrupt register
   task set_handshake_int_regs(ref dma_seq_item dma_config);
@@ -277,7 +277,7 @@ class dma_base_vseq extends cip_base_vseq #(
     end
     ral.handshake_interrupt_enable.set(dma_config.handshake_intr_en);
     csr_update(ral.handshake_interrupt_enable);
-  endtask: set_handshake_int_regs
+  endtask : set_handshake_int_regs
 
   // Task: Configure DMA controller to perform a transfer
   // (common to both 'memory-to-memory' and 'hardware handshaking' modes of operation)
@@ -297,19 +297,19 @@ class dma_base_vseq extends cip_base_vseq #(
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_valid,
                                  dma_config.mem_range_lock);
-  endtask: run_common_config
+  endtask : run_common_config
 
   // Task: Enable Interrupt
   task enable_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
     csr_wr(ral.intr_enable, (1 << ral.intr_enable.get_n_bits()) - 1);
-  endtask: enable_interrupt
+  endtask : enable_interrupt
 
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
     csr_wr(ral.handshake_interrupt_enable, 32'd1);
-  endtask: enable_handshake_interrupt
+  endtask : enable_handshake_interrupt
 
   function void set_seq_fifo_read_mode(asid_encoding_e asid, bit read_fifo_en);
     case (asid)
@@ -359,7 +359,7 @@ class dma_base_vseq extends cip_base_vseq #(
       bit fifo_intr_clear_en;
       bit [31:0] fifo_intr_clear_reg_addr;
       bit [31:0] fifo_intr_clear_val;
-      // Variable to check if any of the handshake interrupt is asserted
+      // Variable to check if any of the handshake interrupts are asserted
       fifo_interrupt_mask = dma_config.handshake_intr_en & cfg.dma_vif.handshake_i;
       `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
                 UVM_HIGH)
@@ -403,7 +403,7 @@ class dma_base_vseq extends cip_base_vseq #(
       seq_host.start(p_sequencer.tl_sequencer_dma_host_h);
       seq_sys.start(p_sequencer.tl_sequencer_dma_sys_h);
     join_none
-  endtask: start_device
+  endtask : start_device
 
   // Method to terminate sequences gracefully
   virtual task stop_device();
@@ -430,7 +430,7 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.fifo_sys.disable_fifo();
   endtask
 
-  // Method to clear memory contents
+  // Method to clear memory models of any content
   function void clear_memory();
     // Clear memory contents
     `uvm_info(`gfn, $sformatf("Clearing memory contents"), UVM_MEDIUM)
@@ -448,7 +448,7 @@ class dma_base_vseq extends cip_base_vseq #(
                             bit dir, // Direction
                             bit go); // Execute
     string tmpstr;
-    tmpstr = go ? "Executing": "Setting";
+    tmpstr = go ? "Executing" : "Setting";
     `uvm_info(`gfn, $sformatf(
                       "DMA: %s DMA Control Register OPCODE=%d FIRST=%d HS=%d BUF=%d FIFO=%d DIR=%d",
                       tmpstr, op, first, hs, buff, fifo, dir), UVM_HIGH)
@@ -464,19 +464,19 @@ class dma_base_vseq extends cip_base_vseq #(
     // Set GO bit
     ral.control.go.set(go);
     csr_update(.csr(ral.control));
-  endtask: set_control_register
+  endtask : set_control_register
 
   // Task: Abort the current transaction
   task abort();
     ral.control.abort.set(1);
     csr_update(.csr(ral.control));
-  endtask: abort
+  endtask : abort
 
   // Task: Clear DMA Status
   task clear();
     `uvm_info(`gfn, "DMA: Clear DMA State", UVM_HIGH)
     csr_wr(ral.clear_state, 32'd1);
-  endtask: clear
+  endtask : clear
 
   // Task: Wait for Completion
   task wait_for_completion(output int status);
@@ -520,7 +520,7 @@ class dma_base_vseq extends cip_base_vseq #(
       end
     join_any
     disable fork;
-  endtask: wait_for_completion
+  endtask : wait_for_completion
 
   // Task: Continuously poll status until completion every N cycles
   task poll_status(int pollrate = 10);
@@ -536,7 +536,7 @@ class dma_base_vseq extends cip_base_vseq #(
       if (v[12]) begin ->e_sha2_digest_valid;  break; end
       delay(pollrate);
     end
-  endtask: poll_status
+  endtask : poll_status
 
   // Monitors busy bit in STATUS register
   task wait_for_idle();
@@ -553,7 +553,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Simulate a clock delay
   virtual task delay(int num = 1);
     cfg.clk_rst_vif.wait_clks(num);
-  endtask: delay
+  endtask : delay
 
   // Task to wait for the transfer of a specified number of bytes.
   //
@@ -601,7 +601,7 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("DMA: %s digest: %x", sha_mode, digest), UVM_MEDIUM)
   endtask
 
-  // Return number of bytes transferred to interface corresponding to destination ASID
+  // Return number of bytes written to interface corresponding to destination ASID
   virtual function uint get_bytes_written(ref dma_seq_item dma_config);
     case (dma_config.dst_asid)
       OtInternalAddr: begin
@@ -620,7 +620,7 @@ class dma_base_vseq extends cip_base_vseq #(
         return seq_sys.bytes_written;
       end
       default: begin
-        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", dma_config.src_asid))
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", dma_config.dst_asid))
       end
     endcase
   endfunction
@@ -629,5 +629,5 @@ class dma_base_vseq extends cip_base_vseq #(
   task body();
     init_model();
     enable_interrupt();
-  endtask: body
+  endtask : body
 endclass
