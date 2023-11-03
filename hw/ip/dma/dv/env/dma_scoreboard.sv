@@ -52,7 +52,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Variable to store clear_int_src register intended for use in monitor_lsio_trigger task
   // since ref argument can not be used in fork-join_none
   bit[31:0] clear_int_src;
-  bit handshake; // Bit to indicate if handshake mode is enabled
   bit [TL_DW-1:0] exp_digest[16];
 
   function void build_phase(uvm_phase phase);
@@ -157,6 +156,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                        dma_config.src_addr,
                                        memory_range,
                                        "Source");
+      `DV_CHECK_EQ(clear_int, 1'b0, "Unexpected Read access to Clear Interrupt address")
+
         // Update the expected value of memory buffer limit interrupt for source address
       if (dma_config.src_asid == OtInternalAddr && item.a_addr > dma_config.mem_buffer_limit) begin
         exp_buffer_limit_intr = 1;
@@ -183,8 +184,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Bytes remaining until the end of the current chunk
       remaining_bytes = dma_config.chunk_data_size
                            - (num_bytes_transferred % dma_config.chunk_data_size);
-      if (transfer_bytes_left < remaining_bytes)
+      if (transfer_bytes_left < remaining_bytes) begin
         remaining_bytes = transfer_bytes_left;
+      end
 
       exp_a_mask_count_ones = remaining_bytes > expected_per_txn_bytes ?
                               expected_per_txn_bytes : remaining_bytes;
@@ -192,8 +194,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
       // check if a_mask matches the data size
       `DV_CHECK_EQ(num_bytes_this_txn, exp_a_mask_count_ones,
-                   $sformatf("unexpected write a_mask: %x for %0d byte transfer",
-                           item.a_mask, expected_per_txn_bytes))
+                   $sformatf("unexpected write a_mask: %x for %0d-byte transfer. Expected %x bytes",
+                             item.a_mask, expected_per_txn_bytes, exp_a_mask_count_ones))
 
       // Check destination ASID for write transaction
       `DV_CHECK_EQ(if_name,
@@ -460,7 +462,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // Function to get the memory model data at provided address
-  function bit[7:0] get_model_data(asid_encoding_e asid, bit [63:0] addr);
+  function bit [7:0] get_model_data(asid_encoding_e asid, bit [63:0] addr);
     case (asid)
       OtInternalAddr : return cfg.mem_host.read_byte(addr);
       SocControlAddr: return cfg.mem_ctn.read_byte(addr);
@@ -660,7 +662,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
         // Get handshake mode enable bit
         dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
-        handshake = dma_config.handshake;
         `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
                   UVM_HIGH)
         // Update the value of abort as this stops the DMA operation
@@ -686,7 +687,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
           exp_dma_err_intr = !dma_config.is_valid_config;
-          // Expect digest to be cleared even if for rejected configurations
+          // Expect digest to be cleared even for rejected configurations
           exp_digest = '{default:0};
           if (cfg.en_cov) begin
             // Sample dma configuration

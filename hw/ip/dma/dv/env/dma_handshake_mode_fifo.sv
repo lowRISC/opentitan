@@ -60,7 +60,7 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW) extends 
   endfunction
 
   // Read a byte from FIFO
-  // Reads are done through pop_back to fifo
+  // Reads are done through pop_back to `fifo` object
   function bit [7:0] read_byte(mem_addr_t addr);
     `DV_CHECK(fifo_en, "Cannot read data when FIFO is disabled")
     `DV_CHECK_GT(fifo.size(), 0, "FIFO underflow")
@@ -76,7 +76,7 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW) extends 
     `DV_CHECK(fifo_en, "Cannot write data when FIFO is disabled")
     `DV_CHECK_LT(fifo.size(), max_size, "FIFO overflow")
     `DV_CHECK(addr[AddrWidth-1:2] == fifo_base[AddrWidth-1:2],
-              $sformatf("addr:%0x doesnt match FIFO base address : %0x",
+              $sformatf("addr:%0x doesn't match FIFO base address : %0x",
                         addr, fifo_base))
     fifo.push_front(data);
   endfunction

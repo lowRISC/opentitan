@@ -33,7 +33,7 @@ class dma_handshake_smoke_vseq extends dma_handshake_vseq;
       clear_int_src == 0; // Disable clearing of FIFO interrupt
       opcode == OpcCopy;) // Avoid any involved operations such as SHA2 hashing
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
-                              dma_config.convert2string()), UVM_HIGH)
+                              dma_config.convert2string()), UVM_MEDIUM)
   endfunction
 
   // The functionality of this vseq is implemented in `dma_generic_vseq` and restricted
