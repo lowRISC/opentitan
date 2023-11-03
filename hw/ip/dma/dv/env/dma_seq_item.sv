@@ -231,16 +231,9 @@ class dma_seq_item extends uvm_sequence_item;
       chunk_data_size <= mem_range_limit - mem_range_base;
     }
     if (handshake) {
-      if (!auto_inc_buffer && opcode != OpcCopy) {
-        // TODO: SHA digest prediction currently cannot handle chunked transfers to/from a FIFO
-        // because all chunks are coincident within the memory model and the prediction is
-        // calculated after the operation, so ensure that we have only a single chunk
-        chunk_data_size >= total_transfer_size;
-      } else {
-        // Add a soft constraint to model realistic FIFO transfers; smaller, more frequent transfers
-        // are more susceptible to races in interrupt generation/handling
-        soft chunk_data_size inside {[1:256]};
-      }
+      // Add a soft constraint to model realistic FIFO transfers; smaller, more frequent transfers
+      // are more susceptible to races in interrupt generation/handling
+      soft chunk_data_size inside {[1:256]};
     }
     // For non-final chunks in a 4B-wide transfer, the chunk size must ensure that updated
     // source/destination addresses meet the alignment requirements for the start of the next
@@ -262,6 +255,13 @@ class dma_seq_item extends uvm_sequence_item;
       // Source and destination addresses must have the same alignment at the start of non-initial
       // chunks when addresses advance
       !handshake || auto_inc_buffer -> chunk_data_size[1:0] == 2'b00;
+    }
+
+    // Chunk size must be a multiple of the bytes/transaction
+    // TODO: perhaps only for 'valid_dma_config' if at some point the DMAC enforces this
+    if (chunk_data_size < total_transfer_size) {
+      per_transfer_width == DmaXfer4BperTxn -> chunk_data_size[1:0] == 2'd0;
+      per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
     }
   }
 
@@ -433,11 +433,6 @@ class dma_seq_item extends uvm_sequence_item;
 
   function void post_randomize();
     super.post_randomize();
-    // TODO: For `generic` mode we presently do not support multi-chunk transfers in the DV env;
-    // this requires the vseqs to be extended to model firmware involvement
-    if (!handshake) begin
-      chunk_data_size = total_transfer_size;
-    end
     // Check if randomization leads to valid configuration
     is_valid_config = choose_int_src_addrs();
     if (is_valid_config) begin
@@ -691,6 +686,16 @@ class dma_seq_item extends uvm_sequence_item;
   // to clear LSIO interrupt
   function bit get_lsio_intr_clear();
     return (handshake_intr_en && clear_int_src);
+  endfunction
+
+  // Simply utility function that returns the actual size of a chunk starting at the given offset
+  function bit [31:0] chunk_size(bit [31:0] offset);
+    if (offset < total_transfer_size) begin
+      bit [31:0] bytes_left = total_transfer_size - offset;
+      return (chunk_data_size < bytes_left) ? chunk_data_size : bytes_left;
+    end else begin
+      return 32'b0;
+    end
   endfunction
 
 endclass : dma_seq_item
