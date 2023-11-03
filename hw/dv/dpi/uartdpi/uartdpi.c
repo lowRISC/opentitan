@@ -19,6 +19,15 @@
 #include <string.h>
 #include <unistd.h>
 
+// This keeps the necessary uart state.
+struct uartdpi_ctx {
+  char ptyname[64];
+  int host;
+  int device;
+  char tmp_read;
+  FILE *log_file;
+};
+
 void *uartdpi_create(const char *name, const char *log_file_path) {
   struct uartdpi_ctx *ctx =
       (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));

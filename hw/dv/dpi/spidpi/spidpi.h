@@ -5,48 +5,11 @@
 #ifndef OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 #define OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 
-#ifdef __linux__
-#include <linux/limits.h>
-#endif
-
-#include <limits.h>
 #include <svdpi.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define MAX_TRANSACTION 4
-struct spidpi_ctx {
-  int loglevel;
-  char ptyname[64];
-  int host;
-  int device;
-  FILE *mon_file;
-  char mon_pathname[PATH_MAX];
-  void *mon;
-  int tick;
-  int cpol;
-  int cpha;
-  int msbfirst;  // shift direction
-  int nout;
-  int bout;
-  int nin;
-  int bin;
-  int din;
-  int nmax;
-  char driving;
-  int state;
-  char buf[MAX_TRANSACTION];
-};
-
-// SPI Host States
-#define SP_IDLE 0
-#define SP_CSFALL 1
-#define SP_DMOVE 2
-#define SP_LASTBIT 3
-#define SP_CSRISE 4
-#define SP_FINISH 99
 
 // Bits in data to C
 #define D2P_SDO 0x2
