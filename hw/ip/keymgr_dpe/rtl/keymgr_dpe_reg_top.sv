@@ -176,10 +176,10 @@ module keymgr_dpe_reg_top (
   logic slot_policy_regwen_qs;
   logic slot_policy_regwen_wd;
   logic slot_policy_we;
-  logic slot_policy_exportable_qs;
-  logic slot_policy_exportable_wd;
   logic slot_policy_allow_child_qs;
   logic slot_policy_allow_child_wd;
+  logic slot_policy_exportable_qs;
+  logic slot_policy_exportable_wd;
   logic slot_policy_retain_parent_qs;
   logic slot_policy_retain_parent_wd;
   logic sw_binding_regwen_re;
@@ -774,34 +774,7 @@ module keymgr_dpe_reg_top (
   // Create REGWEN-gated WE signal
   logic slot_policy_gated_we;
   assign slot_policy_gated_we = slot_policy_we & slot_policy_regwen_qs;
-  //   F[exportable]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_slot_policy_exportable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (slot_policy_gated_we),
-    .wd     (slot_policy_exportable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.slot_policy.exportable.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (slot_policy_exportable_qs)
-  );
-
-  //   F[allow_child]: 1:1
+  //   F[allow_child]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -826,6 +799,33 @@ module keymgr_dpe_reg_top (
 
     // to register interface (read)
     .qs     (slot_policy_allow_child_qs)
+  );
+
+  //   F[exportable]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_slot_policy_exportable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (slot_policy_gated_we),
+    .wd     (slot_policy_exportable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.slot_policy.exportable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (slot_policy_exportable_qs)
   );
 
   //   F[retain_parent]: 2:2
@@ -2872,9 +2872,9 @@ module keymgr_dpe_reg_top (
   assign slot_policy_regwen_wd = reg_wdata[0];
   assign slot_policy_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign slot_policy_exportable_wd = reg_wdata[0];
+  assign slot_policy_allow_child_wd = reg_wdata[0];
 
-  assign slot_policy_allow_child_wd = reg_wdata[1];
+  assign slot_policy_exportable_wd = reg_wdata[1];
 
   assign slot_policy_retain_parent_wd = reg_wdata[2];
   assign sw_binding_regwen_re = addr_hit[12] & reg_re & !reg_error;
@@ -3129,8 +3129,8 @@ module keymgr_dpe_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[0] = slot_policy_exportable_qs;
-        reg_rdata_next[1] = slot_policy_allow_child_qs;
+        reg_rdata_next[0] = slot_policy_allow_child_qs;
+        reg_rdata_next[1] = slot_policy_exportable_qs;
         reg_rdata_next[2] = slot_policy_retain_parent_qs;
       end
 

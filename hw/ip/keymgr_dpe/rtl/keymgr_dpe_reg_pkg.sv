@@ -83,10 +83,10 @@ package keymgr_dpe_reg_pkg;
     } retain_parent;
     struct packed {
       logic        q;
-    } allow_child;
+    } exportable;
     struct packed {
       logic        q;
-    } exportable;
+    } allow_child;
   } keymgr_dpe_reg2hw_slot_policy_reg_t;
 
   typedef struct packed {
