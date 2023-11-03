@@ -70,7 +70,7 @@ module dma
   logic                       dma_sys_write,  dma_sys_read;
 
   logic                       capture_return_data;
-  logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d;
+  logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d, dma_rsp_data;
   logic [SYS_ADDR_WIDTH-1:0]  new_source_addr, new_destination_addr;
 
   logic dma_state_error;
@@ -1048,15 +1048,33 @@ module dma
     end
   end
 
+  // Collect read data from the appropriate port.
   always_comb begin
-    read_return_data_d = '0;
-    if (capture_return_data) begin
-      unique case (src_asid_q)
-        OtInternalAddr: read_return_data_d = dma_host_tlul_rsp_data;
-        SocControlAddr: read_return_data_d = dma_ctn_tlul_rsp_data;
-        default:        read_return_data_d = sys_resp_q.read_data;
-      endcase
-    end
+    unique case (src_asid_q)
+      OtInternalAddr: dma_rsp_data = dma_host_tlul_rsp_data;
+      SocControlAddr: dma_rsp_data = dma_ctn_tlul_rsp_data;
+      default:        dma_rsp_data = sys_resp_q.read_data;
+    endcase
+  end
+
+  // Sub-word selection and replication across the bus width, such that it is available to the
+  // destination for any address alignment.
+  always_comb begin
+    unique case (transfer_width_q)
+      // 1B/txn - steer the selected byte to all byte lanes
+      3'b001:
+        casez (req_src_be_q)
+          4'b1???: read_return_data_d = {4{dma_rsp_data[31:24]}};
+          4'b01??: read_return_data_d = {4{dma_rsp_data[23:16]}};
+          4'b001?: read_return_data_d = {4{dma_rsp_data[15:8]}};
+          default: read_return_data_d = {4{dma_rsp_data[7:0]}};
+        endcase
+      // 2B/txn - select and duplicate the appropriate half-word
+      // Note that for the final transaction of a transfer, there may be only a single strobe set.
+      3'b010:  read_return_data_d = {2{|req_src_be_q[1:0] ? dma_rsp_data[15:0]
+                                                          : dma_rsp_data[31:16]}};
+      default: read_return_data_d = dma_rsp_data;
+    endcase
   end
 
 
