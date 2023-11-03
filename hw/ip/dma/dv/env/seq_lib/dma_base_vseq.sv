@@ -12,8 +12,6 @@ class dma_base_vseq extends cip_base_vseq #(
 
   `uvm_object_utils(dma_base_vseq)
 
-  bit sim_fatal_exit_on_dma_error = 1;
-
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
   dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH)) seq_ctn;
@@ -27,7 +25,6 @@ class dma_base_vseq extends cip_base_vseq #(
   event e_complete;
   event e_aborted;
   event e_errored;
-  event e_sha2_digest_valid;
 
   function new (string name = "");
     super.new(name);
@@ -564,30 +561,19 @@ class dma_base_vseq extends cip_base_vseq #(
       begin
         wait(e_complete.triggered);
         status = 0;
-        `uvm_info(`gfn, "DMA: Completion Seen", UVM_HIGH)
+        `uvm_info(`gfn, "DMA: Completion Seen", UVM_MEDIUM)
       end
-      // Case 3: Response to 'control.abort' request, leaving to 'status.abort' set
+      // Case 3: Response to 'control.abort' request, leading to 'status.abort' being asserted
       begin
         wait(e_aborted.triggered);
         status = 1;
-        `uvm_info(`gfn, "DMA: Aborted Seen", UVM_HIGH)
+        `uvm_info(`gfn, "DMA: Aborted Seen", UVM_MEDIUM)
       end
       // Case 4: Error raised, leading to 'status.error' set
       begin
         wait(e_errored.triggered);
-        if (sim_fatal_exit_on_dma_error) begin
-          status = -1;
-          `uvm_fatal(`gfn, "ERROR: dma_status.error asserted")
-        end else begin
-          status = 2;
-          `uvm_info(`gfn, "DMA: Error Seen", UVM_HIGH)
-        end
-      end
-      // Collect SHA digest in response to 'status.sha2_digest_valid' being asserted
-      begin
-        wait(e_sha2_digest_valid.triggered);
-        status = 0;
-        `uvm_info(`gfn, "DMA: SHA2 digest valid seen", UVM_HIGH)
+        status = 2;
+        `uvm_info(`gfn, "DMA: Error Seen", UVM_MEDIUM)
       end
     join_any
     disable fork;
@@ -600,11 +586,12 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "DMA: Polling DMA Status", UVM_HIGH)
     while (1) begin
       csr_rd(ral.status, v);
-      if (v[0]) begin ->e_busy; end
-      if (v[1]) begin ->e_complete; break; end
-      if (v[2]) begin ->e_aborted;  break; end
-      if (v[3]) begin ->e_errored;  break; end
-      if (v[12]) begin ->e_sha2_digest_valid;  break; end
+      if (v[0]) begin ->e_busy;     end
+      if (v[1]) begin ->e_complete; end
+      if (v[2]) begin ->e_aborted;  end
+      if (v[3]) begin ->e_errored;  end
+      // Note: sha2_digest_valid is not a completion event
+      // v[12]
       delay(pollrate);
     end
   endtask : poll_status
