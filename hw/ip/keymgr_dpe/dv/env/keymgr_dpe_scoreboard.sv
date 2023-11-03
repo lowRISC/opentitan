@@ -211,8 +211,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                   item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
         cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_key_slot.dst_slot].key, current_state);
 
-        `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for state %s %s",
-             current_internal_key[current_key_slot.dst_slot].key, current_state.name, current_cdi.name), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for op %s in state %s",
+             current_internal_key[current_key_slot.dst_slot].key, op.name, current_state.name), UVM_MEDIUM)
       end
       // Should occur when a valid OpDpeGenSwOut is issued in the StWorkDpeAvailable state
       UpdateSwOut: begin
@@ -515,22 +515,54 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       "start": begin
         if (addr_phase_write) begin
           bit start = `gmv(ral.start.en);
+          bit good_key;
+          bit good_data;
 
           if (start) begin
             keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+            get_key_slots();
             current_op_status = keymgr_pkg::OpWip;
 
             `uvm_info(`gfn, $sformatf("At %s, %s is issued", current_state.name, op.name), UVM_LOW)
 
-            // In StWorkDpeReset, OP doesn't trigger KDF,
-            // update result here for InvalidOp and update
-            // status at `op_status`
-            // For other states, update result after KDF is done at process_kmac_data_rsp
             case (current_state)
-              keymgr_dpe_pkg::StWorkDpeReset: begin
+              keymgr_dpe_pkg::StWorkDpeReset, keymgr_dpe_pkg::StWorkDpeAvailable: begin
+                // If in reset latch OTP key. 
+                // Otherwise check that we can expect to have a KMAC operation occur. 
+                // In order to check that the dut.kmac_key_o is correct we update the kdf key
                 if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
                   // expect no EDN request is issued. After this advance is done, will have 2 reqs
-                  `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
+                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
+                  // If advancing from the StWorkDpeReset state then we will Latch OTP key
+                  // need to check the internal OTP key, as well as dst slot policy
+                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) latch_otp_key();
+
+                  // call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
+                  // needs to know what key is used for this OP.
+                  good_key = get_is_kmac_key_correct();
+                  good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+                  if (!good_key) begin
+                    // if invalid key is used, design will switch to use random data for the
+                    // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
+                    // doesn't lead to an invalid_key error
+                    current_internal_key[current_key_slot.dst_slot].key[0] = 1;
+                    current_internal_key[current_key_slot.dst_slot].key[1] = 1;
+                  end
+
+                  // update kmac key for check
+                  if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
+                    if (current_internal_key[current_key_slot.src_slot].key > 0) begin
+                      `uvm_info(`gfn,
+                      $sformatf("start: update_kdf_key:\n key[0] 'h%h\nkey[1] 'h%h\n good key %0d, good_data %0d",
+                      current_internal_key[current_key_slot.src_slot].key[0], current_internal_key[current_key_slot.src_slot].key[1], good_key, good_data), UVM_LOW)
+                      cfg.keymgr_dpe_vif.update_kdf_key(
+                        current_internal_key[current_key_slot.src_slot].key,
+                        current_state,
+                        good_key,
+                        good_data
+                      );
+                    end
+                  end
                 end else begin // !OpDpeAdvance
                   current_op_status = keymgr_pkg::OpDoneFail;
                   // No KDF issued, done interrupt/alert is triggered in next cycle
@@ -553,40 +585,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
               end
               default: begin // other than StWorkDpeReset and StDisabled
-                bit good_key;
-                bit good_data;
-
-                if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
-                  current_cdi = get_adv_cdi_type();
-                  // OTP key is latched when advancing from StWorkDpeReset to StWorkDpeAvailable
-                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) latch_otp_key();
-                end else begin
-                  // TODO(opentitan-integrated/issues/667):
-                  // need to replace cdi with src/dst key slots
-                  //int cdi_sel = `gmv(ral.control_shadowed.cdi_sel);
-                  //`downcast(current_cdi, cdi_sel)
-                end
-                // call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
-                // need to know what key is used for this OP.
-                good_key = get_is_kmac_key_correct();
-                good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
-                if (!good_key) begin
-                  // if invalid key is used, design will switch to use random data for the
-                  // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
-                  // doesn't lead to an invalid_key error
-                  current_internal_key[current_key_slot.dst_slot].key[0] = 1;
-                  current_internal_key[current_key_slot.dst_slot].key[1] = 1;
-                end
-
-                // update kmac key for check
-                if (current_internal_key[current_key_slot.dst_slot].key > 0) begin
-                  cfg.keymgr_dpe_vif.update_kdf_key(
-                    current_internal_key[current_key_slot.dst_slot].key,
-                    current_state,
-                    good_key,
-                    good_data
-                  );
-                end
               end
             endcase
           end // start
@@ -738,6 +736,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
     current_internal_key[current_key_slot.dst_slot].policy = '0;
     current_internal_key[current_key_slot.dst_slot].policy.allow_child = 1;
+    `uvm_info(`gfn,
+      $sformatf("latch_otp_key: key %p, policy %p",
+      current_internal_key[current_key_slot.dst_slot].key,
+      current_internal_key[current_key_slot.dst_slot].policy),
+      UVM_MEDIUM)
     cfg.keymgr_dpe_vif.store_internal_key(
       current_internal_key[current_key_slot.dst_slot].key,
       current_state
@@ -949,20 +952,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   virtual function bit get_is_kmac_key_correct();
     bit [TL_DW-1:0] err_code = get_err_code();
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
-
-    // TODO(opentitan-integrated/issues/667):
-    // re-evalute function get_is_kmac_data_correct for how to
-    // handle the current_state condition for the no longer valid state StOwnerKey
-
-    //if ((current_state == keymgr_dpe_pkg::StWorkDpeOwnerKey &&
-    //     op == keymgr_dpe_pkg::OpDpeAdvance) ||
-    //     op == keymgr_dpe_pkg::OpDpeDisable  ||
-    //     !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()
-    //) begin
-    //  return 0;
-    //end else begin
-    //  return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
-    //end
+    return !(err_code[keymgr_pkg::ErrInvalidOp]) && !get_fault_err();
   endfunction
 
   virtual function void compare_adv_creator_data(keymgr_dpe_cdi_type_e cdi_type,
@@ -1151,6 +1141,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (!$cast(op, op_int_val)) op = keymgr_dpe_pkg::OpDpeDisable;
     return op;
+  endfunction
+
+  virtual function void get_key_slots();
+    current_key_slot.src_slot = `gmv(ral.control_shadowed.slot_src_sel);
+    current_key_slot.dst_slot = `gmv(ral.control_shadowed.slot_dst_sel);
+    `uvm_info(`gfn, $sformatf("get_key_slots %p", current_key_slot), UVM_LOW)
   endfunction
 
   virtual function keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
