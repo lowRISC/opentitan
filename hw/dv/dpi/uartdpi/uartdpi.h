@@ -5,7 +5,9 @@
 #ifndef OPENTITAN_HW_DV_DPI_UARTDPI_UARTDPI_H_
 #define OPENTITAN_HW_DV_DPI_UARTDPI_UARTDPI_H_
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #include <stdio.h>
 
@@ -22,5 +24,7 @@ void uartdpi_close(void *ctx_void);
 int uartdpi_can_read(void *ctx_void);
 char uartdpi_read(void *ctx_void);
 void uartdpi_write(void *ctx_void, char c);
-}
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 #endif  // OPENTITAN_HW_DV_DPI_UARTDPI_UARTDPI_H_

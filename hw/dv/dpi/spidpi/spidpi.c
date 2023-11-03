@@ -20,7 +20,9 @@
 #include <unistd.h>
 
 #include "spidpi.h"
+#ifdef VERILATOR
 #include "verilator_sim_ctrl.h"
+#endif
 
 // Enable this define to stop tracing at cycle 4
 // and resume at the first SPI packet
@@ -102,10 +104,12 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
   // Will tick at the host clock
   ctx->tick++;
 
+#ifdef VERILATOR
 #ifdef CONTROL_TRACE
   if (ctx->tick == 4) {
     VerilatorSimCtrl::GetInstance().TraceOff();
   }
+#endif
 #endif
 
   monitor_spi(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick, ctx->driving,
@@ -126,8 +130,10 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->bin = ctx->msbfirst ? 0x80 : 0x01;
         ctx->din = 0;
         ctx->state = SP_CSFALL;
+#ifdef VERILATOR
 #ifdef CONTROL_TRACE
         VerilatorSimCtrl::GetInstance().TraceOn();
+#endif
 #endif
       }
     }
@@ -196,7 +202,9 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->state = SP_IDLE;
         break;
       case SP_FINISH:
+#ifdef VERILATOR
         VerilatorSimCtrl::GetInstance().RequestStop(true);
+#endif
         break;
       default:
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
