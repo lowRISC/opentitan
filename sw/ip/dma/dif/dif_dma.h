@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 
+#include "dma_regs.h"  // Generated.
 #include "sw/ip/dma/dif/autogen/dif_dma_autogen.h"
 
 #ifdef __cplusplus
@@ -254,16 +255,16 @@ dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
 
 typedef enum dif_dma_status_code {
   // DMA operation is active.
-  kDifDmaStatusBusy = 0x01 << 0,
+  kDifDmaStatusBusy = 0x01 << DMA_STATUS_BUSY_BIT,
   // Configured DMA operation is complete.
-  kDifDmaStatusDone = 0x01 << 1,
+  kDifDmaStatusDone = 0x01 << DMA_STATUS_DONE_BIT,
   // Set once aborted operation drains.
-  kDifDmaStatusAborted = 0x01 << 2,
+  kDifDmaStatusAborted = 0x01 << DMA_STATUS_ABORTED_BIT,
   // Error occurred during the operation.
   // Check the error_code for information about the source of the error.
-  kDifDmaStatusError = 0x01 << 3,
+  kDifDmaStatusError = 0x01 << DMA_STATUS_ERROR_BIT,
   // Set once the SHA2 digest is valid after finishing a transfer
-  kDifDmaStatusSha2DigestValid = 0x01 << 12,
+  kDifDmaStatusSha2DigestValid = 0x01 << DMA_STATUS_SHA2_DIGEST_VALID_BIT,
 } dif_dma_status_code_t;
 
 /**
@@ -281,7 +282,27 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
 
 /**
- * Poll the DMA status util a given bit in the register is set.
+ * Writes the DMA status register and clears the corrsponding status bits.
+ *
+ * @param dma A DMA Controller handle.
+ * @param status Status bits to be cleared.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_write(const dif_dma_t *dma,
+                                  dif_dma_status_t status);
+
+/**
+ * Clear all status bits of the status register.
+ *
+ * @param dma A DMA Controller handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_clear(const dif_dma_t *dma);
+
+/**
+ * Poll the DMA status util a given flag in the register is set.
  *
  * @param dma A DMA Controller handle.
  * @param flag The status that needs to bet set.
@@ -302,12 +323,12 @@ typedef enum dif_dma_error_code {
   kDifDmaErrorOpcode = 0x01 << 2,
   // Size error.
   kDifDmaErrorSize = 0x01 << 3,
-  // Completion error.
-  kDifDmaErrorCompletion = 0x01 << 4,
+  // Bus transaction error.
+  kDifDmaErrorBus = 0x01 << 4,
   // DMA enable memory config error.
   kDifDmaErrorEnableMemoryConfig = 0x01 << 5,
-  // Register config error.
-  kDifDmaErrorRegisterConfig = 0x01 << 6,
+  // Register range valid error.
+  kDifDmaErrorRangeValid = 0x01 << 6,
   // Invalid ASID error.
   kDifDmaErrorInvalidAsid = 0x01 << 7,
 } dif_dma_error_code_t;
@@ -333,15 +354,6 @@ dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
 dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
                                      dif_dma_transaction_opcode_t opcode,
                                      uint32_t digest[]);
-
-/**
- * Clear the DMA controller state.
- *
- * @param dma A DMA Controller handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_state_clear(const dif_dma_t *dma);
 
 /**
  * Enable DMA controller handshake interrupt.
