@@ -15,7 +15,7 @@ package dma_pkg;
     DmaSizeErr,
     DmaCompletionErr,
     DmaBaseLimitErr,
-    DmaGoConfigErr,
+    DmaRangeValidErr,
     DmaAsidErr,
     DmaErrLast
   } dma_error_e;
