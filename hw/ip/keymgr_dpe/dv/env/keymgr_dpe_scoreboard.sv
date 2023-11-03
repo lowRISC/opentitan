@@ -190,6 +190,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void process_kmac_data_rsp(kmac_app_item item);
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     update_result_e update_result;
     bit process_update;
 
@@ -199,7 +200,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     update_result = process_update_after_op_done();
 
+    `uvm_info(`gfn, $sformatf("process_kmac_data_rsp update_result %s for op %s in state %s with",
+         update_result.name, op.name, current_state.name), UVM_MEDIUM)
+
     case (update_result)
+      // Should occur when a valid OpDpeAdvance is issued in the StWorkDpeAvailable state
       UpdateInternalKey: begin
         // digest is 384 bits wide while internal key is only 256, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
@@ -209,6 +214,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for state %s %s",
              current_internal_key[current_key_slot.dst_slot].key, current_state.name, current_cdi.name), UVM_MEDIUM)
       end
+      // Should occur when a valid OpDpeGenSwOut is issued in the StWorkDpeAvailable state
       UpdateSwOut: begin
         if (!get_fault_err) begin
           bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
@@ -225,6 +231,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      // Should occur when a valid OpDpeGenHwOut is issued in the StWorkDpeAvailable state
       UpdateHwOut: begin
         kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
@@ -238,14 +245,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       end
       default: `uvm_info(`gfn, "KMAC result isn't updated to any output", UVM_MEDIUM)
     endcase
-
-    if (current_state != keymgr_dpe_pkg::StWorkDpeReset &&
-        get_operation() inside {keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeDisable}) begin
-        bit good_key = get_is_kmac_key_correct();
-        bit good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
-        cfg.keymgr_dpe_vif.update_kdf_key(current_internal_key[current_key_slot.dst_slot].key, current_state,
-                                      good_key, good_data);
-    end
+    // Don't update_kdf_key here, because the kmac_key_o signal is only visible when a start_en write
+    // happens for one of the valid operations, and a kmac data req is issued.
+    // if update_kdf_key occurs here, a comparison to zero will occur and create a false error.
   endfunction
 
   // update current_state, current_op_status, err_code, alert and return update_result for updating
