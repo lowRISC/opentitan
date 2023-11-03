@@ -604,23 +604,35 @@ class dma_seq_item extends uvm_sequence_item;
   endfunction: check_config
 
   // Method to convert transfer width to a corresponding value for the a_size field
-  function uint transfer_width_to_a_size(dma_transfer_width_e width);
+  static function uint transfer_width_to_a_size(dma_transfer_width_e width);
     case (width)
       DmaXfer1BperTxn: return 0;
       DmaXfer2BperTxn: return 1;
-      DmaXfer4BperTxn: return 2;
-      default: `uvm_fatal(`gfn, $sformatf("Unexpected transfer width %d", width))
+      default:         return 2;
     endcase
   endfunction
 
-  // Method to convert transfer_width enum to number of bytes per transfer
-  function uint transfer_width_to_num_bytes(dma_transfer_width_e width);
+  // Method to convert transfer_width enum to number of bytes per transaction
+  static function uint transfer_width_to_num_bytes(dma_transfer_width_e width);
     case (width)
       DmaXfer1BperTxn: return 1;
       DmaXfer2BperTxn: return 2;
-      DmaXfer4BperTxn: return 4;
-      default: `uvm_fatal(`gfn, $sformatf("Unexpected transfer width %d", width))
+      default:         return 4;
     endcase
+  endfunction
+
+  // Method to return the value for the a_size field for this object
+  function uint a_size();
+    `DV_CHECK(per_transfer_width inside {DmaXfer1BperTxn, DmaXfer2BperTxn, DmaXfer4BperTxn},
+              $sformatf("Unexpected transfer width %d", per_transfer_width))
+    return transfer_width_to_a_size(per_transfer_width);
+  endfunction
+
+  // Method to return the bytes per transaction for this object
+  function uint txn_bytes();
+    `DV_CHECK(per_transfer_width inside {DmaXfer1BperTxn, DmaXfer2BperTxn, DmaXfer4BperTxn},
+              $sformatf("Unexpected transfer width %d", per_transfer_width))
+    return transfer_width_to_num_bytes(per_transfer_width);
   endfunction
 
   // Reset all variable values

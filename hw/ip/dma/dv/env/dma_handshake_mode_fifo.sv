@@ -18,7 +18,7 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW) extends 
   bit [7:0] fifo[$];
   // Enable FIFO
   bit fifo_en;
-  // Maximum allowed size of the FIFO
+  // Maximum allowed size of the FIFO; detects excess data being written into FIFO.
   mem_addr_t max_size;
   // Base address of the FIFO
   mem_addr_t fifo_base;
@@ -30,6 +30,7 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW) extends 
     max_size = '0;
   endfunction
 
+  // Enable and configure the FIFO to transfer a chunk of data
   function void enable_fifo(mem_addr_t fifo_base, mem_addr_t max_size);
     fifo_en = 1;
     this.max_size = max_size;
@@ -44,6 +45,19 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW) extends 
   // Returns the number of items remaining in FIFO
   function int count_bytes_in_queue();
     return fifo.size();
+  endfunction
+
+  // Populate the FIFO with the given sequence of pre-randomized source data in preparation
+  // for reading
+  function void populate_fifo(ref bit [7:0] src_data[],
+                              input bit [31:0] offset, input bit [31:0] size);
+    `DV_CHECK(fifo_en, "Cannot populate FIFO when it is disabled")
+
+    fifo.delete();
+    repeat(size) begin
+      fifo.push_front(src_data[offset]);
+      offset++;
+    end
   endfunction
 
   // Method to randomise data in queue, with the given size

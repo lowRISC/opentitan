@@ -171,15 +171,16 @@ class dma_generic_vseq extends dma_base_vseq;
           end
         join
 
-        poll_status();
         if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
           read_sha2_digest(dma_config.opcode, digest);
         end
 
-        stop_device();
         clear_errors(dma_config);
         // We need to clear the outputs, especially `status.done`
         clear();
+
+        // Now that we've finished all DUT accesses for his iteration...
+        stop_device();
 
         // Set up randomized configuration for the next transaction
         randomize_txn_config(dma_config);
