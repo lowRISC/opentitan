@@ -165,9 +165,20 @@ class dma_generic_vseq extends dma_base_vseq;
             end
           end
           begin
-            while (!dma_config.handshake && !stop) begin
-              // TODO: implement me!
-              delay(100);
+            // In handshaking mode there is no reporting of chunk completion, only that the entire
+            // transfer has completed, so we must monitor the bus read/traffic and rely upon the
+            // 'bytes read' and 'bytes written' counters to supply input and check output at the
+            // appropriate times.
+            while (dma_config.handshake && !stop &&
+                   num_bytes_supplied < dma_config.total_transfer_size) begin
+              if (num_bytes_supplied <= get_bytes_read(dma_config)) begin
+                // All supplied input data has been read; provide the next complete chunk of data
+                // in zero simulation time.
+                uint chunk_size = dma_config.chunk_size(num_bytes_supplied);
+                supply_data(dma_config, num_bytes_supplied, chunk_size);
+                num_bytes_supplied += chunk_size;
+              end
+              delay(1);
             end
           end
           // Waggle the interrupt lines up and down at random times to keep the data moving
