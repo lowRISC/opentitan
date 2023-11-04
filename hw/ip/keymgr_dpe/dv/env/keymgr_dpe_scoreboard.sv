@@ -609,31 +609,62 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, $sformatf("At %s, %s is issued", current_state.name, op.name), UVM_LOW)
 
             case (current_state)
-              keymgr_dpe_pkg::StWorkDpeReset, keymgr_dpe_pkg::StWorkDpeAvailable: begin
-                // If in reset latch OTP key. 
-                // Otherwise check that we can expect to have a KMAC operation occur. 
-                // In order to check that the dut.kmac_key_o is correct we update the kdf key
-                if (op == keymgr_dpe_pkg::OpDpeAdvance) begin
-                  // expect no EDN request is issued. After this advance is done, will have 2 reqs
-                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
-                  // If advancing from the StWorkDpeReset state then we will Latch OTP key
-                  // need to check the internal OTP key, as well as dst slot policy
-                  if (current_state == keymgr_dpe_pkg::StWorkDpeReset) latch_otp_key();
+              keymgr_dpe_pkg::StWorkDpeReset: begin
+                case (op)
+                  keymgr_dpe_pkg::OpDpeAdvance: begin
+                    // Expect no EDN request is issued. After this advance is done, will have 2 reqs
+                    `DV_CHECK_EQ(edn_fifos[0].is_empty(), 1)
+                     latch_otp_key();
 
-                  // call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
-                  // needs to know what key is used for this OP.
-                  good_key = get_is_kmac_key_correct();
-                  good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
-                  if (!good_key) begin
-                    // if invalid key is used, design will switch to use random data for the
-                    // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
-                    // doesn't lead to an invalid_key error
-                    current_internal_key[current_key_slot.dst_slot].key[0] = 1;
-                    current_internal_key[current_key_slot.dst_slot].key[1] = 1;
+                     // Call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
+                     // needs to know what if the key is valid
+                     good_key = get_is_kmac_key_correct();
+                     good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+
+                     if (!good_key) begin
+                       // If invalid key is used, design will switch to use random data for the
+                       // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
+                       // doesn't lead to an invalid_key error
+                       current_internal_key[current_key_slot.dst_slot].key[0] = 1;
+                       current_internal_key[current_key_slot.dst_slot].key[1] = 1;
+                     end
                   end
+                  default: begin // !OpDpeAdvance
+                    // any operation aside from advance will lead to a failed operation
+                    current_op_status = keymgr_pkg::OpDoneFail;
+                    // No KDF issued, done interrupt/alert is triggered in next cycle
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        process_error_n_alert();
 
-                  // update kmac key for check
-                  if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
+                        if (cfg.en_cov) begin
+                          keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                              `gmv(ral.control_shadowed.dest_sel));
+
+                          cov.state_and_op_cg.sample(current_state, op, current_op_status,
+                              current_cdi, dest);
+                        end
+                      end
+                    join_none
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                  end
+                endcase
+              end
+              keymgr_dpe_pkg::StWorkDpeAvailable: begin
+                case (op)
+                  keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
+                    good_key = get_is_kmac_key_correct();
+                    good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+                    if (!good_key) begin
+                      // if invalid key is used, design will switch to use random data for the
+                      // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
+                      // doesn't lead to an invalid_key error
+                      current_internal_key[current_key_slot.dst_slot].key[0] = 1;
+                      current_internal_key[current_key_slot.dst_slot].key[1] = 1;
+                    end
+                    // update kmac key for check
                     if (current_internal_key[current_key_slot.src_slot].key > 0) begin
                       `uvm_info(`gfn,
                       $sformatf("start: update_kdf_key:\n key[0] 'h%h\nkey[1] 'h%h\n good key %0d, good_data %0d",
@@ -646,28 +677,24 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                       );
                     end
                   end
-                end else begin // !OpDpeAdvance
-                  current_op_status = keymgr_pkg::OpDoneFail;
-                  // No KDF issued, done interrupt/alert is triggered in next cycle
-                  void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
-                  if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
-                    begin
-                      cfg.clk_rst_vif.wait_clks(1);
-                      process_error_n_alert();
-
-                      if (cfg.en_cov) begin
-                        keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-                            `gmv(ral.control_shadowed.dest_sel));
-
-                        cov.state_and_op_cg.sample(current_state, op, current_op_status,
-                            current_cdi, dest);
-                      end
-                    end
-                  join_none
-                end
-                void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                  keymgr_dpe_pkg::OpDpeErase: begin
+                    // TODO(#667) add handling of erase  and disable in "start" case of
+                    // process_tl_access
+                  end
+                  keymgr_dpe_pkg::OpDpeDisable: begin
+                  end
+                endcase
               end
-              default: begin // other than StWorkDpeReset and StDisabled
+              keymgr_dpe_pkg::StWorkDpeDisabled: begin
+                // TODO(#667) add handling of disabled and invalid states in "start" case of
+                // process_tl_access
+              end
+              keymgr_dpe_pkg::StWorkDpeInvalid: begin
+                // TODO(#667) add handling of disabled and invalid states in "start" case of
+                // process_tl_access
+              end
+              default: begin
+                `uvm_fatal(`gfn, $sformatf("process_tl_access: unrecognized state in the start case"))
               end
             endcase
           end // start
@@ -941,8 +968,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
     if (get_invalid_op() || get_operation() == keymgr_dpe_pkg::OpDpeDisable) return 0;
 
-    if ((current_internal_key[current_key_slot.dst_slot].key[0] inside {0, '1} ||
-         current_internal_key[current_key_slot.dst_slot].key[1] inside {0, '1}) &&
+    if ((current_internal_key[current_key_slot.src_slot].key[0] inside {0, '1} ||
+         current_internal_key[current_key_slot.src_slot].key[1] inside {0, '1}) &&
          current_state != keymgr_dpe_pkg::StWorkDpeReset) begin
       invalid_hw_input_type = OtpRootKeyInvalid;
       void'(ral.debug.invalid_key.predict(1));
