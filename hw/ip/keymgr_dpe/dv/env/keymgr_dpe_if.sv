@@ -252,12 +252,23 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endtask
 
   function automatic void compare_internal_key_slot(
-    keymgr_dpe_pkg::keymgr_dpe_slot_t key_slot,
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e slot_index
+    keymgr_dpe_pkg::keymgr_dpe_slot_t dst_key_slot,
+    keymgr_dpe_pkg::keymgr_dpe_slot_t src_key_slot,
+    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot_index,
+    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot_index,
+    bit check_parent_retained
   );
-    `DV_CHECK_EQ(key_slot, internal_key_slots[slot_index],
-            $sformatf("exp_key_slot[%0d] vs internal_key_slot[%0d]", slot_index, slot_index), ,
+    `DV_CHECK_EQ(dst_key_slot, internal_key_slots[dst_slot_index],
+            $sformatf("exp_dst_key_slot[%0d] vs internal_key_slot[%0d]",
+            dst_slot_index, dst_slot_index), ,
             msg_id)
+    // if the parent is supposed to be retained then check that the
+    // src slot contains the expected key still
+    if(check_parent_retained)
+      `DV_CHECK_EQ(src_key_slot, internal_key_slots[src_slot_index],
+              $sformatf("exp_src_key_slot[%0d] vs internal_key_slot[%0d]",
+              src_slot_index, src_slot_index), ,
+              msg_id)
   endfunction
 
   // update kmac key for comparison during KDF
