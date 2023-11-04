@@ -243,9 +243,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // flag a key slot comparison
         compare_internal_key_slot = 1;
         // digest is 384 bits wide while internal key is only 256, need to truncate it
-        current_internal_key[current_key_slot.dst_slot].key = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                                  item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
-        cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[current_key_slot.dst_slot].key, current_state);
+        current_internal_key[current_key_slot.dst_slot].key =
+          {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
+           item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
 
         // boot stage should increment between advance calls
         current_internal_key[current_key_slot.dst_slot].boot_stage =
@@ -261,9 +261,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // last max_key_ver_shadowed csr write before the "start" operation was enabled
         current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
 
-        `uvm_info(`gfn,
-           $sformatf("process_kmac_data_rsp: expected dst_keyslot = %p",
-             current_internal_key[current_key_slot.dst_slot]), UVM_MEDIUM)
+        cfg.keymgr_dpe_vif.store_internal_key(
+          current_internal_key[current_key_slot.dst_slot].key, 
+          current_state
+        );
 
         `uvm_info(`gfn, $sformatf("Update internal key 0x%0h for op %s in state %s",
              current_internal_key[current_key_slot.dst_slot].key, op.name, current_state.name), UVM_MEDIUM)
@@ -497,7 +498,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           if (current_op_status == keymgr_pkg::OpDoneSuccess && compare_internal_key_slot) begin
               cfg.keymgr_dpe_vif.compare_internal_key_slot(
                 current_internal_key[current_key_slot.dst_slot],
-                current_key_slot.dst_slot
+                current_internal_key[current_key_slot.src_slot],
+                current_key_slot.dst_slot,
+                current_key_slot.src_slot,
+                current_internal_key[current_key_slot.src_slot].key_policy.retain_parent
               );
             compare_internal_key_slot = 0;
           end
