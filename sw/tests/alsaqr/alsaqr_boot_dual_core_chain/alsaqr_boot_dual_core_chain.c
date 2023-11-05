@@ -68,30 +68,15 @@ int main(int argc, char **argv) {
   // wait for completion of irq
   asm volatile ("wfi");
 
-  // Disable mbox irq to Core 0
-  pointer = (int *) 0x0C002080;
-  *pointer =  0x0;
-  // Enable mbox irq to Core 1
-  pointer = (int *) 0x0C002180;
-  *pointer =  0x400;
-  // Write CVA6 boot PC to mbox
-  pointer = (int *) 0x10404000;
-  *pointer = 0x80000000;
-  // Send IRQ to boot core 1
-  pointer = (int *) 0x10404024;
-  *pointer = 0x1;
-
-  // wait for completion of irq
-  asm volatile ("wfi");
 
   // Disable mbox irq to Core 1
-  pointer = (int *) 0x0C002180;
-  *pointer =  0x0;
+  pointer = (int *) 0x0C002080;
+  *pointer = 0x0;
   // un-set plic mbox irq prio
   pointer = (int *) 0x0C000028;
   *pointer = 0x0;
 
-  printf("[SECD] Booted CVA6, going wfi\r\n");
+  printf("[SECD] Booted CVA6 core 0, going wfi\r\n");
   uart_wait_tx_done();
 
   while(1)
