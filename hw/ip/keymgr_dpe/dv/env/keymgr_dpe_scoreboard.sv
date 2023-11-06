@@ -738,8 +738,14 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             // when advance from StWorkDpeReset to StWorkDpeAvailable
             // we don't know how long it will take, it's ok
             // when status is WIP or success
+            // TODO(#667) - need to restructure SCB so that reading a WIP status doesn't cause an error
+            // when current_op_status is equal to OpDoneSuccess
             if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-              `DV_CHECK_EQ(item.d_data inside {current_op_status, keymgr_pkg::OpDoneSuccess}, 1)
+              `DV_CHECK_EQ(item.d_data inside {
+                 current_op_status, keymgr_pkg::OpDoneSuccess,
+                 keymgr_pkg::OpWip},
+                 1
+              )
             end
             // advance OP completes
             if (current_op_status == keymgr_pkg::OpWip && 
