@@ -310,12 +310,12 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   constraint mem_range_lock_c {
-    // For valid DMA configurations, memory range register must be locked or the DMA controller
-    // will reject the configuration with an error
-    if (valid_dma_config) {
-      mem_range_lock == MuBi4False;
-    } else {
-      // We need to keep this true to prevent subsequent randomization failures
+    // For valid DMA configurations, the memory range registers _may_ be locked but this is not
+    // obligatory. Having the separate 'RANGE_VALID' bit affords the opportunity for FW at
+    // different stages within the boot process to employ different address ranges.
+    if (!valid_dma_config) {
+      // We need to keep this True to prevent subsequent randomization failures; the REGWEN can
+      // only be restored to True (permitting changes) by an IP block reset.
       mem_range_lock == MuBi4True;
     }
   }
