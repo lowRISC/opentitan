@@ -30,7 +30,8 @@ filesets:
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:mem_bkdr_util
-      - lowrisc:dv_dpi:usbdpi
+      - lowrisc:dv_dpi_c:usbdpi
+      - lowrisc:dv_dpi_sv:usbdpi
       - lowrisc:dv:usb20_usbdpi
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}

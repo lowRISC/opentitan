@@ -2,17 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv_dpi_c:uartdpi:0.1"
-description: "UART-DPI C code"
+name: "lowrisc:dv_dpi_sv:usbdpi:0.1"
+description: "USB-DPI SV code"
 
 filesets:
-  files_c:
+  files_rtl:
     files:
-      - uartdpi.c: { file_type: cppSource }
-      - uartdpi.h: { file_type: cppSource, is_include_file: true }
-
+      - usbdpi.sv: { file_type: systemVerilogSource }
 
 targets:
   default:
     filesets:
-      - files_c
+      - files_rtl
