@@ -33,8 +33,7 @@ package dma_pkg;
   typedef enum logic [ASID_WIDTH-1:0] {
     OtInternalAddr = 4'h7,
     SocControlAddr = 4'ha,
-    SocSystemAddr  = 4'h9,
-    OtExtFlashAddr = 4'hc
+    SocSystemAddr  = 4'h9
   } asid_encoding_e;
 
   // Supported opcodes by the DMA
