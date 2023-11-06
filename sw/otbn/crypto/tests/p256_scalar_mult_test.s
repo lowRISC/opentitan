@@ -16,23 +16,36 @@
 .section .text.start
 
 scalar_mult_test:
+  /* Init all-zero register. */
+  bn.xor    w31, w31, w31
 
-  /* call scalar point multiplication routine in P-256 lib */
-  jal      x1, p256_scalar_mult
+  /* Load first share of scalar k from dmem.
+       w0,w1 = dmem[k0] */
+  la        x16, k0
+  li        x2, 0
+  bn.lid    x2, 0(x16++)
+  li        x2, 1
+  bn.lid    x2, 0(x16)
 
-  /* copy result to wide reg file */
-  li       x2, 0
-  la       x3, x
-  bn.lid   x2, 0(x3)
+  /* Load second share of scalar k from dmem.
+       w2,w3 = dmem[k1] */
+  la        x16, k1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
 
-  /* load mask */
-  li       x2, 19
-  la       x3, y
-  bn.lid   x2, 0(x3)
+  /* Call internal scalar multiplication routine.
+     Returns point in projective coordinates.
+     (w8, w9, w10) <= (X, Y, Z) = k*(x,y) */
+  la        x21, x
+  la        x22, y
+  jal       x1, scalar_mult_int
 
-  /* unmask x coordinate
-     w0 <= dmem[x] + dmem[m_x] mod p */
-  bn.addm    w0, w0, w19
+  /* Convert to affine coordinates.
+       w11 <= x
+       w12 <= y */
+  jal       x1, proj_to_affine
 
   ecall
 

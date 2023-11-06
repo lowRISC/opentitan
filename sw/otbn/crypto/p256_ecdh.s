@@ -111,29 +111,10 @@ shared_key:
   jal      x0, check_public_key_valid
   _pk_valid:
 
-  /* Generate arithmetically masked shared key d*Q.
-       dmem[x] <= (d*Q).x - m_x mod p
-       dmem[y] <= m_x */
-  jal      x1, p256_scalar_mult
-
-  /* Arithmetic-to-boolean conversion*/
-
-  /* w11 <= dmem[x] */
-  li        x3, 11
-  la        x4, x
-  bn.lid    x3, 0(x4)
-
-  /* w19 <= dmem[y] = m_x */
-  li        x3, 19
-  la        x4, y
-  bn.lid    x3, 0(x4)
-
-  jal       x1, arithmetic_to_boolean_mod
-
-  /* dmem[x] <= w20 = x' */
-  li        x3, 20
-  la        x4, x
-  bn.sid    x3, 0(x4)
+  /* Generate boolean-masked shared key (d*Q).x.
+       dmem[x] <= x0
+       dmem[y] <= x1 */
+  jal      x1, p256_shared_key
 
   ecall
 
@@ -299,28 +280,22 @@ check_public_key_valid:
   _y_valid:
 
   /* Compute both sides of the Weierstrauss equation.
-       dmem[r] <= (x^3 + ax + b) mod p
-       dmem[s] <= (y^2) mod p */
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
   jal      x1, p256_isoncurve
-
-  /* Load both sides of the equation.
-       w2 <= dmem[r]
-       w3 <= dmem[s] */
-  li        x2, 2
-  la        x3, r
-  bn.lid    x2++, 0(x3)
-  la        x3, s
-  bn.lid    x2, 0(x3)
 
   /* Compare the two sides of the equation.
        FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.cmp    w2, w3
+  bn.cmp    w18, w19
 
-  /* Trigger a fault if FG0.Z is false. */
+  /* Trigger a fault if FG0.Z is false; otherwise jump back to the single call
+     site. */
   csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pk_valid
+  unimp
+  unimp
   unimp
 
 .bss
@@ -343,20 +318,14 @@ x:
 y:
   .zero 32
 
-/* Secret key (d) in two shares: d = (d0 + d1) mod n.
-
-   Note: This is also labeled k0, k1 because the `p256_scalar_mult` algorithm
-   is also used for ECDSA signing and reads from those labels; in the case of
-   ECDH, the scalar in `p256_scalar_mult` is always the private key (d). */
+/* Secret key (d) in two shares: d = (d0 + d1) mod n. */
 .globl d0
-.globl k0
 .balign 32
 d0:
 k0:
   .zero 64
 
 .globl d1
-.globl k1
 .balign 32
 d1:
 k1:
