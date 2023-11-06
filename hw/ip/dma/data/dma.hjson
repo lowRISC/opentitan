@@ -219,10 +219,6 @@
               name: SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
-            { value: "0xc"
-              name: "FLASH_ADDR"
-              desc: "Integrated OpenTitan external flash address space."
-            }
           ]
         }
         { bits: "7:4"
@@ -241,10 +237,6 @@
             { value: "0x9"
               name: SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
-            }
-            { value: "0xc"
-              name: "FLASH_ADDR"
-              desc: "Integrated OpenTitan external flash address space."
             }
           ]
         }

@@ -463,8 +463,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   function bit[7:0] get_model_data(asid_encoding_e asid, bit [63:0] addr);
     case (asid)
       OtInternalAddr : return cfg.mem_host.read_byte(addr);
-      SocControlAddr,
-      OtExtFlashAddr : return cfg.mem_ctn.read_byte(addr);
+      SocControlAddr: return cfg.mem_ctn.read_byte(addr);
       SocSystemAddr : return cfg.mem_sys.read_byte(addr);
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))

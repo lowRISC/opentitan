@@ -104,8 +104,7 @@ class dma_base_vseq extends cip_base_vseq #(
       OtInternalAddr: begin
         cfg.mem_host.randomise_mem({start_addr[63:2],2'd0}, data_size);
       end
-      SocControlAddr,
-      OtExtFlashAddr: begin
+      SocControlAddr: begin
         cfg.mem_ctn.randomise_mem({start_addr[63:2],2'd0}, data_size);
       end
       SocSystemAddr: begin
@@ -127,7 +126,7 @@ class dma_base_vseq extends cip_base_vseq #(
       OtInternalAddr: begin
         cfg.fifo_host.randomise_data(total_data_size);
       end
-      SocControlAddr, OtExtFlashAddr: begin
+      SocControlAddr: begin
         cfg.fifo_ctn.randomise_data(total_data_size);
       end
       SocSystemAddr: begin
@@ -153,7 +152,7 @@ class dma_base_vseq extends cip_base_vseq #(
         cfg.fifo_host.enable_fifo(.fifo_base (start_addr),
                              .max_size (total_data_size));
       end
-      SocControlAddr, OtExtFlashAddr: begin
+      SocControlAddr: begin
         cfg.fifo_ctn.enable_fifo(.fifo_base (start_addr),
                             .max_size (total_data_size));
       end
@@ -318,7 +317,7 @@ class dma_base_vseq extends cip_base_vseq #(
         seq_host.read_fifo_en = read_fifo_en;
         `uvm_info(`gfn, $sformatf("set host read_fifo_en = %0b", read_fifo_en), UVM_HIGH)
       end
-      SocControlAddr, OtExtFlashAddr: begin
+      SocControlAddr: begin
         seq_ctn.read_fifo_en = read_fifo_en;
         `uvm_info(`gfn, $sformatf("set ctn read_fifo_en = %0b", read_fifo_en), UVM_HIGH)
       end
@@ -338,7 +337,7 @@ class dma_base_vseq extends cip_base_vseq #(
         seq_host.write_fifo_en = write_fifo_en;
         `uvm_info(`gfn, $sformatf("set host write_fifo_en = %0b", write_fifo_en), UVM_HIGH)
       end
-      SocControlAddr, OtExtFlashAddr: begin
+      SocControlAddr: begin
         seq_ctn.write_fifo_en = write_fifo_en;
         `uvm_info(`gfn, $sformatf("set ctn write_fifo_en = %0b", write_fifo_en), UVM_HIGH)
       end
@@ -610,7 +609,7 @@ class dma_base_vseq extends cip_base_vseq #(
                   $sformatf("OTInternal bytes_written = %0d", seq_host.bytes_written), UVM_HIGH)
         return seq_host.bytes_written;
       end
-      SocControlAddr, OtExtFlashAddr: begin
+      SocControlAddr: begin
         `uvm_info(`gfn,
                   $sformatf("SocControlAddr bytes_written = %0d", seq_ctn.bytes_written), UVM_HIGH)
         return seq_ctn.bytes_written;
