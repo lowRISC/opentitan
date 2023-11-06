@@ -238,10 +238,6 @@ status_t execute_test(void) {
   return OK_STATUS();
 }
 
-/**
- * TODO: Run the test entropy src end reqs in continuous mode
- * (https://github.com/lowRISC/opentitan/issues/13393)
- */
 bool test_main(void) {
   test_initialize();
 
