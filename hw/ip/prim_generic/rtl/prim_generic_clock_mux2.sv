@@ -10,7 +10,7 @@ module prim_clock_mux2 #(
   input        sel_i,
   output logic clk_o
 );
-`ifndef TARGET_ASIC
+`ifdef TARGET_ASIC
   tc_clk_mux2 clk_mux(
     .clk0_i,
     .clk1_i,
