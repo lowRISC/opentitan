@@ -209,7 +209,6 @@ module dma_reg_top (
   logic control_go_wd;
   logic status_we;
   logic status_busy_qs;
-  logic status_busy_wd;
   logic status_done_qs;
   logic status_done_wd;
   logic status_aborted_qs;
@@ -1312,13 +1311,13 @@ module dma_reg_top (
   ) u_status0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&status_flds_we),
+    .d_i(&(status_flds_we | 5'h1)),
     .q_o(status_qe)
   );
   //   F[busy]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_status_busy (
@@ -1326,8 +1325,8 @@ module dma_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (status_we),
-    .wd     (status_busy_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.status.busy.de),
@@ -1335,7 +1334,7 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (status_flds_we[0]),
-    .q      (),
+    .q      (reg2hw.status.busy.q),
     .ds     (),
 
     // to register interface (read)
@@ -3091,8 +3090,6 @@ module dma_reg_top (
 
   assign control_go_wd = reg_wdata[31];
   assign status_we = addr_hit[21] & reg_we & !reg_error;
-
-  assign status_busy_wd = reg_wdata[0];
 
   assign status_done_wd = reg_wdata[1];
 
