@@ -540,7 +540,11 @@ module spi_host_fsm_ot
   assign sck_d = cpol ? (state_d != InternalClkHigh) :
                         (state_d == InternalClkHigh);
 
+`ifndef TARGET_XILINX
   assign sck_o = sck_buf_q;
+`else
+  assign sck_o = sck_q;
+`endif
 
   prim_ot_flop_en u_sck_flop (
     .clk_i,
@@ -550,10 +554,12 @@ module spi_host_fsm_ot
     .q_o(sck_q)
   );
 
+`ifndef TARGET_XILINX
   tc_clk_buffer spi_clk_buf (
     .clk_i(sck_q),
     .clk_o(sck_buf_q)
   );
+`endif
 
   for (genvar ii = 0; ii < NumCS; ii = ii + 1) begin : gen_csb_gen
     always_ff @(posedge clk_i or negedge rst_ni) begin
