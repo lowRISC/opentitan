@@ -77,10 +77,12 @@ package keymgr_dpe_env_pkg;
 
   string msg_id = "keymgr_dpe_env_pkg";
   // functions
-  /* exposed working states are  StWorkDpeReset, StWorkDpeAvailable, StWorkDpeDisabled, StWorkDpeInvalid
-    1st advance call brings state from StWorkDpeReset to StWorkDpeAvailable, where it will remain until a
-    OpDpeDisable operation which then it will transition to OpDpeDisable state,
-    or a fault transitions the fsm to StWorkDpeInvalid state
+  /* exposed working states are StWorkDpeReset, StWorkDpeAvailable,
+     StWorkDpeDisabled, StWorkDpeInvalid
+     1st advance call brings state from StWorkDpeReset to StWorkDpeAvailable,
+     where it will remain until a
+     OpDpeDisable operation which then it will transition to OpDpeDisable state,
+     or a fault transitions the fsm to StWorkDpeInvalid state
   */
   function automatic keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e get_next_state(
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e current_state,
