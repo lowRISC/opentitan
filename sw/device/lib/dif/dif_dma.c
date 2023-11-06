@@ -21,9 +21,6 @@ static_assert(kDifDmaSoCControlRegisterBus ==
 static_assert(kDifDmaSoCSystemBus ==
                   DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_VALUE_SYS_ADDR_,
               "Address Space ID mismatches with value defined in HW");
-static_assert(kDifDmaOpentitanExternalFlash ==
-                  DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_VALUE_FLASH_ADDR,
-              "Address Space ID mismatches with value defined in HW");
 
 dif_result_t dif_dma_configure(const dif_dma_t *dma,
                                dif_dma_transaction_t transaction) {

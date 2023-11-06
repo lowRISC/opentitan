@@ -30,9 +30,6 @@ typedef enum dif_dma_address_space_id {
 
   /* SoC system address bus using 64 bit SYS port. */
   kDifDmaSoCSystemBus = 0x09,
-
-  /* OT External Flash address space. */
-  kDifDmaOpentitanExternalFlash = 0x0c,
 } dif_dma_address_space_id_t;
 
 /* Supported transaction widths by the DMA */
