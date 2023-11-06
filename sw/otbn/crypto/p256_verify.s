@@ -58,7 +58,7 @@ p256_verify:
   li        x2, 29
   la        x3, p256_n
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
@@ -120,7 +120,7 @@ p256_verify:
   li        x2, 29
   la        x3, p256_p
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
   li        x2, 28
   la        x3, p256_u_p
   bn.lid    x2, 0(x3)
@@ -234,7 +234,7 @@ p256_verify:
   /* final reduction: w24 = x1 <= x1 mod n */
   la        x3, p256_n
   bn.lid    x0, 0(x3)
-  bn.wsrw   0, w0
+  bn.wsrw   MOD, w0
   bn.subm   w24, w19, w31
 
   fail:
@@ -284,8 +284,8 @@ mod_inv_var:
   bn.addi   w3, w31, 1
 
   /* w4 = u = MOD */
-  bn.wsrr   w4, 0
-  bn.wsrr   w7, 0
+  bn.wsrr   w4, MOD
+  bn.wsrr   w7, MOD
 
   /* w5 = v = w0 */
   bn.mov    w5, w0

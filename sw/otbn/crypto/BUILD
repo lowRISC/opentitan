@@ -83,9 +83,9 @@ otbn_library(
 )
 
 otbn_library(
-    name = "p256_a2b",
+    name = "p256_shared_key",
     srcs = [
-        "p256_a2b.s",
+        "p256_shared_key.s",
     ],
 )
 
@@ -123,9 +123,9 @@ otbn_binary(
         "p256_ecdh.s",
     ],
     deps = [
-        ":p256_a2b",
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_shared_key",
     ],
 )
 
