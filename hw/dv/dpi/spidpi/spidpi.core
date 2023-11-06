@@ -2,13 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv_dpi:spidpi:0.1"
-description: "SPI-DPI"
+name: "lowrisc:dv_dpi_c:spidpi:0.1"
+description: "SPI-DPI C code"
 
 filesets:
-  files_rtl:
+  files_c:
     files:
-      - spidpi.sv: { file_type: systemVerilogSource }
       - spidpi.c: { file_type: cppSource }
       - monitor_spi.c: { file_type: cppSource }
       - spidpi.h: { file_type: cppSource, is_include_file: true }
@@ -17,4 +16,4 @@ filesets:
 targets:
   default:
     filesets:
-      - files_rtl
+      - files_c

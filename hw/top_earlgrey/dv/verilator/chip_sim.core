@@ -7,12 +7,18 @@ description: "Earl Grey toplevel for simulation with Verilator"
 filesets:
   files_sim_verilator:
     depend:
-      - lowrisc:dv_dpi:uartdpi
-      - lowrisc:dv_dpi:gpiodpi
-      - lowrisc:dv_dpi:jtagdpi
-      - lowrisc:dv_dpi:dmidpi
-      - lowrisc:dv_dpi:spidpi
-      - lowrisc:dv_dpi:usbdpi
+      - lowrisc:dv_dpi_c:uartdpi
+      - lowrisc:dv_dpi_sv:uartdpi
+      - lowrisc:dv_dpi_c:gpiodpi
+      - lowrisc:dv_dpi_sv:gpiodpi
+      - lowrisc:dv_dpi_c:jtagdpi
+      - lowrisc:dv_dpi_sv:jtagdpi
+      - lowrisc:dv_dpi_c:dmidpi
+      - lowrisc:dv_dpi_sv:dmidpi
+      - lowrisc:dv_dpi_c:spidpi
+      - lowrisc:dv_dpi_sv:spidpi
+      - lowrisc:dv_dpi_c:usbdpi
+      - lowrisc:dv_dpi_sv:usbdpi
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
       - lowrisc:dv:sim_sram
