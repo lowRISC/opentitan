@@ -84,7 +84,7 @@ INSTANTIATE_TEST_SUITE_P(
             .source =
                 {
                     .address = 0x34FCA80BC5C5CA67,
-                    .asid = kDifDmaOpentitanExternalFlash,
+                    .asid = kDifDmaSoCSystemBus,
                 },
             .destination =
                 {
@@ -100,7 +100,7 @@ INSTANTIATE_TEST_SUITE_P(
             .source =
                 {
                     .address = 0x05BA857F8D9C0838,
-                    .asid = kDifDmaOpentitanExternalFlash,
+                    .asid = kDifDmaSoCControlRegisterBus,
                 },
             .destination =
                 {
@@ -121,7 +121,7 @@ INSTANTIATE_TEST_SUITE_P(
             .destination =
                 {
                     .address = 0x9ECFA11919F684D7,
-                    .asid = kDifDmaOpentitanExternalFlash,
+                    .asid = kDifDmaOpentitanInternalBus,
                 },
             .chunk_size = std::numeric_limits<uint32_t>::max(),
             .total_size = std::numeric_limits<uint32_t>::max(),
