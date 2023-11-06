@@ -884,6 +884,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "edn_kat",
+    srcs = ["edn_kat.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
