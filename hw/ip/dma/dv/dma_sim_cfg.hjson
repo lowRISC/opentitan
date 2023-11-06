@@ -45,6 +45,12 @@
   // List of test specifications.
   tests: [
     {
+      name: dma_generic_smoke
+      uvm_test_seq: dma_generic_smoke_vseq
+      run_opts: ["+dma_dv_waive_system_bus=1"]
+      reseed: 50
+    }
+    {
       name: dma_memory_smoke
       uvm_test_seq: dma_memory_smoke_vseq
       run_opts: ["+dma_dv_waive_system_bus=1"]
@@ -86,7 +92,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["dma_memory_smoke", "dma_handshake_smoke"]
+      tests: ["dma_memory_smoke", "dma_handshake_smoke", "dma_generic_smoke"]
     }
   ]
 }
