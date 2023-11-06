@@ -67,7 +67,7 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
     asid_interface_map[OtInternalAddr] = "host";
     asid_interface_map[SocControlAddr] = "ctn";
     asid_interface_map[SocSystemAddr] = "sys";
-    asid_interface_map[OtExtFlashAddr] = "ctn";
+
     // Initialize cip_base_env_cfg
     super.initialize(csr_base_addr);
 
