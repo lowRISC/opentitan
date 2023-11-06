@@ -54,6 +54,8 @@
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
+                // Enable C compilation of chip level dpi
+                "{proj_root}/hw/dv/dpi/dpi_sim_cfg.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -222,7 +224,8 @@
   en_build_modes: ["{tool}_otbn_memutil_build_opts",
                    "{tool}_otbn_tracer_build_opts",
                    "{tool}_memutil_dpi_scrambled_build_opts",
-                   "{tool}_aes_model_build_opts"]
+                   "{tool}_aes_model_build_opts",
+                   "{tool}_dpi_build_opts"]
 
   // Setup for generating OTP images.
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
