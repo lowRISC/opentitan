@@ -1,0 +1,15 @@
+{
+    "repository" :"engdoreis/test-ot-pgm",
+    "title": "[sival, ${ip_block}] Run test ${test_name}",
+    "body": '''
+    # Description
+    This issue is for executing the test ${test_name}
+    # Tasks
+        % for a in check_list:
+        - [ ] Execute test in ${a} mode.
+        % endfor
+    ''',
+    "labels": ["SiVal:TestEvidence"],
+    "milestone": "Earlgrey ES SV1",
+    "assignee": "johngt",
+}

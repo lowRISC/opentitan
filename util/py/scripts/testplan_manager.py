@@ -21,6 +21,8 @@ import logging
 import os
 import sys
 from enum import Enum
+from mako.template import Template
+from gh_issues_manager import GithubWrapper
 
 import hjson
 import pandas as pd
@@ -63,12 +65,16 @@ export_parser.add_argument(
     help="""Path to a json file with the google credentials.
           Check https://docs.gspread.org/en/latest/oauth2.html for more details.""",
 )
-parser.add_argument("--file",
-                    required=False,
-                    help="Path of a single testplan hjson file.")
-parser.add_argument("--dir",
-                    required=False,
-                    help="Path of a dir containing the testplan files.")
+export_parser.add_argument(
+    "--github-token",
+    required=False,
+    help="""Token""",
+)
+export_parser.add_argument(
+    "--issue-template",
+    required=False,
+    help="""Template""",
+)
 
 def main(args):
     if args.dir is None and args.file is None:
@@ -103,10 +109,43 @@ def generate_cmd(args, df: pd.DataFrame):
         gs.update(df)
         output_generated = True
         print(f"Updated spreadsheet {args.url}")
+    if args.github_token and args.issue_template:
+        create_issues(args, df)
+        output_generated = True
 
     if not output_generated:
         print("No output specified.")
     return 0
+
+def create_issues(args, df: pd.DataFrame):
+    repo = hjson.load(open(args.issue_template, "r"))["repository"]
+    repo = GithubWrapper(args.github_token, repo)
+    repo.load_issues(labels=["Component:ChipLevelTest"])
+    issue_template = Template(filename=args.issue_template)
+
+    for _, row in df.fillna("None").iterrows():
+        new_issue = hjson.loads(
+                issue_template.render(ip_block=row["hw_ip_block"],
+                                    test_name=row["name"],
+                                    check_list=row["lc_states"].split(", "),
+                                    stage=row["si_stage"]))
+
+        if repo.issue_exist(new_issue["title"]):
+            print(f"Issue already exists: {new_issue['title']}")
+            repo_issue = repo.get_issues(new_issue["title"])[0]
+            if repo_issue.body != new_issue["body"]:
+                print("Updating the issue")
+                repo_issue.edit(body=new_issue["body"],
+                                    labels=new_issue["labels"])
+        else:
+            print(f'Create issue: {new_issue["title"]}')
+            repo.create_issue(title=new_issue["title"], body=new_issue["body"],\
+                                labels=new_issue["labels"], milestone=new_issue["milestone"])
+
+        created += 1
+    logging.info(
+        "Created %d, Updated %d, Total %d", created, updated, created + updated
+    )
 
 
 class AuthType(Enum):
@@ -207,5 +246,5 @@ def dataframe_from_testplan(testplan_hjson: str) -> pd.DataFrame:
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    logging.basicConfig(level=args.logging.upper())
+    logging.basicConfig(level=args.logging.upper(), filename=args.logging_file)
     sys.exit(main(args))
