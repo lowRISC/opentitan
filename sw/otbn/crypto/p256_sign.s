@@ -91,7 +91,7 @@ p256_sign:
   li        x2, 29
   la        x3, p256_n
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
@@ -111,7 +111,7 @@ p256_sign:
   li        x2, 29
   la        x3, p256_n
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)

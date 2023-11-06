@@ -1,3 +1,3 @@
-# Expected values (w0=R, w1=S):
-w0 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660
-w1 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660
+# Expected values (w18=lhs, w1=rhs):
+w18 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660
+w19 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660

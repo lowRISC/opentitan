@@ -255,10 +255,10 @@ attestation_secret_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0
        w10,w11 <= seed1 */
-  bn.wsrr  w20, 4 /*KEY_S0_L*/
-  bn.wsrr  w10, 6 /*KEY_S1_L*/
-  bn.wsrr  w21, 5 /*KEY_S0_H*/
-  bn.wsrr  w11, 7 /*KEY_S1_H*/
+  bn.wsrr  w20, KEY_S0_L
+  bn.wsrr  w10, KEY_S1_L
+  bn.wsrr  w21, KEY_S0_H
+  bn.wsrr  w11, KEY_S1_H
 
   /* Load the additional DRBG seed from DMEM and XOR with one share of the
      sideloaded seed.
