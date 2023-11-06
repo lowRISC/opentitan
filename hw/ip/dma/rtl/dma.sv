@@ -479,10 +479,8 @@ module dma
 
   // Host interface to SoC CTN address space
   always_comb begin
-    dma_ctn_write = (ctrl_state_q == DmaSendWrite) &
-                    (dst_asid_q == SocControlAddr || dst_asid_q == OtExtFlashAddr);
-    dma_ctn_read  = (ctrl_state_q == DmaSendRead) &
-                    (src_asid_q == SocControlAddr || src_asid_q == OtExtFlashAddr);
+    dma_ctn_write = (ctrl_state_q == DmaSendWrite) & (dst_asid_q == SocControlAddr);
+    dma_ctn_read  = (ctrl_state_q == DmaSendRead)  & (src_asid_q == SocControlAddr);
 
     dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_int;
     // TLUL 4B aligned
@@ -536,7 +534,7 @@ module dma
         write_rsp_valid = sys_resp_q.grant_vec[SysCmdWrite];
         write_rsp_error = 1'b0;  // Write errors do not occur on SoC System bus
       end
-      // SocControlAddr, OtExtFlashAddr handled here
+      // SocControlAddr is handled here
       //   (other ASID values prevented in configuration validation).
       default: begin
         write_gnt       = dma_ctn_tlul_gnt;
@@ -562,7 +560,7 @@ module dma
         read_rsp_valid = sys_resp_q.read_data_vld;
         read_rsp_error = sys_resp_q.error_vld;
       end
-      // SocControlAddr, OtExtFlashAddr handled here
+      // SocControlAddr is handled here
       //   (other ASID values prevented in configuration validation).
       default: begin
         read_gnt       = dma_ctn_tlul_gnt;
@@ -813,14 +811,12 @@ module dma
           // SEC_CM: ASID.INTERSIG.MUBI
           if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
                                                               SocControlAddr,
-                                                              SocSystemAddr,
-                                                              OtExtFlashAddr})) begin
+                                                              SocSystemAddr})) begin
             bad_asid = 1'b1;
           end
           if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
                                                                   SocControlAddr,
-                                                                  SocSystemAddr,
-                                                                  OtExtFlashAddr})) begin
+                                                                  SocSystemAddr})) begin
             bad_asid = 1'b1;
           end
 
@@ -854,12 +850,11 @@ module dma
             bad_src_addr = 1'b1;
             bad_dst_addr = 1'b1;
           end
-          // If data from the SOC system bus, the control bus, or the external flash is transferred
+          // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
           // the DMA enabled memory region.
           if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.source_asid.q == SocSystemAddr)  ||
-              (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) &&
+              (reg2hw.address_space_id.source_asid.q == SocSystemAddr)) &&
               (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
               // Out-of-bound check
               ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
@@ -870,12 +865,11 @@ module dma
             bad_dst_addr = 1'b1;
           end
 
-          // If data from the OT internal memory is transferred  to the SOC system bus, the control
-          // bus, or the external flash, we must check if the source address range falls into the
+          // If data from the OT internal memory is transferred  to the SOC system bus or the
+          // control bus, we must check if the source address range falls into the
           // DMA enabled memory region.
           if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)  ||
-              (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) &&
+              (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)) &&
               (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
                 // Out-of-bound check
                 ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
@@ -886,21 +880,17 @@ module dma
             bad_src_addr = 1'b1;
           end
 
-          // If the source ASID is the SOC control port, the OT internal port, or the external
-          // flash, we are accessing a 32-bit address space. Thus the upper bits of the source
-          // address must be zero
+          // If the source ASID is the SOC control port or the OT internal port, we are accessing a
+          // 32-bit address space. Thus the upper bits of the source address must be zero
           if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr) ||
               (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
               (|reg2hw.source_address_hi.q)) begin
             bad_src_addr = 1'b1;
           end
 
-          // If the destination ASID is the SOC control port, the OT internal port or the external
-          // flash, we are accessing a 32-bit address space. Thus the upper bits of the destination
-          // address must be zero
+          // If the destination ASID is the SOC control por or the OT internal port we are accessing
+          // a 32-bit address space. Thus the upper bits of the destination address must be zero
           if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-              (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr) ||
               (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
               (|reg2hw.destination_address_hi.q)) begin
             bad_dst_addr = 1'b1;
@@ -1063,8 +1053,7 @@ module dma
     if (capture_return_data) begin
       unique case (src_asid_q)
         OtInternalAddr: read_return_data_d = dma_host_tlul_rsp_data;
-        SocControlAddr,
-        OtExtFlashAddr: read_return_data_d = dma_ctn_tlul_rsp_data;
+        SocControlAddr: read_return_data_d = dma_ctn_tlul_rsp_data;
         default:        read_return_data_d = sys_resp_q.read_data;
       endcase
     end

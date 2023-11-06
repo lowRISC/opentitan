@@ -20,14 +20,12 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     bins internal = {OtInternalAddr};
     bins ctn = {SocControlAddr};
     bins sys = {SocSystemAddr};
-    bins flash = {OtExtFlashAddr};
   }
   // Destination address space ID
   cp_dst_asid: coverpoint dma_config.dst_asid{
     bins internal = {OtInternalAddr};
     bins ctn = {SocControlAddr};
     bins sys = {SocSystemAddr};
-    bins flash = {OtExtFlashAddr};
   }
   // Total transfer size for operation
   cp_transfer_size: coverpoint dma_config.total_transfer_size {
@@ -117,7 +115,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     bins internal = {OtInternalAddr};
     bins ctn = {SocControlAddr};
     bins sys = {SocSystemAddr};
-    bins flash = {OtExtFlashAddr};
   }
 
   // Coverpoint for TL error on destination interface
@@ -125,7 +122,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     bins internal = {OtInternalAddr};
     bins ctn = {SocControlAddr};
     bins sys = {SocSystemAddr};
-    bins flash = {OtExtFlashAddr};
   }
 
   cp_src_asid_x_tl_src_err_x_dma_op: cross cp_src_asid, cp_src_tl_err, cp_opcode;

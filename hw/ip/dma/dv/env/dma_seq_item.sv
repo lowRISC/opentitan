@@ -478,11 +478,11 @@ class dma_seq_item extends uvm_sequence_item;
     end
 
     // Check that the ASIDs are valid
-    if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr, OtExtFlashAddr})) begin
+    if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
       `uvm_info(`gfn, " - Destination ASID invalid", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr, OtExtFlashAddr})) begin
+    if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
       `uvm_info(`gfn, " - Source ASID invalid", UVM_MEDIUM)
       valid_config = 0;
     end
