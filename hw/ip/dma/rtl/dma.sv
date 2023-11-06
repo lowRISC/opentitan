@@ -75,7 +75,7 @@ module dma
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
-  logic clear_go;
+  logic clear_go, clear_status, clear_sha_status;
 
   logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                               clear_index_en, int_clear_tlul_rsp_valid;
@@ -385,7 +385,7 @@ module dma
 
   logic use_inline_hashing;
   logic sha2_hash_start, sha2_hash_process;
-  logic sha2_valid, sha2_ready, sha2_digest_set, sha2_digest_clear;
+  logic sha2_valid, sha2_ready, sha2_digest_set;
   sha_fifo32_t sha2_data;
   digest_mode_e sha2_mode;
   sha_word64_t [7:0] sha2_digest;
@@ -602,7 +602,6 @@ module dma
     sha2_hash_start      = 1'b0;
     sha2_valid           = 1'b0;
     sha2_digest_set      = 1'b0;
-    sha2_digest_clear    = 1'b0;
     sha2_consumed_d      = sha2_consumed_q;
 
     // Make SHA2 Done sticky to not miss a single-cycle done event during any outstanding writes
@@ -630,7 +629,6 @@ module dma
             if (reg2hw.control.initial_transfer.q) begin
               transfer_byte_d       = '0;
               capture_transfer_byte = 1'b1;
-              sha2_digest_clear     = 1'b1;
             end
             // if not handshake start transfer
             if (!cfg_handshake_en) begin
@@ -1200,37 +1198,6 @@ module dma
       hw2reg.control.initial_transfer.de = 1'b1;
     end
 
-    // Write digest to CSRs when needed. The digest is an 8-element  64-bit datatype. Depending on
-    // the selected hashing algorithm, the digest is stored differently in the digest datatype:
-    // SHA2-256: digest[0-7][31:0] store the 256-bit digest. The upper 32-bits of all digest
-    //           elements are zero
-    // SHA2-384: digest[0-5][63:0] store the 384-bit digest.
-    // SHA2-512: digest[0-7][63:0] store the 512-bit digest.
-    for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i++) begin
-      hw2reg.sha2_digest[i].de = sha2_digest_set | sha2_digest_clear;
-    end
-
-    for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
-      unique case (reg2hw.control.opcode.q)
-        OpcSha256: begin
-          hw2reg.sha2_digest[i].d = sha2_digest_clear? '0 : sha2_digest[i][0 +: 32];
-        end
-        OpcSha384: begin
-          if (i < 6) begin
-            hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
-            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
-          end
-        end
-        default: begin // SHA2-512
-          hw2reg.sha2_digest[i*2].d     = sha2_digest_clear? '0 : sha2_digest[i][32 +: 32];
-          hw2reg.sha2_digest[(i*2)+1].d = sha2_digest_clear? '0 : sha2_digest[i][0  +: 32];
-        end
-      endcase
-    end
-
-    hw2reg.status.sha2_digest_valid.de = sha2_digest_set | sha2_digest_clear;
-    hw2reg.status.sha2_digest_valid.d  = sha2_digest_set;
-
     hw2reg.destination_address_hi.de = update_destination_addr_reg;
     hw2reg.destination_address_hi.d  = new_destination_addr[63:32];
 
@@ -1243,11 +1210,6 @@ module dma
     hw2reg.source_address_lo.de = update_source_addr_reg;
     hw2reg.source_address_lo.d  = new_source_addr[31:0];
 
-    // Clear the go bit if we are in a single transfer and finished the DMA operation,
-    // hardware handshake mode when we finished all transfers, or when aborting the transfer.
-    hw2reg.control.go.de = clear_go;
-    hw2reg.control.go.d  = 1'b0;
-
     // Assert busy write enable on
     // - transitions from IDLE out
     // - clearing the go bit (going back to idle)
@@ -1258,37 +1220,79 @@ module dma
     hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) &&
                             (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
 
+    // Status is cleared when leaving the IDLE state the first time, i.e., when busy is not yet set
+    clear_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) && !reg2hw.status.busy.q;
+    // The SHA digest valid and the digest itself needs to incorporate the initial transfer flag
+    // as busy is deasserted for every chunk in the middle of a multi-chunk memory-to-memory
+    //transfer
+    clear_sha_status = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
+                       reg2hw.control.initial_transfer.q;
+
     // Set done bit and raise interrupt when we either finished a single transfer or all transfers
-    // in hardware handshake mode.
-    hw2reg.status.done.de = (!cfg_abort_en)     &&
-                             data_move_state    &&
-                             clear_go;
-    hw2reg.status.done.d  = 1'b1;
+    // in hardware handshake mode. Automatically clear the done bit when starting a new transfer
+    hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go) | clear_status;
+    hw2reg.status.done.d  = clear_status? 1'b0 : 1'b1;
 
-    hw2reg.status.error.d  = 1'b1;
-    hw2reg.status.error.de = (ctrl_state_d == DmaError);
+    hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.status.error.d  = clear_status? 1'b0 : 1'b1;
 
-    hw2reg.status.aborted.de = cfg_abort_en && (ctrl_state_d == DmaIdle);
-    hw2reg.status.aborted.d  = 1'b1;
+    hw2reg.status.aborted.de = (cfg_abort_en && (ctrl_state_d == DmaIdle)) | clear_status;
+    hw2reg.status.aborted.d  = clear_status? 1'b0 : 1'b1;
+
+    hw2reg.status.sha2_digest_valid.de = sha2_digest_set | clear_sha_status;
+    hw2reg.status.sha2_digest_valid.d  = sha2_digest_set;
+
+     // Write digest to CSRs when needed. The digest is an 8-element  64-bit datatype. Depending on
+    // the selected hashing algorithm, the digest is stored differently in the digest datatype:
+    // SHA2-256: digest[0-7][31:0] store the 256-bit digest. The upper 32-bits of all digest
+    //           elements are zero
+    // SHA2-384: digest[0-5][63:0] store the 384-bit digest.
+    // SHA2-512: digest[0-7][63:0] store the 512-bit digest.
+    for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i++) begin
+      hw2reg.sha2_digest[i].de = sha2_digest_set | clear_sha_status;
+    end
+
+    for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
+      unique case (reg2hw.control.opcode.q)
+        OpcSha256: begin
+          hw2reg.sha2_digest[i].d = clear_sha_status? '0 : sha2_digest[i][0 +: 32];
+        end
+        OpcSha384: begin
+          if (i < 6) begin
+            hw2reg.sha2_digest[i*2].d     = clear_sha_status? '0 : sha2_digest[i][32 +: 32];
+            hw2reg.sha2_digest[(i*2)+1].d = clear_sha_status? '0 : sha2_digest[i][0  +: 32];
+          end
+        end
+        default: begin // SHA2-512
+          hw2reg.sha2_digest[i*2].d     = clear_sha_status? '0 : sha2_digest[i][32 +: 32];
+          hw2reg.sha2_digest[(i*2)+1].d = clear_sha_status? '0 : sha2_digest[i][0  +: 32];
+        end
+      endcase
+    end
+
+    // Clear the go bit if we are in a single transfer and finished the DMA operation,
+    // hardware handshake mode when we finished all transfers, or when aborting the transfer.
+    hw2reg.control.go.de = clear_go;
+    hw2reg.control.go.d  = 1'b0;
 
     // Fiddle out error signals
-    hw2reg.error_code.src_address_error.de = (ctrl_state_d == DmaError);
-    hw2reg.error_code.dst_address_error.de = (ctrl_state_d == DmaError);
-    hw2reg.error_code.opcode_error.de      = (ctrl_state_d == DmaError);
-    hw2reg.error_code.size_error.de        = (ctrl_state_d == DmaError);
-    hw2reg.error_code.bus_error.de         = (ctrl_state_d == DmaError);
-    hw2reg.error_code.base_limit_error.de  = (ctrl_state_d == DmaError);
-    hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError);
-    hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError);
+    hw2reg.error_code.src_address_error.de = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.dst_address_error.de = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.opcode_error.de      = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.size_error.de        = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.bus_error.de         = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.base_limit_error.de  = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError) | clear_status;
 
-    hw2reg.error_code.src_address_error.d  = next_error[DmaSourceAddrErr];
-    hw2reg.error_code.dst_address_error.d  = next_error[DmaDestinationAddrErr];
-    hw2reg.error_code.opcode_error.d       = next_error[DmaOpcodeErr];
-    hw2reg.error_code.size_error.d         = next_error[DmaSizeErr];
-    hw2reg.error_code.bus_error.d          = next_error[DmaCompletionErr];
-    hw2reg.error_code.base_limit_error.d   = next_error[DmaBaseLimitErr];
-    hw2reg.error_code.range_valid_error.d  = next_error[DmaRangeValidErr];
-    hw2reg.error_code.asid_error.d         = next_error[DmaAsidErr];
+    hw2reg.error_code.src_address_error.d  = clear_status? '0 : next_error[DmaSourceAddrErr];
+    hw2reg.error_code.dst_address_error.d  = clear_status? '0 : next_error[DmaDestinationAddrErr];
+    hw2reg.error_code.opcode_error.d       = clear_status? '0 : next_error[DmaOpcodeErr];
+    hw2reg.error_code.size_error.d         = clear_status? '0 : next_error[DmaSizeErr];
+    hw2reg.error_code.bus_error.d          = clear_status? '0 : next_error[DmaCompletionErr];
+    hw2reg.error_code.base_limit_error.d   = clear_status? '0 : next_error[DmaBaseLimitErr];
+    hw2reg.error_code.range_valid_error.d  = clear_status? '0 : next_error[DmaRangeValidErr];
+    hw2reg.error_code.asid_error.d         = clear_status? '0 : next_error[DmaAsidErr];
 
     // Clear the control.abort bit once we have handled the abort request
     hw2reg.control.abort.de = hw2reg.status.aborted.de;

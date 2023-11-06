@@ -61,6 +61,26 @@ class dma_generic_vseq extends dma_base_vseq;
               UVM_HIGH)
   endfunction
 
+  // Notification of starting and ending iterations (separated by resets)
+  // and transactions (transfers performed without intervening resets)
+  virtual task starting_iter(int unsigned iter, int unsigned num_iters);
+    `uvm_info(`gfn, $sformatf("DMA: Running iteration %0d/%0d", iter + 1, num_iters), UVM_LOW)
+  endtask
+
+  virtual task starting_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config);
+    `uvm_info(`gfn, $sformatf("DMA: Running transaction %0d/%0d", txn + 1, num_txns),
+              UVM_LOW)
+  endtask
+
+  virtual task ending_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config,
+                          int status);
+    // Possibly overridden in derived classes.
+  endtask
+
+  virtual task ending_iter(int unsigned iter, int unsigned num_iters);
+    // Possibly overridden in derived classes.
+  endtask
+
   // Once we have settled upon a valid configuration that moves data between the OT and SoC
   // domains we must prevent further randomization of the base/limit registers, because otherwise
   // the TB will form incorrect predictions.
@@ -93,9 +113,10 @@ class dma_generic_vseq extends dma_base_vseq;
 
     for (uint i = 0; i < num_iters; i++) begin
       enable_interrupt();
-
-      `uvm_info(`gfn, $sformatf("DMA: Running iteration %0d/%0d", i + 1, num_iters), UVM_LOW)
       randomize_iter_config(dma_config);
+
+      // Notification that this iteration (= series of transactions/transfers) is commencing.
+      starting_iter(i, num_iters);
 
       // TODO: can/shall we re-randomize the transaction count on each iteration?
       for (uint j = 0; j < num_txns; j++) begin
@@ -104,11 +125,13 @@ class dma_generic_vseq extends dma_base_vseq;
         bit stop = 1'b0;
         int status;
 
-        `uvm_info(`gfn, $sformatf("DMA: Running transaction %0d/%0d", j + 1, num_txns),
-                  UVM_LOW)
-
         run_common_config(dma_config);
         start_device(dma_config);
+
+        // Notification that transaction is just starting; after the configuration has been decided
+        // and programmed into the DMA controller, but before the transfer has commenced.
+        starting_txn(j, num_txns, dma_config);
+
         set_control_register(dma_config.opcode, // OPCODE
                              1'b1,              // Initial transfer
                              dma_config.handshake, // Handshake Enable
@@ -116,7 +139,6 @@ class dma_generic_vseq extends dma_base_vseq;
                              dma_config.auto_inc_fifo, // Auto-increment FIFO Address
                              dma_config.direction, // Direction
                              1'b1); // Go
-        `uvm_info(`gfn, $sformatf("handshake_value = 0x%0x", dma_config.lsio_trigger_i), UVM_HIGH)
 
         // Keep track of the number of bytes that we've supplied to the DMA controller
         num_bytes_supplied = dma_config.chunk_size(0);
@@ -143,10 +165,6 @@ class dma_generic_vseq extends dma_base_vseq;
               end else if (!dma_config.handshake) begin
                 // Model the FirmWare running on the OT side, responding to the Done interrupt and
                 // nudging the controller to perform the next chunk of a multi-chunk transfer
-
-                // TODO: clear the Done bit; PR #660 is aimed at obviating this
-                ral.status.done.set(1'b1);
-                csr_update(ral.status);
 
                 // Supply the next chunk of input data
                 void'(configure_mem_model(dma_config, num_bytes_supplied));
@@ -224,6 +242,9 @@ class dma_generic_vseq extends dma_base_vseq;
           read_sha2_digest(dma_config.opcode, digest);
         end
 
+        // Notification that the transaction is ending, indicating the completion status
+        ending_txn(j, num_txns, dma_config, status);
+
         clear_errors(dma_config);
         // We need to clear the outputs, especially `status.done`
         clear();
@@ -234,6 +255,10 @@ class dma_generic_vseq extends dma_base_vseq;
         // Set up randomized configuration for the next transaction
         randomize_txn_config(dma_config);
       end
+
+      // Notification that this iteration is ending, and the DUT is about to be reset
+      ending_iter(i, num_iters);
+
       apply_resets_concurrently();
       delay(10);
       // Reset config
