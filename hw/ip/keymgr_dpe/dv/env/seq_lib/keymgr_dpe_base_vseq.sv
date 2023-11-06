@@ -171,7 +171,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
         });
         if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
           is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
-          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].boot_stage < (keymgr_dpe_pkg::DpeNumBootStages-1);
+          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].boot_stage <
+            (keymgr_dpe_pkg::DpeNumBootStages-1);
           is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.allow_child == 1;
           if (cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.retain_parent == 0) begin
             is_good_op &= (src_slot == dst_slot);
@@ -216,8 +217,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
                               current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
+    // TODO(#667) - need to restructure SCB so that reading a WIP status doesn't cause error
+    // for now set the minimum spinwait_delay_ns to 2 to ensure this false error doesn't happen
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
-                 .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
+                 .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(2, 100)));
 
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
 
@@ -276,30 +279,17 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s slot %0d to %0d",
       current_state.name, src_slot, dst_slot), UVM_MEDIUM)
 
-    /* When advancing from StWorkDpeReset - only required to set the dst_slot
-       and advance operation. 
-       Set src_slot anyway as it should have no effect
-    on the latching of the OTP key. */ 
-    if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
-      ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
-      ral.control_shadowed.slot_src_sel.set(src_slot); // should not affect latching of OTP key 
-      ral.control_shadowed.slot_dst_sel.set(dst_slot);
-      csr_update(.csr(ral.control_shadowed));
-      csr_wr(.ptr(ral.start), .value(1));
-    end else begin
-      //  all further advance calls
-      ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
-      ral.control_shadowed.slot_src_sel.set(src_slot);
-      ral.control_shadowed.slot_dst_sel.set(dst_slot);
-      csr_wr(.ptr(ral.sw_binding[0]), .value(sw_binding));
-      csr_wr(.ptr(ral.max_key_ver_shadowed), .value(max_key_ver));
-      ral.slot_policy.exportable.set(policy.exportable);
-      ral.slot_policy.allow_child.set(policy.allow_child);
-      ral.slot_policy.retain_parent.set(policy.retain_parent);
-      csr_update(.csr(ral.control_shadowed));
-      csr_update(.csr(ral.slot_policy));
-      csr_wr(.ptr(ral.start), .value(1));
-    end
+    ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
+    ral.control_shadowed.slot_src_sel.set(src_slot);
+    ral.control_shadowed.slot_dst_sel.set(dst_slot);
+    csr_wr(.ptr(ral.sw_binding[0]), .value(sw_binding));
+    csr_wr(.ptr(ral.max_key_ver_shadowed), .value(max_key_ver));
+    ral.slot_policy.exportable.set(policy.exportable);
+    ral.slot_policy.allow_child.set(policy.allow_child);
+    ral.slot_policy.retain_parent.set(policy.retain_parent);
+    csr_update(.csr(ral.slot_policy));
+    csr_update(.csr(ral.control_shadowed));
+    csr_wr(.ptr(ral.start), .value(1));
     sema_update_control_csr.put();
 
     if (wait_done) begin
@@ -314,11 +304,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
       keymgr_pkg::keymgr_key_dest_e key_dest,
       bit [31:0] salt = 0,
-      int key_version = 0, 
+      int key_version = 0,
       bit wait_done = 1
     );
     sema_update_control_csr.get();
-    `uvm_info(`gfn, $sformatf("Generate key manager output w/operation %s and dest %s", operation.name, key_dest.name), UVM_MEDIUM)
+    `uvm_info(`gfn,
+      $sformatf("Generate key manager output w/operation %s and dest %s",
+        operation.name, key_dest.name), UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(int'(operation));
     ral.control_shadowed.dest_sel.set(int'(key_dest));
