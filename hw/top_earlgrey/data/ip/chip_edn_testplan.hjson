@@ -17,7 +17,8 @@
             '''
       stage: V2
       tests: ["chip_sw_edn_entropy_reqs",
-              "chip_sw_csrng_edn_concurrency"]
+              "chip_sw_csrng_edn_concurrency",
+              "chip_sw_entropy_src_ast_rng_req",]
     },
     {
       name: chip_sw_edn_boot_mode
