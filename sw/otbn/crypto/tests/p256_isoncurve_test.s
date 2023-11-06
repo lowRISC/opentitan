@@ -13,16 +13,13 @@
 .section .text.start
 
 p256_oncurve_test:
+  /* Initialize all-zero register. */
+  bn.xor   w31, w31, w31
 
-  /* call curve point test routine in P-256 lib */
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= lhs
+       w19 <= rhs */
   jal      x1, p256_isoncurve
-
-  /* load result to WDRs for comparison with reference */
-  li        x2, 0
-  la        x3, r
-  bn.lid    x2++, 0(x3)
-  la        x3, s
-  bn.lid    x2, 0(x3)
 
   ecall
 

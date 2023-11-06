@@ -25,7 +25,7 @@ main:
   li        x2, 29
   la        x3, p256_n
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
 
   /* Load first share of input.
        w0, w1 <= dmem[k0] */
