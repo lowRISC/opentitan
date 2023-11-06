@@ -25,6 +25,9 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   rand bit do_rand_otp_key;
   rand bit do_invalid_otp_key;
+  rand keymgr_dpe_pkg::keymgr_dpe_policy_t policy;
+  rand keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot;
+  rand keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot;
 
   // save DUT returned current state here, rather than using it from RAL,
   // it's needed info to predict operation result in seq
@@ -153,7 +156,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   virtual task wait_op_done();
     keymgr_pkg::keymgr_op_status_e exp_status;
     bit is_good_op = 1;
-    int key_verion = `gmv(ral.key_version[0]);
+    int key_version = `gmv(ral.key_version[0]);
     bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
     logic [2:0] operation = `gmv(ral.control_shadowed.operation);
     keymgr_dpe_pkg::keymgr_dpe_ops_e cast_operation = keymgr_dpe_pkg::keymgr_dpe_ops_e'(operation);
@@ -162,21 +165,35 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
     case (operation)
       keymgr_dpe_pkg::OpDpeAdvance: begin
-        is_good_op = !(current_state inside {
+        is_good_op &= !(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
           keymgr_dpe_pkg::StWorkDpeDisabled
         });
+        if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
+          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
+          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].boot_stage < (keymgr_dpe_pkg::DpeNumBootStages-1);
+          is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.allow_child == 1;
+          if (cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.retain_parent == 0) begin
+            is_good_op &= (src_slot == dst_slot);
+          end
+          if (cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.retain_parent == 1) begin
+            is_good_op &= (src_slot != dst_slot);
+          end
+        end
+        `uvm_info(`gfn, $sformatf("wait_op_done: current_state %s is_good_op %d",
+            current_state.name, is_good_op), UVM_MEDIUM)
       end
       keymgr_dpe_pkg::OpDpeGenSwOut,
       keymgr_dpe_pkg::OpDpeGenHwOut: begin
         // generating versioned key's is only valid
         // during available state and it's a good op if
         // max_key_ver <= max_key_version
-        is_good_op = (!(current_state inside {
+        is_good_op &= (!(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeReset
-        })) ? key_verion <= ral.max_key_ver_shadowed.get_mirrored_value() : 0;
+        })) ? key_version <= ral.max_key_ver_shadowed.get_mirrored_value() : 0;
+        is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
       end
       keymgr_dpe_pkg::OpDpeErase: begin
         is_good_op = !(current_state inside {
@@ -250,16 +267,14 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   endtask : read_current_state
 
   virtual task keymgr_dpe_advance(bit wait_done = 1,
-                                  int src_slot = 0,
-                                  int dst_slot = 0,
                                   int sw_binding = $urandom(),
-                                  int max_key_ver = 0,
-                                  keymgr_dpe_pkg::keymgr_dpe_policy_t policy = 'h5
+                                  int max_key_ver = $urandom()
                                 );
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state = get_next_state(
       current_state, keymgr_dpe_pkg::OpDpeAdvance);
     sema_update_control_csr.get();
-    `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Advance key manager state from %0s slot %0d to %0d",
+      current_state.name, src_slot, dst_slot), UVM_MEDIUM)
 
     /* When advancing from StWorkDpeReset - only required to set the dst_slot
        and advance operation. 
@@ -299,7 +314,6 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
       keymgr_pkg::keymgr_key_dest_e key_dest,
       bit [31:0] salt = 0,
-      int src_slot = 0,
       int key_version = 0, 
       bit wait_done = 1
     );
@@ -309,12 +323,12 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.operation.set(int'(operation));
     ral.control_shadowed.dest_sel.set(int'(key_dest));
     ral.control_shadowed.slot_src_sel.set(src_slot);
+    ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_wr(.ptr(ral.salt[0]), .value(salt));
     csr_wr(.ptr(ral.key_version[0]), .value(key_version));
     csr_update(.csr(ral.control_shadowed));
-    sema_update_control_csr.put();
     csr_wr(.ptr(ral.start), .value(1));
-
+    sema_update_control_csr.put();
     if (wait_done) wait_op_done();
   endtask : keymgr_dpe_generate
 
