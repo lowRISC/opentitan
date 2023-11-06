@@ -474,7 +474,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         //pre_internal_key = tb.dut.u_ctrl.key_state_q;
         //// flip up to 2 bits
         //`DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_internal_key,
-        //                                   $countones(force_internal_key) inside {1, 2};, , msg_id)
+        //  $countones(force_internal_key) inside {1, 2};, , msg_id)
         //force_internal_key = force_internal_key ^ pre_internal_key;
 
         //force tb.dut.u_ctrl.key_state_q = force_internal_key;
