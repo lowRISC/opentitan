@@ -1370,6 +1370,15 @@
       run_timeout_mins: 300
     }
     {
+      name: chip_sw_edn_kat
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_kat:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      run_opts: ["+sw_test_timeout_ns=18_000_000",
+                 "+rng_srate_value=5",
+                 "+disable_assert_edn_output_diff_from_prev=1"]
+    }
+    {
       name: chip_sw_edn_sw_mode
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:edn_sw_mode:1:new_rules"]
