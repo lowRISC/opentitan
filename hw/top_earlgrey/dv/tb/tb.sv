@@ -248,6 +248,108 @@ module tb;
     .usb_n            (dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN])
   );
 
+  // This interface enables the environment to connect the DPI modules.
+  tb_dpi_if u_tb_dpi_if();
+
+  // The connection for the pins via DPI.
+  logic [31:0] gpiodpi_p2d;
+  logic [31:0] gpiodpi_d2p;
+  logic [31:0] gpiodpi_en_d2p;
+  logic [31:0] gpiodpi_pull_en_d2p;
+  logic [31:0] gpiodpi_pull_sel_d2p;
+
+  // The gpiodpi module allows the host to directly control gpio when enabled.
+  gpiodpi u_gpiodpi(
+    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .active(u_tb_dpi_if.enable_gpiodpi),
+    .gpio_p2d(gpiodpi_p2d),
+    .gpio_d2p(gpiodpi_d2p),
+    .gpio_en_d2p(gpiodpi_en_d2p),
+    .gpio_pull_en(gpiodpi_pull_en_d2p),
+    .gpio_pull_sel(gpiodpi_pull_sel_d2p)
+  );
+
+  // Assign pad values from gpiodpi outputs if active.
+  // TODO: revise the pad assignments: these are literally from verilator.
+  assign {dut.IOB12, dut.IOB11, dut.IOB10, dut.IOB9, dut.IOB8, dut.IOB7, dut.IOB6} =
+      u_tb_dpi_if.enable_gpiodpi ? gpiodpi_p2d[6:0] : 7'hzz;
+  assign {dut.IOR13, dut.IOR12, dut.IOR11, dut.IOR10, dut.IOR7, dut.IOR6, dut.IOR5} =
+      u_tb_dpi_if.enable_gpiodpi ? gpiodpi_p2d[13:7] : 7'hzz;
+  assign {dut.IOC2, dut.IOC1, dut.IOC0} = u_tb_dpi_if.enable_gpiodpi ? gpiodpi_p2d[24:22] : 3'hz;
+  assign dut.IOC5 = u_tb_dpi_if.enable_gpiodpi ? gpiodpi_p2d[27] : 1'hz;
+  assign dut.IOC8 = u_tb_dpi_if.enable_gpiodpi ? gpiodpi_p2d[30] : 1'hz;
+
+  // Inputs to gpiodpi.
+  // 14 generic GPIOs
+`define ASSIGN_GPIODPI_D2P(gi_, pi_)                               \
+  assign gpiodpi_d2p[gi_] = dut.mio_out[pi_];                      \
+  assign gpiodpi_en_d2p[gi_] = dut.mio_oe[pi_];                    \
+  assign gpiodpi_pull_en_d2p[gi_] = dut.mio_attr[pi_].pull_en;     \
+  assign gpiodpi_pull_sel_d2p[gi_] = dut.mio_attr[pi_].pull_select
+
+`define ASSIGN_UNUSED_GPIODPI_D2P(gi_)    \
+  assign gpiodpi_d2p[gi_] = 1'b0;         \
+  assign gpiodpi_en_d2p[gi_] = 1'b0;      \
+  assign gpiodpi_pull_en_d2p[gi_] = 1'b0; \
+  assign gpiodpi_pull_sel_d2p[gi_] = 1'b0
+
+  `ASSIGN_GPIODPI_D2P(0, MioPadIob6);
+  `ASSIGN_GPIODPI_D2P(1, MioPadIob7);
+  `ASSIGN_GPIODPI_D2P(2, MioPadIob8);
+  `ASSIGN_GPIODPI_D2P(3, MioPadIob9);
+  `ASSIGN_GPIODPI_D2P(4, MioPadIob10);
+  `ASSIGN_GPIODPI_D2P(5, MioPadIob11);
+  `ASSIGN_GPIODPI_D2P(6, MioPadIob12);
+  `ASSIGN_GPIODPI_D2P(7, MioPadIor5);
+  `ASSIGN_GPIODPI_D2P(8, MioPadIor6);
+  `ASSIGN_GPIODPI_D2P(9, MioPadIor7);
+  `ASSIGN_GPIODPI_D2P(10, MioPadIor10);
+  `ASSIGN_GPIODPI_D2P(11, MioPadIor11);
+  `ASSIGN_GPIODPI_D2P(12, MioPadIor12);
+  `ASSIGN_GPIODPI_D2P(13, MioPadIor13);
+  `ASSIGN_UNUSED_GPIODPI_D2P(14);
+  `ASSIGN_UNUSED_GPIODPI_D2P(15);
+  `ASSIGN_UNUSED_GPIODPI_D2P(16);
+  `ASSIGN_UNUSED_GPIODPI_D2P(17);
+  `ASSIGN_UNUSED_GPIODPI_D2P(18);
+  `ASSIGN_UNUSED_GPIODPI_D2P(19);
+  `ASSIGN_UNUSED_GPIODPI_D2P(20);
+  `ASSIGN_UNUSED_GPIODPI_D2P(21);
+  // SW straps
+  `ASSIGN_GPIODPI_D2P(22, MioPadIoc0);
+  `ASSIGN_GPIODPI_D2P(23, MioPadIoc1);
+  `ASSIGN_GPIODPI_D2P(24, MioPadIoc2);
+  `ASSIGN_UNUSED_GPIODPI_D2P(25);
+  `ASSIGN_UNUSED_GPIODPI_D2P(26);
+  // TAP straps
+  `ASSIGN_GPIODPI_D2P(27, MioPadIoc5);
+  `ASSIGN_UNUSED_GPIODPI_D2P(28);
+  `ASSIGN_UNUSED_GPIODPI_D2P(29);
+  `ASSIGN_GPIODPI_D2P(30, MioPadIoc8);
+  `ASSIGN_UNUSED_GPIODPI_D2P(31);
+
+`undef ASSIGN_GPIODPI_D2P
+`undef ASSIGN_UNUSED_GPIODPI_D2P
+
+  // The connection to the uarts via DPI. Notice this connects directy to pads, per the
+  // Specific board model.
+  logic uartdpi_tx;
+  logic uartdpi_rx;
+  uartdpi #(
+    .BAUD('d1_000_000),
+    .FREQ('d24_000_000)
+  ) u_uartdpi0(
+    .clk_i(dut.top_earlgrey.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+    .active(u_tb_dpi_if.enable_uartdpi),
+    .tx_o(uartdpi_tx),
+    .rx_i(uartdpi_rx)
+  );
+
+  assign dut.IOC3 = u_tb_dpi_if.enable_uartdpi ? uartdpi_tx : 1'bz;
+  assign uartdpi_rx = u_tb_dpi_if.enable_uartdpi ? dut.IOC4 : 1'b0;
+
   sim_sram u_sim_sram (
 `ifdef GATE_LEVEL
     .clk_i (sel_sim_sram ?`CPU_HIER.u_core.u_ibex_core.load_store_unit_i.ls_fsm_cs_reg_0_.CK:1'b0),
@@ -313,6 +415,10 @@ module tb;
     // USB DPI interface.
     uvm_config_db#(virtual usb20_if)::set(
         null, "*.env", "usb20_vif", u_usb20_if);
+
+    // Generic DPI interface.
+    uvm_config_db#(virtual tb_dpi_if)::set(
+        null, "*.env", "tb_dpi_vif", u_tb_dpi_if);
 
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.

@@ -227,6 +227,7 @@ module chip_englishbreakfast_verilator (
   gpiodpi #(.N_GPIO(32)) u_gpiodpi (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
+    .active     (1'b1),
     .gpio_p2d   (cio_gpio_p2d),
     .gpio_d2p   (cio_gpio_d2p),
     .gpio_en_d2p(cio_gpio_en_d2p)
@@ -242,6 +243,7 @@ module chip_englishbreakfast_verilator (
   ) u_uart (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
+    .active (1'b1),
     .tx_o   (cio_uart_rx_p2d),
     .rx_i   (cio_uart_tx_d2p)
   );

@@ -9,6 +9,7 @@ module uartdpi #(
 )(
   input  logic clk_i,
   input  logic rst_ni,
+  input  bit   active,
 
   output logic tx_o,
   input  logic rx_i
@@ -37,9 +38,17 @@ module uartdpi #(
   chandle ctx;
   string log_file_path = DEFAULT_LOG_FILE;
 
-  initial begin
+  function automatic void initialize();
     $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
     ctx = uartdpi_create(NAME, log_file_path);
+  endfunction
+
+  initial begin
+    if (active) initialize();
+  end
+
+  always @(posedge active) begin
+    if (ctx == null) initialize();
   end
 
   final begin
@@ -52,9 +61,12 @@ module uartdpi #(
   int  txcount;
   int  txcyccount;
   reg [9:0] txsymbol;
-  reg seen_reset;
+  bit seen_reset;
 
-  always_ff @(negedge clk_i or negedge rst_ni) begin
+  logic eff_clk;
+  assign eff_clk = clk_i & active;
+
+  always_ff @(negedge eff_clk or negedge rst_ni) begin
     if (!rst_ni) begin
       tx_o <= 1;
       txactive <= 0;
@@ -82,19 +94,13 @@ module uartdpi #(
     end
   end
 
-
-  initial begin
-    // Prevent falling edges of rx_i before reset causing spurious characters
-    seen_reset = 0;
-  end
-
   // RX
   reg rxactive;
   int rxcount;
   int rxcyccount;
   reg [7:0] rxsymbol;
 
-  always_ff @(negedge clk_i or negedge rst_ni) begin
+  always_ff @(negedge eff_clk or negedge rst_ni) begin
     rxcyccount <= rxcyccount + 1;
 
     if (!rst_ni) begin

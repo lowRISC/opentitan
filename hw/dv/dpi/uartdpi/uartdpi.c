@@ -110,7 +110,9 @@ void uartdpi_close(void *ctx_void) {
 
 int uartdpi_can_read(void *ctx_void) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
-
+  if (ctx == NULL) {
+    return 0;
+  }
   int rv = read(ctx->host, &ctx->tmp_read, 1);
   return (rv == 1);
 }
@@ -123,8 +125,10 @@ char uartdpi_read(void *ctx_void) {
 
 void uartdpi_write(void *ctx_void, char c) {
   int rv;
-
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
+  if (ctx == NULL) {
+    return;
+  }
 
   rv = write(ctx->host, &c, 1);
   assert(rv == 1 && "Write to pseudo-terminal failed.");

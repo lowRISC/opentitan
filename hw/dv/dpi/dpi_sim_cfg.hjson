@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Additional build-time options for enabling the compilation of this DPI
+  // with DV simulators such as VCS and Xcelium.
+  dpi_common_core: "lowrisc:dv_dpi:tcp_server:0.1"
+  dpi_common_dir: "{eval_cmd} echo \"{dpi_common_core}\" | tr ':' '_'"
+
+  build_modes: [
+    {
+      name: vcs_dpi_build_opts
+      build_opts: ["-CFLAGS -I{build_dir}/src/{dpi_common_dir}", "-lutil"]
+    }
+
+    {
+      name: xcelium_dpi_build_opts
+      build_opts: ["-I{build_dir}/src/{dpi_common_dir}", "-lutil"]
+    }
+  ]
+}
