@@ -50,7 +50,7 @@ p256_proj_add_test:
   bn.lid    x2, 0(x3)
 
   /* store modulus to MOD WSR */
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
 
   /* init all-zero reg */
   bn.xor   w31, w31, w31

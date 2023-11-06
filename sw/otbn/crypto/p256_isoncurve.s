@@ -7,8 +7,8 @@
 /**
  * Checks if a point is a valid curve point on curve P-256 (secp256r1)
  *
- * Returns r = x^3 + ax + b  mod p
- *     and s = y^2  mod p
+ * Returns rhs = x^3 + ax + b  mod p
+ *     and lhs = y^2  mod p
  *         with x,y being the affine coordinates of the curve point
  *              a, b and p being the domain parameters of P-256
  *
@@ -27,8 +27,8 @@
  *
  * @param[in]  dmem[x]: affine x-coordinate of input point
  * @param[in]  dmem[y]: affine y-coordinate of input point
- * @param[out] dmem[r]: right side result r
- * @param[out] dmem[s]: left side result s
+ * @param[out]     w18: lhs, left side of equation = (x^3 + ax + b) mod p
+ * @param[out]     w19: rhs, right side of equation = y^2 mod p
  *
  * clobbered registers: x2, x3, x19, x20, w0, w19 to w25
  * clobbered flag groups: FG0
@@ -43,7 +43,7 @@ p256_isoncurve:
   li        x2, 29
   la        x3, p256_p
   bn.lid    x2, 0(x3)
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
   li        x2, 28
   la        x3, p256_u_p
   bn.lid    x2, 0(x3)
@@ -53,21 +53,6 @@ p256_isoncurve:
   li        x2, 27
   la        x3, p256_b
   bn.lid    x2, 0(x3)
-
-  /* load affine y-coordinate of curve point from dmem
-     w26 <= dmem[y] */
-  la        x3, y
-  li        x2, 24
-  bn.lid    x2, 0(x3)
-
-  /* w19 <= y^2 = w24*w24 */
-  bn.mov    w25, w24
-  jal       x1, mod_mul_256x256
-
-  /* store left side result: dmem[s] <= w19 = y^2  mod p */
-  la        x20, s
-  li        x2, 19
-  bn.sid    x2, 0(x20)
 
   /* load affine x-coordinate of curve point from dmem
      w26 <= dmem[x] */
@@ -92,12 +77,17 @@ p256_isoncurve:
   bn.subm   w19, w19, w26
   bn.subm   w19, w19, w26
 
-  /* w24 <= x^3 + ax + b mod p = w19 + w27 mod p */
-  bn.addm   w19, w19, w27
+  /* w18 <= x^3 + ax + b mod p = w19 + w27 mod p = lhs */
+  bn.addm   w18, w19, w27
 
-  /* store right side result: dmem[r] <= w19 = x^3 + ax + b mod p */
-  la        x19, r
-  li        x2, 19
-  bn.sid    x2, 0(x19)
+  /* Load affine y-coordinate of curve point from dmem
+     w26 <= dmem[y] */
+  la        x3, y
+  li        x2, 24
+  bn.lid    x2, 0(x3)
+
+  /* w19 <= w24*w24 mod p = y^2 mod p = rhs */
+  bn.mov    w25, w24
+  jal       x1, mod_mul_256x256
 
   ret

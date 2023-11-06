@@ -864,7 +864,7 @@ mod_inv:
 fetch_proj_randomize:
 
   /* get random number from URND */
-  bn.wsrr   w16, 2 /* URND */
+  bn.wsrr   w16, URND
 
   /* reduce random number
      w16 = z <= w16 mod p */
@@ -993,7 +993,7 @@ scalar_mult_int:
   bn.lid    x2, 0(x3)
 
   /* store modulus to MOD WSR */
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
 
   /* load lower 256 bit of Barrett constant u for modulus p from dmem
      w28 <= u = dmem[p256_u_p] */
@@ -1099,14 +1099,14 @@ scalar_mult_int:
     bn.rshi   w2, w2, w31 >> 255
 
     /* init regs with random numbers from URND */
-    bn.wsrr   w11, 2
-    bn.wsrr   w12, 2
-    bn.wsrr   w13, 2
+    bn.wsrr   w11, URND
+    bn.wsrr   w12, URND
+    bn.wsrr   w13, URND
 
     /* get a fresh random number from URND and scale the coordinates of
        2P = (w3, w4, w5) (scaling each projective coordinate with same
        factor results in same point) */
-    bn.wsrr   w7, 2
+    bn.wsrr   w7, URND
 
     /* w4 = w4 * w7 */
     bn.mov    w24, w4
@@ -1209,132 +1209,6 @@ p256_base_mult:
 
 
 /**
- * Externally callable wrapper for P-256 scalar point multiplication
- *
- * Calculates R = k*P = k*(x_a, y_a)
- *         with R, P being valid P-256 curve points in affine form,
- *         k being a 256 bit scalar. The x coordinate of R is
- *         arithmetically masked.
- * Returns the masked x coordinate of R and the corresponding mask.
- *
- * This routine assumes that the scalar k is provided in two shares, k0 and k1,
- * where:
- *   k = (k0 + k1) mod n
- *
- * Sets up context and calls internal scalar multiplication routine.
- * This routine runs in constant time.
- *
- * @param[in]      dmem[k0]:  first share of scalar k (320 bits)
- * @param[in]      dmem[k1]:  second share of scalar k (320 bits)
- * @param[in]      dmem[x]:   affine x-coordinate in dmem
- * @param[in]      dmem[y]:   affine y-coordinate in dmem
- * @param[out]     dmem[x]:   affine arithmetically masked x-coordinate in dmem
- * @param[out]     dmem[y]:   arithmetic mask for x coordinate in dmem
- *
- * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
- *        the computed affine y-coordinate.
- *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w25
- * clobbered flag groups: FG0
- */
-p256_scalar_mult:
-
-  /* init all-zero register */
-  bn.xor    w31, w31, w31
-
-  /* Load first share of secret key k from dmem.
-       w0,w1 = dmem[k0] */
-  la        x16, k0
-  li        x2, 0
-  bn.lid    x2, 0(x16++)
-  li        x2, 1
-  bn.lid    x2, 0(x16)
-
-  /* Load second share of secret key k from dmem.
-       w2,w3 = dmem[k1] */
-  la        x16, k1
-  li        x2, 2
-  bn.lid    x2, 0(x16++)
-  li        x2, 3
-  bn.lid    x2, 0(x16)
-
-  /* Call internal scalar multiplication routine.
-     Returns point in projective coordinates.
-     R = (x, y, z) = (w8, w9, w10) <= k*P = w0*P */
-  la        x21, x
-  la        x22, y
-  jal       x1, scalar_mult_int
-
-  /* Arithmetic masking:
-   1. Generate a random mask
-   2. Subtract masks from projective x coordinate
-      (x, y, z) -> ((x - m) mod p,
-                     y,
-                     z)
-   3. Convert masked curve point back to affine
-      form.
-   4. Multiply mask with z^-1 for use in
-      affine space. */
-
-  /* Fetch a fresh random number as mask.
-       w2 <= URND() */
-  bn.wsrr   w2, URND
-
-  /* Subtract random mask from x coordinate of
-     projective point.
-     The subtraction has to be done within the underlying
-     finite field -> mod p.
-     w8 = (w8 - w2) mod p */
-  bn.subm    w8, w8, w2
-
-  /* Convert masked result back to affine coordinates.
-     R = (x_a, y_a) = (w11, w12) */
-  jal       x1, proj_to_affine
-
-  /* Store result (masked affine x-coordinate) in DMEM.
-     Y-coordinate not needed, will be overwritten with
-     mask value below.
-     dmem[x] <= x_a = w11 */
-  li        x2, 11
-  bn.sid    x2, 0(x21)
-
-  /* Get modular inverse z^-1 of projective z coordinate
-     and multiply the random masks with z^-1 to
-     also convert them into affine space. */
-
-  /* Load barrett constant as input for
-     mod_mul_256x256.
-     w28 = dmem[p256_u_p] */
-  li        x2, 28
-  la        x4, p256_u_p
-  bn.lid    x2, 0(x4)
-
-  /* Get field modulus p.
-     w29 <= MOD() */
-  bn.wsrr   w29, MOD
-
-  /* Move z^-1 and x coordinate mask to
-     mod_mul_256x256 input WDRs.
-     z^-1 is still stored in w14 from previous
-     proj_to_affine call.
-     w25 <= w14 = z^-1
-     w24 <= w2 = m_x */
-  bn.mov    w25, w14
-  bn.mov    w24, w2
-
-  /* Compute modular multiplication of m_x and z^-1.
-     w19 = w24 * w25 mod w29 = m_x * z^-1 mod p */
-  jal       x1, mod_mul_256x256
-
-  /* Store "affine" mask to DMEM. Use the y-coordinate
-     to save memory (not needed afterwards)
-     dmem[y] <= w19 = m_x * z^-1 mod p */
-  li        x2, 19
-  bn.sid    x2, 0(x22)
-
-  ret
-
-/**
  * Generate a nonzero random value in the scalar field.
  *
  * Returns t, a random value that is nonzero mod n, in shares.
@@ -1382,7 +1256,7 @@ p256_random_scalar:
   bn.lid    x2, 0(x3)
 
   /* Copy n into the MOD register. */
-  bn.wsrw   0, w29
+  bn.wsrw   MOD, w29
 
   /* Load Barrett constant for n.
      w28 <= u_n = dmem[p256_u_n]  */
@@ -1586,8 +1460,8 @@ boolean_to_arithmetic:
 
   /* Fetch 321 bits of randomness from URND.
        [w2, w1] <= gamma */
-  bn.wsrr   w1, 2
-  bn.wsrr   w2, 2
+  bn.wsrr   w1, URND
+  bn.wsrr   w2, URND
   bn.rshi   w2, w31, w2 >> 191
 
   /* [w4, w3] <= [w21, w20] ^ [w2, w1] = s0 ^ gamma */
@@ -1628,8 +1502,8 @@ boolean_to_arithmetic:
   bn.rshi   w21, w31, w21 >> 191
 
   /* apply fresh mask to w20 and w21 before xoring with w3 and w4 */
-  bn.wsrr   w28, 1
-  bn.wsrr   w29, 1
+  bn.wsrr   w28, RND
+  bn.wsrr   w29, RND
   bn.xor    w20, w28, w20
   bn.xor    w21, w29, w21
 

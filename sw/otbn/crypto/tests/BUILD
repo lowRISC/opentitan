@@ -248,10 +248,10 @@ otbn_consttime_test(
 )
 
 otbn_consttime_test(
-    name = "p256_scalar_mult_consttime",
-    subroutine = "p256_scalar_mult",
+    name = "p256_shared_key_consttime",
+    subroutine = "p256_shared_key",
     deps = [
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:p256_ecdh",
     ],
 )
 
@@ -323,7 +323,6 @@ otbn_sim_test(
     ],
     exp = "p256_scalar_mult_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_a2b",
         "//sw/otbn/crypto:p256_base",
     ],
 )
@@ -335,8 +334,8 @@ otbn_sim_test(
     ],
     exp = "p256_ecdh_shared_key_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_a2b",
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_shared_key",
     ],
 )
 
@@ -347,8 +346,8 @@ otbn_sim_test(
     ],
     exp = "p256_arithmetic_to_boolean_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_a2b",
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_shared_key",
     ],
 )
 
@@ -359,8 +358,8 @@ otbn_sim_test(
     ],
     exp = "p256_arithmetic_to_boolean_mod_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_a2b",
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_shared_key",
     ],
 )
 
