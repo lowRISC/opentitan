@@ -423,6 +423,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -613,7 +615,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           bit good_data;
 
           if (start) begin
-            keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
             get_key_slots();
             current_op_status = keymgr_pkg::OpWip;
 
@@ -869,13 +870,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)
     end
+    current_internal_key[current_key_slot.dst_slot].valid = 1;
+    current_internal_key[current_key_slot.dst_slot].boot_stage = 0;
+    current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
     current_internal_key[current_key_slot.dst_slot].key_policy = '0;
     current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = 1;
     `uvm_info(`gfn,
-      $sformatf("latch_otp_key: key %p, policy %p",
-      current_internal_key[current_key_slot.dst_slot].key,
-      current_internal_key[current_key_slot.dst_slot].key_policy),
+      $sformatf("latch_otp_key: key %p",
+      current_internal_key[current_key_slot.dst_slot]
+      ),
       UVM_MEDIUM)
     cfg.keymgr_dpe_vif.store_internal_key(
       current_internal_key[current_key_slot.dst_slot].key,
