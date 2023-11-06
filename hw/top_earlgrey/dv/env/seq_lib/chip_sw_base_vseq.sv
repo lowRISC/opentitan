@@ -259,6 +259,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endfunction
 
   virtual task body();
+    // Disable assertions mentioned in plusargs.
+    assert_off();
     cfg.sw_test_status_vif.set_num_iterations(num_trans);
     // Initialize the CPU to kick off the sw test. TODO: Should be called in pre_start() instead.
     if (cfg.early_cpu_init) begin
@@ -1165,5 +1167,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     mypath = {path, ".end_page"};
     `DV_CHECK(uvm_hdl_release(mypath));
   endtask
+
+  function void assert_off();
+    uint disable_assertion = 0;
+    void'($value$plusargs("disable_assert_edn_output_diff_from_prev=%0d", disable_assertion));
+    if (disable_assertion) begin
+      $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A");
+    end
+  endfunction
 
 endclass : chip_sw_base_vseq
