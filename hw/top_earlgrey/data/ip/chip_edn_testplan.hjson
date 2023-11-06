@@ -132,16 +132,27 @@
             - Disable the entropy complex.
             - Enable ENTROPY_SRC in FIPS mode.
             - Enable CSRNG.
-            - Enable EDN0 in auto request mode.
-            - Enable EDN1 in auto request mode with the following configuration:
-              - Set flag0 in all application command headers to kMultiBitBool4True.
+            - Enable EDN1 in auto request mode.
+            - Enable EDN0 in auto request mode with the following configuration:
+              - Use deterministic seeds (set flag0 = kMultiBitBool4True in all instantiate/reseed application command headers sent to CSRNG).
                 This causes CSRNG to ignore the seed provided by ENTROPY_SRC and exclusively use the optional additional data provided by EDN.
               - Set the command length or amount of optional additional data for the Instantiate and Reseed commands to 12 words.
-              - Set the generate length parameter for the Generate command to 1 block.
+              - Set the generate length parameter for the Generate command to 4 blocks.
               - Provide the correct seed material for the Instantiate and Reseed commands.
-              - For an example, refer to the `chip_sw_aes_masking_off_test`.
-            - Verify that EDN1 delivers the expected entropy bits using the rv_core_ibex.RND_DATA and rv_core_ibex.RND_STATUS registers.
-            - Verify that EDN1 triggers a recoverable alert and sets the RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit as more entropy is consumed via rv_core_ibex.RND_DATA and CSRNG continues to provide the same entropy bits to EDN1.
+              - For an example, refer to `chip_sw_csrng_kat_test`.
+            - Verify that EDN0 delivers the expected entropy bits using the rv_core_ibex.RND_DATA and rv_core_ibex.RND_STATUS registers.
+            - Disable the entropy complex.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Enable CSRNG.
+            - Enable EDN1 in auto request mode.
+            - Enable EDN0 in auto request mode with the following configuration:
+              - Use deterministic seeds (set flag0 = kMultiBitBool4True in all instantiate/reseed application command headers sent to CSRNG).
+              - Set the command length or amount of optional additional data for the Instantiate and Reseed commands to 12 words.
+              - Set the generate length parameter for the Generate command to 1 block.
+              - Set the max_num_reqs_between_reseeds parameter for the Generate command to 1.
+              - Provide the correct seed material for the Instantiate and Reseed commands.
+              - For an example, refer to `chip_sw_aes_masking_off_test`.
+            - Verify that EDN0 triggers a recoverable alert and sets the RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit as more entropy is consumed via rv_core_ibex.RND_DATA and CSRNG continues to provide the same entropy bits to EDN0.
             '''
       features: [
         EDN.MODE.AUTO,
