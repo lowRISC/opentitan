@@ -150,6 +150,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     logic [keymgr_dpe_pkg::DpeNumBootStagesWidth-1:0] boot_stage =
       current_internal_key[current_key_slot.src_slot].boot_stage;
 
+    `uvm_info(`gfn, $sformatf("process_kmac_data_req: for op %s in state %s",
+     op.name, current_state.name), UVM_MEDIUM)
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
       compare_invalid_data(item.byte_data_q);
@@ -161,7 +163,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_dpe_pkg::OpDpeAdvance: begin
-        is_err = get_hw_invalid_input();
+        // Invalid outputs and invalid operations should results in random data
+        // for message data. 
+        is_err = get_hw_invalid_input() || get_invalid_op();
         `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
         case (current_state)
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
@@ -319,21 +323,23 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // middle of OP will trigger this error
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) current_state = keymgr_dpe_pkg::StWorkDpeInvalid;
 
-    // op_status is updated one cycle after done. If SW reads at this edge, still return old value
-    // delay half cycle to push the update available in next cycle
-    fork
-      begin
-        cfg.clk_rst_vif.wait_n_clks(1);
-        if (get_err_code() || get_fault_err()) current_op_status = keymgr_pkg::OpDoneFail;
-        else                                   current_op_status = keymgr_pkg::OpDoneSuccess;
+    // op_status is updated one cycle after done. If SW reads at this edge then it is still okay
+    // to update this current_op_status as the status comparison can take OpWip as a legal value
+    if (get_err_code() || get_fault_err()) begin 
+      current_op_status = keymgr_pkg::OpDoneFail;
+      `uvm_info(`gfn,
+        $sformatf("process_update_after_op_done: op %0s state %s get_err_code %0d get_fault_err %0d",
+          op.name, current_state.name, get_err_code(), get_fault_err()), UVM_LOW)
+    end
+    else begin
+      current_op_status = keymgr_pkg::OpDoneSuccess;
+    end
 
-        if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-          keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
-              `gmv(ral.control_shadowed.dest_sel));
-          cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
-        end
-      end
-    join_none
+    if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
+      keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+          `gmv(ral.control_shadowed.dest_sel));
+      cov.state_and_op_cg.sample(current_state, op, current_op_status, current_cdi, dest);
+    end
 
     process_error_n_alert();
     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
@@ -370,8 +376,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           end
           keymgr_dpe_pkg::OpDpeGenSwOut,
           keymgr_dpe_pkg::OpDpeGenHwOut: begin
-            // If there is an OP error then SW/HW key should not be updated
-            if (get_op_err()) begin
+            // If there is a fault error then SW/HW key should not be updated
+            // an op error will still cause a kmac engine operation. So still need to update
+            // in order to avoid a false error in the scb/if
+            if (get_fault_err()) begin
               update_result = NotUpdate;
             end else if (op == keymgr_dpe_pkg::OpDpeGenHwOut) begin
               update_result = UpdateHwOut;
@@ -598,6 +606,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       "start": begin
         if (addr_phase_write) begin
           bit start = `gmv(ral.start.en);
+          // compare key is used to either store an invalid key or the
+          // current valid internal key for an advance operation.
+          keymgr_dpe_pkg::keymgr_dpe_slot_t compare_key;
           bit good_key;
           bit good_data;
 
@@ -606,7 +617,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             get_key_slots();
             current_op_status = keymgr_pkg::OpWip;
 
-            `uvm_info(`gfn, $sformatf("At %s, %s is issued", current_state.name, op.name), UVM_LOW)
+            `uvm_info(`gfn, $sformatf("Start: At %s, %s is issued",
+               current_state.name, op.name), UVM_LOW)
 
             case (current_state)
               keymgr_dpe_pkg::StWorkDpeReset: begin
@@ -619,7 +631,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                      // Call this after latch_otp_key, as get_is_kmac_key_correct/get_hw_invalid_input
                      // needs to know what if the key is valid
                      good_key = get_is_kmac_key_correct();
-                     good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+                     good_data = good_key && get_sw_invalid_input() && get_hw_invalid_input();
 
                      if (!good_key) begin
                        // If invalid key is used, design will switch to use random data for the
@@ -656,13 +668,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 case (op)
                   keymgr_dpe_pkg::OpDpeAdvance, keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
                     good_key = get_is_kmac_key_correct();
-                    good_data = good_key && !get_sw_invalid_input() && !get_hw_invalid_input();
+                    good_data = good_key && get_sw_invalid_input() && get_hw_invalid_input();
                     if (!good_key) begin
                       // if invalid key is used, design will switch to use random data for the
                       // operation. Set a non all 0s/1s data (use 1 here) for them in scb, so that it
                       // doesn't lead to an invalid_key error
-                      current_internal_key[current_key_slot.dst_slot].key[0] = 1;
-                      current_internal_key[current_key_slot.dst_slot].key[1] = 1;
+                      compare_key.key[0] = 1;
+                      compare_key.key[1] = 1;
+                    end begin
+                      compare_key.key = current_internal_key[current_key_slot.src_slot].key;
                     end
                     // update kmac key for check
                     if (current_internal_key[current_key_slot.src_slot].key > 0) begin
@@ -670,7 +684,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                       $sformatf("start: update_kdf_key:\n key[0] 'h%h\nkey[1] 'h%h\n good key %0d, good_data %0d",
                       current_internal_key[current_key_slot.src_slot].key[0], current_internal_key[current_key_slot.src_slot].key[1], good_key, good_data), UVM_LOW)
                       cfg.keymgr_dpe_vif.update_kdf_key(
-                        current_internal_key[current_key_slot.src_slot].key,
+                        compare_key.key,
                         current_state,
                         good_key,
                         good_data
@@ -877,6 +891,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void process_error_n_alert();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit [TL_DW-1:0] err = get_err_code();
 
     void'(ral.err_code.predict(err));
@@ -884,16 +899,22 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (get_fault_err() || !cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
       is_sw_share_corrupted = 1;
       cfg.keymgr_dpe_vif.wipe_sideload_keys();
+      `uvm_info(`gfn, $sformatf("proces_error_n_alert: at %s, %s is issued and error %s",
+                current_state.name, op.name, "sw_share_corrupted"), UVM_MEDIUM)
     end
 
     if (get_fault_err()) begin
       set_exp_alert("fatal_fault_err", .is_fatal(1));
+      `uvm_info(`gfn, $sformatf("process_error_n_alert: at %s, %s is issued and error %s",
+                current_state.name, op.name, "get_fault_err"), UVM_MEDIUM)
     end
 
-    if (get_op_err()) set_exp_alert("recov_operation_err");
+    if (get_op_err()) begin 
+      set_exp_alert("recov_operation_err");
+      `uvm_info(`gfn, $sformatf("process_error_n_alert: at %s, %s is issued and error %s",
+                current_state.name, op.name, "recov_operation_err"), UVM_MEDIUM)
+    end
 
-    `uvm_info(`gfn, $sformatf("at %s, %s is issued and error 'b%0b",
-              current_state, get_operation(), err), UVM_MEDIUM)
   endfunction
 
   virtual function bit [TL_DW-1:0] get_fault_err();
@@ -911,6 +932,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit [TL_DW-1:0] get_err_code();
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     bit [TL_DW-1:0] err_code;
 
     // A detected fault will cause us to transition to invalid where
@@ -927,7 +949,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit get_invalid_op();
-    `uvm_info(`gfn, $sformatf("get_invalid_op: current_state: %s", current_state.name), UVM_MEDIUM)
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+    `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s",
+       op.name, current_state.name), UVM_MEDIUM)
     case (current_state)
       keymgr_dpe_pkg::StWorkDpeReset : begin
         if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) begin
@@ -935,7 +959,48 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       keymgr_dpe_pkg::StWorkDpeAvailable: begin
-        return 0;
+        case (op)
+          keymgr_dpe_pkg::OpDpeAdvance: begin
+            // invalid op if src boot_stage is equal to current boot stage
+            if (current_internal_key[current_key_slot.src_slot].boot_stage >=
+                (keymgr_dpe_pkg::DpeNumBootStages-1)
+            ) begin
+              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s boot_stage err",
+                op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
+            // invalid op if dst slot == src slot and retain_parent == 1
+            if ((current_internal_key[current_key_slot.src_slot].key_policy.retain_parent == 1) &&
+                current_key_slot.src_slot == current_key_slot.dst_slot
+            ) begin
+              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s retain_parent == 1 err",
+                op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
+            // invalid op if dst slot != src slot and retain_parent == 0
+            if ((current_internal_key[current_key_slot.src_slot].key_policy.retain_parent == 0) &&
+                current_key_slot.src_slot != current_key_slot.dst_slot
+            ) begin
+              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s retain_parent == 0 err",
+                op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
+            // invalid op src_slot is invalid. Src slot could have been "erased"
+            if (current_internal_key[current_key_slot.src_slot].valid == 0) begin
+              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s valid == 0 err",
+                op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
+            return 0;
+          end
+          keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
+            if (!current_internal_key[current_key_slot.src_slot].valid)
+              return 1;
+            return 0;
+          end
+          default: begin
+          end
+        endcase
       end
       keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
         return 1;
@@ -946,13 +1011,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function bit get_sw_invalid_input();
-    if (get_operation() inside {
-      keymgr_dpe_pkg::OpDpeGenSwOut,
-      keymgr_dpe_pkg::OpDpeGenHwOut} &&
-      current_state != keymgr_dpe_pkg::StWorkDpeReset &&
-      get_current_max_version() < `gmv(ral.key_version[0])) begin
-      void'(ral.debug.invalid_key_version.predict(1));
-      return 1;
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+    if (op inside {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut}) begin
+      if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable &&
+          current_internal_key[current_key_slot.src_slot].valid &&
+          get_current_max_version() >= `gmv(ral.key_version[0])
+      ) begin
+        return 0;
+      end else begin
+        void'(ral.debug.invalid_key_version.predict(1));
+        return 1;
+      end
     end else begin
       return 0;
     end
@@ -986,67 +1055,37 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) return err_cnt > 0;
 
-    case (current_state)
-      // TODO(opentitan-integrated/issues/667):
-      //re-evaluate get_hw_invalid_input() function for the state StInit
-      // which is no longer valid for keymgr_dpe
+      if (cfg.keymgr_dpe_vif.keymgr_dpe_div inside {0, '1}) begin
+        invalid_hw_input_type = LcStateInvalid;
+        void'(ral.debug.invalid_health_state.predict(1));
+        err_cnt++;
+        `uvm_info(`gfn, "HW invalid input on keymgr_dpe_div", UVM_LOW)
+      end
 
-      //keymgr_dpe_pkg::StWorkDpeInit: begin
-      //  if (cfg.keymgr_dpe_vif.keymgr_dpe_div inside {0, '1}) begin
-      //    invalid_hw_input_type = LcStateInvalid;
-      //    void'(ral.debug.invalid_health_state.predict(1));
-      //    err_cnt++;
-      //    `uvm_info(`gfn, "HW invalid input on keymgr_dpe_div", UVM_LOW)
-      //  end
+      if (cfg.keymgr_dpe_vif.otp_device_id inside {0, '1}) begin
+        invalid_hw_input_type = OtpDevIdInvalid;
+        void'(ral.debug.invalid_dev_id.predict(1));
+        err_cnt++;
+        `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
+      end
 
-      //  if (cfg.keymgr_dpe_vif.otp_device_id inside {0, '1}) begin
-      //    invalid_hw_input_type = OtpDevIdInvalid;
-      //    void'(ral.debug.invalid_dev_id.predict(1));
-      //    err_cnt++;
-      //    `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
-      //  end
+      for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
+        if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
+          invalid_hw_input_type = RomDigestInvalid;
+          void'(ral.debug.invalid_digest.predict(1));
+          err_cnt++;
+          `uvm_info(`gfn, $sformatf("HW invalid input on rom_digests[%0d]", i), UVM_LOW)
+        end
 
-      //  for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
-      //    if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
-      //      invalid_hw_input_type = RomDigestInvalid;
-      //      void'(ral.debug.invalid_digest.predict(1));
-      //      err_cnt++;
-      //      `uvm_info(`gfn, $sformatf("HW invalid input on rom_digests[%0d]", i), UVM_LOW)
-      //    end
-
-      //    if (!cfg.keymgr_dpe_vif.rom_digests[i].valid) begin
-      //      invalid_hw_input_type = RomDigestValidLow;
-      //      void'(ral.debug.invalid_digest.predict(1));
-      //      err_cnt++;
-      //      `uvm_info(`gfn,
-      //                $sformatf("HW invalid input, rom_digests[%0d].valid is low", i),
-      //                UVM_LOW)
-      //    end
-      //  end
-
-      //  if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
-      //    invalid_hw_input_type = FlashCreatorSeedInvalid;
-      //    void'(ral.debug.invalid_creator_seed.predict(1));
-      //    err_cnt++;
-      //    `uvm_info(`gfn, "HW invalid input on flash.seeds[CreatorSeedIdx]", UVM_LOW)
-      //  end
-      //end
-
-      // TODO(opentitan-integrated/issues/667):
-      // re-evaluate get_hw_invalid_input()
-      // function for the state StCreatorRootKey
-      // which is no longer valid for keymgr_dpe
-
-      //keymgr_dpe_pkg::StWorkDpeCreatorRootKey: begin
-      //  if (cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx] inside {0, '1}) begin
-      //    invalid_hw_input_type = FlashOwnerSeedInvalid;
-      //    void'(ral.debug.invalid_owner_seed.predict(1));
-      //    err_cnt++;
-      //    `uvm_info(`gfn, "HW invalid input on flash.seeds[OwnerSeedIdx]", UVM_LOW)
-      //  end
-      //end
-      default: ;
-    endcase
+        if (!cfg.keymgr_dpe_vif.rom_digests[i].valid) begin
+          invalid_hw_input_type = RomDigestValidLow;
+          void'(ral.debug.invalid_digest.predict(1));
+          err_cnt++;
+          `uvm_info(`gfn,
+                    $sformatf("HW invalid input, rom_digests[%0d].valid is low", i),
+                    UVM_LOW)
+        end
+      end
 
     // Sample error when there is only one error to make sure each error can cause operation to
     // fail
