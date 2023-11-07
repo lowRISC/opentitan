@@ -25,6 +25,12 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// In dvsim, one run
+// with --waves can take
+// 1.874h  | 38.068ms
+// without --waves,
+// 38.072m | 39.484ms
+
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -58,45 +64,33 @@ bool test_main(void) {
             rst_info == kDifRstmgrResetInfoWatchdog ||
             rst_info == kDifRstmgrResetInfoEscalation ||
             rst_info == kDifRstmgrResetInfoLowPowerExit ||
-            rst_info == (kDifRstmgrResetInfoSysRstCtrl |
-                         kDifRstmgrResetInfoLowPowerExit) ||
-            rst_info ==
-                (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLowPowerExit) ||
-            rst_info == (kDifRstmgrResetInfoWatchdog |
-                         kDifRstmgrResetInfoLowPowerExit) ||
-            rst_info == (kDifRstmgrResetInfoEscalation |
-                         kDifRstmgrResetInfoLowPowerExit) ||
             rst_info == kDifRstmgrResetInfoSw,
         "Wrong reset reason %02X", rst_info);
 
-  uint32_t event_idx = 0;
-  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterResets, &event_idx));
+  uint32_t reset_case = 0;
+  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterResets, &reset_case));
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterResets));
-
-  int reset_case = event_idx / 2;
-  bool deep_sleep = event_idx % 2 == 0;
-  const char *sleep_mode = deep_sleep ? "deep" : "normal";
-  pwrmgr_sleep_resets_lib_modes_t mode =
-      deep_sleep ? kPwrmgrSleepResetsLibModesDeepSleep
-                 : kPwrmgrSleepResetsLibModesNormalSleep;
   LOG_INFO("New reset event");
-  LOG_INFO("  case %d, %s mode", reset_case, sleep_mode);
+  LOG_INFO("  case %d, active mode", reset_case);
 
   switch (reset_case) {
     case 0:
       config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
                                                 : kTopEarlgreyPinmuxInselIoc0);
-      prepare_for_sysrst(mode);
+      prepare_for_sysrst(kPwrmgrSleepResetsLibModesActive);
       break;
     case 1:
-      LOG_INFO("Watchdog reset in %s sleep mode", sleep_mode);
+      LOG_INFO("Watchdog reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
-      prepare_for_wdog(mode);
+      prepare_for_wdog(kPwrmgrSleepResetsLibModesActive);
       break;
     case 2:
-      LOG_INFO("Rstmgr software reset in %s sleep mode", sleep_mode);
+      LOG_INFO("Rstmgr software reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
+      CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
+      LOG_INFO("Device reset from sw");
       // Triggering a sw reset will prevent the device from completing the
       // setup required to enter sleep mode. This sets a watchdog, but it will
       // most likely be wiped out by the software reset, unless they land in
@@ -104,10 +98,10 @@ bool test_main(void) {
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
       // Assert rstmgr software reset request.
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(rstmgr));
-      prepare_for_wdog(mode);
+      prepare_for_wdog(kPwrmgrSleepResetsLibModesActive);
       break;
     case 3:
-      LOG_INFO("Escalation reset in %s sleep mode", sleep_mode);
+      LOG_INFO("Booting and running normal sleep followed by escalation reset");
       LOG_INFO("Let SV wait timer reset");
       trigger_escalation();
       break;

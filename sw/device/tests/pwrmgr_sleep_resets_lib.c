@@ -39,7 +39,7 @@ static_assert(
         kWdogBarkMicros > kEscalationPhase0Micros &&
         kWdogBarkMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros) &&
         kWdogBiteMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros),
-    "The wdog bark and bite shall happens during the escalation phase 1");
+    "The wdog bark and bite should happen during the escalation phase 1");
 
 dif_flash_ctrl_state_t *flash_ctrl;
 dif_rv_plic_t *plic;
@@ -234,60 +234,55 @@ void trigger_escalation(void) {
   CHECK(false, "Timeout waiting for escalation to occur.");
 }
 
-void enter_sleep_no_resets_enabled(bool deep_sleep) {
-  dif_pwrmgr_domain_config_t config =
-      deep_sleep ? 0
-                 : kDifPwrmgrDomainOptionUsbClockInLowPower |
-                       kDifPwrmgrDomainOptionCoreClockInLowPower |
-                       kDifPwrmgrDomainOptionIoClockInLowPower |
-                       kDifPwrmgrDomainOptionMainPowerInLowPower;
+void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode) {
+  if (mode == kPwrmgrSleepResetsLibModesActive) {
+    // Just wait for a reset.
+    busy_spin_micros(kWaitWhileActiveMicros);
+  } else {
+    bool deep_sleep = mode == kPwrmgrSleepResetsLibModesDeepSleep;
+    // Place device into low power.
+    dif_pwrmgr_domain_config_t config =
+        deep_sleep ? 0
+                   : kDifPwrmgrDomainOptionUsbClockInLowPower |
+                         kDifPwrmgrDomainOptionCoreClockInLowPower |
+                         kDifPwrmgrDomainOptionIoClockInLowPower |
+                         kDifPwrmgrDomainOptionMainPowerInLowPower;
 
-  // Program the pwrmgr to go to deep sleep state (clocks off).
-  // Enter in low power mode.
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(pwrmgr, 0, config));
-  wait_for_interrupt();
-
+    // Program the pwrmgr to go to deep sleep state (clocks off).
+    // Enter in low power mode.
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
+    wait_for_interrupt();
+  }
   // If we arrive here the test must fail.
-  CHECK(false, "Fail to reset from low power entry!");
+  CHECK(false, "Failed to reset!");
 }
 
-void enter_sleep_for_wdog(bool deep_sleep) {
-  dif_pwrmgr_domain_config_t config =
-      deep_sleep ? 0
-                 : kDifPwrmgrDomainOptionUsbClockInLowPower |
-                       kDifPwrmgrDomainOptionCoreClockInLowPower |
-                       kDifPwrmgrDomainOptionIoClockInLowPower |
-                       kDifPwrmgrDomainOptionMainPowerInLowPower;
-
-  // Program the pwrmgr to go to deep sleep state (clocks off).
-  // Enter in low power mode.
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
-  wait_for_interrupt();
-
+void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
+  if (mode == kPwrmgrSleepResetsLibModesActive) {
+    LOG_INFO("Sysrst reset in active mode");
+    // Just wait for a reset.
+    busy_spin_micros(kWaitWhileActiveMicros);
+  } else {
+    bool deep_sleep = mode == kPwrmgrSleepResetsLibModesDeepSleep;
+    // Place device into low power.
+    dif_pwrmgr_domain_config_t config =
+        deep_sleep ? 0
+                   : kDifPwrmgrDomainOptionUsbClockInLowPower |
+                         kDifPwrmgrDomainOptionCoreClockInLowPower |
+                         kDifPwrmgrDomainOptionIoClockInLowPower |
+                         kDifPwrmgrDomainOptionMainPowerInLowPower;
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
+    // Log message to synchronize with host side: emit it as close as
+    // possible before WFI so the host has no chance of sending the reset
+    // before it is enabled.
+    LOG_INFO("Sysrst reset in %s sleep mode", deep_sleep ? "deep" : "normal");
+    // Enter in low power mode.
+    wait_for_interrupt();
+  }
   // If we arrive here the test must fail.
-  CHECK(false, "Fail to reset from low power entry!");
-}
-
-void enter_sleep_for_sysrst(bool deep_sleep) {
-  // Place device into low power and immediately wake.
-  dif_pwrmgr_domain_config_t config =
-      deep_sleep ? 0
-                 : kDifPwrmgrDomainOptionUsbClockInLowPower |
-                       kDifPwrmgrDomainOptionCoreClockInLowPower |
-                       kDifPwrmgrDomainOptionIoClockInLowPower |
-                       kDifPwrmgrDomainOptionMainPowerInLowPower;
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
-  // Log message to synchronize with host side: emit it as close as
-  // possible before WFI so the host has no chance of sending the reset
-  // before it is enabled.
-  LOG_INFO("Sysrst reset in %s sleep mode", deep_sleep ? "deep" : "normal");
-  // Enter in low power mode.
-  wait_for_interrupt();
-
-  // If we arrive here the test must fail.
-  CHECK(false, "Fail to reset from low power entry!");
+  CHECK(false, "Failed to reset!");
 }
 
 void ottf_external_isr(void) {

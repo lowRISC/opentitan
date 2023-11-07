@@ -78,14 +78,14 @@ bool test_main(void) {
     case 0:
       config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
                                                 : kTopEarlgreyPinmuxInselIoc0);
-      enter_sleep_for_sysrst(/*deep_sleep=*/false);
+      prepare_for_sysrst(kPwrmgrSleepResetsLibModesNormalSleep);
       break;
     case 1:
       LOG_INFO("Watchdog reset in normal sleep mode");
       LOG_INFO("Let SV wait timer reset");
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
-      enter_sleep_for_wdog(/*deep_sleep=*/false);
+      prepare_for_wdog(kPwrmgrSleepResetsLibModesNormalSleep);
       break;
     case 2:
       LOG_INFO("Rstmgr software reset in normal sleep mode");
@@ -99,7 +99,7 @@ bool test_main(void) {
       config_wdog(/*bark_micros=*/200, /*bite_micros=*/2 * 200);
       // Assert rstmgr software reset request.
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(rstmgr));
-      enter_sleep_for_wdog(/*deep_sleep=*/false);
+      prepare_for_wdog(kPwrmgrSleepResetsLibModesNormalSleep);
       break;
     case 3:
       LOG_INFO("Escalation reset in normal sleep mode");
