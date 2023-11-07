@@ -30,7 +30,30 @@ typedef enum pwmgr_sleep_resets_lib_times {
   kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 120 us
   kEscalationPhase1Micros = 5 * 100,                          // 500 us
   kEscalationPhase2Micros = 50,                               // 50 us
+  // Allow a long wait before the reset is received, since the host needs
+  // to read and parse the log message before it changes the pin values.
+  kWaitWhileActiveMicros = 80000,  // 80 ms
 } pwmgr_sleep_resets_lib_times_t;
+
+/**
+ * The modes of the tests using this library.
+ */
+typedef enum pwrmgr_sleep_resets_lib_modes {
+  /**
+   * Deep sleep mode.
+   */
+  kPwrmgrSleepResetsLibModesDeepSleep = 1,
+
+  /**
+   * Normal sleep mode.
+   */
+  kPwrmgrSleepResetsLibModesNormalSleep = 2,
+
+  /**
+   * Active mode (no sleep).
+   */
+  kPwrmgrSleepResetsLibModesActive = 3
+} pwrmgr_sleep_resets_lib_modes_t;
 
 /**
  * Objects to access the peripherals used in this test via dif API.
@@ -73,19 +96,18 @@ void config_wdog(uint64_t bark_micros, uint64_t bite_micros);
 void trigger_escalation(void);
 
 /**
- * Enter normal or deep sleep enabling no resets.
+ * Prepare for watchdog reset.
+ *
+ * Enable watchdog reset, and spin wait or enter either normal or deep sleep.
  */
-void enter_sleep_no_resets_enabled(bool deep_sleep);
+void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode);
 
 /**
- * Enter normal or deep sleep enabling watchdog resets.
+ * Prepare for sysrst reset.
+ *
+ * Enable sysrst reset, and spin wait or enter either normal or deep sleep .
  */
-void enter_sleep_for_wdog(bool deep_sleep);
-
-/**
- * Enter normal or deep sleep enabling sysrst resets.
- */
-void enter_sleep_for_sysrst(bool deep_sleep);
+void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode);
 
 /**
  * External ISR.

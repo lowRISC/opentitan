@@ -452,6 +452,9 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst.
             - rstmgr sw reset is in rstmgr testplan.
             - ndm reset is in rv_dm testplan.
+	    This test is like the pwrmgr_*_sleep_all_reset_reqs tests, except the CPU will
+	    just spin_wait for a reset, so the pwrmgr will be in active state.
+	    SiVal: The CPU must be enabled to configure the test.
             '''
       stage: V3
       si_stage: SV3
@@ -471,8 +474,8 @@
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
         "PWRMGR.RESET.POR_REQUEST",
       ]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_pwrmgr_all_reset_reqs"]
+      bazel: ["//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_escalation_reset

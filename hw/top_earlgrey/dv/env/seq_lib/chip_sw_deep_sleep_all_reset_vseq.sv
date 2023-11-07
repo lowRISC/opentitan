@@ -31,6 +31,7 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
     while (1) begin
       `DV_WAIT(cfg.sw_logger_vif.printed_log == "New reset event")
       `DV_WAIT(
+            cfg.sw_logger_vif.printed_log == "Sysrst reset in active mode" ||
             cfg.sw_logger_vif.printed_log == "Sysrst reset in deep sleep mode" ||
             cfg.sw_logger_vif.printed_log == "Sysrst reset in normal sleep mode" ||
             cfg.sw_logger_vif.printed_log == "Let SV wait timer reset" ||
@@ -39,7 +40,8 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
       `uvm_info(`gfn, $sformatf("SW message delivered to TB\n >> %0s",
                                 cfg.sw_logger_vif.printed_log), UVM_MEDIUM)
-      if (cfg.sw_logger_vif.printed_log == "Sysrst reset in deep sleep mode" ||
+      if (cfg.sw_logger_vif.printed_log == "Sysrst reset in active mode" ||
+          cfg.sw_logger_vif.printed_log == "Sysrst reset in deep sleep mode" ||
           cfg.sw_logger_vif.printed_log == "Sysrst reset in normal sleep mode") begin
         repeat (10) @cfg.chip_vif.pwrmgr_low_power_if.cb;
         repeat (cycles_till_reset) @cfg.chip_vif.pwrmgr_low_power_if.cb;
