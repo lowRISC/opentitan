@@ -543,6 +543,25 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "clkmgr_jitter_frequency_test",
+    srcs = ["clkmgr_jitter_frequency_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:sensor_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "clkmgr_jitter_test",
     srcs = ["clkmgr_jitter_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
