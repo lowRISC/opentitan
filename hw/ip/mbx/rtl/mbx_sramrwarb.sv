@@ -76,7 +76,7 @@ module mbx_sramrwarb
   // Block SRAM requests if we reached the maximum outstanding number
   assign max_outstanding_reqs_reached = (outstanding_req_count_q == LCFG_MAX_REQS);
   // All outstanding requests responded, thus all transfers are written or read
-  assign imbx_sram_all_vld_rcvd_o = (outstanding_req_count_q == '0);
+  assign imbx_sram_all_vld_rcvd_o = (outstanding_req_count_q == '0) & ~sram_req;
 
   tlul_adapter_host #(
     .MAX_REQS              ( LCFG_MAX_REQS ),
