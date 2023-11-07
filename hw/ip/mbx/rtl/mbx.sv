@@ -12,17 +12,19 @@ module mbx
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32,
   parameter int unsigned CfgObjectSizeWidth    = 11,
-  parameter bit          DoeIrqSupport         = 1'b1
+  parameter bit          DoeIrqSupport         = 1'b1,
+  parameter bit          DoeAsyncMsgSupport    = 1'b1
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
   // Comportable interrupt to the OT
   output logic                                      intr_mbx_ready_o,
   output logic                                      intr_mbx_abort_o,
-  // Custom interrupt to the system requester
+  // Custom straps for capability register implementation
   output logic                                      doe_intr_support_o,
   output logic                                      doe_intr_en_o,
   output logic                                      doe_intr_o,
+  output logic                                      doe_async_msg_support_o,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -56,9 +58,11 @@ module mbx
   logic hostif_event_intr_ready, hostif_event_intr_abort;
   logic hostif_address_range_valid, hostif_address_range_valid_write;
   logic sysif_control_abort_set;
+  logic doe_async_msg_en;
 
   // Status signal inputs from the sysif to the hostif
-  logic sysif_status_busy, sysif_status_error, sysif_async_en;
+  logic sysif_status_busy, sysif_status_error;
+  logic doe_async_msg_set, doe_async_msg_clear;
 
   // Setter signals from the hostif to the sysif
   logic hostif_control_abort_clear, hostif_control_error_set;
@@ -107,10 +111,12 @@ module mbx
     .hostif_control_abort_clear_o        ( hostif_control_abort_clear         ),
     .hostif_control_error_set_o          ( hostif_control_error_set           ),
     .hostif_control_error_i              ( sysif_status_error                 ),
+    .hostif_control_async_msg_set_o      ( doe_async_msg_set                  ),
+    .hostif_control_async_msg_clear_o    ( doe_async_msg_clear                ),
     // Access to the status register
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_sys_intr_en_i         ( doe_intr_en_o                      ),
-    .hostif_status_sys_async_en_i        ( sysif_async_en                     ),
+    .hostif_status_sys_async_en_i        ( doe_async_msg_en                   ),
     .hostif_status_sys_intr_state_i      ( doe_intr_o                         ),
     // Access to the IB/OB RD/WR Pointers
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
@@ -160,7 +166,7 @@ module mbx
   logic ombx_pending;
   logic ombx_status_ready_valid, ombx_status_ready;
   logic sysif_status_ready;
-  logic ombx_doe_intr_state_set;
+  logic ombx_doe_intr_ready_set;
 
   // Interface signals for SRAM host access to read the memory and serve it to the outbox
   logic ombx_sram_read_req, ombx_sram_read_gnt;
@@ -169,19 +175,25 @@ module mbx
   logic sysif_read_data_read_valid, sysif_read_data_write_valid;
 
   mbx_sysif #(
-    .CfgSramAddrWidth ( CfgSramAddrWidth ),
-    .CfgSramDataWidth ( CfgSramDataWidth ),
-    .DoeIrqSupport    ( DoeIrqSupport    )
+    .CfgSramAddrWidth   ( CfgSramAddrWidth   ),
+    .CfgSramDataWidth   ( CfgSramDataWidth   ),
+    .DoeIrqSupport      ( DoeIrqSupport      ),
+    .DoeAsyncMsgSupport ( DoeAsyncMsgSupport )
   ) u_sysif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
     .tl_sys_i                            ( soc_tl_d_i                         ),
     .tl_sys_o                            ( soc_tl_d_o                         ),
     .intg_err_o                          ( sysif_intg_err                     ),
-    // System interrupt support
+    // Custom interrupt to the system requester
     .doe_intr_support_o                  ( doe_intr_support_o                 ),
     .doe_intr_en_o                       ( doe_intr_en_o                      ),
     .doe_intr_o                          ( doe_intr_o                         ),
+    // Asynchronous message to the requester
+    .doe_async_msg_support_o             ( doe_async_msg_support_o            ),
+    .doe_async_msg_en_o                  ( doe_async_msg_en                   ),
+    .doe_async_msg_set_i                 ( doe_async_msg_set                  ),
+    .doe_async_msg_clear_i               ( doe_async_msg_clear                ),
     // Access to the control register
     .sysif_control_abort_set_o           ( sysif_control_abort_set            ),
     .sysif_control_go_set_o              ( sysif_control_go_set               ),
@@ -189,8 +201,7 @@ module mbx
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
-    .sysif_status_async_en_o             ( sysif_async_en                     ),
-    .sysif_status_doe_intr_state_set_i   ( ombx_doe_intr_state_set            ),
+    .sysif_status_doe_intr_ready_set_i   ( ombx_doe_intr_ready_set            ),
     .sysif_status_error_set_i            ( hostif_control_error_set           ),
     .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
@@ -252,7 +263,7 @@ module mbx
   ) u_ombx (
     .clk_i                           ( clk_i                            ),
     .rst_ni                          ( rst_ni                           ),
-    .ombx_doe_intr_state_set_o       ( ombx_doe_intr_state_set          ),
+    .ombx_doe_intr_ready_set_o       ( ombx_doe_intr_ready_set          ),
     // Interface to the host port
     .ombx_state_error_o              ( ombx_state_error                 ),
     .ombx_pending_o                  ( ombx_pending                     ),
