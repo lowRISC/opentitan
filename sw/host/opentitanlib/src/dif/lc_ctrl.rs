@@ -39,6 +39,10 @@ with_unknown! {
 }
 
 impl DifLcCtrlState {
+    pub fn from_redundant_encoding(encoding: u32) -> Result<Self> {
+        Ok(DifLcCtrlState(encoding & 0x1fu32))
+    }
+
     /// Encode the given life cycle state in a redundant format where the
     /// five-bit value is repeated six times.
     pub fn redundant_encoding(&self) -> u32 {

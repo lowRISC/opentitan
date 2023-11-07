@@ -11,6 +11,7 @@ pub mod gpio;
 pub mod hello;
 pub mod i2c;
 pub mod image;
+pub mod lc;
 pub mod load_bitstream;
 pub mod otp;
 pub mod reset_sam3x;

@@ -19,6 +19,7 @@ rust_binary(
         "src/command/hello.rs",
         "src/command/i2c.rs",
         "src/command/image.rs",
+        "src/command/lc.rs",
         "src/command/load_bitstream.rs",
         "src/command/mod.rs",
         "src/command/otp.rs",
