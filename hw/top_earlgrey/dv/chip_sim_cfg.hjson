@@ -1740,6 +1740,12 @@
       run_opts: ["+calibrate_usb_clk=1"]
     }
     {
+      name: chip_sw_clkmgr_jitter_frequency
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:clkmgr_jitter_frequency_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_clkmgr_jitter
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:clkmgr_jitter_test:1:new_rules"]

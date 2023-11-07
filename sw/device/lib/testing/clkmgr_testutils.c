@@ -36,9 +36,17 @@ static expected_count_info_t kNoJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
 // The expected counts when jitter is enabled.
 static expected_count_info_t kJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
 
+// Notice the expected variability is set to somewhat less than the added
+// variability of the AON and the measured clock.
+
 // The expected variability as a percentage. The AST guarantees 3% for all
-// clocks, including the AON, so this sets the effective variability to 5%.
+// clocks, including the AON, so the effective variability is set to 5%.
 static uint32_t kVariabilityPercentage = 5;
+
+// The expected variability when jitter is enabled as a percentage. The AST
+// guarantees 10% for jittery clocks and 3% for the AON clock, so the
+// effective variability is set to 12%.
+static uint32_t kJitterVariabilityPercentage = 12;
 
 // Compute the variability for a given number of cycles, adding an extra cycle
 // for synchronizers.
@@ -104,23 +112,22 @@ void initialize_expected_counts(void) {
                               .variability = get_count_variability(
                                   kDeviceUsbCount, kVariabilityPercentage)};
 
-  // If jitter is enabled the low threshold should be up to 20% lower, so
-  // the variability is set to 0.1 * max_count, and count as max - 0.1 * max.
+  // When jitter is enabled only the main clk is affected: the low threshold
+  // should be up to 20% lower, so the expected count is set to 0.9 max, and
+  // the variability is set per kJitterVariabilityPercentage.
   kJitterCountInfos[kDifClkmgrMeasureClockIo] =
-      (expected_count_info_t){.count = kDeviceIoCount - kDeviceIoCount / 10,
-                              .variability = kDeviceIoCount / 10};
-  kJitterCountInfos[kDifClkmgrMeasureClockIoDiv2] = (expected_count_info_t){
-      .count = kDeviceIoDiv2Count - kDeviceIoDiv2Count / 10,
-      .variability = kDeviceIoDiv2Count / 10};
-  kJitterCountInfos[kDifClkmgrMeasureClockIoDiv4] = (expected_count_info_t){
-      .count = kDeviceIoDiv4Count - kDeviceIoDiv4Count / 10,
-      .variability = kDeviceIoDiv4Count};
+      kNoJitterCountInfos[kDifClkmgrMeasureClockIo];
+  kJitterCountInfos[kDifClkmgrMeasureClockIoDiv2] =
+      kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv2];
+  kJitterCountInfos[kDifClkmgrMeasureClockIoDiv4] =
+      kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv4];
   kJitterCountInfos[kDifClkmgrMeasureClockMain] =
       (expected_count_info_t){.count = kDeviceCpuCount - kDeviceCpuCount / 10,
-                              .variability = kDeviceCpuCount / 10};
+                              .variability = get_count_variability(
+                                  kDeviceCpuCount - kDeviceCpuCount / 10,
+                                  kJitterVariabilityPercentage)};
   kJitterCountInfos[kDifClkmgrMeasureClockUsb] =
-      (expected_count_info_t){.count = kDeviceUsbCount - kDeviceUsbCount / 10,
-                              .variability = kDeviceUsbCount / 10};
+      kNoJitterCountInfos[kDifClkmgrMeasureClockUsb];
 }
 
 const char *clkmgr_testutils_measurement_name(

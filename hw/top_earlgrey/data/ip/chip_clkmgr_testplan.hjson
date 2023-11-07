@@ -234,10 +234,9 @@
     {
       name: chip_sw_clkmgr_jitter_cycle_measurements
       desc: '''Verify jitter via clock cycle measurements after calibration.
-            The clock count thresholds should need to be set wider than when jitter is disabled.
+            The clock count thresholds for main clk need to be set wider than when jitter is disabled.
             SiVal: This is only useful on real silicon.
-            Can be done after clock calibration.
-            This test can use chip_sw_ast_clk_outputs with an option to turn jitter on.
+            Should be done after clock calibration.
             '''
       stage: V3
       si_stage: SV3
@@ -252,8 +251,8 @@
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
       ]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_clkmgr_jitter_frequency"]
+      bazel: ["//sw/device/tests:clkmgr_jitter_frequency_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_clkmgr_extended_range
