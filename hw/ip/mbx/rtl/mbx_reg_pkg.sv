@@ -61,6 +61,10 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } sys_async_msg;
+    struct packed {
+      logic        q;
+      logic        qe;
     } error;
     struct packed {
       logic        q;
@@ -126,7 +130,7 @@ package mbx_reg_pkg;
     } sys_intr_enable;
     struct packed {
       logic        d;
-    } sys_async_en;
+    } sys_async_enable;
   } mbx_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -152,11 +156,11 @@ package mbx_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [149:148]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [147:146]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [145:142]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [141:138]
-    mbx_reg2hw_control_reg_t control; // [137:134]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [151:150]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [149:148]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [147:144]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [143:140]
+    mbx_reg2hw_control_reg_t control; // [139:134]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [133:132]
     mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [131:102]
     mbx_reg2hw_inbound_limit_address_reg_t inbound_limit_address; // [101:72]
@@ -203,14 +207,15 @@ package mbx_reg_pkg;
   parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
-  parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;
+  parameter logic [3:0] MBX_CONTROL_RESVAL = 4'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_CONTROL_SYS_ASYNC_MSG_RESVAL = 1'h 0;
   parameter logic [3:0] MBX_STATUS_RESVAL = 4'h 1;
   parameter logic [0:0] MBX_STATUS_BUSY_RESVAL = 1'h 1;
   parameter logic [0:0] MBX_STATUS_SYS_INTR_STATE_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_STATUS_SYS_INTR_ENABLE_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_STATUS_SYS_ASYNC_EN_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_STATUS_SYS_ASYNC_ENABLE_RESVAL = 1'h 0;
   parameter logic [31:0] MBX_INBOUND_WRITE_PTR_RESVAL = 32'h 0;
   parameter logic [29:0] MBX_INBOUND_WRITE_PTR_INBOUND_READ_PTR_RESVAL = 30'h 0;
   parameter logic [31:0] MBX_OUTBOUND_READ_PTR_RESVAL = 32'h 0;
@@ -282,7 +287,7 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } doe_async_en;
+    } doe_async_msg_en;
     struct packed {
       logic        q;
       logic        qe;
@@ -317,7 +322,7 @@ package mbx_reg_pkg;
     } doe_intr_en;
     struct packed {
       logic        d;
-    } doe_async_en;
+    } doe_async_msg_en;
     struct packed {
       logic        d;
     } go;
@@ -370,7 +375,7 @@ package mbx_reg_pkg;
   parameter logic [31:0] MBX_SOC_CONTROL_RESVAL = 32'h 0;
   parameter logic [0:0] MBX_SOC_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_SOC_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_SOC_CONTROL_DOE_ASYNC_EN_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_SOC_CONTROL_DOE_ASYNC_MSG_EN_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_SOC_CONTROL_GO_RESVAL = 1'h 0;
 
   // Window parameters for soc interface
