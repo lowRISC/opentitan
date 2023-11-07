@@ -46,7 +46,7 @@ module tb;
   keymgr_dpe #(
     // TODO(opentitan-integrated/issues/332):
     // need to model the OTP seed input
-    .UseOtpSeedsInsteadOfFlash(0)
+    .UseOtpSeedsInsteadOfFlash(keymgr_dpe_if.UseOtpSeedsInsteadOfFlash)
   ) dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
