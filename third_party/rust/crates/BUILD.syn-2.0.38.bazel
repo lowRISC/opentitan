@@ -39,7 +39,6 @@ rust_library(
         "proc-macro",
         "quote",
         "visit",
-        "visit-mut",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
