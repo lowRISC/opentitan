@@ -98,6 +98,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // current value of the keyslots in the dut.
   keymgr_dpe_pkg::keymgr_dpe_slot_t [keymgr_dpe_pkg::DpeNumSlots-1:0] internal_key_slots;
 
+  parameter bit UseOtpSeedsInsteadOfFlash = 1;
+
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
