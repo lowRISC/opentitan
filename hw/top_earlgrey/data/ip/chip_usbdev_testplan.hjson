@@ -320,6 +320,7 @@
             - With a physical host this requires the `usbdev/suspend_test` host-side test
               application to perform Suspend/Resume Signaling.
             - Note: this test does not engage the AON Wake module or enter a low power state.
+            '''
       features: [
         "USBDEV.CONN.VBUS",
         "USBDEV.CONN.PULLUP",
