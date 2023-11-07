@@ -1165,7 +1165,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
     act = {<<8{byte_data_q}};
 
-    exp.DiversificationKey = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+    exp.DiversificationKey = (cfg.keymgr_dpe_vif.UseOtpSeedsInsteadOfFlash) ?
+      cfg.keymgr_dpe_vif.otp_key.creator_seed :
+      cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+
     for (int i = 0; i < keymgr_dpe_reg_pkg::NumRomDigestInputs; ++i) begin
       exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
     end
@@ -1200,8 +1203,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
     act = {<<8{byte_data_q}};
-
-    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+    exp.OwnerRootSecret = (cfg.keymgr_dpe_vif.UseOtpSeedsInsteadOfFlash) ?
+      cfg.keymgr_dpe_vif.otp_key.owner_seed :
+      cfg.keymgr_dpe_vif.flash.seeds[flash_ctrl_pkg::OwnerSeedIdx];
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
