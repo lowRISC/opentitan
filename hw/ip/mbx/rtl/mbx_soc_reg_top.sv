@@ -184,8 +184,8 @@ module mbx_soc_reg_top (
   logic soc_control_abort_wd;
   logic soc_control_doe_intr_en_qs;
   logic soc_control_doe_intr_en_wd;
-  logic soc_control_doe_async_en_qs;
-  logic soc_control_doe_async_en_wd;
+  logic soc_control_doe_async_msg_en_qs;
+  logic soc_control_doe_async_msg_en_wd;
   logic soc_control_go_wd;
   logic soc_status_we;
   logic soc_status_busy_qs;
@@ -288,21 +288,21 @@ module mbx_soc_reg_top (
   );
   assign reg2hw.soc_control.doe_intr_en.qe = soc_control_qe;
 
-  //   F[doe_async_en]: 3:3
+  //   F[doe_async_msg_en]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_soc_control_doe_async_en (
+  ) u_soc_control_doe_async_msg_en (
     .re     (soc_control_re),
     .we     (soc_control_we),
-    .wd     (soc_control_doe_async_en_wd),
-    .d      (hw2reg.soc_control.doe_async_en.d),
+    .wd     (soc_control_doe_async_msg_en_wd),
+    .d      (hw2reg.soc_control.doe_async_msg_en.d),
     .qre    (),
     .qe     (soc_control_flds_we[2]),
-    .q      (reg2hw.soc_control.doe_async_en.q),
+    .q      (reg2hw.soc_control.doe_async_msg_en.q),
     .ds     (),
-    .qs     (soc_control_doe_async_en_qs)
+    .qs     (soc_control_doe_async_msg_en_qs)
   );
-  assign reg2hw.soc_control.doe_async_en.qe = soc_control_qe;
+  assign reg2hw.soc_control.doe_async_msg_en.qe = soc_control_qe;
 
   //   F[go]: 31:31
   prim_subreg_ext #(
@@ -493,7 +493,7 @@ module mbx_soc_reg_top (
 
   assign soc_control_doe_intr_en_wd = reg_wdata[1];
 
-  assign soc_control_doe_async_en_wd = reg_wdata[3];
+  assign soc_control_doe_async_msg_en_wd = reg_wdata[3];
 
   assign soc_control_go_wd = reg_wdata[31];
   assign soc_status_we = addr_hit[3] & reg_we & !reg_error;
@@ -524,7 +524,7 @@ module mbx_soc_reg_top (
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = soc_control_doe_intr_en_qs;
-        reg_rdata_next[3] = soc_control_doe_async_en_qs;
+        reg_rdata_next[3] = soc_control_doe_async_msg_en_qs;
         reg_rdata_next[31] = '0;
       end
 
