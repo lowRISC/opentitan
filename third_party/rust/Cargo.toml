@@ -91,7 +91,7 @@ pest = "2.2"
 pest_derive = "2.2"
 
 # documentation generation tools
-mdbook = "0.4.31"
+mdbook = { version = "0.4.31", default-features = false, features = ["search"] }
 
 # elf2tab dependencies
 tar = "0.4.36"
