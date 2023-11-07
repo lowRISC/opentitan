@@ -128,6 +128,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "source_address_lo"
@@ -145,6 +146,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "source_address_hi"
@@ -167,6 +169,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "destination_address_lo"
@@ -185,6 +188,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "destination_address_hi"
@@ -201,6 +205,7 @@
       desc: "Address space that source and destination pointers refer to."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "3:0"
           name: "source_asid"
@@ -307,10 +312,33 @@
       // writing to other registers, which the automated tests are not aware of.
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     }
+    { name: "CFG_REGWEN"
+      desc: '''
+            Indicates whether the configuration registers are locked because the DMA controller is operating. 
+            The CONTROL, STATUS, and CLEAR_STATE registers remain usable.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "3:0"
+          mubi: "true"
+          resval: true
+          name: "regwen"
+          desc: '''
+                Used by hardware to lock the DMA configuration registers.
+                This register is purely managed by hardware and only software readable.
+                '''
+        }
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
     { name: "TOTAL_DATA_SIZE"
       desc: "Total size of the data blob involved in DMA movement."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "data_size"
@@ -329,6 +357,7 @@
       desc: "Total size of the data blob involved in DMA movement."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "data_size"
@@ -349,6 +378,7 @@
       desc: "Denotes the width of each transaction that the DMA shall issue."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "1:0"
           name: "transaction_width"
@@ -385,6 +415,7 @@
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "address_limit_lo"
@@ -404,6 +435,7 @@
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "address_limit_hi"
@@ -423,6 +455,7 @@
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "address_limit_lo"
@@ -442,6 +475,7 @@
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
           name: "address_limit_hi"
@@ -695,6 +729,7 @@
       desc: "Enable bits for incoming handshake interrupt wires."
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { bits: "NumIntClearSources-1:0"
           name: "mask"
@@ -712,6 +747,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { name: "source"
           desc: "Source N needs interrupt cleared"
@@ -727,6 +763,7 @@
             '''
       swaccess: "rw"
       hwaccess: "hro"
+      regwen: "CFG_REGWEN"
       fields: [
         { name: "bus"
           desc: "Bus selection bit for source N."
@@ -742,6 +779,7 @@
         cname: "ADDR"
         swaccess: "rw"
         hwaccess: "hro"
+        regwen: "CFG_REGWEN"
         fields: [
           { name: "addr"
             desc: "Destination address for interrupt source clearing write."
@@ -759,6 +797,7 @@
         cname: "WRVAL"
         swaccess: "rw"
         hwaccess: "hro"
+        regwen: "CFG_REGWEN"
         fields: [
           { name: "wr_val"
             desc: "Write value for interrupt clearing write."

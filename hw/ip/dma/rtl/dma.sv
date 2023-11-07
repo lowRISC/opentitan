@@ -105,6 +105,8 @@ module dma
   logic cfg_data_direction;
   logic cfg_abort_en;
 
+  logic clear_cfg_regwen, set_cfg_regwen;
+
   logic [SYS_METADATA_WIDTH-1:0] src_metadata;
   assign src_metadata = SYS_METADATA_WIDTH'(1'b1) << OtAgentId;
 
@@ -255,6 +257,29 @@ module dma
   logic [$bits(dma_ctrl_state_e)-1:0] ctrl_state_logic;
   assign ctrl_state_q = dma_ctrl_state_e'(ctrl_state_logic);
 
+  // Captured state that we cannot lock with a REGWEN
+  logic [31:0] enabled_memory_range_base_q, enabled_memory_range_limit_q;
+  logic        capture_enabled_memory_range;
+
+  prim_generic_flop_en #(
+    .Width(32)
+  ) u_enabled_memory_base (
+    .clk_i  ( gated_clk                           ),
+    .rst_ni ( rst_ni                              ),
+    .en_i   ( capture_enabled_memory_range        ),
+    .d_i    ( reg2hw.enabled_memory_range_base.q  ),
+    .q_o    ( enabled_memory_range_base_q         )
+  );
+  prim_generic_flop_en #(
+    .Width(32)
+  ) u_enabled_memory_limit (
+    .clk_i  ( gated_clk                           ),
+    .rst_ni ( rst_ni                              ),
+    .en_i   ( capture_enabled_memory_range        ),
+    .d_i    ( reg2hw.enabled_memory_range_limit.q ),
+    .q_o    ( enabled_memory_range_limit_q        )
+  );
+
   prim_flop #(
     .Width($bits(dma_ctrl_state_e)),
     .ResetValue({DmaIdle})
@@ -328,15 +353,14 @@ module dma
   );
 
   logic                  capture_asid;
-  logic [ASID_WIDTH-1:0] src_asid_q, src_asid_d;
-  logic [ASID_WIDTH-1:0] dst_asid_q, dst_asid_d;
+  logic [ASID_WIDTH-1:0] src_asid_q, dst_asid_q;
   prim_generic_flop_en #(
     .Width(ASID_WIDTH)
   ) aff_src_asid (
     .clk_i ( gated_clk    ),
     .rst_ni( rst_ni       ),
     .en_i  ( capture_asid ),
-    .d_i   ( src_asid_d   ),
+    .d_i   ( reg2hw.address_space_id.source_asid.q ),
     .q_o   ( src_asid_q   )
   );
 
@@ -346,7 +370,7 @@ module dma
     .clk_i ( gated_clk    ),
     .rst_ni( rst_ni       ),
     .en_i  ( capture_asid ),
-    .d_i   ( dst_asid_d   ),
+    .d_i   ( reg2hw.address_space_id.destination_asid.q ),
     .q_o   ( dst_asid_q   )
   );
 
@@ -565,21 +589,20 @@ module dma
   always_comb begin
     ctrl_state_d = ctrl_state_q;
 
-    capture_transfer_byte  = 1'b0;
-    transfer_byte_d        = transfer_byte_q;
-    capture_chunk_byte     = 1'b0;
-    chunk_byte_d           = chunk_byte_q;
-    capture_transfer_width = 1'b0;
-    transfer_width_d       = '0;
-    capture_return_data    = 1'b0;
+    capture_transfer_byte        = 1'b0;
+    transfer_byte_d              = transfer_byte_q;
+    capture_chunk_byte           = 1'b0;
+    chunk_byte_d                 = chunk_byte_q;
+    capture_transfer_width       = 1'b0;
+    transfer_width_d             = '0;
+    capture_return_data          = 1'b0;
+    capture_enabled_memory_range = 1'b0;
 
     next_error   = '0;
     capture_addr = 1'b0;
     src_addr_d   = '0;
     dst_addr_d   = '0;
     capture_asid = 1'b0;
-    src_asid_d   = '0;
-    dst_asid_d   = '0;
 
     capture_be   = '0;
     req_src_be_d = '0;
@@ -629,6 +652,9 @@ module dma
             if (reg2hw.control.initial_transfer.q) begin
               transfer_byte_d       = '0;
               capture_transfer_byte = 1'b1;
+              // Capture unlocked state  when starting the transfer.
+              capture_enabled_memory_range = 1'b1;
+              capture_asid                 = 1'b1;
             end
             // if not handshake start transfer
             if (!cfg_handshake_en) begin
@@ -732,8 +758,6 @@ module dma
           // Capture ASID values for use throughout the transfer.
           if (transfer_byte_q == '0) begin
             capture_asid = 1'b1;
-            src_asid_d = reg2hw.address_space_id.source_asid.q;
-            dst_asid_d = reg2hw.address_space_id.destination_asid.q;
           end
 
           unique case (transfer_width_d)
@@ -803,7 +827,7 @@ module dma
 
           // Check the validity of the restricted DMA-enabled memory range
           // Note: both the base and the limit addresses are inclusive
-          if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
+          if (enabled_memory_range_limit_q < enabled_memory_range_base_q) begin
             next_error[DmaBaseLimitErr] = 1'b1;
           end
 
@@ -838,11 +862,11 @@ module dma
               (reg2hw.address_space_id.source_asid.q == SocSystemAddr)) &&
               (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
               // Out-of-bound check
-              ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
-                (reg2hw.destination_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+              ((reg2hw.destination_address_lo.q > enabled_memory_range_limit_q) ||
+                (reg2hw.destination_address_lo.q < enabled_memory_range_base_q) ||
                 ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+                  SYS_ADDR_WIDTH'(enabled_memory_range_limit_q)))) begin
             next_error[DmaDestAddrErr] = 1'b1;
           end
 
@@ -853,11 +877,11 @@ module dma
               (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)) &&
               (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
                 // Out-of-bound check
-                ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
-                (reg2hw.source_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+                ((reg2hw.source_address_lo.q > enabled_memory_range_limit_q) ||
+                (reg2hw.source_address_lo.q < enabled_memory_range_base_q)   ||
                 ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+                  SYS_ADDR_WIDTH'(enabled_memory_range_limit_q)))) begin
             next_error[DmaSourceAddrErr] = 1'b1;
           end
 
@@ -1178,6 +1202,14 @@ module dma
 
   always_comb begin
     hw2reg = '0;
+
+    // Lock or unlock the regwen when leaving or returning back to DmaIdle
+    clear_cfg_regwen = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle);
+    set_cfg_regwen   = (ctrl_state_d == DmaIdle);
+    // Convert the regwen set/clear signal to the multi bit
+    hw2reg.cfg_regwen.de = set_cfg_regwen | clear_cfg_regwen;
+    hw2reg.cfg_regwen.d  = prim_mubi_pkg::mubi4_bool_to_mubi(set_cfg_regwen);
+
 
     // If we are in hardware handshake mode with auto-increment increment the corresponding address
     // when finishing a DMA operation when transitioning from a data move state to the idle state
