@@ -562,7 +562,7 @@
           desc: '''This is the state of the EDN main state machine.
                 See the RTL file `edn_main_sm` for the meaning of the values.
                 '''
-          resval: 0x185
+          resval: 0x0C1
         }
       ]
     },

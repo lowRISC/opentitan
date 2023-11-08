@@ -1157,7 +1157,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (9'h185),
+    .RESVAL  (9'hc1),
     .Mubi    (1'b0)
   ) u_main_sm_state (
     .clk_i   (clk_i),
