@@ -75,8 +75,10 @@ class edn_genbits_vseq extends edn_base_vseq;
 
     // set generate length and num_reqs_between_reseeds depending on the operational mode
     if (cfg.boot_req_mode == MuBi4True) begin
-      mode = edn_env_pkg::BootReqMode;
       glen = total_glen - cfg.num_boot_reqs;
+      // Disable boot mode to enter sw mode which enables sw commands.
+      ral.ctrl.boot_req_mode.set(prim_mubi_pkg::MuBi4False);
+      csr_update(.csr(ral.ctrl));
     end
 
     if (cfg.auto_req_mode == MuBi4True) begin
@@ -93,16 +95,14 @@ class edn_genbits_vseq extends edn_base_vseq;
       glen = total_glen;
     end
 
-    if (cfg.boot_req_mode != MuBi4True) begin
-      // Send instantiate cmd
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags),
-             .glen(glen), .mode(mode));
-      for (int i = 0; i < clen; i++) begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
-        wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
-      end
+    // Send instantiate cmd
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
+    wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags),
+            .glen(glen), .mode(mode));
+    for (int i = 0; i < clen; i++) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
+      wr_cmd(.cmd_type(edn_env_pkg::Sw), .cmd_data(cmd_data), .mode(mode));
     end
 
     if (cfg.auto_req_mode != MuBi4True) begin
