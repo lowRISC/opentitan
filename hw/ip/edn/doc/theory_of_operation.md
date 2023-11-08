@@ -28,8 +28,9 @@ This means, for instance, that no personalization strings or additional data may
 On exiting, the EDN issues an `uninstantiate` command to destroy the associated CSRNG instance.
 
 Once firmware initialization is complete, it is important to exit this mode if the endpoints ever need FIPS-approved random values.
+Should another generate command be needed, it can only be issued after exiting boot mode.
 This is done by either *clearing* the `EDN_ENABLE` field or *clearing* the `BOOT_REQ_MODE` field in [`CTRL`](registers.md#ctrl) to halt the boot-time request state machine.
-Firmware must then wait for successful the shutdown of the state machine by polling the `REQ_MODE_SM_STS` field of the [`MAIN_SM_STATE`](registers.md#main_sm_state) register.
+Firmware must then wait for the transition of the state machine by polling the `CMD_RDY` field of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register or wait for the state machine to enter the SW mode by polling the [`MAIN_SM_STATE`](registers.md#main_sm_state) register.
 
 It should be noted that when in boot-time request mode, no status will be updated that is used for the software port operation.
 If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
