@@ -7355,7 +7355,7 @@
         }
         soc:
         {
-          soc_mbx: 0x00005400
+          soc_mbx: 0x01465400
         }
       }
       clock_connections:
@@ -7476,7 +7476,7 @@
         }
         soc:
         {
-          soc_mbx: 0x01465400
+          soc_mbx: 0x01465500
         }
       }
       clock_connections:
@@ -12014,7 +12014,7 @@
             {
               base_addrs:
               {
-                soc_mbx: 0x5400
+                soc_mbx: 0x1465400
               }
               size_byte: 0x20
             }
@@ -12036,7 +12036,7 @@
             {
               base_addrs:
               {
-                soc_mbx: 0x1465400
+                soc_mbx: 0x1465500
               }
               size_byte: 0x20
             }

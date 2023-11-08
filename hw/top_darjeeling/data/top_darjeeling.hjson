@@ -826,7 +826,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000400"},
-        soc:  {soc_mbx: "0x00005400"},
+        soc:  {soc_mbx: "0x01465400"},
       },
     },
     { name: "mbx5",
@@ -836,7 +836,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000500"},
-        soc:  {soc_mbx: "0x01465400"},
+        soc:  {soc_mbx: "0x01465500"},
       },
     },
     { name: "mbx6",

@@ -161,7 +161,7 @@
         {
           base_addrs:
           {
-            soc_mbx: 0x5400
+            soc_mbx: 0x1465400
           }
           size_byte: 0x20
         }
@@ -183,7 +183,7 @@
         {
           base_addrs:
           {
-            soc_mbx: 0x1465400
+            soc_mbx: 0x1465500
           }
           size_byte: 0x20
         }
