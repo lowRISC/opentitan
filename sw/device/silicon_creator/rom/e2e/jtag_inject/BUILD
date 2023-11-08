@@ -115,24 +115,23 @@ LC_STATES_DEBUG_DISALLOWED = [
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_params(
+        cw310 = cw310_jtag_params(
             timeout = "moderate",
+            binaries = {
+                "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf": "rom",
+            },
             bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-            test_cmds = [
-                "--bitstream=\"$(rootpath {bitstream})\"",
-                "--elf=\"$(rootpath //sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf)\"",
-            ] + (
-                ["--expect-fail"] if lc_state_val in LC_STATES_DEBUG_DISALLOWED else []
-            ) + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+            logging = "debug",
+            tags = ["cw310_rom_with_fake_keys"],
+            test_cmd = " --elf={rom}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
         ),
-        data = [
-            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
-        targets = ["cw310_rom_with_fake_keys"],
-        test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
