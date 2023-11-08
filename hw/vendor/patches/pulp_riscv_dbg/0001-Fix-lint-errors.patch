@@ -1,4 +1,4 @@
-From e0f9a11ece9c212d5d59183cb4263af415e0ea23 Mon Sep 17 00:00:00 2001
+From aa62d018f46ee0c811045789ac5165521783c9fd Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:28:07 -0700
 Subject: [PATCH 1/4] Fix lint errors
@@ -6,10 +6,27 @@ Subject: [PATCH 1/4] Fix lint errors
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
-index b14b390..5b2c556 100755
+index b14b390..0d73ab4 100755
 --- a/src/dm_mem.sv
 +++ b/src/dm_mem.sv
-@@ -265,12 +265,13 @@ module dm_mem #(
+@@ -82,7 +82,15 @@ module dm_mem #(
+   localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
+   localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
+ 
+-  logic [dm::ProgBufSize/2-1:0][63:0]   progbuf;
++  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm::HaltAddress;
++  // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is
++  // more than eough to cover the 19 x 64bit = 0x98 bytes currenty allocated in the debug ROM.
++  localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm::HaltAddress + 'h7FF;
++  // Prog buff size after repacking the 32bit array into a 64bit array.
++  localparam int unsigned ProgBuf64Size = dm::ProgBufSize / 2;
++  localparam int unsigned ProgBuf64AddrSize = $clog2(ProgBuf64Size);
++
++  logic [ProgBuf64Size-1:0][63:0] progbuf;
+   logic [7:0][63:0]   abstract_cmd;
+   logic [NrHarts-1:0] halted_d, halted_q;
+   logic [NrHarts-1:0] resuming_d, resuming_q;
+@@ -265,12 +273,13 @@ module dm_mem #(
            // core can write data registers
            [DataBaseAddr:DataEndAddr]: begin
              data_valid_o = 1'b1;
@@ -26,7 +43,7 @@ index b14b390..5b2c556 100755
                          data_bits[dc+1][(i-4)*8+:8] = wdata_i[i*8+:8];
                        end
                      end else begin // for lower 32bit data write
-@@ -310,8 +311,11 @@ module dm_mem #(
+@@ -310,14 +319,17 @@ module dm_mem #(
  
            [DataBaseAddr:DataEndAddr]: begin
              rdata_d = {
@@ -40,6 +57,14 @@ index b14b390..5b2c556 100755
                        };
            end
  
+           [ProgBufBaseAddr:ProgBufEndAddr]: begin
+-            rdata_d = progbuf[$clog2(dm::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
+-                          ProgBufBaseAddr[DbgAddressBits-1:3])];
++            rdata_d = progbuf[ProgBuf64AddrSize'(addr_i[DbgAddressBits-1:3] -
++                                                 ProgBufBaseAddr[DbgAddressBits-1:3])];
+           end
+ 
+           // two slots for abstract command
 diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
 index e897bf5..6be89a6 100644
 --- a/src/dmi_jtag.sv

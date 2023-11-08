@@ -1,4 +1,4 @@
-From de14c615628e7f0a2bf53fa5eec5685cccb1504d Mon Sep 17 00:00:00 2001
+From f2287d1540014435c0ab612fbf69ec5155acc333 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Thu, 17 Aug 2023 10:30:17 -0700
 Subject: [PATCH 4/4] Extend DMI address width

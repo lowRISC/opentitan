@@ -88,8 +88,11 @@ module dm_mem #(
   // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is
   // more than eough to cover the 19 x 64bit = 0x98 bytes currenty allocated in the debug ROM.
   localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm::HaltAddress + 'h7FF;
+  // Prog buff size after repacking the 32bit array into a 64bit array.
+  localparam int unsigned ProgBuf64Size = dm::ProgBufSize / 2;
+  localparam int unsigned ProgBuf64AddrSize = $clog2(ProgBuf64Size);
 
-  logic [dm::ProgBufSize/2-1:0][63:0]   progbuf;
+  logic [ProgBuf64Size-1:0][63:0] progbuf;
   logic [7:0][63:0]   abstract_cmd;
   logic [NrHarts-1:0] halted_d, halted_q;
   logic [NrHarts-1:0] resuming_d, resuming_q;
@@ -328,8 +331,8 @@ module dm_mem #(
           end
 
           [ProgBufBaseAddr:ProgBufEndAddr]: begin
-            rdata_d = progbuf[$clog2(dm::ProgBufSize)'(addr_i[DbgAddressBits-1:3] -
-                          ProgBufBaseAddr[DbgAddressBits-1:3])];
+            rdata_d = progbuf[ProgBuf64AddrSize'(addr_i[DbgAddressBits-1:3] -
+                                                 ProgBufBaseAddr[DbgAddressBits-1:3])];
           end
 
           // two slots for abstract command

@@ -1,4 +1,4 @@
-From 107fe81668549a470caccc46aad1d74c1647042c Mon Sep 17 00:00:00 2001
+From 0fa994dd7783812dd42a7bd6c32f6ca3715723ca Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:49 -0700
 Subject: [PATCH 2/4] Add access error signal to dm_mem
@@ -6,7 +6,7 @@ Subject: [PATCH 2/4] Add access error signal to dm_mem
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
-index 5b2c556..cc0cc69 100755
+index 0d73ab4..6a50a3e 100755
 --- a/src/dm_mem.sv
 +++ b/src/dm_mem.sv
 @@ -20,7 +20,8 @@ module dm_mem #(
@@ -31,19 +31,7 @@ index 5b2c556..cc0cc69 100755
  );
    localparam int unsigned DbgAddressBits = 12;
    localparam int unsigned HartSelLen     = (NrHarts == 1) ? 1 : $clog2(NrHarts);
-@@ -82,6 +84,11 @@ module dm_mem #(
-   localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
-   localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
- 
-+  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm::HaltAddress;
-+  // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is
-+  // more than eough to cover the 19 x 64bit = 0x98 bytes currenty allocated in the debug ROM.
-+  localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm::HaltAddress + 'h7FF;
-+
-   logic [dm::ProgBufSize/2-1:0][63:0]   progbuf;
-   logic [7:0][63:0]   abstract_cmd;
-   logic [NrHarts-1:0] halted_d, halted_q;
-@@ -231,6 +238,7 @@ module dm_mem #(
+@@ -239,6 +241,7 @@ module dm_mem #(
      rdata_d        = rdata_q;
      data_bits      = data_i;
      rdata          = '0;
@@ -51,7 +39,7 @@ index 5b2c556..cc0cc69 100755
  
      // write data in csr register
      data_valid_o   = 1'b0;
-@@ -282,7 +290,7 @@ module dm_mem #(
+@@ -290,7 +293,7 @@ module dm_mem #(
                end
              end
            end
@@ -60,7 +48,7 @@ index 5b2c556..cc0cc69 100755
          endcase
  
        // this is a read
-@@ -339,6 +347,11 @@ module dm_mem #(
+@@ -347,6 +350,11 @@ module dm_mem #(
              end
              rdata_d = rdata;
            end
@@ -72,7 +60,7 @@ index 5b2c556..cc0cc69 100755
            default: ;
          endcase
        end
-@@ -353,6 +366,54 @@ module dm_mem #(
+@@ -361,6 +369,54 @@ module dm_mem #(
      data_o = data_bits;
    end
  
@@ -127,7 +115,7 @@ index 5b2c556..cc0cc69 100755
    always_comb begin : p_abstract_cmd_rom
      // this abstract command is currently unsupported
      unsupported_command = 1'b0;
-@@ -517,10 +578,6 @@ module dm_mem #(
+@@ -525,10 +581,6 @@ module dm_mem #(
      );
    end
  
