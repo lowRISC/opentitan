@@ -1279,6 +1279,57 @@ opentitan_test(
     ],
 )
 
+
+
+################ flash rma enter
+otp_image(
+        name = "img_dev_exec_disabled",
+        src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+        overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
+        visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+        name = "rom_with_fake_keys_otp_dev_exec_disabled",
+        src = "//hw/bitstream:rom_with_fake_keys",
+        data = "img_dev_exec_disabled",
+        meminfo = "//hw/bitstream:otp_mmi",
+#        tags = ["manual",],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+)
+
+opentitan_test(
+        name = "flash_ctrl_rma_entry_test",
+## copied from //sw/device/silicon_creator/rom/e2e/jtag_inject/BUILD
+        srcs = ["flash_ctrl_rma_entry_test.c"],
+        cw310 = cw310_jtag_params(
+            binaries = {
+                "//sw/device/examples/sram_program:sram_program": "sram_program",
+            },
+            bitstream = ":rom_with_fake_keys_otp_dev_exec_disabled",
+#            logging = "debug",
+            tags = ["cw310_rom_with_fake_keys"],
+            test_cmd = """
+                --elf={sram_program}
+            """,
+            test_harness = "//sw/host/tests/chip/jtag:sram_load",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            CONST.LCV.DEV,
+        ),
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+)
+
 opentitan_test(
     name = "gpio_smoketest",
     srcs = ["gpio_smoketest.c"],
