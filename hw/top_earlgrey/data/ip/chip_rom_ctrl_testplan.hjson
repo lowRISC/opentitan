@@ -13,6 +13,8 @@
       features: ["ROM_CTRL.SCRAMBLED"]
       stage: V2
       si_stage: SV1
+      bazel:["//sw/device/silicon_creator/rom/e2e/jtag_inject:rom_e2e_openocd_debug_test"]
+      lc_states: ["TEST_UNLOCKED0", "DEV", "RMA", "PROD", "PROD_END"]
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
