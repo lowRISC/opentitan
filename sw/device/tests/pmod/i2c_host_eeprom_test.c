@@ -89,14 +89,17 @@ static status_t write_read_random(dif_i2c_t *i2c) {
 static status_t write_read_page(dif_i2c_t *i2c) {
   // Write multiple bytes to the 9th page (of 64 bytes each).
   const uint8_t kAddr[2] = {0x02, 0x01};
-  uint8_t data[5] = {kAddr[0], kAddr[1], 0xAB, 0xCD, 0xEF};
+  uint8_t data[10] = {kAddr[0], kAddr[1], 0x01, 0x23, 0x45,
+                      0x67,     0x89,     0xAB, 0xCD, 0xEF};
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(data), data, false));
 
   // Wait for the write to finish.
   TRY(poll_while_busy(i2c));
 
   // Read back the data at that address.
-  uint8_t read_data[3] = {0x00, 0x00, 0x00};
+  uint8_t read_data[8] = {
+      0x00,
+  };
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(kAddr), kAddr, true));
   TRY(i2c_testutils_read(i2c, kDeviceAddr, sizeof(read_data), read_data,
                          kDefaultTimeoutMicros));
@@ -106,7 +109,7 @@ static status_t write_read_page(dif_i2c_t *i2c) {
 
   // Erase the values we just wrote to prevent the success state persisting to
   // subsequent runs of the test.
-  data[2] = data[3] = data[4] = 0xFF;
+  memset(&data[2], 0xFF, sizeof(read_data));
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(data), data, false));
   TRY(poll_while_busy(i2c));
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(kAddr), kAddr, true));
