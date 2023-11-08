@@ -25,6 +25,7 @@
       features: ["I2C.MODE.HOST", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
               "chip_sw_i2c_host_tx_rx_idx2"]

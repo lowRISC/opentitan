@@ -56,6 +56,17 @@ static status_t poll_while_busy(dif_i2c_t *i2c) {
   return i2c_testutils_read(i2c, kDeviceAddr, 0, NULL, kAckPollTimeoutMicros);
 }
 
+/**
+ * Check if an given irq has fired and is pending.
+ */
+static status_t check_irq(dif_i2c_t *i2c, dif_i2c_irq_t irq) {
+  bool irq_fired = false;
+  TRY(dif_i2c_irq_is_pending(i2c, irq, &irq_fired));
+  TRY_CHECK(irq_fired, "Irq %u not fired", irq);
+  TRY(dif_i2c_irq_acknowledge(i2c, irq));
+  return OK_STATUS();
+}
+
 static status_t write_read_random(dif_i2c_t *i2c) {
   int32_t naks = 0;
   // Write a byte to some random address.
@@ -122,6 +133,17 @@ static status_t write_read_page(dif_i2c_t *i2c) {
   return OK_STATUS();
 }
 
+static status_t write_read_page_with_irq(dif_i2c_t *i2c) {
+  TRY(dif_i2c_irq_acknowledge_all(i2c));
+  TRY(dif_i2c_set_watermarks(i2c, /*rx_level=*/kDifI2cLevel4Byte,
+                             /*fmt_level=*/kDifI2cLevel4Byte));
+
+  TRY(write_read_page(i2c));
+
+  TRY(check_irq(i2c, kDifI2cIrqFmtThreshold));
+  return check_irq(i2c, kDifI2cIrqRxThreshold);
+}
+
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                               uint8_t i2c_instance,
                               i2c_pinmux_platform_id_t platform) {
@@ -168,6 +190,7 @@ bool test_main(void) {
       CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSpeeds[i]));
       EXECUTE_TEST(test_result, write_read_random, &i2c);
       EXECUTE_TEST(test_result, write_read_page, &i2c);
+      EXECUTE_TEST(test_result, write_read_page_with_irq, &i2c);
     }
     CHECK_STATUS_OK(test_shutdown(&i2c, &pinmux, i2c_instance));
   }
