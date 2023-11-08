@@ -24,7 +24,7 @@ use top_earlgrey::top_earlgrey;
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum LcTransitionError {
-    #[error("LC controller not ready to perform an LC transition (status: {0:x}).")]
+    #[error("LC controller not ready to perform an LC transition (status: 0x{0:x}).")]
     LcCtrlNotReady(LcCtrlStatus),
     #[error("LC transition mutex was already claimed.")]
     MutexAlreadyClaimed,
@@ -32,11 +32,11 @@ pub enum LcTransitionError {
     FailedToClaimMutex,
     #[error("Volatile raw unlock is not supported on this chip.")]
     VolatileRawUnlockNotSupported,
-    #[error("LC transition target programming failed (target state: {0:x}).")]
+    #[error("LC transition target programming failed (target state: 0x{0:x}).")]
     TargetProgrammingFailed(u32),
-    #[error("LC transition failed (status: {0:x}).")]
+    #[error("LC transition failed (status: 0x{0:x}).")]
     TransitionFailed(LcCtrlStatus),
-    #[error("Bad post transition LC state: {0:x}.")]
+    #[error("Bad post transition LC state: 0x{0:x}.")]
     BadPostTransitionState(u32),
     #[error("Invalid LC state: {0:x}")]
     InvalidState(u32),
@@ -76,12 +76,19 @@ fn setup_lc_transition(
     }
 
     // Program the target LC state.
-    jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionTarget, u32::from(target_lc_state))?;
+    jtag.write_lc_ctrl_reg(
+        &LcCtrlReg::TransitionTarget,
+        target_lc_state.redundant_encoding(),
+    )?;
 
     // Check correct target LC state was programmed.
-    let target_lc_state_programmed = jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionTarget)?;
-    if target_lc_state_programmed != u32::from(target_lc_state) {
-        return Err(LcTransitionError::TargetProgrammingFailed(target_lc_state_programmed).into());
+    let target_lc_state_programmed = DifLcCtrlState::from_redundant_encoding(
+        jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionTarget)?,
+    )?;
+    if target_lc_state_programmed != target_lc_state {
+        return Err(
+            LcTransitionError::TargetProgrammingFailed(target_lc_state_programmed.into()).into(),
+        );
     }
 
     // If the transition requires a token, write it to the multi-register.
@@ -216,18 +223,12 @@ pub fn trigger_volatile_raw_unlock(
     setup_lc_transition(jtag.clone(), target_lc_state, hashed_token)?;
 
     // Configure external clock and set volatile raw unlock bit.
+    let mut ctrl = LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK;
     if use_external_clk {
-        jtag.write_lc_ctrl_reg(
-            &LcCtrlReg::TransitionCtrl,
-            LcCtrlTransitionCtrl::EXT_CLOCK_EN.bits()
-                | LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK.bits(),
-        )?;
-    } else {
-        jtag.write_lc_ctrl_reg(
-            &LcCtrlReg::TransitionCtrl,
-            LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK.bits(),
-        )?;
+        ctrl |= LcCtrlTransitionCtrl::EXT_CLOCK_EN;
     }
+    jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl, ctrl.bits())?;
+
     // Read back the volatile raw unlock bit to see if the feature is supported in the silicon.
     if jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl)? < 2u32 {
         return Err(LcTransitionError::VolatileRawUnlockNotSupported.into());

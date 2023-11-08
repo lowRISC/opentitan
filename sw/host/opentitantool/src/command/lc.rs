@@ -2,18 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use std::any::Any;
+use std::rc::Rc;
+use std::time::Duration;
+
+use anyhow::{bail, Result};
 use clap::{Args, Subcommand};
 use hex::decode;
 use humantime::parse_duration;
 use serde_annotate::Annotate;
-use std::any::Any;
-use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, trigger_volatile_raw_unlock};
 
 #[derive(serde::Serialize)]
@@ -21,13 +23,42 @@ pub struct LcStateReadResult {
     pub lc_state: DifLcCtrlState,
 }
 
+/// Read, decode, and check the LC state is Raw.
+fn check_lc_state_is_raw(jtag: Rc<dyn Jtag>) -> Result<()> {
+    let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
+    if lc_state != DifLcCtrlState::Raw {
+        bail!("Device must be in Raw LC state. It is in: {}", lc_state);
+    }
+    Ok(())
+}
+
+/// Parses an unlock token string.
+fn parse_unlock_token_str(token: &str) -> Result<[u32; 4]> {
+    let hex_str_no_sep = token.replace('_', "");
+    let hex_str_prefix = "0x";
+    let sanitized_hex_str = if token.starts_with(hex_str_prefix) {
+        hex_str_no_sep.strip_prefix(hex_str_prefix).unwrap()
+    } else {
+        hex_str_no_sep.as_str()
+    };
+    let token_bytes_vec = decode(sanitized_hex_str)?;
+    if token_bytes_vec.len() != 16 {
+        bail!(
+            "Expected a token of length 16-bytes but it was {}-bytes.",
+            token_bytes_vec.len()
+        );
+    }
+    let token_word_vec: Vec<u32> = token_bytes_vec
+        .chunks_exact(std::mem::size_of::<u32>())
+        .map(|chunk| u32::from_be_bytes(chunk.try_into().unwrap()))
+        .rev()
+        .collect();
+    Ok(token_word_vec.try_into().unwrap())
+}
+
 #[derive(Debug, Args)]
 /// Reads the device life cycle state over JTAG.
 pub struct LcStateRead {
-    /// Whether or not to use the externally provided clock.
-    #[arg(long)]
-    pub use_ext_clk: bool,
-
     /// Reset duration when switching the LC TAP straps.
     #[arg(long, value_parser = parse_duration, default_value = "100ms")]
     pub reset_delay: Duration,
@@ -53,6 +84,8 @@ impl CommandDispatch for LcStateRead {
         // Read and decode the LC state.
         let lc_state =
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+
+        jtag.disconnect()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
@@ -61,7 +94,7 @@ impl CommandDispatch for LcStateRead {
 /// Initiates a device transition from Raw to TestUnlocked0.
 pub struct RawUnlock {
     /// The raw unlock token hexstring.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(long)]
     pub token: String,
 
     /// Reset duration when switching the LC TAP straps.
@@ -86,36 +119,8 @@ impl CommandDispatch for RawUnlock {
         let jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
 
-        // Read, decode, and check the LC state is Raw.
-        let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
-        if lc_state != DifLcCtrlState::Raw {
-            return Err(anyhow!(
-                "Device must be in Raw LC state. It is in: {}",
-                lc_state
-            ));
-        }
-
-        // Parse unlock token.
-        let hex_str_no_sep = self.token.replace('_', "");
-        let hex_str_prefix = "0x";
-        let sanitized_hex_str = if self.token.starts_with(hex_str_prefix) {
-            hex_str_no_sep.strip_prefix(hex_str_prefix).unwrap()
-        } else {
-            hex_str_no_sep.as_str()
-        };
-        let token_bytes_vec = decode(sanitized_hex_str)?;
-        let token_word_vec: Vec<u32> = token_bytes_vec
-            .chunks_exact(std::mem::size_of::<u32>())
-            .map(|chunk| u32::from_be_bytes(chunk.try_into().unwrap()))
-            .rev()
-            .collect();
-        if token_word_vec.len() < 4 {
-            return Err(anyhow!(
-                "Expected a token of length 16-bytes but it was {}-bytes.",
-                token_word_vec.len() * std::mem::size_of::<u32>()
-            ));
-        }
-        let token_words: [u32; 4] = token_word_vec.try_into().unwrap();
+        check_lc_state_is_raw(jtag.clone())?;
+        let token_words = parse_unlock_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -130,7 +135,10 @@ impl CommandDispatch for RawUnlock {
         )?;
 
         // Read and decode the LC state.
-        let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
+        let lc_state =
+            DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+
+        jtag.disconnect()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
@@ -139,7 +147,7 @@ impl CommandDispatch for RawUnlock {
 /// Initiates a (volatile) device transition from Raw to TestUnlocked0.
 pub struct VolatileRawUnlock {
     /// The raw unlock token hexstring.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(long)]
     pub token: String,
 
     /// Reset duration when switching the LC TAP straps.
@@ -164,36 +172,8 @@ impl CommandDispatch for VolatileRawUnlock {
         let jtag = self.jtag_params.create(transport)?;
         jtag.connect(JtagTap::LcTap)?;
 
-        // Read, decode, and check the LC state is Raw.
-        let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
-        if lc_state != DifLcCtrlState::Raw {
-            return Err(anyhow!(
-                "Device must be in Raw LC state. It is in: {}",
-                lc_state
-            ));
-        }
-
-        // Parse unlock token.
-        let hex_str_no_sep = self.token.replace('_', "");
-        let hex_str_prefix = "0x";
-        let sanitized_hex_str = if self.token.starts_with(hex_str_prefix) {
-            hex_str_no_sep.strip_prefix(hex_str_prefix).unwrap()
-        } else {
-            hex_str_no_sep.as_str()
-        };
-        let token_bytes_vec = decode(sanitized_hex_str)?;
-        let token_word_vec: Vec<u32> = token_bytes_vec
-            .chunks_exact(std::mem::size_of::<u32>())
-            .map(|chunk| u32::from_be_bytes(chunk.try_into().unwrap()))
-            .rev()
-            .collect();
-        if token_word_vec.len() < 4 {
-            return Err(anyhow!(
-                "Expected a token of length 16-bytes but it was {}-bytes.",
-                token_word_vec.len() * std::mem::size_of::<u32>()
-            ));
-        }
-        let token_words: [u32; 4] = token_word_vec.try_into().unwrap();
+        check_lc_state_is_raw(jtag.clone())?;
+        let token_words = parse_unlock_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -207,7 +187,10 @@ impl CommandDispatch for VolatileRawUnlock {
         )?;
 
         // Read and decode the LC state.
-        let lc_state = DifLcCtrlState(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?);
+        let lc_state =
+            DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+
+        jtag.disconnect()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
