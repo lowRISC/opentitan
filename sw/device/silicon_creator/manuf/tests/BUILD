@@ -123,6 +123,26 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "manuf_cp_volatile_unlock_raw_functest",
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+    cw310 = cw310_jtag_params(
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
 # This is the same as rom_with_fake_keys_otp_test_unlocked* but with ROM execution disabled.
 [
     otp_image(
