@@ -383,7 +383,7 @@ opentitan_binary(
             binaries = {
                 ":sram_exec_test": "sram_program",
             },
-            bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
+            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = """
                 --elf={sram_program}
