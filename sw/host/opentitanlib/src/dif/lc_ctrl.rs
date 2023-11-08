@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bitflags::bitflags;
 use num_enum::IntoPrimitive;
 use serde::{Deserialize, Serialize};
@@ -40,6 +40,10 @@ with_unknown! {
 
 impl DifLcCtrlState {
     pub fn from_redundant_encoding(encoding: u32) -> Result<Self> {
+        let base_encoding = encoding & 0x1fu32;
+        if base_encoding > u32::from(DifLcCtrlState::StateInvalid) {
+            bail!("Invalid life cycle state value.");
+        }
         Ok(DifLcCtrlState(encoding & 0x1fu32))
     }
 

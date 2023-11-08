@@ -57,8 +57,9 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
     .context("failed to transition to TEST_UNLOCKED0")?;
 
     // Check that LC state is `TEST_UNLOCKED0` over the LC TAP.
-    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, u32::from(DifLcCtrlState::TestUnlocked0));
+    let state =
+        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+    assert_eq!(state, DifLcCtrlState::TestUnlocked0);
 
     jtag.disconnect()?;
 
@@ -102,7 +103,10 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
         &mut state,
     )?;
-    assert_eq!(state[0], u32::from(DifLcCtrlState::TestUnlocked0));
+    assert_eq!(
+        DifLcCtrlState::from_redundant_encoding(state[0])?,
+        DifLcCtrlState::TestUnlocked0
+    );
 
     jtag.disconnect()?;
 
