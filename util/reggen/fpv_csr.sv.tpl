@@ -48,6 +48,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   windows = rb.windows
 %>\
 
+  import prim_mubi_pkg::*;
 `ifdef UVM
   import uvm_pkg::*;
 `endif
@@ -112,11 +113,50 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   // Assign regwen to registers. If the register does not have regwen, it will default to value 1.
   logic [${num_hro_regs}-1:0] regwen;
   % for hro_reg in hro_regs_list:
-<% regwen = hro_reg.regwen %>\
+<%
+     regwen = hro_reg.regwen
+     mubi_regwen = False
+     mubi_width = 4
+     # Locate the REGWEN register and determine its type.
+     for reg in hro_regs_list:
+       if reg.name == regwen and reg.fields[0].mubi:
+         mubi_regwen = True
+         mubi_width = reg.fields[0].bits.width()
+       endif
+     endfor
+%>\
     % if regwen == None:
       assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
+    % elif mubi_regwen:
+      assign regwen[${hro_map.get(hro_reg.offset)[0]}] =
+                      mubi${mubi_width}_test_true_strict(mubi${mubi_width}_t'(`REGWEN_PATH.${regwen.lower()}_qs));
     % else:
       assign regwen[${hro_map.get(hro_reg.offset)[0]}] = `REGWEN_PATH.${regwen.lower()}_qs;
+    % endif
+  % endfor
+
+  // Types of REGWEN supported.
+  typedef enum {
+    NotRegwen,
+    MuBi4Regwen,
+    MuBi8Regwen,
+    MuBi12Regwen,
+    MuBi16Regwen
+  } regwen_type_t;
+
+  // The REGWEN type of each register, if any.
+  regwen_type_t regwen_types[${num_hro_regs}];
+  % for hro_reg in hro_regs_list:
+    % if hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 4:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi4Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 8:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi8Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 12:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi12Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 16:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi16Regwen;
+    % else:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = NotRegwen;
     % endif
   % endfor
 
@@ -163,7 +203,24 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
           if (!d2h.d_error && regwen[hro_idx]) begin
             if (access_policy[hro_idx] == FpvRw0c) begin
               // Assume FpvWr0c policy only has one field that is wr0c.
-              exp_vals[hro_idx] <= exp_vals[hro_idx][0] == 0 ? 0 : pend_trans[d2h.d_source].wr_data;
+              unique case (regwen_types[hro_idx])
+                MuBi4Regwen:
+                  exp_vals[hro_idx] <= mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
+                                                    mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
+                MuBi8Regwen:
+                  exp_vals[hro_idx] <= mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
+                                                    mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
+                MuBi12Regwen:
+                  exp_vals[hro_idx] <= mubi12_and_hi(
+                                          mubi12_t'(exp_vals[hro_idx][11:0]),
+                                          mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
+                MuBi16Regwen:
+                  exp_vals[hro_idx] <= mubi16_and_hi(
+                                          mubi16_t'(exp_vals[hro_idx][15:0]),
+                                          mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
+                default:
+                  exp_vals[hro_idx] <= exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
+              endcase
             end else begin
               exp_vals[hro_idx] <= pend_trans[d2h.d_source].wr_data;
             end
