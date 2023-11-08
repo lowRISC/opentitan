@@ -25,6 +25,7 @@ package edn_pkg;
 
   parameter edn_req_t EDN_REQ_DEFAULT = '0;
   parameter edn_rsp_t EDN_RSP_DEFAULT = '0;
+  parameter csrng_pkg::csrng_cmd_t BOOT_UNINSTANTIATE = 32'h5;
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 21 -n 9 \

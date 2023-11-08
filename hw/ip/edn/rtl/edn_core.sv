@@ -125,6 +125,7 @@ module edn_core import edn_pkg::*;
   logic                      boot_req_mode_pfa;
   logic                      boot_wr_cmd_reg;
   logic                      boot_wr_cmd_genfifo;
+  logic                      boot_wr_cmd_uni;
   logic                      auto_first_ack_wait;
   logic                      auto_req_mode_busy;
   logic                      auto_set_intr_gate;
@@ -477,11 +478,12 @@ module edn_core import edn_pkg::*;
          (!edn_enable_fo[CsrngCmdReq]) ? '0 :
          boot_wr_cmd_reg ? boot_ins_cmd :
          sw_cmd_req_load ? sw_cmd_req_bus :
+         boot_wr_cmd_uni ? edn_pkg::BOOT_UNINSTANTIATE :
          cs_cmd_req_q;
 
   assign cs_cmd_req_vld_d =
          (!edn_enable_fo[CsrngCmdReqValid]) ? '0 :
-         (sw_cmd_req_load || boot_wr_cmd_reg); // cmd reg write
+         (sw_cmd_req_load || boot_wr_cmd_reg || boot_wr_cmd_uni); // cmd reg write
 
   assign cs_cmd_req_out_d =
          (!edn_enable_fo[CsrngCmdReqOut]) ? '0 :
@@ -651,6 +653,7 @@ module edn_core import edn_pkg::*;
     .sw_cmd_valid_o         (sw_cmd_valid),
     .boot_wr_cmd_reg_o      (boot_wr_cmd_reg),
     .boot_wr_cmd_genfifo_o  (boot_wr_cmd_genfifo),
+    .boot_wr_cmd_uni_o      (boot_wr_cmd_uni),
     .auto_set_intr_gate_o   (auto_set_intr_gate),
     .auto_clr_intr_gate_o   (auto_clr_intr_gate),
     .auto_first_ack_wait_o  (auto_first_ack_wait),
