@@ -116,10 +116,10 @@ interface edn_cov_if (
       // Generate commands in auto mode that aren't from the generate register aren't intended
       ignore_bins gen_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode } &&
                                        ! binsof(cp_cmd_src) intersect { edn_env_pkg::AutoGen };
-      // Generate commands in boot mode that aren't from the bootgen or sw register aren't intended
+      // Generate commands in boot mode that aren't from the bootgen register aren't intended
       ignore_bins gen_boot_wrong_src =
           binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
-          ! binsof(cp_cmd_src) intersect { edn_env_pkg::BootGen, edn_env_pkg::Sw };
+          ! binsof(cp_cmd_src) intersect { edn_env_pkg::BootGen };
       // Generate commands in boot mode that have a clen > 0 aren't intended
       ignore_bins gen_boot_seq_wrong_clen =
           binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
@@ -146,7 +146,7 @@ interface edn_cov_if (
       // Instantiate commands in boot mode that aren't from the BootIns register aren't intended
       ignore_bins ins_boot_wrong_src =
           binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
-          ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw, edn_env_pkg::BootIns };
+          ! binsof(cp_cmd_src) intersect { edn_env_pkg::BootIns };
       // Instantiate commands in boot mode that have a clen > 0 aren't intended
       ignore_bins ins_boot_seq_wrong_clen =
           binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
@@ -170,9 +170,8 @@ interface edn_cov_if (
       // Reseed commands in auto mode that aren't from the autoRes register aren't intended
       ignore_bins res_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode } &&
                                        ! binsof(cp_cmd_src) intersect { edn_env_pkg::AutoRes };
-      // Reseed commands in boot mode that aren't from the sw register aren't intended
-      ignore_bins res_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
-                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Reseed commands in boot mode aren't intended
+      ignore_bins res_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode };
       // Reseed commands in sw mode that aren't from the sw register aren't intended
       ignore_bins res_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
                                      ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
@@ -185,9 +184,8 @@ interface edn_cov_if (
       ignore_bins not_upd = ! binsof(cp_acmd) intersect { csrng_pkg::UPD };
       // Update commands in auto mode aren't intended
       ignore_bins upd_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode };
-      // Update commands in boot mode that aren't from the sw register aren't intended
-      ignore_bins upd_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
-                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Update commands in boot mode aren't intended
+      ignore_bins upd_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode };
       // Update commands in sw mode that aren't from the sw register aren't intended
       ignore_bins upd_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
                                      ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
@@ -199,9 +197,8 @@ interface edn_cov_if (
       ignore_bins not_uni = ! binsof(cp_acmd) intersect { csrng_pkg::UNI };
       // Uninstantiate commands in auto mode aren't intended
       ignore_bins uni_auto_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::AutoReqMode };
-      // Uninstantiate commands in boot mode that aren't from the sw register aren't intended
-      ignore_bins uni_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode } &&
-                                       ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
+      // Uninstantiate commands in boot mode are always the same.
+      ignore_bins uni_boot_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::BootReqMode };
       // Uninstantiate commands in sw mode that aren't from the sw register aren't intended
       ignore_bins uni_sw_wrong_src = binsof(cp_mode) intersect { edn_env_pkg::SwMode } &&
                                      ! binsof(cp_cmd_src) intersect { edn_env_pkg::Sw };
