@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
-  DMA 'generic' smoke test that runs smoke test with both 'memory-to-memory' and
-      'hardware handshaking' transfers.
+  DMA 'generic' smoke test; runs smoke test with both 'memory-to-memory' and 'hardware handshaking'
+  transfers.
 
     - FW allocates DMA enabled Memory Space for the data movement
     - FW configures Source Address and ASID

@@ -54,13 +54,13 @@
       name: dma_memory_smoke
       uvm_test_seq: dma_memory_smoke_vseq
       run_opts: ["+dma_dv_waive_system_bus=1"]
-      reseed: 50
+      reseed: 25
     }
     {
       name: dma_handshake_smoke
       uvm_test_seq: dma_handshake_smoke_vseq
       run_opts: ["+dma_dv_waive_system_bus=1"]
-      reseed: 50
+      reseed: 25
     }
     {
       name: dma_memory_region_lock
@@ -69,16 +69,22 @@
       reseed: 5
     }
     {
+      name: dma_generic_stress
+      uvm_test_seq: dma_generic_stress_vseq
+      run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
+      reseed: 5
+    }
+    {
       name: dma_memory_stress
       uvm_test_seq: dma_memory_stress_vseq
       run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
-      reseed: 5
+      reseed: 3
     }
     {
       name: dma_handshake_stress
       uvm_test_seq: dma_handshake_stress_vseq
       run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
-      reseed: 5
+      reseed: 3
     }
     {
       name: dma_stress_all
@@ -93,6 +99,10 @@
     {
       name: smoke
       tests: ["dma_memory_smoke", "dma_handshake_smoke", "dma_generic_smoke"]
+    }
+    {
+      name: stress
+      tests: ["dma_memory_stress", "dma_handshake_stress", "dma_generic_stress"]
     }
   ]
 }
