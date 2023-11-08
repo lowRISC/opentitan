@@ -100,6 +100,7 @@ otp_json(
                 --exec="transport init"
                 --exec="bootstrap --clear-uart=true {firmware}"
                 --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                --exec="fpga clear-bitstream"
                 no-op
             """,
         ),
