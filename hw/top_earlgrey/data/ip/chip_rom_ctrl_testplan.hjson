@@ -12,7 +12,7 @@
             '''
       features: ["ROM_CTRL.SCRAMBLED"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV1
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
