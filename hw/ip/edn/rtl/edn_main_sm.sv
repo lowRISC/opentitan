@@ -19,6 +19,7 @@ module edn_main_sm import edn_pkg::*; #(
   output logic                  sw_cmd_valid_o,
   output logic                  boot_wr_cmd_reg_o,
   output logic                  boot_wr_cmd_genfifo_o,
+  output logic                  boot_wr_cmd_uni_o,
   output logic                  auto_set_intr_gate_o,
   output logic                  auto_clr_intr_gate_o,
   output logic                  auto_first_ack_wait_o,
@@ -64,12 +65,13 @@ module edn_main_sm import edn_pkg::*; #(
   assign main_sm_state_o = state_q;
 
   assign main_sm_busy_o = (state_q != Idle) && (state_q != BootPulse) &&
-         (state_q != BootDone) && (state_q != SWPortMode);
+         (state_q != SWPortMode);
 
   always_comb begin
     state_d                = state_q;
     boot_wr_cmd_reg_o      = 1'b0;
     boot_wr_cmd_genfifo_o  = 1'b0;
+    boot_wr_cmd_uni_o      = 1'b0;
     boot_send_gencmd_o     = 1'b0;
     auto_set_intr_gate_o   = 1'b0;
     auto_clr_intr_gate_o   = 1'b0;
@@ -126,6 +128,18 @@ module edn_main_sm import edn_pkg::*; #(
         state_d = BootDone;
       end
       BootDone: begin
+        if (!boot_req_mode_i) begin
+          state_d = BootLoadUni;
+        end
+      end
+      BootLoadUni: begin
+        boot_wr_cmd_uni_o = 1'b1;
+        state_d = BootUniAckWait;
+      end
+      BootUniAckWait: begin
+        if (csrng_cmd_ack_i) begin
+          state_d = Idle;
+        end
       end
       //-----------------------------------
       AutoLoadIns: begin
@@ -204,6 +218,7 @@ module edn_main_sm import edn_pkg::*; #(
       // Tie off outputs, except for main_sm_err_o.
       boot_wr_cmd_reg_o      = 1'b0;
       boot_wr_cmd_genfifo_o  = 1'b0;
+      boot_wr_cmd_uni_o      = 1'b0;
       boot_send_gencmd_o     = 1'b0;
       auto_set_intr_gate_o   = 1'b0;
       auto_clr_intr_gate_o   = 1'b0;
@@ -216,9 +231,9 @@ module edn_main_sm import edn_pkg::*; #(
       main_sm_done_pulse_o   = 1'b0;
     end else if (!edn_enable_i && state_q inside {BootLoadIns, BootLoadGen, BootInsAckWait,
                                                   BootCaptGenCnt, BootSendGenCmd, BootGenAckWait,
-                                                  BootPulse, BootDone, AutoLoadIns,
-                                                  AutoFirstAckWait, AutoAckWait, AutoDispatch,
-                                                  AutoCaptGenCnt, AutoSendGenCmd,
+                                                  BootPulse, BootDone, BootLoadUni, BootUniAckWait,
+                                                  AutoLoadIns, AutoFirstAckWait, AutoAckWait,
+                                                  AutoDispatch, AutoCaptGenCnt, AutoSendGenCmd,
                                                   AutoCaptReseedCnt, AutoSendReseedCmd, SWPortMode
                                                  }) begin
       // Only go to idle if the state is legal and not Idle or Error.
@@ -227,6 +242,7 @@ module edn_main_sm import edn_pkg::*; #(
       // Tie off outputs, except for main_sm_err_o.
       boot_wr_cmd_reg_o      = 1'b0;
       boot_wr_cmd_genfifo_o  = 1'b0;
+      boot_wr_cmd_uni_o      = 1'b0;
       boot_send_gencmd_o     = 1'b0;
       auto_set_intr_gate_o   = 1'b0;
       auto_clr_intr_gate_o   = 1'b0;
