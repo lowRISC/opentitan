@@ -49,6 +49,7 @@
       features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
+      bazel: ["//sw/device/tests:i2c_target_test_cw310_test_rom"]
       tests: ["chip_sw_i2c_device_tx_rx"]
     }
     {
