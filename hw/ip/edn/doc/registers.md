@@ -448,7 +448,7 @@ an interrupt or an alert.
 ## MAIN_SM_STATE
 Main state machine state observation register
 - Offset: `0x40`
-- Reset default: `0x185`
+- Reset default: `0xc1`
 - Reset mask: `0x1ff`
 
 ### Fields
@@ -460,7 +460,6 @@ Main state machine state observation register
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                    |
 |:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------------------------------|
 |  31:9  |        |         |               | Reserved                                                                                                       |
-|  8:0   |   ro   |  0x185  | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
-
+|  8:0   |   ro   |  0xc1   | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
 
 <!-- END CMDGEN -->
