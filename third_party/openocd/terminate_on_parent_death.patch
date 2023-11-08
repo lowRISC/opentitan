@@ -1,0 +1,26 @@
+diff --git a/src/server/server.c b/src/server/server.c
+index 1569f5a2c..aa7921903 100644
+--- a/src/server/server.c
++++ b/src/server/server.c
+@@ -43,6 +43,7 @@
+ 
+ #ifndef _WIN32
+ #include <netinet/tcp.h>
++#include <sys/prctl.h>
+ #endif
+ 
+ static struct service *services;
+@@ -670,7 +671,12 @@ int server_preinit(void)
+ 	signal(SIGBREAK, sig_handler);
+ 	signal(SIGINT, sig_handler);
+ #else
+-	signal(SIGHUP, sig_handler);
++        /*
++         * Ask Linux kernel to send SIGHUP to this process, in case its parent dies.
++         */
++        prctl(PR_SET_PDEATHSIG, SIGHUP);
++
++        signal(SIGHUP, sig_handler);
+ 	signal(SIGPIPE, sig_handler);
+ 	signal(SIGQUIT, sigkey_handler);
+ 	signal(SIGINT, sigkey_handler);
