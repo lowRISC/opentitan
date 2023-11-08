@@ -36,10 +36,11 @@ const GETTYSBURG: &str = r#"Four score and seven years ago our fathers brought f
 continent, a new nation, conceived in Liberty, and dedicated to the
 proposition that all men are created equal."#;
 
-fn test_set_target_address(_opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_set_target_address(_opts: &Opts, transport: &TransportWrapper, instance: u8) -> Result<()> {
     let uart = transport.uart("console")?;
     //let i2c = transport.i2c(&opts.i2c)?;
     let address = I2cTargetAddress {
+        instance,
         // Respond to address 0x33.
         id0: 0x33,
         mask0: 0x7f,
@@ -114,7 +115,12 @@ fn test_wakeup_normal_sleep(opts: &Opts, transport: &TransportWrapper, address: 
     test_read_transaction(opts, transport, address)
 }
 
-fn test_wakeup_deep_sleep(opts: &Opts, transport: &TransportWrapper, address: u8) -> Result<()> {
+fn test_wakeup_deep_sleep(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    address: u8,
+    instance: u8,
+) -> Result<()> {
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
     TestCommand::EnterDeepSleep.send(&*uart)?;
@@ -125,7 +131,7 @@ fn test_wakeup_deep_sleep(opts: &Opts, transport: &TransportWrapper, address: u8
     log::info!("Transaction error: {}", result.is_err());
     Status::recv(&*uart, Duration::from_secs(5), false)?;
     log::info!("Chip is awake.  Reissuing read transaction.");
-    test_set_target_address(opts, transport)?;
+    test_set_target_address(opts, transport, instance)?;
     test_read_transaction(opts, transport, address)
 }
 
@@ -139,15 +145,17 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
-    execute_test!(test_set_target_address, &opts, &transport);
-    execute_test!(test_read_transaction, &opts, &transport, 0x33);
-    execute_test!(test_read_transaction, &opts, &transport, 0x70);
-    execute_test!(test_read_transaction, &opts, &transport, 0x71);
-    execute_test!(test_read_transaction, &opts, &transport, 0x72);
-    execute_test!(test_read_transaction, &opts, &transport, 0x73);
-    execute_test!(test_write_transaction, &opts, &transport, 0x33);
-    execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
+    for i2c_instance in 0..3 {
+        execute_test!(test_set_target_address, &opts, &transport, i2c_instance);
+        execute_test!(test_read_transaction, &opts, &transport, 0x33);
+        execute_test!(test_read_transaction, &opts, &transport, 0x70);
+        execute_test!(test_read_transaction, &opts, &transport, 0x71);
+        execute_test!(test_read_transaction, &opts, &transport, 0x72);
+        execute_test!(test_read_transaction, &opts, &transport, 0x73);
+        execute_test!(test_write_transaction, &opts, &transport, 0x33);
+        execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
+    }
     execute_test!(test_wakeup_normal_sleep, &opts, &transport, 0x33);
-    execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33);
+    execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33, 0);
     Ok(())
 }

@@ -13,6 +13,7 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'i', 'i')
 
 #define STRUCT_I2C_TARGET_ADDRESS(field, string) \
+    field(instance, uint8_t) \
     field(id0, uint8_t) \
     field(mask0, uint8_t) \
     field(id1, uint8_t) \

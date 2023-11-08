@@ -45,6 +45,8 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;
 static dif_i2c_t i2c;
 
+static uint8_t i2c_instance_under_test = 0;
+
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                                   .hart_id = kTopEarlgreyPlicTargetIbex0};
 
@@ -77,11 +79,41 @@ static status_t reset_fifos(dif_i2c_t *i2c) {
   return OK_STATUS();
 }
 
+static status_t i2c_detach_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
+                                    uint8_t i2c_instance) {
+  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
+  return i2c_testutils_detach_pinmux(pinmux, i2c_instance);
+}
+
+static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
+                                       uint8_t i2c_instance) {
+  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
+                                         TOP_EARLGREY_I2C1_BASE_ADDR,
+                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
+
+  mmio_region_t base_addr =
+      mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
+  TRY(dif_i2c_init(base_addr, i2c));
+
+  TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance,
+                                  I2cPinmuxPlatformIdHyper310));
+  TRY(i2c_testutils_set_speed(i2c, kDifI2cSpeedStandard));
+  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
+  return OK_STATUS();
+}
+
 static status_t configure_device_address(ujson_t *uj, dif_i2c_t *i2c) {
   i2c_target_address_t address;
   TRY(ujson_deserialize_i2c_target_address_t(uj, &address));
+
   TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
   TRY(dif_i2c_device_set_enabled(i2c, kDifToggleDisabled));
+
+  TRY(i2c_detach_instance(i2c, &pinmux, i2c_instance_under_test));
+  i2c_instance_under_test = address.instance;
+  TRY(i2c_configure_instance(i2c, &pinmux, i2c_instance_under_test));
+
   dif_i2c_id_t id0 = {
       .mask = address.mask0,
       .address = address.id0,
@@ -257,10 +289,8 @@ static status_t command_processor(ujson_t *uj) {
 }
 
 static status_t test_init(void) {
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
-  TRY(dif_i2c_init(base_addr, &i2c));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
@@ -272,15 +302,13 @@ static status_t test_init(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
-
-  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
-  TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
   return OK_STATUS();
 }
 
 bool test_main(void) {
   CHECK_STATUS_OK(test_init());
+  CHECK_STATUS_OK(
+      i2c_configure_instance(&i2c, &pinmux, i2c_instance_under_test));
   status_t status;
   ujson_t uj = ujson_ottf_console();
   status = command_processor(&uj);
