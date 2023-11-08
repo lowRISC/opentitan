@@ -30,6 +30,8 @@ pub enum LcTransitionError {
     MutexAlreadyClaimed,
     #[error("Failed to claim LC transition mutex.")]
     FailedToClaimMutex,
+    #[error("Volatile raw unlock is not supported on this chip.")]
+    VolatileRawUnlockNotSupported,
     #[error("LC transition target programming failed (target state: {0:x}).")]
     TargetProgrammingFailed(u32),
     #[error("LC transition failed (status: {0:x}).")]
@@ -42,6 +44,62 @@ pub enum LcTransitionError {
     Generic(String),
 }
 impl_serializable_error!(LcTransitionError);
+
+fn setup_lc_transition(
+    jtag: Rc<dyn Jtag>,
+    target_lc_state: DifLcCtrlState,
+    token: Option<[u32; 4]>,
+) -> Result<()> {
+    // Check the lc_ctrl is initialized and ready to accept a transition request.
+    let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
+    let status = LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
+    if status != LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY {
+        return Err(LcTransitionError::LcCtrlNotReady(status).into());
+    }
+
+    // Check the LC transition mutex has not been claimed yet.
+    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? == u8::from(MultiBitBool8::True) as u32
+    {
+        return Err(LcTransitionError::MutexAlreadyClaimed.into());
+    }
+
+    // Attempt to claim the LC transition mutex.
+    jtag.write_lc_ctrl_reg(
+        &LcCtrlReg::ClaimTransitionIf,
+        u8::from(MultiBitBool8::True) as u32,
+    )?;
+
+    // Check the LC transition mutex was claimed.
+    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? != u8::from(MultiBitBool8::True) as u32
+    {
+        return Err(LcTransitionError::FailedToClaimMutex.into());
+    }
+
+    // Program the target LC state.
+    jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionTarget, u32::from(target_lc_state))?;
+
+    // Check correct target LC state was programmed.
+    let target_lc_state_programmed = jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionTarget)?;
+    if target_lc_state_programmed != u32::from(target_lc_state) {
+        return Err(LcTransitionError::TargetProgrammingFailed(target_lc_state_programmed).into());
+    }
+
+    // If the transition requires a token, write it to the multi-register.
+    if let Some(token_words) = token {
+        let token_regs = [
+            &LcCtrlReg::TransitionToken0,
+            &LcCtrlReg::TransitionToken1,
+            &LcCtrlReg::TransitionToken2,
+            &LcCtrlReg::TransitionToken3,
+        ];
+
+        for (reg, value) in iter::zip(token_regs, token_words) {
+            jtag.write_lc_ctrl_reg(reg, value)?;
+        }
+    }
+
+    Ok(())
+}
 
 /// Perform a lifecycle transition through the JTAG interface to the LC CTRL.
 ///
@@ -92,56 +150,9 @@ pub fn trigger_lc_transition(
     reset_delay: Duration,
     reconnect_jtag_tap: Option<JtagTap>,
 ) -> Result<()> {
-    // Check the lc_ctrl is initialized and ready to accept a transition request.
-    let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
-    let status = LcCtrlStatus::from_bits(status).ok_or(LcTransitionError::InvalidState(status))?;
-    if status != LcCtrlStatus::INITIALIZED | LcCtrlStatus::READY {
-        return Err(LcTransitionError::LcCtrlNotReady(status).into());
-    }
-
-    // Check the LC transition mutex has not been claimed yet.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? == u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::MutexAlreadyClaimed.into());
-    }
-
-    // Attempt to claim the LC transition mutex.
-    jtag.write_lc_ctrl_reg(
-        &LcCtrlReg::ClaimTransitionIf,
-        u8::from(MultiBitBool8::True) as u32,
-    )?;
-
-    // Check the LC transition mutex was claimed.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? != u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::FailedToClaimMutex.into());
-    }
-
-    // Program the target LC state.
-    jtag.write_lc_ctrl_reg(
-        &LcCtrlReg::TransitionTarget,
-        target_lc_state.redundant_encoding(),
-    )?;
-
-    // Check correct target LC state was programmed.
-    let target_lc_state_programmed = jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionTarget)?;
-    if target_lc_state_programmed != target_lc_state.redundant_encoding() {
-        return Err(LcTransitionError::TargetProgrammingFailed(target_lc_state_programmed).into());
-    }
-
-    // If the transition requires a token, write it to the multi-register.
-    if let Some(token_words) = token {
-        let token_regs = [
-            &LcCtrlReg::TransitionToken0,
-            &LcCtrlReg::TransitionToken1,
-            &LcCtrlReg::TransitionToken2,
-            &LcCtrlReg::TransitionToken3,
-        ];
-
-        for (reg, value) in iter::zip(token_regs, token_words) {
-            jtag.write_lc_ctrl_reg(reg, value)?;
-        }
-    }
+    // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
+    // and token CSRs.
+    setup_lc_transition(jtag.clone(), target_lc_state, token)?;
 
     // Configure external clock.
     if use_external_clk {
@@ -182,6 +193,69 @@ pub fn trigger_lc_transition(
     if let Some(tap) = reconnect_jtag_tap {
         jtag.connect(tap)?;
     }
+
+    Ok(())
+}
+
+/// Perform a volatile raw unlock transition through the LC JTAG interface.
+///
+/// Requires the `jtag` to be already connected to the LC TAP. Requires the pre-hashed token be
+/// provided (a pre-requisite of the volatile operation. The device will NOT be reset into the
+/// new lifecycle state as TAP straps are sampled again on a successfull transition. However,
+/// the TAP can be switched from LC to RISCV on a successfull transition.
+pub fn trigger_volatile_raw_unlock(
+    transport: &TransportWrapper,
+    jtag: Rc<dyn Jtag>,
+    target_lc_state: DifLcCtrlState,
+    hashed_token: Option<[u32; 4]>,
+    use_external_clk: bool,
+    post_transition_tap: JtagTap,
+) -> Result<()> {
+    // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
+    // and token CSRs.
+    setup_lc_transition(jtag.clone(), target_lc_state, hashed_token)?;
+
+    // Configure external clock and set volatile raw unlock bit.
+    if use_external_clk {
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::TransitionCtrl,
+            LcCtrlTransitionCtrl::EXT_CLOCK_EN.bits()
+                | LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK.bits(),
+        )?;
+    } else {
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::TransitionCtrl,
+            LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK.bits(),
+        )?;
+    }
+    // Read back the volatile raw unlock bit to see if the feature is supported in the silicon.
+    if jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl)? < 2u32 {
+        return Err(LcTransitionError::VolatileRawUnlockNotSupported.into());
+    }
+
+    // Select the requested JTAG TAP to connect to post-transition.
+    if post_transition_tap == JtagTap::RiscvTap {
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
+    }
+
+    // Initiate LC transition and poll status register until transition is completed.
+    jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCmd, LcCtrlTransitionCmd::START.bits())?;
+
+    // Disconnect and reconnect to JTAG if we are switching to the RISCV TAP, as TAP straps are
+    // re-sampled on a successfull transition. We do this before we poll the status register
+    // because a volatile unlock will trigger a TAP strap resampling immediately upon success.
+    if post_transition_tap == JtagTap::RiscvTap {
+        jtag.disconnect()?;
+        jtag.connect(JtagTap::RiscvTap)?;
+    }
+
+    wait_for_status(
+        &jtag,
+        Duration::from_secs(3),
+        LcCtrlStatus::TRANSITION_SUCCESSFUL,
+    )
+    .context("failed waiting for TRANSITION_SUCCESSFUL status.")?;
 
     Ok(())
 }

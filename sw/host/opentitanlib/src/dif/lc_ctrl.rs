@@ -208,6 +208,7 @@ bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionCtrl: u32 {
         const EXT_CLOCK_EN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
+        const VOLATILE_RAW_UNLOCK = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_VOLATILE_RAW_UNLOCK_BIT;
     }
 }
 

@@ -108,7 +108,7 @@ pub trait Jtag {
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum JtagTap {
     /// RISC-V core's TAP.
     RiscvTap,
