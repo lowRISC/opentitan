@@ -396,6 +396,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
                                        " CSRNG instance. the value from generate fifo 0x%h."},
                                       cs_cmd))
 
+            // Instantiate not allowed if EDN is in boot_req_mode and boot sequence is done.
+            `DV_CHECK_FATAL(boot_mode -> !boot_gen_cmd_sent,
+                            $sformatf({"Instantiate command not allowed in boot_req_mode after",
+                                       " boot sequence is done. cmd: 0x%h"}, cs_cmd))
+
             // Determine whether the instantiate only consists of the header
             // and set flags accordingly
             if (clen_cntr == 0) begin
@@ -417,7 +422,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
                                          " has to match the value in sw_cmd_req register 0x%h."},
                                         cs_cmd, sw_cmd_req_comp))
 
-            // If EDN is in sw mode or boot_gen command has been sent
+            // If EDN is in sw mode check if the received command is correct.
             end else begin
               sw_cmd_req_comp = sw_cmd_req_q.pop_front();
               `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
@@ -432,8 +437,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
                             $sformatf({"Reseed command not allowed without instantiated",
                                        " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
-            // If EDN is in boot_req_mode and boot sequence is not done
-            `DV_CHECK_FATAL(boot_mode -> boot_gen_cmd_sent,
+            // Reseed not allowed if EDN is in boot_req_mode.
+            `DV_CHECK_FATAL(!boot_mode,
                             $sformatf({"Reseed command not allowed in boot_req_mode.",
                                        " cmd: 0x%h"}, cs_cmd))
 
@@ -507,8 +512,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
                             $sformatf({"Update command not allowed without instantiated",
                                        " CSRNG instance. cmd: 0x%h"}, cs_cmd))
 
-            // If EDN is in boot_req_mode and boot sequence is not done
-            `DV_CHECK_FATAL(boot_mode -> boot_gen_cmd_sent,
+            // Update not allowed if EDN is in boot_req_mode.
+            `DV_CHECK_FATAL(!boot_mode,
                             $sformatf({"Update command not allowed in boot_req_mode.",
                                        " cmd: 0x%h"}, cs_cmd))
 
@@ -535,17 +540,27 @@ class edn_scoreboard extends cip_base_scoreboard #(
                             $sformatf("clen must be 0 for uninstantiate command. cmd: 0x%h",
                                       cs_cmd))
 
-            `DV_CHECK_FATAL(!auto_mode || (boot_mode -> boot_gen_cmd_sent),
+            `DV_CHECK_FATAL((!auto_mode || !boot_mode),
                             $sformatf({"Uninstantiate command not allowed in auto mode or",
-                                       " before boot gen command has been sent."}))
+                                       " boot mode."}))
 
-            if ((!auto_mode && !boot_mode) || (boot_mode && boot_gen_cmd_sent)) begin
+            if (!auto_mode && !boot_mode && !boot_gen_cmd_sent) begin
               sw_cmd_req_comp = sw_cmd_req_q.pop_front();
               `DV_CHECK_FATAL(cs_cmd == sw_cmd_req_comp,
                               $sformatf({"Uninstantiate command 0x%h has to match",
                                          " the value from sw_cmd_req register 0x%h."},
                                         cs_cmd, sw_cmd_req_comp))
             end
+
+            if (boot_gen_cmd_sent) begin
+              boot_gen_cmd_sent = 1'b0;
+              boot_mode = 1'b0;
+              `DV_CHECK_FATAL(cs_cmd == edn_pkg::BOOT_UNINSTANTIATE,
+                              $sformatf({"Uninstantiate command 0x%h has to match",
+                                         " the boot mode uninstantiate command 0x%h."},
+                                        cs_cmd, edn_pkg::BOOT_UNINSTANTIATE))
+            end
+
             instantiated = 1'b0;
           end
           default: begin
