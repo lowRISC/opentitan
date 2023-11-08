@@ -118,7 +118,7 @@ opentitan_test(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
     exec_env = {
@@ -171,7 +171,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked1",
         tags = ["manuf"],
         test_cmd = """
         --clear-bitstream
@@ -228,7 +228,7 @@ opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_dev_individualized",
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """

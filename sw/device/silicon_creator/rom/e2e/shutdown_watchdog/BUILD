@@ -108,12 +108,12 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )

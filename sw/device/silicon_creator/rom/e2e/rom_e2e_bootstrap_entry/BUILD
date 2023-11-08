@@ -40,9 +40,9 @@ package(default_visibility = ["//visibility:public"])
 [
     bitstream_splice(
         name = "bitstream_e2e_bootstrap_entry_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )

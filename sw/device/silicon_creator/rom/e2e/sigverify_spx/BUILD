@@ -180,12 +180,12 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -205,6 +205,7 @@ opentitan_flash_binary(
                 t["name"],
             ),
             exit_success = t["exit_success"][lc_state],
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = get_key_structs_for_lc_state(lc_state_val)[0],

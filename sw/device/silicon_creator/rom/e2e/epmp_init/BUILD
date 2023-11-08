@@ -30,7 +30,7 @@ package(default_visibility = ["//visibility:public"])
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_" + lc_state,
+            bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         exec_env = {

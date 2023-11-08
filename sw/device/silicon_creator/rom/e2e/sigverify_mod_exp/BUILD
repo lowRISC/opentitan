@@ -86,12 +86,12 @@ SIGVERIFY_MOD_EXP_CASES = [
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_sigverify_mod_exp_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )

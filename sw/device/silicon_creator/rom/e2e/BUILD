@@ -80,9 +80,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_default",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -93,6 +93,7 @@ opentitan_functest(
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
     cw310 = cw310_params(
         bitstream = ":bitstream_default_otp",
+        interface = "hyper310",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     signed = True,
@@ -212,6 +213,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+    ),
     signed = True,
     targets = [
         "cw310_rom_with_fake_keys",
@@ -231,6 +235,7 @@ opentitan_functest(
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
+        interface = "hyper310",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -257,7 +262,8 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_smoke",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
+        interface = "hyper310",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -278,6 +284,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+    ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
@@ -305,6 +314,7 @@ opentitan_functest(
     cw310 = cw310_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_PASS,
+        interface = "hyper310",
     ),
     signed = True,
     targets = [
@@ -330,7 +340,8 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_dev",
+        interface = "hyper310",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
@@ -345,6 +356,7 @@ opentitan_functest(
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY)),
+        interface = "hyper310",
     ),
     key_struct = "rsa_unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
@@ -375,6 +387,7 @@ opentitan_functest(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
         exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        interface = "hyper310",
         test_cmds = [
             "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
             "--exec=\"transport init\"",

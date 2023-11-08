@@ -60,6 +60,8 @@ else
   fi
 fi
 
+# Force using cached bitstreams for this test
+bitstream_strategy=cached
 echo
 echo "Bitstream strategy is ${bitstream_strategy}"
 echo "##vso[task.setvariable variable=bitstreamStrategy]${bitstream_strategy}"

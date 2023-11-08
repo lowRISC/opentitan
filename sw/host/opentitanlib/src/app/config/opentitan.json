@@ -117,6 +117,14 @@
       "stopbits": "Stop1"
     }
   ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP"
+    },
+    {
+      "name": "TPM"
+    }
+  ],
   "provides": {
     "chip": "opentitan"
   }

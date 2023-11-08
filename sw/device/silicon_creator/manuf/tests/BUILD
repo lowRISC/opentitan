@@ -68,7 +68,7 @@ _MANUF_TEST_LOCKED_KEY = None
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         cw310 = cw310_jtag_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
             lc_state = lc_state,  # will be expanded in test_cmd
             tags = ["manuf"],
             test_cmd = (
@@ -107,7 +107,7 @@ opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
@@ -127,7 +127,7 @@ opentitan_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
     ),
@@ -162,9 +162,9 @@ opentitan_test(
 [
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -440,9 +440,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_otp_ctrl_functest",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )

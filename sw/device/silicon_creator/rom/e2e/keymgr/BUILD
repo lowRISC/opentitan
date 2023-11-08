@@ -90,9 +90,9 @@ rom_e2e_keymgr_init_configs = [
 [
     bitstream_splice(
         name = "bitstream_keymgr_{}".format(config["name"]),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_keymgr_{}".format(config["name"]),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         visibility = ["//visibility:private"],
     )
     for config in rom_e2e_keymgr_init_configs

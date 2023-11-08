@@ -57,9 +57,9 @@ package(default_visibility = ["//visibility:public"])
 [
     bitstream_splice(
         name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_shutdown_output_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()

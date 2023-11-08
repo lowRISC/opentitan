@@ -227,7 +227,7 @@ def cw310_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["cw310", "exclusive"] + tags,
+        tags = ["hyper310", "exclusive"] + tags,
         timeout = timeout,
         local = local,
         test_harness = test_harness,
@@ -276,7 +276,7 @@ def cw310_jtag_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["cw310", "exclusive"] + tags,
+        tags = ["hyper310", "exclusive"] + tags,
         timeout = timeout,
         local = local,
         test_harness = test_harness,

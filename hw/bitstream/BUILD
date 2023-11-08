@@ -140,9 +140,9 @@ bitstream_splice(
     bitstream_splice(
         name = "rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
         testonly = True,
-        src = ":rom_with_{}_keys".format(authenticity),
+        src = "//hw/bitstream/hyperdebug:rom_with_{}_keys".format(authenticity),
         data = img_target,
-        meminfo = ":otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = ["manual"],
         update_usr_access = True,
     )

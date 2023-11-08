@@ -47,9 +47,9 @@ package(default_visibility = ["//visibility:public"])
 [
     bitstream_splice(
         name = "rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = "img_{}_exec_disabled".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = [
             "manual",
         ],

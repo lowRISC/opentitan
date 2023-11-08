@@ -75,9 +75,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_bootstrap_rma",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_bootstrap_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -120,7 +120,7 @@ opentitan_test(
         binaries = {
             "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_bootstrap_disabled",
         test_cmd = """
             --bitstream="{bitstream}"
         """,

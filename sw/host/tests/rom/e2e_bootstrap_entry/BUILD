@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/main.rs",
     ],
+    rustc_flags = ["-g"],
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

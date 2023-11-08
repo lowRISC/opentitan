@@ -30,9 +30,9 @@ package(default_visibility = ["//visibility:public"])
 [
     bitstream_splice(
         name = "bitstream_chip_specific_startup_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )

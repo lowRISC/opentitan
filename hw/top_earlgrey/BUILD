@@ -60,21 +60,18 @@ fpga_cw310(
         "--rcfile=",
         "--logging=info",
         "--interface={interface}",
-    ] + select({
-        "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
-        "//conditions:default": [],
-    }),
+    ],
     base = ":fpga_cw310",
-    bitstream = "//hw/bitstream:test_rom",
+    bitstream = "//hw/bitstream/hyperdebug:test_rom",
     exec_env = "fpga_cw310_test_rom",
     param = {
-        "interface": "cw310",
+        "interface": "hyper310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     test_cmd = """
-        --exec="fpga load-bitstream {bitstream}"
         --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
@@ -85,7 +82,7 @@ fpga_cw310(
     name = "fpga_cw310_rom_with_fake_keys",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
@@ -95,12 +92,12 @@ fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     exec_env = "fpga_cw310_rom_ext",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
     param = {
-        "interface": "cw310",
+        "interface": "hyper310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
@@ -184,7 +181,7 @@ fpga_cw340(
         "//conditions:default": [],
     }),
     base = ":fpga_cw340",
-    bitstream = "//hw/bitstream:test_rom",
+    bitstream = "//hw/bitstream/cw340:test_rom",
     exec_env = "fpga_cw340_test_rom",
     param = {
         "interface": "cw340",

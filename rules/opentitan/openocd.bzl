@@ -9,7 +9,6 @@ OPENTITANTOOL_OPENOCD_DATA_DEPS = [
 
 OPENTITANTOOL_OPENOCD_TEST_CMD = """
     --openocd="$(rootpath //third_party/openocd:openocd_bin)"
-    --openocd-adapter-config="$(rootpath //third_party/openocd:jtag_olimex_cfg)"
     --clear-bitstream
     --bitstream={bitstream}
 """

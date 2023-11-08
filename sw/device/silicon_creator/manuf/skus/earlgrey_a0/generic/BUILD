@@ -104,7 +104,7 @@ opentitan_test(
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_cmd = """
             --elf={sram_cp_provision}
@@ -123,7 +123,7 @@ opentitan_test(
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
@@ -212,9 +212,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_post_cp_test_locked0",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_post_cp_test_locked0",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )

@@ -141,9 +141,9 @@ package(default_visibility = ["//visibility:public"])
 [
     bitstream_splice(
         name = "bitstream_sigverify_always_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_sigverify_always_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -187,6 +187,7 @@ SIGVERIFY_BAD_CASES = [
                 case["expected_bfv"],
                 hex_digits(lc_state_val),
             ),
+            interface = "hyper310",
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),

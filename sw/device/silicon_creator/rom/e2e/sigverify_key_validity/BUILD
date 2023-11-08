@@ -79,11 +79,11 @@ otp_json(
         name = "bitstream_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -107,6 +107,7 @@ otp_json(
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = key,

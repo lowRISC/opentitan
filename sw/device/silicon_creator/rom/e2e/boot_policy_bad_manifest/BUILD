@@ -259,12 +259,12 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
             lc_state,
             sec_ver,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -288,6 +288,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
                 t.get("sec_ver", 0),
             ),
             exit_success = t["exit_success"],
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = "multislot",

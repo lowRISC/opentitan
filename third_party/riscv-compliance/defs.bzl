@@ -4,7 +4,12 @@
 
 """Helper macros for generating RISC-V compliance test targets."""
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load(
+    "//rules:opentitan_test.bzl",
+    "cw310_params",
+    "opentitan_functest",
+    "verilator_params",
+)
 
 def rv_compliance_test(name, arch):
     test_file = "@riscv-compliance//:riscv-test-suite/{}/src/{}.S".format(arch, name)
@@ -32,6 +37,9 @@ def rv_compliance_test(name, arch):
             "compliance_main.c",
             "compliance_main.S",
         ],
+        cw310 = cw310_params(
+            interface = "hyper310",
+        ),
         verilator = verilator_params(
             timeout = "long",
         ),

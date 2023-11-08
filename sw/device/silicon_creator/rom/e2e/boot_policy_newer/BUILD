@@ -131,9 +131,9 @@ BOOT_POLICY_NEWER_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_boot_policy_newer_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -149,6 +149,7 @@ BOOT_POLICY_NEWER_CASES = [
         cw310 = cw310_params(
             bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state),
             exit_success = t["exit_success"].format(hex_digits(lc_state_val)),
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = "multislot",

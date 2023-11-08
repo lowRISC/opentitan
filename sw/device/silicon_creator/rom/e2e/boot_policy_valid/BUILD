@@ -93,9 +93,9 @@ BOOT_POLICY_VALID_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_boot_policy_valid_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -112,6 +112,7 @@ BOOT_POLICY_VALID_CASES = [
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = "multislot",

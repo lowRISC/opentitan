@@ -127,6 +127,9 @@ alias(
 opentitan_functest(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
+    cw310 = cw310_params(
+        interface = "hyper310",
+    ),
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1182,7 +1185,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
         name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
         srcs = ["flash_ctrl_info_access_lc.c"],
         cw310 = new_cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -2452,6 +2455,7 @@ opentitan_functest(
     srcs = ["uart_smoketest.c"],
     cw310 = cw310_params(
         exit_failure = ROM_BOOT_FAILURE_MSG,
+        interface = "hyper310",
     ),
     cw340 = cw340_params(
         exit_failure = ROM_BOOT_FAILURE_MSG,
@@ -2832,9 +2836,9 @@ otp_image(
 
 bitstream_splice(
     name = "power_virus_systemtest_bitstream",
-    src = "//hw/bitstream:test_rom",
+    src = "//hw/bitstream/hyperdebug:test_rom",
     data = ":power_virus_systemtest_otp_img_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -2976,7 +2980,7 @@ opentitan_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         test_cmd = """
             --bootstrap="{firmware}"
         """,

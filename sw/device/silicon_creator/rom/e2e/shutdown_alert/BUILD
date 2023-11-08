@@ -65,9 +65,9 @@ ALERT_LC_STATES = get_lc_items(
 
 [bitstream_splice(
     name = "bitstream_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -99,6 +99,7 @@ ALERT_LC_STATES = get_lc_items(
         ),
         cw310 = cw310_params(
             bitstream = ":bitstream_alert_{}".format(lc_state),
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = get_key_structs_for_lc_state(
@@ -201,9 +202,9 @@ otp_alert_digest(
 
 [bitstream_splice(
     name = "bitstream_shutdown_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_shutdown_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -230,6 +231,7 @@ otp_alert_digest(
         name = "shutdown_alert_{}".format(lc_state),
         cw310 = cw310_params(
             bitstream = ":bitstream_shutdown_alert_{}".format(lc_state),
+            interface = "hyper310",
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = get_key_structs_for_lc_state(

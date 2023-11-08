@@ -51,9 +51,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_reset_ret_ram",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
     data = ":otp_img_reset_ret_ram",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -83,7 +83,7 @@ opentitan_test(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     exec_env = {

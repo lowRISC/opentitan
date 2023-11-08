@@ -135,12 +135,12 @@ BOOT_DATA_RECOVERY_CASES = [
             case["lc_state"],
             case["default_boot_data"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/bitstream/hyperdebug:rom_with_fake_keys",
         data = ":otp_img_boot_data_recovery_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream/hyperdebug:otp_mmi",
         tags = maybe_skip_in_ci(getattr(
             CONST.LCV,
             case["lc_state"].upper(),
