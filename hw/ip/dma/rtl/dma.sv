@@ -1063,7 +1063,7 @@ module dma
     unique case (transfer_width_q)
       // 1B/txn - steer the selected byte to all byte lanes
       3'b001:
-        casez (req_src_be_q)
+        unique casez (req_src_be_q)
           4'b1???: read_return_data_d = {4{dma_rsp_data[31:24]}};
           4'b01??: read_return_data_d = {4{dma_rsp_data[23:16]}};
           4'b001?: read_return_data_d = {4{dma_rsp_data[15:8]}};
