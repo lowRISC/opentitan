@@ -199,6 +199,16 @@ fpga_cw340(
     """,
 )
 
+fpga_cw340(
+    name = "fpga_cw340_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_cw340_test_rom",
+    bitstream = "//hw/bitstream:rom_with_fake_keys",
+    exec_env = "fpga_cw340_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+)
+
 ###########################################################################
 # Sim Verilator Environments
 #
