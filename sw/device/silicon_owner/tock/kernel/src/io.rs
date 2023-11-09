@@ -9,8 +9,8 @@ use earlgrey::chip_config::EarlGreyConfig;
 use kernel::debug;
 use kernel::debug::IoWrite;
 
-use crate::CHIP;
 use crate::ChipConfig;
+use crate::CHIP;
 use crate::PROCESSES;
 use crate::PROCESS_PRINTER;
 
@@ -29,11 +29,8 @@ impl IoWrite for Writer {
     fn write(&mut self, buf: &[u8]) -> usize {
         // This creates a second instance of the UART peripheral, and should only be used
         // during panic.
-        earlgrey::uart::Uart::new(
-            earlgrey::uart::UART0_BASE,
-            ChipConfig::PERIPHERAL_FREQ,
-        )
-        .transmit_sync(buf);
+        earlgrey::uart::Uart::new(earlgrey::uart::UART0_BASE, ChipConfig::PERIPHERAL_FREQ)
+            .transmit_sync(buf);
         buf.len()
     }
 }

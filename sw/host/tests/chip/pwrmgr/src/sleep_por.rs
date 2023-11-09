@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow,Result};
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use std::time::Duration;
 
@@ -25,18 +25,14 @@ fn sleep_por_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     log::info!("Starting host side");
-    let vec = UartConsole::wait_for(
-        &*uart, r"PASS|FAIL|Ready for pad POR",
-        opts.timeout)?;
+    let vec = UartConsole::wait_for(&*uart, r"PASS|FAIL|Ready for pad POR", opts.timeout)?;
     match vec[0].as_str() {
         "PASS" => return Err(anyhow!("Cannot pass before getting an exra POR")),
         "FAIL" => return Err(anyhow!("Failure result: {:?}", vec)),
         _ => {}
     };
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let vec = UartConsole::wait_for(
-        &*uart, r"PASS|FAIL|Ready for pad POR",
-        opts.timeout)?;
+    let vec = UartConsole::wait_for(&*uart, r"PASS|FAIL|Ready for pad POR", opts.timeout)?;
     match vec[0].as_str() {
         "Ready for pad POR" => Ok(()),
         "PASS" => Ok(()),
