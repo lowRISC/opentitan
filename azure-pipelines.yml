@@ -510,7 +510,7 @@ jobs:
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
   pool:
-    name: FPGA
+    name: $(fpga_pool)
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
@@ -536,7 +536,7 @@ jobs:
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
   pool:
-    name: FPGA
+    name: $(fpga_pool)
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
@@ -562,7 +562,7 @@ jobs:
 - job: execute_hyperdebug_tests_cw310
   displayName: Hyperdebug CW310 Tests (Experimental)
   pool:
-    name: FPGA
+    name: $(fpga_pool)
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
@@ -628,7 +628,7 @@ jobs:
 - job: execute_fpga_manuf_tests_cw310
   displayName: CW310 Manufacturing Tests
   pool:
-    name: FPGA
+    name: $(fpga_pool)
     demands: BOARD -equals cw310
   timeoutInMinutes: 60
   dependsOn:
