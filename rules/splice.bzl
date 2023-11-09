@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@nonhermetic//:env.bzl", "ENV")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 """Rules for memory splicing with Vivado.
 """
 
 def _bitstream_splice_impl(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     update = ctx.actions.declare_file("{}.update.mem".format(ctx.label.name))
     spliced = ctx.actions.declare_file("{}.spliced.bit".format(ctx.label.name))
     output = ctx.actions.declare_file("{}.bit".format(ctx.label.name))
@@ -20,9 +22,9 @@ def _bitstream_splice_impl(ctx):
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
         outputs = [update],
-        inputs = [ctx.executable._gen_mem_img, ctx.file.data],
+        inputs = [ctx.file.data],
         arguments = [gen_mem_img_args],
-        executable = ctx.executable._gen_mem_img,
+        executable = tc.tools.gen_mem_image,
         use_default_shell_env = True,
         execution_requirements = {
             "no-sandbox": "",
@@ -78,7 +80,7 @@ def _bitstream_splice_impl(ctx):
             outputs = [output],
             inputs = [spliced],
             arguments = [ott_args],
-            executable = ctx.executable._opentitantool,
+            executable = tc.tools.opentitantool,
         )
     else:
         ctx.actions.symlink(
@@ -106,17 +108,8 @@ bitstream_splice_ = rule(
         "swap_nybbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
         "update_usr_access": attr.bool(default = False, doc = "Update the USR_ACCESS value of the bitstream, breaks hermeticity"),
-        "_gen_mem_img": attr.label(
-            default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
-            executable = True,
-            cfg = "exec",
-        ),
-        "_opentitantool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            executable = True,
-            cfg = "exec",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def bitstream_splice(testonly = True, **kwargs):

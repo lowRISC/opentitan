@@ -16,6 +16,7 @@ load(
 load("@crt//rules:transition.bzl", "platform_target")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:structs.bzl", "structs")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 """Rules to build OpenTitan for the RISC-V target"""
 
@@ -651,6 +652,7 @@ gen_sim_dv_logs_db = rule(
 )
 
 def _assemble_flash_image_impl(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     output = ctx.actions.declare_file(ctx.attr.output)
     outputs = [output]
     inputs = []
@@ -672,7 +674,7 @@ def _assemble_flash_image_impl(ctx):
         outputs = outputs,
         inputs = inputs,
         arguments = arguments,
-        executable = ctx.executable._opentitantool,
+        executable = tc.tools.opentitantool,
     )
     return [DefaultInfo(
         files = depset(outputs),
@@ -685,13 +687,8 @@ assemble_flash_image = rv_rule(
         "image_size": attr.int(default = 0, doc = "Size of the assembled image"),
         "output": attr.string(),
         "binaries": attr.label_keyed_string_dict(allow_empty = False),
-        "_opentitantool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            allow_single_file = True,
-            executable = True,
-            cfg = "exec",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def opentitan_binary(

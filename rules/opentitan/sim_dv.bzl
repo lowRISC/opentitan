@@ -18,6 +18,7 @@ load(
     "extract_software_logs",
     "scramble_flash",
 )
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -135,7 +136,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
-            test_harness = test_harness.short_path,
+            test_harness = test_harness.executable.short_path,
             args = args,
             test_cmd = test_cmd,
             data_files = " ".join([f.path for f in data_files]),
@@ -156,6 +157,7 @@ def _sim_dv(ctx):
 sim_dv = rule(
     implementation = _sim_dv,
     attrs = exec_env_common_attrs(),
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def dv_params(

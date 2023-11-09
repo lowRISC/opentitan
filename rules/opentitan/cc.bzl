@@ -197,12 +197,12 @@ def _build_binary(ctx, exec_env, name, deps, kind):
             fail("Signing requires a manifest and an rsa_key, and optionally an spx_key")
         signed = sign_binary(
             ctx,
+            opentitantool = exec_env._opentitantool,
             bin = binary,
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
             # FIXME: will need to supply hsmtool when we add NitroKey signing.
-            _tool = exec_env._opentitantool,
         )
     else:
         signed = {}

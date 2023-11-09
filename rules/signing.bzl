@@ -5,6 +5,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:rv.bzl", "rv_rule")
 load("//rules/opentitan:providers.bzl", "get_binary_files")
 load("//rules/opentitan:util.bzl", "get_override")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 
@@ -65,7 +66,6 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         src,
         manifest,
         rsa_key.file,
-        opentitantool,
     ]
     spx_args = []
     if spx_key:
@@ -93,7 +93,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
     digest = ctx.actions.declare_file("{}.digest".format(basename))
     ctx.actions.run(
         outputs = [digest],
-        inputs = [pre, opentitantool],
+        inputs = [pre],
         arguments = [
             "--rcfile=",
             "--quiet",
@@ -112,7 +112,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         spxmsg = ctx.actions.declare_file("{}.spx-message".format(basename))
         ctx.actions.run(
             outputs = [spxmsg],
-            inputs = [pre, opentitantool],
+            inputs = [pre],
             arguments = [
                 "--rcfile=",
                 "--quiet",
@@ -141,7 +141,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
     rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa_sig"))
     ctx.actions.run(
         outputs = [rsa_sig],
-        inputs = [digest, rsa_key.file, opentitantool],
+        inputs = [digest, rsa_key.file],
         arguments = [
             "--rcfile=",
             "--quiet",
@@ -160,7 +160,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx_sig"))
         ctx.actions.run(
             outputs = [spx_sig],
-            inputs = [spxmsg, spx_key.file, opentitantool],
+            inputs = [spxmsg, spx_key.file],
             arguments = [
                 "--rcfile=",
                 "--quiet",
@@ -189,7 +189,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
       file: The signed binary.
     """
     signed = ctx.actions.declare_file(paths.replace_extension(pre.basename, ".signed.bin"))
-    inputs = [opentitantool, pre, rsa_sig]
+    inputs = [pre, rsa_sig]
     args = [
         "--rcfile=",
         "--quiet",
@@ -216,6 +216,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
     return signed
 
 def _offline_presigning_artifacts(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
     digests = []
@@ -223,7 +224,7 @@ def _offline_presigning_artifacts(ctx):
     for src in get_binary_files(ctx.attr.srcs):
         artifacts = _presigning_artifacts(
             ctx,
-            ctx.executable._tool,
+            tc.tools.opentitantool,
             src,
             ctx.file.manifest,
             rsa_key,
@@ -253,19 +254,16 @@ offline_presigning_artifacts = rule(
             allow_files = True,
             doc = "SPX public key to validate this image",
         ),
-        "_tool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            executable = True,
-            cfg = "exec",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _offline_fake_rsa_sign(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     outputs = []
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     for file in ctx.files.srcs:
-        sig, _ = _local_sign(ctx, ctx.executable._tool, file, rsa_key)
+        sig, _ = _local_sign(ctx, tc.tools.opentitantool, file, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
@@ -278,16 +276,13 @@ offline_fake_rsa_sign = rule(
             mandatory = True,
             doc = "RSA private key to sign this image",
         ),
-        "_tool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            executable = True,
-            cfg = "exec",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
     doc = "Create detached signatures using on-disk private keys via opentitantool.",
 )
 
 def _offline_signature_attach(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     inputs = {}
     for src in ctx.attr.srcs:
         if PreSigningBinaryInfo in src:
@@ -321,7 +316,7 @@ def _offline_signature_attach(ctx):
             continue
         out = _post_signing_attach(
             ctx,
-            ctx.executable._tool,
+            tc.tools.opentitantool,
             inputs[f]["bin"],
             inputs[f]["rsa_sig"],
             inputs[f].get("spx_sig"),
@@ -335,19 +330,16 @@ offline_signature_attach = rule(
         "srcs": attr.label_list(allow_files = True, providers = [PreSigningBinaryInfo], doc = "Binary files to sign"),
         "rsa_signatures": attr.label_list(allow_files = True, doc = "RSA signed digest files"),
         "spx_signatures": attr.label_list(allow_files = True, doc = "SPX+ signed digest files"),
-        "_tool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            executable = True,
-            cfg = "exec",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def sign_binary(ctx, **kwargs):
+def sign_binary(ctx, opentitantool, **kwargs):
     """Sign a binary.
 
     Args:
       ctx: The rule context.
+      opentitantool: An opentitantool FilesToRun provider.
       kwargs: Overrides of values normally retrived from the context object.
         rsa_key: The RSA signing key.
         spx_key: The SPHINCS+ signing key.
@@ -365,7 +357,6 @@ def sign_binary(ctx, **kwargs):
     """
     rsa_key = key_from_dict(get_override(ctx, "attr.rsa_key", kwargs), "rsa_key")
     spx_key = key_from_dict(get_override(ctx, "attr.spx_key", kwargs), "spx_key")
-    opentitantool = get_override(ctx, "file._tool", kwargs)
 
     artifacts = _presigning_artifacts(
         ctx,
@@ -401,7 +392,8 @@ def sign_binary(ctx, **kwargs):
     }
 
 def _sign_bin_impl(ctx):
-    result = sign_binary(ctx)
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    result = sign_binary(ctx, tc.tools.opentitantool)
     return [
         DefaultInfo(files = depset([result["signed"]]), data_runfiles = ctx.runfiles(files = [result["signed"]])),
     ]
@@ -420,12 +412,6 @@ sign_bin = rv_rule(
             doc = "SPX public key to validate this image",
         ),
         "manifest": attr.label(allow_single_file = True, mandatory = True),
-        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
-        # need for this transition, in order to build the ROM_EXT signer tool.
-        "platform": attr.string(default = "@local_config_platform//:host"),
-        "_tool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            allow_single_file = True,
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
