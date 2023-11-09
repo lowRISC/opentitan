@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow,Result};
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use std::time::Duration;
 
@@ -21,15 +21,16 @@ struct Opts {
     timeout: Duration,
 }
 
-fn sleep_all_wakeups_test(opts: &Opts,
-                          transport: &TransportWrapper) -> Result<()> {
+fn sleep_all_wakeups_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let ioc0_pin = transport.gpio_pin("Ioc0")?;
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     loop {
         let vec = UartConsole::wait_for(
-            &*uart, r"PASS|FAIL|Issue WFI to enter sleep ([0-9]+)",
-            opts.timeout)?;
+            &*uart,
+            r"PASS|FAIL|Issue WFI to enter sleep ([0-9]+)",
+            opts.timeout,
+        )?;
         match vec[0].as_str() {
             "PASS" => return Ok(()),
             "FAIL" => return Err(anyhow!("Failure result: {:?}", vec)),

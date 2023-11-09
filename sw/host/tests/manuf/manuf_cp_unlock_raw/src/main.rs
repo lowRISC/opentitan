@@ -51,7 +51,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         Some(token_words),
         true,
         opts.init.bootstrap.options.reset_delay,
-        Some(JtagTap::LcTap)
+        Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 

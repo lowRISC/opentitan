@@ -2,23 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use clap::Parser;
-use std::time::Duration;
 use anyhow::Result;
 use arrayvec::ArrayVec;
+use clap::Parser;
 use std::fs;
+use std::time::Duration;
 
 use serde::Deserialize;
 
-use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::aes_commands::{
-    AesSubcommand,
-    CryptotestAesMode,
-    CryptotestAesData,
-    CryptotestAesPadding,
-    CryptotestAesOperation,
-    CryptotestAesOutput,
+    AesSubcommand, CryptotestAesData, CryptotestAesMode, CryptotestAesOperation,
+    CryptotestAesOutput, CryptotestAesPadding,
 };
+use cryptotest_commands::commands::CryptotestCommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -56,7 +52,11 @@ const AES_CMD_MAX_MSG_BYTES: usize = 64;
 const AES_CMD_MAX_KEY_BYTES: usize = 256 / 8;
 const AES_BLOCK_BYTES: usize = 128 / 8;
 
-fn run_aes_testcase(test_case: &AesTestCase, opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn run_aes_testcase(
+    test_case: &AesTestCase,
+    opts: &Opts,
+    transport: &TransportWrapper,
+) -> Result<()> {
     let uart = transport.uart("console")?;
 
     assert_eq!(test_case.algorithm.as_str(), "aes");
@@ -87,7 +87,7 @@ fn run_aes_testcase(test_case: &AesTestCase, opts: &Opts, transport: &TransportW
         Some(iv_val) => {
             iv = ArrayVec::new();
             iv.try_extend_from_slice(iv_val)?
-        },
+        }
         None => iv = ArrayVec::from([0; AES_BLOCK_BYTES]),
     }
 
@@ -103,12 +103,12 @@ fn run_aes_testcase(test_case: &AesTestCase, opts: &Opts, transport: &TransportW
             input.try_extend_from_slice(&test_case.plaintext)?;
             input_len = test_case.plaintext.len();
             expected_output = &test_case.ciphertext;
-        },
+        }
         "decrypt" => {
             input.try_extend_from_slice(&test_case.ciphertext)?;
             input_len = test_case.ciphertext.len();
             expected_output = &test_case.plaintext;
-        },
+        }
         _ => panic!("Invalid AES operation"),
     }
 
@@ -118,10 +118,14 @@ fn run_aes_testcase(test_case: &AesTestCase, opts: &Opts, transport: &TransportW
         iv,
         input,
         input_len,
-    }.send(&*uart)?;
+    }
+    .send(&*uart)?;
 
     let aes_output = CryptotestAesOutput::recv(&*uart, opts.timeout, false)?;
-    assert_eq!(aes_output.output[0..input_len], expected_output[0..input_len]);
+    assert_eq!(
+        aes_output.output[0..input_len],
+        expected_output[0..input_len]
+    );
     Ok(())
 }
 
