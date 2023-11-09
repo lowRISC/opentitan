@@ -8,7 +8,8 @@ module mbx_sysif
   parameter int unsigned CfgSramAddrWidth = 32,
   parameter int unsigned CfgSramDataWidth = 32,
   // PCIe capabilities
-  parameter bit          DoeIrqSupport    = 1'b1
+  parameter bit          DoeIrqSupport      = 1'b1,
+  parameter bit          DoeAsyncMsgSupport = 1'b1
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -20,6 +21,11 @@ module mbx_sysif
   output logic                        doe_intr_support_o,
   output logic                        doe_intr_en_o,
   output logic                        doe_intr_o,
+  // Asynchronous message to the requester
+  output logic                        doe_async_msg_support_o,
+  output logic                        doe_async_msg_en_o,
+  input  logic                        doe_async_msg_set_i,
+  input  logic                        doe_async_msg_clear_i,
   // Access to the control register
   output logic                        sysif_control_abort_set_o,
   output logic                        sysif_control_go_set_o,
@@ -27,7 +33,7 @@ module mbx_sysif
   input  logic                        sysif_status_busy_valid_i,
   input  logic                        sysif_status_busy_i,
   output logic                        sysif_status_busy_o,
-  input  logic                        sysif_status_doe_intr_state_set_i,
+  input  logic                        sysif_status_doe_intr_ready_set_i,
   input  logic                        sysif_status_error_set_i,
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
@@ -69,17 +75,25 @@ module mbx_sysif
     .devmode_i  ( 1'b1       )
   );
 
-  assign doe_intr_support_o = DoeIrqSupport;
-  assign doe_intr_o         = reg2hw.soc_status.doe_intr_status.q;
+  // Straps for the external capability header registers
+  assign doe_intr_support_o      = DoeIrqSupport;
+  assign doe_async_msg_support_o = DoeAsyncMsgSupport;
+  // DOE IRQ is generated when:
+  // - the host wrote a complete message to the outbound mailbox
+  // - there is an error
+  // - there is an asynchronous message
+  // request
+  assign doe_intr_o = DoeIrqSupport & reg2hw.soc_status.doe_intr_status.q;
 
-  // Control register
-  assign sysif_control_abort_set_o   = reg2hw.soc_control.abort.qe & reg2hw.soc_control.abort.q;
-  assign hw2reg.soc_control.abort.d  = 1'b0;
+  // Fiddle rising edge of writing the abort and go bit
+  assign sysif_control_abort_set_o  = reg2hw.soc_control.abort.qe & reg2hw.soc_control.abort.q;
+  assign hw2reg.soc_control.abort.d = 1'b0;
 
-  assign sysif_control_go_set_o   = reg2hw.soc_control.go.qe & reg2hw.soc_control.go.q;
-  assign hw2reg.soc_control.go.d  = 1'b0;
+  assign sysif_control_go_set_o  = reg2hw.soc_control.go.qe & reg2hw.soc_control.go.q;
+  assign hw2reg.soc_control.go.d = 1'b0;
 
   // Manual implementation of the doe_intr_en bit
+  // Gate the data input with the feature flag
   // SWAccess: RW
   // HWAccess: RO
   prim_subreg #(
@@ -91,7 +105,7 @@ module mbx_sysif
     .rst_ni  (rst_ni),
     // from register interface
     .we     (reg2hw.soc_control.doe_intr_en.qe),
-    .wd     (reg2hw.soc_control.doe_intr_en.q),
+    .wd     (reg2hw.soc_control.doe_intr_en.q & DoeIrqSupport),
     // HWAccess: hro
     .de     (1'b0),
     .d      (1'b0),
@@ -99,6 +113,30 @@ module mbx_sysif
     .qe     (),
     .q      (doe_intr_en_o),
     .ds     (hw2reg.soc_control.doe_intr_en.d),
+    .qs     ()
+  );
+
+  // Manual implementation of the doe_async_msg_en bit
+  // Gate the data input with the feature flag
+  // SWAccess: RW
+  // HWAccess: RO
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_soc_control_doe_async_msg_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    // from register interface
+    .we     (reg2hw.soc_control.doe_async_msg_en.qe),
+    .wd     (reg2hw.soc_control.doe_async_msg_en.q & DoeAsyncMsgSupport),
+    // HWAccess: hro
+    .de     (1'b0),
+    .d      (1'b0),
+    // to internal hardware
+    .qe     (),
+    .q      (doe_async_msg_en_o),
+    .ds     (hw2reg.soc_control.doe_async_msg_en.d),
     .qs     ()
   );
 
@@ -110,11 +148,22 @@ module mbx_sysif
   assign hw2reg.soc_status.busy.de = sysif_status_busy_valid_i;
   assign hw2reg.soc_status.busy.d  = sysif_status_busy_i;
 
-  // Set by the outbound handler if the DOE interrupt is enabled. Setting this bit creates a DOE
-  // interrupt to the system side.
-  // Cleared by SoC firmware (w1c)
-  assign hw2reg.soc_status.doe_intr_status.de = sysif_status_doe_intr_state_set_i & doe_intr_en_o;
-  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_state_set_i;
+  // Interrupt is triggered by the outbound handler if the message has been written to
+  // the memory and can be read by the system, an error is raised, or if there is an asynchronous
+  // message request coming from the host.
+  // The interrupt is cleared by the SOC firmware via the RW1C behavior
+  assign hw2reg.soc_status.doe_intr_status.de = DoeIrqSupport &
+                                                (sysif_status_doe_intr_ready_set_i |
+                                                 sysif_status_error_set_i          |
+                                                 doe_async_msg_set_i);
+  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_ready_set_i |
+                                                sysif_status_error_set_i          |
+                                                doe_async_msg_set_i;
+
+  // Async message status is updated by the host interface
+  assign hw2reg.soc_status.doe_async_msg_status.de = DoeAsyncMsgSupport &
+                                                     (doe_async_msg_set_i | doe_async_msg_clear_i);
+  assign hw2reg.soc_status.doe_async_msg_status.d  = doe_async_msg_set_i;
 
   // Error is cleared when writing the abort bit
   assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_control_abort_set_o;
@@ -122,8 +171,8 @@ module mbx_sysif
 
   // Set by OT firmware (w1s)
   // Cleared by SoC firmware (w1c)
-  assign hw2reg.soc_status.ready.de            = sysif_status_ready_valid_i;
-  assign hw2reg.soc_status.ready.d             = sysif_status_ready_i;
+  assign hw2reg.soc_status.ready.de = sysif_status_ready_valid_i;
+  assign hw2reg.soc_status.ready.d  = sysif_status_ready_i;
   // Ready bit indication into hardware
   assign sysif_status_ready_o = reg2hw.soc_status.ready.q;
 

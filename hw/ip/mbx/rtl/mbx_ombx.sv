@@ -12,7 +12,7 @@ module mbx_ombx #(
   input  logic                          clk_i,
   input  logic                          rst_ni,
   output logic                          ombx_state_error_o,
-  output logic                          ombx_doe_intr_state_set_o,
+  output logic                          ombx_doe_intr_ready_set_o,
   output logic                          ombx_pending_o,
   output logic                          ombx_status_ready_update_o,
   output logic                          ombx_status_ready_o,
@@ -168,21 +168,21 @@ module mbx_ombx #(
 
   // The following flop creates an indicator that hostif.object_size has been written such that
   // in the next cycle, the read pointer limit can be updated and the first transfer from the
-  // SRAM to the internal data flop can be initiated. Only update the object size when not a
-  // transfer was successful.
+  // SRAM to the internal data flop can be initiated.
 
   prim_flop #(
     .Width(1)
   ) u_host_write_object_size (
     .clk_i ( clk_i                                                              ),
     .rst_ni( rst_ni                                                             ),
+    // Ignore hardware-initiated changes to the OUTBOUND_OBJECT_SIZE register.
     .d_i   ( hostif_ombx_object_size_write_i & ~ombx_object_size_update_valid_q ),
     .q_o   ( host_write_object_size_q                                           )
   );
 
   logic [CfgObjectSizeWidth-1:0] hostif_ob_object_size_minus_one;
   // Update the hostif.object_size register on every transaction or when aborting the transaction
-  assign hostif_ombx_object_size_update_o = (read_req & ombx_sram_read_gnt_i) |
+  assign hostif_ombx_object_size_update_o = (ombx_sram_read_req_o & ombx_sram_read_gnt_i) |
                                              sysif_control_abort_set_i;
   // The updated value is the decremented by 1 size or zero-ed out if the transaction is aborted
   assign hostif_ob_object_size_minus_one = hostif_ombx_object_size_i - 1;
@@ -229,10 +229,8 @@ module mbx_ombx #(
     .q_o   ( first_req_q                                      )
   );
 
-  // Create a DOE interrupt request when the obmx FSM turns into the ready state or when an error
-  // is raised
-  assign ombx_doe_intr_state_set_o = (ombx_status_ready_o & ombx_status_ready_update_o) |
-                                      hostif_control_error_set_i;
+  // Create a DOE interrupt request when the obmx FSM turns into the ready state
+  assign ombx_doe_intr_ready_set_o = (ombx_status_ready_o & ombx_status_ready_update_o);
 
   mbx_fsm #(
     .CfgOmbx ( 1 )
@@ -282,7 +280,7 @@ module mbx_ombx #(
   `ASSERT_NEVER(NeverReadWhenEmpty_A, ombx_sram_read_req_o & ombx_is_empty)
   // Never let the read pointer run out of the limit, but allow the range to be redefined whilst
   // the mailbox is not active
-  `ASSERT_NEVER(NeverRunOutOfLimit_A, |{set_first_req, first_req_q, mbx_read} &
+  `ASSERT_NEVER(NeverRunOutOfLimit_A, |{first_req_q, mbx_read} &
                 (sram_read_ptr_q > sram_read_ptr_limit_q))
 
 `ifdef INC_ASSERT

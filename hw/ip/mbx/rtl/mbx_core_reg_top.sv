@@ -143,10 +143,12 @@ module mbx_core_reg_top (
   logic control_abort_wd;
   logic control_error_qs;
   logic control_error_wd;
+  logic control_sys_async_msg_wd;
   logic status_re;
   logic status_busy_qs;
   logic status_sys_intr_state_qs;
   logic status_sys_intr_enable_qs;
+  logic status_sys_async_enable_qs;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -366,7 +368,7 @@ module mbx_core_reg_top (
 
   // R[control]: V(True)
   logic control_qe;
-  logic [1:0] control_flds_we;
+  logic [2:0] control_flds_we;
   assign control_qe = &control_flds_we;
   //   F[abort]: 0:0
   prim_subreg_ext #(
@@ -399,6 +401,22 @@ module mbx_core_reg_top (
     .qs     (control_error_qs)
   );
   assign reg2hw.control.error.qe = control_qe;
+
+  //   F[sys_async_msg]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_control_sys_async_msg (
+    .re     (1'b0),
+    .we     (control_we),
+    .wd     (control_sys_async_msg_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (control_flds_we[2]),
+    .q      (reg2hw.control.sys_async_msg.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.control.sys_async_msg.qe = control_qe;
 
 
   // R[status]: V(True)
@@ -445,6 +463,21 @@ module mbx_core_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_sys_intr_enable_qs)
+  );
+
+  //   F[sys_async_enable]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_sys_async_enable (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.sys_async_enable.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_sys_async_enable_qs)
   );
 
 
@@ -826,6 +859,8 @@ module mbx_core_reg_top (
   assign control_abort_wd = reg_wdata[0];
 
   assign control_error_wd = reg_wdata[1];
+
+  assign control_sys_async_msg_wd = reg_wdata[3];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
@@ -902,12 +937,14 @@ module mbx_core_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[0] = control_abort_qs;
         reg_rdata_next[1] = control_error_qs;
+        reg_rdata_next[3] = '0;
       end
 
       addr_hit[5]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_sys_intr_state_qs;
         reg_rdata_next[2] = status_sys_intr_enable_qs;
+        reg_rdata_next[3] = status_sys_async_enable_qs;
       end
 
       addr_hit[6]: begin
