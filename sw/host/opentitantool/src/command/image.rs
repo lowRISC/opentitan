@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, ensure, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -133,6 +133,11 @@ impl CommandDispatch for ManifestUpdateCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
         let mut update_length = self.update_length;
+
+        // Some sanity check
+        image
+            .manifest_sanity_check()
+            .context("Image doesn't appear to contain a manifest, or the manifest is corrupted")?;
 
         // Load the manifest HJSON definition and update the image.
         if let Some(manifest) = &self.manifest {
