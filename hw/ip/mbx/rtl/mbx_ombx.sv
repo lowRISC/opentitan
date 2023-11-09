@@ -16,6 +16,7 @@ module mbx_ombx #(
   output logic                          ombx_pending_o,
   output logic                          ombx_status_ready_update_o,
   output logic                          ombx_status_ready_o,
+  input  logic                          hostif_range_valid_write_i,
   input  logic                          hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0]   hostif_limit_i,
@@ -111,8 +112,12 @@ module mbx_ombx #(
   // SRAM read pointer management
   logic load_read_ptr, advance_read_ptr;
 
+  // Determine when the range is set to valid
+  logic range_valid_set;
+  assign range_valid_set = hostif_range_valid_write_i & hostif_range_valid_i;
+
   // Rewind the read pointer to the base
-  assign load_read_ptr = set_first_req | sys_read_all_o | host_clear_abort;
+  assign load_read_ptr = range_valid_set | set_first_req | sys_read_all_o | host_clear_abort;
 
   // Advance the read pointer when one request went through
   assign advance_read_ptr = ombx_sram_read_req_o & ombx_sram_read_gnt_i;
@@ -200,12 +205,12 @@ module mbx_ombx #(
   prim_generic_flop_en #(
     .Width(CfgSramAddrWidth)
   ) u_sram_read_ptr_limit (
-    .clk_i ( clk_i                                ),
-    .rst_ni( rst_ni                               ),
+    .clk_i ( clk_i                                                    ),
+    .rst_ni( rst_ni                                                   ),
     // Factor in ~mbx_read because HW update can trigger host_write_object_size_q
-    .en_i  ( host_write_object_size_q & ~mbx_read ),
-    .d_i   ( sram_read_ptr_limit_d                ),
-    .q_o   ( sram_read_ptr_limit_q                )
+    .en_i  ( (host_write_object_size_q & ~mbx_read) | range_valid_set ),
+    .d_i   ( sram_read_ptr_limit_d                                    ),
+    .q_o   ( sram_read_ptr_limit_q                                    )
   );
 
   // Logic to initiate the first read (mbx_empty) from the SRAM to the requester
