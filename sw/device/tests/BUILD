@@ -3303,3 +3303,58 @@ opentitan_binary(
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
+
+opentitan_test(
+    name = "rv_core_ibex_epmp_test_functest",
+    srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
+    cw310 = cw310_jtag_params(
+        binaries = {
+            ":rv_core_ibex_epmp_test": "sram_program",
+        },
+        bitstream =
+            "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
+        tags = ["manual"],
+        test_cmd = "--elf={sram_program}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    silicon = silicon_jtag_params(
+        test_cmd = "--elf={firmware}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_binary(
+    name = "rv_core_ibex_epmp_test",
+    testonly = True,
+    srcs = [
+        "rv_core_ibex_epmp_test.S",
+        "rv_core_ibex_epmp_test.c",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:pmp",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
