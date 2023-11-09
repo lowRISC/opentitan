@@ -69,7 +69,7 @@ pub trait Flavor {
             instance.to_string()
         ))
     }
-    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
         bail!(TransportError::InvalidInstance(
             TransportInterfaceType::I2c,
             instance.to_string()
@@ -259,7 +259,8 @@ impl<T: Flavor> Hyperdebug<T> {
                 gpio: Default::default(),
                 spis: Default::default(),
                 selected_spi: Cell::new(0),
-                i2cs: Default::default(),
+                i2cs_by_name: Default::default(),
+                i2cs_by_index: Default::default(),
                 uarts: Default::default(),
             }),
             current_firmware_version,
@@ -339,7 +340,8 @@ pub struct Inner {
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
     selected_spi: Cell<u8>,
-    i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
+    i2cs_by_name: RefCell<HashMap<String, Rc<dyn Bus>>>,
+    i2cs_by_index: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
 }
 
@@ -529,9 +531,16 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 
     // Create I2C Target instance, or return one from a cache of previously created instances.
-    fn i2c(&self, instance: &str) -> Result<Rc<dyn Bus>> {
-        let idx = T::i2c_index(&self.inner, instance)?;
-        if let Some(instance) = self.inner.i2cs.borrow().get(&idx) {
+    fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
+        if let Some(instance) = self.inner.i2cs_by_name.borrow().get(name) {
+            return Ok(Rc::clone(instance));
+        }
+        let (idx, mode) = T::i2c_index(&self.inner, name)?;
+        if let Some(instance) = self.inner.i2cs_by_index.borrow().get(&idx) {
+            self.inner
+                .i2cs_by_name
+                .borrow_mut()
+                .insert(name.to_string(), Rc::clone(instance));
             return Ok(Rc::clone(instance));
         }
         let instance: Rc<dyn Bus> = Rc::new(
@@ -541,23 +550,29 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                     cmsis_interface,
                     true, /* cmsis_encapsulation */
                     idx,
+                    mode,
                 )?,
                 (None, Some(i2c_interface)) => i2c::HyperdebugI2cBus::open(
                     &self.inner,
                     i2c_interface,
                     false, /* cmsis_encapsulation */
                     idx,
+                    mode,
                 )?,
                 (None, None) => bail!(TransportError::InvalidInstance(
                     TransportInterfaceType::I2c,
-                    instance.to_string()
+                    name.to_string()
                 )),
             },
         );
         self.inner
-            .i2cs
+            .i2cs_by_index
             .borrow_mut()
             .insert(idx, Rc::clone(&instance));
+        self.inner
+            .i2cs_by_name
+            .borrow_mut()
+            .insert(name.to_string(), Rc::clone(&instance));
         Ok(instance)
     }
 
@@ -680,28 +695,20 @@ impl Flavor for StandardFlavor {
         }
     }
 
-    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
-        match instance.parse() {
-            Err(_) => {
-                // Execute a "i2c info" command to look up the numeric index corresponding to the
-                // given alphanumeric I2C instance name.
-                let mut buf = String::new();
-                let captures = inner
-                    .cmd_one_line_output_match(
-                        &format!("i2c info {}", instance),
-                        &SPI_REGEX,
-                        &mut buf,
-                    )
-                    .map_err(|_| {
-                        TransportError::InvalidInstance(
-                            TransportInterfaceType::I2c,
-                            instance.to_string(),
-                        )
-                    })?;
-                Ok(captures.get(1).unwrap().as_str().parse().unwrap())
-            }
-            Ok(n) => Ok(n),
-        }
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
+        // Execute a "i2c info" command to look up the numeric index corresponding to the
+        // given alphanumeric I2C instance name.
+        let mut buf = String::new();
+        let captures = inner
+            .cmd_one_line_output_match(&format!("i2c info {}", instance), &SPI_REGEX, &mut buf)
+            .map_err(|_| {
+                TransportError::InvalidInstance(TransportInterfaceType::I2c, instance.to_string())
+            })?;
+        let mode = match captures.get(4) {
+            Some(c) if c.as_str().starts_with('d') => i2c::Mode::Device,
+            _ => i2c::Mode::Host,
+        };
+        Ok((captures.get(1).unwrap().as_str().parse().unwrap(), mode))
     }
 
     fn get_default_usb_vid() -> u16 {
@@ -728,7 +735,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
         StandardFlavor::spi_index(inner, instance)
     }
-    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<u8> {
+    fn i2c_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, i2c::Mode)> {
         StandardFlavor::i2c_index(inner, instance)
     }
     fn get_default_usb_vid() -> u16 {
@@ -758,4 +765,5 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     }
 }
 
-static SPI_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap());
+static SPI_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());

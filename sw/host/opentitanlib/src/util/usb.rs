@@ -195,6 +195,20 @@ impl UsbBackend {
         Ok(len)
     }
 
+    /// Read bulk data bytes to given USB endpoint.
+    pub fn read_bulk_timeout(
+        &self,
+        endpoint: u8,
+        data: &mut [u8],
+        timeout: Duration,
+    ) -> Result<usize> {
+        let len = self
+            .handle
+            .read_bulk(endpoint, data, timeout)
+            .context("USB error")?;
+        Ok(len)
+    }
+
     /// Write bulk data bytes to given USB endpoint.
     pub fn write_bulk(&self, endpoint: u8, data: &[u8]) -> Result<usize> {
         let len = self
