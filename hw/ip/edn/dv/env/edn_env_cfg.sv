@@ -27,6 +27,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   bit abort_sw_cmd = 0;
   bit backdoor_disable = 1'b0;
+  bit base_vseq_edn_enabled = 1'b0;
 
   int min_auto_reseeds = 2;
 

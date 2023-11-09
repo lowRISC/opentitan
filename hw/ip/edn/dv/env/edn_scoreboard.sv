@@ -44,6 +44,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
   bit instantiated = 1'b0;
   // indicator bit, 1'b1 if in boot_req_mode and generate cmd has been sent
   bit boot_gen_cmd_sent = 1'b0;
+  // Indicator bit that equals 1'b1 if a backdoor disable has happened and
+  // the cmd FIFOs have been cleared.
+  bit backdoor_disable_fifo_clr = 1'b0;
   // counter to keep track of additional data
   int clen_cntr = 0;
   // EDN previous and current ctrl state
@@ -76,6 +79,15 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+  endfunction
+
+  function void check_fifo_clr_needed();
+    // Check if a backdoor disable has happened and the FIFOs haven't been cleared yet.
+    if (cfg.backdoor_disable && !backdoor_disable_fifo_clr) begin
+      backdoor_disable_fifo_clr = 1'b1;
+      reseed_cmd_q.delete();
+      generate_cmd_q.delete();
+    end
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -171,8 +183,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
         edn_ctrl.boot_req_mode.q = `gmv(ral.ctrl.boot_req_mode);
         edn_ctrl.cmd_fifo_rst.q = `gmv(ral.ctrl.cmd_fifo_rst);
 
-        // reset fifos if cmd_fifo_rst is true
-        if (write && (edn_ctrl.cmd_fifo_rst.q == MuBi4True)) begin
+        // Reset fifos if cmd_fifo_rst is true or if EDN is being disabled.
+        if (write && (edn_ctrl.cmd_fifo_rst.q == MuBi4True ||
+                      (edn_ctrl.edn_enable.q == MuBi4False &&
+                       edn_ctrl_pre.edn_enable.q == MuBi4True))) begin
           reseed_cmd_q.delete();
           generate_cmd_q.delete();
         end
@@ -192,17 +206,20 @@ class edn_scoreboard extends cip_base_scoreboard #(
           if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || (cfg.backdoor_disable)) begin
             clen_cntr = 0;
             reqs_between_reseeds_ctr = 32'b0;
-            cfg.backdoor_disable = 1'b0;
             instantiated = 1'b0;
             boot_gen_cmd_sent = 1'b0;
             sw_cmd_req_q.delete();
 
-            // clear auto mode fifos if Main_SM enters SW_Port_Mode
-            if (edn_ctrl.boot_req_mode.q != MuBi4True &&
-                edn_ctrl.auto_req_mode.q != MuBi4True) begin
+            // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
+            // disabled via backdoor and the FIFOs haven't been cleared yet.
+            if ((edn_ctrl.boot_req_mode.q != MuBi4True && edn_ctrl.auto_req_mode.q != MuBi4True) ||
+                (cfg.backdoor_disable && !backdoor_disable_fifo_clr)) begin
               reseed_cmd_q.delete();
               generate_cmd_q.delete();
             end
+            // We can reset the indicator bits since the backdoor disable is now accounted for.
+            cfg.backdoor_disable = 1'b0;
+            backdoor_disable_fifo_clr = 1'b0;
 
           // If auto mode is being disabled wait for SM to enter Idle state and clear FIFOs
           end else if ((edn_ctrl.auto_req_mode.q != MuBi4True) &&
@@ -220,12 +237,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
             join_none
           end
         end
-
-        // currently FIFOs aren't cleared when EDN is disabled.
-        // Uncomment based on decision in #19653
-        // reseed_cmd_q.delete();
-        // generate_cmd_q.delete();
-
       end
       "sw_cmd_req": begin
         // Only save sw commands if we are in a state that allows for sw commands
@@ -252,11 +263,13 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end
       "generate_cmd": begin
         if (addr_phase_write) begin
+          check_fifo_clr_needed();
           generate_cmd_q.push_back(item.a_data);
         end
       end
       "reseed_cmd": begin
         if (addr_phase_write) begin
+          check_fifo_clr_needed();
           reseed_cmd_q.push_back(item.a_data);
         end
       end
