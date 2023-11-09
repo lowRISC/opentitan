@@ -22,8 +22,10 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
+    "silicon_jtag_params",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
@@ -3252,5 +3254,53 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "rv_core_ibex_isa_test_functest",
+    srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
+    cw310 = cw310_jtag_params(
+        binaries = {
+            ":rv_core_ibex_isa_test": "sram_program",
+        },
+        bitstream =
+            "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
+        tags = ["manual"],
+        test_cmd = "--elf={sram_program}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    silicon = silicon_jtag_params(
+        tags = ["manual"],
+        test_cmd = "--elf={firmware}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_binary(
+    name = "rv_core_ibex_isa_test",
+    testonly = True,
+    srcs = [
+        "rv_core_ibex_isa_test.S",
+        "rv_core_ibex_isa_test.c",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
