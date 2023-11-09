@@ -117,6 +117,8 @@ class edn_base_vseq extends cip_base_vseq #(
     ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
     ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
     csr_update(.csr(ral.ctrl));
+    // Signal that the EDN has been enabled for the first time.
+    cfg.base_vseq_edn_enabled = 1'b1;
 
     // If set_regwen is set, write random value to the EDN, and expect the write won't be taken.
     if (set_regwen) begin
