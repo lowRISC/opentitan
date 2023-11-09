@@ -16,10 +16,22 @@ def _host_tools_transition_impl(settings, attr):
     This transition is used for building host tools, passing through all build
     settings specified on the command line.
     """
-    return {"//command_line_option:platforms": "@local_config_platform//:host"}
+    ret = {
+        "//command_line_option:platforms": "@local_config_platform//:host",
+        "//command_line_option:copt": settings["//command_line_option:copt"],
+        "//command_line_option:features": settings["//command_line_option:features"],
+    }
+    return ret
 
 host_tools_transition = transition(
     implementation = _host_tools_transition_impl,
-    inputs = [],
-    outputs = ["//command_line_option:platforms"],
+    inputs = [
+        "//command_line_option:copt",
+        "//command_line_option:features",
+    ],
+    outputs = [
+        "//command_line_option:platforms",
+        "//command_line_option:copt",
+        "//command_line_option:features",
+    ],
 )

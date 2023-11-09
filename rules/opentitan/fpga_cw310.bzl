@@ -30,6 +30,7 @@ load(
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
     "OPENTITANTOOL_OPENOCD_TEST_CMD",
 )
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
@@ -145,7 +146,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
-            test_harness = test_harness.short_path,
+            test_harness = test_harness.executable.short_path,
             args = args,
             test_cmd = test_cmd,
         ),
@@ -165,6 +166,7 @@ def _fpga_cw310(ctx):
 fpga_cw310 = rule(
     implementation = _fpga_cw310,
     attrs = exec_env_common_attrs(),
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _fpga_cw305(ctx):
@@ -179,6 +181,7 @@ def _fpga_cw305(ctx):
 fpga_cw305 = rule(
     implementation = _fpga_cw305,
     attrs = exec_env_common_attrs(),
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _fpga_cw340(ctx):
@@ -193,6 +196,7 @@ def _fpga_cw340(ctx):
 fpga_cw340 = rule(
     implementation = _fpga_cw340,
     attrs = exec_env_common_attrs(),
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def cw310_params(

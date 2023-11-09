@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+
 """Rules for generating OTP images.
 
 OTP image generation begins with producing one or more (H)JSON files that
@@ -126,15 +128,11 @@ otp_json = rule(
 )
 
 def _otp_alert_digest_impl(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
 
     outputs = [file]
-
-    inputs = [
-        ctx.file._opentitantool,
-        ctx.file.otp_img,
-    ]
-
+    inputs = [ctx.file.otp_img]
     args = ctx.actions.args()
     args.add_all(("--rcfile=", "otp", "alert-digest", ctx.file.otp_img))
     args.add("--output", file)
@@ -143,9 +141,8 @@ def _otp_alert_digest_impl(ctx):
         outputs = outputs,
         inputs = inputs,
         arguments = [args],
-        executable = ctx.file._opentitantool.path,
+        executable = tc.tools.opentitantool,
     )
-
     return [DefaultInfo(files = depset([file]))]
 
 otp_alert_digest = rule(
@@ -155,16 +152,8 @@ otp_alert_digest = rule(
             allow_single_file = [".json", ".hjson"],
             doc = "The OTP image file containing alert_handler values.",
         ),
-        "_opentitantool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            allow_single_file = True,
-            executable = True,
-            cfg = host_tools_transition,
-        ),
-        "_allowlist_function_transition": attr.label(
-            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
-        ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _otp_image(ctx):
