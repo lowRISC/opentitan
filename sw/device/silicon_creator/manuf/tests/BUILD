@@ -19,6 +19,8 @@ load(
     "silicon_jtag_params",
 )
 
+package(default_visibility = ["//visibility:public"])
+
 _TEST_UNLOCKED_LC_ITEMS = get_lc_items(
     CONST.LCV.TEST_UNLOCKED0,
     CONST.LCV.TEST_UNLOCKED1,
@@ -167,7 +169,7 @@ opentitan_test(
         data = ":otp_img_rom_exec_disabled_test_unlocked{}".format(i),
         meminfo = "//hw/bitstream:otp_mmi",
         update_usr_access = True,
-        visibility = ["//visibility:private"],
+        visibility = ["//visibility:public"],
     )
     for i in range(0, 8)
 ]
