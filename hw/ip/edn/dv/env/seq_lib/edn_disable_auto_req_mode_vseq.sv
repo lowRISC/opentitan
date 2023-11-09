@@ -91,6 +91,10 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         // Kill EDN initialization and endpoint requests if necessary.
         mbox_kill_edn_init.put(1'b1);
         mbox_kill_endpoint_reqs.put(1'b1);
+        // TODO: Remove the following lines resetting the FIFOs based on decision in #19653.
+        // Reset cmd FIFO to prevent FIFO from overflowing after re-enabling EDN.
+        csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4True));
+        csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4False));
         // Wait before re-enabling EDN.
         `uvm_info(`gfn, $sformatf("Waiting before re-enabling EDN"), UVM_LOW)
         cfg.clk_rst_vif.wait_n_clks($urandom_range(1, 1000));
