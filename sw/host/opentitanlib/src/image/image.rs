@@ -94,6 +94,24 @@ impl ToWriter for Image {
 
 impl Image {
     pub const MAX_SIZE: usize = 512 * 1024;
+
+    /// Perform a sanity check to ensure that the image comes with manifest.
+    ///
+    /// Note that passing the sanity check doesn't guarantee that the manifest is valid.
+    pub fn manifest_sanity_check(&self) -> Result<()> {
+        let manifest = self.borrow_manifest()?;
+        let len = self.data.bytes.len() as u32;
+
+        ensure!(manifest.signed_region_end < len);
+        ensure!(manifest.length < len);
+        ensure!(manifest.code_start < len);
+        ensure!(manifest.code_end < len);
+        ensure!(manifest.entry_point < len);
+        ensure!(manifest.extensions.entries.iter().all(|x| x.offset < len));
+
+        Ok(())
+    }
+
     /// Overwrites all fields in the image's manifest that are defined in `other`.
     pub fn overwrite_manifest(&mut self, other: ManifestSpec) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;

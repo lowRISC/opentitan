@@ -160,7 +160,7 @@ def _binary_name(ctx, exec_env):
         exec_env = exec_env.exec_env,
     )
 
-def _build_binary(ctx, exec_env, name, deps):
+def _build_binary(ctx, exec_env, name, deps, kind):
     """Build a binary, sign and perform output file transformations.
     This function is the core of the `opentitan_binary` and `opentitan_test`
     implementations.
@@ -170,6 +170,7 @@ def _build_binary(ctx, exec_env, name, deps):
       exec_env: An ExecEnvInfo provider.
       name: The name of the output artifacts.
       deps: Dependencies for this binary.
+      kind: Kind of binary.
     Returns:
       (dict, dict): A dict of output artifacts and a dict of signing artifacts.
     """
@@ -191,7 +192,7 @@ def _build_binary(ctx, exec_env, name, deps):
     manifest = get_fallback(ctx, "file.manifest", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
-    if manifest:
+    if manifest and kind != "ram":
         if not rsa_key:
             fail("Signing requires a manifest and an rsa_key, and optionally an spx_key")
         signed = sign_binary(
@@ -232,7 +233,8 @@ def _opentitan_binary(ctx):
         exec_env = exec_env[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + [exec_env.lib]
-        provides, signed = _build_binary(ctx, exec_env, name, deps)
+        kind = ctx.attr.kind
+        provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(**provides))
         default_info.append(provides["default"])
 
@@ -342,7 +344,8 @@ def _opentitan_test(ctx):
     if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + [exec_env.lib]
-        provides, signed = _build_binary(ctx, exec_env, name, deps)
+        kind = ctx.attr.kind
+        provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         p = exec_env.provider(**provides)
     else:
         p = None
