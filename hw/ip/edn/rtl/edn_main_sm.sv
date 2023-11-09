@@ -239,7 +239,7 @@ module edn_main_sm import edn_pkg::*; #(
       send_gencmd_o          = 1'b0;
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
-      main_sm_done_pulse_o   = 1'b0;
+      main_sm_done_pulse_o   = 1'b1;
     end
   end
 
