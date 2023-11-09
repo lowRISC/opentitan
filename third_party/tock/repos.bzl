@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-8b28201bce7dd7b832de469b34a83457b2cc4ceb",
-        url = "https://github.com/tock/tock/archive/8b28201bce7dd7b832de469b34a83457b2cc4ceb.tar.gz",
-        sha256 = "91d00204db504d191a6bf4edaa4520f465a57547971b472f80583f45c3f1c4a5",
+        strip_prefix = "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
+        url = "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
+        sha256 = "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
@@ -152,9 +152,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "libtock",
         local = libtock,
-        strip_prefix = "libtock-rs-cda873797a4a2937ccc13da75d0c74c04fab0a23",
-        url = "https://github.com/tock/libtock-rs/archive/cda873797a4a2937ccc13da75d0c74c04fab0a23.tar.gz",
-        sha256 = "a7c164ae64b5557ad0e21d400ba1ade58ed112cbecc4e545a69b3f7ff125bb94",
+        strip_prefix = "libtock-rs-a2c6ad80648e3ba073e7433b4330706df052a6ae",
+        url = "https://github.com/tock/libtock-rs/archive/a2c6ad80648e3ba073e7433b4330706df052a6ae.tar.gz",
+        sha256 = "888d1925cd760e818385d13187286d6b87f763c548a4dc1bb26e55786dc95636",
         additional_files_content = {
             "BUILD": crate_build(
                 name = "libtock",
