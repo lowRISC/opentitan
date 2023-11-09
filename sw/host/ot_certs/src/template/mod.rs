@@ -328,6 +328,15 @@ pub enum VariableType {
     },
 }
 
+impl VariableType {
+    // Return the maximum size of the variable in bytes.
+    pub fn size(&self) -> usize {
+        match self {
+            Self::ByteArray { size } | Self::Integer { size } | Self::String { size } => *size,
+        }
+    }
+}
+
 impl Template {
     pub fn from_hjson_str(content: &str) -> Result<Template> {
         Ok(deser_hjson::from_str(content)?)
