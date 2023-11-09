@@ -5,6 +5,7 @@
 load("@bazel_skylib//lib:types.bzl", "types")
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "PROVIDER_FIELDS")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
 _FIELDS = {
@@ -29,7 +30,6 @@ _FIELDS = {
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "rom_scramble_config": ("file.rom_scramble_config", False),
-    "_opentitantool": ("executable._opentitantool", True),
 }
 
 ExecEnvInfo = provider(
@@ -74,7 +74,10 @@ def exec_env_as_dict(ctx):
     base = ctx.attr.base
     if base:
         base = base[ExecEnvInfo]
-    result = {}
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    result = {
+        "_opentitantool": tc.tools.opentitantool,
+    }
     for field, (path, required) in _FIELDS.items():
         val = getattr_path(ctx, path)
         if not val and base:
@@ -200,11 +203,6 @@ def exec_env_common_attrs(**kwargs):
             doc = "ROM scrambling config for this environment",
             allow_single_file = True,
         ),
-        "_opentitantool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            executable = True,
-            cfg = "exec",
-        ),
     }
 
 def _do_update(name, file, data_files, param, action_param):
@@ -301,14 +299,15 @@ def common_test_setup(ctx, exec_env, firmware):
     """
 
     # If there is no explicitly specified test_harness, then the harness is opentitantool.
-    test_harness = ctx.executable.test_harness
-    if test_harness == None:
+    if ctx.attr.test_harness:
+        test_harness = ctx.attr.test_harness.files_to_run
+    else:
         test_harness = exec_env._opentitantool
 
     # Get the files we'll need to run the test.
     data_labels = ctx.attr.data + exec_env.data
     data_files = get_files(data_labels)
-    data_files.append(test_harness)
+    data_files.append(test_harness.executable)
 
     # Construct a param dictionary by combining the exec_env.param, the rule's
     # param and and some extra file references.
