@@ -510,6 +510,15 @@ a.block:visited {
     font-weight: bold;
 }
 
+.tooltip-text {
+    grid-column: span 2;
+    padding: 0.2em 0.4em;
+    margin-top: 0;
+    margin-bottom: 0;
+    max-width: 30ch;
+    text-align: start;
+}
+
 .tooltip hr {
     grid-column: span 2;
     width: 100%;
