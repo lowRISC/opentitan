@@ -16,34 +16,34 @@ window.onload = (event) => {
 
 <div class="scroll-container" style="width: 100%; overflow-x: auto">
 <figure class="block-diagram" id="earlgrey-block-diagram">
-    <figcaption><b>OpenTitan Earlgrey ASIC</b></figcaption>
-    <a href="https://opentitan.org/book/hw/top_earlgrey/doc/specification.html">📋 <b>Datasheet</b></a>
+    <figcaption><b>OpenTitan Earl Grey (Standalone Chip)</b></figcaption>
+    <a href="../book/hw/top_earlgrey/doc/specification.html">📋 <b>Datasheet</b></a>
     <div class="top">
         <div class="domains" grid="2">
             <div class="domain">
                 <h3 class="domain-title">High speed domain</h3>
                 <div class="blocks" grid="4">
-                    <a class="block clock1 dual" href="https://opentitan.org/book/hw/ip/rv_core_ibex/" id="ibex" grid-rows="2" grid-cols="2">
+                    <a class="block clock1 dual" href="../book/hw/ip/rv_core_ibex/" id="ibex" grid-rows="2" grid-cols="2">
                         <span class="dual-label">DUAL LOCKSTEP</span>
                         <span class="big-label">Ibex Core</span> (RV32IMCB)
                     </a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/top_earlgrey/ip_autogen/rv_plic/" id="interrupt-controller">Interrupt Controller</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/rom_ctrl/" id="rom">ROM</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/rv_dm/" id="debug-module">Debug Module</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/sram_ctrl/" id="main-sram">Main<br>SRAM</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/tlul/" id="high-speed-crossbar" grid-cols="4">TL-UL<br>Crossbar</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/keymgr/" id="key-manager">Key Manager</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/kmac/" id="kmac">KMAC</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/edn/" id="edn">EDN</a>
-                    <a class="block clock2" href="https://opentitan.org/book/hw/ip/spi_host/" id="spi-host-0">SPI<br>Host 0</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/otbn/" id="otbn">OTBN</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/hmac/" id="hmac">HMAC</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/csrng/" id="csrng">CSRNG</a>
-                    <a class="block clock3" href="https://opentitan.org/book/hw/ip/spi_host/" id="spi-host-1">SPI<br>Host 1</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/aes/" id="aes">AES</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/flash_ctrl/" id="flash">Flash</a>
-                    <a class="block clock1" href="https://opentitan.org/book/hw/ip/entropy_src/" id="entropy-source">Entropy Source</a>
-                    <a class="block clock3" href="https://opentitan.org/book/hw/ip/usbdev/" id="usb" subclock1="clock5">USB</a>
+                    <a class="block clock1" href="../book/hw/top_earlgrey/ip_autogen/rv_plic/" id="interrupt-controller">Interrupt Controller</a>
+                    <a class="block clock1" href="../book/hw/ip/rom_ctrl/" id="rom">ROM</a>
+                    <a class="block clock1" href="../book/hw/ip/rv_dm/" id="debug-module">Debug Module</a>
+                    <a class="block clock1" href="../book/hw/ip/sram_ctrl/" id="main-sram">Main<br>SRAM</a>
+                    <a class="block clock1" href="../book/hw/ip/tlul/" id="high-speed-crossbar" grid-cols="4">TL-UL<br>Crossbar</a>
+                    <a class="block clock1" href="../book/hw/ip/keymgr/" id="key-manager">Key Manager</a>
+                    <a class="block clock1" href="../book/hw/ip/kmac/" id="kmac">KMAC</a>
+                    <a class="block clock1" href="../book/hw/ip/edn/" id="edn">EDN</a>
+                    <a class="block clock2" href="../book/hw/ip/spi_host/" id="spi-host-0">SPI<br>Host 0</a>
+                    <a class="block clock1" href="../book/hw/ip/otbn/" id="otbn">OTBN</a>
+                    <a class="block clock1" href="../book/hw/ip/hmac/" id="hmac">HMAC</a>
+                    <a class="block clock1" href="../book/hw/ip/csrng/" id="csrng">CSRNG</a>
+                    <a class="block clock3" href="../book/hw/ip/spi_host/" id="spi-host-1">SPI<br>Host 1</a>
+                    <a class="block clock1" href="../book/hw/ip/aes/" id="aes">AES</a>
+                    <a class="block clock1" href="../book/hw/ip/flash_ctrl/" id="flash">Flash</a>
+                    <a class="block clock1" href="../book/hw/ip/entropy_src/" id="entropy-source">Entropy Source</a>
+                    <a class="block clock3" href="../book/hw/ip/usbdev/" id="usb" subclock1="clock5">USB</a>
                     <div class="arrow column" arrow-x="1" arrow-y="2" arrow-length="2" arrow-span="2"></div>
                     <div class="arrow column" arrow-x="3" arrow-y="1" arrow-length="3"></div>
                     <div class="arrow column" arrow-x="4" arrow-y="1" arrow-length="3"></div>
@@ -57,28 +57,28 @@ window.onload = (event) => {
             <div class="domain">
                 <h3 class="domain-title">Peripheral domain</h3>
                 <div class="blocks" grid="4">
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/tlul/" id="peripheral-crossbar" grid-rows="6">TL-UL Crossbar</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/otp_ctrl/" id="otp-fuse-controller">OTP (Fuse) Controller</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/lc_ctrl/" id="life-cycle">Life<br>Cycle</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip_autogen/alert_handler/" id="alert-handler">Alert Handler</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/uart/" id="uart">4 x UART</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/rv_timer/" id="timers">Timers</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/gpio/" id="gpio">GPIO</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/i2c/" id="i2c"><span>3 x I<sup>2</sup>C</span></a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/spi_device/" id="spi-device" subclock1="clock1">SPI<br>Device</a>
-                    <a class="block clock4" href="https://opentitan.org/book/hw/ip/pattgen/" id="pattern-generators">Pattern Generators</a>
+                    <a class="block clock4" href="../book/hw/ip/tlul/" id="peripheral-crossbar" grid-rows="6">TL-UL Crossbar</a>
+                    <a class="block clock4" href="../book/hw/ip/otp_ctrl/" id="otp-fuse-controller">OTP (Fuse) Controller</a>
+                    <a class="block clock4" href="../book/hw/ip/lc_ctrl/" id="life-cycle">Life<br>Cycle</a>
+                    <a class="block clock4" href="../book/hw/top_earlgrey/ip_autogen/alert_handler/" id="alert-handler">Alert Handler</a>
+                    <a class="block clock4" href="../book/hw/ip/uart/" id="uart">4 x UART</a>
+                    <a class="block clock4" href="../book/hw/ip/rv_timer/" id="timers">Timers</a>
+                    <a class="block clock4" href="../book/hw/ip/gpio/" id="gpio">GPIO</a>
+                    <a class="block clock4" href="../book/hw/ip/i2c/" id="i2c"><span>3 x I<sup>2</sup>C</span></a>
+                    <a class="block clock4" href="../book/hw/ip/spi_device/" id="spi-device" subclock1="clock1">SPI<br>Device</a>
+                    <a class="block clock4" href="../book/hw/ip/pattgen/" id="pattern-generators">Pattern Generators</a>
                     <div class="domain always-on" grid-rows="3" grid-cols="3" id="interior-aon-domain">
                         <h3 class="domain-title">Always-on domain</h3>
                         <div class="blocks" grid="3">
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/pwm/" id="pwm" subclock1="clock5">PWM</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/sram_ctrl/" id="retention-sram">Retention SRAM</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip_autogen/pwrmgr/" id="power-manager" subclock1="clock5">Power Manager</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/sysrst_ctrl/" id="sysrst-controller" subclock1="clock5">Sysrst Controller</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/aon_timer/" id="aon-timers" subclock1="clock5">AON<br>Timers</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/clkmgr/" id="clkrst-managers" subclock1="clock5">Clk/Rst Managers</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/pinmux/" id="pinmux-padctrl">Pinmux / Padctrl</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/ip/adc_ctrl/" id="adc-controller" subclock1="clock5">ADC Controller</a>
-                            <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip/sensor_ctrl/" id="sensor-control" subclock1="clock5">Sensor Control</a>
+                            <a class="block clock4" href="../book/hw/ip/pwm/" id="pwm" subclock1="clock5">PWM</a>
+                            <a class="block clock4" href="../book/hw/ip/sram_ctrl/" id="retention-sram">Retention SRAM</a>
+                            <a class="block clock4" href="../book/hw/top_earlgrey/ip_autogen/pwrmgr/" id="power-manager" subclock1="clock5">Power Manager</a>
+                            <a class="block clock4" href="../book/hw/ip/sysrst_ctrl/" id="sysrst-controller" subclock1="clock5">Sysrst Controller</a>
+                            <a class="block clock4" href="../book/hw/ip/aon_timer/" id="aon-timers" subclock1="clock5">AON<br>Timers</a>
+                            <a class="block clock4" href="../book/hw/ip/clkmgr/" id="clkrst-managers" subclock1="clock5">Clk/Rst Managers</a>
+                            <a class="block clock4" href="../book/hw/ip/pinmux/" id="pinmux-padctrl">Pinmux / Padctrl</a>
+                            <a class="block clock4" href="../book/hw/ip/adc_ctrl/" id="adc-controller" subclock1="clock5">ADC Controller</a>
+                            <a class="block clock4" href="../book/hw/top_earlgrey/ip/sensor_ctrl/" id="sensor-control" subclock1="clock5">Sensor Control</a>
                             <div class="arrow row" arrow-x="0" arrow-y="1" arrow-length="4"></div>
                             <div class="arrow row" arrow-x="0" arrow-y="2" arrow-length="4"></div>
                             <div class="arrow row" arrow-x="0" arrow-y="3" arrow-length="4"></div>
@@ -100,8 +100,8 @@ window.onload = (event) => {
     </div>
     <div class="domain always-on">
         <div class="blocks" grid="4">
-            <a class="block clock6" href="https://opentitan.org/book/hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.html" id="padring" grid-cols="3">Padring (only wire and pad instances)</a>
-            <a class="block clock4" href="https://opentitan.org/book/hw/top_earlgrey/ip/ast/" id="analog-sensor-top" subclock1="clock3" subclock2="clock5">Analog Sensor Top</a>
+            <a class="block clock6" href="../book/hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.html" id="padring" grid-cols="3">Padring (only wire and pad instances)</a>
+            <a class="block clock4" href="../book/hw/top_earlgrey/ip/ast/" id="analog-sensor-top" subclock1="clock3" subclock2="clock5">Analog Sensor Top</a>
             <div class="arrow row" arrow-x="3" arrow-y="1" arrow-length="2"></div>
         </div>
     </div>

@@ -1,7 +1,7 @@
 # Registers
 
 The register description below matches the instance in the [Earl Grey top level
-design](../../../top_earlgrey/doc/specification.md).
+design](../../../top_earlgrey/doc/datasheet.md).
 
 Similar register descriptions can be generated with different parameterizations.
 

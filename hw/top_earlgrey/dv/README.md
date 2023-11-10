@@ -19,7 +19,7 @@
 * [Simulation results](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
 
 ## Design features
-For detailed information on `top_earlgrey` design features, please see the [Earl Grey Top Level Specification](../doc/specification.md).
+For detailed information on `top_earlgrey` design features, please see the [Earl Grey Top Level Specification](../doc/datasheet.md).
 
 ## Testbench architecture
 The `top_earlgrey` chip level testbench has been constructed based on the [CIP testbench architecture](../../dv/sv/cip_lib/README.md).

@@ -12,7 +12,7 @@ Next, we focus on all available [processor cores](#processor-cores) and provide 
 
 Finally, we provide the same set of information for all available [top level designs](#top-level-designs).
 
-## Results of tool-flows
+## Block-level results of tool-flows
 
 * [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary/latest/report.html)
 * [FPV sec_cm results (weekly)](https://reports.opentitan.org/hw/top_earlgrey/formal/sec_cm/summary/latest/report.html)
@@ -35,9 +35,9 @@ Finally, we provide the same set of information for all available [top level des
   * [DV document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
-## Earl Grey chip-level results
+## Earl Grey top-level results
 
-* [Datasheet](./top_earlgrey/doc/specification.md)
+* [Datasheet](./top_earlgrey/doc/datasheet.md)
 * [Specification](./top_earlgrey/doc/design/README.md)
 * [DV Document](./top_earlgrey/dv/README.md)
 * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
@@ -51,3 +51,7 @@ Finally, we provide the same set of information for all available [top level des
 ### Earl Grey-specific comportable IPs
 
 {{#dashboard top_earlgrey }}
+
+## Darjeeling top-level results
+
+* [Datasheet](./top_darjeeling/doc/datasheet.md)
