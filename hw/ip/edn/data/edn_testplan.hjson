@@ -39,7 +39,7 @@
             Verify BOOT_INS_CMD/BOOT_GEN_CMD registers.
             Verify auto request mode behaves as predicted.
             Verify RESEED_CMD/GENERATE_CMD/MAX_NUM_REQS_BETWEEN_RESEEDS registers.
-            Verify SUM_STS register bits behave as predicted.
+            Verify MAIN_SM_STATE register bits behave as predicted.
             Verify all csrng commands (clen = 0-12, sw_mode, boot/auto_req_mode).
             Verify with ready randomly asserting/deasserting
             '''

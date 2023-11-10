@@ -250,8 +250,6 @@ class edn_scoreboard extends cip_base_scoreboard #(
           boot_gen_cmd_comp = item.a_data;
         end
       end
-      "sum_sts": begin
-      end
       "generate_cmd": begin
         if (addr_phase_write) begin
           generate_cmd_q.push_back(item.a_data);
