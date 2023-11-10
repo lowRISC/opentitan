@@ -53,11 +53,6 @@ p256_verify:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load r of signature from dmem: w24 = r = dmem[r] */
-  la        x19, r
-  li        x2, 11
-  bn.lid    x2, 0(x19)
-
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
   li        x2, 29
