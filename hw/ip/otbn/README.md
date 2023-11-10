@@ -111,6 +111,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
 
 <!-- This list of CSRs is replicated in otbn_env_cov.sv, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other four as well. -->
+<!-- BEGIN CMDGEN ./hw/ip/otbn/util/docs/md_isrs.py hw/ip/otbn/data/csr.yml -->
 <table>
   <thead>
     <tr>
@@ -128,16 +129,16 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         Wide arithmetic flag group 0.
         This CSR provides access to flag group 0 used by wide integer arithmetic.
-        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
+        *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
         <table>
           <thead>
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of Flag Group 0</td></tr>
-            <tr><td>1</td><td>MSb of Flag Group 0</td></tr>
-            <tr><td>2</td><td>LSb of Flag Group 0</td></tr>
-            <tr><td>3</td><td>Zero of Flag Group 0</td></tr>
+            <tr><td>0</td><td>Carry of flag group 0</td></tr>
+            <tr><td>1</td><td>MSb of flag group 0</td></tr>
+            <tr><td>2</td><td>LSb of flag group 0</td></tr>
+            <tr><td>3</td><td>Zero of flag group 0</td></tr>
           </tbody>
         </table>
       </td>
@@ -149,16 +150,16 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         Wide arithmetic flag group 1.
         This CSR provides access to flag group 1 used by wide integer arithmetic.
-        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
+        *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
         <table>
           <thead>
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of Flag Group 1</td></tr>
-            <tr><td>1</td><td>MSb of Flag Group 1</td></tr>
-            <tr><td>2</td><td>LSb of Flag Group 1</td></tr>
-            <tr><td>3</td><td>Zero of Flag Group 1</td></tr>
+            <tr><td>0</td><td>Carry of flag group 1</td></tr>
+            <tr><td>1</td><td>MSb of flag group 1</td></tr>
+            <tr><td>2</td><td>LSb of flag group 1</td></tr>
+            <tr><td>3</td><td>Zero of flag group 1</td></tr>
           </tbody>
         </table>
       </td>
@@ -169,21 +170,21 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>FLAGS</td>
       <td>
         Wide arithmetic flag groups.
-        This CSR provides access to both flags groups used by wide integer arithmetic.
-        <strong>FLAGS</strong>, <strong>FG0</strong> and <strong>FG1</strong> provide different views on the same underlying bits.
+        This CSR provides access to both flag groups used by wide integer arithmetic.
+        *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
         <table>
           <thead>
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of Flag Group 0</td></tr>
-            <tr><td>1</td><td>MSb of Flag Group 0</td></tr>
-            <tr><td>2</td><td>LSb of Flag Group 0</td></tr>
-            <tr><td>3</td><td>Zero of Flag Group 0</td></tr>
-            <tr><td>4</td><td>Carry of Flag Group 1</td></tr>
-            <tr><td>5</td><td>MSb of Flag Group 1</td></tr>
-            <tr><td>6</td><td>LSb of Flag Group 1</td></tr>
-            <tr><td>7</td><td>Zero of Flag Group 1</td></tr>
+            <tr><td>0</td><td>Carry of flag group 0</td></tr>
+            <tr><td>1</td><td>MSb of flag group 0</td></tr>
+            <tr><td>2</td><td>LSb of flag group 0</td></tr>
+            <tr><td>3</td><td>Zero of flag group 0</td></tr>
+            <tr><td>4</td><td>Carry of flag group 1</td></tr>
+            <tr><td>5</td><td>MSb of flag group 1</td></tr>
+            <tr><td>6</td><td>LSb of flag group 1</td></tr>
+            <tr><td>7</td><td>Zero of flag group 1</td></tr>
           </tbody>
         </table>
       </td>
@@ -274,11 +275,11 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RO</td>
       <td>RND</td>
       <td>
-An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
-Primarily intended to be used for key generation.
+        An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+        Primarily intended to be used for key generation.
 
-The number is sourced from the EDN via a single-entry cache.
-Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
+        The number is sourced from the EDN via a single-entry cache.
+        Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
     </tr>
     <tr>
@@ -286,16 +287,18 @@ Reads when the cache is empty will cause OTBN to be stalled until a new random n
       <td>RO</td>
       <td>URND</td>
       <td>
-A random number without guaranteed secrecy properties or specific statistical properties.
-Intended for use in masking and blinding schemes.
-Use RND for high-quality randomness.
+        A random number without guaranteed secrecy properties or specific statistical properties.
+        Intended for use in masking and blinding schemes.
+        Use RND for high-quality randomness.
 
-The number is sourced from an local PRNG.
-Reads never stall.
+        The number is sourced from an local PRNG.
+        Reads never stall.
       </td>
     </tr>
   </tbody>
 </table>
+
+<!-- END CMDGEN -->
 
 ### Wide Data Registers (WDRs)
 
@@ -324,6 +327,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
 
 <!-- This list of WSRs is replicated in otbn_env_cov.sv, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other four as well. -->
+<!-- BEGIN CMDGEN ./hw/ip/otbn/util/docs/md_isrs.py --add-anchors hw/ip/otbn/data/wsr.yml -->
 <table>
   <thead>
     <tr>
@@ -337,43 +341,41 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
     <tr>
       <td>0x0</td>
       <td>RW</td>
-      <td>MOD</td>
-<td>
-
-The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
-This WSR is also visible as CSRs `MOD0` through to `MOD7`.
-
-</td>
+      <td><a name="mod">MOD</a></td>
+      <td>
+        The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
+        This WSR is also visible as CSRs `MOD0` through to `MOD7`.
+      </td>
     </tr>
     <tr>
       <td>0x1</td>
       <td>RO</td>
-      <td>RND</td>
+      <td><a name="rnd">RND</a></td>
       <td>
-An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
-Primarily intended to be used for key generation.
+        An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+        Primarily intended to be used for key generation.
 
-The number is sourced from the EDN via a single-entry cache.
-Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
+        The number is sourced from the EDN via a single-entry cache.
+        Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
     </tr>
     <tr>
       <td>0x2</td>
       <td>RO</td>
-      <td>URND</td>
+      <td><a name="urnd">URND</a></td>
       <td>
-A random number without guaranteed secrecy properties or specific statistical properties.
-Intended for use in masking and blinding schemes.
-Use RND for high-quality randomness.
+        A random number without guaranteed secrecy properties or specific statistical properties.
+        Intended for use in masking and blinding schemes.
+        Use RND for high-quality randomness.
 
-The number is sourced from a local PRNG.
-Reads never stall.
+        The number is sourced from an local PRNG.
+        Reads never stall.
       </td>
     </tr>
     <tr>
       <td>0x3</td>
       <td>RW</td>
-      <td>ACC</td>
+      <td><a name="acc">ACC</a></td>
       <td>
         The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
       </td>
@@ -383,9 +385,9 @@ Reads never stall.
       <td>RO</td>
       <td><a name="key-s0-l">KEY_S0_L</a></td>
       <td>
-Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
-A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a key.
+        A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
     <tr>
@@ -393,10 +395,10 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td>RO</td>
       <td><a name="key-s0-h">KEY_S0_H</a></td>
       <td>
-Bits [255:128] of this register are always zero.
-Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:128] of this register are always zero.
+        Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
-A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+        A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
     <tr>
@@ -404,9 +406,9 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td>RO</td>
       <td><a name="key-s1-l">KEY_S1_L</a></td>
       <td>
-Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
-A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+        A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
     <tr>
@@ -414,14 +416,16 @@ A `KEY_INVALID` software error is raised on read if the Key Manager has not prov
       <td>RO</td>
       <td><a name="key-s1-h">KEY_S1_H</a></td>
       <td>
-Bits [255:128] of this register are always zero.
-Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+        Bits [255:128] of this register are always zero.
+        Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
 
-A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+        A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
   </tbody>
 </table>
+
+<!-- END CMDGEN -->
 
 ### Flags
 
