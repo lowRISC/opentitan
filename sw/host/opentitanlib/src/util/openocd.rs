@@ -6,6 +6,7 @@ use std::cell::Cell;
 use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
 use std::net::TcpStream;
+use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
@@ -89,6 +90,19 @@ impl OpenOcd {
         cmd.stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+
+        // SAFETY: prctl is a syscall which is atomic and thus async-signal-safe.
+        unsafe {
+            cmd.pre_exec(|| {
+                // Since we use OpenOCD as a library, make sure it's killed when
+                // the parent process dies. This setting is preserved across execve.
+                rustix::process::set_parent_process_death_signal(Some(
+                    rustix::process::Signal::Hup,
+                ))?;
+                Ok(())
+            });
+        }
+
         let mut child = cmd
             .spawn()
             .with_context(|| format!("failed to spawn openocd: {cmd:?}",))?;
