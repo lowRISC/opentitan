@@ -2,18 +2,17 @@
 
 ## Introduction to OpenTitan
 
-[OpenTitan](https://opentitan.org) is an open source silicon Root of Trust (RoT) project.
-OpenTitan will make the silicon RoT design and implementation more transparent, trustworthy, and secure for enterprises, platform providers, and chip manufacturers.
-OpenTitan is administered by lowRISC CIC as a collaborative [project](./project_governance/README.md) to produce high quality, open IP for instantiation as a full-featured product.
-This repository exists to enable collaboration across partners participating in the OpenTitan project.
+[OpenTitan](https://opentitan.org) is an open source secure silicon ecosystem producing both silicon IP and complete top-level designs capable of supporting numerous applications, including a discrete secure micro-controller and an integrated secure execution environment (both supporting Root of Trust functionality with secure boot and DICE attestation).
+OpenTitan will make design and implementation of secure silicon more transparent, trustworthy, and secure for enterprises, platforms, and chip manufacturers.
+OpenTitan is administered by lowRISC CIC as a [collaborative, partner-centric project](./project_governance/README.md) to produce high quality, open IP for instantiation as a full-featured product.
+This repository exists to enable collaboration across participating OpenTitan project partners and the broader open silicon community.
 
 ## Getting Started
 
-To get started with OpenTitan, see the [Getting Started](./getting_started/README.md) page.
-For additional resources when working with OpenTitan, see the [contributor's reference](./contributing/README.md).
-For details on coding styles or how to use our project-specific tooling, see the [reference manuals](../util/README.md).
-Lastly, the [Hardware Dashboard page](../hw/README.md) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
-For questions about how the project is organized, see the [project](./project_governance/README.md) landing spot for more information.
+Start at the [Getting Started](./getting_started/README.md) page to begin your OpenTitan journey.
+Other helpful OpenTitan resources include the [contribution](./contributing/README.md) and the [tools guides](../util/README.md).
+The [Hardware book](../hw/README.md) also contains useful technical documentation on the SoC, our RISC-V Ibex processor core, and the individual IP blocks.
+For questions about how project organization and governance, see the [project landing spot](./project_governance/README.md).
 
 ## Understanding OpenTitan
 
@@ -23,7 +22,8 @@ For questions about how the project is organized, see the [project](./project_go
 
 ## Datasheets
 
-* [OpenTitan Earl Grey Chip Datasheet](../hw/top_earlgrey/doc/specification.md)
+* [OpenTitan Earl Grey (Standalone Chip) Datasheet](../hw/top_earlgrey/doc/datasheet.md)
+* [OpenTitan Darjeeling (Integrated Admissible Architecture) Datasheet](../hw/top_darjeeling/doc/datasheet.md)
 
 ## Documentation
 

@@ -26,6 +26,9 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
      //back to back dmi accesses
      csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(wdata));
      csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(wdata));
+     csr_wr(.ptr(jtag_dmi_ral.abstractdata[1]), .value(wdata));
+     csr_wr(.ptr(jtag_dmi_ral.progbuf[1]), .value(wdata));
+     csr_wr(.ptr(jtag_dmi_ral.command), .value(wdata));
      csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
      `DV_CHECK_EQ(0,get_field_val(jtag_dtm_ral.dtmcs.dmistat,rdata))
   endtask

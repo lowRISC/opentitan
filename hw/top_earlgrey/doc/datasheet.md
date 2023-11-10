@@ -1,4 +1,4 @@
-# OpenTitan Earl Grey Chip Datasheet
+# OpenTitan Earl Grey (Discrete Chip) Datasheet
 
 # Overview
 
@@ -26,8 +26,8 @@ The OpenTitan Earl Grey chip provides the following features:
         <li>RV32IMCB RISC-V "Ibex" core:
           <ul>
             <li>3-stage pipeline, single-cycle multiplier</li>
-            <li>Selected subset of the bit-manipulation extension</li>
-            <li>4kB instruction cache with 2 ways</li>
+            <li>Support for the full ratified bit manipulation extension and some unratified subsets</li>
+            <li>4KiB instruction cache with 2 ways</li>
             <li>RISC-V compliant JTAG DM (debug module)</li>
             <li>PLIC (platform level interrupt controller)</li>
             <li>U/M (user/machine) execution modes </li>
@@ -67,11 +67,11 @@ The OpenTitan Earl Grey chip provides the following features:
       <ul>
         <li>Memory:
           <ul>
-            <li>2x512kB banks eFlash</li>
-            <li>128kB main SRAM</li>
-            <li>4KB Always ON (AON) retention SRAM</li>
-            <li>32kB ROM</li>
-            <li>2kB OTP</li>
+            <li>2x512KiB banks eFlash</li>
+            <li>128KiB main SRAM</li>
+            <li>4KiB Always ON (AON) retention SRAM</li>
+            <li>32KiB ROM</li>
+            <li>2KiB (=16kibit) OTP</li>
           </ul>
         </li>
         <br></br>
@@ -100,7 +100,14 @@ The OpenTitan Earl Grey chip provides the following features:
         <li>Software:
           <ul>
             <li>Boot ROM code implementing secure boot and chip configuration</li>
-            <li>Bare metal applications and validation tests</li>
+            <li>Bare metal top-level tests</li>
+            <li>OpenTitan Crypto Library with OTBN accelerated standard algorithms for </li>
+            <ul>
+              <li>RSA 2K, 3K, 4K</li>
+              <li>ECC with NIST P256/P384, Brainpool P256r1 or X25519/Ed25519</li>
+              <li>SHA2-256, 384, 512</li>
+            </ul>
+            <li>SPHINCS+ PQ-secure boot using a stateless hash-based signatures scheme</li>
           </ul>
         </li>
       </ul>
