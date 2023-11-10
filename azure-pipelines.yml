@@ -18,6 +18,8 @@ variables:
   # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
   VIVADO_VERSION: "2021.1"
+  # This controls where the bazel execution logs go
+  BAZEL_EXEC_LOG_ROOT: $(Build.ArtifactStagingDirectory)/bazel_exec_logs
 
 trigger:
   batch: true
@@ -216,6 +218,7 @@ jobs:
       #   environment does not have access to Vivado.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       TARGET_PATTERN_FILE=target_pattern.txt
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
       echo //... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
@@ -234,8 +237,11 @@ jobs:
         --build_tests_only=false \
         --define DISABLE_VERILATOR_BUILD=true \
         --test_tag_filters=-broken,-cw310,-verilator,-dv \
-        --target_pattern_file="${TARGET_PATTERN_FILE}"
+        --target_pattern_file="${TARGET_PATTERN_FILE}" \
+        --execution_log_json_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
+        --noexecution_log_sort
     displayName: Build SW
+  - template: ci/publish-bazel-exec-logs.yml
   - publish: target_pattern.txt
     artifact: target_pattern_file
   - bash: |
@@ -284,8 +290,11 @@ jobs:
         --test_output=errors \
         --define DISABLE_VERILATOR_BUILD=true \
         --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
-        --target_pattern_file="${TARGET_PATTERN_FILE}"
+        --target_pattern_file="${TARGET_PATTERN_FILE}" \
+        --execution_log_json_file="$BAZEL_EXEC_LOG_ROOT/test.log" \
+        --noexecution_log_sort
     displayName: Build & test SW
+  - template: ci/publish-bazel-exec-logs.yml
   - template: ci/publish-bazel-test-results.yml
 
 - job: chip_englishbreakfast_verilator
