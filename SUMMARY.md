@@ -26,7 +26,7 @@
 - [Introduction](./hw/README.md)
 
 - [Top Earlgrey](./hw/top_earlgrey/README.md)
-  - [Datasheet](./hw/top_earlgrey/doc/specification.md)
+  - [Datasheet](./hw/top_earlgrey/doc/datasheet.md)
   - [Design](./hw/top_earlgrey/doc/design/README.md)
   - [Design Verification](./hw/top_earlgrey/dv/README.md)
     - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)
@@ -59,6 +59,9 @@
     - [ASIC Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.md)
     - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
     - [CW340 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw340.md)
+
+- [Top Darjeeling](./hw/top_darjeeling/README.md)
+  - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
 
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
