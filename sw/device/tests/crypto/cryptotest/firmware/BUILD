@@ -38,6 +38,8 @@ opentitan_binary(
     deps = [
         ":aes",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
