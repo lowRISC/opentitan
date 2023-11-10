@@ -1,0 +1,118 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+- name: fg0
+  address: 0x7c0
+  doc: |
+    Wide arithmetic flag group 0.
+    This CSR provides access to flag group 0 used by wide integer arithmetic.
+    *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
+  bits:
+    0: Carry of flag group 0
+    1: MSb of flag group 0
+    2: LSb of flag group 0
+    3: Zero of flag group 0
+
+- name: fg1
+  address: 0x7c1
+  doc: |
+    Wide arithmetic flag group 1.
+    This CSR provides access to flag group 1 used by wide integer arithmetic.
+    *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
+  bits:
+    0: Carry of flag group 1
+    1: MSb of flag group 1
+    2: LSb of flag group 1
+    3: Zero of flag group 1
+
+- name: flags
+  address: 0x7c8
+  doc: |
+    Wide arithmetic flag groups.
+    This CSR provides access to both flag groups used by wide integer arithmetic.
+    *FLAGS*, *FG0* and *FG1* provide different views on the same underlying bits.
+  bits:
+    0: Carry of flag group 0
+    1: MSb of flag group 0
+    2: LSb of flag group 0
+    3: Zero of flag group 0
+    4: Carry of flag group 1
+    5: MSb of flag group 1
+    6: LSb of flag group 1
+    7: Zero of flag group 1
+
+- name: mod0
+  address: 0x7d0
+  doc: |
+    Bits [31:0] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod1
+  address: 0x7d1
+  doc: |
+    Bits [63:32] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod2
+  address: 0x7d2
+  doc: |
+    Bits [95:64] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod3
+  address: 0x7d3
+  doc: |
+    Bits [127:96] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod4
+  address: 0x7d4
+  doc: |
+    Bits [159:128] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod5
+  address: 0x7d5
+  doc: |
+    Bits [191:160] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod6
+  address: 0x7d6
+  doc: |
+    Bits [223:192] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: mod7
+  address: 0x7d7
+  doc: |
+    Bits [255:224] of the modulus operand, used in the {{#otbn-insn-ref BN.ADDM}}/{{#otbn-insn-ref BN.SUBM}} instructions.
+    This CSR is mapped to the MOD WSR.
+
+- name: rnd_prefetch
+  address: 0x7d8
+  doc: |
+    Write to this CSR to begin a request to fill the RND cache.
+    Always reads as 0.
+
+- name: rnd
+  address: 0xfc0
+  read-only: true
+  doc: |
+    An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+    Primarily intended to be used for key generation.
+
+    The number is sourced from the EDN via a single-entry cache.
+    Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
+
+- name: urnd
+  address: 0xfc1
+  read-only: true
+  doc: |
+    A random number without guaranteed secrecy properties or specific statistical properties.
+    Intended for use in masking and blinding schemes.
+    Use RND for high-quality randomness.
+
+    The number is sourced from an local PRNG.
+    Reads never stall.
