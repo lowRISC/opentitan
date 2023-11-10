@@ -1,0 +1,69 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+- name: mod
+  address: 0
+  doc: |
+    The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
+    This WSR is also visible as CSRs `MOD0` through to `MOD7`.
+
+- name: rnd
+  address: 1
+  read-only: true
+  doc: |
+    An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
+    Primarily intended to be used for key generation.
+
+    The number is sourced from the EDN via a single-entry cache.
+    Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
+
+- name: urnd
+  address: 2
+  read-only: true
+  doc: |
+    A random number without guaranteed secrecy properties or specific statistical properties.
+    Intended for use in masking and blinding schemes.
+    Use RND for high-quality randomness.
+
+    The number is sourced from an local PRNG.
+    Reads never stall.
+
+- name: acc
+  address: 3
+  doc: |
+    The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
+
+- name: key_s0_l
+  address: 4
+  read-only: true
+  doc: |
+    Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+
+    A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: key_s0_h
+  address: 5
+  read-only: true
+  doc: |
+    Bits [255:128] of this register are always zero.
+    Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+
+    A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: key_s1_l
+  address: 6
+  read-only: true
+  doc: |
+    Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+
+    A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+
+- name: key_s1_h
+  address: 7
+  read-only: true
+  doc: |
+    Bits [255:128] of this register are always zero.
+    Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
+
+    A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
