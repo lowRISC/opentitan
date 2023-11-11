@@ -34,6 +34,7 @@
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_dm_v1`]     | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_timer`]     | Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers                                                         |
+| [`socdbg_ctrl`]  | Control Module to enable or disable debug access                                                                                  |
 | [`spi_device`]   | Serial peripheral interface supporting different device modes, suitable for bulk-load of data into and out of the chip            |
 | [`spi_host`]     | Serial peripheral interface for host mode, suitable for interfacing external serial NOR flash devices                             |
 | [`sram_ctrl`]    | Interfacing on-chip SRAM blocks with system bus, supports lightweight scrambling, integrity and secure wipe                       |
@@ -74,6 +75,7 @@
 [`rv_dm`]: ./rv_dm/README.md
 [`rv_dm_v1`]: ./rv_dm_v1/README.md
 [`rv_timer`]: ./rv_timer/README.md
+[`socdbg_ctrl`]: ./socdbg_ctrl/README.md
 [`spi_device`]: ./spi_device/README.md
 [`spi_host`]: ./spi_host/README.md
 [`sram_ctrl`]: ./sram_ctrl/README.md
