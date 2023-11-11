@@ -21,6 +21,7 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_sw_rv_core_ibex_nmi_irq"]
+      bazel: ["//sw/device/tests:rv_core_ibex_nmi_irq_test_fpga_cw310_rom_with_fake_keys"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
         "RV_CORE_IBEX.CPU.INTERRUPTS"
@@ -46,6 +47,7 @@
       features: [
         "RV_CORE_IBEX.RND"
       ]
+      bazel: ["//sw/device/tests:rv_core_ibex_rnd_test_fpga_cw310_rom_with_fake_keys"]
     }
     {
       name: chip_sw_rv_core_ibex_address_translation
@@ -67,6 +69,7 @@
       features: [
         "RV_CORE_IBEX.ADDRESS_TRANSLATION"
       ]
+      bazel: ["//sw/device/tests:rv_core_ibex_address_translation_test_fpga_cw310_rom_with_fake_keys"]
     }
     {
       name: chip_sw_rv_core_ibex_icache_scrambled_access
@@ -88,6 +91,7 @@
       features: [
         "RV_CORE_IBEX.CPU.ICACHE"
       ]
+      bazel: ["//sw/device/tests:rv_core_ibex_icache_invalidate_test_fpga_cw310_rom_with_fake_keys"]
     }
     {
        name: chip_sw_rv_core_ibex_fault_dump
