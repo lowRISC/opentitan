@@ -566,7 +566,7 @@ module top_earlgrey #(
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
+  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_aon_rom_ctrl;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
@@ -783,6 +783,7 @@ module top_earlgrey #(
   assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
   assign pwrmgr_aon_rom_ctrl[1] = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
+  assign pwrmgr_aon_rom_ctrl[2] = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
   assign keymgr_rom_digest[1] = rom_ctrl_pkg::KEYMGR_DATA_DEFAULT;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
@@ -801,6 +802,8 @@ module top_earlgrey #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
+  assign socdbg_ctrl_soc_dbg_state =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.soc_dbg_state;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
   assign keymgr_otp_device_id =

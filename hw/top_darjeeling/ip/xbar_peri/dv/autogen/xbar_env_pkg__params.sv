@@ -46,6 +46,9 @@ tl_device_t xbar_devices[$] = '{
     '{"lc_ctrl", '{
         '{32'h30140000, 32'h301400ff}
     }},
+    '{"socdbg_ctrl__core", '{
+        '{32'h30160000, 32'h3016001f}
+    }},
     '{"sensor_ctrl", '{
         '{32'h30020000, 32'h3002003f}
     }},
@@ -86,5 +89,6 @@ tl_host_t xbar_hosts[$] = '{
         "ast",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
-        "aon_timer_aon"}}
+        "aon_timer_aon",
+        "socdbg_ctrl__core"}}
 };

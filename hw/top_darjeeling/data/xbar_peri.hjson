@@ -96,6 +96,12 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
+    { name:      "socdbg_ctrl.core",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
     { name:      "sensor_ctrl",
       type:      "device",
       clock:     "clk_peri_i",
@@ -144,7 +150,7 @@
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
       "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl", "sensor_ctrl",
       "alert_handler", "ast", "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs",
-      "aon_timer_aon"
+      "aon_timer_aon", "socdbg_ctrl.core"
     ],
   },
 }

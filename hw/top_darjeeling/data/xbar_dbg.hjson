@@ -24,11 +24,18 @@
       reset:      "rst_dbg_ni",
       pipeline:   false,
     },
+    { name:       "socdbg_ctrl.jtag",
+      type:       "device",
+      addr_space: "soc_dbg",
+      clock:      "clk_dbg_i",
+      reset:      "rst_dbg_ni",
+      pipeline:   false,
+    },
   ],
 
   connections: {
     dbg: [
-      "mbx_jtag.soc",
+      "mbx_jtag.soc", "socdbg_ctrl.jtag",
     ],
   },
 }

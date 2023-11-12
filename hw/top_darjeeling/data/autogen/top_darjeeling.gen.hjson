@@ -1970,6 +1970,226 @@
       }
     }
     {
+      name: socdbg_ctrl
+      type: socdbg_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x30160000
+        }
+        jtag:
+        {
+          soc_dbg: 0x00000240
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: halt_cpu_boot
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: debug_halt_cpu_boot
+          conn_type: false
+          index: -1
+        }
+        {
+          name: continue_cpu_boot
+          struct: pwrmgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          top_signame: pwrmgr_aon_rom_ctrl
+          index: 2
+        }
+        {
+          name: soc_dbg_state
+          struct: soc_dbg_state
+          package: lc_ctrl_state_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          top_signame: socdbg_ctrl_soc_dbg_state
+          index: -1
+        }
+        {
+          name: socdbg_policy_bus
+          struct: soc_dbg_policy
+          package: socdbg_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          external: true
+          top_signame: socdbg_policy_bus
+          conn_type: false
+          index: -1
+        }
+        {
+          name: lc_escalate_en
+          desc:
+            '''
+            Life cycle escalation enable coming from life cycle controller.
+            This signal moves all FSMs within OTP into the error state.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          desc:
+            '''
+            Multibit life cycle hardware debug enable signal coming from life cycle controller,
+            asserted when the hardware debug mechanisms are enabled in the system.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: lc_creator_seed_sw_rw_en
+          desc:
+            '''
+            Provision enable qualifier coming from life cycle controller.
+            This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+          index: -1
+        }
+        {
+          name: lc_seed_hw_rd_en
+          desc:
+            '''
+            Seed read enable coming from life cycle controller.
+            This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          index: -1
+        }
+        {
+          name: lc_dft_en
+          desc:
+            '''
+            Test enable qualifier coming from life cycle controller.
+            This signals enables the TL-UL access port to the proprietary OTP IP.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
+          name: lc_check_byp_en
+          desc:
+            '''
+            Life cycle partition check bypass signal.
+            This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: socdbg_ctrl
+          top_signame: lc_ctrl_lc_check_byp_en
+          index: -1
+        }
+        {
+          name: core_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: socdbg_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: jtag_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: socdbg_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: socdbg_ctrl_jtag_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: spi_host0
       type: spi_host
       clock_srcs:
@@ -2293,7 +2513,7 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 2
+          width: 3
           default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
           end_idx: -1
@@ -8823,6 +9043,7 @@
       [
         rom_ctrl0.pwrmgr_data
         rom_ctrl1.pwrmgr_data
+        socdbg_ctrl.continue_cpu_boot
       ]
       keymgr_dpe.rom_digest:
       [
@@ -8931,6 +9152,7 @@
         otp_ctrl.lc_dft_en
         pinmux_aon.lc_dft_en
         ast.lc_dft_en
+        socdbg_ctrl.lc_dft_en
         pwrmgr_aon.lc_dft_en
       ]
       lc_ctrl.lc_hw_debug_en:
@@ -8940,6 +9162,7 @@
         ast.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
+        socdbg_ctrl.lc_hw_debug_en
         clkmgr_aon.lc_hw_debug_en
         pwrmgr_aon.lc_hw_debug_en
       ]
@@ -8961,11 +9184,13 @@
         sram_ctrl_ret_aon.lc_escalate_en
         sram_ctrl_mbox.lc_escalate_en
         aon_timer_aon.lc_escalate_en
+        socdbg_ctrl.lc_escalate_en
         pinmux_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
         otp_ctrl.lc_check_byp_en
+        socdbg_ctrl.lc_check_byp_en
         pinmux_aon.lc_check_byp_en
       ]
       lc_ctrl.lc_clk_byp_req:
@@ -8979,6 +9204,7 @@
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
         otp_ctrl.lc_creator_seed_sw_rw_en
+        socdbg_ctrl.lc_creator_seed_sw_rw_en
       ]
       lc_ctrl.lc_seed_hw_rd_en:
       [
@@ -9274,6 +9500,10 @@
       [
         peri.tl_lc_ctrl
       ]
+      socdbg_ctrl.core_tl:
+      [
+        peri.tl_socdbg_ctrl__core
+      ]
       sensor_ctrl.tl:
       [
         peri.tl_sensor_ctrl
@@ -9334,6 +9564,10 @@
       [
         dbg.tl_mbx_jtag__soc
       ]
+      socdbg_ctrl.jtag_tl:
+      [
+        dbg.tl_socdbg_ctrl__jtag
+      ]
     }
     top:
     [
@@ -9345,6 +9579,7 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       otp_ctrl.otp_broadcast
+      socdbg_ctrl.soc_dbg_state
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
       keymgr_dpe.otp_device_id
@@ -9407,6 +9642,8 @@
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
       rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
+      socdbg_ctrl.socdbg_policy_bus: socdbg_policy_bus
+      socdbg_ctrl.halt_cpu_boot: debug_halt_cpu_boot
       pwrmgr_aon.strap: pwrmgr_strap_en
       rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
       peri.tl_ast: ast_tl
@@ -11190,6 +11427,7 @@
           sram_ctrl_ret_aon.ram
           sram_ctrl_ret_aon.regs
           aon_timer_aon
+          socdbg_ctrl.core
         ]
       }
       nodes:
@@ -11474,6 +11712,27 @@
                 hart: 0x30140000
               }
               size_byte: 0x100
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: socdbg_ctrl.core
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: socdbg_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x30160000
+              }
+              size_byte: 0x20
             }
           ]
           xbar: false
@@ -11781,6 +12040,18 @@
           inst_name: peri
           default: ""
           top_signame: lc_ctrl_tl
+          index: -1
+        }
+        {
+          name: tl_socdbg_ctrl__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: socdbg_ctrl_core_tl
           index: -1
         }
         {
@@ -12273,6 +12544,7 @@
         dbg:
         [
           mbx_jtag.soc
+          socdbg_ctrl.jtag
         ]
       }
       nodes:
@@ -12312,6 +12584,28 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: socdbg_ctrl.jtag
+          type: device
+          addr_space: soc_dbg
+          clock: clk_dbg_i
+          reset: rst_dbg_ni
+          pipeline: false
+          inst_type: socdbg_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_dbg: 0x240
+              }
+              size_byte: 0x4
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -12345,6 +12639,18 @@
           inst_name: dbg
           default: ""
           top_signame: mbx_jtag_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_socdbg_ctrl__jtag
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dbg
+          default: ""
+          top_signame: socdbg_ctrl_jtag_tl
           index: -1
         }
       ]
@@ -14989,6 +15295,7 @@
     rv_timer
     otp_ctrl
     alert_handler
+    socdbg_ctrl
     spi_host0
     pwrmgr_aon
     aon_timer_aon
@@ -15272,6 +15579,12 @@
       width: 1
       type: interrupt
       module_name: alert_handler
+    }
+    {
+      name: socdbg_ctrl_debug_attention
+      width: 1
+      type: interrupt
+      module_name: socdbg_ctrl
     }
     {
       name: spi_host0_error
@@ -15565,6 +15878,7 @@
     rv_timer
     otp_ctrl
     lc_ctrl
+    socdbg_ctrl
     spi_host0
     pwrmgr_aon
     rstmgr_aon
@@ -15717,6 +16031,15 @@
       type: alert
       async: "1"
       module_name: lc_ctrl
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: socdbg_ctrl_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: socdbg_ctrl
       lpg_name: secure_lc_io_div4_0
       lpg_idx: 4
     }
@@ -17946,6 +18269,185 @@
         index: -1
       }
       {
+        name: halt_cpu_boot
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: debug_halt_cpu_boot
+        conn_type: false
+        index: -1
+      }
+      {
+        name: continue_cpu_boot
+        struct: pwrmgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        top_signame: pwrmgr_aon_rom_ctrl
+        index: 2
+      }
+      {
+        name: soc_dbg_state
+        struct: soc_dbg_state
+        package: lc_ctrl_state_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        top_signame: socdbg_ctrl_soc_dbg_state
+        index: -1
+      }
+      {
+        name: socdbg_policy_bus
+        struct: soc_dbg_policy
+        package: socdbg_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        external: true
+        top_signame: socdbg_policy_bus
+        conn_type: false
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        desc:
+          '''
+          Life cycle escalation enable coming from life cycle controller.
+          This signal moves all FSMs within OTP into the error state.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        desc:
+          '''
+          Multibit life cycle hardware debug enable signal coming from life cycle controller,
+          asserted when the hardware debug mechanisms are enabled in the system.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: lc_creator_seed_sw_rw_en
+        desc:
+          '''
+          Provision enable qualifier coming from life cycle controller.
+          This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+        index: -1
+      }
+      {
+        name: lc_seed_hw_rd_en
+        desc:
+          '''
+          Seed read enable coming from life cycle controller.
+          This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        index: -1
+      }
+      {
+        name: lc_dft_en
+        desc:
+          '''
+          Test enable qualifier coming from life cycle controller.
+          This signals enables the TL-UL access port to the proprietary OTP IP.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
+        name: lc_check_byp_en
+        desc:
+          '''
+          Life cycle partition check bypass signal.
+          This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: socdbg_ctrl
+        top_signame: lc_ctrl_lc_check_byp_en
+        index: -1
+      }
+      {
+        name: core_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: socdbg_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: jtag_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: socdbg_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: socdbg_ctrl_jtag_tl
+        index: -1
+      }
+      {
         name: passthrough
         struct: passthrough
         package: spi_device_pkg
@@ -18172,7 +18674,7 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 2
+        width: 3
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
         end_idx: -1
@@ -22460,6 +22962,18 @@
         index: -1
       }
       {
+        name: tl_socdbg_ctrl__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: socdbg_ctrl_core_tl
+        index: -1
+      }
+      {
         name: tl_sensor_ctrl
         struct: tl
         package: tlul_pkg
@@ -22679,6 +23193,18 @@
         inst_name: dbg
         default: ""
         top_signame: mbx_jtag_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_socdbg_ctrl__jtag
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dbg
+        default: ""
+        top_signame: socdbg_ctrl_jtag_tl
         index: -1
       }
       {
@@ -23511,6 +24037,30 @@
         netname: rv_dm_dmi_d2h
       }
       {
+        package: socdbg_ctrl_pkg
+        struct: soc_dbg_policy
+        signame: socdbg_policy_bus_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: socdbg_policy_bus
+      }
+      {
+        package: ""
+        struct: logic
+        signame: debug_halt_cpu_boot_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: debug_halt_cpu_boot
+      }
+      {
         package: ""
         struct: logic
         signame: pwrmgr_strap_en_o
@@ -24142,7 +24692,7 @@
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         signame: pwrmgr_aon_rom_ctrl
-        width: 2
+        width: 3
         type: uni
         end_idx: -1
         act: rcv
@@ -26033,6 +26583,28 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: socdbg_ctrl_core_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: socdbg_ctrl_core_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: sensor_ctrl_tl_req
         width: 1
         type: req_rsp
@@ -26361,6 +26933,28 @@
         default: ""
       }
       {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: socdbg_ctrl_jtag_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: socdbg_ctrl_jtag_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
         package: clkmgr_pkg
         struct: clkmgr_out
         signame: clkmgr_aon_clocks
@@ -26431,6 +27025,15 @@
         type: uni
         end_idx: -1
         default: "'0"
+      }
+      {
+        package: lc_ctrl_state_pkg
+        struct: soc_dbg_state
+        signame: socdbg_ctrl_soc_dbg_state
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
       }
       {
         package: otp_ctrl_pkg

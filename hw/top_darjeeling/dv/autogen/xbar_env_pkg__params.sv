@@ -145,6 +145,9 @@ tl_device_t xbar_devices[$] = '{
     '{"lc_ctrl", '{
         '{32'h30140000, 32'h301400ff}
     }},
+    '{"socdbg_ctrl__core", '{
+        '{32'h30160000, 32'h3016001f}
+    }},
     '{"sensor_ctrl", '{
         '{32'h30020000, 32'h3002003f}
     }},
@@ -192,6 +195,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"mbx_jtag__soc", '{
         '{32'h01460200, 32'h0146021f}
+    }},
+    '{"socdbg_ctrl__jtag", '{
+        '{32'h00000240, 32'h00000243}
     }}};
 
   // List of Xbar hosts
@@ -230,6 +236,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
         "aon_timer_aon",
+        "socdbg_ctrl__core",
         "aes",
         "csrng",
         "edn0",
@@ -284,6 +291,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
         "aon_timer_aon",
+        "socdbg_ctrl__core",
         "aes",
         "csrng",
         "edn0",
@@ -338,7 +346,8 @@ tl_host_t xbar_hosts[$] = '{
         "ast",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
-        "aon_timer_aon"}}
+        "aon_timer_aon",
+        "socdbg_ctrl__core"}}
     ,
     '{"mbx0__sram", 4, '{
         "sram_ctrl_mbox__ram"}}

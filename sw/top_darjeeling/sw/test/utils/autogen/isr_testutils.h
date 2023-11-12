@@ -31,6 +31,7 @@
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
+#include "sw/ip/socdbg_ctrl/dif/dif_socdbg_ctrl.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/uart/dif/dif_uart.h"
@@ -427,6 +428,50 @@ typedef struct soc_proxy_isr_ctx {
 } soc_proxy_isr_ctx_t;
 
 /**
+ * A handle to a soc_proxy ISR context struct.
+ */
+typedef struct soc_proxy_isr_ctx {
+  /**
+   * A handle to a soc_proxy.
+   */
+  dif_soc_proxy_t *soc_proxy;
+  /**
+   * The PLIC IRQ ID where this soc_proxy instance's IRQs start.
+   */
+  dif_rv_plic_irq_id_t plic_soc_proxy_start_irq_id;
+  /**
+   * The soc_proxy IRQ that is expected to be encountered in the ISR.
+   */
+  dif_soc_proxy_irq_t expected_irq;
+  /**
+   * Whether or not a single IRQ is expected to be encountered in the ISR.
+   */
+  bool is_only_irq;
+} soc_proxy_isr_ctx_t;
+
+/**
+ * A handle to a socdbg_ctrl ISR context struct.
+ */
+typedef struct socdbg_ctrl_isr_ctx {
+  /**
+   * A handle to a socdbg_ctrl.
+   */
+  dif_socdbg_ctrl_t *socdbg_ctrl;
+  /**
+   * The PLIC IRQ ID where this socdbg_ctrl instance's IRQs start.
+   */
+  dif_rv_plic_irq_id_t plic_socdbg_ctrl_start_irq_id;
+  /**
+   * The socdbg_ctrl IRQ that is expected to be encountered in the ISR.
+   */
+  dif_socdbg_ctrl_irq_t expected_irq;
+  /**
+   * Whether or not a single IRQ is expected to be encountered in the ISR.
+   */
+  bool is_only_irq;
+} socdbg_ctrl_isr_ctx_t;
+
+/**
  * A handle to a spi_device ISR context struct.
  */
 typedef struct spi_device_isr_ctx {
@@ -729,6 +774,34 @@ void isr_testutils_soc_proxy_isr(
     plic_isr_ctx_t plic_ctx, soc_proxy_isr_ctx_t soc_proxy_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_soc_proxy_irq_t *irq_serviced);
+
+/**
+ * Services an soc_proxy IRQ.
+ *
+ * @param plic_ctx A PLIC ISR context handle.
+ * @param soc_proxy_ctx A(n) soc_proxy ISR context handle.
+ * @param[out] peripheral_serviced Out param for the peripheral that was
+ * serviced.
+ * @param[out] irq_serviced Out param for the IRQ that was serviced.
+ */
+void isr_testutils_soc_proxy_isr(
+    plic_isr_ctx_t plic_ctx, soc_proxy_isr_ctx_t soc_proxy_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_soc_proxy_irq_t *irq_serviced);
+
+/**
+ * Services an socdbg_ctrl IRQ.
+ *
+ * @param plic_ctx A PLIC ISR context handle.
+ * @param socdbg_ctrl_ctx A(n) socdbg_ctrl ISR context handle.
+ * @param[out] peripheral_serviced Out param for the peripheral that was
+ * serviced.
+ * @param[out] irq_serviced Out param for the IRQ that was serviced.
+ */
+void isr_testutils_socdbg_ctrl_isr(
+    plic_isr_ctx_t plic_ctx, socdbg_ctrl_isr_ctx_t socdbg_ctrl_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_socdbg_ctrl_irq_t *irq_serviced);
 
 /**
  * Services an spi_device IRQ.

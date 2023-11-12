@@ -171,7 +171,7 @@
       type:    "uni",
       name:    "rom_ctrl",
       act:     "rcv",
-      width:   "2",
+      width:   "3",
       package: "rom_ctrl_pkg",
       default: "rom_ctrl_pkg::PWRMGR_DATA_DEFAULT"
     },

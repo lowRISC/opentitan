@@ -35,6 +35,7 @@
     dbg:
     [
       mbx_jtag.soc
+      socdbg_ctrl.jtag
     ]
   }
   nodes:
@@ -68,6 +69,28 @@
             soc_dbg: 0x1460200
           }
           size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: socdbg_ctrl.jtag
+      type: device
+      addr_space: soc_dbg
+      clock: clk_dbg_i
+      reset: rst_dbg_ni
+      pipeline: false
+      inst_type: socdbg_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_dbg: 0x240
+          }
+          size_byte: 0x4
         }
       ]
       xbar: false

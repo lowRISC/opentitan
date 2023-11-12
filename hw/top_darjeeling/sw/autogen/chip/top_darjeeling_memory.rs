@@ -171,6 +171,19 @@ pub const TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR: usize = 0x30150000;
 /// address between #TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR and
 /// `TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR + TOP_DARJEELING_ALERT_HANDLER_SIZE_BYTES`.
 pub const TOP_DARJEELING_ALERT_HANDLER_SIZE_BYTES: usize = 0x800;
+/// Peripheral base address for core device on socdbg_ctrl in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_SOCDBG_CTRL_CORE_BASE_ADDR: usize = 0x30160000;
+
+/// Peripheral size for core device on socdbg_ctrl in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_SOCDBG_CTRL_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_SOCDBG_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_SOCDBG_CTRL_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_SOCDBG_CTRL_CORE_SIZE_BYTES: usize = 0x20;
 /// Peripheral base address for spi_host0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

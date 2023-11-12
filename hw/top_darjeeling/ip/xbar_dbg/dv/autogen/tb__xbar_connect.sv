@@ -18,3 +18,4 @@ initial force dut.rst_dbg_ni = rst_n;
 
 // Device TileLink interface connections
 `CONNECT_TL_DEVICE_IF(mbx_jtag__soc, dut, clk_dbg_i, rst_n)
+`CONNECT_TL_DEVICE_IF(socdbg_ctrl__jtag, dut, clk_dbg_i, rst_n)

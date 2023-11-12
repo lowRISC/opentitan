@@ -3050,7 +3050,7 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 2
+          width: 3
           default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
           end_idx: 1
@@ -17305,7 +17305,7 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 2
+        width: 3
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
         end_idx: 1
@@ -21868,7 +21868,7 @@
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         signame: pwrmgr_aon_rom_ctrl
-        width: 2
+        width: 3
         type: uni
         end_idx: 1
         act: rcv

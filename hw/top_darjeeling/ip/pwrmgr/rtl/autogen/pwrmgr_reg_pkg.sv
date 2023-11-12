@@ -20,7 +20,7 @@ package pwrmgr_reg_pkg;
   parameter int ResetMainPwrIdx = 2;
   parameter int ResetEscIdx = 3;
   parameter int ResetNdmIdx = 4;
-  parameter int NumRomInputs = 2;
+  parameter int NumRomInputs = 3;
   parameter int NumAlerts = 1;
 
   // Address widths within the block

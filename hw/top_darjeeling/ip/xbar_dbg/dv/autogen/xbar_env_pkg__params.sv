@@ -9,10 +9,14 @@
 tl_device_t xbar_devices[$] = '{
     '{"mbx_jtag__soc", '{
         '{32'h01460200, 32'h0146021f}
+    }},
+    '{"socdbg_ctrl__jtag", '{
+        '{32'h00000240, 32'h00000243}
 }}};
 
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"dbg", 0, '{
-        "mbx_jtag__soc"}}
+        "mbx_jtag__soc",
+        "socdbg_ctrl__jtag"}}
 };

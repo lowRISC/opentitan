@@ -1061,6 +1061,36 @@ cc_test(
 )
 
 cc_library(
+    name = "socdbg_ctrl",
+    srcs = [
+        "//sw/ip/socdbg_ctrl/dif:headers",
+        "//sw/ip/socdbg_ctrl/dif:sources",
+    ],
+    hdrs = [
+        "//sw/ip/socdbg_ctrl/dif:api",
+    ],
+    deps = [
+        "//hw/ip/socdbg_ctrl/data:socdbg_ctrl_regs",
+        "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
+cc_test(
+    name = "socdbg_ctrl_unittest",
+    srcs = [
+        "//sw/ip/socdbg_ctrl/dif:test_sources",
+    ],
+    deps = [
+        ":socdbg_ctrl",
+        "//sw/ip/base/dif:test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "sensor_ctrl",
     srcs = [
         "//sw/ip/sensor_ctrl/dif:headers",

@@ -1,13 +1,5 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{
-  instance_name: top_darjeeling_rv_plic
-  param_values:
-  {
-    src: 154
-    target: 1
-    prio: 3
-    top_name: darjeeling
-  }
-}
+
+#include "sw/ip/socdbg_ctrl/dif/dif_socdbg_ctrl.h"
