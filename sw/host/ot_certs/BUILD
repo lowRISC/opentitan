@@ -16,6 +16,7 @@ rust_library(
         "src/types.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
+        "src/x509/tests.rs",
     ],
     proc_macro_deps = [
         "@crate_index//:indoc",
@@ -42,6 +43,14 @@ rust_test(
     crate = ":ot_certs",
     proc_macro_deps = [
         "@crate_index//:indoc",
+    ],
+    deps = [
+        "@crate_index//:base64ct",
+        # We need those because they are not re-exported by openssl
+        # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021
+        # is merged.
+        "@crate_index//:openssl-sys",
+        "@crate_index//:foreign-types",
     ],
 )
 

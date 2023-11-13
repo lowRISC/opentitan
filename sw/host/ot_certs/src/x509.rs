@@ -20,6 +20,8 @@ use crate::offsets::{CertificateWithVariables, OffsetGenerator};
 use crate::template;
 
 mod extension;
+#[cfg(test)]
+mod tests;
 
 // Convert a template curve name to an openssl one.
 fn ecgroup_from_curve(curve: &template::EcCurve) -> EcGroup {
