@@ -30,7 +30,7 @@ load(
     new_verilator_params = "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_hex", "otp_image", "otp_json", "otp_partition")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -1283,14 +1283,61 @@ opentitan_test(
 
 
 ################ flash rma enter
+otp_json(
+    name = "otp_json_test_rma",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # This RMA token is a cSHAKE128 digest. The preimage is
+                # hardcoded into the test harness [0] and the tool that
+                # generated this token [1].
+                #
+                # [0]: //sw/host/tests/rom/e2e_bootstrap_rma
+                # [1]: //sw/host/tests/rom/e2e_bootstrap_rma:gen_rma_token
+                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+#            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
 
+otp_image(
+        name = "img_dev_exec_disabled",
+        src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+        overlays = STD_OTP_OVERLAYS +
+                   ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+                    ":otp_json_test_rma",
+                   ],
+        visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+        name = "rom_with_fake_keys_otp_dev_exec_disabled",
+        src = "//hw/bitstream:rom_with_fake_keys",
+        data = "img_dev_exec_disabled",
+        meminfo = "//hw/bitstream:otp_mmi",
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+)
 opentitan_test(
     name = "babo_test",
     srcs = ["babo.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+        bitstream = ":rom_with_fake_keys_otp_dev_exec_disabled",
         test_cmd = " ".join([
-            "-- --firmware-elf=\"{firmware:elf}\"",
+            "--elf=\"{firmware}\"",
+            " \"{firmware}\"",
         ]),
         test_harness = "//sw/host/tests/chip/flash_ctrl:host",
     ),
@@ -1306,14 +1353,17 @@ opentitan_test(
     deps = [
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/test_framework:check",
-#        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/lib:sram_start",

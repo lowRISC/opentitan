@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/json/mem.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-//#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/runtime/ibex.h"
 
@@ -17,18 +17,39 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-volatile uint32_t kTestWord;
+volatile uint32_t kTestPhase;
 volatile uint32_t kEndTest;
 
 static dif_uart_t uart;
 static dif_pinmux_t pinmux;
+static dif_flash_ctrl_state_t flash;
+static dif_otp_ctrl_t otp_ctrl;
+
+enum {
+  kFlashInfoBankId = 0,
+  kFlashInfoPartitionId = 0,
+  kFlashInfoPageIdCreatorSecret = 1,
+  kFlashInfoPageIdOwnerSecret = 2,
+  kFlashInfoPageIdIsoPart = 3,
+  kTestPhase0 = 0,
+  kTestPhase1 = 1,
+  kTestPhaseInit = 2,
+};
+
+static const uint32_t kRandomData[3] = {
+  0xbab0bab1, 0xdeadbeef, 0xcafefeed,
+};
 
 
 status_t command_processor(ujson_t *uj) {
@@ -71,6 +92,63 @@ status_t command_processor(ujson_t *uj) {
     }                                                                    \
   } while (0)
 
+static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
+                                const uint32_t *data,
+                                bool scramble) {
+  uint32_t address = 0;
+  if (scramble) {
+    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+  } else {
+    TRY(flash_ctrl_testutils_info_region_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+  }
+
+  TRY(flash_ctrl_testutils_erase_and_write_page(
+      flash, address, kFlashInfoPartitionId, data,
+      kDifFlashCtrlPartitionTypeInfo, 1));
+
+  LOG_INFO("wr_info: data:0x%x", *data);
+  return OK_STATUS();
+}
+
+static status_t read_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
+                                uint32_t *data,
+                                bool scramble) {
+  uint32_t address = 0;
+  if (scramble) {
+    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+  } else {
+    TRY(flash_ctrl_testutils_info_region_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+  }
+
+  TRY(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
+                                data, kDifFlashCtrlPartitionTypeInfo, 1, 1));
+
+  return OK_STATUS();
+}
+
+static status_t read_and_check_info(bool match) {
+  uint32_t readback_data[3];
+  read_info_page(&flash, kFlashInfoPageIdCreatorSecret, readback_data, true);
+  read_info_page(&flash, kFlashInfoPageIdOwnerSecret, readback_data + 1, true);
+  read_info_page(&flash, kFlashInfoPageIdIsoPart, readback_data + 2, true);
+  LOG_INFO("readdata0: %x",*readback_data);
+  LOG_INFO("readdata1: %x",*(readback_data+1));
+  LOG_INFO("readdata2: %x",*(readback_data+2));
+  if(match){
+    // iso partition cannot be accessed in dev state.
+    // check create and owner partition only
+    CHECK_ARRAYS_EQ(readback_data, kRandomData, 2);
+  } else {
+    CHECK_ARRAYS_NE(readback_data, kRandomData, 3);
+  }
+  LOG_INFO("read_and_check is done");
+  return OK_STATUS();
+}
+
 bool sram_main(void) {
   // Initialize UART console.
   CHECK_DIF_OK(dif_pinmux_init(
@@ -78,6 +156,10 @@ bool sram_main(void) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
   pinmux_testutils_init(&pinmux);
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(&flash,  mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");
@@ -90,18 +172,41 @@ bool sram_main(void) {
                  .tx_enable = kDifToggleEnabled,
                  .rx_enable = kDifToggleEnabled,
              }));
-  base_uart_stdout(&uart);
+  ottf_console_init();
 
   kEndTest = 0;
-  kTestWord = 0xface1234u;
-  LOG_INFO("otdbg:before:kTestWord: %d",kTestWord);
+  kTestPhase = kTestPhaseInit;
+  //  LOG_INFO("otdbg:before:kTestWord: %d",kTestWord);
 
   ujson_t uj = ujson_ottf_console();
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, command_processor, &uj);
 
-  LOG_INFO("otdbg:after:kTestWord: %d",kTestWord);
+  //  LOG_INFO("otdbg:after:kTestWord: %d",kTestWord);
+  switch (kTestPhase) {
+  case kTestPhase0:
+    LOG_INFO("testphase0");
+    write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kRandomData, true);
+    //    LOG_INFO("write1 done");
+    write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kRandomData + 1, true);
+    //    LOG_INFO("write2 done");
+    write_info_page(&flash, kFlashInfoPageIdIsoPart, kRandomData + 2, true);
+    //    LOG_INFO("write3 done");
+    read_and_check_info(true);
+    // lock secret2 partition
+    CHECK_STATUS_OK(
+         otp_ctrl_testutils_lock_partition(&otp_ctrl, kDifOtpCtrlPartitionSecret2, 0));
+    break;
+  case kTestPhase1:
+    LOG_INFO("testphase1");
+    read_and_check_info(false);
+    break;
+  default:
+    LOG_ERROR("unexpected test phase : %d", kTestPhase);
+    break;
+  }
 
+  LOG_INFO("test_end");
   return status_ok(result);
 }
