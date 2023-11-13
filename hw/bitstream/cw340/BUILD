@@ -16,20 +16,19 @@ filegroup(
     name = "bitstream",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["//hw/bitstream:skip.bit"],
+        "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_test_rom"],
         "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
     }),
     tags = ["manual"],
-    visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "rom_mmi",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["//hw/bitstream:skip.bit"],
+        "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_rom_mmi"],
         "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_rom_mmi"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_rom_mmi"],
@@ -41,7 +40,7 @@ filegroup(
     name = "otp_mmi",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["//hw/bitstream:skip.bit"],
+        "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_otp_mmi"],
         "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_otp_mmi"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_otp_mmi"],

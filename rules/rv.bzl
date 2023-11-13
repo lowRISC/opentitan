@@ -19,12 +19,22 @@ PER_DEVICE_DEPS = {
 }
 
 def _opentitan_transition_impl(settings, attr):
-    return {"//command_line_option:platforms": attr.platform}
+    return {
+        "//command_line_option:platforms": attr.platform,
+        "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
+        "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
+        "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
+    }
 
 opentitan_transition = transition(
     implementation = _opentitan_transition_impl,
     inputs = [],
-    outputs = ["//command_line_option:platforms"],
+    outputs = [
+        "//command_line_option:platforms",
+        "//hw/bitstream/universal:rom",
+        "//hw/bitstream/universal:otp",
+        "//hw/bitstream/universal:env",
+    ],
 )
 
 def rv_rule(**kwargs):

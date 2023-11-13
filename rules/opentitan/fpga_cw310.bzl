@@ -230,6 +230,10 @@ def cw310_params(
     Returns:
       struct of test parameters.
     """
+    if bitstream and (rom or otp):
+        fail("Cannot use rom or otp with bitstream.")
+    if not bitstream:
+        bitstream = "@//hw/bitstream/universal:splice"
     return struct(
         tags = ["cw310", "exclusive"] + tags,
         timeout = timeout,
@@ -279,6 +283,10 @@ def cw310_jtag_params(
     Returns:
       struct of test parameters.
     """
+    if bitstream and (rom or otp):
+        fail("Cannot use rom or otp with bitstream.")
+    if not bitstream:
+        bitstream = "@//hw/bitstream/universal:splice"
     return struct(
         tags = ["cw310", "exclusive"] + tags,
         timeout = timeout,
