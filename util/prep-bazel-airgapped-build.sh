@@ -163,7 +163,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
-  readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams-integrated-a"
+  readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams"
   readonly SYSTEM_BITSTREAM_CACHEDIR="${SYSTEM_BITSTREAM_CACHE}/cache"
   readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
   # The revision named in latest.txt is not necessarily on disk. Induce the

@@ -413,7 +413,7 @@ jobs:
   # Build CW310 variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-  condition: false # currently disabled in Integrated repo
+  condition: false # currently disabled in Integrated branch
   # condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public-eda
   timeoutInMinutes: 240
@@ -428,8 +428,8 @@ jobs:
   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-  condition: false # currently disabled in Integrated repo
-  # condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: false # currently disabled in Integrated branch
+  # condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'integrated_dev'))
   pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
@@ -474,16 +474,16 @@ jobs:
     vmImage: ubuntu-20.04
   dependsOn:
     - chip_darjeeling_cw310
-    # - chip_earlgrey_cw310 # currently disabled in Integrated repo
-    # - chip_earlgrey_cw310_hyperdebug # currently disabled in Integrated repo
-  condition: eq(variables['Build.SourceBranchName'], 'master')
+    # - chip_earlgrey_cw310 # currently disabled in Integrated branch
+    # - chip_earlgrey_cw310_hyperdebug # currently disabled in Integrated branch
+  condition: eq(variables['Build.SourceBranchName'], 'integrated_dev')
   steps:
     - template: ci/download-artifacts-template.yml
       parameters:
         downloadPartialBuildBinFrom:
           - chip_darjeeling_cw310
-          # - chip_earlgrey_cw310 # currently disabled in Integrated repo
-          # - chip_earlgrey_cw310_hyperdebug # currently disabled in Integrated repo
+          # - chip_earlgrey_cw310 # currently disabled in Integrated branch
+          # - chip_earlgrey_cw310_hyperdebug # currently disabled in Integrated branch
     - bash: |
         set -x
         . util/build_consts.sh
@@ -491,10 +491,10 @@ jobs:
       parameters:
         fragmentFiles:
           - "$BIN_DIR/hw/top_darjeeling/chip_darjeeling_cw310/manifest.json"
-          # - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json" # currently disabled in Integrated repo
-          # - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json" # currently disabled in Integrated repo
+          # - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json" # currently disabled in Integrated branch
+          # - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json" # currently disabled in Integrated branch
         gcpKeyFile: "gcpkey.json"
-        bucketURI: "gs://opentitan-bitstreams-integrated-a/master"
+        bucketURI: "gs://opentitan-bitstreams/integrated_dev"
 
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
@@ -581,7 +581,7 @@ jobs:
     - sw_build
     - execute_verilated_tests_darjeeling
     - chip_darjeeling_cw310
-    # - chip_earlgrey_cw310 # currently disabled in Integrated repo
+    # - chip_earlgrey_cw310 # currently disabled in Integrated branch
     - chip_englishbreakfast_verilator
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   steps:
@@ -593,7 +593,7 @@ jobs:
         - sw_build
         - execute_verilated_tests_darjeeling
         - chip_darjeeling_cw310
-        # - chip_earlgrey_cw310 # currently disabled in Integrated repo
+        # - chip_earlgrey_cw310 # currently disabled in Integrated branch
         - chip_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
@@ -611,7 +611,7 @@ jobs:
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
     inputs:
       gitHubConnection: opentitan-release-upload
-      repositoryName: lowrisc/opentitan-integrated
+      repositoryName: lowrisc/opentitan
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*

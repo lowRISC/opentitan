@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   project:          opentitan
-  repo_server:      "github.com/lowrisc/opentitan-integrated"
+  repo_server:      "github.com/lowrisc/opentitan"
   doc_server:       docs.opentitan.org
   results_server:   reports.opentitan.org
 

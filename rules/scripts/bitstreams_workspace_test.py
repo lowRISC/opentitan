@@ -29,7 +29,7 @@ class TestBitstreamCache(unittest.TestCase):
                                           return_value=MOCKED_OS_WALK_RETURN)
 
         cache = BitstreamCache('/',
-                               '/tmp/cache/opentitan-bitstreams-integrated-a',
+                               '/tmp/cache/opentitan-bitstreams',
                                'latest.txt',
                                offline=True)
         cache.InitRepository = unittest.mock.MagicMock(name='method')
@@ -83,7 +83,7 @@ class TestBitstreamCache(unittest.TestCase):
             return_value='2022-07-14T15:02:54.463801')
 
         cache = BitstreamCache('/',
-                               '/tmp/cache/opentitan-bitstreams-integrated-a',
+                               '/tmp/cache/opentitan-bitstreams',
                                'latest.txt',
                                offline=True)
         cache.InitRepository = unittest.mock.MagicMock(name='method')
@@ -143,7 +143,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
     """
 
     def setUp(self):
-        self.cache = BitstreamCache('/', '/tmp/cache/opentitan-bitstreams-integrated-a',
+        self.cache = BitstreamCache('/', '/tmp/cache/opentitan-bitstreams',
                                     'latest.txt')
         self.cache.InitRepository = unittest.mock.MagicMock(name='method')
 
@@ -152,7 +152,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
 
         MOCKED_GET_RETURN = [
             b"""<ListBucketResult xmlns="http://doc.s3.amazonaws.com/2006-03-01">
-<Name>opentitan-bitstreams-integrated-a</Name>
+<Name>opentitan-bitstreams</Name>
 <Prefix/>
 <Marker/>
 <IsTruncated>false</IsTruncated>
@@ -184,7 +184,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
         """Test fetching the XML file with the list of available bitstreams."""
         MOCKED_GET_RETURN = [
             b"""<ListBucketResult xmlns="http://doc.s3.amazonaws.com/2006-03-01">
-<Name>opentitan-bitstreams-integrated-a</Name>
+<Name>opentitan-bitstreams</Name>
 <Prefix/>
 <Marker/>
 <NextMarker>master/bitstream-1.tar.gz</NextMarker>
@@ -199,7 +199,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
 </Contents>
 </ListBucketResult>""",
             b"""<ListBucketResult xmlns="http://doc.s3.amazonaws.com/2006-03-01">
-<Name>opentitan-bitstreams-integrated-a</Name>
+<Name>opentitan-bitstreams</Name>
 <Prefix/>
 <Marker>master/bitstream-1.tar.gz</Marker>
 <IsTruncated>false</IsTruncated>

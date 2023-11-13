@@ -146,7 +146,7 @@ The following files are produced as a result:
 * `otp.mmi`
 * `rom.mmi`
 
-If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams-integrated-a/master/bitstream-latest.tar.gz
+If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz
 
 ### Exposing GCS-cached artifacts to Bazel
 

@@ -21,8 +21,8 @@ cw310_tags=("$@")
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
-readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams-integrated-a/cache/${SHA}"
-readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_darjeeling/chip_darjeeling_cw310"
+readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${SHA}"
+readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_cw310"
 mkdir -p "${BIT_CACHE_DIR}"
 cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
