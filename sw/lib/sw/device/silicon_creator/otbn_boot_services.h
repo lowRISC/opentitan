@@ -40,19 +40,20 @@ rom_error_t otbn_boot_app_load(void);
  * P256 base point.
  *
  * The `additional_seed` is expected to be the output from a specially seeded
- * DRBG. It must be fully independent from the key manager seed.
+ * DRBG, and is provisioned into flash at manufacturing time. It must be fully
+ * independent from the key manager seed.
  *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param additional_seed Seed material from DRBG.
+ * @param additional_seed The attestation key generation seed to load.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    const attestation_seed_t *additional_seed,
+    attestation_key_seed_t additional_seed,
     keymgr_diversification_t diversification,
     attestation_public_key_t *public_key);
 
@@ -66,13 +67,13 @@ rom_error_t otbn_boot_attestation_keygen(
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param additional_seed Seed material from DRBG.
+ * @param additional_seed The attestation key generation seed to load.
  * @param diversification Salt and version information for key manager.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    const attestation_seed_t *additional_seed,
+    attestation_key_seed_t additional_seed,
     keymgr_diversification_t diversification);
 
 /**
