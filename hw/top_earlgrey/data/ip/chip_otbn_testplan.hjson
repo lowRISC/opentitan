@@ -19,7 +19,7 @@
                 ensure the internal state secure wipe has worked.
              '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests: []
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -37,7 +37,7 @@
               pre-computed using a reference model.
             '''
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       tests: ["chip_sw_otbn_ecdsa_op_irq",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
@@ -56,7 +56,7 @@
               returning some data.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests: ["chip_sw_otbn_randomness"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -70,7 +70,7 @@
             - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests:  ["chip_sw_otbn_randomness"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -119,7 +119,7 @@
               (unique, non-zero data).
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests: ["chip_sw_otbn_mem_scramble"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -137,7 +137,7 @@
             with no errors.
       '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV2
       tests: []
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [

@@ -15,7 +15,7 @@
             '''
       features: ["SYSRST_CTRL.COMBO_DETECT"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset", "chip_sw_sysrst_ctrl_reset"]
     }
@@ -39,7 +39,7 @@
             '''
       features: ["SYSRST_CTRL.PIN_INPUT_VALUE_ACCESS"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_inputs"]
     }
@@ -56,7 +56,7 @@
             '''
       features: ["SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_in_irq"]
     }
@@ -73,7 +73,7 @@
               '''
         features: ["SYSRST_CTRL.ULATRA_LOW_POWER_WAKEUP"]
         stage: V3
-        si_stage:SV2
+        si_stage:SV3
         lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
         tests: ["chip_sw_sysrst_ctrl_ulp_z3_wakeup"]
     }

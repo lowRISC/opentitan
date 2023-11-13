@@ -25,7 +25,7 @@
             '''
       features: ["SRAM_CTRL.SCRAMBLED"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }

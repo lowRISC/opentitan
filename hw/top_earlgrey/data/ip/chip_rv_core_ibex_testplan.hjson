@@ -19,7 +19,7 @@
             sure that the alert_handler won't move forward to the next escalation stage.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV2
       tests: ["chip_sw_rv_core_ibex_nmi_irq"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -61,7 +61,7 @@
                  being remapped.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests: ["chip_sw_rv_core_ibex_address_translation"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
@@ -82,7 +82,7 @@
               continued functioning of the instruction cache.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [

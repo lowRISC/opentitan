@@ -489,7 +489,7 @@
             alert_handler to immediately trip escalation reset.
             '''
       stage: V2
-      si_stage: None
+      si_stage: SV3
       lc_states: [
         "TEST_UNLOCKED",
         "DEV",

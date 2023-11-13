@@ -20,7 +20,7 @@
       features: ["ALERT_HANDLER.ALERT.OBSERVE",
                  "ALERT_HANDLER.ALERT.ESCALATE"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_test"]
     }
@@ -39,7 +39,7 @@
       features: ["ALERT_HANDLER.ALERT.ESCALATE",
                  "ALERT_HANDLER.ESCALATION.PHASES"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_escalation"]
       otp_mutate: true
@@ -63,7 +63,7 @@
       features: ["ALERT_HANDLER.ALERT.ESCALATE",
                  "ALERT_HANDLER.ESCALATION.PHASES"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
       otp_mutate: false
@@ -81,7 +81,7 @@
       features: ["ALERT_HANDLER.ESCALATION.COUNT",
                  "ALERT_HANDLER.ESCALATION.TIMEOUT"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
     }
@@ -116,7 +116,7 @@
             '''
       features: ["ALERT_HANDLER.ALERT.INTERRUPT"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_plic_all_irqs"]
     }
@@ -145,7 +145,7 @@
             '''
       features: ["ALERT_HANDLER.CRASH_DUMP"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_rstmgr_alert_info"]
       bazel: ["//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom"]
@@ -160,7 +160,7 @@
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_ping_timeout"]
       bazel: ["//sw/device/tests:alert_handler_ping_timeout_test_fpga_cw310_test_rom"]
@@ -181,7 +181,7 @@
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
     }
@@ -205,7 +205,7 @@
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_pings"]
       bazel: ["//sw/device/tests:alert_handler_lpg_sleep_mode_pings_test_fpga_cw310_test_rom"]
@@ -219,7 +219,7 @@
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
       bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_test_rom"]
@@ -233,7 +233,7 @@
            '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
       bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_test_rom"]
@@ -291,7 +291,7 @@
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
       bazel: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test_fpga_cw310_test_rom"]

@@ -14,7 +14,7 @@
             '''
       features: ["GPIO.OUT.MASK"]
       stage: V1
-      si_stage: SV1
+      si_stage: SV2
       tests: ["chip_sw_gpio"]
     }
     {
@@ -26,7 +26,7 @@
             '''
       features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
       stage: V1
-      si_stage: SV1
+      si_stage: SV2
       tests: ["chip_sw_gpio"]
     }
     {
@@ -39,7 +39,7 @@
             '''
       features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
       stage: V1
-      si_stage: SV1
+      si_stage: SV3
       tests: ["chip_sw_gpio"]
     }
   ]

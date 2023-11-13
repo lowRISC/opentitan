@@ -16,6 +16,7 @@
             X'ref'ed with each IP test that requests entropy from EDN.
             '''
       stage: V2
+      si_stage: SV3
       tests: ["chip_sw_edn_entropy_reqs",
               "chip_sw_csrng_edn_concurrency",
               "chip_sw_entropy_src_ast_rng_req",]
@@ -62,7 +63,7 @@
         EDN.TRACK_SEED_COMPLIANCE
       ]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_boot_mode"]

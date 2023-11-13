@@ -22,7 +22,7 @@
             '''
       features: ["ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"]
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_ast_rng_req"]
       bazel: []
@@ -200,7 +200,7 @@
         "ENTROPY_SRC.RNG_BIT_ENABLE",
       ]
       stage: V3
-      si_stage: SV1
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: []
       bazel: []
