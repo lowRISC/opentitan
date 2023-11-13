@@ -25,10 +25,6 @@ load(
     "otp_image",
     "otp_json",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -38,22 +34,6 @@ package(default_visibility = ["//visibility:public"])
         name = "img_{}_exec_disabled".format(lc_state),
         src = "//hw/ip/otp_ctrl/data:otp_json_" + lc_state,
         overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, _ in get_lc_items()
-]
-
-# Splice each execution-disabled OTP image into the ROM bitstream.
-[
-    bitstream_splice(
-        name = "rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = "img_{}_exec_disabled".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = [
-            "manual",
-        ],
-        update_usr_access = True,
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()
@@ -71,8 +51,8 @@ package(default_visibility = ["//visibility:public"])
             binaries = {
                 "//sw/device/examples/sram_program:sram_program": "sram_program",
             },
-            bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
             logging = "debug",
+            otp = ":img_{}_exec_disabled".format(lc_state),
             tags = ["cw310_rom_with_fake_keys"],
             test_cmd = """
                 --elf={sram_program}
@@ -120,13 +100,10 @@ LC_STATES_DEBUG_DISALLOWED = [
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_jtag_params(
             timeout = "moderate",
-            binaries = {
-                "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf": "rom",
-            },
-            bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
             logging = "debug",
+            otp = ":img_{}_exec_disabled".format(lc_state),
             tags = ["cw310_rom_with_fake_keys"],
-            test_cmd = " --elf={rom}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
+            test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
             test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
         ),
         exec_env = {

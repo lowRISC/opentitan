@@ -20,31 +20,15 @@ load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
-
-[
-    bitstream_splice(
-        name = "bitstream_chip_specific_startup_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-    )
-    for lc_state, lc_state_val in get_lc_items()
-]
 
 [
     opentitan_test(
         name = "e2e_chip_specific_startup_{}".format(lc_state),
         srcs = ["chip_specific_startup.c"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_chip_specific_startup_{}".format(lc_state),
+            otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """
                 --bitstream="{bitstream}"

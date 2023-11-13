@@ -29,10 +29,6 @@ load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -66,19 +62,6 @@ otp_json(
         overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
     )
     for lc_state, _ in get_lc_items()
-]
-
-# Bitstreams with the watchdog-enable OTP images spliced in.
-[
-    bitstream_splice(
-        name = "bitstream_watchdog_enable_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_watchdog_enable_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-    )
-    for lc_state, lc_state_val in get_lc_items()
 ]
 
 WATCHDOG_TEST_CASES = {
@@ -133,14 +116,6 @@ WATCHDOG_TEST_CASES = {
     for lc_state, lc_state_val in get_lc_items()
 ]
 
-# Bitstream targets (CW310) and otp images (verilator) for the watchdog config
-# tests. The format argument should be replaced with the desired life cycle
-# state.
-WATCHDOG_BITSTREAM = {
-    "disable": "//hw/bitstream:rom_with_fake_keys_otp_{}",
-    "enable": ":bitstream_watchdog_enable_{}",
-}
-
 WATCHDOG_OTP = {
     "disable": "//hw/ip/otp_ctrl/data:img_{}",
     "enable": ":otp_img_watchdog_enable_{}",
@@ -159,7 +134,7 @@ WATCHDOG_OTP = {
                     lc_state,
                 ): "firmware",
             },
-            bitstream = WATCHDOG_BITSTREAM[watchdog_config].format(lc_state),
+            otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         exec_env = {

@@ -22,10 +22,6 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -88,22 +84,11 @@ rom_e2e_keymgr_init_configs = [
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_keymgr_{}".format(config["name"]),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_keymgr_{}".format(config["name"]),
-        meminfo = "//hw/bitstream:otp_mmi",
-        visibility = ["//visibility:private"],
-    )
-    for config in rom_e2e_keymgr_init_configs
-]
-
-[
     opentitan_test(
         name = "rom_e2e_keymgr_init_{}".format(config["name"]),
         cw310 = cw310_params(
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},
-            bitstream = ":bitstream_keymgr_{}".format(config["name"]),
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
         ),
         dv = dv_params(
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},

@@ -37,10 +37,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
     "@bazel_skylib//lib:structs.bzl",
     "structs",
 )
@@ -101,19 +97,6 @@ otp_json(
     for lc_state, _ in get_lc_items()
 ]
 
-[
-    bitstream_splice(
-        name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, lc_state_val in get_lc_items()
-]
-
 _SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE))
 
 device_id_test_cases = [
@@ -123,7 +106,7 @@ device_id_test_cases = [
             "selector_bits": "0xff",
             "device_id": _test_device_id,
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -134,7 +117,7 @@ device_id_test_cases = [
             "selector_bits": "0xff",
             "device_id": ["0xbad"] * 8,
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": _SIGVERIFY_FAIL_MSG,
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -156,7 +139,7 @@ device_id_test_cases = [
                 hex(CONST.DEFAULT_USAGE_CONSTRAINTS),
             ],
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -178,7 +161,7 @@ device_id_test_cases = [
                 hex(CONST.DEFAULT_USAGE_CONSTRAINTS),
             ],
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": _SIGVERIFY_FAIL_MSG,
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -200,7 +183,7 @@ lc_state_test_cases = [
             "selector_bits": "0x400",
             "life_cycle_state": hex(lcv_hw_to_sw(lc_state_val)) if match_case else "0",
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(lc_state),
+        "otp": ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
         "exit_success": DEFAULT_TEST_SUCCESS_MSG if match_case else _SIGVERIFY_FAIL_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG if match_case else DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": lc_state_val,
@@ -219,7 +202,7 @@ manuf_state_test_cases = [
             "selector_bits": "0x100" if entity == "creator" else "0x200",
             "manuf_state_{}".format(entity): "{}".format(_test_manuf_states[entity]) if match_case else "0",
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG if match_case else _SIGVERIFY_FAIL_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG if match_case else DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -244,7 +227,7 @@ all_constr_test_cases = [
             "manuf_state_creator": _test_manuf_states["creator"],
             "manuf_state_owner": _test_manuf_states["owner"],
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(bs_lc_state),
+        "otp": ":otp_img_sigverify_usage_constraints_{}".format(bs_lc_state),
         "exit_success": DEFAULT_TEST_SUCCESS_MSG if mf_lc_val == lcv_hw_to_sw(bs_lc_val) else _SIGVERIFY_FAIL_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG if mf_lc_val == lcv_hw_to_sw(bs_lc_val) else DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": bs_lc_val,
@@ -265,7 +248,7 @@ invalid_unselected_word_cases = [
             "selector_bits": "0",
             "selector_mismatch_is_failure": False,
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_rma",
+        "otp": ":otp_img_sigverify_usage_constraints_rma",
         "exit_success": _SIGVERIFY_FAIL_MSG,
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": CONST.LCV.RMA,
@@ -294,9 +277,9 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         name = "sigverify_usage_constraint_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
-            bitstream = t["bitstream"],
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
+            otp = t["otp"],
             tags = maybe_skip_in_ci(t["lc_state_val"]),
         ),
         exec_env = {

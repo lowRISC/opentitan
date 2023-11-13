@@ -27,10 +27,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
     "@bazel_skylib//lib:structs.bzl",
     "structs",
 )
@@ -79,25 +75,6 @@ REDACT.update({"INVALID": 0x0})
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_{}_{}".format(
-            lc_state,
-            redact.lower(),
-        ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":img_{}_{}".format(
-            lc_state,
-            redact.lower(),
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, _ in get_lc_items()
-    for redact in REDACT
-]
-
-[
     opentitan_test(
         name = "e2e_shutdown_redact_{}_{}".format(
             lc_state,
@@ -107,16 +84,16 @@ REDACT.update({"INVALID": 0x0})
             binaries = {
                 "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
             },
-            bitstream = "bitstream_{}_{}".format(
-                lc_state,
-                redact.lower(),
-            ),
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(error_redact(
                 CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER,
                 lc_state_val,
                 redact_val,
             ))),
+            otp = ":img_{}_{}".format(
+                lc_state,
+                redact.lower(),
+            ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         exec_env = {
