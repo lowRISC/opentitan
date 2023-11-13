@@ -73,7 +73,7 @@
             '''
       features: ["I2C.MODE.HOST", "I2C.MODE.TARGET", "I2C.SPEED.STANDARD", "I2C.SPEED.FAST", "I2C.SPEED.FASTPLUS"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       tests: []
     }
     {
@@ -91,7 +91,7 @@
             '''
       features: ["I2C.MODE.HOST", "I2C.OVERRIDE"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       tests: []
     }
     {
@@ -116,7 +116,7 @@
             '''
       features: ["I2C.MODE.HOST", "I2C.PROTOCOL.CLOCKSTRETCHING"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       tests: []
     }
     {
@@ -135,7 +135,7 @@
             '''
       features: ["I2C.MODE.HOST", "I2C.PROTOCOL.NACK"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       tests: []
       bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
     }
@@ -154,7 +154,7 @@
             '''
       features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.REPEATEDSTART"]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       tests: []
     }
   ]

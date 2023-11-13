@@ -25,7 +25,7 @@
         "AES.MANUAL_OPERATION",
       ]
       stage: V2
-      si_stage: SV1
+      si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en"]
@@ -62,7 +62,7 @@
         "AES.KEY_LEN.256",
       ]
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: []
     }
@@ -128,7 +128,7 @@
         "AES.CLEAR.KEY_IV_DATA_IN",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_aes_entropy"]
     }
@@ -223,7 +223,7 @@
         "AES.MODE.ECB",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_aes_idle"]
     }
@@ -247,7 +247,7 @@
         "AES.KEY.SIDELOAD",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_keymgr_sideload_aes"]
     }

@@ -31,7 +31,7 @@
             '''
       features: ["USBDEV.CONN.VBUS"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_vbus"]
       bazel: []
@@ -56,7 +56,7 @@
         "USBDEV.CONN.PULLUP",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_usbdev_pullup"]
       bazel: []
@@ -107,7 +107,7 @@
         "USBDEV.CONN.REF_PULSE",
       ]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
       bazel: []

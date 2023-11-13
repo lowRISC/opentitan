@@ -62,7 +62,7 @@
       features: ["LC_CTRL.ACCESS.JTAG"]
       tags: ["dv", "fpga", "silicon"]
       stage: V2
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
       bazel: []
@@ -107,7 +107,7 @@
       ]
       tags: ["dv", "fpga", "silicon"]
       stage: V2
-      si_stage: SV1
+      si_stage: SV3
       otp_mutate: true
       lc_states: ["RAW", "TEST_UNLOCKED", "TEST_LOCKED"]
       tests: ["chip_sw_lc_ctrl_transition"]
@@ -313,7 +313,7 @@
       ]
       tags: ["dv", "fpga", "silicon"]
       stage: V2
-      si_stage: SV1
+      si_stage: SV2
       lc_states: ["RAW"]
       tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
               "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
