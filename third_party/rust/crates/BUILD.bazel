@@ -56,6 +56,12 @@ alias(
 )
 
 alias(
+    name = "base64ct",
+    actual = "@crate_index__base64ct-1.6.0//:base64ct",
+    tags = ["manual"],
+)
+
+alias(
     name = "bitflags",
     actual = "@crate_index__bitflags-2.4.0//:bitflags",
     tags = ["manual"],
@@ -142,6 +148,12 @@ alias(
 alias(
     name = "erased-serde",
     actual = "@crate_index__erased-serde-0.3.31//:erased_serde",
+    tags = ["manual"],
+)
+
+alias(
+    name = "foreign-types",
+    actual = "@crate_index__foreign-types-0.3.2//:foreign_types",
     tags = ["manual"],
 )
 
@@ -256,6 +268,12 @@ alias(
 alias(
     name = "openssl",
     actual = "@crate_index__openssl-0.10.59//:openssl",
+    tags = ["manual"],
+)
+
+alias(
+    name = "openssl-sys",
+    actual = "@crate_index__openssl-sys-0.9.95//:openssl_sys",
     tags = ["manual"],
 )
 
