@@ -315,6 +315,7 @@ _NORMAL_DEPENDENCIES = {
             "elliptic-curve": "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.31//:erased_serde",
+            "foreign-types": "@crate_index__foreign-types-0.3.2//:foreign_types",
             "hex": "@crate_index__hex-0.4.3//:hex",
             "humantime": "@crate_index__humantime-2.1.0//:humantime",
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
@@ -333,6 +334,7 @@ _NORMAL_DEPENDENCIES = {
             "object": "@crate_index__object-0.32.1//:object",
             "once_cell": "@crate_index__once_cell-1.18.0//:once_cell",
             "openssl": "@crate_index__openssl-0.10.59//:openssl",
+            "openssl-sys": "@crate_index__openssl-sys-0.9.95//:openssl_sys",
             "p256": "@crate_index__p256-0.13.2//:p256",
             "pem-rfc7468": "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
             "pest": "@crate_index__pest-2.7.3//:pest",
@@ -376,11 +378,16 @@ _NORMAL_ALIASES = {
 
 _NORMAL_DEV_DEPENDENCIES = {
     "third_party/rust": {
+        _COMMON_CONDITION: {
+            "base64ct": "@crate_index__base64ct-1.6.0//:base64ct",
+        },
     },
 }
 
 _NORMAL_DEV_ALIASES = {
     "third_party/rust": {
+        _COMMON_CONDITION: {
+        },
     },
 }
 
@@ -409,6 +416,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 
 _PROC_MACRO_DEV_ALIASES = {
     "third_party/rust": {
+        _COMMON_CONDITION: {
+        },
     },
 }
 
