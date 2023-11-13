@@ -29,7 +29,6 @@ opentitan_test(
     srcs = ["boot_svc_empty_test.c"],
     cw310 = cw310_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
-        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "FinalBootLog: 2:AA\r\n",
     ),
@@ -56,7 +55,6 @@ opentitan_test(
     srcs = ["boot_svc_next_test.c"],
     cw310 = cw310_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
-        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:ABA\r\n",
     ),
@@ -84,7 +82,6 @@ opentitan_test(
     srcs = ["boot_svc_bad_next_test.c"],
     cw310 = cw310_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
-        bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:AAA\r\n",
     ),
