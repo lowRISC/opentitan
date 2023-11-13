@@ -16,6 +16,7 @@ from serialize.parse_helpers import (check_keys, check_str, check_bool,
 from .encoding import Encoding
 from .encoding_scheme import EncSchemes
 from .information_flow import InsnInformationFlow
+from .isr import Isr, read_isrs, IsrMap, IsrMaps
 from .lsu_desc import LSUDesc
 from .operand import Operand
 from .syntax import InsnSyntax
@@ -24,10 +25,11 @@ from .syntax import InsnSyntax
 class Insn:
     def __init__(self,
                  yml: object,
-                 encoding_schemes: Optional[EncSchemes]) -> None:
+                 encoding_schemes: Optional[EncSchemes],
+                 isrs: Optional[IsrMaps]) -> None:
         yd = check_keys(yml, 'instruction',
                         ['mnemonic', 'operands'],
-                        ['group', 'rv32i', 'synopsis',
+                        ['group', 'rv32i', 'uses_isr', 'synopsis',
                          'syntax', 'doc', 'errs', 'note',
                          'encoding', 'glued-ops',
                          'literal-pseudo-op', 'python-pseudo-op', 'lsu',
@@ -48,7 +50,7 @@ class Insn:
             self.encoding = Encoding(encoding_yml,
                                      encoding_schemes, self.mnemonic)
 
-        self.operands = [Operand(y, self.mnemonic, self.encoding)
+        self.operands = [Operand(y, self.mnemonic, self.encoding, isrs)
                          for y in check_list(yd['operands'],
                                              'operands for ' + what)]
         self.name_to_operand = index_list('operands for ' + what,
@@ -82,6 +84,8 @@ class Insn:
 
         self.rv32i = check_bool(yd.get('rv32i', False),
                                 'rv32i flag for ' + what)
+        self.uses_isr = check_bool(yd.get('uses_isr', False),
+                                   'uses_isr flag for ' + what)
         self.glued_ops = check_bool(yd.get('glued-ops', False),
                                     'glued-ops flag for ' + what)
         self.synopsis = get_optional_str(yd, 'synopsis', what)
@@ -231,14 +235,15 @@ class DummyInsn(Insn):
             'mnemonic': 'dummy-insn',
             'operands': []
         }
-        super().__init__(fake_yml, None)
+        super().__init__(fake_yml, None, None)
 
 
 class InsnGroup:
     def __init__(self,
                  path: str,
                  encoding_schemes: Optional[EncSchemes],
-                 yml: object) -> None:
+                 yml: object,
+                 isrs: Optional[IsrMaps]) -> None:
 
         yd = check_keys(yml, 'insn-group',
                         ['key', 'title', 'doc', 'insns'], [])
@@ -252,7 +257,7 @@ class InsnGroup:
                                                    insns_rel_path))
         insns_yaml = load_yaml(insns_path, insns_what)
         try:
-            self.insns = [Insn(i, encoding_schemes)
+            self.insns = [Insn(i, encoding_schemes, isrs)
                           for i in check_list(insns_yaml, insns_what)]
         except ValueError as err:
             raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
@@ -263,8 +268,9 @@ class InsnGroups:
     def __init__(self,
                  path: str,
                  encoding_schemes: Optional[EncSchemes],
-                 yml: object) -> None:
-        self.groups = [InsnGroup(path, encoding_schemes, y)
+                 yml: object,
+                 isrs: Optional[IsrMaps]) -> None:
+        self.groups = [InsnGroup(path, encoding_schemes, y, isrs)
                        for y in check_list(yml, 'insn-groups')]
         if not self.groups:
             raise ValueError('Empty list of instruction groups: '
@@ -274,7 +280,10 @@ class InsnGroups:
 
 
 class InsnsFile:
-    def __init__(self, path: str, yml: object) -> None:
+    def __init__(self,
+                 path: str,
+                 yml: object,
+                 isrs: Optional[IsrMaps]) -> None:
         yd = check_keys(yml, 'top-level',
                         ['insn-groups'],
                         ['encoding-schemes'])
@@ -294,7 +303,8 @@ class InsnsFile:
 
         self.groups = InsnGroups(path,
                                  self.encoding_schemes,
-                                 yd['insn-groups'])
+                                 yd['insn-groups'],
+                                 isrs)
 
         # The instructions are grouped by instruction group and stored in
         # self.groups. Most of the time, however, we just want "an OTBN
@@ -378,16 +388,32 @@ class InsnsFile:
         return ret
 
 
-def load_file(path: str) -> InsnsFile:
+def load_file(path: str, isrs: Optional[IsrMaps]) -> InsnsFile:
     '''Load the YAML file at path.
 
     Raises a RuntimeError on syntax or schema error.
 
     '''
     try:
-        return InsnsFile(path, load_yaml(path, None))
+        return InsnsFile(path, load_yaml(path, None), isrs)
     except ValueError as err:
         raise RuntimeError('Invalid schema in YAML file at {!r}: {}'
+                           .format(path, err)) from None
+
+
+def make_isr_dict(path: str) -> IsrMap:
+    '''Load a YAML file at path and return a map from name to Isr.'''
+    try:
+        name_to_isr = {}  # type: Dict[str, Isr]
+        for isr in read_isrs(path):
+            name = isr.name.lower()
+            if name in name_to_isr:
+                raise ValueError(f'Duplicate ISRs with name {name}.')
+            name_to_isr[name] = isr
+        return IsrMap(name_to_isr)
+
+    except ValueError as err:
+        raise RuntimeError('Invalid schema in ISR YAML file at {!r}: {}'
                            .format(path, err)) from None
 
 
@@ -401,10 +427,16 @@ def load_insns_yaml() -> InsnsFile:
 
     '''
     global _DEFAULT_INSNS_FILE
-    if _DEFAULT_INSNS_FILE is None:
-        dirname = os.path.dirname(__file__)
-        rel_path = os.path.join('..', '..', 'data', 'insns.yml')
-        insns_yml = os.path.normpath(os.path.join(dirname, rel_path))
-        _DEFAULT_INSNS_FILE = load_file(insns_yml)
+    if _DEFAULT_INSNS_FILE is not None:
+        return _DEFAULT_INSNS_FILE
+
+    dirname = os.path.dirname(__file__)
+    data_path = os.path.normpath(os.path.join(dirname, '..', '..', 'data'))
+
+    csrs = make_isr_dict(os.path.join(data_path, 'csr.yml'))
+    wsrs = make_isr_dict(os.path.join(data_path, 'wsr.yml'))
+
+    _DEFAULT_INSNS_FILE = load_file(os.path.join(data_path, 'insns.yml'),
+                                    IsrMaps(csrs, wsrs))
 
     return _DEFAULT_INSNS_FILE
