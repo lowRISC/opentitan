@@ -34,6 +34,11 @@ encoding-schemes: enc-schemes.yml
 #  rv32i:     A boolean. If true, this instruction came from the RV32I ISA.
 #             Optional, defaults to false.
 #
+#  uses_isr:  A boolean. If this is true, the instruction uses an ISR, which
+#             might be specified by name. In this case, we need the tooling to
+#             understand the instruction, even if it actually came from the
+#             RV32I ISA. Optional, defaults to false.
+#
 #  synopsis:  A longer name for this instruction. If set, used as a subtitle in
 #             the generated documentation. (optional)
 #

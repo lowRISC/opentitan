@@ -796,8 +796,11 @@ class Transformer:
             return
 
         # If this instruction comes from the rv32i instruction set, we can just
-        # pass it straight through.
-        if insn.rv32i:
+        # pass it straight through. The extra check for "uses_isr" is needed to
+        # support ISR names in instructions like CSRRW. This instruction is
+        # part of the rv32i instruction set, but we want to do some work to
+        # resolve CSR names.
+        if insn.rv32i and not insn.uses_isr:
             self.out_handle.write('.line {}\n{}\n'.format(
                 self.line_number - 1, reconstructed))
             return

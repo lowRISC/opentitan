@@ -10,6 +10,7 @@ from serialize.parse_helpers import (check_bool, check_keys, check_str,
 
 from .encoding import Encoding
 from .encoding_scheme import EncSchemeField
+from .isr import IsrMap, IsrMaps
 
 
 class OperandType:
@@ -620,8 +621,43 @@ class OptionOperandType(OperandType):
         return 1
 
 
+class IsrOperandType(ImmOperandType):
+    '''An operand type for a CSR or WSR.'''
+    def __init__(self, width: int, name: str, isrs: IsrMap):
+        super().__init__(width, 0, 0, False, False)
+        self.name = name
+        self.isrs = isrs
+
+    def syntax_determines_value(self) -> bool:
+        return True
+
+    def str_to_op_val(self, as_str: str) -> int:
+        # Check to see whether we recognise this as the name of an ISR (folding
+        # case to lower).
+        as_isr = self.isrs.name_to_isr.get(as_str.lower())
+        if as_isr is not None:
+            return as_isr.address
+
+        # If it's not a known ISR name, check whether this can be parsed as an
+        # integer.
+        as_int = super().str_to_op_val(as_str)
+        if as_int is not None:
+            return as_int
+
+        raise ValueError(f'Failed to recognise {self.name} '
+                         f'name from {as_str}.')
+
+    def op_val_to_str(self, op_val: int, cur_pc: Optional[int]) -> str:
+        isr_at_addr = self.isrs.addr_to_isr.get(op_val)
+        if isr_at_addr is not None:
+            return isr_at_addr.name
+
+        return str(op_val)
+
+
 def parse_operand_type(fmt: str, pc_rel: bool, what: str,
-                       scheme_field: Optional[EncSchemeField]) -> OperandType:
+                       scheme_field: Optional[EncSchemeField],
+                       isr_maps: Optional[IsrMaps]) -> OperandType:
     '''Make sense of the operand type syntax'''
     # Registers
     reg_fmts = {
@@ -644,12 +680,16 @@ def parse_operand_type(fmt: str, pc_rel: bool, what: str,
 
     # CSR and WSR indices. These are treated like unsigned immediates, with
     # width 12 and 8, respectively.
-    xsr_fmts = {'csr': 12, 'wsr': 8}
-    xsr_match = xsr_fmts.get(fmt)
-    if xsr_match is not None:
+    isr_widths = {'csr': 12, 'wsr': 8}
+    isr_width = isr_widths.get(fmt)
+    if isr_width is not None:
         assert not pc_rel
-        return ImmOperandType.make(xsr_match, 0, 0, False, False, what,
-                                   scheme_field)
+
+        isrs = IsrMap({})
+        if isr_maps is not None:
+            isrs = isr_maps.csrs if fmt == 'csr' else isr_maps.wsrs
+
+        return IsrOperandType(isr_width, fmt, isrs)
 
     # Immediates
     for base, signed in [('simm', True), ('uimm', False)]:
@@ -693,7 +733,8 @@ def parse_operand_type(fmt: str, pc_rel: bool, what: str,
 
 
 def infer_operand_type(name: str, pc_rel: bool, what: str,
-                       scheme_field: Optional[EncSchemeField]) -> OperandType:
+                       scheme_field: Optional[EncSchemeField],
+                       isrs: Optional[IsrMaps]) -> OperandType:
     '''Try to guess an operand's type from its name'''
 
     op_type_name = None
@@ -711,12 +752,13 @@ def infer_operand_type(name: str, pc_rel: bool, what: str,
             "Operand name {!r} doesn't imply an operand type: "
             "you'll have to set the type explicitly.".format(name))
 
-    return parse_operand_type(op_type_name, pc_rel, what, scheme_field)
+    return parse_operand_type(op_type_name, pc_rel, what, scheme_field, isrs)
 
 
 def make_operand_type(op_type_name: Optional[str], pc_rel: bool,
                       operand_name: str, mnemonic: str,
-                      scheme_field: Optional[EncSchemeField]) -> OperandType:
+                      scheme_field: Optional[EncSchemeField],
+                      isrs: Optional[IsrMaps]) -> OperandType:
     '''Construct a type for an operand
 
     This is either based on the type, if given, or inferred from the name
@@ -726,15 +768,17 @@ def make_operand_type(op_type_name: Optional[str], pc_rel: bool,
     '''
     what = ('the type for the {!r} operand of instruction {!r}'.format(
         operand_name, mnemonic))
-    return (parse_operand_type(op_type_name, pc_rel, what, scheme_field)
-            if op_type_name is not None else infer_operand_type(
-                operand_name, pc_rel, what, scheme_field))
+    return (parse_operand_type(op_type_name, pc_rel, what,
+                               scheme_field, isrs)
+            if op_type_name is not None
+            else infer_operand_type(operand_name, pc_rel, what,
+                                    scheme_field, isrs))
 
 
 class Operand:
-
     def __init__(self, yml: object, mnemonic: str,
-                 insn_encoding: Optional[Encoding]) -> None:
+                 insn_encoding: Optional[Encoding],
+                 isrs: Optional[IsrMaps]) -> None:
         # The YAML representation should be a string (a bare operand name) or a
         # dict.
         what = 'operand for {!r} instruction'.format(mnemonic)
@@ -779,5 +823,5 @@ class Operand:
         self.name = name
         self.abbrev = abbrev
         self.op_type = make_operand_type(op_type, pc_rel, name, mnemonic,
-                                         enc_scheme_field)
+                                         enc_scheme_field, isrs)
         self.doc = doc
