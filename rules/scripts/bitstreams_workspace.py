@@ -28,9 +28,9 @@ import jsonschema
 MANIFEST_SCHEMA_VERSION = 2
 
 # Default location of the bitstreams cache.
-CACHE_DIR = '~/.cache/opentitan-bitstreams-integrated-a'
+CACHE_DIR = '~/.cache/opentitan-bitstreams'
 # Default bucket URL.
-BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams-integrated-a/'
+BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 # The xml document returned by the bucket is in this namespace.
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 # Manifest schema directory

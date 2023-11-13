@@ -24,14 +24,14 @@ You can either download the latest bitstream for the ChipWhisperer CW310 board o
 
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams-integrated-a/master/bitstream-latest.tar.gz).
+If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
 
 For example, to download and unpack the bitstream, run the following:
 
 ```console
 mkdir -p /tmp/bitstream-latest
 cd /tmp/bitstream-latest
-curl https://storage.googleapis.com/opentitan-bitstreams-integrated-a/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
+curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
 tar -xvf bitstream-latest.tar.gz
 ```
 
@@ -39,7 +39,7 @@ By default, the bitstream is built with a version of the boot ROM used for testi
 There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
 When the bitstream cache is used in bazel flows, the ROMs from the cache are not used.
 Instead, the bazel-built ROMs are spliced into the image to create new bitstreams, using the mechanism described in the [FPGA Reference Manual](https://opentitan.org/book/doc/contributing/fpga/ref_manual_fpga.html#boot-rom-development).
-The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams-integrated-a/master/latest.txt).
+The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
 ### Using the `@bitstreams` repository
 
