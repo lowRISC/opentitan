@@ -6,7 +6,7 @@
 .globl arithmetic_to_boolean
 
 .text
-
+/*将模 p 的算术份额转换为布尔份额。*/
 /**
  * Converts arithmetic shares mod p to boolean shares.
  *
@@ -117,7 +117,7 @@ arithmetic_to_boolean_mod:
   bn.sel    w20, w20, w26, FG0.Z
 
   ret
-
+/*使用 Goubin 的算法将算术份额转换为布尔份额。*/
 /**
  * Convert arithmetic shares to boolean ones using Goubin's algorithm.
  *

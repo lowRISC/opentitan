@@ -32,7 +32,8 @@ def ecdsa_p256_int_to_hexwords(x):
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--hjsonfile', '-j',
-                        metavar='FILE',
+                        metavar='FILE'
+                        ,
                         required=True,
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')

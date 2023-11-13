@@ -1,0 +1,363 @@
+/* Copyright lowRISC contributors. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * Elliptic-curve Diffie-Hellman (ECDH) on curve P-256.
+ *
+ * This binary has the following modes of operation:
+ * 1. MODE_KEYGEN_RANDOM: generate a random keypair
+ * 2. MODE_SHARED_KEYGEN: compute shared key
+ * 3. MODE_KEYGEN_FROM_SEED: generate keypair from a sideloaded seed
+ * 4. MODE_SHARED_KEYGEN_FROM_SEED: compute shared key using sideloaded seed
+ */
+
+/**
+ * Mode magic values generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 \
+ *    --avoid-zero -s 3660400884
+ *
+ * Call the same utility with the same arguments and a higher -m to generate
+ * additional value(s) without changing the others or sacrificing mutual HD.
+ *
+ * TODO(#17727): in some places the OTBN assembler support for .equ directives
+ * is lacking, so they cannot be used in bignum instructions or pseudo-ops such
+ * as `li`. If support is added, we could use 32-bit values here instead of
+ * 11-bit.
+ */
+.equ MODE_KEYPAIR_RANDOM, 0x3f1
+.equ MODE_SHARED_KEY, 0x5ec
+.equ MODE_KEYPAIR_FROM_SEED, 0x29f
+.equ MODE_SHARED_KEY_FROM_SEED, 0x74b
+
+.section .text.start
+start:
+  /* Init all-zero register. */
+  bn.xor  w31, w31, w31
+
+  /* Read the mode and tail-call the requested operation. */
+  la      x2, mode
+  lw      x2, 0(x2)
+
+  addi    x3, x0, MODE_KEYPAIR_RANDOM
+  beq     x2, x3, keypair_random
+
+  addi    x3, x0, MODE_SHARED_KEY
+  beq     x2, x3, shared_key
+
+  addi    x3, x0, MODE_KEYPAIR_FROM_SEED
+  beq     x2, x3, keypair_from_seed
+
+  addi    x3, x0, MODE_SHARED_KEY_FROM_SEED
+  beq     x2, x3, shared_key_from_seed
+
+  /* Unsupported mode; fail. */
+  unimp
+  unimp
+  unimp
+
+/**
+ * Generate a fresh random keypair.
+ *
+ * Returns secret key d in 320b shares d0, d1.
+ *
+ * Returns public key Q = d*G in affine coordinates (x, y).
+ *
+ * This routine runs in constant time (except potentially waiting for entropy
+ * from RND).
+ *
+ * @param[in]       w31: all-zero
+ * @param[out] dmem[d0]: First share of secret key.
+ * @param[out] dmem[d1]: Second share of secret key.
+ * @param[out]  dmem[x]: Public key x-coordinate.
+ * @param[out]  dmem[y]: Public key y-coordinate.
+ *
+ * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w26
+ * clobbered flag groups: FG0
+ */
+keypair_random:
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal   x1, p256_generate_random_key
+
+  /* Generate public key d*G.
+       dmem[x] <= (d*G).x
+       dmem[y] <= (d*G).y */
+  jal      x1, p256_base_mult
+
+  ecall
+
+/**
+ * Generate a shared key from a secret and public key.
+ *
+ * Returns the shared key, which is the affine x-coordinate of (d*Q). The
+ * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
+ * x1).
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[in]  dmem[k0]: First share of secret key.
+ * @param[in]  dmem[k1]: Second share of secret key.
+ * @param[in]   dmem[x]: Public key (Q) x-coordinate.
+ * @param[in]   dmem[y]: Public key (Q) y-coordinate.
+ * @param[out]  dmem[x]: x0, first share of shared key.
+ * @param[out]  dmem[y]: x1, second share of shared key.
+ */
+shared_key:
+  /* Validate the public key. Halts the program if the key is invalid and jumps
+     back here if it's OK. */
+  jal      x0, check_public_key_valid
+  _pk_valid:
+
+  /* Generate arithmetically masked shared key d*Q.
+       dmem[x] <= (d*Q).x - m_x mod p
+       dmem[y] <= m_x */
+  jal      x1, p256_scalar_mult
+
+  /* Arithmetic-to-boolean conversion*/
+
+  /* w11 <= dmem[x] */
+  li        x3, 11
+  la        x4, x
+  bn.lid    x3, 0(x4)
+
+  /* w19 <= dmem[y] = m_x */
+  li        x3, 19
+  la        x4, y
+  bn.lid    x3, 0(x4)
+
+  jal       x1, arithmetic_to_boolean_mod
+
+  /* dmem[x] <= w20 = x' */
+  li        x3, 20
+  la        x4, x
+  bn.sid    x3, 0(x4)
+
+  ecall
+
+/**
+ * Generate a keypair from a keymgr-derived seed.
+ *
+ * Returns secret key d in 320b shares d0, d1.
+ *
+ * Returns public key Q = d*G in affine coordinates (x, y).
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[out] dmem[d0]: First share of secret key.
+ * @param[out] dmem[d1]: Second share of secret key.
+ * @param[out]  dmem[x]: Public key x-coordinate.
+ * @param[out]  dmem[y]: Public key y-coordinate.
+ */
+keypair_from_seed:
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal   x1, secret_key_from_seed
+
+  /* Generate public key d*G.
+       dmem[x] <= (d*G).x
+       dmem[y] <= (d*G).y */
+  jal      x1, p256_base_mult
+
+  ecall
+
+/**
+ * Generate a shared key from a keymgr-derived seed.
+ *
+ * Returns the shared key, which is the affine x-coordinate of (d*Q). The
+ * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
+ * x1).
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[in]   dmem[x]: Public key (Q) x-coordinate.
+ * @param[in]   dmem[y]: Public key (Q) y-coordinate.
+ * @param[out]  dmem[x]: x0, first share of shared key.
+ * @param[out]  dmem[y]: x1, second share of shared key.
+ */
+shared_key_from_seed:
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal   x1, secret_key_from_seed
+
+  /* Tail-call shared-key generation. */
+  jal      x0, shared_key
+
+/**
+ * Generate a secret key from a keymgr-derived seed.
+ *
+ * Returns secret key d in 320b shares d0, d1 such that:
+ *   (d0 + d1) mod n = (seed0 ^ seed1) mod n
+ * ...where seed0 and seed1 are the 320-bit keymgr-provided seed values stored
+ * in KEY_S0_{L,H} and KEY_S1_{L,H} WSRs. Note that the keymgr actually
+ * provides 384 bits, but these higher bits are ignored.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[out] dmem[d0]: First share of secret key.
+ * @param[out] dmem[d0]: Second share of secret key.
+ *
+ * clobbered registers: x2, x3, w1 to w4, w20 to w29
+ * clobbered flag groups: FG0
+ */
+secret_key_from_seed:
+  /* Load keymgr seeds from WSRs.
+       w20,w21 <= seed0
+       w10,w11 <= seed1 */
+  bn.wsrr  w20, 0x4 /* KEY_S0_L */
+  bn.wsrr  w21, 0x5 /* KEY_S0_H */
+  bn.wsrr  w10, 0x6 /* KEY_S1_L */
+  bn.wsrr  w11, 0x7 /* KEY_S1_H */
+
+  /* Generate secret key shares.
+       w20, w21 <= d0
+       w10, w11 <= d1 */
+  jal      x1, p256_key_from_seed
+
+  /* Store secret key shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  li       x2, 20
+  la       x3, d0
+  bn.sid   x2++, 0(x3)
+  bn.sid   x2++, 32(x3)
+  li       x2, 10
+  la       x3, d1
+  bn.sid   x2++, 0(x3)
+  bn.sid   x2, 32(x3)
+
+  ret
+
+/**
+ * Check if a provided public key is valid.
+ *
+ * For a given public key (x, y), check that:
+ * - x and y are both fully reduced mod p
+ * - (x, y) is on the P-256 curve.
+ *
+ * Note that, because the point is in affine form, it is not possible that (x,
+ * y) is the point at infinity. In some other forms such as projective
+ * coordinates, we would need to check for this also.
+ *
+ * This routine raises a software error and halts operation if the public key
+ * is invalid.
+ *
+ * @param[in] dmem[x]: Public key x-coordinate.
+ * @param[in] dmem[y]: Public key y-coordinate.
+ */
+check_public_key_valid:
+  /* Init all-zero register. */
+  bn.xor   w31, w31, w31
+
+  /* Load domain parameter p.
+       w29 <= dmem[p256_p] = p */
+  li        x2, 29
+  la        x3, p256_p
+  bn.lid    x2, 0(x3)
+
+  /* Load public key x-coordinate.
+       w2 <= dmem[x] = x */
+  li        x2, 2
+  la        x3, x
+  bn.lid    x2, 0(x3)
+
+  /* Compare x to p.
+       FG0.C <= (x < p) */
+  bn.cmp    w2, w29
+
+  /* Trigger a fault if FG0.C is false. */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _x_valid
+  unimp
+
+  _x_valid:
+
+  /* Load public key y-coordinate.
+       w2 <= dmem[y] = y */
+  li        x2, 2
+  la        x3, y
+  bn.lid    x2, 0(x3)
+
+  /* Compare y to p.
+       FG0.C <= (y < p) */
+  bn.cmp    w2, w29
+
+  /* Trigger a fault if FG0.C is false. */
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  bne       x2, x0, _y_valid
+  unimp
+
+  _y_valid:
+
+  /* Compute both sides of the Weierstrauss equation.
+       dmem[r] <= (x^3 + ax + b) mod p
+       dmem[s] <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Load both sides of the equation.
+       w2 <= dmem[r]
+       w3 <= dmem[s] */
+  li        x2, 2
+  la        x3, r
+  bn.lid    x2++, 0(x3)
+  la        x3, s
+  bn.lid    x2, 0(x3)
+
+  /* Compare the two sides of the equation.
+       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp    w2, w3
+
+  /* Trigger a fault if FG0.Z is false. */
+  csrrs     x2, 0x7c0, x0
+  srli      x2, x2, 3
+  andi      x2, x2, 1
+  bne       x2, x0, _pk_valid
+  unimp
+
+.bss
+
+/* Operational mode. */
+.globl mode
+.balign 4
+mode:
+  .zero 4
+
+/* Public key (Q) x-coordinate. */
+.globl x
+.balign 32
+x:
+  .zero 32
+
+/* Public key y-coordinate. */
+.globl y
+.balign 32
+y:
+  .zero 32
+
+/* Secret key (d) in two shares: d = (d0 + d1) mod n.
+
+   Note: This is also labeled k0, k1 because the `p256_scalar_mult` algorithm
+   is also used for ECDSA signing and reads from those labels; in the case of
+   ECDH, the scalar in `p256_scalar_mult` is always the private key (d). */
+.globl d0
+.globl k0
+.balign 32
+d0:
+k0:
+  .zero 64
+
+.globl d1
+.globl k1
+.balign 32
+d1:
+k1:
+  .zero 64

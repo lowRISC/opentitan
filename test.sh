@@ -1,0 +1,1 @@
+bazel test --test_output=streamed //sw/otbn/crypto/tests:p256_base_mult_test

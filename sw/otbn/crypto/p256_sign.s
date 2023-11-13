@@ -11,9 +11,10 @@
  */
 
 .globl p256_sign
-
+/*首先计算一个随机的非零掩码标量alpha，并使用它来计算签名的s部分。
+*具体来说，s = ((k * alpha)^-1 * (r * (d * alpha) + alpha * msg)) mod n，其中k是一个提供的秘密随机数，r是曲线点k*G的仿射x坐标，G是曲线的基点，
+*n是基点G的阶数,将私钥和秘密随机数分为两个共享部分，以提供额外的冗余度，以防止侧信道攻击。*/
 .text
-
  /**
  * P-256 ECDSA signature generation
  *
