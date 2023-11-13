@@ -76,7 +76,8 @@ typedef struct attestation_public_key {
  * Holds an attestation signature (ECDSA-P256).
  */
 typedef struct attestation_signature {
-  uint32_t sig[kAttestationSignatureWords];
+  uint32_t r[kAttestationSignatureWords / 2];
+  uint32_t s[kAttestationSignatureWords / 2];
 } attestation_signature_t;
 
 #ifdef __cplusplus

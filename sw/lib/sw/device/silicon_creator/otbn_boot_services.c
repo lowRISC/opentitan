@@ -153,12 +153,10 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
 
   // Retrieve the signature (in two parts, r and s).
   size_t half_num_words = kAttestationSignatureWords / 2;
-  uint32_t *r_dest = sig->sig;
-  uint32_t *s_dest = &sig->sig[half_num_words];
   HARDENED_RETURN_IF_ERROR(
-      otbn_dmem_read(half_num_words, kOtbnVarBootR, r_dest));
+      otbn_dmem_read(half_num_words, kOtbnVarBootR, sig->r));
   HARDENED_RETURN_IF_ERROR(
-      otbn_dmem_read(half_num_words, kOtbnVarBootS, s_dest));
+      otbn_dmem_read(half_num_words, kOtbnVarBootS, sig->s));
 
   return kErrorOk;
 }
