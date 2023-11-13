@@ -391,7 +391,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        insns = load_file(args.yaml_file)
+        insns = load_file(args.yaml_file, None)
         impls = read_implementation(args.py_file)
     except RuntimeError as err:
         print(err, file=sys.stderr)
