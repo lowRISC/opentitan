@@ -628,10 +628,14 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<const flash_ctrl_info_page_t *, 7> no_owner_access = {
-      &kFlashCtrlInfoPageCreatorSecret,   &kFlashCtrlInfoPageOwnerSecret,
-      &kFlashCtrlInfoPageWaferAuthSecret, &kFlashCtrlInfoPageBootData0,
-      &kFlashCtrlInfoPageBootData1,       &kFlashCtrlInfoPageOwnerSlot0,
+  std::array<const flash_ctrl_info_page_t *, 8> no_owner_access = {
+      &kFlashCtrlInfoPageCreatorSecret,
+      &kFlashCtrlInfoPageOwnerSecret,
+      &kFlashCtrlInfoPageWaferAuthSecret,
+      &kFlashCtrlInfoPageAttestationKeySeeds,
+      &kFlashCtrlInfoPageBootData0,
+      &kFlashCtrlInfoPageBootData1,
+      &kFlashCtrlInfoPageOwnerSlot0,
       &kFlashCtrlInfoPageOwnerSlot1,
   };
   for (auto page : no_owner_access) {

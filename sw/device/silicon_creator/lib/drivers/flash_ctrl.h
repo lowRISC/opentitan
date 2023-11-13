@@ -165,7 +165,7 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 14,
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 16,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
