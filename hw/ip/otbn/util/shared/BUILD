@@ -106,12 +106,21 @@ py_library(
 )
 
 py_library(
+    name = "isr",
+    srcs = ["isr.py"],
+    deps = [
+        "//util/serialize:parse_helpers",
+    ],
+)
+
+py_library(
     name = "insn_yaml",
     srcs = ["insn_yaml.py"],
     deps = [
         ":encoding",
         ":encoding_scheme",
         ":information_flow",
+        ":isr",
         ":lsu_desc",
         ":operand",
         ":syntax",
@@ -151,6 +160,7 @@ py_library(
     deps = [
         ":encoding",
         ":encoding_scheme",
+        ":isr",
         "//util/serialize:parse_helpers",
     ],
 )

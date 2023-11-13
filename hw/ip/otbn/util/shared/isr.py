@@ -52,3 +52,19 @@ def read_isrs(path: str) -> Iterable[Isr]:
         isrs[isr.address] = isr
 
     return isrs.values()
+
+
+class IsrMap:
+    def __init__(self, isrs: Dict[str, Isr]):
+        self.name_to_isr = isrs
+        self.addr_to_isr = {}  # type: Dict[int, Isr]
+        for isr in isrs.values():
+            if isr.address in self.addr_to_isr:
+                raise ValueError(f'Duplicate ISR at address {isr.address:x}')
+            self.addr_to_isr[isr.address] = isr
+
+
+class IsrMaps:
+    def __init__(self, csrs: IsrMap, wsrs: IsrMap):
+        self.csrs = csrs
+        self.wsrs = wsrs
