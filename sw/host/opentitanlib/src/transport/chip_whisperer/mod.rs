@@ -21,7 +21,7 @@ use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::openocd::OpenOcdServer;
+use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::parse_int::ParseInt;
 use board::Board;
 
@@ -152,18 +152,6 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            // Open the console UART.  We do this first so we get the receiver
-            // started and the uart buffering data for us.
-            let uart = self.uart("0")?;
-            let reset_pin = self.gpio_pin(B::PIN_POR_N)?;
-            if fpga_program.skip() {
-                log::info!("Skip loading the __skip__ bitstream.");
-                return Ok(None);
-            }
-            if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
-                return Ok(None);
-            }
-
             // Program the FPGA bitstream.
             log::info!("Programming the FPGA bitstream.");
             let usb = self.device.borrow();
@@ -197,9 +185,11 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
         let mut inner = self.inner.borrow_mut();
         if inner.jtag.is_none() {
-            inner.jtag = Some(Rc::new(OpenOcdServer::new(
-                self.openocd_adapter_config.clone(),
-                None,
+            inner.jtag = Some(Rc::new(OpenOcdJtagChain::new(
+                match self.openocd_adapter_config {
+                    Some(ref path) => std::fs::read_to_string(path)?,
+                    None => String::new(),
+                },
                 opts,
             )?));
         }

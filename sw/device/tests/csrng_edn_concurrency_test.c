@@ -157,7 +157,7 @@ static void otbn_task(void *task_parameters) {
     }
     LOG_INFO("OTBN:START");
     for (size_t i = 0; i < task_iter_count_max[kTestTaskIdOtbn]; ++i) {
-      otbn_randomness_test_start(&otbn);
+      otbn_randomness_test_start(&otbn, /*iters=*/0);
       dif_otbn_status_t status;
       do {
         CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
@@ -222,8 +222,14 @@ static void entropy_config(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   LOG_INFO("Generating EDN params");
-  dif_edn_auto_params_t edn_params0 = edn_testutils_auto_params_build(false);
-  dif_edn_auto_params_t edn_params1 = edn_testutils_auto_params_build(false);
+  dif_edn_auto_params_t edn_params0 =
+      edn_testutils_auto_params_build(false,
+                                      /*res_itval=*/0,
+                                      /*glen_val=*/0);
+  dif_edn_auto_params_t edn_params1 =
+      edn_testutils_auto_params_build(false,
+                                      /*res_itval=*/0,
+                                      /*glen_val=*/0);
 
   task_iter_count_max[kTestTaskIdOtbn] =
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumOtbnIterationsMax);

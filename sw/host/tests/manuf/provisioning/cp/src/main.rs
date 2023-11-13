@@ -7,10 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 
-use cp_lib::{
-    reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningActions,
-    ManufCpProvisioningDataInput,
-};
+use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
@@ -26,9 +23,6 @@ struct Opts {
 
     #[command(flatten)]
     provisioning_data: ManufCpProvisioningDataInput,
-
-    #[command(flatten)]
-    provisioning_actions: ManufCpProvisioningActions,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -54,29 +48,24 @@ fn main() -> Result<()> {
         )?,
     };
 
-    if opts.provisioning_actions.all_steps || opts.provisioning_actions.unlock_raw {
-        unlock_raw(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-        )?;
-    }
+    unlock_raw(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )?;
     run_sram_cp_provision(
         &transport,
         &opts.init.jtag_params,
         opts.init.bootstrap.options.reset_delay,
         &opts.sram_program,
-        &opts.provisioning_actions,
         &provisioning_data,
         opts.timeout,
     )?;
-    if opts.provisioning_actions.all_steps || opts.provisioning_actions.lock_chip {
-        reset_and_lock(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-        )?;
-    }
+    reset_and_lock(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )?;
 
     Ok(())
 }

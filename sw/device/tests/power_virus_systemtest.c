@@ -771,7 +771,7 @@ static void configure_entropy_complex(void) {
               .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
                                             kDifCsrngEntropySrcToggleEnable,
                                             /*cmd_len=*/0,
-                                            /*generate_len=*/4096),
+                                            /*generate_len=*/4095),
               .seed_material = edn_empty_seed,
           },
       .reseed_interval = 0,

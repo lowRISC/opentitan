@@ -19,20 +19,23 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "flash_info_permissions",
+    srcs = ["flash_info_permissions.h"],
+    deps = ["//sw/device/lib/dif:flash_ctrl"],
+)
+
 opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
-    srcs = [
-        "consts.h",
-        "sram_cp_provision.c",
-    ],
+    srcs = ["sram_cp_provision.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -45,7 +48,6 @@ opentitan_binary(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_console",
@@ -62,16 +64,14 @@ opentitan_binary(
 opentitan_binary(
     name = "sram_cp_provision_functest",
     testonly = True,
-    srcs = [
-        "consts.h",
-        "sram_cp_provision_functest.c",
-    ],
+    srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":flash_info_permissions",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -85,7 +85,6 @@ opentitan_binary(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_console",
@@ -109,7 +108,6 @@ opentitan_test(
         tags = ["manuf"],
         test_cmd = """
             --elf={sram_cp_provision}
-            --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
@@ -130,7 +128,6 @@ opentitan_test(
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
-            --all-steps
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
     ),
@@ -149,6 +146,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -161,17 +159,45 @@ opentitan_binary(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
+opentitan_binary(
+    name = "ft_personalize_2",
+    testonly = True,
+    srcs = ["ft_personalize_2.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
 
@@ -195,17 +221,21 @@ bitstream_splice(
 
 opentitan_test(
     name = "ft_provision",
-    srcs = ["ft_personalize.c"],
+    srcs = ["ft_personalize_1.c"],
     cw310 = cw310_jtag_params(
         binaries = {
             ":sram_ft_individualize": "sram_ft_individualize",
+            ":ft_personalize_2": "ft_personalize_2",
         },
         bitstream = ":bitstream_post_cp_test_locked0",
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """
-            --bootstrap={firmware}
             --elf={sram_ft_individualize}
-            --all-steps
+            --bootstrap={firmware}
+            --secondary-bootstrap={ft_personalize_2}
+            --target-mission-mode-lc-state="prod"
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
@@ -217,20 +247,13 @@ opentitan_test(
         CONST.LCV.PROD,
     ),
     deps = [
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//sw/device/silicon_creator/manuf/lib:otp_fields",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )

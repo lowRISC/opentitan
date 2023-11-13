@@ -12,8 +12,7 @@
             - Program the I2C to be in host mode.
             - The SW test writes a known payload over the chip's I2C host interface, which is
               received by the testbench.
-            - The testbench then loops this data back to the chip's I2C host and exercises the
-              read interface.
+            - The SW reads back the payload from the testbench and exercises the read interface.
             - SW validates the reception of FMT watermark and trans complete interrupts.
             - SW validates that the data read matches the original data written.
             - Verify the virtual / true open drain capability.
@@ -26,6 +25,7 @@
       features: ["I2C.MODE.HOST", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
               "chip_sw_i2c_host_tx_rx_idx2"]
@@ -137,6 +137,7 @@
       stage: V3
       si_stage: SV2
       tests: []
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
     }
     {
       name: chip_sw_i2c_repeatedstart

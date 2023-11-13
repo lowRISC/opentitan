@@ -24,20 +24,20 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
 }
 
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
-                                    crypto_const_byte_buf_t input_message,
+                                    const hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
                                     const ecc_signature_t *signature) {
-  HARDENED_TRY(otcrypto_ecdsa_sign_async_start(private_key, input_message,
+  HARDENED_TRY(otcrypto_ecdsa_sign_async_start(private_key, message_digest,
                                                elliptic_curve));
   return otcrypto_ecdsa_sign_async_finalize(elliptic_curve, signature);
 }
 
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
-                                      crypto_const_byte_buf_t input_message,
+                                      const hash_digest_t *message_digest,
                                       const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_ecdsa_verify_async_start(public_key, input_message,
+  HARDENED_TRY(otcrypto_ecdsa_verify_async_start(public_key, message_digest,
                                                  signature, elliptic_curve));
   return otcrypto_ecdsa_verify_async_finalize(elliptic_curve, signature,
                                               verification_result);
@@ -378,22 +378,21 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * Start an ECDSA signature generation operation for curve P-256.
  *
  * @param private_key Private key to sign with.
- * @param input_message Message to sign.
+ * @param message_digest Message digest to sign.
  * @return OK or error.
  */
 static status_t internal_ecdsa_p256_sign_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_byte_buf_t input_message) {
-  // Get the SHA256 digest of the message.
-  hmac_sha_init();
-  hmac_update(input_message.data, input_message.len);
-  hmac_digest_t digest;
-  hmac_final(&digest);
+    const hash_digest_t *message_digest) {
+  // Check the digest length.
+  if (message_digest->len != kP256ScalarWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_TRY(sideload_key_seed(private_key));
-    return ecdsa_p256_sideload_sign_start(digest.digest);
+    return ecdsa_p256_sideload_sign_start(message_digest->data);
   } else if (private_key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -413,17 +412,15 @@ static status_t internal_ecdsa_p256_sign_start(
   memcpy(sk.share1, share1, sizeof(sk.share1));
 
   // Start the asynchronous signature-generation routine.
-  return ecdsa_p256_sign_start(digest.digest, &sk);
+  return ecdsa_p256_sign_start(message_digest->data, &sk);
 }
 
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_byte_buf_t input_message, const ecc_curve_t *elliptic_curve) {
-  if (private_key == NULL || elliptic_curve == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (input_message.data == NULL && input_message.len != 0) {
+    const hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve) {
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      elliptic_curve == NULL || message_digest == NULL ||
+      message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -443,7 +440,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      HARDENED_TRY(internal_ecdsa_p256_sign_start(private_key, input_message));
+      HARDENED_TRY(internal_ecdsa_p256_sign_start(private_key, message_digest));
       return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:
       OT_FALLTHROUGH_INTENDED;
@@ -525,15 +522,20 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  * Start an ECDSA signature verification operation for curve P-256.
  *
  * @param public_key Public key to check against.
- * @param input_message Message to check against.
+ * @param message_digest Message digest to check against.
  * @param signature Signature to verify.
  * @return OK or error.
  */
 static status_t internal_ecdsa_p256_verify_start(
-    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
+    const ecc_public_key_t *public_key, const hash_digest_t *message_digest,
     const ecc_signature_t *signature) {
   // Check the public key size.
   HARDENED_TRY(p256_public_key_length_check(public_key));
+
+  // Check the digest length.
+  if (message_digest->len != kP256ScalarWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Copy the public key into a P256-specific struct.
   p256_point_t pk;
@@ -553,24 +555,15 @@ static status_t internal_ecdsa_p256_verify_start(
   memcpy(sig.r, signature->r, sizeof(sig.r));
   memcpy(sig.s, signature->s, sizeof(sig.s));
 
-  // Get the SHA256 digest of the message.
-  hmac_sha_init();
-  hmac_update(input_message.data, input_message.len);
-  hmac_digest_t digest;
-  hmac_final(&digest);
-
   // Start the asynchronous signature-verification routine.
-  return ecdsa_p256_verify_start(&sig, digest.digest, &pk);
+  return ecdsa_p256_verify_start(&sig, message_digest->data, &pk);
 }
 
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
+    const ecc_public_key_t *public_key, const hash_digest_t *message_digest,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve) {
-  if (public_key == NULL || elliptic_curve == NULL || signature == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (input_message.data == NULL && input_message.len != 0) {
+  if (public_key == NULL || elliptic_curve == NULL || signature == NULL ||
+      message_digest == NULL || message_digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -593,7 +586,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type, kEccCurveTypeNistP256);
-      HARDENED_TRY(internal_ecdsa_p256_verify_start(public_key, input_message,
+      HARDENED_TRY(internal_ecdsa_p256_verify_start(public_key, message_digest,
                                                     signature));
       return OTCRYPTO_OK;
     case kEccCurveTypeNistP384:

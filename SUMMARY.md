@@ -26,7 +26,7 @@
 - [Introduction](./hw/README.md)
 
 - [Top Earlgrey](./hw/top_earlgrey/README.md)
-  - [Datasheet](./hw/top_earlgrey/doc/specification.md)
+  - [Datasheet](./hw/top_earlgrey/doc/datasheet.md)
   - [Design](./hw/top_earlgrey/doc/design/README.md)
   - [Design Verification](./hw/top_earlgrey/dv/README.md)
     - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)
@@ -60,6 +60,9 @@
     - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
     - [CW340 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw340.md)
 
+- [Top Darjeeling](./hw/top_darjeeling/README.md)
+  - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
+
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
     - [Theory of Operation](./hw/ip/rv_core_ibex/doc/theory_of_operation.md)
@@ -70,6 +73,7 @@
     - [Checklist](./hw/ip/rv_core_ibex/doc/checklist.md)
   - [OTBN](./hw/ip/otbn/README.md)
     - [Theory of Operation](./hw/ip/otbn/doc/theory_of_operation.md)
+    - [Introduction to OTBN](./hw/ip/otbn/doc/otbn_intro.md)
     - [Developing OTBN](./hw/ip/otbn/doc/developing_otbn.md)
     - [ISA Guide](./hw/ip/otbn/doc/isa.md)
     - [Design Verification](./hw/ip/otbn/dv/README.md)
@@ -550,6 +554,7 @@
   - [API Documentation](./doc/security/cryptolib/cryptolib_api.md)
 - [Implementation Guidelines](./doc/security/implementation_guidelines/README.md)
   - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
+  - [Reset vs. Non-Reset Flops](./doc/security/implementation_guidelines/reset_vs_non-reset_flops/README.md)
 
 - [Logical Security Model](./doc/security/logical_security_model/README.md)
 - [Security Model Specification](./doc/security/specs/README.md)

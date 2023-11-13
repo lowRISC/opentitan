@@ -114,7 +114,7 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_deep_sleep_por_reset"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_sleep_por_reset
@@ -140,7 +140,7 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_sleep_por_reset"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -181,17 +181,18 @@
         "PWRMGR.LOW_POWER.DISABLE_POWER"
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: [
-        "chip_sw_pwrmgr_deep_sleep_all_reset_reqs",
         "chip_sw_aon_timer_wdog_bite_reset",
+        "chip_sw_pwrmgr_deep_sleep_all_reset_reqs",
       ]
       bazel: [
-        "//sw/device/tests:aon_timer_wdog_bite_reset_test_cw310_test_rom",
+        "//sw/device/tests:aon_timer_wdog_bite_reset_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_deep_sleep_all_reset_reqs_test_fpga_cw310_test_rom",
       ]
     }
     {
@@ -212,13 +213,13 @@
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_wdog_reset
@@ -244,7 +245,7 @@
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_wdog_reset"]
-      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_aon_power_glitch_reset
@@ -364,13 +365,13 @@
         "PWRMGR.LOW_POWER.DISABLE_POWER"
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_sysrst_ctrl_reset
@@ -422,7 +423,7 @@
       ]
       features: ["PWRMGR.LOW_POWER.ENTRY"]
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
-      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_usb_clk_disabled_when_active
@@ -442,7 +443,7 @@
       ]
       features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
-      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_all_resets
@@ -451,6 +452,9 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst.
             - rstmgr sw reset is in rstmgr testplan.
             - ndm reset is in rv_dm testplan.
+	    This test is like the pwrmgr_*_sleep_all_reset_reqs tests, except the CPU will
+	    just spin_wait for a reset, so the pwrmgr will be in active state.
+	    SiVal: The CPU must be enabled to configure the test.
             '''
       stage: V3
       si_stage: SV3
@@ -464,13 +468,14 @@
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
         "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.POR_REQUEST",
       ]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_pwrmgr_all_reset_reqs"]
+      bazel: ["//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_escalation_reset
@@ -479,12 +484,12 @@
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and pwrmgr
             should not attempt to send out more alerts.
-            SiVal: Could generate escalation writing to the alert_test, and setting the
+            SiVal: This is not suitable for sival, and the various reset tests that work in sival
+            platforms cover escalation resets via writing to the alert_test, and setting the
             alert_handler to immediately trip escalation reset.
-            Any LC state and OTP image.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: None
       lc_states: [
         "TEST_UNLOCKED",
         "DEV",

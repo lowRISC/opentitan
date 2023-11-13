@@ -366,28 +366,25 @@
     }
     {
       name: "ALERT_HANDLER.PING_TIMER",
-      descr: '''
+      desc: '''
                 The alert handler periodically pings all alert receivers and
                 will raise an alert if the ping isn't responded to in good time
              '''
     }
     { name: "ALERT_HANDLER.ESCALATION.COUNT",
-      descr:
-            '''
+      desc: '''
                 An escalation can be triggered when the number of alerts seen in
                 a particular class exceeds a software programmable threshold
             '''
     }
     { name: "ALERT_HANDLER.ESCALATION.TIMEOUT",
-      descr:
-            '''
+      desc: '''
                 An escalation can be triggered when an interrupt from a class
                 isn't acknowledged after a software programmable timeout
             '''
     }
     { name: "ALERT_HANDLER.ESCALATION.PHASES",
-      descr:
-            '''
+      desc: '''
                Each alert class can trigger the same 4 escalation phases. A
                programmable timer specifies the delay between each of the
                escalation phases. The actions taken on each of the escalation
@@ -396,8 +393,7 @@
     }
     {
       name: "ALERT_HANDLER.CRASH_DUMP",
-      descr:
-            '''
+      desc: '''
                A crashdump with the state of CSRs and alert handler state bits
                is made available. When a programmable latching trigger condition
                is met the crashdump is held constant at its value on that

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #ifdef __linux__
+#include <linux/limits.h>
 #include <pty.h>
 #elif __APPLE__
 #include <util.h>
@@ -15,12 +16,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <svdpi.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include "spidpi.h"
+#ifdef VERILATOR
 #include "verilator_sim_ctrl.h"
+#endif
+
+// This holds the necessary SPI state.
+#define MAX_TRANSACTION 4
+struct spidpi_ctx {
+  int loglevel;
+  char ptyname[64];
+  int host;
+  int device;
+  FILE *mon_file;
+  char mon_pathname[PATH_MAX];
+  void *mon;
+  int tick;
+  int cpol;
+  int cpha;
+  int msbfirst;  // shift direction
+  int nout;
+  int bout;
+  int nin;
+  int bin;
+  int din;
+  int nmax;
+  char driving;
+  int state;
+  char buf[MAX_TRANSACTION];
+};
+
+// SPI Host States
+#define SP_IDLE 0
+#define SP_CSFALL 1
+#define SP_DMOVE 2
+#define SP_LASTBIT 3
+#define SP_CSRISE 4
+#define SP_FINISH 99
 
 // Enable this define to stop tracing at cycle 4
 // and resume at the first SPI packet
@@ -102,10 +139,12 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
   // Will tick at the host clock
   ctx->tick++;
 
+#ifdef VERILATOR
 #ifdef CONTROL_TRACE
   if (ctx->tick == 4) {
     VerilatorSimCtrl::GetInstance().TraceOff();
   }
+#endif
 #endif
 
   monitor_spi(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick, ctx->driving,
@@ -126,8 +165,10 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->bin = ctx->msbfirst ? 0x80 : 0x01;
         ctx->din = 0;
         ctx->state = SP_CSFALL;
+#ifdef VERILATOR
 #ifdef CONTROL_TRACE
         VerilatorSimCtrl::GetInstance().TraceOn();
+#endif
 #endif
       }
     }
@@ -196,7 +237,9 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->state = SP_IDLE;
         break;
       case SP_FINISH:
+#ifdef VERILATOR
         VerilatorSimCtrl::GetInstance().RequestStop(true);
+#endif
         break;
       default:
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);

@@ -40,6 +40,8 @@ enum RootCommandHierarchy {
     I2c(command::i2c::I2cCommand),
     #[command(subcommand)]
     Image(command::image::Image),
+    #[command(subcommand)]
+    LifeCycle(command::lc::LcCommand),
     NoOp(command::NoOp),
     #[command(subcommand)]
     Otp(command::otp::Otp),

@@ -166,13 +166,9 @@ cc_library(
     srcs = ["sigverify_keys.c"],
     hdrs = ["sigverify_keys.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
     ],
@@ -265,6 +261,23 @@ opentitan_binary(
 )
 
 opentitan_binary(
+    name = "rom_ext_sival_prod_signed_slot_a",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest_standard",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    deps = [
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_binary(
     name = "rom_ext_slot_b",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
@@ -274,6 +287,23 @@ opentitan_binary(
     linker_script = ":ld_slot_b",
     manifest = ":manifest_standard",
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    deps = [
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_binary(
+    name = "rom_ext_sival_prod_signed_slot_b",
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    linker_script = ":ld_slot_b",
+    manifest = ":manifest_standard",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",

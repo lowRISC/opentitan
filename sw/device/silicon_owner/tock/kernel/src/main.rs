@@ -20,6 +20,7 @@ use capsules_aes_gcm::aes_gcm;
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
 use earlgrey::chip::EarlGreyDefaultPeripherals;
+use earlgrey::chip_config::EarlGreyConfig;
 use kernel::capabilities;
 use kernel::component::Component;
 use kernel::hil;
@@ -53,7 +54,7 @@ static mut PROCESSES: [Option<&'static dyn kernel::process::Process>; 4] = [None
 
 // Test access to the peripherals
 #[cfg(test)]
-static mut PERIPHERALS: Option<&'static EarlGreyDefaultPeripherals> = None;
+static mut PERIPHERALS: Option<&'static EarlGreyDefaultPeripherals<ChipConfig>> = None;
 // Test access to board
 #[cfg(test)]
 static mut BOARD: Option<&'static kernel::Kernel> = None;
@@ -64,10 +65,10 @@ static mut PLATFORM: Option<&'static EarlGrey> = None;
 #[cfg(test)]
 static mut MAIN_CAP: Option<&dyn kernel::capabilities::MainLoopCapability> = None;
 // Test access to alarm
-static mut ALARM: Option<&'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static>>> = None;
+static mut ALARM: Option<&'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>> = None;
 // Test access to TicKV
 static mut TICKV: Option<
-    &capsules_extra::tickv::TicKVStore<
+    &capsules_extra::tickv::TicKVSystem<
         'static,
         capsules_core::virtualizers::virtual_flash::FlashUser<
             'static,
@@ -93,7 +94,7 @@ static mut RSA_HARDWARE: Option<&lowrisc::rsa::OtbnRsa<'static>> = None;
 #[cfg(test)]
 static mut SHA256SOFT: Option<&capsules_extra::sha256::Sha256Software<'static>> = None;
 
-static mut CHIP: Option<&'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals>> = None;
+static mut CHIP: Option<&'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>> = None;
 static mut PROCESS_PRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
 
 // How should the kernel respond when a process faults.
@@ -103,6 +104,15 @@ const FAULT_RESPONSE: kernel::process::PanicFaultPolicy = kernel::process::Panic
 #[no_mangle]
 #[link_section = ".stack_buffer"]
 pub static mut STACK_MEMORY: [u8; 0x1400] = [0; 0x1400];
+
+enum ChipConfig {}
+impl EarlGreyConfig for ChipConfig {
+    const NAME: &'static str = "fpga_cw310";
+    const CPU_FREQ: u32 = 24_000_000;
+    const PERIPHERAL_FREQ: u32 = 6_000_000;
+    const AON_TIMER_FREQ: u32 = 250_000;
+    const UART_BAUDRATE: u32 = 115200;
+}
 
 /// A structure representing this platform that holds references to all
 /// capsules for this platform. We've included an alarm and console.
@@ -116,7 +126,7 @@ struct EarlGrey {
     console: &'static capsules_core::console::Console<'static>,
     alarm: &'static capsules_core::alarm::AlarmDriver<
         'static,
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static>>,
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
     >,
     hmac: &'static capsules_extra::hmac::HmacDriver<'static, lowrisc::hmac::Hmac<'static>, 32>,
     lldb: &'static capsules_core::low_level_debug::LowLevelDebug<
@@ -142,21 +152,30 @@ struct EarlGrey {
     >,
     kv_driver: &'static capsules_extra::kv_driver::KVStoreDriver<
         'static,
-        capsules_extra::tickv::TicKVStore<
+        capsules_extra::virtual_kv::VirtualKVPermissions<
             'static,
-            capsules_core::virtualizers::virtual_flash::FlashUser<
+            capsules_extra::kv_store_permissions::KVStorePermissions<
                 'static,
-                lowrisc::flash_ctrl::FlashCtrl<'static>,
+                capsules_extra::tickv_kv_store::TicKVKVStore<
+                    'static,
+                    capsules_extra::tickv::TicKVSystem<
+                        'static,
+                        capsules_core::virtualizers::virtual_flash::FlashUser<
+                            'static,
+                            lowrisc::flash_ctrl::FlashCtrl<'static>,
+                        >,
+                        capsules_extra::sip_hash::SipHasher24<'static>,
+                        2048,
+                    >,
+                    [u8; 8],
+                >,
             >,
-            capsules_extra::sip_hash::SipHasher24<'static>,
-            2048,
         >,
-        [u8; 8],
     >,
     syscall_filter: &'static TbfHeaderFilterDefaultAllow,
     scheduler: &'static PrioritySched,
     scheduler_timer:
-        &'static VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static>>>,
+        &'static VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>,
     watchdog: &'static lowrisc::aon_timer::AonTimer,
 }
 
@@ -183,7 +202,7 @@ impl SyscallDriverLookup for EarlGrey {
     }
 }
 
-impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static>>>
+impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig>, ChipConfig>>
     for EarlGrey
 {
     type SyscallDriverLookup = Self;
@@ -192,7 +211,7 @@ impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripheral
     type CredentialsCheckingPolicy = ();
     type Scheduler = PrioritySched;
     type SchedulerTimer =
-        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static>>>;
+        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>;
     type WatchDog = lowrisc::aon_timer::AonTimer;
     type ContextSwitchCallback = ();
 
@@ -225,8 +244,8 @@ impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripheral
 unsafe fn setup() -> (
     &'static kernel::Kernel,
     &'static EarlGrey,
-    &'static earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static>>,
-    &'static EarlGreyDefaultPeripherals<'static>,
+    &'static earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig>, ChipConfig>,
+    &'static EarlGreyDefaultPeripherals<'static, ChipConfig>,
 ) {
     // Ibex-specific handler
     earlgrey::chip::configure_trap_handler();
@@ -238,7 +257,7 @@ unsafe fn setup() -> (
     let board_kernel = static_init!(kernel::Kernel, kernel::Kernel::new(&PROCESSES));
 
     let peripherals = static_init!(
-        EarlGreyDefaultPeripherals,
+        EarlGreyDefaultPeripherals<ChipConfig>,
         EarlGreyDefaultPeripherals::new()
     );
     peripherals.init();
@@ -253,7 +272,7 @@ unsafe fn setup() -> (
     // Create a shared UART channel for the console and for kernel debug.
     let uart_mux = components::console::UartMuxComponent::new(
         &peripherals.uart0,
-        earlgrey::uart::UART0_BAUDRATE,
+        ChipConfig::UART_BAUDRATE,
     )
     .finalize(components::uart_mux_component_static!());
 
@@ -288,13 +307,13 @@ unsafe fn setup() -> (
     )
     .finalize(components::gpio_component_static!(earlgrey::gpio::GpioPin));
 
-    let hardware_alarm = static_init!(earlgrey::timer::RvTimer, earlgrey::timer::RvTimer::new());
+    let hardware_alarm = static_init!(earlgrey::timer::RvTimer<ChipConfig>, earlgrey::timer::RvTimer::new());
     hardware_alarm.setup();
 
     // Create a shared virtualization mux layer on top of a single hardware
     // alarm.
     let mux_alarm = static_init!(
-        MuxAlarm<'static, earlgrey::timer::RvTimer>,
+        MuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
         MuxAlarm::new(hardware_alarm)
     );
     hil::time::Alarm::set_alarm_client(hardware_alarm, mux_alarm);
@@ -303,13 +322,13 @@ unsafe fn setup() -> (
 
     // Alarm
     let virtual_alarm_user = static_init!(
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>,
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
         VirtualMuxAlarm::new(mux_alarm)
     );
     virtual_alarm_user.setup();
 
     let scheduler_timer_virtual_alarm = static_init!(
-        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>,
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
         VirtualMuxAlarm::new(mux_alarm)
     );
     scheduler_timer_virtual_alarm.setup();
@@ -317,7 +336,7 @@ unsafe fn setup() -> (
     let alarm = static_init!(
         capsules_core::alarm::AlarmDriver<
             'static,
-            VirtualMuxAlarm<'static, earlgrey::timer::RvTimer>,
+            VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<ChipConfig>>,
         >,
         capsules_core::alarm::AlarmDriver::new(
             virtual_alarm_user,
@@ -327,13 +346,13 @@ unsafe fn setup() -> (
     hil::time::Alarm::set_alarm_client(virtual_alarm_user, alarm);
 
     let scheduler_timer = static_init!(
-        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static>>>,
+        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>,
         VirtualSchedulerTimer::new(scheduler_timer_virtual_alarm)
     );
 
     let chip = static_init!(
         earlgrey::chip::EarlGrey<
-            EarlGreyDefaultPeripherals,
+            EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig
         >,
         earlgrey::chip::EarlGrey::new(peripherals, hardware_alarm)
     );
@@ -493,9 +512,9 @@ unsafe fn setup() -> (
     sip_hash.set_client(tickv);
     TICKV = Some(tickv);
 
-    let mux_kv = components::kv_system::KVStoreMuxComponent::new(tickv).finalize(
-        components::kv_store_mux_component_static!(
-            capsules_extra::tickv::TicKVStore<
+    let kv_store = components::kv::TicKVKVStoreComponent::new(tickv).finalize(
+        components::tickv_kv_store_component_static!(
+            capsules_extra::tickv::TicKVSystem<
                 capsules_core::virtualizers::virtual_flash::FlashUser<
                     lowrisc::flash_ctrl::FlashCtrl,
                 >,
@@ -506,31 +525,75 @@ unsafe fn setup() -> (
         ),
     );
 
-    let kv_store = components::kv_system::KVStoreComponent::new(mux_kv).finalize(
-        components::kv_store_component_static!(
-            capsules_extra::tickv::TicKVStore<
-                capsules_core::virtualizers::virtual_flash::FlashUser<
-                    lowrisc::flash_ctrl::FlashCtrl,
+    let kv_store_permissions = components::kv::KVStorePermissionsComponent::new(kv_store).finalize(
+        components::kv_store_permissions_component_static!(
+            capsules_extra::tickv_kv_store::TicKVKVStore<
+                capsules_extra::tickv::TicKVSystem<
+                    capsules_core::virtualizers::virtual_flash::FlashUser<
+                        lowrisc::flash_ctrl::FlashCtrl,
+                    >,
+                    capsules_extra::sip_hash::SipHasher24<'static>,
+                    2048,
                 >,
-                capsules_extra::sip_hash::SipHasher24<'static>,
-                2048,
-            >,
-            capsules_extra::tickv::TicKVKeyType,
+                capsules_extra::tickv::TicKVKeyType,
+            >
         ),
     );
 
-    let kv_driver = components::kv_system::KVDriverComponent::new(
-        kv_store,
+    let mux_kv = components::kv::KVPermissionsMuxComponent::new(kv_store_permissions).finalize(
+        components::kv_permissions_mux_component_static!(
+            capsules_extra::kv_store_permissions::KVStorePermissions<
+                capsules_extra::tickv_kv_store::TicKVKVStore<
+                    capsules_extra::tickv::TicKVSystem<
+                        capsules_core::virtualizers::virtual_flash::FlashUser<
+                            lowrisc::flash_ctrl::FlashCtrl,
+                        >,
+                        capsules_extra::sip_hash::SipHasher24<'static>,
+                        2048,
+                    >,
+                    capsules_extra::tickv::TicKVKeyType,
+                >,
+            >
+        ),
+    );
+
+    let virtual_kv_driver = components::kv::VirtualKVPermissionsComponent::new(mux_kv).finalize(
+        components::virtual_kv_permissions_component_static!(
+            capsules_extra::kv_store_permissions::KVStorePermissions<
+                capsules_extra::tickv_kv_store::TicKVKVStore<
+                    capsules_extra::tickv::TicKVSystem<
+                        capsules_core::virtualizers::virtual_flash::FlashUser<
+                            lowrisc::flash_ctrl::FlashCtrl,
+                        >,
+                        capsules_extra::sip_hash::SipHasher24<'static>,
+                        2048,
+                    >,
+                    capsules_extra::tickv::TicKVKeyType,
+                >,
+            >
+        ),
+    );
+
+    let kv_driver = components::kv::KVDriverComponent::new(
+        virtual_kv_driver,
         board_kernel,
         capsules_extra::kv_driver::DRIVER_NUM,
     )
     .finalize(components::kv_driver_component_static!(
-        capsules_extra::tickv::TicKVStore<
-            capsules_core::virtualizers::virtual_flash::FlashUser<lowrisc::flash_ctrl::FlashCtrl>,
-            capsules_extra::sip_hash::SipHasher24<'static>,
-            2048,
-        >,
-        capsules_extra::tickv::TicKVKeyType,
+        capsules_extra::virtual_kv::VirtualKVPermissions<
+            capsules_extra::kv_store_permissions::KVStorePermissions<
+                capsules_extra::tickv_kv_store::TicKVKVStore<
+                    capsules_extra::tickv::TicKVSystem<
+                        capsules_core::virtualizers::virtual_flash::FlashUser<
+                            lowrisc::flash_ctrl::FlashCtrl,
+                        >,
+                        capsules_extra::sip_hash::SipHasher24<'static>,
+                        2048,
+                    >,
+                    capsules_extra::tickv::TicKVKeyType,
+                >,
+            >,
+        >
     ));
 
     let mux_otbn = crate::otbn::AccelMuxComponent::new(&peripherals.otbn)

@@ -310,6 +310,13 @@
             '''
     }
     {
+      name: "USBDEV.BUFFER.MEMORY"
+      desc: '''usbdev presents a conventional 512-entry 32-bit RAM on the memory bus
+            that supports read/write operations for receiving and sending packets over
+            the USB. Writing and reading of partial words is not supported.
+            '''
+    }
+    {
       name: "USBDEV.TRANSFER.CONTROL_RX"
       desc: "Reception of packets in Control Transfers from the host controller."
     }
@@ -362,6 +369,13 @@
     {
       name: "USBDEV.POWER.WAKE_BUS_RESET",
       desc: "Wake from Sleep in response to Bus Reset from host."
+    }
+    {
+      name: "USBDEV.POWER.TOGGLE_RESTORE",
+      desc: '''Save and restore Data Toggles for all IN and OUT endpoints.
+            Resuming from Deep Sleep requires the ability to restore the Data Toggles
+            to an arbitrary state. (Requires prod-only RTL changes.)
+            '''
     }
   ],
   countermeasures: [

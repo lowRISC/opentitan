@@ -5,12 +5,12 @@
 pub mod bigint;
 pub mod bitfield;
 pub mod file;
-pub mod nix;
 pub mod num_de;
 pub mod openocd;
 pub mod parse_int;
 pub mod present;
 pub mod printer;
+pub mod raw_tty;
 pub mod rom_detect;
 pub mod status;
 pub mod unknown;

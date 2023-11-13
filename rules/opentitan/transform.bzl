@@ -64,22 +64,19 @@ def obj_disassemble(ctx, **kwargs):
 
     output = ctx.actions.declare_file(output)
     src = get_override(ctx, "attr.src", kwargs)
-    cleanup_script = get_override(ctx, "file._cleanup_script", kwargs)
 
     ctx.actions.run_shell(
-        tools = [cleanup_script],
         outputs = [output],
         inputs = [src] + cc_toolchain.all_files.to_list(),
         arguments = [
             cc_toolchain.objdump_executable,
             src.path,
-            cleanup_script.path,
             output.path,
         ],
         execution_requirements = {
             "no-sandbox": "",
         },
-        command = "$1 -wx --disassemble --line-numbers --disassemble-zeroes --source --visualize-jumps $2 | $3 > $4",
+        command = "$1 -wx --disassemble --line-numbers --disassemble-zeroes --source --visualize-jumps $2 | expand > $3",
     )
     return output
 

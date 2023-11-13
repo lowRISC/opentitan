@@ -27,16 +27,10 @@
     },
     {
       "name": "TAP_STRAP0",
-      "mode": "PushPull",
-      "level": false,
-      "pull_mode": "None",
       "alias_of": "IOC8"
     },
     {
       "name": "TAP_STRAP1",
-      "mode": "PushPull",
-      "level": false,
-      "pull_mode": "None",
       "alias_of": "IOC5"
     }
   ],
@@ -80,10 +74,12 @@
       "pins": [
         {
           "name": "TAP_STRAP0",
+          "mode": "PushPull",
           "level": true
         },
         {
           "name": "TAP_STRAP1",
+          "mode": "PushPull",
           "level": false
         }
       ]
@@ -93,10 +89,12 @@
       "pins": [
         {
           "name": "TAP_STRAP0",
+          "mode": "PushPull",
           "level": false
         },
         {
           "name": "TAP_STRAP1",
+          "mode": "PushPull",
           "level": true
         }
       ]

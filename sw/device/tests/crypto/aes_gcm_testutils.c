@@ -5,9 +5,11 @@
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -29,12 +31,6 @@ static aead_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
   switch (tag_len_bytes) {
     case (128 / 8):
       return kAeadGcmTagLen128;
-    case (120 / 8):
-      return kAeadGcmTagLen120;
-    case (112 / 8):
-      return kAeadGcmTagLen112;
-    case (104 / 8):
-      return kAeadGcmTagLen104;
     case (96 / 8):
       return kAeadGcmTagLen96;
     case (64 / 8):
@@ -50,20 +46,20 @@ static aead_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
   return 0;
 }
 
-uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
+status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test,
+                                   uint32_t *cycles) {
   // Construct the blinded key configuration.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
       .key_mode = kKeyModeAesGcm,
-      .key_length = test.key_len * sizeof(uint32_t),
+      .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
   };
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
-  CHECK_STATUS_OK(
-      keyblob_from_key_and_mask(test.key, kKeyMask, config, keyblob));
+  TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.
   crypto_blinded_key_t key = {
@@ -76,68 +72,72 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t iv_num_words =
+      (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
-  memcpy(iv_data, test.iv, test.iv_len);
+  memcpy(iv_data, test->iv, test->iv_len);
   crypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };
   crypto_const_byte_buf_t plaintext = {
-      .data = test.plaintext,
-      .len = test.plaintext_len,
+      .data = test->plaintext,
+      .len = test->plaintext_len,
   };
   crypto_const_byte_buf_t aad = {
-      .data = test.aad,
-      .len = test.aad_len,
+      .data = test->aad,
+      .len = test->aad_len,
   };
 
-  uint8_t actual_tag_data[test.tag_len];
-  crypto_byte_buf_t actual_tag = {
+  size_t tag_num_words =
+      (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t actual_tag_data[tag_num_words];
+  crypto_word32_buf_t actual_tag = {
       .data = actual_tag_data,
-      .len = sizeof(actual_tag_data),
+      .len = tag_num_words,
   };
 
-  uint8_t actual_ciphertext_data[test.plaintext_len];
+  uint8_t actual_ciphertext_data[test->plaintext_len];
   crypto_byte_buf_t actual_ciphertext = {
       .data = actual_ciphertext_data,
       .len = sizeof(actual_ciphertext_data),
   };
 
-  aead_gcm_tag_len_t tag_len = get_tag_length(test.tag_len);
+  aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
 
   // Call encrypt() with a cycle count timing profile.
   uint64_t t_start = profile_start();
   crypto_status_t err = otcrypto_aes_encrypt_gcm(
       &key, plaintext, iv, aad, tag_len, &actual_ciphertext, &actual_tag);
-  uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_encrypt");
+  *cycles = profile_end(t_start);
 
   // Check for errors and that the tag and plaintext match expected values.
-  CHECK_STATUS_OK(err);
-  CHECK_ARRAYS_EQ(actual_tag_data, test.tag, test.tag_len);
-  if (test.plaintext_len > 0) {
-    int cmp =
-        memcmp(actual_ciphertext_data, test.ciphertext, test.plaintext_len);
-    CHECK(cmp == 0, "AES-GCM encryption output does not match ciphertext");
+  TRY(err);
+  if (test->plaintext_len > 0) {
+    TRY_CHECK_ARRAYS_EQ(actual_ciphertext_data, test->ciphertext,
+                        test->plaintext_len);
   }
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_tag_data, test->tag,
+                      test->tag_len);
 
-  return cycles;
+  return OK_STATUS();
 }
 
-uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
+status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
+                                   hardened_bool_t *tag_valid,
+                                   uint32_t *cycles) {
   // Construct the blinded key configuration.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
       .key_mode = kKeyModeAesGcm,
-      .key_length = test.key_len * sizeof(uint32_t),
+      .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
   };
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
-  CHECK_STATUS_OK(
-      keyblob_from_key_and_mask(test.key, kKeyMask, config, keyblob));
+  TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.
   crypto_blinded_key_t key = {
@@ -150,55 +150,53 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t iv_num_words =
+      (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
-  memcpy(iv_data, test.iv, test.iv_len);
+  memcpy(iv_data, test->iv, test->iv_len);
   crypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };
   crypto_const_byte_buf_t ciphertext = {
-      .data = test.ciphertext,
-      .len = test.plaintext_len,
+      .data = test->ciphertext,
+      .len = test->plaintext_len,
   };
   crypto_const_byte_buf_t aad = {
-      .data = test.aad,
-      .len = test.aad_len,
+      .data = test->aad,
+      .len = test->aad_len,
   };
-  crypto_const_byte_buf_t tag = {
-      .data = test.tag,
-      .len = test.tag_len,
+  size_t tag_num_words =
+      (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t tag_data[tag_num_words];
+  memcpy(tag_data, test->tag, test->tag_len);
+  crypto_const_word32_buf_t tag = {
+      .data = tag_data,
+      .len = tag_num_words,
   };
 
-  uint8_t actual_plaintext_data[test.plaintext_len];
+  uint8_t actual_plaintext_data[test->plaintext_len];
   crypto_byte_buf_t actual_plaintext = {
       .data = actual_plaintext_data,
       .len = sizeof(actual_plaintext_data),
   };
 
-  aead_gcm_tag_len_t tag_len = get_tag_length(test.tag_len);
-  hardened_bool_t success;
+  aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
 
   // Call decrypt() with a cycle count timing profile.
+  icache_invalidate();
   uint64_t t_start = profile_start();
   crypto_status_t err = otcrypto_aes_decrypt_gcm(
-      &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, &success);
-  uint32_t cycles = profile_end_and_print(t_start, "aes_gcm_decrypt");
+      &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, tag_valid);
+  *cycles = profile_end(t_start);
+  icache_invalidate();
 
   // Check the results.
-  CHECK_STATUS_OK(err);
-  if (tag_valid) {
-    CHECK(success == kHardenedBoolTrue,
-          "AES-GCM decryption failed on valid input");
-    if (test.plaintext_len > 0) {
-      int cmp =
-          memcmp(actual_plaintext_data, test.plaintext, test.plaintext_len);
-      CHECK(cmp == 0, "AES-GCM decryption output does not match plaintext");
-    }
-  } else {
-    CHECK(success == kHardenedBoolFalse,
-          "AES-GCM decryption passed an invalid tag");
+  TRY(err);
+  if (test->plaintext_len > 0 && *tag_valid == kHardenedBoolTrue) {
+    TRY_CHECK_ARRAYS_EQ(actual_plaintext_data, test->plaintext,
+                        test->plaintext_len);
   }
 
-  return cycles;
+  return OK_STATUS();
 }

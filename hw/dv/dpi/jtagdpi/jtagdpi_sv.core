@@ -1,0 +1,16 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv_dpi_sv:jtagdpi:0.1"
+description: "JTAG DPI SV code"
+
+filesets:
+  files_rtl:
+    files:
+      - jtagdpi.sv: { file_type: systemVerilogSource }
+
+targets:
+  default:
+    filesets:
+      - files_rtl

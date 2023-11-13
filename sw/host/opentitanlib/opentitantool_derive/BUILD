@@ -10,7 +10,6 @@ rust_proc_macro(
     name = "opentitantool_derive",
     srcs = ["src/lib.rs"],
     deps = [
-        "@crate_index//:proc-macro-error",
         "@crate_index//:proc-macro2",
         "@crate_index//:quote",
         "@crate_index//:syn",

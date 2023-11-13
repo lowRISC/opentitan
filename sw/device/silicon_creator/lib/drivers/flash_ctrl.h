@@ -70,16 +70,16 @@ typedef enum flash_ctrl_partition {
   /**
    * Bank 0 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageFactoryId,         	0, 0) \
-  X(kFlashCtrlInfoPageCreatorSecret,     	0, 1) \
-  X(kFlashCtrlInfoPageOwnerSecret,       	0, 2) \
-  X(kFlashCtrlInfoPageWaferAuthSecret,   	0, 3) \
-  X(kFlashCtrlInfoPageBank0Type0Page4,   	0, 4) \
-  X(kFlashCtrlInfoPageBank0Type0Page5,   	0, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved0,    	0, 6) \
-  X(kFlashCtrlInfoPageOwnerReserved1,    	0, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved2,    	0, 8) \
-  X(kFlashCtrlInfoPageOwnerReserved3,    	0, 9) \
+  X(kFlashCtrlInfoPageFactoryId,           0, 0) \
+  X(kFlashCtrlInfoPageCreatorSecret,       0, 1) \
+  X(kFlashCtrlInfoPageOwnerSecret,         0, 2) \
+  X(kFlashCtrlInfoPageWaferAuthSecret,     0, 3) \
+  X(kFlashCtrlInfoPageAttestationKeySeeds, 0, 4) \
+  X(kFlashCtrlInfoPageBank0Type0Page5,     0, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved0,      0, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved1,      0, 7) \
+  X(kFlashCtrlInfoPageOwnerReserved2,      0, 8) \
+  X(kFlashCtrlInfoPageOwnerReserved3,      0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \

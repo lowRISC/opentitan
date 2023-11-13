@@ -219,7 +219,7 @@ status_t execute_test(void) {
     LOG_INFO("Entropy src test %d/%d", i, loop);
     alert_handler_test(&pwrmgr);
     aes_test(&aes);
-    otbn_randomness_test_start(&otbn);
+    otbn_randomness_test_start(&otbn, /*iters=*/0);
     keymgr_test(&kmgr);
     otp_ctrl_test(&otp);
     kmac_test(&kmac);

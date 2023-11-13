@@ -24,6 +24,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/impl/aes_gcm",
+        "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -35,6 +36,7 @@ cc_library(
     deps = [
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -101,6 +103,7 @@ cc_library(
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/include:datatypes",
     ],

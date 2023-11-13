@@ -54,6 +54,8 @@
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
+                // Enable C compilation of chip level dpi
+                "{proj_root}/hw/dv/dpi/dpi_sim_cfg.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -222,7 +224,8 @@
   en_build_modes: ["{tool}_otbn_memutil_build_opts",
                    "{tool}_otbn_tracer_build_opts",
                    "{tool}_memutil_dpi_scrambled_build_opts",
-                   "{tool}_aes_model_build_opts"]
+                   "{tool}_aes_model_build_opts",
+                   "{tool}_dpi_build_opts"]
 
   // Setup for generating OTP images.
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
@@ -997,9 +1000,17 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_pwrmgr_all_reset_reqs
+      uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
+      sw_images: ["//sw/device/tests:pwrmgr_all_reset_reqs_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000"]
+      run_timeout_mins: 120
+    }
+    {
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
       uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_reset_reqs_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
       run_timeout_mins: 120
@@ -1007,7 +1018,7 @@
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
       uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_reset_reqs_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:pwrmgr_deep_sleep_all_reset_reqs_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
       run_timeout_mins: 120
@@ -1015,20 +1026,20 @@
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
       uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_reset_reqs_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:pwrmgr_normal_sleep_all_reset_reqs_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_timeout_mins: 120
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_por_reset
       uvm_test_seq: chip_sw_sleep_por_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_por_reset_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:pwrmgr_deep_sleep_por_reset_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_por_reset
       uvm_test_seq: chip_sw_sleep_por_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_por_reset_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1275,7 +1286,7 @@
      {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
       uvm_test_seq: chip_sw_all_escalation_resets_vseq
-      sw_images: ["//sw/device/tests:alert_handler_lpg_sleep_mode_alerts_test:1:new_rules"]
+      sw_images: ["//sw/device/tests/sim_dv:alert_handler_lpg_sleep_mode_alerts_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb=0",
                  "+sw_test_timeout_ns=3000_000_000",
@@ -1341,9 +1352,27 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
     {
+      name: chip_sw_edn_auto_mode
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_auto_mode:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
+      run_opts: ["+sw_test_timeout_ns=300_000_000_000", "+rng_srate_value=5"]
+      run_timeout_mins: 300
+    }
+    {
+      name: chip_sw_edn_boot_mode
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_boot_mode:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
+      run_opts: ["+sw_test_timeout_ns=300_000_000_000", "+rng_srate_value=5"]
+      run_timeout_mins: 300
+    }
+    {
       name: chip_sw_edn_sw_mode
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:edn_sw_mode:1"]
+      sw_images: ["//sw/device/tests:edn_sw_mode:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
@@ -1709,6 +1738,12 @@
       sw_images: ["sw/device/tests:clkmgr_reset_frequency_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+calibrate_usb_clk=1"]
+    }
+    {
+      name: chip_sw_clkmgr_jitter_frequency
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:clkmgr_jitter_frequency_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_clkmgr_jitter

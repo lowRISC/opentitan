@@ -192,6 +192,7 @@ cc_library(
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

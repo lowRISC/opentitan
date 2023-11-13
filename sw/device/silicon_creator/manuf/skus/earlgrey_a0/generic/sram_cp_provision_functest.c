@@ -11,7 +11,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/json/provisioning_command.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -23,7 +22,7 @@
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
-#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/consts.h"
+#include "sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic/flash_info_permissions.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.

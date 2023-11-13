@@ -2,7 +2,7 @@
 
 ## Specification
 
-The specification of Earlgrey is located [here](./doc/specification.md).
+The datasheet and specification of Earlgrey is located [here](./doc/datasheet.md).
 
 ## Tool: TopGen
 

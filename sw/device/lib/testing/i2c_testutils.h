@@ -108,7 +108,7 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count);
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
  * @param[out] addr Address that received the I2C write.
- * @param[out] bytes Array of bytes to store the result of the write.
+ * @param[out] bytes Array of bytes to stores the result of the write.
  * @param[out] cont_byte Received continuation byte. Can be null if test expects
  *                       STOP signal.
  * @return kOk(dir) Where dir indicates that repeated START has signaled that
@@ -121,16 +121,39 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
                                           uint8_t *bytes, uint8_t *cont_byte);
 
 /**
- * Initialize the pinmux.
+ * Define the available platforms which i2c is mapped
+ */
+typedef enum i2c_pinmux_platform_id {
+  I2cPinmuxPlatformIdHyper310 = 0,
+  I2cPinmuxPlatformIdDvsim,
+  I2cPinmuxPlatformIdCw310Pmod,
+  I2cPinmuxPlatformIdCount,
+} i2c_pinmux_platform_id_t;
+
+/**
+ * Connect the i2c pins to mio pins via pinmux based on the platform the test is
+ * running.
  *
  * @param pimmux A pinmux handler.
- * @param kI2cIdx The i2c identifier.
+ * @param kI2cIdx The i2c instance identifier.
+ * @param platform The platform which the test is running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                     uint8_t kI2cIdx);
+                                     uint8_t kI2cIdx,
+                                     i2c_pinmux_platform_id_t platform);
 
+/**
+ * Disconnect the i2c input pins from mio pads and wire it to zero.
+ *
+ * @param pimmux A pinmux handler.
+ * @param i2c_id The i2c instance identifier.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t i2c_id);
 /**
  * Return whether the fifo is empty.
  *
@@ -149,7 +172,9 @@ status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c);
  * @param byte_count The number of bytes to be read.
  * @param[out] data Buffer to receive the fifo data.
  * @param timeout Timeout in microseconds.
- * @return The result of the operation.
+ * @return Return an error code if fails to read, otherwise `kOk(nak_count)`,
+ * where `nak_count` is the number of NAKs received or attempts needed before
+ * the success`.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,

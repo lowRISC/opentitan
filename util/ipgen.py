@@ -31,8 +31,8 @@ def action_generate(ip_template: IpTemplate, args: argparse.Namespace) -> None:
     config_fp = args.config_file
     config_text = config_fp.read()
     config_fp.close()
-    ip_config = IpConfig.from_text(ip_template.params,
-                                   config_text, "the file passed to --config")
+    ip_config = IpConfig.from_text(ip_template.params, config_text,
+                                   "the file passed to --config")
 
     # Render the IP template into an IP block.
     renderer = IpBlockRenderer(ip_template, ip_config)

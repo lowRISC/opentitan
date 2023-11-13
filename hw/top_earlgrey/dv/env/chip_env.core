@@ -44,7 +44,6 @@ filesets:
       - chip_env.sv: {is_include_file: true}
       - chip_virtual_sequencer.sv: {is_include_file: true}
       - chip_scoreboard.sv: {is_include_file: true}
-      - chip_env.sv: {is_include_file: true}
       - seq_lib/chip_vseq_list.sv: {is_include_file: true}
       - seq_lib/chip_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_stub_cpu_base_vseq.sv: {is_include_file: true}
@@ -155,6 +154,7 @@ filesets:
       - pwrmgr_low_power_if.sv
       - rstmgr_cnsty_fault_if.sv
       - flash_ctrl_host_gnt_fault_if.sv
+      - tb_dpi_if.sv
       - top_earlgrey_error_injection_ifs_bind.sv
     file_type: systemVerilogSource
 

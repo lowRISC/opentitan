@@ -34,7 +34,7 @@ extern "C" {
  * @param plaintext plaintext value (may be NULL if plaintext_len is 0)
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
- * @param tag_len Tag length in bytes
+ * @param tag_len Tag length in 32-bit words
  * @param[out] tag Output buffer for tag
  * @param[out] ciphertext Output buffer for ciphertext (same length as
  * plaintext)
@@ -44,8 +44,8 @@ OT_WARN_UNUSED_RESULT
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
-                         const uint8_t *aad, const size_t tag_len, uint8_t *tag,
-                         uint8_t *ciphertext);
+                         const uint8_t *aad, const size_t tag_len,
+                         uint32_t *tag, uint8_t *ciphertext);
 
 /**
  * AES-GCM authenticated decryption as defined in NIST SP800-38D, algorithm 5.
@@ -72,10 +72,10 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param ciphertext plaintext value (may be NULL if ciphertext_len is 0)
  * @param aad_len length of AAD in bytes
  * @param aad AAD value (may be NULL if aad_len is 0)
- * @param tag_len Tag length in bytes
+ * @param tag_len Tag length in 32-bit words
  * @param tag Authentication tag
- * @param plaintext[out] Output buffer for plaintext (same length as ciphertext)
- * @param success[out] True if authentication was successful, otherwise false
+ * @param[out] plaintext Output buffer for plaintext (same length as ciphertext)
+ * @param[out] success True if authentication was successful, otherwise false
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
@@ -83,7 +83,7 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint32_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
-                         const uint8_t *tag, uint8_t *plaintext,
+                         const uint32_t *tag, uint8_t *plaintext,
                          hardened_bool_t *success);
 
 /**

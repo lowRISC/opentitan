@@ -32,8 +32,8 @@ alias(
 )
 
 alias(
-    name = "ansi_term",
-    actual = "@crate_index__ansi_term-0.12.1//:ansi_term",
+    name = "anstyle",
+    actual = "@crate_index__anstyle-1.0.4//:anstyle",
     tags = ["manual"],
 )
 
@@ -69,13 +69,19 @@ alias(
 
 alias(
     name = "chrono",
-    actual = "@crate_index__chrono-0.4.27//:chrono",
+    actual = "@crate_index__chrono-0.4.31//:chrono",
     tags = ["manual"],
 )
 
 alias(
     name = "clap",
-    actual = "@crate_index__clap-4.4.1//:clap",
+    actual = "@crate_index__clap-4.4.7//:clap",
+    tags = ["manual"],
+)
+
+alias(
+    name = "clap-num",
+    actual = "@crate_index__clap-num-1.0.2//:clap_num",
     tags = ["manual"],
 )
 
@@ -200,12 +206,6 @@ alias(
 )
 
 alias(
-    name = "nix",
-    actual = "@crate_index__nix-0.26.4//:nix",
-    tags = ["manual"],
-)
-
-alias(
     name = "num-bigint-dig",
     actual = "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig",
     tags = ["manual"],
@@ -213,7 +213,7 @@ alias(
 
 alias(
     name = "num-traits",
-    actual = "@crate_index__num-traits-0.2.16//:num_traits",
+    actual = "@crate_index__num-traits-0.2.17//:num_traits",
     tags = ["manual"],
 )
 
@@ -272,12 +272,6 @@ alias(
 )
 
 alias(
-    name = "proc-macro-error",
-    actual = "@crate_index__proc-macro-error-1.0.4//:proc_macro_error",
-    tags = ["manual"],
-)
-
-alias(
     name = "proc-macro2",
     actual = "@crate_index__proc-macro2-1.0.69//:proc_macro2",
     tags = ["manual"],
@@ -292,12 +286,6 @@ alias(
 alias(
     name = "rand",
     actual = "@crate_index__rand-0.8.5//:rand",
-    tags = ["manual"],
-)
-
-alias(
-    name = "raw_tty",
-    actual = "@crate_index__raw_tty-0.1.0//:raw_tty",
     tags = ["manual"],
 )
 
@@ -328,6 +316,18 @@ alias(
 alias(
     name = "rusb",
     actual = "@crate_index__rusb-0.9.3//:rusb",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rustix",
+    actual = "@crate_index__rustix-0.38.10//:rustix",
+    tags = ["manual"],
+)
+
+alias(
+    name = "scopeguard",
+    actual = "@crate_index__scopeguard-1.2.0//:scopeguard",
     tags = ["manual"],
 )
 
@@ -381,7 +381,7 @@ alias(
 
 alias(
     name = "syn",
-    actual = "@crate_index__syn-1.0.109//:syn",
+    actual = "@crate_index__syn-2.0.38//:syn",
     tags = ["manual"],
 )
 

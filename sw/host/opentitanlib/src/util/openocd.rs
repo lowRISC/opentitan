@@ -2,20 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use once_cell::sync::Lazy;
-use regex::Regex;
-use std::borrow::BorrowMut;
-use std::cell::{Cell, RefCell};
-use std::io::{self, ErrorKind, Read, Write};
+use std::cell::Cell;
+use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
-use std::net::{TcpStream, ToSocketAddrs};
-use std::path::PathBuf;
+use std::net::TcpStream;
+use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::sync::{Arc, Mutex};
-use std::thread;
 use std::time::{Duration, Instant};
 
 use anyhow::{bail, ensure, Context, Result};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -26,143 +23,65 @@ use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
 /// Represents an OpenOCD server that we can interact with.
-pub struct OpenOcdServer {
-    /// Configuration file for the particular adapter used.
-    adapter_config: Option<PathBuf>,
-    /// Additional connection command for the particular adapter. (USB serial number, etc.)
-    adapter_command: Option<String>,
-    /// JTAG parameters.
-    opts: JtagParams,
+pub struct OpenOcd {
     /// OpenOCD child process.
-    openocd_server_process: RefCell<Option<Child>>,
-    /// Stream to the telnet interface of OpenOCD.
-    openocd_socket_stream: Cell<Option<TcpStream>>,
-    /// Accumulators for OpenOCD stdout and stderr
-    openocd_accumulated_stdout: Arc<Mutex<String>>,
-    openocd_accumulated_stderr: Arc<Mutex<String>>,
-    /// JTAG TAP OpenOCD is connected to.
-    jtag_tap: Cell<Option<JtagTap>>,
+    server_process: Child,
+    /// Receiving side of the stream to the telnet interface of OpenOCD.
+    reader: BufReader<TcpStream>,
+    /// Sending side of the stream to the telnet interface of OpenOCD.
+    writer: TcpStream,
 }
 
-/// Errors related to the OpenOCD server.
-#[derive(Error, Debug, Deserialize, Serialize)]
-pub enum OpenOcdServerError {
-    #[error("OpenOCD server is not running")]
-    OpenOcdNotRunning,
-    #[error("Generic error {0}")]
-    Generic(String),
+impl Drop for OpenOcd {
+    fn drop(&mut self) {
+        let _ = self.server_process.kill();
+    }
 }
-impl_serializable_error!(OpenOcdServerError);
 
-impl OpenOcdServer {
-    /// Delay between polls to the OpenOCD server to prevent thrashing.
-    const POLL_DELAY: Duration = Duration::from_millis(100);
+impl OpenOcd {
     /// How long to wait for OpenOCD to get ready to accept a TCL connection.
     const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(30);
 
-    /// Create a new OpenOcdServer with the given JTAG options without starting OpenOCD.
-    pub fn new(
-        adapter_config: Option<PathBuf>,
-        adapter_command: Option<String>,
-        opts: &JtagParams,
-    ) -> Result<OpenOcdServer> {
-        Ok(OpenOcdServer {
-            adapter_config,
-            adapter_command,
-            opts: opts.clone(),
-            openocd_server_process: Default::default(),
-            openocd_socket_stream: Default::default(),
-            openocd_accumulated_stdout: Default::default(),
-            openocd_accumulated_stderr: Default::default(),
-            jtag_tap: Default::default(),
-        })
-    }
-
     /// Wait until we see a particular message on the output.
     fn wait_until_regex_match<'a>(
-        stderr: &mut impl Read,
+        stderr: &mut impl BufRead,
         regex: &Regex,
         timeout: Duration,
-        s: &'a mut Vec<u8>,
+        s: &'a mut String,
     ) -> Result<regex::Captures<'a>> {
         let start = Instant::now();
         loop {
-            let mut byte = 0u8;
             // NOTE the read could block indefinitely, a proper solution would involved spawning
             // a thread or using async.
-            let n = stderr.read(std::slice::from_mut(&mut byte))?;
-            if n != 1 {
+            let n = stderr.read_line(s)?;
+            if n == 0 {
                 bail!("OpenOCD stopped before being ready?");
             }
-            if byte == b'\n' {
-                let string = std::str::from_utf8(&s[..])?;
-                log::info!(target: concat!(module_path!(), "::stderr"), "{}", string);
-                if regex.is_match(string) {
-                    // I would have wanted to return here, but doing so causes the Rust compiler
-                    // to complain that returning a value, which needs to immutably borrow for 'a
-                    // lifetime somehow conflicts with the mutable borrowing in other branches
-                    // further down this loop.  Moving the return statement outside the loop
-                    // eliminates the error, but requires duplicate invocation of the regex
-                    // method.  Jonathan Van Why has found that the "Polonius" borrow checker
-                    // would allow returning from this if statement, so once that becomes part of
-                    // the mainstream Rust compiler, we can improve this code.
-                    break;
-                }
-                s.clear();
-            } else {
-                s.push(byte);
+            log::info!(target: concat!(module_path!(), "::stderr"), "{}", s);
+            if regex.is_match(s) {
+                // This is not a `if let Some(capture) = regex.captures(s) {}` to to Rust
+                // borrow checker limitations. Can be modified if Polonius lands.
+                return Ok(regex.captures(s).unwrap());
             }
+            s.clear();
+
             if start.elapsed() >= timeout {
                 bail!("OpenOCD did not become ready to accept a TCL connection");
             }
         }
-        // Perform same regex match as inside the loop above.
-        return Ok(regex.captures(std::str::from_utf8(&s[..])?).unwrap());
     }
 
-    /// Spawn the OpenOCD server and connect to it.
-    fn start(&self, tap: JtagTap) -> Result<()> {
-        // Check if a server was already started.
-        if let Some(mut child) = self.openocd_server_process.take() {
-            // If it's still running, it won't have an exit status.
-            if child.try_wait()?.is_none() {
-                self.openocd_server_process.replace(Some(child));
-                bail!("OpenOCD server already running");
-            }
-        }
-
-        let mut cmd = Command::new(&self.opts.openocd);
-
-        // Pass the path to the adapter config file if given.
-        if let Some(cfg) = self.adapter_config.as_ref() {
-            cmd.arg("-f").arg(cfg);
-        }
-
-        // Pass any additional connection command, if given.
-        if let Some(command) = self.adapter_command.as_ref() {
-            cmd.arg("-c").arg(command);
-        }
-
-        // Because these commands are command-line args, they *must* end with
-        // semicolons to satisfy the TCL lexer. When a TCL program is read from
-        // a file, newlines are sufficient to separate statements.
-        let adapter_speed_cmd = format!("adapter speed {}", self.opts.adapter_speed_khz);
-        cmd.arg("-c").arg(adapter_speed_cmd.as_str());
-        cmd.arg("-c").arg("transport select jtag;");
-        cmd.arg("-c").arg("scan_chain;");
-
-        // Pass through the config for the chosen TAP.
-        let target = match tap {
-            JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
-            JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
-        };
-        self.jtag_tap.set(Some(tap));
-        cmd.arg("-c").arg(target);
+    /// Spawn an OpenOCD server with given path.
+    pub fn spawn(path: &Path) -> Result<Self> {
+        let mut cmd = Command::new(path);
 
         // Let OpenOCD choose which port to bind to, in order to never unnecesarily run into
         // issues due to a particular port already being in use.
-        cmd.arg("-c").arg("tcl_port 0; telnet_port 0; gdb_port 0;");
-        cmd.arg("-c").arg("init;");
+        // We don't use the telnet and GDB ports so disable them.
+        // The configuration will happen through the TCL interface, so use `noinit` to prevent
+        // OpenOCD from transition to execution mode.
+        cmd.arg("-c")
+            .arg("tcl_port 0; telnet_port disabled; gdb_port disabled; noinit;");
 
         log::info!("CWD: {:?}", std::env::current_dir());
         log::info!("Spawning OpenOCD: {cmd:?}");
@@ -174,14 +93,14 @@ impl OpenOcdServer {
             .spawn()
             .with_context(|| format!("failed to spawn openocd: {cmd:?}",))?;
         let stdout = child.stdout.take().unwrap();
-        let mut stderr = child.stderr.take().unwrap();
+        let mut stderr = BufReader::new(child.stderr.take().unwrap());
         // Wait until we see 'Info : Listening on port XXX for tcl connections' before knowing
         // which port to connect to.
         log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
         static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
             Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
         });
-        let mut buf = Vec::new();
+        let mut buf = String::new();
         let regex_captures = Self::wait_until_regex_match(
             &mut stderr,
             &READY_REGEX,
@@ -190,31 +109,151 @@ impl OpenOcdServer {
         )
         .context("OpenOCD was not ready in time to accept a connection")?;
         let openocd_port: u16 = regex_captures.get(1).unwrap().as_str().parse()?;
-        // Printer stdout and stderr
-        let a = self.openocd_accumulated_stdout.clone();
-        let b = self.openocd_accumulated_stderr.clone();
+        // Print stdout and stderr with log
         std::thread::spawn(move || {
-            printer::accumulate(stdout, concat!(module_path!(), "::stdout"), a)
+            printer::accumulate(
+                stdout,
+                concat!(module_path!(), "::stdout"),
+                Default::default(),
+            )
         });
         std::thread::spawn(move || {
-            printer::accumulate(stderr, concat!(module_path!(), "::stderr"), b)
+            printer::accumulate(
+                stderr,
+                concat!(module_path!(), "::stderr"),
+                Default::default(),
+            )
         });
 
-        self.openocd_server_process.replace(Some(child));
+        let kill_guard = scopeguard::guard(child, |mut child| {
+            let _ = child.kill();
+        });
 
         log::info!("Connecting to OpenOCD tcl interface...");
 
-        let addr = format!("localhost:{}", openocd_port);
-        let stream = Self::wait_for_socket(addr, self.opts.openocd_timeout)
+        let stream = TcpStream::connect(("localhost", openocd_port))
             .context("failed to connect to OpenOCD socket")?;
 
-        self.openocd_socket_stream.set(Some(stream));
+        let mut connection = Self {
+            server_process: scopeguard::ScopeGuard::into_inner(kill_guard),
+            reader: BufReader::new(stream.try_clone()?),
+            writer: stream,
+        };
 
         // Test the connection by asking for OpenOCD's version.
-        let version = self
-            .send_tcl_cmd("version")
-            .context("failed to get OpenOCD version")?;
+        let version = connection.execute("version")?;
         log::info!("OpenOCD version: {version}");
+
+        Ok(connection)
+    }
+
+    /// Send a string to OpenOCD Tcl interface.
+    fn send(&mut self, cmd: &str) -> Result<()> {
+        // The protocol is to send the command followed by a `0x1a` byte,
+        // see https://openocd.org/doc/html/Tcl-Scripting-API.html#Tcl-RPC-server
+
+        // Sanity check to ensure that the command string is not malformed.
+        if cmd.contains('\x1A') {
+            bail!("TCL command string should be contained inside the text to send");
+        }
+
+        self.writer
+            .write_all(cmd.as_bytes())
+            .context("failed to send a command to OpenOCD server")?;
+        self.writer
+            .write_all(&[0x1a])
+            .context("failed to send the command terminator to OpenOCD server")?;
+        self.writer.flush().context("failed to flush stream")?;
+        Ok(())
+    }
+
+    fn recv(&mut self) -> Result<String> {
+        let mut buf = Vec::new();
+        self.reader.read_until(0x1A, &mut buf)?;
+        if !buf.ends_with(b"\x1A") {
+            bail!(OpenOcdError::PrematureExit);
+        }
+        buf.pop();
+        String::from_utf8(buf).context("failed to parse OpenOCD response as UTF-8")
+    }
+
+    pub fn shutdown(mut self) -> Result<()> {
+        self.execute("shutdown")?;
+        // Wait for it to exit.
+        self.server_process
+            .wait()
+            .context("failed to wait for OpenOCD server to exit")?;
+        Ok(())
+    }
+
+    /// Send a TCL command to OpenOCD and wait for its response.
+    pub fn execute(&mut self, cmd: &str) -> Result<String> {
+        self.send(cmd)?;
+        self.recv()
+    }
+}
+
+/// An JTAG interface driver over OpenOCD.
+pub struct OpenOcdJtagChain {
+    /// Connection command for the particular adapter.
+    adapter_command: String,
+    /// JTAG parameters.
+    opts: JtagParams,
+    /// OpenOCD server instance.
+    openocd_server: Cell<Option<OpenOcd>>,
+    /// JTAG TAP OpenOCD is connected to.
+    jtag_tap: Cell<Option<JtagTap>>,
+}
+
+/// Errors related to the OpenOCD server.
+#[derive(Error, Debug, Deserialize, Serialize)]
+pub enum OpenOcdError {
+    #[error("OpenOCD server is not running")]
+    OpenOcdNotRunning,
+    #[error("OpenOCD server exists prematurely")]
+    PrematureExit,
+    #[error("Generic error {0}")]
+    Generic(String),
+}
+impl_serializable_error!(OpenOcdError);
+
+impl OpenOcdJtagChain {
+    /// Create a new OpenOcdJtagChain with the given JTAG options without starting OpenOCD.
+    pub fn new(adapter_command: String, opts: &JtagParams) -> Result<OpenOcdJtagChain> {
+        Ok(OpenOcdJtagChain {
+            adapter_command,
+            opts: opts.clone(),
+            openocd_server: Default::default(),
+            jtag_tap: Default::default(),
+        })
+    }
+
+    /// Spawn the OpenOCD server and connect to it.
+    fn start(&self, tap: JtagTap) -> Result<()> {
+        // Check if a server was already started.
+        if self.openocd_server.take().is_some() {
+            bail!("OpenOCD server already running");
+        }
+
+        let mut openocd = OpenOcd::spawn(&self.opts.openocd)?;
+
+        openocd.execute(&self.adapter_command)?;
+        openocd.execute(&format!("adapter speed {}", self.opts.adapter_speed_khz))?;
+        openocd.execute("transport select jtag")?;
+        openocd.execute("scan_chain")?;
+
+        // Pass through the config for the chosen TAP.
+        let target = match tap {
+            JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
+            JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
+        };
+        self.jtag_tap.set(Some(tap));
+        openocd.execute(target)?;
+
+        // Finish initialisation.
+        openocd.execute("init")?;
+
+        self.openocd_server.replace(Some(openocd));
 
         Ok(())
     }
@@ -222,32 +261,7 @@ impl OpenOcdServer {
     fn stop(&self) -> Result<()> {
         log::info!("Stopping OpenOCD...");
 
-        let Some(mut child) = self.openocd_server_process.take() else {
-            // OpenOCD wasn't started, do nothing.
-            return Ok(());
-        };
-
-        // Ask the server nicely to shut down.
-        self.send_tcl_cmd("shutdown")
-            .context("failed to send shutdown command")?;
-
-        // Wait for it to exit.
-        child
-            .wait()
-            .context("failed to wait for OpenOCD server to exit")?;
-
-        // Cleanup TAP selection.
-        self.jtag_tap.set(None);
-
-        // Close the connection.
-        drop(self.openocd_server_process.take());
-
-        Ok(())
-    }
-
-    /// Kill the server without waiting for it to exit.
-    fn kill(&self) -> Result<()> {
-        let Some(mut child) = self.openocd_server_process.take() else {
+        let Some(server) = self.openocd_server.take() else {
             // OpenOCD wasn't started, do nothing.
             return Ok(());
         };
@@ -255,42 +269,22 @@ impl OpenOcdServer {
         // Cleanup TAP selection.
         self.jtag_tap.set(None);
 
-        child.kill()?;
+        server.shutdown()?;
 
         Ok(())
     }
 
     /// Send a TCL command to OpenOCD and wait for its response.
     fn send_tcl_cmd(&self, cmd: &str) -> Result<String> {
-        // Take the stream. The stream will not be replaced on communication
+        // Take the server. The server will not be replaced on communication
         // errors, causing future commands to also fail.
-        let Some(mut stream) = self.openocd_socket_stream.take() else {
-            return Err(OpenOcdServerError::OpenOcdNotRunning.into());
+        let Some(mut server) = self.openocd_server.take() else {
+            return Err(OpenOcdError::OpenOcdNotRunning.into());
         };
 
-        // The protocol is to send the command followed by a `0x1a` byte,
-        // see https://openocd.org/doc/html/Tcl-Scripting-API.html#Tcl-RPC-server
-        stream
-            .write_all(cmd.as_bytes())
-            .context("failed to send a command to OpenOCD server")?;
-        stream
-            .write_all(&[0x1a])
-            .context("failed to send the command terminator to OpenOCD server")?;
-
-        stream.flush().context("failed to flush stream")?;
-
-        let answer = stream
-            .borrow_mut()
-            .bytes()
-            .take_while(|x| match x {
-                Ok(x) => *x != 0x1a,
-                _ => false,
-            })
-            .collect::<Result<_, _>>()
-            .context("failed to read the result of a command from OpenOCD server")?;
-
-        self.openocd_socket_stream.replace(Some(stream));
-        String::from_utf8(answer).context("failed to parse OpenOCD response as UTF-8")
+        let ret = server.execute(cmd)?;
+        self.openocd_server.replace(Some(server));
+        Ok(ret)
     }
 
     fn read_memory_impl<T: ParseInt>(&self, addr: u32, buf: &mut [T]) -> Result<usize> {
@@ -335,37 +329,6 @@ impl OpenOcdServer {
         Ok(())
     }
 
-    /// Poll `addr` until it is bound and a socket can connect.
-    fn wait_for_socket<A: ToSocketAddrs>(addr: A, timeout: Duration) -> io::Result<TcpStream> {
-        let start = Instant::now();
-        loop {
-            log::warn!("Attempting to make tcp connection...");
-            match TcpStream::connect(&addr) {
-                // This is the error for addresses that aren't bound
-                Err(e) if e.kind() == ErrorKind::ConnectionRefused => (),
-                // This is error has been observed in CQ.
-                Err(e) if e.kind() == ErrorKind::AddrNotAvailable => {
-                    log::warn!("Got ErrorKind::AddrInUse on client socket, odd...");
-                }
-                // All other errors (and `Ok`s) we want to know about
-                Err(e) => {
-                    log::warn!("Error: {:?}", e.kind());
-
-                    return Err(e);
-                }
-                socket => return socket,
-            }
-
-            // Delay between loops if there's enough time before timeout.
-            if start.elapsed() + Self::POLL_DELAY < timeout {
-                thread::sleep(Self::POLL_DELAY);
-            } else {
-                log::warn!("timeout");
-                return Err(ErrorKind::TimedOut.into());
-            }
-        }
-    }
-
     /// Read a register: this function does not attempt to translate the
     /// name or number of the register. If force is set, bypass OpenOCD's
     /// register cache.
@@ -401,13 +364,7 @@ impl OpenOcdServer {
     }
 }
 
-impl Drop for OpenOcdServer {
-    fn drop(&mut self) {
-        self.kill().ok();
-    }
-}
-
-impl Jtag for OpenOcdServer {
+impl Jtag for OpenOcdJtagChain {
     fn connect(&self, tap: JtagTap) -> Result<()> {
         self.start(tap)
     }

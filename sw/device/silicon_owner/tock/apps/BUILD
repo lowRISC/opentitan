@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 ld_library(
     name = "libtock_layout",
     includes = [
-        "@libtock//runtime:layout",
+        "@libtock//build_scripts:layout",
     ],
 )
 

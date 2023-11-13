@@ -48,7 +48,6 @@ cc_library(
         ":boot_svc_header",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
     ],
 )
 

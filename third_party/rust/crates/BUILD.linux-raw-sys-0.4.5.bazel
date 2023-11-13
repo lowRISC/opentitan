@@ -31,8 +31,12 @@ rust_library(
     crate_features = [
         "errno",
         "general",
+        "if_ether",
         "ioctl",
+        "net",
+        "netlink",
         "no_std",
+        "prctl",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",

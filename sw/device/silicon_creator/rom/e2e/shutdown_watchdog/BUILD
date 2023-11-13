@@ -46,7 +46,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         "lc_state": lc_state[0],
         "lc_state_val": lc_state[1],
         # Make sure that the watchdog was not enabled so the count stayed 0.
-        "exit_success": "Returning after 2 seconds\r\n[^\r\n]*Watchdog count: 0",
+        "exit_success": "Wait done: after [0-9]+ ms, watchdog count=0",
         "bite_threshold": bite_threshold,
     }
     for lc_state in get_lc_items(
@@ -58,7 +58,7 @@ SHUTDOWN_WATCHDOG_CASES = [
     {
         "lc_state": lc_state[0],
         "lc_state_val": lc_state[1],
-        "exit_success": "Returning after 2 seconds\r\n[^\r\n]*Watchdog count: 0" if bite_threshold == 0 else "I00000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
+        "exit_success": "Wait done: after [0-9]+ ms, watchdog count=0" if bite_threshold == 0 else "I0000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
         "bite_threshold": bite_threshold,
     }
     for lc_state in get_lc_items(

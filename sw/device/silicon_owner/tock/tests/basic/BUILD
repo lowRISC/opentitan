@@ -37,11 +37,8 @@ tock_image(
 
 opentitan_test(
     name = "basic_test",
-    # TODO(tock#3639, opentitan#19479): Tock needs to update the earlgrey chip
-    # config to use the new fpga_cw310 clock frequencies.
     cw310 = cw310_params(
         binaries = {":image": "firmware"},
-        tags = ["broken"],
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,

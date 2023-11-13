@@ -13,7 +13,9 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -56,8 +58,17 @@ static void sw_reset(void) {
 }
 
 status_t export_data_over_console(ujson_t *uj,
-                                  manuf_perso_data_out_t *export_data) {
-  RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, export_data);
+                                  manuf_perso_data_out_t *out_data) {
+  RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, out_data);
+  return OK_STATUS();
+}
+
+static status_t check_array_non_zero(uint32_t *array, size_t num_words) {
+  for (size_t i = 0; i < num_words; ++i) {
+    if (array[i] == 0) {
+      return INTERNAL();
+    }
+  }
   return OK_STATUS();
 }
 
@@ -84,7 +95,7 @@ bool test_main(void) {
   // retention SRAM (namely in the creator partition) as it is faster than
   // storing it in flash, and still persists across a SW initiated reset.
   retention_sram_t *ret_sram_data = retention_sram_get();
-  manuf_perso_data_out_t *export_data =
+  manuf_perso_data_out_t *out_data =
       (manuf_perso_data_out_t *)&ret_sram_data->creator.reserved;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
@@ -99,18 +110,47 @@ bool test_main(void) {
     // always executed. This facilitates test-reruns.
     sw_reset();
   } else if (info == kDifRstmgrResetInfoSw) {
-    // Provision the OTP SECRET2 partition.
+    // Provision the OTP SECRET2 partition and flash info pages.
     if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
-      LOG_INFO("Provisioning OTP SECRET2 ...");
-      CHECK_STATUS_OK(manuf_personalize_device_secrets(&flash_state, &lc_ctrl,
-                                                       &otp_ctrl, export_data));
+      // Wait for host ECC pubkey, used to generate a shared AES key to export
+      // the RMA unlock token, to arrive over the console.
+      LOG_INFO("Ready to receive host ECC pubkey ...");
+      manuf_perso_data_in_t in_data;
+      CHECK_STATUS_OK(ujson_deserialize_manuf_perso_data_in_t(&uj, &in_data));
+
+      // Perform OTP and flash info writes.
+      LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
+      CHECK_STATUS_OK(manuf_personalize_device_secrets(
+          &flash_state, &lc_ctrl, &otp_ctrl, &in_data, out_data));
+
+      // Read the attestation key seed fields to ensure they are non-zero.
+      uint32_t uds_attestation_key_seed[kAttestationSeedWords];
+      uint32_t cdi_0_attestation_key_seed[kAttestationSeedWords];
+      uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
+          uds_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
+          cdi_0_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
+                                           kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_flash_info_field_read(
+          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
+          cdi_1_attestation_key_seed, kAttestationSeedBytes));
+      CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
+                                           kAttestationSeedWords));
+
+      // Reset the chip to activate the OTP partitions and flash pages.
       sw_reset();
     }
 
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
     LOG_INFO("Exporting RMA unlock token ...");
-    CHECK_STATUS_OK(export_data_over_console(&uj, export_data));
+    CHECK_STATUS_OK(export_data_over_console(&uj, out_data));
 
     // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
     // resetting the chip.

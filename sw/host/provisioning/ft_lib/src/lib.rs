@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
 use arrayvec::ArrayVec;
-use clap::{ArgAction, Args};
+use elliptic_curve::pkcs8::DecodePrivateKey;
+use elliptic_curve::{PublicKey, SecretKey};
+use p256::NistP256;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
@@ -17,68 +20,8 @@ use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
-use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
-use ujson_lib::provisioning_command::{FtIndividualizeCommand, FtPersonalizeCommand};
-
-/// Provisioning action command-line parameters, namely, the provisioning commands to send.
-#[derive(Debug, Args, Clone)]
-pub struct ManufFtProvisioningActions {
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        help = "Whether to perform all FT provisioning steps."
-    )]
-    pub all_steps: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether to transition from TEST_LOCKED0 to TEST_UNLOCKED1 LC state."
-    )]
-    pub test_unlock: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether to write the OTP CREATOR_SW_CFG partition."
-    )]
-    pub otp_creator_sw_cfg: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether the OTP OWNER_SW_CFG partition."
-    )]
-    pub otp_owner_sw_cfg: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether to write the OTP HW_CFG partition."
-    )]
-    pub otp_hw_cfg: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether to transition to a mission mode state (specified by another arg) after provisioning is complete."
-    )]
-    pub test_exit: bool,
-
-    #[arg(
-        long,
-        action = ArgAction::SetTrue,
-        conflicts_with = "all_steps",
-        help = "Whether to personalize the device with secrets.",
-    )]
-    pub personalize: bool,
-}
+use ujson_lib::provisioning_data::{EccP256PublicKey, ManufPersoDataIn, ManufPersoDataOut};
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -124,7 +67,6 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     reset_delay: Duration,
     sram_program: &SramProgramParams,
-    provisioning_actions: &ManufFtProvisioningActions,
     timeout: Duration,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
@@ -146,33 +88,9 @@ pub fn run_sram_ft_individualize(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Get UART, set flow control, and wait for test to start running.
+    // Get UART, set flow control, and wait for SRAM program to complete execution.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(
-        &*uart,
-        r"FT SRAM provisioning start. Waiting for command ...",
-        timeout,
-    )?;
-
-    // Inject provisioning commands.
-    if provisioning_actions.all_steps {
-        FtIndividualizeCommand::WriteAll.send(&*uart)?;
-        Status::recv(&*uart, timeout, false)?;
-    }
-    if provisioning_actions.otp_creator_sw_cfg {
-        FtIndividualizeCommand::OtpCreatorSwCfgWrite.send(&*uart)?;
-        Status::recv(&*uart, timeout, false)?;
-    }
-    if provisioning_actions.otp_owner_sw_cfg {
-        FtIndividualizeCommand::OtpOwnerSwCfgWrite.send(&*uart)?;
-        Status::recv(&*uart, timeout, false)?;
-    }
-    if provisioning_actions.otp_hw_cfg {
-        FtIndividualizeCommand::OtpHwCfgWrite.send(&*uart)?;
-        Status::recv(&*uart, timeout, false)?;
-    }
-    FtIndividualizeCommand::Done.send(&*uart)?;
-    Status::recv(&*uart, timeout, false)?;
+    let _ = UartConsole::wait_for(&*uart, r"FT SRAM provisioning done.", timeout)?;
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
@@ -225,25 +143,61 @@ pub fn test_exit(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
+    secondary_bootstrap: PathBuf,
+    host_ecc_sk: PathBuf,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
-    // Bootstrap test program into flash and wait for test status pass over the UART.
+    // Bootstrap first personalization binary into flash and wait for test status pass over the UART.
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
+    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+
+    // Bootstrap second personalization binary into flash.
+    uart.clear_rx_buffer()?;
+    init.bootstrap.load(transport, &secondary_bootstrap)?;
+
+    // Load host (HSM) generated ECC keys.
+    let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(host_ecc_sk)?;
+    let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
+
+    // Format host ECC public key to inject it into the device.
+    // Note: we trim off the first byte of SEC1 formatted public key as these are not part
+    // of the key bytes, rather this byte just indicates if the key was compressed or not.
+    let host_pk_sec1_bytes = host_pk.to_sec1_bytes();
+    let num_coord_bytes: usize = (host_pk_sec1_bytes.len() - 1) / 2;
+    let mut host_pk_x = host_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    let mut host_pk_y = host_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    host_pk_x.reverse();
+    host_pk_y.reverse();
+    let in_data = ManufPersoDataIn {
+        host_pk: EccP256PublicKey {
+            x: host_pk_x,
+            y: host_pk_y,
+        },
+    };
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(
-        &*uart,
-        r"FT personalization start. Waiting for command ...",
-        timeout,
-    )?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
 
-    // Inject provisioning commands.
-    FtPersonalizeCommand::Done.send(&*uart)?;
-    Status::recv(&*uart, timeout, false)?;
+    // Send data into the device over the console.
+    in_data.send(&*uart)?;
+
+    // Wait until device exports provisioning data, including the wrapped RMA unlock token and
+    // device certificates.
+    let _ = UartConsole::wait_for(&*uart, r"Exporting FT provisioning data ...", timeout)?;
+    let out_data = ManufPersoDataOut::recv(&*uart, timeout, false)?;
+
+    // TODO(#19455): write the wrapped RMA unlock token to a file.
+    log::info!("{:x?}", out_data);
 
     Ok(())
 }

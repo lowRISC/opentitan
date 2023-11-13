@@ -560,6 +560,106 @@
     }
   ]
 
+  features: [
+    {
+      name: "OTP_CTRL.PARTITION.VENDOR_TEST"
+      desc: '''Vendor test partition is used for OTP programming smoke check during manufacturing flow.
+      In this partition, ECC uncorrectable errors will not lead to fatal errors and alerts.
+      Instead the error will be reported as correctable ECC error.
+      '''
+    }
+    {
+      name: "OTP_CTRL.PARTITION.CREATOR_SW_CFG"
+      desc: '''During calibration stage, various parameters (clock, voltage, and timing sources) are calibrated and recorded to CREATOR_SW_CFG partition.
+      '''
+    }
+    {
+      name: "OTP_CTRL.PARTITION.OWNER_SW_CFG"
+      desc: "Define attriutes for rom code execution"
+    }
+    {
+      name: "OTP_CTRL.INIT"
+      desc: '''When power is up, OTP controller reads devices status.
+      After all reads complete, the controller performs integrity check on the HW_CFG and SECRET partitions.
+      Once all integrity checks are complete, the controller marks outputs as valid.
+      '''
+    }
+    {
+      name: "OTP_CTRL.ENTROPY_READ"
+      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG partition.
+        - EN_CSRNG_SW_APP_READ
+        - EN_ENTROPY_SRC_FW_READ
+        - EN_ENTROPY_SRC_FW_OVER
+      '''
+    }
+    {
+      name: "OTP_CTRL.KEY_DERIVATION"
+      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL and FLASH_CTRL."
+    }
+    {
+      name: "OTP_CTRL.PROGRAM"
+      desc: '''All other partitions except life cycle partition are programmed through DAI interface.
+      And once non-zero digest is programmed to these partition, no further write access is allowed.
+      Life cycle partition is programmed by LC_CTRL.
+      '''
+    }
+    {
+      name: "OTP_CTRL.PARTITION.SECRET0"
+      desc: "Test unlock tokens, Test exit token"
+    }
+    {
+      name: "OTP_CTRL.PARTITION.SECRET1"
+      desc: "SRAM and FLASH scrambling key"
+    }
+    {
+      name: "OTP_CTRL.PARTITION.SECRET2"
+      desc: "RMA unlock token and creator root key"
+    }
+    {
+      name: "OTP_CTRL.PARTITION.LIFE_CYCLE"
+      desc: '''LC state, LC transition count.
+      This feature is owned by the LC_CTRL and cannot be tested well through the OTP_CTRL CSR interface.
+      '''
+    }
+    {
+      name: "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK"
+      desc: '''Following partitions can be read lockable by CSR.
+                 - VENDOR_TEST
+                 - CREATOR_SW_CFG
+                 - OWNER_SW_CFG
+               Following partitions can be read lockable by writing digest.
+                 - SECRET0
+                 - SECRET1
+                 - RECRET2
+      All read attempt to these partitions after read is locked will trigger AccessError (recoverable).
+      '''
+    }
+    {
+      name: "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"
+      desc: "All partitions except LIFE_CYCLE can be write lockable by writing digest."
+    }
+    {
+      name: "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"
+      desc: "Recoverable error is created when unauthorized access atempt are detected via dai interface."
+    }
+    {
+      name: "OTP_CTRL.ERROR_HANDLING.FATAL"
+      desc: "Unrecoverable errors are created for uncorrectable ecc error, otp macro malfunction and unauthorized access via lc_ctrl."
+    }
+    {
+      name: "OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT"
+      desc: "Timeout value for the integrity and consistency checks."
+    }
+    {
+      name: "OTP_CTRL.BACKGROUND_CHECK.INTEGRITY_CHECK_PERIOD"
+      desc: "The interval which the digest of the partition is recomputed to check integrity of locked partition."
+    }
+    {
+      name: "OTP_CTRL.BACKGROUND_CHECK.CONSISTENCY_CHECK_PERIOD"
+      desc: "Re-read period of the buffer registers to ensure data is matched with the associated OTP partition."
+    }
+  ]
+
   ///////////////
   // Registers //
   ///////////////

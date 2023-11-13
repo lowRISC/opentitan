@@ -348,6 +348,11 @@ attacks, see [[12](#ref-12)] and [[13](#ref-13)])
     best course of action here.
 2.  Sensor configuration / calibration data should be integrity-protected.
 
+### **Recommendation 15**: Reset vs. non-reset flops
+
+The flip-flop type used for registering sensitive assets inside a particular module should be selected later in the design process on a sub-block level and in consideration of all countermeasures and security hardening employed.
+For details, refer to [Reset vs. non-reset flops](../reset_vs_non-reset_flops/README.md)
+
 ## References and further reading
 
 [<span id="ref-1">1</span>]: Overview of checksums and hashes -

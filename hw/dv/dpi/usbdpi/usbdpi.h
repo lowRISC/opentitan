@@ -430,7 +430,7 @@ uint32_t CRC5(uint32_t dwInput, int iBitcnt);
 uint32_t CRC16(const uint8_t *data, int bytes);
 
 #ifdef __cplusplus
-}
+}  // extern "C"
 #endif
 
 #endif  // OPENTITAN_HW_DV_DPI_USBDPI_USBDPI_H_

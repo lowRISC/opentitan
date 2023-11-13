@@ -19,6 +19,7 @@
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
     // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_aes_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_aon_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
@@ -33,9 +34,11 @@
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rom_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rv_plic_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rv_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_spi_device_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_spi_host_testplan.hjson",
@@ -43,6 +46,7 @@
     "hw/top_earlgrey/data/ip/chip_uart_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_alert_handler_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rv_dm_testplan.hjson"
   ]
 
   testpoints: [
@@ -319,183 +323,6 @@
       tests: ["chip_sw_data_integrity_escalation"]
     }
 
-    // RV_DM (JTAG) tests:
-    {
-      name: chip_jtag_csr_rw
-      desc: '''
-            Verify accessibility of all the CSRs in the chip over JTAG.
-
-            - Shuffle the list of CSRs first to remove the effect of ordering.
-            - Write all CSRs via JTAG interface with a random value.
-            - Shuffle the list of CSRs yet again.
-            - Read all CSRs back and check their values for correctness while adhering to the CSR's
-              access policies.
-            - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
-            '''
-      stage: V2
-      tests: ["chip_jtag_csr_rw"]
-    }
-    {
-      name: chip_jtag_mem_access
-      desc: '''
-            Verify accessibility of all the memories in the chip over JTAG.
-
-            This test will target the following memories in the chip:
-              sram_main, sram_ret, otbn i|dmem, ROM
-
-            - Shuffle the list of memories first to remove the effect of ordering.
-            - Write a location in a randomly chosen set of addresses within each memory via JTAG
-              interface with random values.
-            - For read-only memories, preload the memory with random data via backdoor.
-            - Shuffle the list of memories again.
-            - Read the previously written addresses in the memories back again and check the read
-              value for correctness. Pick some random addresses to verify in case of read-only
-              memories.
-            '''
-      stage: V2
-      tests: ["chip_jtag_mem_access"]
-    }
-    {
-      name: chip_rv_dm_perform_debug
-      desc: '''
-            - X-ref'ed with rom_e2e_jtag_inject from rom testplan.
-            - X-ref'ed with chip_sw_flash_lc_iso_part_sw_wr_en.
-            - X-ref'ed with manuf_cp_device_info_flash_wr from manufacturing testplan.
-            - Using the sram injection mechanism from rom_e2e_jtag_inject, load a SRAM program that
-              writes to isolated flash partition while the device is in TEST_UNLOCKED state.
-            - After writing, verify that the test program cannot read back the written value.
-
-            '''
-      stage: V3
-      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
-              "rom_e2e_jtag_debug_rma"]
-    }
-    {
-      name: chip_rv_dm_ndm_reset_req
-      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
-
-            - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
-            - Configure RV_DM to send NDM reset request to reset sytem reset tree.
-            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
-              accessed.
-            - Read the programmed CSRs / mem to ensure that everything under system reset tree is
-              reset to the original values, while values under life cycle reset will be preserved.
-            - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
-            '''
-      stage: V2
-      tests: ["chip_rv_dm_ndm_reset_req"]
-    }
-    {
-      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
-      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
-
-            - Initialize the DUT in a HW-debug enabled life cycle state.
-            - Activate the RISCV debug module.
-            - Run some SW test on the CPU.
-            - Initiate a CPU halt request via JTAG.
-            - Wait for the CPU to be in halted state via JTAG by polling dmstatus.anyhalted.
-            - Deassert the CPU haltreq and verify that we are still in halted state.
-            - (Optional) Using the abstract command, read the dcsr register to verify the cause
-              reflects the debug halt request.
-            - Issue an NDM reset request. All non-debug parts of the chip should reset. Read the
-              dmstatus.anyhalted / dvstatus.allhalted and verify that they are cleared.
-            - Verify that the debug logic is fully accessible during this time, while the NDM reset
-              is being processed and the chip is rebooted, by continuously accessing the DMI
-              register space in `rv_dm` over JTAG.
-            - De-assert the NDM reset request and wait for the CPU to reboot and finish the post-NDM
-              reset phase of the test.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
-    }
-    {
-      name: chip_rv_dm_access_after_wakeup
-      desc: '''Verify RV_DM works after wakes up from sleep.
-
-            - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
-            - If waking up from normal sleep, an activation should not be required for RV_DM CSR
-              accesses to work.
-            - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_dm_access_after_wakeup"]
-    }
-    {
-      name: chip_sw_rv_dm_access_after_hw_reset
-      desc: '''Verify RV_DM works after a watchdog or escalated reset.
-
-            - Access some RV_DM CSRs both before and after resets.
-            - An activation would be required, and the tap strap would also be sampled again.
-            '''
-      stage: V3
-      tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
-    }
-    {
-      name: chip_sw_rv_dm_jtag_tap_sel
-      desc: '''Verify ability to select all available TAPs.
-
-            - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
-              RV_DM and DFT.
-            - Verify the TAP is selected correctly.
-            - X-ref'ed with chip_sw_tap_strap_sampling.
-            '''
-      stage: V2
-      tests: ["chip_tap_straps_rma"]
-    }
-    {
-      name: chip_rv_dm_lc_disabled
-      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
-
-            - Put life cycle in a random life cycle state.
-            - Verify that the rv_dm bus device is inaccessible from the CPU as well as external
-              JTAG if the life cycle state is not in TEST_UNLOCKED*, DEV or RMA.
-            - The bus access check is performed by randomly reading or writing a CSR inside the
-              RV_DM and checking whether the TL-UL bus errors out.
-            - The JTAG access check is performed by writing and then reading a register that is
-              accessible via the TAP/DMI inside the RV_DM. If the JTAG wires are gated, it is
-              expected that the RV_DM returns all-zero instead of the written value.
-            - X-ref'ed with `chip_tap_strap_sampling`
-            '''
-      stage: V2
-      tests: ["chip_rv_dm_lc_disabled"]
-    }
-    // PLIC integration tests:
-    {
-      name: chip_sw_plic_all_irqs
-      desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
-
-            The automated SW test enables all interrupts at the PLIC to interrupt the core. It uses
-            the `intr_test` CSR in each peripheral to mock assert an interrupt, looping through all
-            available interrupts in that peripheral. The ISR verifies that the right interrupt
-            occurred. This is used as a catch-all interrupt test for all peripheral integration
-            testing within which functionally asserting an interrupt is hard to achieve or not of
-            high value.
-            '''
-      stage: V2
-      tests: ["chip_plic_all_irqs"]
-    }
-    {
-      name: chip_sw_plic_sw_irq
-      desc: '''Verify the SW interrupt to the CPU.
-
-            Enable all peripheral interrupts at PLIC. Enable all types of interrupt at the CPU core.
-            Write to the MSIP CSR to generate a SW interrupt to the CPU. Verify that the only
-            interrupt that is seen is the SW interrupt.
-            '''
-      stage: V2
-      tests: ["chip_sw_plic_sw_irq"]
-    }
-    {
-      name: chip_sw_plic_alerts
-      desc: '''Verify alerts from PLIC due to both, TL intg and reg WE onehot check faults.
-
-            - Since PLIC is not pre-verified in a DV environment, we need to ensure these are tested
-              separately.
-            '''
-      stage: V3
-      tests: ["chip_sw_all_escalation_resets"]
-    }
-
     // SYSRST_CTRL (pre-verified IP) integration tests:
     {
       name: chip_sw_sysrst_ctrl_inputs
@@ -658,283 +485,6 @@
       ]
     }
 
-    ///////////////////////////////////////////////////////
-    // Security Peripherals                              //
-    // AES                                               //
-    ///////////////////////////////////////////////////////
-
-    // AES (pre-verified IP) integration tests:
-    {
-      name: chip_sw_aes_enc
-      desc: '''Verify the AES operation.
-
-            Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
-            computation to start. Wait for the AES operation to complete by polling the status
-            register. Check the digest registers for correctness against the expected digest value.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_enc",
-              "chip_sw_aes_enc_jitter_en"]
-    }
-    {
-      name: chip_sw_aes_entropy
-      desc: '''Verify the AES entropy input used by the internal PRNGs.
-
-            - Write the initial key share, IV and data in CSRs (known combinations).
-            - Configure the entropy_src to generate entropy in LFSR mode.
-            - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
-            - Poll the status idle bit to ensure reseed operation is complete.
-            - Trigger the AES operation to run and wait for it to complete.
-            - Check the digest against the expected value.
-            - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
-              complete by polling the status idle bit.
-            - Read back the data out CSRs - they should all read garbage values.
-            - Assertion check verifies that the IV are also garbage, i.e. different from the
-              originally written values.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_entropy"]
-    }
-    {
-      name: chip_sw_aes_idle
-      desc: '''Verify AES idle signaling to clkmgr.
-
-            - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
-              verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
-            - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
-            - Initiate an AES operation with a known key, plain text and digest, write AES clk
-              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
-              is enabled), before the AES operation is complete.
-            - After the AES operation is complete verify that the AES clk hint status within
-              clkmgr now reads 0 again (AES is disabled).
-            - Write the AES clk hint to 1, read and check the AES output for correctness.
-            '''
-      stage: V2
-      tests: ["chip_sw_aes_idle"]
-    }
-    {
-      name: chip_sw_aes_sideload
-      desc: '''Verify the AES sideload mechanism.
-
-            - Configure the keymgr to generate an aes key.
-            - Configure the AES to use the sideloaded key.
-            - Load the plaintext into the AES.
-            - Trigger the AES encryption and wait for it to complete.
-            - Verify that the ciphertext is different from the plaintext.
-            - Load the ciphertext into the AES.
-            - Trigger the AES decryption and wait for it to complete.
-            - Verify that the output is equal to the plain text.
-            - Clear the key in the keymgr and decrypt the ciphertext again.
-            - Verify that output is not equal to the plain text.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_sideload_aes"]
-    }
-    {
-      name: chip_sw_aes_masking_off
-      desc: '''Verify the AES masking off feature for ES.
-
-            - Perform known-answer test using CSRNG SW application interface.
-            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
-              masking PRNG.
-            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed
-              commands using the maximum amount of additional data and no entropy input in automatic
-              mode.
-            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero
-              output of the AES masking PRNG.
-            - Initialize AES and set the force_masks configuration bit.
-            - Configure an AES key of which the second share is zero.
-            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic
-              seed produced by CSRNG and distributed by EDN.
-            - Verify that the masking PRNG outputs an all-zero vector.
-            - Encrypt a message of multiple blocks using AES.
-            - Verify that the second share of the initial, intermediate and output state is zero.
-            - Verify that the second share of the SubBytes input and output is zero.
-            - Verify that the produced cipher text is correct.
-            '''
-      stage: V2S
-      tests: ["chip_sw_aes_masking_off"]
-    }
-
-    /////////////////////////////////////////////////////
-    // Memory & Controllers                            //
-    // RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL           //
-    /////////////////////////////////////////////////////
-
-    // OTP (pre-verified IP) integration tests:
-    {
-      name: chip_otp_ctrl_init
-      desc: '''Verify the OTP ctrl initialization on chip power up.
-
-            Verify that the chip powers up correctly on POR.
-            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
-              FSM states. Ensure that the whole power up sequence does not hang.
-            - Verify with connectivity assertion checks, the handshake signals are connected.
-            - Ensure that no interrupts or alerts are triggered.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_otp_ctrl_keys
-      desc: '''Verify the proliferation of keys to security peripherals.
-
-            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
-              (note that keymgr does not have handshake), OTBN and the CPU instruction cache.
-            - Ensure that the test requests a new key and verifies the previously written
-              data to an address now returns a garbage value.
-
-            X-ref'ed with the following IP tests that consume these signals:
-            - chip_sw_sram_scrambled_access
-            - chip_sw_flash_scramble
-            - chip_sw_keymgr_key_derivation
-            - chip_sw_otbn_mem_scramble
-            '''
-      stage: V2
-      tests: [// Verifies both, main and retention SRAM scrambling.
-              "chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
-              "chip_sw_otbn_mem_scramble",
-              "chip_sw_rv_core_ibex_icache_invalidate"]
-    }
-    {
-      name: chip_sw_otp_ctrl_entropy
-      desc: '''Verify the entropy interface from OTP ctrl to EDN.
-
-            This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
-            to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
-            '''
-      stage: V2
-      tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
-              "chip_sw_otbn_mem_scramble",
-              "chip_sw_rv_core_ibex_icache_invalidate"]
-    }
-    {
-      name: chip_sw_otp_ctrl_program
-      desc: '''Verify the program request from lc_ctrl.
-
-            - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
-              program request.
-            - Verify that the OTP ctrl generates the LC data output correctly and is sent to the LC
-              ctrl before it is reset.
-            - Verify that the `lc_check_byp_en_i` from LC ctrl is set.
-            - Ensure that the whole operation does not raise any interrupts or alerts or errors.
-            - After reset, verify that the LC state transition completed successfully by reading the
-              LC state and LC count CSRs.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_otp_ctrl_program_error
-      desc: '''Verify the otp program error.
-
-            - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
-              `lc_otp_program_i`.
-            - Verify that the LC ctrl triggers an alert and escalation when the OTP ctrl responds back with the correct
-              fatal program error as expected.
-            - Allow escalation to go through reset.
-            - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
-            - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
-              for kTopEarlgreyAlertIdLcCtrlFatalProgError.
-            - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
-            - Verify after the escalation reset that the alert info captured the correct alert.
-            '''
-
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_program_error"]
-    }
-    {
-      name: chip_sw_otp_ctrl_hw_cfg
-      desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
-
-            Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
-            consumers of the hardware configuration bits are receiving the correct values.
-
-            Xref'ed with corresponding IP tests that receive these bits.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
-    }
-    {
-      name: chip_sw_otp_ctrl_lc_signals
-      desc: '''Verify the broadcast signals from LC ctrl.
-
-            - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
-            - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
-            - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
-            - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
-              programming passes when enabled.
-
-            Note that `lc_escalate_en_i` is verified via a connectivity test.
-
-            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr advance operation
-            into the CreatorRootKey state, which should fail since the root key will be tied off to
-            all-zero when the SECRET2 partition is not locked in OTP.
-
-            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
-            decoded outputs to other IPs.
-            '''
-      stage: V2
-      tests: [
-        // lc_dft_en_i
-        "chip_prim_tl_access",
-        // lc_check_byp_en_i
-        "chip_sw_lc_ctrl_transition",
-        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses
-        // the keymgr.
-        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
-        "chip_sw_otp_ctrl_lc_signals_dev",
-        "chip_sw_otp_ctrl_lc_signals_prod",
-        "chip_sw_otp_ctrl_lc_signals_rma",
-        ]
-    }
-    {
-      name: chip_sw_otp_prim_tl_access
-      desc: '''Verify that the SW can read / write the prim tlul interface.
-
-            - The prim tlul interface is a open source placeholder for the closed source CSRs that
-              will be implemented in a translation 'shim'.
-            - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
-              When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
-            '''
-      stage: V2
-      tests: ["chip_prim_tl_access"]
-    }
-    {
-      name: chip_sw_otp_ctrl_vendor_test_csr_access
-      desc: '''
-            Verify the vendor test control access in raw, test_*, dev, prod, and rma LC states.
-
-            - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
-            - Verify that the SW is able to access the vendor test control and status registers in
-              raw, test_* and rma LC states.
-              In open source environment, this check is implemented by probing the OTP_CTRL's
-              `lc_otp_vendor_test_i` port.
-            - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
-              of what is programmed into the vendor test control register.
-            '''
-      stage: V3
-      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
-    }
-    {
-      name: chip_sw_otp_ctrl_escalation
-      desc: '''Verify escalation from otp_ctrl macro fatal error.
-
-            - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
-              via DAI interface.
-            - Because this fatal error will immediately turn off CPU, so the DV sequence will probe
-              the alert interface to make sure alert and escalation is triggered.
-
-            X'ref with chip_sw_all_escalation_resets.
-            '''
-      stage: V3
-      tests: ["chip_sw_otp_ctrl_escalation"]
-    }
-
     ////////////////////////
     // Analog Peripherals //
     // AST, SENSOR_CTRL   //
@@ -1086,6 +636,7 @@
             work in DV as well.
             '''
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
@@ -1105,6 +656,28 @@
               "chip_sw_uart_smoketest",
               "chip_sw_flash_scrambling_smoketest",
             ]
+      bazel: [
+        "//sw/device/tests:aes_smoketest",
+        "//sw/device/tests:aon_timer_smoketest",
+        "//sw/device/tests:clkmgr_smoketest",
+        "//sw/device/tests:csrng_smoketest",
+        "//sw/device/tests:entropy_src_smoketest",
+        "//sw/device/tests:gpio_smoketest",
+        "//sw/device/tests:hmac_smoketest",
+        "//sw/device/tests:kmac_smoketest",
+        "//sw/device/tests:otbn_smoketest",
+        "//sw/device/tests:otp_ctrl_smoketest",
+        "//sw/device/tests:pmp_smoketest_napot",
+        "//sw/device/tests:pmp_smoketest_tor",
+        "//sw/device/tests:pwrmgr_smoketest",
+        "//sw/device/tests:rstmgr_smoketest",
+        "//sw/device/tests:rv_plic_smoketest",
+        "//sw/device/tests:rv_timer_smoketest",
+        "//sw/device/tests:sim_dv/pwrmgr_usbdev_smoketest",
+        "//sw/device/tests:spi_host_smoketest",
+        "//sw/device/tests:sram_ctrl_smoketest",
+        "//sw/device/tests:uart_smoketest",
+      ]
     }
     {
       name: chip_sw_rom_functests

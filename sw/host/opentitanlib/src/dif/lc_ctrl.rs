@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use bitflags::bitflags;
 use num_enum::IntoPrimitive;
 use serde::{Deserialize, Serialize};
@@ -39,6 +39,14 @@ with_unknown! {
 }
 
 impl DifLcCtrlState {
+    pub fn from_redundant_encoding(encoding: u32) -> Result<Self> {
+        let base_encoding = encoding & 0x1fu32;
+        if base_encoding > u32::from(DifLcCtrlState::StateInvalid) {
+            bail!("Invalid life cycle state value.");
+        }
+        Ok(DifLcCtrlState(encoding & 0x1fu32))
+    }
+
     /// Encode the given life cycle state in a redundant format where the
     /// five-bit value is repeated six times.
     pub fn redundant_encoding(&self) -> u32 {
@@ -204,6 +212,7 @@ bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     pub struct LcCtrlTransitionCtrl: u32 {
         const EXT_CLOCK_EN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
+        const VOLATILE_RAW_UNLOCK = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_VOLATILE_RAW_UNLOCK_BIT;
     }
 }
 

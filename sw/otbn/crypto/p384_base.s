@@ -541,10 +541,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w6, w16
-  bn.mov    w7, w17
+  bn.sel    w6, w16, w10, C
+  bn.sel    w7, w17, w11, C
 
   /* 5: [w9, w8] = t4 <= X2+Y2 = dmem[x27+0]+dmem[x27+64] */
   bn.lid    x22, 0(x27)
@@ -555,10 +553,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 6: [w7, w6] = t3 <= t3*t4 = [w7, w6]*[w9, w8] */
   bn.mov    w10, w6
@@ -574,20 +570,16 @@ proj_add_p384:
   bn.addc   w17, w1, w3
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 8: [w7, w6] = t3 <= t3-t4 = [w7, w6]-[w9, w8] */
   bn.sub    w16, w6, w8
   bn.subb   w17, w7, w9
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w6, w16
-  bn.mov    w7, w17
+  bn.sel    w6, w10, w16, C
+  bn.sel    w7, w11, w17, C
 
   /* 9: [w9, w8] = t4 <= Y1+Z1 = dmem[x26+64]+dmem[x26+128] */
   bn.lid    x22, 64(x26)
@@ -598,10 +590,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w16, w10, C
+  bn.sel    w9, w17, w11, C
 
   /* 10: [w26, w25] = X3 <= Y2+Z2 = dmem[x27+64]+dmem[x27+128] */
   bn.lid    x22, 64(x27)
@@ -612,10 +602,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 11: [w9, w8] = t4 <= t4*X3 = [w9, w8]*[w26, w25] */
   bn.mov    w10, w8
@@ -631,20 +619,16 @@ proj_add_p384:
   bn.addc   w17, w3, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 13: [w9, w8] = t4 <= t4-X3 = [w9, w8]-[w26, w25] */
   bn.sub    w16, w8, w25
   bn.subb   w17, w9, w26
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w8, w16
-  bn.mov    w9, w17
+  bn.sel    w8, w10, w16, C
+  bn.sel    w9, w11, w17, C
 
   /* 14: [w26, w25] = X3 <= X1+Z1 = dmem[x26+0]+dmem[x26+128] */
   bn.lid    x22, 0(x26)
@@ -655,10 +639,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 15: [w28, w27] = Y3 <= X2+Z2 = dmem[x27+0]+dmem[x27+128] */
   bn.lid    x22, 0(x27)
@@ -669,10 +651,8 @@ proj_add_p384:
   bn.addc   w17, w11, w17
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 16: [w26, w25] = X3 <= X3*Y3 = [w26, w25]*[w28, w27] */
   bn.mov    w10, w25
@@ -688,20 +668,16 @@ proj_add_p384:
   bn.addc   w17, w1, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 18: [w28, w27] = Y3 <= X3-Y3 = [w26, w25]-[w28, w27] */
   bn.sub    w16, w25, w27
   bn.subb   w17, w26, w28
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 19: [w30, w29] = Z3 <= b*t2 = dmem[x28+0]*[w5, w4] */
   bn.lid    x22, 0(x28)
@@ -717,50 +693,40 @@ proj_add_p384:
   bn.subb   w17, w28, w30
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w10, w16, C
+  bn.sel    w26, w11, w17, C
 
   /* 21: [w30, w29] = Z3 <= X3+X3 = [w26, w25]+[w26, w25] */
   bn.add    w16, w25, w25
   bn.addc   w17, w26, w26
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w16, w10, C
+  bn.sel    w30, w17, w11, C
 
   /* 22: [w26, w25] = X3 <= X3+Z3 = [w26, w25]+[w30, w29] */
   bn.add    w16, w25, w29
   bn.addc   w17, w26, w30
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 23: [w30, w29] = Z3 <= t1-X3 = [w3, w2]-[w26, w25] */
   bn.sub    w16, w2, w25
   bn.subb   w17, w3, w26
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w10, w16, C
+  bn.sel    w30, w11, w17, C
 
   /* 24: [w26, w25] = X3 <= t1+X3 = [w3, w2]+[w26, w25] */
   bn.add    w16, w2, w25
   bn.addc   w17, w3, w26
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w16, w10, C
+  bn.sel    w26, w17, w11, C
 
   /* 25: [w28, w27] = Y3 <= b*Y3 = dmem[x28+0]*[w28, w27] */
   bn.lid    x22, 0(x28)
@@ -776,90 +742,72 @@ proj_add_p384:
   bn.addc   w17, w5, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 27: [w5, w4] = t2 <= t1+t2 = [w3, w2]+[w5, w4] */
   bn.add    w16, w2, w4
   bn.addc   w17, w3, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w4, w16
-  bn.mov    w5, w17
+  bn.sel    w4, w16, w10, C
+  bn.sel    w5, w17, w11, C
 
   /* 28: [w28, w27] = Y3 <= Y3-t2 = [w28, w27]-[w5, w4] */
   bn.sub    w16, w27, w4
   bn.subb   w17, w28, w5
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 29: [w28, w27] = Y3 <= Y3-t0 = [w28, w27]-[w1, w0] */
   bn.sub    w16, w27, w0
   bn.subb   w17, w28, w1
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w10, w16, C
+  bn.sel    w28, w11, w17, C
 
   /* 30: [w3, w2] = t1 <= Y3+Y3 = [w28, w27]+[w28, w27] */
   bn.add    w16, w27, w27
   bn.addc   w17, w28, w28
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 31: [w28, w27] = Y3 <= t1+Y3 = [w3, w2]+[w28, w27] */
   bn.add    w16, w2, w27
   bn.addc   w17, w3, w28
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 32: [w3, w2] = t1 <= t0+t0 = [w1, w0]+[w1, w0] */
   bn.add    w16, w0, w0
   bn.addc   w17, w1, w1
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w2, w16
-  bn.mov    w3, w17
+  bn.sel    w2, w16, w10, C
+  bn.sel    w3, w17, w11, C
 
   /* 33: [w1, w0] = t0 <= t1+t0 = [w3, w2]+[w1, w0] */
   bn.add    w16, w2, w0
   bn.addc   w17, w3, w1
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w0, w16
-  bn.mov    w1, w17
+  bn.sel    w0, w16, w10, C
+  bn.sel    w1, w17, w11, C
 
   /* 34: [w1, w0] = t0 <= t0-t2 = [w1, w0]-[w5, w4] */
   bn.sub    w16, w0, w4
   bn.subb   w17, w1, w5
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w0, w16
-  bn.mov    w1, w17
+  bn.sel    w0, w10, w16, C
+  bn.sel    w1, w11, w17, C
 
   /* 35: [w3, w2] = t1 <= t4*Y3 = [w9, w8]*[w28, w27] */
   bn.mov    w10, w8
@@ -893,10 +841,8 @@ proj_add_p384:
   bn.addc   w17, w28, w5
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w27, w16
-  bn.mov    w28, w17
+  bn.sel    w27, w16, w10, C
+  bn.sel    w28, w17, w11, C
 
   /* 39: [w26, w25] = X3 <= t3*X3 = [w7, w6]*[w26, w25] */
   bn.mov    w10, w6
@@ -912,10 +858,8 @@ proj_add_p384:
   bn.subb   w17, w26, w3
   bn.add    w10, w16, w12
   bn.addc   w11, w17, w13
-  bn.sel    w16, w10, w16, C
-  bn.sel    w17, w11, w17, C
-  bn.mov    w25, w16
-  bn.mov    w26, w17
+  bn.sel    w25, w10, w16, C
+  bn.sel    w26, w11, w17, C
 
   /* 41: [w30, w29] = Z3 <= t4*Z3 = [w9, w8]*[w30, w29] */
   bn.mov    w10, w8
@@ -940,10 +884,265 @@ proj_add_p384:
   bn.addc   w17, w30, w3
   bn.sub    w10, w16, w12
   bn.subb   w11, w17, w13
-  bn.sel    w16, w16, w10, C
-  bn.sel    w17, w17, w11, C
-  bn.mov    w29, w16
-  bn.mov    w30, w17
+  bn.sel    w29, w16, w10, C
+  bn.sel    w30, w17, w11, C
+
+  ret
+
+/**
+ * Convert projective coordinates of a P-384 curve point to affine coordinates
+ *
+ * returns P = (x_a, y_a) = (x/z mod p, y/z mod p)
+ *              where P is a valid P-384 curve point,
+ *                    x_a and y_a are the resulting affine coordinates of the
+ *                      curve point,
+ *                    x,y and z are a set of projective coordinates of the
+ *                      point and
+ *                    p is the modulus of the P-384 underlying finite field.
+ *
+ * This routine computes the affine coordinates for a set of projective
+ * coordinates of a valid P-384 curve point. The routine performs the required
+ * divisions by computing the multiplicative modular inverse of the
+ * projective z-coordinate in the underlying finite field of the P-384 curve.
+ * For inverse computation Fermat's little theorem is used, i.e.
+ * we compute z^-1 = z^(p-2) mod p.
+ * For exponentiation a 16 step addition chain is used.
+ * Source of the addition chain is the addchain project:
+ * https://github.com/mmcloughlin/addchain/
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  [w26,w25]: x, x-coordinate of curve point (projective).
+ * @param[in]  [w28,w27]: y, y-coordinate of curve point (projective).
+ * @param[in]  [w30,w29]: z, z-coordinate of curve point (projective).
+ * @param[in]  [w13, w12]: p, modulus of P-384.
+ * @param[in]  w31: all-zero.
+ * @param[out] [w1, w0]: z^-1. inverse of z-coordinate of curve point.
+ * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point.
+ * @param[out] [w28, w27]: y_a, affine y-coordinate of resulting point.
+ *
+ * clobbered registers: w0 to w28
+ * clobbered flag groups: FG0
+ */
+ .globl proj_to_affine_p384
+proj_to_affine_p384:
+
+  /* Exp: 0b10 = 2*0b1
+     Val: r10 = z^2 mod p
+          [w17,w16] <= [w30,w29]^2 mod [w13,w12] */
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  bn.mov    w16, w29
+  bn.mov    w17, w30
+  jal       x1, p384_mulmod_p
+
+  /* Exp: 0b11 = 0b1+0b10
+     Val: r11 <= z*r10 mod p
+          [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  jal       x1, p384_mulmod_p
+
+  /* Exp: 0b110 = 2*0b11
+     Val: r110 = r11^2 mod p
+          [w17,w16] <= [w17,w16]^2 mod [w13,w12] */
+  bn.mov    w10, w16
+  bn.mov    w11, w17
+  jal       x1, p384_mulmod_p
+
+  /* Exp: 0b111 = 0b1+0b110
+     Val: r111 <= z*r110  mod p
+          [w1,w0] = [w17,w16] <= [w30,w29]*[w17,w16] mod [w13,w12] */
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  jal       x1, p384_mulmod_p
+  bn.mov    w0, w16
+  bn.mov    w1, w17
+
+  /* Exp: 0b111000 = 0b111<<3
+     Val: r111000 <= r111^(2^3)  mod p
+          [w17,w16] <= [w17,w16]^(2^3) mod [w13,w12] */
+  loopi     3, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+
+  /* Exp: 0b1111111 = 0b111+0b111000
+     Val: r1111111 <= r111*r111000 mod p
+          [w3,w2] = [w17,w16] <= [w1,w0]*[w17,w16] mod [w13,w12] */
+  bn.mov    w10, w0
+  bn.mov    w11, w1
+  jal       x1, p384_mulmod_p
+  bn.mov    w2, w16
+  bn.mov    w3, w17
+
+  /* Exp: 2^12-1 = (0b1111111<<6)+0b111111
+     Val: r_12_1 <= r111111^(2^6)*r111111 mod p
+          [w5,w4] = [w17,w16] <= [w17,w16]^(2^6)*[w17,w16] mod [w13,w12] */
+  loopi     6, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w2
+  bn.mov    w11, w3
+  jal       x1, p384_mulmod_p
+  bn.mov    w4, w16
+  bn.mov    w5, w17
+
+  /* Exp: 2^24-1 = ((2^12-1)<<12)+(2^12-1)
+     Val: r_24_1 <= r_12_1^(2^12)*r12_1 mod p
+          [w17,w16] <= [w17,w16]^(2^12)*[w5,w4] mod [w13,w12] */
+  loopi     12, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w4
+  bn.mov    w11, w5
+  jal       x1, p384_mulmod_p
+
+  /* Exp: 2^30-1 = ((2^24-1)<<6)+0b111111
+     Val: r_30_1 <= r_24_1^(2^6)*r111111 mod p
+          [w3, w2] = [w17,w16] <= [w17,w16]^(2^6)*[w3,w2] mod [w13,w12] */
+  loopi     6, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w2
+  bn.mov    w11, w3
+  jal       x1, p384_mulmod_p
+  bn.mov    w2, w16
+  bn.mov    w3, w17
+
+  /* Exp: 2^31-1 <= (2^30-1)*2+0b1
+     Val: r_31_1 <= r30_1^2*z mod p
+          [w7,w6] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
+  bn.mov    w10, w16
+  bn.mov    w11, w17
+  jal       x1, p384_mulmod_p
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  jal       x1, p384_mulmod_p
+  bn.mov    w6, w16
+  bn.mov    w7, w17
+
+  /* Exp: 2^32-1 <= (2^30-1)*2+0b1
+     Val: r_32_1 <= r31_1^2*z mod p
+          [w9,w8] = [w17,w16] <= [w17,w16]^2*[w30,w29] mod [w13,w12] */
+  bn.mov    w10, w16
+  bn.mov    w11, w17
+  jal       x1, p384_mulmod_p
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  jal       x1, p384_mulmod_p
+  bn.mov    w9, w16
+  bn.mov    w8, w17
+
+  /* Exp: 2^63-1 <= ((2^32-1)<<31)+(2^31-1)
+     Val: r_63_1 <= r_32_1^(2^31)*r_31_1 mod p
+          [w7,w6] = [w17,w16] <= [w17,w16]^(2^31)*[w7,w6] mod [w13,w12] */
+  loopi     31, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w6
+  bn.mov    w11, w7
+  jal       x1, p384_mulmod_p
+  bn.mov    w6, w16
+  bn.mov    w7,w17
+
+  /* Exp: 2^126-1 = ((2^63-1)<<63) + (2^63-1)
+     Val: r_126_1 <= r_63_1^(2^63)*r_63_1 mod p
+          [w7,w6] = [w17,w16] <= [w17,w16]^(2^63)*[w7,w6] mod [w13,w12] */
+  loopi     63, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w6
+  bn.mov    w11, w7
+  jal       x1, p384_mulmod_p
+  bn.mov    w6, w16
+  bn.mov    w7, w17
+
+  /* Exp: 2^252-1 = ((2^126-1)<<126)+(2^126-1)
+     Val: r_252_1 <= r_126_1^(2^63)*r_126_1 mod p
+          [w17,w16] <= [w17,w16]^(2^126)*[w7,w6] mod [w13,w12] */
+  loopi     126, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w6
+  bn.mov    w11, w7
+  jal       x1, p384_mulmod_p
+
+  /* Exp: 2^255-1 = ((2^252-1)<<3)+0b111
+     Val: r_255_1 <= r_252_1^(2^3)*r111 mod p
+          [w17,w16] <= [w17,w16]^(2^3)*[w1,w0] mod [w13,w12] */
+  loopi     3, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w0
+  bn.mov    w11, w1
+  jal       x1, p384_mulmod_p
+
+  /* Exp: p-2 = ((((((2^255-1)<<33)+(2^32-1))<<94)+(2^30-1))<<2)+0b1
+     Val: x_inv <=((r_255_1^(2^33)*r_32_1)^(2^94)*r_30_1)^(2^2)*z mod p
+          [w17,w16] <= (([w17,w16]^(2^33)*[w9,w8])^(2^94)*[w3,w2])^(2^2)
+                       *[w30,w29] mod [w13,w12] */
+  loopi     33, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w9
+  bn.mov    w11, w8
+  jal       x1, p384_mulmod_p
+  loopi     94, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w2
+  bn.mov    w11, w3
+  jal       x1, p384_mulmod_p
+  loopi     2, 4
+    bn.mov    w10, w16
+    bn.mov    w11, w17
+    jal       x1, p384_mulmod_p
+    nop
+  bn.mov    w10, w29
+  bn.mov    w11, w30
+  jal       x1, p384_mulmod_p
+
+  /* store inverse [w1,w0] <= [w17,w16] = z_inv*/
+  bn.mov w0, w16
+  bn.mov w1, w17
+
+  /* convert x-coordinate to affine space
+     [w26,w25] <= [w17,w16] = x_a <= x/z = x*z_inv = [w26,w25]*[w1,w0] mod p */
+  bn.mov    w10, w25
+  bn.mov    w11, w26
+  jal       x1, p384_mulmod_p
+  bn.mov    w25, w16
+  bn.mov    w26, w17
+
+  /* convert y-coordinate to affine space
+     [w28,w27] <= [w17,w16] = y_a <= y/z = y*z_inv = [w28,w27]*[w1,w0] mod p */
+  bn.mov    w10, w27
+  bn.mov    w11, w28
+  bn.mov    w16, w0
+  bn.mov    w17, w1
+  jal       x1, p384_mulmod_p
+  bn.mov    w27, w16
+  bn.mov    w28, w17
 
   ret
 

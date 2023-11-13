@@ -29,6 +29,53 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "aes_kwp_kat_functest",
+    srcs = ["aes_kwp_kat_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl/aes_kwp",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "aes_kwp_functest",
+    srcs = ["aes_kwp_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "aes_kwp_sideload_functest",
+    srcs = ["aes_kwp_sideload_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -176,6 +223,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
@@ -187,6 +235,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -195,6 +244,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:keymgr_testutils",

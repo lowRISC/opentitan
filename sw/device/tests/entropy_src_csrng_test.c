@@ -268,7 +268,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
       entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
 
   LOG_INFO("OTBN:START");
-  otbn_randomness_test_start(&otbn);
+  otbn_randomness_test_start(&otbn, /*iters=*/0);
 
   bool busy = true;
   while (busy) {

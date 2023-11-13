@@ -9,6 +9,7 @@ use std::time::Duration;
 use aes::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
 use aes::Aes256Dec;
 use anyhow::Result;
+use arrayvec::ArrayVec;
 use clap::Parser;
 use elliptic_curve::ecdh::diffie_hellman;
 use elliptic_curve::pkcs8::DecodePrivateKey;
@@ -21,11 +22,11 @@ use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
-use opentitanlib::test_utils::rpc::UartRecv;
+use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
-use provisioning_data::ManufPersoDataOut;
+use provisioning_data::{EccP256PublicKey, ManufPersoDataIn, ManufPersoDataOut};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -36,9 +37,9 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
 
-    /// HSM generated ECDH private key DER file.
+    /// Host (HSM) generated ECC (P256) private key DER file.
     #[arg(long)]
-    hsm_ecdh_sk: PathBuf,
+    host_ecc_sk: PathBuf,
 }
 
 fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -46,24 +47,53 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
+    // Load host (HSM) generated ECC keys.
+    let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.host_ecc_sk)?;
+    let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
+
+    // Format host generated ECC public key to inject it into the device.
+    let host_pk_sec1_bytes = host_pk.to_sec1_bytes();
+    let num_coord_bytes: usize = (host_pk_sec1_bytes.len() - 1) / 2;
+    let mut host_pk_x = host_pk_sec1_bytes.as_ref()[1..num_coord_bytes + 1]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    let mut host_pk_y = host_pk_sec1_bytes.as_ref()[num_coord_bytes + 1..]
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<ArrayVec<u32, 8>>();
+    host_pk_x.reverse();
+    host_pk_y.reverse();
+    let in_data = ManufPersoDataIn {
+        host_pk: EccP256PublicKey {
+            x: host_pk_x,
+            y: host_pk_y,
+        },
+    };
+
     // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Ready to receive host ECC pubkey ...",
+        opts.timeout,
+    )?;
 
-    // Wait for exported data to be transimitted over the console.
+    // Send data into the device over the console.
+    in_data.send(&*uart)?;
+
+    // Wait for output data to be transimitted over the console.
+    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
     let export_data = ManufPersoDataOut::recv(&*uart, opts.timeout, false)?;
     log::info!("{:x?}", export_data);
 
-    // Load HSM-generated EC private key.
-    let hsm_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.hsm_ecdh_sk)?;
-
     // Load device-generated EC public key.
     let mut device_pk_sec1_bytes = Vec::new();
-    for key_word in &export_data.wrapped_rma_unlock_token.ecc_pk_device_y {
+    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.y {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
-    for key_word in &export_data.wrapped_rma_unlock_token.ecc_pk_device_x {
+    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.x {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
     device_pk_sec1_bytes.push(0x04); // This indicates the EC public key is not compressed.
@@ -71,7 +101,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     let device_pk = PublicKey::<NistP256>::from_sec1_bytes(&device_pk_sec1_bytes)?;
 
     // Peform ECDH to generate shared secret (AES) key.
-    let ecdh_shared_secret = diffie_hellman(hsm_sk.to_nonzero_scalar(), device_pk.as_affine());
+    let ecdh_shared_secret = diffie_hellman(host_sk.to_nonzero_scalar(), device_pk.as_affine());
     let mut aes_key_bytes = Vec::from(ecdh_shared_secret.raw_secret_bytes().as_slice());
     aes_key_bytes.reverse();
     let aes_key = GenericArray::from_slice(aes_key_bytes.as_slice());

@@ -31,7 +31,7 @@ use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, Seri
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
-use crate::util::openocd::OpenOcdServer;
+use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
@@ -77,7 +77,7 @@ pub trait Flavor {
     }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
-    fn load_bitstream(_transport: &impl Transport, _fpga_program: &FpgaProgram) -> Result<()> {
+    fn load_bitstream(_fpga_program: &FpgaProgram) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
@@ -617,7 +617,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 update_firmware_action.force,
             )
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            T::load_bitstream(self, fpga_program).map(|_| None)
+            T::load_bitstream(fpga_program).map(|_| None)
         } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
             T::clear_bitstream(clear).map(|_| None)
         } else {
@@ -637,15 +637,14 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         // Tell OpenOCD to use its CMSIS-DAP driver, and to connect to the same exact USB
         // HyperDebug device that we are.
         let usb_device = self.inner.usb_device.borrow();
-        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdServer::new(
-            None,
-            Some(format!(
+        let new_jtag: Rc<dyn Jtag> = Rc::new(OpenOcdJtagChain::new(
+            format!(
                 "{}; cmsis_dap_vid_pid 0x{:04x} 0x{:04x}; adapter serial \"{}\";",
                 include_str!(env!("openocd_cmsis_dap_adapter_cfg")),
                 usb_device.get_vendor_id(),
                 usb_device.get_product_id(),
                 usb_device.get_serial_number(),
-            )),
+            ),
             opts,
         )?);
         *jtag = Some(Rc::clone(&new_jtag));
@@ -745,25 +744,10 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn get_default_usb_pid() -> u16 {
         StandardFlavor::get_default_usb_pid()
     }
-    fn load_bitstream(transport: &impl Transport, fpga_program: &FpgaProgram) -> Result<()> {
-        if fpga_program.skip() {
-            log::info!("Skip loading the __skip__ bitstream.");
-            return Ok(());
-        }
-
+    fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
         // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
         let board = ChipWhisperer::<B>::new(None, None, None, &[], None)?;
-
-        // The transport does not provide name resolution for the IO interface
-        // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
-        // Open the console UART.  We do this first so we get the receiver
-        // started and the uart buffering data for us.
-        let uart = transport.uart("UART2")?;
-        let reset_pin = transport.gpio_pin("CN10_29")?;
-        if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
-            return Ok(());
-        }
 
         // Program the FPGA bitstream.
         log::info!("Programming the FPGA bitstream.");

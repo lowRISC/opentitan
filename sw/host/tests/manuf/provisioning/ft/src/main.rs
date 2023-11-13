@@ -2,15 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
 use clap::{Args, Parser};
 
-use ft_lib::{
-    run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
-    ManufFtProvisioningActions,
-};
+use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock};
 use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -31,6 +29,10 @@ pub struct ManufFtProvisioningDataInput {
     /// LC state to transition to from TEST_UNLOCKED*.
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "prod")]
     target_mission_mode_lc_state: DifLcCtrlState,
+
+    /// Host (HSM) generated ECC (P256) private key DER file.
+    #[arg(long)]
+    host_ecc_sk: PathBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -44,8 +46,9 @@ struct Opts {
     #[command(flatten)]
     provisioning_data: ManufFtProvisioningDataInput,
 
-    #[command(flatten)]
-    provisioning_actions: ManufFtProvisioningActions,
+    /// Second personalization binary to bootstrap.
+    #[arg(long)]
+    secondary_bootstrap: PathBuf,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -67,40 +70,33 @@ fn main() -> Result<()> {
     let test_exit_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
 
-    if opts.provisioning_actions.all_steps || opts.provisioning_actions.test_unlock {
-        test_unlock(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-            &test_unlock_token,
-        )?;
-    }
-    if opts.provisioning_actions.all_steps
-        || opts.provisioning_actions.otp_creator_sw_cfg
-        || opts.provisioning_actions.otp_owner_sw_cfg
-        || opts.provisioning_actions.otp_hw_cfg
-    {
-        run_sram_ft_individualize(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-            &opts.sram_program,
-            &opts.provisioning_actions,
-            opts.timeout,
-        )?;
-    }
-    if opts.provisioning_actions.all_steps || opts.provisioning_actions.test_exit {
-        test_exit(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-            &test_exit_token,
-            opts.provisioning_data.target_mission_mode_lc_state,
-        )?;
-    }
-    if opts.provisioning_actions.all_steps || opts.provisioning_actions.personalize {
-        run_ft_personalize(&transport, &opts.init, opts.timeout)?;
-    }
+    test_unlock(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+        &test_unlock_token,
+    )?;
+    run_sram_ft_individualize(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+        &opts.sram_program,
+        opts.timeout,
+    )?;
+    test_exit(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+        &test_exit_token,
+        opts.provisioning_data.target_mission_mode_lc_state,
+    )?;
+    run_ft_personalize(
+        &transport,
+        &opts.init,
+        opts.secondary_bootstrap,
+        opts.provisioning_data.host_ecc_sk,
+        opts.timeout,
+    )?;
 
     Ok(())
 }

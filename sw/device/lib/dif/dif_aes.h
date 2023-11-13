@@ -351,7 +351,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data);
 
 /**
- * Process a stream of data containing the plain text and outbut a stream of
+ * Process a stream of data containing the plain text and output a stream of
  * data with the cipher text.
  *
  * This function should be used when performance is desired. It requires the
@@ -362,7 +362,7 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data);
  *
  * @param aes AES handle.
  * @param plain_text AES Input Data.
- * @param cipher_text AES Input Data.
+ * @param cipher_text AES Output Data.
  * @param block_amount The amount of blocks to be encrypted.
  * @return The result of the operation.
  */

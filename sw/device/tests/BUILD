@@ -2,7 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "//rules:opentitan.bzl",
+    "OPENTITAN_CPU",
+    "RSA_ONLY_KEY_STRUCTS",
+)
 load(
     "//rules:opentitan_test.bzl",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
@@ -18,14 +22,19 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
-    "opentitan_binary",
     "opentitan_test",
+    "rsa_key_for_lc_state",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load(
+    "//rules:const.bzl",
+    "CONST",
+    "get_lc_items",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -62,7 +71,14 @@ opentitan_test(
 opentitan_test(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -391,38 +407,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "pwrmgr_random_sleep_all_wake_ups",
-    srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
-    cw310 = new_cw310_params(
-        test_cmd = """
-            --bootstrap={firmware}
-            --bitstream={bitstream}
-        """,
-        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
-    ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
-    deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:ret_sram_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
-    ],
-)
-
-opentitan_test(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
@@ -554,6 +538,25 @@ opentitan_test(
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "clkmgr_jitter_frequency_test",
+    srcs = ["clkmgr_jitter_frequency_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -793,6 +796,67 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "edn_auto_mode",
+    srcs = ["edn_auto_mode.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:otbn_randomness_impl",
+        "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
+    ],
+)
+
+opentitan_test(
+    name = "edn_boot_mode",
+    srcs = ["edn_boot_mode.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = new_verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:otbn_randomness_impl",
     ],
 )
 
@@ -1043,7 +1107,6 @@ opentitan_test(
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1067,9 +1130,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
-    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
     exec_env = EARLGREY_TEST_ENVS,
-    verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -1085,13 +1146,12 @@ opentitan_test(
     ],
 )
 
+# This is sim_dv only target.
+# Real sival target is implement after this.
 opentitan_test(
     name = "flash_ctrl_info_access_lc",
     srcs = ["flash_ctrl_info_access_lc.c"],
-    # Will be updated with a separate PR.
-    # Put this tag for now.
-    cw310 = new_cw310_params(tags = ["broken"]),
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1105,6 +1165,100 @@ opentitan_test(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# hash table for lc_state name and value.
+_FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED0,
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
+)
+
+[
+    opentitan_test(
+        name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
+        srcs = ["flash_ctrl_info_access_lc.c"],
+        cw310 = new_cw310_params(
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:isr_testutils",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rv_plic_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_state_val in _FLASH_CTRL_INFO_ACCESS_LC_STATES
+]
+
+test_suite(
+    name = "flash_ctrl_info_access_lc_states",
+    tests = ["flash_ctrl_info_access_lc_{}".format(lc_state.lower()) for lc_state, _ in _FLASH_CTRL_INFO_ACCESS_LC_STATES],
+)
+
+[
+    opentitan_test(
+        name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
+        srcs = ["flash_ctrl_info_access_lc.c"],
+        cw310 = new_cw310_params(
+            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_{}_personalized".format(lc_state),
+        ),
+        dv = new_dv_params(
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_{}_personalized".format(lc_state),
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:irq",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:isr_testutils",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rv_plic_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state in [
+        "prod",
+        "prod_end",
+        "dev",
+    ]
+]
+
+test_suite(
+    name = "flash_ctrl_info_access_lc_states_personalized",
+    tests = [
+        "flash_ctrl_info_access_lc_{}_personalized".format(lc_state)
+        for lc_state in [
+            "prod",
+            "prod_end",
+            "dev",
+        ]
     ],
 )
 
@@ -1622,6 +1776,253 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "pwrmgr_sleep_resets_lib",
+    srcs = ["pwrmgr_sleep_resets_lib.c"],
+    hdrs = ["pwrmgr_sleep_resets_lib.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    visibility = ["//sw/device/tests:__pkg__"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_all_reset_reqs_test",
+    srcs = ["pwrmgr_all_reset_reqs_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:pwrmgr_sleep_resets_lib",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_random_sleep_all_reset_reqs_test",
+    srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:pwrmgr_sleep_resets_lib",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_deep_sleep_all_reset_reqs_test",
+    srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:pwrmgr_sleep_resets_lib",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_normal_sleep_all_reset_reqs_test",
+    srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:pwrmgr_sleep_resets_lib",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_deep_sleep_por_reset_test",
+    srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_normal_sleep_por_reset_test",
+    srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "pwrmgr_random_sleep_all_wake_ups",
+    srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
+    ],
+)
+
 opentitan_test(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
@@ -1974,7 +2375,7 @@ opentitan_test(
     srcs = ["sram_ctrl_execution_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2026,6 +2427,23 @@ opentitan_test(
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "sram_ctrl_subword_access_test",
+    srcs = ["sram_ctrl_subword_access_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
@@ -2582,6 +3000,7 @@ opentitan_functest(
     cw310 = cw310_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         interface = "hyper310",
+        tags = ["flaky"],
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
@@ -2590,6 +3009,7 @@ opentitan_functest(
     cw340 = cw340_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         interface = "hyper340",
+        tags = ["flaky"],
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
@@ -2723,5 +3143,39 @@ opentitan_test(
     deps = [
         "//sw/device/lib/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "example_sival",
+    srcs = ["example_sival.c"],
+    cw310 = new_cw310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/example_sival",
+    ),
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
+
+opentitan_test(
+    name = "sram_ctrl_memset_test",
+    srcs = ["sram_ctrl_memset_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )

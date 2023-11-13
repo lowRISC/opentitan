@@ -149,6 +149,7 @@ enum module_ {
   X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument)), \
   \
   X(kErrorBootSvcBadHeader,           ERROR_(1, kModuleBootSvc, kInternal)), \
+  X(kErrorBootSvcBadSlot,             ERROR_(2, kModuleBootSvc, kInvalidArgument)), \
   \
   X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
   \

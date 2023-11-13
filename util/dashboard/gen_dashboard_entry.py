@@ -9,7 +9,7 @@ import html
 import logging as log
 import sys
 from pathlib import Path
-from typing import Union, Tuple, TextIO
+from typing import TextIO, Tuple, Union
 
 import dashboard.dashboard_validate as dashboard_validate
 import hjson
@@ -71,9 +71,10 @@ def get_doc_url(base, url):
 def get_linked_design_spec(obj):
     result = ""
     if 'design_spec' in obj:
-        result = "<span title='Design Spec'><a href='{}'>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['design_spec']) + "/..")
-        result += "<code>{}</code></a></span>".format(html.escape(obj['name']))
+        design_spec_url = get_doc_url(
+            obj['_ip_desc_hjson_dir'], obj['design_spec']) + "/.."
+        result = f"<span title='Design Spec'><a href='{design_spec_url}'>"
+        result += f"<code>{html.escape(obj['name'])}</code></a></span>"
     else:
         result = html.escape(obj['name'])
 
@@ -83,8 +84,9 @@ def get_linked_design_spec(obj):
 # Provide the link to the DV document.
 def get_linked_dv_doc(obj):
     if 'dv_doc' in obj:
-        return "<span title='DV Document'><a href=\"{}\">DV</a></span>".format(
-            get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']) + "/../../dv")
+        url = (get_doc_url(obj['_ip_desc_hjson_dir'], obj['dv_doc']) +
+               "/../../dv")
+        return f"<span title='DV Document'><a href=\"{url}\">DV</a></span>"
     else:
         return ""
 
@@ -93,9 +95,8 @@ def get_linked_dv_doc(obj):
 def get_linked_version(rev):
     version = html.escape(rev['version'])
     tree = rev['commit_id'] if 'commit_id' in rev else 'master'
-    url = "https://github.com/lowrisc/opentitan/tree/{}".format(tree)
-    return "<span title='{}'><a href=\"{}\">{}</a></span>".format(
-        tree, url, version)
+    url = f"https://github.com/lowrisc/opentitan/tree/{tree}"
+    return f"<span title='{tree}'><a href=\"{url}\">{version}</a></span>"
 
 
 # Link D/V stages with the checklist table.
@@ -107,7 +108,7 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
     in_page_ref = ""
     # if N/A or in D0/V0 stage, there is no in-page reference.
     if rev[stage] not in ["D0", "V0", "N/A"]:
-        in_page_ref = "#{}".format(html.escape(rev[stage]).lower())
+        in_page_ref = f"#{html.escape(rev[stage]).lower()}"
 
     # If the checklist is available, the commit id is available, and it is not
     # the latest revision, link to the committed version of the checklist.
@@ -115,8 +116,8 @@ def get_linked_checklist(obj, rev, stage, is_latest_rev=True):
     # checklist html.
     # Else, link to the template.
     if 'hw_checklist' in obj and 'commit_id' in rev and not is_latest_rev:
-        url = "https://github.com/lowrisc/opentitan/tree/{}/{}.md{}".format(
-            rev['commit_id'], obj['hw_checklist'], in_page_ref)
+        url = (f"https://github.com/lowrisc/opentitan/tree/{rev['commit_id']}/"
+               f"{obj['hw_checklist']}.md{in_page_ref}")
     elif 'hw_checklist' in obj:
         url = get_doc_url(obj['_ip_desc_hjson_dir'],
                           obj['hw_checklist'] + ".html" + in_page_ref)
@@ -204,8 +205,9 @@ def get_development_stage(obj, rev, is_latest_rev=True):
 
 
 # Create dashboard of hardware IP development status
-def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]], outfile: TextIO):
-    """From an IP block's configuration data, generate a summary as a HTML table row.
+def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]],
+                           outfile: TextIO):
+    """Generate summary HTML table row from an IP block's configuration data.
 
     Parameters
         ----------
@@ -223,7 +225,8 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]], outfile: Text
     SoC generation process.
     e.g
     Path  ->  `hw/ip/aes/data/aes.hjson`
-    Tuple -> (`hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson`, `hw/ip/clkmgr/`)
+    Tuple -> (`hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson`,
+              `hw/ip/clkmgr/`)
     """
 
     if isinstance(config, Tuple):
@@ -233,12 +236,15 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]], outfile: Text
         hjson_path = config
         ip_desc_hjson_dir = str(hjson_path.parent.relative_to(REPO_TOP))
 
-    with hjson_path:
-        prjfile = open(str(hjson_path))
-        try:
-            obj = hjson.load(prjfile)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    try:
+        with open(str(hjson_path)) as prjfile:
+            try:
+                obj = hjson.load(prjfile)
+            except ValueError:
+                raise SystemExit(sys.exc_info()[1])
+    except IOError as e:
+        log.error("Error opening file %s: %s", hjson_path, e)
+        return
 
     if hjson_path.suffixes == ['.prj', '.hjson']:
         is_comportable_spec = False

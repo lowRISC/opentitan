@@ -37,6 +37,7 @@ void test_status_set(test_status_t test_status) {
       break;
     }
     default: {
+      LOG_INFO("test_status_set to 0x%x", test_status);
       test_status_device_write(test_status);
       break;
     }

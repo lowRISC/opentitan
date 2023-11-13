@@ -7,27 +7,23 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+enum {
+  /* Number of 32-bit words in a SHA256 digest. */
+  kSha256DigestWords = 256 / 32,
+};
 
 // Message
 static const char kMessage[] = "test message";
 
 static const ecc_curve_t kCurveP256 = {
     .curve_type = kEccCurveTypeNistP256,
-    .domain_parameter =
-        (ecc_domain_t){
-            .p = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .a = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .b = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .q = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
-            .gx = NULL,
-            .gy = NULL,
-            .cofactor = 0u,
-            .checksum = 0u,
-        },
+    .domain_parameter = NULL,
 };
 
 static const crypto_key_config_t kPrivateKeyConfig = {
@@ -72,11 +68,18 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   CHECK_STATUS_OK(
       otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key));
 
-  // Package message in a cryptolib-style struct.
-  crypto_const_byte_buf_t message = {
+  // Hash the message.
+  crypto_const_byte_buf_t msg = {
       .len = sizeof(kMessage) - 1,
       .data = (unsigned char *)&kMessage,
   };
+  uint32_t msg_digest_data[kSha256DigestWords];
+  hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = kHashModeSha256,
+  };
+  TRY(otcrypto_hash(msg, &msg_digest));
 
   // Allocate space for the signature.
   uint32_t sigR[kP256ScalarWords] = {0};
@@ -91,11 +94,11 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Generate a signature for the message.
   LOG_INFO("Signing...");
   CHECK_STATUS_OK(
-      otcrypto_ecdsa_sign(&private_key, message, &kCurveP256, &signature));
+      otcrypto_ecdsa_sign(&private_key, &msg_digest, &kCurveP256, &signature));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_verify(&public_key, message, &signature,
+  CHECK_STATUS_OK(otcrypto_ecdsa_verify(&public_key, &msg_digest, &signature,
                                         &kCurveP256, verification_result));
 
   return OTCRYPTO_OK;

@@ -1,0 +1,16 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv_dpi_sv:dmidpi:0.1"
+description: "DMI-DPI SV code"
+
+filesets:
+  files_rtl:
+    files:
+      - dmidpi.sv: { file_type: systemVerilogSource }
+
+targets:
+  default:
+    filesets:
+      - files_rtl

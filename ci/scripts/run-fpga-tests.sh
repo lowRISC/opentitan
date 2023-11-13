@@ -8,9 +8,6 @@ set -e
 
 . util/build_consts.sh
 
-SHA=$(git rev-parse HEAD)
-readonly SHA
-
 if [ $# == 0 ]; then
     echo >&2 "Usage: run-fpga-tests.sh <fpga> <tags>"
     echo >&2 "E.g. ./run-fpga-tests.sh cw310 cw310_rom"
@@ -23,7 +20,7 @@ fpga_tags=("$@")
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
-readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${SHA}"
+readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/ci_bitstreams"
 if [ "${fpga}" = "hyper310" ]; then
     readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug"
 else
@@ -32,8 +29,7 @@ fi
 mkdir -p "${BIT_CACHE_DIR}"
 cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
-echo -n "$SHA" > "${BIT_CACHE_DIR}/../../latest.txt"
-export BITSTREAM="--offline --list ${SHA}"
+export BITSTREAM="--offline --list ci_bitstreams"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U

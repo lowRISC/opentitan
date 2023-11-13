@@ -51,7 +51,13 @@ cc_library(
     name = "flash_info_fields",
     srcs = ["flash_info_fields.c"],
     hdrs = ["flash_info_fields.h"],
-    deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/silicon_creator/lib:attestation",
+    ],
 )
 
 cc_library(
@@ -157,7 +163,7 @@ cc_library(
     name = "individualize_sw_cfg_earlgrey_a0_sku_generic",
     deps = [
         ":individualize_sw_cfg",
-        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus:generic_otp_sw_cfg",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:otp_sw_cfg",
     ],
 )
 
@@ -214,7 +220,7 @@ cc_library(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/manuf/keys",
+        "//sw/device/silicon_creator/lib:attestation",
     ],
 )
 
@@ -223,13 +229,11 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
-        data = [
-            "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
-        ],
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
-            --hsm-ecdh-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
         test_harness = "//sw/host/tests/manuf/personalize",
     ),
@@ -238,6 +242,7 @@ opentitan_test(
     },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
+        ":flash_info_fields",
         ":personalize",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
@@ -253,7 +258,7 @@ opentitan_test(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )

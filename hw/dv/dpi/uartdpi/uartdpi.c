@@ -19,6 +19,15 @@
 #include <string.h>
 #include <unistd.h>
 
+// This keeps the necessary uart state.
+struct uartdpi_ctx {
+  char ptyname[64];
+  int host;
+  int device;
+  char tmp_read;
+  FILE *log_file;
+};
+
 void *uartdpi_create(const char *name, const char *log_file_path) {
   struct uartdpi_ctx *ctx =
       (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));
@@ -101,7 +110,9 @@ void uartdpi_close(void *ctx_void) {
 
 int uartdpi_can_read(void *ctx_void) {
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
-
+  if (ctx == NULL) {
+    return 0;
+  }
   int rv = read(ctx->host, &ctx->tmp_read, 1);
   return (rv == 1);
 }
@@ -114,8 +125,10 @@ char uartdpi_read(void *ctx_void) {
 
 void uartdpi_write(void *ctx_void, char c) {
   int rv;
-
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
+  if (ctx == NULL) {
+    return;
+  }
 
   rv = write(ctx->host, &c, 1);
   assert(rv == 1 && "Write to pseudo-terminal failed.");
