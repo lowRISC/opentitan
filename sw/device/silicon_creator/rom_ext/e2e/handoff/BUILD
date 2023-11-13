@@ -58,7 +58,6 @@ _FAULT_TEST_CASES = {
             "fault_test.c",
         ],
         cw310 = cw310_params(
-            bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
             exit_success = test_data["exit_success"],
         ),
         defines = test_data["defines"],

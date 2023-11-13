@@ -41,7 +41,6 @@ _POSITIONS = {
         srcs = ["boot_test.c"],
         cw310 = cw310_params(
             assemble = "{rom_ext}@0 {firmware}@{offset}",
-            bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
             offset = position["offset"],
         ),
         exec_env = {
@@ -92,7 +91,6 @@ _KEYS = {
         name = "key_{}".format(name),
         srcs = ["boot_test.c"],
         cw310 = cw310_params(
-            bitstream = "//sw/device/silicon_creator/rom_ext/e2e:bitstream_secret2_locked",
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
         ),

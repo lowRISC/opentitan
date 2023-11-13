@@ -9,7 +9,6 @@ load(
     "otp_json",
     "otp_partition",
 )
-load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -37,13 +36,4 @@ otp_image(
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
     ],
-    visibility = ["//visibility:private"],
-)
-
-bitstream_splice(
-    name = "bitstream_secret2_locked",
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_secret2_locked_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
 )
