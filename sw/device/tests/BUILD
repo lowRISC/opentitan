@@ -22,6 +22,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
     new_cw310_params = "cw310_params",
@@ -1282,52 +1283,154 @@ opentitan_test(
 
 
 ################ flash rma enter
-otp_image(
-        name = "img_dev_exec_disabled",
-        src = "//hw/ip/otp_ctrl/data:otp_json_dev",
-        overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
-        visibility = ["//visibility:private"],
-)
+#otp_image(
+#        name = "img_dev_exec_disabled",
+#        src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+#        overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
+#        visibility = ["//visibility:private"],
+#)
+#
+#bitstream_splice(
+#        name = "rom_with_fake_keys_otp_dev_exec_disabled",
+#        src = "//hw/bitstream:rom_with_fake_keys",
+#        data = "img_dev_exec_disabled",
+#        meminfo = "//hw/bitstream:otp_mmi",
+#        update_usr_access = True,
+#        visibility = ["//visibility:private"],
+#)
 
-bitstream_splice(
-        name = "rom_with_fake_keys_otp_dev_exec_disabled",
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = "img_dev_exec_disabled",
-        meminfo = "//hw/bitstream:otp_mmi",
-#        tags = ["manual",],
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-)
+#opentitan_test(
+#        name = "flash_ctrl_rma_entry_test",
+### copied from //sw/device/silicon_creator/rom/e2e/jtag_inject/BUILD
+#        srcs = ["flash_ctrl_rma_entry_test.c"],
+#        cw310 = cw310_jtag_params(
+#            binaries = {
+#                "//sw/device/examples/sram_program:sram_program": "sram_program",
+#            },
+#            bitstream = ":rom_with_fake_keys_otp_dev_exec_disabled",
+#            tags = ["cw310_rom_with_fake_keys"],
+#            test_cmd = """
+#                --elf={sram_program}
+#            """,
+#            test_harness = "//sw/host/tests/chip/jtag:sram_load",
+#        ),
+#        exec_env = {
+#            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#        },
+#        rsa_key = rsa_key_for_lc_state(
+#            RSA_ONLY_KEY_STRUCTS,
+#            CONST.LCV.DEV,
+#        ),
+#        deps = [
+#            "//sw/device/lib/runtime:log",
+#            "//sw/device/lib/testing/test_framework:ottf_main",
+#            "//sw/device/silicon_creator/lib/drivers:otp",
+#            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+#        ],
+#)
+
+#opentitan_binary(
+#    name = "flash_init_from_sram",
+#    testonly = True,
+#    srcs = ["flash_init_from_sram.c"],
+#    exec_env = {
+#        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#    },
+#    kind = "ram",
+#    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+#    deps = [
+#        "//sw/device/lib/testing/json:command",
+#        "//sw/device/lib/testing/json:mem",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+#        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+#        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+#        "//sw/device/lib/arch:device",
+#        "//sw/device/lib/base:macros",
+#        "//sw/device/lib/dif:flash_ctrl",
+#        "//sw/device/lib/dif:otp_ctrl",
+#        "//sw/device/lib/dif:rstmgr",
+#        "//sw/device/lib/runtime:log",
+#        "//sw/device/lib/testing:flash_ctrl_testutils",
+#        "//sw/device/lib/testing:otp_ctrl_testutils",
+#        "//sw/device/lib/testing:pinmux_testutils",
+#        "//sw/device/lib/testing:ret_sram_testutils",
+#        "//sw/device/lib/testing:rstmgr_testutils",
+#        "//sw/device/lib/testing/test_framework:check",
+#        "//sw/device/lib/testing/test_framework:ottf_test_config",
+#        "//sw/device/lib/testing/test_framework:status",
+#        "//sw/device/silicon_creator/manuf/lib:sram_start",
+#    ],
+#)
+#
+#opentitan_test(
+#        name = "flash_ctrl_rma_entry_test",
+##        srcs = ["flash_ctrl_rma_entry_test.c"],
+#        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+#        cw310 = cw310_jtag_params(
+#            binaries = {
+#                ":flash_init_from_sram": "sram_program",
+#            },
+##            bitstream = ":rom_with_fake_keys_otp_dev_exec_disabled",
+#            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+#            tags = ["cw310_rom_with_fake_keys"],
+#            test_cmd = """
+#                --elf={sram_program}
+#            """,
+#            test_harness = "//sw/host/tests/chip/jtag:sram_load",
+##             test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
+#        ),
+#        exec_env = {
+#            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#        },
+#        rsa_key = rsa_key_for_lc_state(
+#            RSA_ONLY_KEY_STRUCTS,
+#            CONST.LCV.PROD,
+#        ),
+#        deps = [
+#            "//sw/device/lib/testing/test_framework:check",
+#            "//sw/device/lib/testing/test_framework:ottf_main",
+#            "//sw/device/silicon_creator/lib/drivers:otp",
+#            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+#        ],
+#)
 
 opentitan_test(
-        name = "flash_ctrl_rma_entry_test",
-## copied from //sw/device/silicon_creator/rom/e2e/jtag_inject/BUILD
-        srcs = ["flash_ctrl_rma_entry_test.c"],
-        cw310 = cw310_jtag_params(
-            binaries = {
-                "//sw/device/examples/sram_program:sram_program": "sram_program",
-            },
-            bitstream = ":rom_with_fake_keys_otp_dev_exec_disabled",
-#            logging = "debug",
-            tags = ["cw310_rom_with_fake_keys"],
-            test_cmd = """
-                --elf={sram_program}
-            """,
-            test_harness = "//sw/host/tests/chip/jtag:sram_load",
-        ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            CONST.LCV.DEV,
-        ),
-        deps = [
-            "//sw/device/lib/runtime:log",
-            "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        ],
+    name = "babo_test",
+    srcs = ["babo.c"],
+    cw310 = cw310_jtag_params(
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+        test_cmd = " ".join([
+            "-- --firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/flash_ctrl:host",
+    ),
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    rsa_key = rsa_key_for_lc_state(
+       RSA_ONLY_KEY_STRUCTS,
+       CONST.LCV.PROD,
+    ),
+    deps = [
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/test_framework:check",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+    ],
 )
 
 opentitan_test(
