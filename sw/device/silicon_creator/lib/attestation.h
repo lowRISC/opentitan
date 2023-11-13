@@ -51,12 +51,20 @@ enum {
   kAttestationSignatureWords = kAttestationSignatureBytes / sizeof(uint32_t),
 };
 
-/**
- * Holds an additional seed for use in attestation key generation.
- */
-typedef struct attestation_seed {
-  uint32_t seed[kAttestationSeedWords];
-} attestation_seed_t;
+typedef enum {
+  /**
+   * The UDS attestation key seed.
+   */
+  kUdsAttestationKeySeed = 0,
+  /**
+   * The CDI_0 attestation key seed.
+   */
+  kCdi0AttestationKeySeed = 1,
+  /**
+   * The CDI_1 attestation key seed.
+   */
+  kCdi1AttestationKeySeed = 2,
+} attestation_key_seed_t;
 
 /**
  * Holds an attestation public key (ECDSA-P256).
