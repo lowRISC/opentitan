@@ -418,6 +418,7 @@
 
 - mnemonic: csrrs
   rv32i: true
+  uses_isr: true
   synopsis: Atomic Read and Set bits in CSR
   operands: [grd, csr, grs1]
   doc: |
@@ -481,6 +482,7 @@
 
 - mnemonic: csrrw
   rv32i: true
+  uses_isr: true
   synopsis: Atomic Read/Write CSR
   operands: [grd, csr, grs1]
   doc: |
