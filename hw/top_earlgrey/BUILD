@@ -66,13 +66,17 @@ fpga_cw310(
         "//conditions:default": [],
     }),
     base = ":fpga_cw310",
-    bitstream = "//hw/bitstream:test_rom",
+    base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    rom_mmi = "//hw/bitstream:rom_mmi",
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
         --exec="transport init"
@@ -86,9 +90,9 @@ fpga_cw310(
     name = "fpga_cw310_rom_with_fake_keys",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
 )
 
@@ -96,16 +100,17 @@ fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    bitstream = "//hw/bitstream:rom_with_fake_keys",
     exec_env = "fpga_cw310_rom_ext",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
@@ -118,7 +123,8 @@ fpga_cw310(
     name = "fpga_cw310_sival",
     testonly = True,
     base = ":fpga_cw310_rom_with_fake_keys",
-    bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
+    # TODO(cfrantz): remove in favor of the OTP config.
+    base_bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
     exec_env = "fpga_cw310_sival",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
@@ -133,7 +139,8 @@ fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
     base = ":fpga_cw310_rom_ext",
-    bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
+    # TODO(cfrantz): remove in favor of the OTP config.
+    base_bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_prod_personalized",
     exec_env = "fpga_cw310_sival_rom_ext",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
@@ -185,13 +192,15 @@ fpga_cw340(
         "//conditions:default": [],
     }),
     base = ":fpga_cw340",
-    bitstream = "//hw/bitstream:test_rom",
+    base_bitstream = "//hw/bitstream/cw340:bitstream",
     exec_env = "fpga_cw340_test_rom",
+    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     param = {
         "interface": "cw340",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    rom_mmi = "//hw/bitstream/cw340:rom_mmi",
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"

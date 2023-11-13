@@ -17,9 +17,11 @@ _FIELDS = {
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
+    "rom_mmi": ("file.rom_mmi", False),
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
-    "bitstream": ("file.bitstream", False),
+    "otp_mmi": ("file.otp_mmi", False),
+    "base_bitstream": ("file.base_bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
     "param": ("attr.param", False),
@@ -136,6 +138,11 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "ROM image to use in this environment",
         ),
+        "rom_mmi": attr.label(
+            default = kwargs.get("rom_mmi"),
+            allow_single_file = True,
+            doc = "Memory layout description for ROM splicing",
+        ),
         "rom_ext": attr.label(
             default = kwargs.get("rom_ext"),
             allow_files = True,
@@ -146,8 +153,13 @@ def exec_env_common_attrs(**kwargs):
             allow_single_file = True,
             doc = "OTP image to use in this environment",
         ),
-        "bitstream": attr.label(
-            default = kwargs.get("bitstream"),
+        "otp_mmi": attr.label(
+            default = kwargs.get("otp_mmi"),
+            allow_single_file = True,
+            doc = "Memory layout description for OTP splicing",
+        ),
+        "base_bitstream": attr.label(
+            default = kwargs.get("base_bitstream"),
             allow_single_file = True,
             doc = "Bitstream to use in this environment",
         ),
@@ -275,6 +287,11 @@ def update_file_attr(name, attr, provider, data_files, param, action_param = Non
     if not attr:
         # Nothing to do.
         return
+    if types.is_list(attr):
+        if len(attr) == 1:
+            attr = attr[0]
+        else:
+            fail("attr must be a single item")
     if type(attr) == "File":
         _update(name, attr, data_files, param, action_param)
     elif provider and provider in attr:
@@ -316,8 +333,7 @@ def common_test_setup(ctx, exec_env, firmware):
     action_param = dict(param)
 
     # Collect all file resource specified in the exec_env or as overrides.
-    bitstream = get_fallback(ctx, "attr.bitstream", exec_env)
-    update_file_attr("bitstream", bitstream, None, data_files, param, action_param)
+    update_file_attr("bitstream", ctx.attr.bitstream, None, data_files, param, action_param)
 
     otp = get_fallback(ctx, "attr.otp", exec_env)
     update_file_attr("otp", otp, None, data_files, param, action_param)
