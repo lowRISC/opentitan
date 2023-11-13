@@ -34,10 +34,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV_LCV",
@@ -50,17 +46,6 @@ package(default_visibility = ["//visibility:public"])
         name = "otp_img_shutdown_output_{}".format(lc_state),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
-    )
-    for lc_state, _ in get_lc_items()
-]
-
-[
-    bitstream_splice(
-        name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_shutdown_output_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
 ]
@@ -78,7 +63,6 @@ manifest(
         name = "shutdown_output_{}".format(lc_state),
         cw310 = cw310_params(
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},
-            bitstream = ":bitstream_shutdown_output_{}".format(lc_state),
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
                 hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),

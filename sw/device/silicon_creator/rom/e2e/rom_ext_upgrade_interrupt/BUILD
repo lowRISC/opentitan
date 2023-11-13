@@ -34,10 +34,6 @@ load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -71,28 +67,11 @@ otp_json(
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_rom_ext_upgrade_interrupt_{}".format(
-            lc_state,
-        ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_rom_ext_upgrade_interrupt_{}".format(
-            lc_state,
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, lc_state_val in get_lc_items()
-]
-
-[
     opentitan_test(
         name = "rom_ext_upgrade_interrupt_{}".format(lc_state),
         srcs = ["rom_ext_upgrade_interrupt.c"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_rom_ext_upgrade_interrupt_{}".format(lc_state),
+            otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """
                 --exec="fpga clear-bitstream"

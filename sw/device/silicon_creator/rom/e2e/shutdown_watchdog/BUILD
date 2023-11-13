@@ -29,10 +29,6 @@ load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -103,24 +99,6 @@ SHUTDOWN_WATCHDOG_CASES = [
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_shutdown_watchdog_{}_{}".format(
-            t["lc_state"],
-            t["bite_threshold"],
-        ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_shutdown_watchdog_{}_{}".format(
-            t["lc_state"],
-            t["bite_threshold"],
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for t in SHUTDOWN_WATCHDOG_CASES
-]
-
-[
     opentitan_test(
         name = "shutdown_watchdog_{}_{}".format(
             t["lc_state"],
@@ -128,11 +106,11 @@ SHUTDOWN_WATCHDOG_CASES = [
         ),
         srcs = ["hang_test.c"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_shutdown_watchdog_{}_{}".format(
+            exit_success = t["exit_success"],
+            otp = ":otp_img_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],
                 t["bite_threshold"],
             ),
-            exit_success = t["exit_success"],
             tags = maybe_skip_in_ci(getattr(
                 CONST.LCV,
                 t["lc_state"].upper(),

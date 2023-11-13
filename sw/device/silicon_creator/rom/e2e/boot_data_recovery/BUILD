@@ -35,10 +35,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV",
@@ -129,27 +125,6 @@ BOOT_DATA_RECOVERY_CASES = [
     for case in BOOT_DATA_RECOVERY_CASES
 ]
 
-[
-    bitstream_splice(
-        name = "bitstream_boot_data_recovery_{}_{}".format(
-            case["lc_state"],
-            case["default_boot_data"],
-        ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_boot_data_recovery_{}_{}".format(
-            case["lc_state"],
-            case["default_boot_data"],
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(getattr(
-            CONST.LCV,
-            case["lc_state"].upper(),
-        )),
-        update_usr_access = True,
-    )
-    for case in BOOT_DATA_RECOVERY_CASES
-]
-
 BOOT_DATA_RECOVERY_MANIFEST = manifest(
     d = dict(
         name = "boot_data_recovery_manifest",
@@ -167,11 +142,11 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_boot_data_recovery_{}_{}".format(
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
+            otp = ":otp_img_boot_data_recovery_{}_{}".format(
                 case["lc_state"],
                 case["default_boot_data"],
             ),
-            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
             tags = maybe_skip_in_ci(getattr(
                 CONST.LCV,
                 case["lc_state"].upper(),

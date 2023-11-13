@@ -25,10 +25,6 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -73,20 +69,11 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-bitstream_splice(
-    name = "bitstream_bootstrap_rma",
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_bootstrap_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 opentitan_test(
     name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
     cw310 = cw310_jtag_params(
-        bitstream = ":bitstream_bootstrap_rma",
+        otp = "otp_img_bootstrap_rma",
         # We need to clear the bitstream between consecutive runs of this
         # test since it modifies OTP state (i.e., the LC state).
         test_cmd = """
@@ -120,7 +107,7 @@ opentitan_test(
         binaries = {
             "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
+        otp = "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
         test_cmd = """
             --bitstream="{bitstream}"
         """,
