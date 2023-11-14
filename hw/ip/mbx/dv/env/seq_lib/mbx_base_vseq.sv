@@ -119,10 +119,40 @@ class mbx_base_vseq extends cip_base_vseq #(
       UVM_DEBUG)
   endtask: mbx_init
 
-  virtual task wait_for_core_interrupt();
+  virtual task wait_for_core_interrupt(int clks_timeout=1024);
     `uvm_info(`gfn, $sformatf("wait_for_core_interrupt -- Start"), UVM_DEBUG)
-    `DV_WAIT(cfg.intr_vif.pins == 1'b1)
+    fork begin : isolation_fork
+      fork
+        begin
+          `DV_WAIT(cfg.intr_vif.pins[MbxCoreReady] == 1'b1, "core interrupt wait timeout")
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks(clks_timeout);
+          `dv_fatal($sformatf("Timed out after %d clocks waiting for a core interrupt",
+              clks_timeout), `gfn)
+        end
+      join_any;
+      disable fork;
+    end join
     `uvm_info(`gfn, $sformatf("wait_for_core_interrupt -- End"), UVM_DEBUG)
+  endtask: wait_for_core_interrupt
+
+  virtual task wait_for_soc_interrupt(int clks_timeout=1024);
+    `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- Start"), UVM_DEBUG)
+    fork begin : isolation_fork
+      fork
+        begin
+          `DV_WAIT(cfg.intr_soc_vif.pins[0] == 1'b1, "soc interrupt wait timeout")
+        end
+        begin
+          cfg.clk_rst_vif.wait_clks(clks_timeout);
+          `dv_fatal($sformatf("Timed out after %d clocks waiting for a soc interrupt",
+              clks_timeout), `gfn)
+        end
+      join_any;
+      disable fork;
+    end join
+    `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- End"), UVM_DEBUG)
   endtask: wait_for_core_interrupt
 
   virtual task body();

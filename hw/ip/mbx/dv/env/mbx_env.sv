@@ -15,6 +15,11 @@ class mbx_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+
+    if (!uvm_config_db#(intr_vif)::get(this, "", "intr_soc_vif", cfg.intr_soc_vif) &&
+        cfg.num_interrupts > 0) begin
+      `uvm_fatal(get_full_name(), "failed to get intr_soc_vif from uvm_config_db")
+    end
   endfunction: build_phase
 
   function void connect_phase(uvm_phase phase);
