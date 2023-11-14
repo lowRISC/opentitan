@@ -114,6 +114,10 @@ xkcp_repos()
 load("//third_party/hsm:repos.bzl", "hsm_repos")
 hsm_repos()
 
+# NIST CAVP Test Vectors
+load("//third_party/nist_cavp_testvectors:repos.bzl", "nist_cavp_repos")
+nist_cavp_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
