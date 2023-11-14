@@ -105,8 +105,6 @@ jobs:
   - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check trailing whitespace
-  - bash: ci/scripts/build-docs.sh
-    displayName: Render documentation
   - bash: ci/scripts/check-links.sh
     displayName: Check File Links
   - bash: ci/scripts/check-cmdgen.sh
@@ -153,6 +151,8 @@ jobs:
   - bash:  ci/scripts/check_bazel_target_names.py
     displayName: Check Bazel target names (Experimental)
     continueOnError: True
+  - bash: ci/scripts/build-docs.sh
+    displayName: Render documentation
   # Define OT_DESTRUCTIVE=1 to enable ci/scripts/check-generated.sh to delete
   # uncommitted changes.
   - bash: OT_DESTRUCTIVE=1 ci/scripts/check-generated.sh
