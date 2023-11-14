@@ -814,7 +814,7 @@ module dma
           end
           if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
             (|reg2hw.destination_address_lo.q[1:0])) begin
-            next_error[DmaDestinationAddrErr] = 1'b1;
+            next_error[DmaDestAddrErr] = 1'b1;
           end
 
           // In 2-byte transfers, source and destination address must be 2-byte aligned
@@ -823,13 +823,13 @@ module dma
           end
           if (reg2hw.transfer_width.q == DmaXfer2BperTxn &&
               reg2hw.destination_address_lo.q[0]) begin
-            next_error[DmaDestinationAddrErr] = 1'b1;
+            next_error[DmaDestAddrErr] = 1'b1;
           end
 
           // Source and destination must have the same alignment
           if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
             next_error[DmaSourceAddrErr] = 1'b1;
-            next_error[DmaDestinationAddrErr] = 1'b1;
+            next_error[DmaDestAddrErr] = 1'b1;
           end
           // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
@@ -843,7 +843,7 @@ module dma
                 ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                   SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-            next_error[DmaDestinationAddrErr] = 1'b1;
+            next_error[DmaDestAddrErr] = 1'b1;
           end
 
           // If data from the OT internal memory is transferred  to the SOC system bus or the
@@ -874,7 +874,7 @@ module dma
           if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
               (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
               (|reg2hw.destination_address_hi.q)) begin
-            next_error[DmaDestinationAddrErr] = 1'b1;
+            next_error[DmaDestAddrErr] = 1'b1;
           end
 
           if (!reg2hw.range_valid.q) begin
@@ -901,8 +901,8 @@ module dma
         DmaWaitReadResponse: begin
           if (read_rsp_valid) begin
             if (read_rsp_error) begin
-              next_error[DmaCompletionErr] = 1'b1;
-              ctrl_state_d                 = DmaError;
+              next_error[DmaBusErr] = 1'b1;
+              ctrl_state_d          = DmaError;
             end else begin
               capture_return_data = 1'b1;
               // We received data, feed it into the SHA2 engine
@@ -928,8 +928,8 @@ module dma
 
           if (write_rsp_valid) begin
             if (write_rsp_error) begin
-              next_error[DmaCompletionErr] = 1'b1;
-              ctrl_state_d                 = DmaError;
+              next_error[DmaBusErr] = 1'b1;
+              ctrl_state_d          = DmaError;
             end else begin
               // Advance by the number of bytes just transferred
               transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
@@ -1286,10 +1286,10 @@ module dma
     hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError) | clear_status;
 
     hw2reg.error_code.src_address_error.d  = clear_status? '0 : next_error[DmaSourceAddrErr];
-    hw2reg.error_code.dst_address_error.d  = clear_status? '0 : next_error[DmaDestinationAddrErr];
+    hw2reg.error_code.dst_address_error.d  = clear_status? '0 : next_error[DmaDestAddrErr];
     hw2reg.error_code.opcode_error.d       = clear_status? '0 : next_error[DmaOpcodeErr];
     hw2reg.error_code.size_error.d         = clear_status? '0 : next_error[DmaSizeErr];
-    hw2reg.error_code.bus_error.d          = clear_status? '0 : next_error[DmaCompletionErr];
+    hw2reg.error_code.bus_error.d          = clear_status? '0 : next_error[DmaBusErr];
     hw2reg.error_code.base_limit_error.d   = clear_status? '0 : next_error[DmaBaseLimitErr];
     hw2reg.error_code.range_valid_error.d  = clear_status? '0 : next_error[DmaRangeValidErr];
     hw2reg.error_code.asid_error.d         = clear_status? '0 : next_error[DmaAsidErr];
