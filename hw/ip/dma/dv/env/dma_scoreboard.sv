@@ -84,24 +84,36 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endfunction : build_phase
 
-  // Check if address is valid, and indicate whether it's a 'clear interrupt' address.
+  // Look up the given address in the list of 'Clear Interrupt' addresses, returning a positive
+  // index iff found.
+  function int int_addr_lookup(bit [31:0] addr);
+    for (uint idx = 0; idx < dma_config.int_src_addr.size(); idx++) begin
+      if (dma_config.int_src_addr[idx] == addr) begin
+        // Address matches; this address should just receive write traffic.
+        return int'(idx);
+      end
+    end
+    return -1;
+  endfunction : int_addr_lookup
+
+  // Check if address is valid.
+  // If it's a valid 'clear interrupt' address, return the positive index of the interrupt;
+  // otherwise return -1.
   // This method is common for both source and destination address.
-  function bit valid_addr_is_clrint(bit [63:0] addr,
+  function int int_source_from_addr(bit [63:0] addr,
                                     bit [63:0] last_addr,
                                     bit handshake_mode,
                                     bit fifo_en,
                                     bit [63:0] start_addr,
                                     bit [31:0] memory_range,
                                     string check_type = "Source");
+    int idx;
+
     `DV_CHECK(addr[1:0] == 0, $sformatf("Address is not 4 Byte aligned"))
 
     // Is this address a 'Clear Interrupt' operation?
-    for (uint idx = 0; idx < dma_config.int_src_addr.size(); idx++) begin
-      if (dma_config.int_src_addr[idx] == addr) begin
-        // Address matches; this address should just receive write traffic.
-        return 1'b1;
-      end
-    end
+    idx = int_addr_lookup(addr);
+    if (idx >= 0) return idx;
 
     // Handshake mode when fifo is enabled
     if (handshake_mode && fifo_en) begin
@@ -117,7 +129,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                 aligned_start_addr, start_addr + memory_range))
     end
     // Valid address, but not an interrupt-clearing address.
-    return 1'b0;
+    return -1;
   endfunction
 
   // On-the-fly checking of write data against the pre-randomized source data
@@ -148,7 +160,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                     dma_config.per_transfer_width);
     tl_a_op_e a_opcode = tl_a_op_e'(item.a_opcode);
     bit [31:0] memory_range;
-    bit clear_int;
+    int int_source;
 
     `uvm_info(`gfn, $sformatf("Got addr txn \n:%s", item.sprint()), UVM_DEBUG)
     // Common checks
@@ -176,15 +188,16 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if opcode is as expected
       `DV_CHECK(a_opcode inside {Get},
                $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
-      // Check if the transaction address is in source address range
-      clear_int = valid_addr_is_clrint(item.a_addr,
-                                       last_src_addr,
-                                       dma_config.handshake,
-                                       dma_config.get_read_fifo_en(),
-                                       dma_config.src_addr,
-                                       memory_range,
-                                       "Source");
-      `DV_CHECK_EQ(clear_int, 1'b0, "Unexpected Read access to Clear Interrupt address")
+      // Check if the transaction address is an interrupt-clearing address or lies within the
+      // source address range.
+      int_source = int_source_from_addr(item.a_addr,
+                                        last_src_addr,
+                                        dma_config.handshake,
+                                        dma_config.get_read_fifo_en(),
+                                        dma_config.src_addr,
+                                        memory_range,
+                                        "Source");
+      `DV_CHECK_EQ(int_source, -1, "Unexpected Read access to Clear Interrupt address")
 
       // Push addr item to source queue
       src_queue.push_back(item);
@@ -223,15 +236,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(if_name, cfg.asid_names[dma_config.dst_asid],
                    $sformatf("Unexpected write txn on %s interface with destination ASID %s",
                              if_name, dma_config.dst_asid.name()))
-      // Check if the transaction address is in destination address range
-      clear_int = valid_addr_is_clrint(item.a_addr,
-                                       last_dst_addr,
-                                       dma_config.handshake,
-                                       dma_config.get_write_fifo_en(),
-                                       dma_config.dst_addr,
-                                       memory_range,
-                                       "Destination");
-
+      // Check if the transaction address is an interrupt-clearing address or lies within the
+      // destination address range.
+      int_source = int_source_from_addr(item.a_addr,
+                                        last_dst_addr,
+                                        dma_config.handshake,
+                                        dma_config.get_write_fifo_en(),
+                                        dma_config.dst_addr,
+                                        memory_range,
+                                        "Destination");
       // Check if opcode is as expected
       if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
           (remaining_bytes < expected_per_txn_bytes)) begin
@@ -247,10 +260,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
 
       // Track write-side progress through this transfer
-      `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x clear_int %x",
-                                num_bytes_this_txn, clear_int), UVM_HIGH);
+      `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x int_source %x",
+                                num_bytes_this_txn, int_source), UVM_HIGH);
 
-      if (!clear_int) begin
+      if (int_source < 0) begin
         // On-the-fly checking of writing data
         check_write_data(if_name, item);
 
