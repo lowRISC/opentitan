@@ -352,8 +352,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ_FATAL(dma_config.is_valid_config, 1,
                            $sformatf("transaction observed on %s for invalid configuration",
                                      if_name))
-        // Check if there is any active operation
-        `DV_CHECK_FATAL(operation_in_progress, "transaction detected with no active operation")
+        // Check if there is any active operation, but be aware that the Abort functionality
+        // intentionally does not wait for a bus response (this is safe because the design never
+        // blocks/stalls the TL-UL response).
+        `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
+                        "Transaction detected with no active operation")
         case (dir)
           AddrChannel: begin
             `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
@@ -473,7 +476,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_EQ(size, 0, $sformatf("%0d unhandled destination interface transactions",size))
     end
     // Check if DMA operation is in progress
-    `DV_CHECK_EQ(operation_in_progress, 0, "DMA operation imcomplete")
+    `DV_CHECK_EQ(operation_in_progress, 0, "DMA operation incomplete")
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -715,29 +718,35 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.int_src_wr_val[index] = item.a_data;
       end
       "control": begin
-        // bit to indicate the very start of a DMA transfer, not each individual chunk
-        bit start_transfer = `gmv(ral.control.go) & `gmv(ral.control.initial_transfer);
-        `uvm_info(`gfn, $sformatf("Got Start_Transfer = %0b", start_transfer), UVM_HIGH)
-        // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
-        `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
-        // Get handshake mode enable bit
-        dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
-        `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
-                  UVM_HIGH)
-        // Update the value of abort as this stops the DMA operation
-        abort_via_reg_write = `gmv(ral.control.abort);
+        // Is this the very start of a DMA transfer, rather than each individual chunk?
+        // Note: Abort overrides Go
+        bit start_transfer = get_field_val(ral.control.go, item.a_data) &
+                             get_field_val(ral.control.initial_transfer, item.a_data) &
+                            !get_field_val(ral.control.abort, item.a_data);
+        `uvm_info(`gfn, $sformatf("CONTROL register written as 0x%0x", item.a_data), UVM_MEDIUM);
+        // Update the 'Aborted' prediction in response to setting the CONTROL.abort bit
+        // Note: this is a Write Only field so we cannot use the mirrored value
+        abort_via_reg_write = get_field_val(ral.control.abort, item.a_data);
         if (abort_via_reg_write) begin
-          `uvm_info(`gfn, "Detected Abort operation", UVM_LOW)
+          `uvm_info(`gfn, "Aborting operation", UVM_LOW)
         end
-        // Get auto-increment bit
-        dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
-        dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
-        dma_config.direction = dma_control_data_direction_e'(`gmv(ral.control.data_direction));
         // Test bench/firmware is permitted to write to the Control register at the start of each
         // chunk but we must not reset our internal state; for non-initial chunks the Control
         // register write is just a nudge to proceed
         if (start_transfer) begin
+          `uvm_info(`gfn, $sformatf("Got Start_Transfer = %0b", start_transfer), UVM_HIGH)
+          // Get mirrored field value and cast to associated enum in dma_config
+          dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
+          `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
+          // Get handshake mode enable bit
+          dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
+          `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
+                    UVM_HIGH)
+          // Get auto-increment bit
+          dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
+          dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
+          dma_config.direction = dma_control_data_direction_e'(`gmv(ral.control.data_direction));
+
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
           // Check if configuration is valid
@@ -806,7 +815,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
       "status": begin
         bit busy, done, aborted, error, sha2_digest_valid;
         bit [7:0] error_code;
-        bit exp_aborted = src_tl_error_detected || abort_via_reg_write;
+        bit exp_aborted = abort_via_reg_write;
+        bit bus_error;
+
         do_read_check = 1'b0;
         busy = get_field_val(ral.status.busy, item.d_data);
         done = get_field_val(ral.status.done, item.d_data);
@@ -821,6 +832,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
         error_code[6] = get_field_val(ral.error_code.range_valid_error, item.d_data);
         error_code[7] = get_field_val(ral.error_code.asid_error, item.d_data);
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
+
+        // Bus errors are distinct from configuration errors.
+        bus_error = error_code[4];
 
         if (done || aborted || error) begin
           string reasons;
@@ -842,8 +856,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
                          $sformatf("act_data_size: %0d exp_data_size: %0d",
                                    num_bytes_transferred, exp_bytes_transferred))
         end
-        // Check if aborted bit is set if there is a TL error
-        `DV_CHECK_EQ(aborted, exp_aborted, "Aborted bit not set with TL error or DMA config err")
+        // STATUS.aborted should only be true if we requested an Abort.
+        // However, the transfer may just have completed successfully even if we did request an
+        // Abort and it may even have terminated in response to a TL-UL error for some sequences.
+        if (abort_via_reg_write) begin
+          `DV_CHECK_EQ(|{aborted, bus_error, done}, 1'b1, "Transfer neither Aborted nor completed.")
+        end else begin
+          `DV_CHECK_EQ(aborted, 1'b0, "STATUS.aborted bit set when not expected")
+        end
         if (cfg.en_cov) begin
           // Sample dma status and error code
           cov.status_cg.sample(.busy (busy),
