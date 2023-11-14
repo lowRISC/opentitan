@@ -356,8 +356,19 @@ static void *server_create(void *ctx_void) {
 
     // New client data
     if (FD_ISSET(ctx->cfd, &read_fds)) {
-      while (get_byte(ctx, &xfer_data)) {
-        tcp_buffer_put_byte(ctx->buf_in, xfer_data);
+      unsigned count = 0;
+      while (!tcp_buffer_is_full(ctx->buf_in)) {
+        if (get_byte(ctx, &xfer_data)) {
+          tcp_buffer_put_byte(ctx->buf_in, xfer_data);
+          count++;
+        } else {
+          // If there's no data after select says there is, the client is gone
+          if (count == 0) {
+            fprintf(stderr, "%s: Client disappeared.\n", ctx->display_name);
+            tcp_server_client_close(ctx);
+          }
+          break;
+        }
       }
     }
 
