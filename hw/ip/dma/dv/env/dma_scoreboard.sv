@@ -205,37 +205,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Update last address
       last_src_addr = item.a_addr;
     end else begin // Write transaction
-      uint exp_a_mask_count_ones;
-      uint num_bytes_this_txn;
-      uint transfer_bytes_left;
-      uint remaining_bytes;
-
-      // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
-      //       register, so we can rely upon all non-final chunks being of the same size
-      `DV_CHECK(num_bytes_transferred < dma_config.total_transfer_size,
-                "Write transaction when too many bytes transferred already");
-
-      transfer_bytes_left = dma_config.total_transfer_size - num_bytes_transferred;
-      // Bytes remaining until the end of the current chunk
-      remaining_bytes = dma_config.chunk_data_size
-                           - (num_bytes_transferred % dma_config.chunk_data_size);
-      if (transfer_bytes_left < remaining_bytes) begin
-        remaining_bytes = transfer_bytes_left;
-      end
-
-      exp_a_mask_count_ones = remaining_bytes > expected_per_txn_bytes ?
-                              expected_per_txn_bytes : remaining_bytes;
-      num_bytes_this_txn = $countones(item.a_mask);
-
-      // check if a_mask matches the data size
-      `DV_CHECK_EQ(num_bytes_this_txn, exp_a_mask_count_ones,
-                   $sformatf("unexpected write a_mask: %x for %0d-byte transfer. Expected %x bytes",
-                             item.a_mask, expected_per_txn_bytes, exp_a_mask_count_ones))
-
-      // Check destination ASID for write transaction
-      `DV_CHECK_EQ(if_name, cfg.asid_names[dma_config.dst_asid],
-                   $sformatf("Unexpected write txn on %s interface with destination ASID %s",
-                             if_name, dma_config.dst_asid.name()))
       // Check if the transaction address is an interrupt-clearing address or lies within the
       // destination address range.
       int_source = int_source_from_addr(item.a_addr,
@@ -245,32 +214,84 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                         dma_config.dst_addr,
                                         memory_range,
                                         "Destination");
-      // Check if opcode is as expected
-      if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
-          (remaining_bytes < expected_per_txn_bytes)) begin
-        `DV_CHECK(a_opcode inside {PutPartialData},
-                  $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
-      end else begin
-        `DV_CHECK(a_opcode inside {PutFullData},
-                  $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
-      end
-
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
 
-      // Track write-side progress through this transfer
-      `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x int_source %x",
-                                num_bytes_this_txn, int_source), UVM_HIGH);
-
+      // Write to 'Clear Interrupt' address?
       if (int_source < 0) begin
+        // Regular write traffic
+        uint exp_a_mask_count_ones;
+        uint num_bytes_this_txn;
+        uint transfer_bytes_left;
+        uint remaining_bytes;
+
+        // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
+        //       register, so we can rely upon all non-final chunks being of the same size
+        `DV_CHECK(num_bytes_transferred < dma_config.total_transfer_size,
+                  "Write transaction when too many bytes transferred already");
+
+        transfer_bytes_left = dma_config.total_transfer_size - num_bytes_transferred;
+        // Bytes remaining until the end of the current chunk
+        remaining_bytes = dma_config.chunk_data_size
+                             - (num_bytes_transferred % dma_config.chunk_data_size);
+        if (transfer_bytes_left < remaining_bytes) begin
+          remaining_bytes = transfer_bytes_left;
+        end
+
+        exp_a_mask_count_ones = remaining_bytes > expected_per_txn_bytes ?
+                                expected_per_txn_bytes : remaining_bytes;
+        num_bytes_this_txn = $countones(item.a_mask);
+
+        // check if a_mask matches the data size
+        `DV_CHECK_EQ(num_bytes_this_txn, exp_a_mask_count_ones,
+                 $sformatf("unexpected write a_mask: %x for %0d-byte transfer. Expected %x bytes",
+                           item.a_mask, expected_per_txn_bytes, exp_a_mask_count_ones))
+
+        // Check destination ASID for write transaction
+        `DV_CHECK_EQ(if_name, cfg.asid_names[dma_config.dst_asid],
+                     $sformatf("Unexpected write txn on %s interface with destination ASID %s",
+                               if_name, dma_config.dst_asid.name()))
+
+        // Track write-side progress through this transfer
+        `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x int_source %x",
+                                  num_bytes_this_txn, int_source), UVM_HIGH);
+
         // On-the-fly checking of writing data
         check_write_data(if_name, item);
+
+        // Check if opcode is as expected
+        if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
+            (remaining_bytes < expected_per_txn_bytes)) begin
+          `DV_CHECK(a_opcode inside {PutPartialData},
+                    $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
+        end else begin
+          `DV_CHECK(a_opcode inside {PutFullData},
+                    $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
+        end
 
         // Update last address
         last_dst_addr = item.a_addr;
         // Update number of bytes transferred only in case of write txn - refer #338
         num_bytes_transferred += num_bytes_this_txn;
+      end else begin
+        // Write to 'Clear Interrupt' address, so check the value written and the bus to which the
+        // write has been sent.
+        string exp_name;
+        exp_name = dma_config.clear_int_bus[int_source] ? "host" : "ctn";
+
+        `uvm_info(`gfn, $sformatf("Clear Interrupt write of 0x%0x to address 0x%0x",
+                                  item.a_data, item.a_addr), UVM_HIGH)
+        `DV_CHECK_EQ(if_name, exp_name,
+                     $sformatf("%s received %s-targeted clear interrupt write", if_name, exp_name))
+        `DV_CHECK_EQ(dma_config.int_src_wr_val[int_source], item.a_data,
+                     $sformatf("Unexpected value 0x%0x written to clear interrupt %d", item.a_data,
+                               int_source))
+        `DV_CHECK_EQ(item.a_mask, 4'hF, "Unexpected write enables to clear interrupt write")
+
+        // We're expecting only full word writes.
+        `DV_CHECK(a_opcode inside {PutFullData},
+                  $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
       end
     end
 
@@ -366,13 +387,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
                       uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) d_chan_fifo);
+    bit exp_int_clearing;
     tl_channels_e dir;
     tl_seq_item   item;
     fork
       forever begin
         dir_fifo.get(dir);
+        // Clear Interrupt writes are emitted even for invalid configurations.
+        exp_int_clearing = dma_config.handshake & |dma_config.clear_int_src &
+                          |dma_config.handshake_intr_en;
         // Check if transaction is expected for a valid configuration
-        `DV_CHECK_EQ_FATAL(dma_config.is_valid_config, 1,
+        `DV_CHECK_FATAL(dma_config.is_valid_config || exp_int_clearing,
                            $sformatf("transaction observed on %s for invalid configuration",
                                      if_name))
         // Check if there is any active operation, but be aware that the Abort functionality

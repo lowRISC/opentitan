@@ -30,7 +30,6 @@ class dma_handshake_smoke_vseq extends dma_handshake_vseq;
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; // Enable hardware handshake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
-      clear_int_src == 0; // Disable clearing of FIFO interrupt
       opcode == OpcCopy;) // Avoid any involved operations such as SHA2 hashing
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
                               dma_config.convert2string()), UVM_MEDIUM)
