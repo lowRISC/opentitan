@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/aes_block_schema.json",
+  "title": "Cryptotest ECDSA Signature Verification Test Vector",
+  "description": "A list of testvectors for ECDSA Signature Verification testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "algorithm": {
+        "description": "Should be ecdsa",
+        "type": "string",
+        "enum": ["ecdsa"]
+      },
+      "operation": {
+        "description": "ECDSA operation",
+        "type": "string",
+        "enum": ["verify"]
+      },
+      "curve": {
+        "description": "Curve type",
+        "type": "string",
+        "enum": ["p-256", "p-384"]
+      },
+      "hash_alg": {
+        "description": "Hash algorithm",
+        "type": "string",
+        "enum": ["sha-1", "sha-224", "sha-256", "sha-384", "sha-512"]
+      },
+      "message": {
+        "description": "Message to be verified",
+        "$ref": "#/$defs/byte_array"
+      },
+      "qx": {
+        "description": "Qx",
+        "type": "integer"
+      },
+      "qy": {
+        "description": "Qy",
+        "type": "integer"
+      },
+      "r": {
+        "description": "r parameter",
+        "type": "integer"
+      },
+      "s": {
+        "description": "s parameter",
+        "type": "integer"
+      },
+      "result": {
+        "description": "Verification result",
+        "type": "boolean"
+      }
+    }
+  }
+}
