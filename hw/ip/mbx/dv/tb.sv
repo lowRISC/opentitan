@@ -16,6 +16,7 @@ module tb;
 
   wire clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire intr_doe;
   wire intr_ready;
   wire intr_abort;
 
@@ -23,7 +24,8 @@ module tb;
   tl_if i_tl_scxb_mbx_core_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_agxb_mbx_core_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_mbx_agxb_device_if(.clk(clk), .rst_n(rst_n));
-  pins_if #(NUM_MAX_INTERRUPTS) i_intr_if(interrupts);
+  pins_if #(NUM_MAX_INTERRUPTS) i_intr_core_if(interrupts);
+  pins_if #(NUM_MAX_INTERRUPTS) i_intr_soc_if({intr_doe});
 
   `DV_ALERT_IF_CONNECT()
 
@@ -34,7 +36,7 @@ module tb;
     .rst_ni(rst_n),
     .doe_intr_support_o(),
     .doe_intr_en_o(),
-    .doe_intr_o(),
+    .doe_intr_o(intr_doe),
     // various tlul interfaces
     .core_tl_d_o(i_tl_agxb_mbx_core_if.d2h),
     .core_tl_d_i(i_tl_agxb_mbx_core_if.h2d),
@@ -84,7 +86,9 @@ module tb;
       null, "*.env.m_tl_agent_mbx_mem_reg_block*", "vif",
       i_tl_mbx_agxb_device_if);
     uvm_config_db#(intr_vif)::set(
-      null, "*.env", "intr_vif", i_intr_if);
+      null, "*.env", "intr_vif", i_intr_core_if);
+    uvm_config_db#(intr_vif)::set(
+      null, "*.env", "intr_soc_vif", i_intr_soc_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
