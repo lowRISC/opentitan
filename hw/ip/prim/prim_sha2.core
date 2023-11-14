@@ -1,0 +1,46 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:sha2"
+description: "SHA-2 (configurable multi-mode and 256) engine"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:sha2_pkg
+    files:
+      - rtl/prim_sha2_pad.sv
+      - rtl/prim_sha2.sv
+      - rtl/prim_sha2_32.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_sha2.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_sha2.waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_sha2.vbl
+
+targets:
+  default:
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl

@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_sha2 pre_dv Verilator testbenches
+
+# waive long line violations in test vectors feeding
+waive --rule=line-length --location="prim_sha_multimode32_tb.sv"
+waive --rule=line-length --location="prim_sha_tb.sv"

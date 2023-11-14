@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// waiver file for sha-2
+
+`verilator_config
+
+// The wipe_secret and wipe_v inputs to hmac_core and sha2_pad are not
+// currently used, but we're keeping them attached for future use.
+lint_off -rule UNUSED -file "*/rtl/prim_sha2_pad.sv" -match "Signal is not used: 'wipe_secret'"
+lint_off -rule UNUSED -file "*/rtl/prim_sha2_pad.sv" -match "Signal is not used: 'wipe_v'"
