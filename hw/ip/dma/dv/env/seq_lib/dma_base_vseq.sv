@@ -26,6 +26,9 @@ class dma_base_vseq extends cip_base_vseq #(
   event e_aborted;
   event e_errored;
 
+  // Access to CONTROL register
+  semaphore sem_control;
+
   function new (string name = "");
     super.new(name);
     dma_config = dma_seq_item::type_id::create("dma_config");
@@ -53,6 +56,9 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn,
               $sformatf("dma_dv_waive_system_bus = %d", dma_config.dma_dv_waive_system_bus),
               UVM_LOW)
+
+    // Mutual exclusion of CONTROL register accesses.
+    sem_control = new(1);
   endfunction : new
 
   function void init_model();
@@ -512,37 +518,75 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.fifo_sys.init();
   endfunction
 
-  // Task: Configures (optionally executes) DMA control registers
-  task set_control_register(opcode_e op = OpcCopy, // OPCODE
-                            bit first, // Initial transfer
-                            bit hs, // Handshake Enable
-                            bit buff, // Auto-increment Buffer Address
-                            bit fifo, // Auto-increment FIFO Address
-                            bit dir, // Direction
-                            bit go); // Execute
-    string tmpstr;
-    tmpstr = go ? "Executing" : "Setting";
+  // Task: Set the CONTROL register, optionally commencing a transfer.
+  task set_control(opcode_e opcode,
+                   bit initial_transfer,
+                   bit handshake,
+                   bit auto_inc_buffer,
+                   bit auto_inc_fifo,
+                   bit data_direction,
+                   bit go);   // Commence transfer?
+    uvm_reg_data_t data = 0;
+    string action;
+
+    action = go ? "Executing" : "Setting";
     `uvm_info(`gfn, $sformatf(
-                      "DMA: %s DMA Control Register OPCODE=%d FIRST=%d HS=%d BUF=%d FIFO=%d DIR=%d",
-                      tmpstr, op, first, hs, buff, fifo, dir), UVM_HIGH)
+              "DMA: %s CONTROL OpC=%d Initial=%d Handshake=%d inc_buffer=%d inc_fifo=%d dir=%d",
+                action, opcode, initial_transfer, handshake, auto_inc_buffer, auto_inc_fifo,
+                data_direction),
+              UVM_HIGH)
+
     // Configure all fields except GO bit which shall initially be clear
-    ral.control.opcode.set(int'(op));
-    ral.control.initial_transfer.set(first);
-    ral.control.hardware_handshake_enable.set(hs);
-    ral.control.memory_buffer_auto_increment_enable.set(buff);
-    ral.control.fifo_auto_increment_enable.set(fifo);
-    ral.control.data_direction.set(dir);
-    ral.control.go.set(1'b0);
-    csr_update(.csr(ral.control));
-    // Set GO bit
-    ral.control.go.set(go);
-    csr_update(.csr(ral.control));
-  endtask : set_control_register
+    data = get_csr_val_with_updated_field(ral.control.opcode, data, int'(opcode));
+    data = get_csr_val_with_updated_field(ral.control.initial_transfer, data, initial_transfer);
+    data = get_csr_val_with_updated_field(ral.control.hardware_handshake_enable, data, handshake);
+    data = get_csr_val_with_updated_field(ral.control.memory_buffer_auto_increment_enable, data,
+                                          auto_inc_buffer);
+    data = get_csr_val_with_updated_field(ral.control.fifo_auto_increment_enable, data,
+                                          auto_inc_fifo);
+    data = get_csr_val_with_updated_field(ral.control.data_direction, data, data_direction);
+    data = get_csr_val_with_updated_field(ral.control.go, data, 1'b0);
+
+    // Exclusive access to CONTROL register
+    // Note: a parallel thread may be attempting to Abort transfers using the CONTROL register.
+    sem_control.get(1);
+
+    csr_wr(ral.control, data);
+    // Set GO bit to start operation (chunk/transfer)?
+    if (go) begin
+      data = get_csr_val_with_updated_field(ral.control.go, data, go);
+      csr_wr(ral.control, data);
+    end
+
+    sem_control.put(1);
+  endtask : set_control
+
+  // Start the transfer of a chunk of data.
+  task start_chunk(ref dma_seq_item dma_config,
+                   input bit initial_transfer);  // Is this the first chunk of the transfer?
+    set_control(dma_config.opcode,
+                initial_transfer,
+                dma_config.handshake,
+                dma_config.auto_inc_buffer,
+                dma_config.auto_inc_fifo,
+                dma_config.direction,
+                1'b1); // Go
+  endtask
 
   // Task: Abort the current transaction
   task abort();
-    ral.control.abort.set(1);
-    csr_update(.csr(ral.control));
+    uvm_reg_data_t data = 0;
+
+    `uvm_info(`gfn, "Aborting transfer", UVM_MEDIUM)
+
+    // Exclusive access to CONTROL register
+    // Note: may be called by a thread that is parallel to the main vseq.
+    sem_control.get(1);
+
+    data = get_csr_val_with_updated_field(ral.control.abort, data, 1'b1);
+    csr_wr(ral.control, data);
+
+    sem_control.put(1);
   endtask : abort
 
   // Task: Clear DMA Status
