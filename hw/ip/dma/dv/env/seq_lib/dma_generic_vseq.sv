@@ -132,13 +132,8 @@ class dma_generic_vseq extends dma_base_vseq;
         // and programmed into the DMA controller, but before the transfer has commenced.
         starting_txn(j, num_txns, dma_config);
 
-        set_control_register(dma_config.opcode, // OPCODE
-                             1'b1,              // Initial transfer
-                             dma_config.handshake, // Handshake Enable
-                             dma_config.auto_inc_buffer, // Auto-increment Buffer Address
-                             dma_config.auto_inc_fifo, // Auto-increment FIFO Address
-                             dma_config.direction, // Direction
-                             1'b1); // Go
+        // Start the Initial chunk of the transfer.
+        start_chunk(dma_config, 1'b1);
 
         // Keep track of the number of bytes that we've supplied to the DMA controller
         num_bytes_supplied = dma_config.chunk_size(0);
@@ -171,9 +166,7 @@ class dma_generic_vseq extends dma_base_vseq;
                 num_bytes_supplied += dma_config.chunk_size(num_bytes_supplied);
 
                 // Nudge the DMA controller to start processing the next chunk of data
-                ral.control.initial_transfer.set(1'b0);
-                ral.control.go.set(1'b1);
-                csr_update(ral.control);
+                start_chunk(dma_config, 1'b0);
               end else begin
                 `uvm_fatal(`gfn,
                       $sformatf("STATUS.done bit set prematurely (0x%x byte(s) of 0x%x transferred",

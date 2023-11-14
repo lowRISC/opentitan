@@ -11,6 +11,7 @@
 `include "dma_handshake_vseq.sv"
 `include "dma_handshake_smoke_vseq.sv"
 `include "dma_memory_region_lock_vseq.sv"
+`include "dma_abort_vseq.sv"
 `include "dma_generic_stress_vseq.sv"
 `include "dma_memory_stress_vseq.sv"
 `include "dma_handshake_stress_vseq.sv"
