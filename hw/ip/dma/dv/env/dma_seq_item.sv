@@ -52,11 +52,11 @@ class dma_seq_item extends uvm_sequence_item;
   rand asid_encoding_e dst_asid;
   rand dma_control_data_direction_e direction;
   // Variable to indicate if interrupt needs clearing before reading from FIFO
-  rand bit [dma_reg_pkg::NumIntClearSources - 1:0] clear_int_src;
-  // Variable to indicate interrupt source interface
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_src;
+  // Variable to indicate the bus on which each interrupt clearing address resides
   // 0 - CTN/SYS fabric
   // 1 - OT internal
-  rand bit clear_int_bus;
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_bus;
   // Array with interrupt register addresses
   // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
   rand bit [31:0] int_src_addr[];
@@ -109,8 +109,10 @@ class dma_seq_item extends uvm_sequence_item;
   `uvm_object_utils_end
 
   constraint lsio_trigger_i_c {
+    // Hardware handshaking sequences will not operate without at least one enabled interrupt source
+    // to keep the data flowing.
     solve handshake_intr_en before lsio_trigger_i;
-    soft (lsio_trigger_i & handshake_intr_en) != 0;
+    (lsio_trigger_i & handshake_intr_en) != 0;
   }
 
   // SHA hashing supports only 4-byte transactions
@@ -123,13 +125,6 @@ class dma_seq_item extends uvm_sequence_item;
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
   constraint sha2_digest_c {
     sha2_digest.size() == 16;
-  }
-
-  // TODO: This is temporary, because presently the DV test bench does not support the clearing
-  // of interrupts. The scoreboard will trigger because it sees TL-UL traffic even for invalid
-  // configurations.
-  constraint clear_int_src_c {
-    handshake -> clear_int_src == 0;
   }
 
   // Constrain array size to number of handshake interrupt signals
@@ -357,8 +352,9 @@ class dma_seq_item extends uvm_sequence_item;
       uint tries = 0;
       // Only try so many attempts, to keep things time-bounded
       while (tries < max_tries) begin
+        // Choose a 4B-aligned address; TL-UL accesses discard [1:0] on 32-bit bus.
+        bit [31:0] cand = $urandom & ~3;
         const uint gap = 'h10;
-        bit [31:0] cand = $urandom;
         // Here are we treating all interrupt sourcers and buffers as if they belonged to a single
         // memory space, to avoid further complicating the code
         //

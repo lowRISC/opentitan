@@ -428,44 +428,45 @@ class dma_base_vseq extends cip_base_vseq #(
     if (dma_config.handshake) begin
       // Will the test sequence generate any interrupts?
       bit [31:0] fifo_interrupt_mask;
-      bit fifo_intr_clear_en;
-      // Variable to check if any of the handshake interrupts are asserted
-      fifo_interrupt_mask = dma_config.handshake_intr_en & cfg.dma_vif.handshake_i;
+      fifo_interrupt_mask = dma_config.handshake_intr_en &  // Any handshaking interrupts enabled
+                            dma_config.lsio_trigger_i;      // .. and being driven by test seq?
+      `DV_CHECK_EQ(|fifo_interrupt_mask, 1'b1, "Handshake test has no enabled interrupt sources")
+
       `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
                 UVM_HIGH)
-      fifo_intr_clear_en = fifo_interrupt_mask > 0;
       // Set fifo enable bit
       set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
       set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
 
       // TODO: there may be some merit at some point to starting handshaking transfers when
       // interrupts cannot occur, but only if we're expecting to abort transfers, for example.
-      if (fifo_intr_clear_en) begin
+      if (|fifo_interrupt_mask) begin
+        bit host_en = 1'b0;
+        bit ctn_en = 1'b0;
         // Get FIFO interrupt register address and value
         // Find the interrupt index with both handshake interrupt enable and clear_int_src
         for (int i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
-          // Check if at least one handshake interrupt is asserted and
-          // clear_int_src is set
+          // Instruct memory/FIFO models on the appropriate bus(es) to expect 'Clear Interrupt'
+          // writes, so that they may be excluded from normal traffic.
           if (dma_config.clear_int_src[i]) begin
-            `uvm_info(`gfn, $sformatf("Detected FIFO reg clear enable at index : %0d", i),
-                      UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("Clear Interrupt writes expected for source %d on bus %d", i,
+                                      dma_config.clear_int_bus[i]), UVM_HIGH)
             // Set FIFO interrupt clear address and values in corresponding pull sequence instance
-            case (dma_config.clear_int_bus)
-              0: seq_ctn.add_fifo_reg({dma_config.int_src_addr[i][31:2], 2'd0},
-                                       dma_config.int_src_wr_val[i]);
-              1: seq_host.add_fifo_reg({dma_config.int_src_addr[i][31:2], 2'd0},
-                                        dma_config.int_src_wr_val[i]);
-              default: begin end
+            case (dma_config.clear_int_bus[i])
+              0: begin
+                seq_ctn.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                ctn_en = 1'b1;
+              end
+              default: begin
+                seq_host.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                host_en = 1'b1;
+              end
             endcase
-            break;
           end
         end
-        // Set FIFO interrupt clear in corresponding pull sequence instance
-        case (dma_config.clear_int_bus)
-          0: seq_ctn.set_fifo_clear(fifo_intr_clear_en);
-          1: seq_host.set_fifo_clear(fifo_intr_clear_en);
-          default: begin end
-        endcase
+        // Set FIFO interrupt clear in corresponding pull sequence instance(s)
+        if (ctn_en)  seq_ctn.set_fifo_clear(1'b1);
+        if (host_en) seq_host.set_fifo_clear(1'b1);
       end
     end
 
