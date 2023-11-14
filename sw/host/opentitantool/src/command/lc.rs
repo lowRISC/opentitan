@@ -144,6 +144,42 @@ impl CommandDispatch for RawUnlock {
 }
 
 #[derive(Debug, Args)]
+/// Reads the LC transition count register of the LC controller.
+pub struct TransitionCount {
+    /// Reset duration when switching the LC TAP straps.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
+    pub reset_delay: Duration,
+
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+}
+
+#[derive(serde::Serialize)]
+pub struct LcTransitionCountResult {
+    pub transition_count: u32,
+}
+
+impl CommandDispatch for TransitionCount {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Set the TAP straps for the lifecycle controller and reset.
+        transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        transport.reset_target(self.reset_delay, true)?;
+
+        // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
+        let jtag = self.jtag_params.create(transport)?;
+        jtag.connect(JtagTap::LcTap)?;
+        let transition_count = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?;
+        jtag.disconnect()?;
+
+        Ok(Some(Box::new(LcTransitionCountResult { transition_count })))
+    }
+}
+
+#[derive(Debug, Args)]
 /// Initiates a (volatile) device transition from Raw to TestUnlocked0.
 pub struct VolatileRawUnlock {
     /// The raw unlock token hexstring.
@@ -200,5 +236,6 @@ impl CommandDispatch for VolatileRawUnlock {
 pub enum LcCommand {
     Read(LcStateRead),
     RawUnlock(RawUnlock),
+    TransitionCount(TransitionCount),
     VolatileRawUnlock(VolatileRawUnlock),
 }
