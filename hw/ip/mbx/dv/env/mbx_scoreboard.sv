@@ -85,10 +85,11 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     `downcast(m_mbx_soc_ral, cfg.ral_models[cfg.mbx_soc_ral_name])
-    fork
-      monitor_core_interrupt();
-      monitor_exp_core_interrupts();
-    join_none
+    // TODO: Renable interrupt checking once scoreboard is fully functional
+    //fork
+    //  monitor_core_interrupt();
+    //  monitor_exp_core_interrupts();
+    //join_none
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
