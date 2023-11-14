@@ -15,8 +15,14 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "time",
+    name = "serde_with",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+        "@crate_index__chrono-0.4.31//:chrono": "chrono_0_4",
+        "@crate_index__indexmap-1.9.3//:indexmap": "indexmap_1",
+        "@crate_index__indexmap-2.0.0//:indexmap": "indexmap_2",
+        "@crate_index__time-0.3.28//:time": "time_0_3",
+    },
     compile_data = glob(
         include = ["**"],
         exclude = [
@@ -30,20 +36,19 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "formatting",
+        "default",
         "macros",
-        "parsing",
         "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@crate_index__time-macros-0.2.14//:time_macros",
+        "@crate_index__serde_with_macros-3.4.0//:serde_with_macros",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=time",
+        "crate-name=serde_with",
         "manual",
         "noclippy",
         "norustfmt",
@@ -82,11 +87,12 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.28",
+    version = "3.4.0",
     deps = [
-        "@crate_index__deranged-0.3.8//:deranged",
-        "@crate_index__itoa-1.0.9//:itoa",
+        "@crate_index__chrono-0.4.31//:chrono",
+        "@crate_index__indexmap-1.9.3//:indexmap",
+        "@crate_index__indexmap-2.0.0//:indexmap",
         "@crate_index__serde-1.0.189//:serde",
-        "@crate_index__time-core-0.1.1//:time_core",
+        "@crate_index__time-0.3.28//:time",
     ],
 )

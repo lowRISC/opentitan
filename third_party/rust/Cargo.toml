@@ -53,9 +53,9 @@ rusb = "0.9.3"
 rustix = { version = "0.38", features = ["event", "fs", "net", "process", "stdio", "termios"] }
 scopeguard = "1.2"
 serde = { version = "1.0.188", features = ["derive"] }
-
 serde_bytes = "0.11"
 serde_json = "1.0.69"
+serde_with = "3.4.0"
 serialport = "4.2.2"
 sha2 = { version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
@@ -98,3 +98,6 @@ tar = "0.4.36"
 elf = "0.7.1"
 ring = "0.16.20"
 rsa-der = "0.3.0"
+
+[dev-dependencies]
+indoc = "2.0.4"
