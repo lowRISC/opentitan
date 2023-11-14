@@ -29,6 +29,20 @@ typedef struct dif_mbx_range_config {
 } dif_mbx_range_config_t;
 
 /**
+ * A DOE transaction is allowed to have at maximum 1024 double words (32-bit
+ * each).
+ */
+#define DOE_MAILBOX_MAX_OBJECT_SIZE 1024
+
+/**
+ * DOE object transferred on the inbound or outbound mailbox.
+ */
+typedef struct dif_mbx_transaction {
+  uint32_t *data_dwords;
+  uint32_t nr_dwords;
+} dif_mbx_transaction_t;
+
+/**
  * Configures the mailbox inbound and outbound ranges and validates them.
  *
  * @param mbx A DOE Mailbox handle.
@@ -40,6 +54,16 @@ dif_result_t dif_mbx_range_set(const dif_mbx_t *mbx,
                                dif_mbx_range_config_t config);
 
 /**
+ * Returns whether the mailbox is busy or not.
+ *
+ * @param mbx A DOE Mailbox handle.
+ * @param[out] is_busy True if the mailbox is busy, false if not.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_mbx_is_busy(const dif_mbx_t *mbx, bool *is_busy);
+
+/**
  * Reads the mailbox range configuration.
  *
  * @param mbx A DOE Mailbox handle.
@@ -49,6 +73,28 @@ dif_result_t dif_mbx_range_set(const dif_mbx_t *mbx,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_mbx_range_get(const dif_mbx_t *mbx,
                                dif_mbx_range_config_t *config);
+
+/**
+ * Host reads the DoE Mailbox request from internal SRAM.
+ *
+ * @param mbx A DOE Mailbox handle.
+ * @param[out] request DOE object read from the internal SRAM.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx_host,
+                                     dif_mbx_transaction_t *request);
+
+/**
+ * Host writes the DoE Mailbox response to the internal SRAM.
+ *
+ * @param mbx A DOE Mailbox handle.
+ * @param response DOE object written to the the internal SRAM.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_mbx_generate_response(const dif_mbx_t *mbx,
+                                       const dif_mbx_transaction_t response);
 
 #ifdef __cplusplus
 }  // extern "C"
