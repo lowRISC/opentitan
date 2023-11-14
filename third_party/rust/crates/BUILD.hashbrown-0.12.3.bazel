@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "time",
+    name = "hashbrown",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,21 +29,14 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
-        "formatting",
-        "macros",
-        "parsing",
-        "std",
+        "raw",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@crate_index__time-macros-0.2.14//:time_macros",
-    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=time",
+        "crate-name=hashbrown",
         "manual",
         "noclippy",
         "norustfmt",
@@ -82,11 +75,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.28",
-    deps = [
-        "@crate_index__deranged-0.3.8//:deranged",
-        "@crate_index__itoa-1.0.9//:itoa",
-        "@crate_index__serde-1.0.189//:serde",
-        "@crate_index__time-core-0.1.1//:time_core",
-    ],
+    version = "0.12.3",
 )

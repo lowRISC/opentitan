@@ -77,4 +77,7 @@ rust_library(
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.3.8",
+    deps = [
+        "@crate_index__serde-1.0.189//:serde",
+    ],
 )

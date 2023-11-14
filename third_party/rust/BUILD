@@ -91,6 +91,13 @@ crates_vendor(
                 "@//third_party/rust/patches:pqcrypto-sphincsplus-includedir.patch",
             ],
         )],
+        # This is a workaround: presumably because of a rules_rust bug, indexmap 1.9.3 depends
+        # on hashbrown 0.12 with no defaults and the `raw` feature but rules_rust does not add this
+        # feature to crate which prevents the crate from compiling.
+        "hashbrown": [crate.annotation(
+            crate_features = ["raw"],
+            version = "0.12",
+        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],
