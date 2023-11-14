@@ -8,3 +8,8 @@ filegroup(
     name = "aes_block_schema",
     srcs = ["aes_block_schema.json"],
 )
+
+filegroup(
+    name = "ecdsa_sig_ver_schema",
+    srcs = ["ecdsa_sig_ver_schema.json"],
+)
