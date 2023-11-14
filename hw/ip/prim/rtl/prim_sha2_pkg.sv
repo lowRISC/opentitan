@@ -5,8 +5,6 @@
 
 package prim_sha2_pkg;
 
-  localparam int MsgFifoDepth = 16;
-
   localparam int NumRound256 = 64;   // SHA-224, SHA-256
   localparam int NumRound512 = 80;   // SHA-512, SHA-384
 
@@ -53,7 +51,7 @@ package prim_sha2_pkg;
   };
 
   // SHA-256 constants
-  localparam sha_word32_t CubicRootPrime256 [64] = '{
+  localparam sha_word32_t CubicRootPrime256 [NumRound256] = '{
     32'h 428a_2f98, 32'h 7137_4491, 32'h b5c0_fbcf, 32'h e9b5_dba5,
     32'h 3956_c25b, 32'h 59f1_11f1, 32'h 923f_82a4, 32'h ab1c_5ed5,
     32'h d807_aa98, 32'h 1283_5b01, 32'h 2431_85be, 32'h 550c_7dc3,
@@ -73,7 +71,7 @@ package prim_sha2_pkg;
   };
 
   // SHA-512/SHA-384 constants
-  localparam sha_word64_t CubicRootPrime512 [80] = '{
+  localparam sha_word64_t CubicRootPrime512 [NumRound512] = '{
     64'h 428a_2f98_d728_ae22, 64'h 7137_4491_23ef_65cd, 64'h b5c0_fbcf_ec4d_3b2f,
     64'h e9b5_dba5_8189_dbbc, 64'h 3956_c25b_f348_b538, 64'h 59f1_11f1_b605_d019,
     64'h 923f_82a4_af19_4f9b, 64'h ab1c_5ed5_da6d_8118, 64'h d807_aa98_a303_0242,
@@ -103,35 +101,36 @@ package prim_sha2_pkg;
     64'h 5fcb_6fab_3ad6_faec, 64'h 6c44_198c_4a47_5817
   };
 
-  function automatic sha_word32_t conv_endian32( input sha_word32_t v, input logic swap);
+  function automatic sha_word32_t conv_endian32(input sha_word32_t v, input logic swap);
     sha_word32_t conv_data = {<<8{v}};
-    conv_endian32 = (swap) ? conv_data : v ;
+    conv_endian32 = (swap) ? conv_data : v;
   endfunction : conv_endian32
 
-  function automatic sha_word64_t conv_endian64( input sha_word64_t v, input logic swap);
+  function automatic sha_word64_t conv_endian64(input sha_word64_t v, input logic swap);
     sha_word64_t conv_data = {<<8{v}};
-    conv_endian64 = (swap) ? conv_data : v ;
+    conv_endian64 = (swap) ? conv_data : v;
   endfunction : conv_endian64
 
-  function automatic sha_word32_t rotr32( input sha_word32_t v , input integer amt );
+  function automatic sha_word32_t rotr32(input sha_word32_t v, input integer amt);
     rotr32 = (v >> amt) | (v << (32-amt));
   endfunction : rotr32
 
-  function automatic sha_word64_t rotr64( input sha_word64_t v , input integer amt );
+  function automatic sha_word64_t rotr64(input sha_word64_t v, input integer amt);
     rotr64 = (v >> amt) | (v << (64-amt));
   endfunction : rotr64
 
-  function automatic sha_word32_t shiftr32( input sha_word32_t v, input integer amt );
+  function automatic sha_word32_t shiftr32(input sha_word32_t v, input integer amt);
     shiftr32 = (v >> amt);
   endfunction : shiftr32
 
-  function automatic sha_word64_t shiftr64( input sha_word64_t v, input integer amt );
+  function automatic sha_word64_t shiftr64(input sha_word64_t v, input integer amt);
     shiftr64 = (v >> amt);
   endfunction : shiftr64
 
-  // compression function for SHA-256
-  function automatic sha_word64_t [7:0] compress_256( input sha_word32_t w, input sha_word32_t k,
-                                                input sha_word64_t [7:0] h_i);
+  // compression function for SHA-256 in multi-mode configuration
+  function automatic sha_word64_t [7:0] compress_multi_256(input sha_word32_t w,
+                                                           input sha_word32_t k,
+                                                           input sha_word64_t [7:0] h_i);
     // as input: takes 64-bit word hash vector, 32-bit slice of w[0] and 32-bit constant
     automatic sha_word32_t sigma_0, sigma_1, ch, maj, temp1, temp2;
 
@@ -144,19 +143,44 @@ package prim_sha2_pkg;
     temp2 = (sigma_0 + maj);
 
     // 32-bit zero padding to complete 64-bit words of hash vector for output
-    compress_256[7] = {32'b0, h_i[6][31:0]};          // h = g
-    compress_256[6] = {32'b0, h_i[5][31:0]};          // g = f
-    compress_256[5] = {32'b0, h_i[4][31:0]};          // f = e
-    compress_256[4] = {32'b0, h_i[3][31:0] + temp1};  // e = (d + temp1)
-    compress_256[3] = {32'b0, h_i[2][31:0]};          // d = c
-    compress_256[2] = {32'b0, h_i[1][31:0]};          // c = b
-    compress_256[1] = {32'b0, h_i[0][31:0]};          // b = a
-    compress_256[0] = {32'b0, (temp1 + temp2)};       // a = (temp1 + temp2)
+    compress_multi_256[7] = {32'b0, h_i[6][31:0]};          // h = g
+    compress_multi_256[6] = {32'b0, h_i[5][31:0]};          // g = f
+    compress_multi_256[5] = {32'b0, h_i[4][31:0]};          // f = e
+    compress_multi_256[4] = {32'b0, h_i[3][31:0] + temp1};  // e = (d + temp1)
+    compress_multi_256[3] = {32'b0, h_i[2][31:0]};          // d = c
+    compress_multi_256[2] = {32'b0, h_i[1][31:0]};          // c = b
+    compress_multi_256[1] = {32'b0, h_i[0][31:0]};          // b = a
+    compress_multi_256[0] = {32'b0, (temp1 + temp2)};       // a = (temp1 + temp2)
+  endfunction : compress_multi_256
+
+  // compression function for SHA-256 in 256-only configuration
+  function automatic sha_word32_t [7:0] compress_256(input sha_word32_t w,
+                                                     input sha_word32_t k,
+                                                     input sha_word32_t [7:0] h_i);
+    automatic sha_word32_t sigma_0, sigma_1, ch, maj, temp1, temp2;
+
+    sigma_1 = rotr32(h_i[4], 6) ^ rotr32(h_i[4], 11) ^ rotr32(h_i[4], 25);
+    ch = (h_i[4] & h_i[5]) ^ (~h_i[4] & h_i[6]);
+    temp1 = (h_i[7] + sigma_1 + ch + k + w);
+    sigma_0 = rotr32(h_i[0], 2) ^ rotr32(h_i[0], 13) ^ rotr32(h_i[0], 22);
+    maj = (h_i[0] & h_i[1]) ^ (h_i[0] & h_i[2]) ^
+          (h_i[1] & h_i[2]);
+    temp2 = (sigma_0 + maj);
+
+    compress_256[7] = h_i[6];          // h = g
+    compress_256[6] = h_i[5];          // g = f
+    compress_256[5] = h_i[4];          // f = e
+    compress_256[4] = h_i[3] + temp1;  // e = (d + temp1)
+    compress_256[3] = h_i[2];          // d = c
+    compress_256[2] = h_i[1];          // c = b
+    compress_256[1] = h_i[0];          // b = a
+    compress_256[0] = temp1 + temp2;       // a = (temp1 + temp2)
   endfunction : compress_256
 
   // compression function for SHA-512/384
-  function automatic sha_word64_t [7:0] compress_512( input sha_word64_t w, input sha_word64_t k,
-                                                input sha_word64_t [7:0] h_i);
+  function automatic sha_word64_t [7:0] compress_512(input sha_word64_t w,
+                                                     input sha_word64_t k,
+                                                     input sha_word64_t [7:0] h_i);
     automatic sha_word64_t sigma_0, sigma_1, ch, maj, temp1, temp2;
 
     sigma_1 = rotr64(h_i[4], 14) ^ rotr64(h_i[4], 18) ^ rotr64(h_i[4], 41);
@@ -177,9 +201,9 @@ package prim_sha2_pkg;
   endfunction : compress_512
 
   function automatic sha_word32_t calc_w_256(input sha_word32_t w_0,
-                                       input sha_word32_t w_1,
-                                       input sha_word32_t w_9,
-                                       input sha_word32_t w_14);
+                                             input sha_word32_t w_1,
+                                             input sha_word32_t w_9,
+                                             input sha_word32_t w_14);
     automatic sha_word32_t sum0, sum1;
     sum0 = rotr32(w_1,   7) ^ rotr32(w_1,  18) ^ shiftr32(w_1,   3);
     sum1 = rotr32(w_14, 17) ^ rotr32(w_14, 19) ^ shiftr32(w_14, 10);
@@ -187,9 +211,9 @@ package prim_sha2_pkg;
   endfunction : calc_w_256
 
   function automatic sha_word64_t calc_w_512(input sha_word64_t w_0,
-                                       input sha_word64_t w_1,
-                                       input sha_word64_t w_9,
-                                       input sha_word64_t w_14);
+                                             input sha_word64_t w_1,
+                                             input sha_word64_t w_9,
+                                             input sha_word64_t w_14);
     automatic sha_word64_t sum0, sum1;
     sum0 = rotr64(w_1,   1) ^ rotr64(w_1,  8) ^ shiftr64(w_1,   7);
     sum1 = rotr64(w_14, 19) ^ rotr64(w_14, 61) ^ shiftr64(w_14, 6);
@@ -211,4 +235,4 @@ package prim_sha2_pkg;
     SwPushMsgWhenDisallowed    = 32'h 0000_0005
   } err_code_e;
 
-endpackage : hmac_multimode_pkg
+endpackage : prim_sha2_pkg
