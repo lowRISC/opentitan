@@ -814,7 +814,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "status": begin
         bit busy, done, aborted, error, sha2_digest_valid;
-        bit [7:0] error_code;
+        bit [DmaErrLast-1:0] error_code;
         bit exp_aborted = abort_via_reg_write;
         bit bus_error;
 
@@ -823,18 +823,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
         done = get_field_val(ral.status.done, item.d_data);
         aborted = get_field_val(ral.status.aborted, item.d_data);
         error = get_field_val(ral.status.error, item.d_data);
-        error_code[0] = get_field_val(ral.error_code.src_address_error, item.d_data);
-        error_code[1] = get_field_val(ral.error_code.dst_address_error, item.d_data);
-        error_code[2] = get_field_val(ral.error_code.opcode_error, item.d_data);
-        error_code[3] = get_field_val(ral.error_code.size_error, item.d_data);
-        error_code[4] = get_field_val(ral.error_code.bus_error, item.d_data);
-        error_code[5] = get_field_val(ral.error_code.base_limit_error, item.d_data);
-        error_code[6] = get_field_val(ral.error_code.range_valid_error, item.d_data);
-        error_code[7] = get_field_val(ral.error_code.asid_error, item.d_data);
+        error_code[DmaSourceAddrErr] = get_field_val(ral.error_code.src_address_error, item.d_data);
+        error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
+        error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
+        error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
+        error_code[DmaBusErr]        = get_field_val(ral.error_code.bus_error, item.d_data);
+        error_code[DmaBaseLimitErr]  = get_field_val(ral.error_code.base_limit_error, item.d_data);
+        error_code[DmaRangeValidErr] = get_field_val(ral.error_code.range_valid_error, item.d_data);
+        error_code[DmaAsidErr]       = get_field_val(ral.error_code.asid_error, item.d_data);
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
 
         // Bus errors are distinct from configuration errors.
-        bus_error = error_code[4];
+        bus_error = error_code[DmaBusErr];
 
         if (done || aborted || error) begin
           string reasons;
