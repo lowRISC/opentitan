@@ -106,6 +106,8 @@ def _parameter_name(env, pname):
             pname = "cw310"
         elif "cw340" in suffix:
             pname = "cw340"
+        elif "hyper310" in suffix:
+            pname = "hyper310"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -146,6 +148,8 @@ def opentitan_test(
         rsa_key = None,
         spx_key = None,
         manifest = None,
+        test_cmd = None,
+        test_harness = None,
         exec_env = {},
         cw310 = _cw310_params(),
         cw340 = _cw310_params(),
@@ -195,6 +199,8 @@ def opentitan_test(
         pname = _parameter_name(env, pname)
         extra_tags = _hacky_tags(env)
         tparam = test_parameters[pname]
+        cmd = tparam.test_cmd if tparam.test_cmd else test_cmd
+        harness = tparam.test_harness if tparam.test_harness else test_harness
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
         (_, suffix) = env.split(":")
@@ -218,7 +224,8 @@ def opentitan_test(
             timeout = tparam.timeout,
             local = tparam.local,
             # Override parameters in the test rule.
-            test_harness = tparam.test_harness,
+            test_harness = harness,
+            test_cmd = cmd,
             binaries = tparam.binaries,
             rom = tparam.rom,
             rom_ext = tparam.rom_ext,
@@ -226,7 +233,6 @@ def opentitan_test(
             bitstream = tparam.bitstream,
             post_test_cmd = getattr(tparam, "post_test_cmd", ""),
             post_test_harness = getattr(tparam, "post_test_harness", None),
-            test_cmd = tparam.test_cmd,
             param = tparam.param,
             data = tparam.data,
             rsa_key = rsa_key,
