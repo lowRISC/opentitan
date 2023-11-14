@@ -82,7 +82,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     if (!dma_config.randomize()) begin
       `uvm_fatal(`gfn, "Failed to randomize dma_config")
     end
-  endfunction: build_phase
+  endfunction : build_phase
 
   // Check if address is valid, and indicate whether it's a 'clear interrupt' address.
   // This method is common for both source and destination address.
@@ -170,8 +170,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if the transaction has correct mask
       `DV_CHECK_EQ($countones(item.a_mask), 4) // Always 4B
       // Check source ASID for read transaction
-      `DV_CHECK_EQ(if_name,
-                   cfg.asid_interface_map[dma_config.src_asid],
+      `DV_CHECK_EQ(if_name, cfg.asid_names[dma_config.src_asid],
                    $sformatf("Unexpected read txn on %s interface with source ASID %s",
                              if_name, dma_config.src_asid.name()))
       // Check if opcode is as expected
@@ -221,8 +220,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                              item.a_mask, expected_per_txn_bytes, exp_a_mask_count_ones))
 
       // Check destination ASID for write transaction
-      `DV_CHECK_EQ(if_name,
-                   cfg.asid_interface_map[dma_config.dst_asid],
+      `DV_CHECK_EQ(if_name, cfg.asid_names[dma_config.dst_asid],
                    $sformatf("Unexpected write txn on %s interface with destination ASID %s",
                              if_name, dma_config.dst_asid.name()))
       // Check if the transaction address is in destination address range

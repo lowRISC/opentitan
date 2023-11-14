@@ -426,11 +426,9 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
     if (dma_config.handshake) begin
-      // Assign memory models used in tl_device_vseq instances
+      // Will the test sequence generate any interrupts?
       bit [31:0] fifo_interrupt_mask;
       bit fifo_intr_clear_en;
-      bit [31:0] fifo_intr_clear_reg_addr;
-      bit [31:0] fifo_intr_clear_val;
       // Variable to check if any of the handshake interrupts are asserted
       fifo_interrupt_mask = dma_config.handshake_intr_en & cfg.dma_vif.handshake_i;
       `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
@@ -439,7 +437,9 @@ class dma_base_vseq extends cip_base_vseq #(
       // Set fifo enable bit
       set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
       set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
-      // Get FIFO register clear enable
+
+      // TODO: there may be some merit at some point to starting handshaking transfers when
+      // interrupts cannot occur, but only if we're expecting to abort transfers, for example.
       if (fifo_intr_clear_en) begin
         // Get FIFO interrupt register address and value
         // Find the interrupt index with both handshake interrupt enable and clear_int_src
