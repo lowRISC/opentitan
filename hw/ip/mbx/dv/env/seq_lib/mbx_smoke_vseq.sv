@@ -41,6 +41,8 @@ class mbx_smoke_vseq extends mbx_base_vseq;
 
     // Ensure that we have a valid memory range
     csr_wr(ral.address_range_valid, 1'b1);
+    // Enable core ready interrupt
+    cfg_interrupts(1 << MbxCoreReady);
 
     // Data from R-code to ROT
 
@@ -93,14 +95,16 @@ class mbx_smoke_vseq extends mbx_base_vseq;
                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.mbx_soc_ral_name]));
     end
 
-    // Note: we need only set bit 31 (Go) here, no need to read.
+    // Note: we need only set bits 31 and 1 (Go, dot_intr_en) here, no need to read.
     // csr_rd(m_mbx_soc_ral.soc_control, rd_data);
     // rd_data[31] = 1'b1;
-    rd_data = 32'h8000_0000;
+    rd_data = 32'h8000_0002;
+    `uvm_info(`gfn, "Doing soc_control csr wr", UVM_LOW)
+    clear_all_interrupts();
     csr_wr(m_mbx_soc_ral.soc_control, rd_data);
 
-    // TODO: should wait until the Ready interrupt is signaled to the ROT
-    cfg.clk_rst_vif.wait_clks(1024);
+    wait_for_core_interrupt();
+    clear_all_interrupts();
 
     // Collect the request message from the OT mailbox memory
     read_mem(ibmbx_base_addr, req_size << 2, q);
@@ -120,12 +124,11 @@ class mbx_smoke_vseq extends mbx_base_vseq;
     end
     write_mem(obmbx_base_addr, q);
     csr_wr(ral.outbound_object_size, rsp_size);
-    do begin
-      csr_rd(m_mbx_soc_ral.soc_status, rd_data);
-      `uvm_info(get_full_name(),
-        $sformatf("rd_data for soc_status is :'h%0h", rd_data),
-        UVM_DEBUG)
-    end while (rd_data[31] != 1'b1);
+
+    wait_for_soc_interrupt();
+    csr_rd(m_mbx_soc_ral.soc_status, rd_data);
+    `DV_CHECK_EQ(rd_data[31], 1'b1, "soc_status ready bit not set after soc interrupt seen")
+    clear_all_interrupts();
 
     // Collect the entire message before checking it.
     // Note: this may not be the best approach unless we can time out in the event of a lock up
