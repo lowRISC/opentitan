@@ -581,6 +581,7 @@ cc_library(
     deps = [
         "//hw/ip/mbx/data:mbx_regs",
         "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
