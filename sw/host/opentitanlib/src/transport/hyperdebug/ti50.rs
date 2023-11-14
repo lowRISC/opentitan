@@ -6,6 +6,7 @@ use anyhow::{bail, Result};
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
+use crate::transport::hyperdebug::i2c::Mode;
 use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
 use crate::transport::{TransportError, TransportInterfaceType};
 
@@ -30,6 +31,18 @@ impl Flavor for Ti50Flavor {
         }
         bail!(TransportError::InvalidInstance(
             TransportInterfaceType::Spi,
+            instance.to_string()
+        ))
+    }
+
+    fn i2c_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, Mode)> {
+        if instance == "I2C1" {
+            return Ok((0, Mode::Host));
+        } else if instance == "I2C2" {
+            return Ok((1, Mode::Host));
+        }
+        bail!(TransportError::InvalidInstance(
+            TransportInterfaceType::I2c,
             instance.to_string()
         ))
     }
