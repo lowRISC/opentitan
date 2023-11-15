@@ -12,6 +12,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
+    "silicon_jtag_params",
 )
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
@@ -229,9 +230,14 @@ cc_library(
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+        silicon = silicon_jtag_params(
+            test_cmd = "--elf={firmware}",
+            test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
+        ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:device",

@@ -86,19 +86,19 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
         }
     }
 
+    jtag.halt()?;
+    jtag.disconnect()?;
+
     // If the program was not corrupted, make sure that it printed the expected message.
     if !corrupt {
         const CONSOLE_TIMEOUT: Duration = Duration::from_secs(1);
         let _ = UartConsole::wait_for(
             &*uart,
-            r"sram_empty_functest\.c:\d+\] hello.",
+            r"Hello OpenTitan! We are executing from SRAM.",
             CONSOLE_TIMEOUT,
         )
         .context("SRAM program did not print 'hello' in time")?;
     }
-
-    jtag.halt()?;
-    jtag.disconnect()?;
 
     Ok(())
 }

@@ -41,7 +41,7 @@ void sram_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  LOG_INFO("hello");
+  LOG_INFO("Hello OpenTitan! We are executing from SRAM.");
 
   // Make sure that the function returns so that the CRT can notify the host.
 }
