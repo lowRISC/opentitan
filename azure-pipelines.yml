@@ -629,7 +629,6 @@ jobs:
       ci/scripts/run-fpga-tests.sh hyper310 hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
-  continueOnError: True
 
 - job: execute_rom_fpga_tests_cw340
   displayName: CW340 ROM Tests
