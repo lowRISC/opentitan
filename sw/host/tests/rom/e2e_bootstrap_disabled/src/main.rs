@@ -48,7 +48,7 @@ fn test_bootstrap_disabled_requested(opts: &Opts, transport: &TransportWrapper) 
     };
     // Now check whether the SPI device is responding to status messages
     log::info!("Issuing SPI READ_STATUS");
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0xFF);
     Ok(())
 }
@@ -77,7 +77,7 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
     };
     // Now check whether the SPI device is responding to status messages
     log::info!("Issuing SPI READ_STATUS");
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0xFF);
     Ok(())
 }
