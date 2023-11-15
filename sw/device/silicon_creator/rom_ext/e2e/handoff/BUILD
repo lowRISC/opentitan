@@ -75,8 +75,8 @@ _FAULT_TEST_CASES = {
             "//sw/device/lib/crt",
             "//sw/device/lib/dif:rv_plic",
             "//sw/device/lib/runtime:irq",
+            "//sw/device/silicon_creator/lib:dbg_print",
             "//sw/device/silicon_creator/lib:manifest_def",
-            "//sw/device/silicon_creator/lib:rom_print",
             "//sw/device/silicon_creator/lib/base:static_critical",
         ],
     )

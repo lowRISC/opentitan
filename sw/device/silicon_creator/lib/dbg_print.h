@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DBG_PRINT_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DBG_PRINT_H_
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -18,7 +18,11 @@ extern "C" {
  *
  * This function only supports the format specifiers required by the
  * ROM:
+ * - %c, which prints a null-terminated string.
+ * - %d, which prints a signed int in decimal.
+ * - %u, which prints an unsigned int in decimal.
  * - %s, which prints a null-terminated string.
+ * - %p, which prints pointer in hexadecimal.
  * - %x, which prints an `unsigned int` in hexadecimal using lowercase
  *   characters.
  *
@@ -34,12 +38,15 @@ extern "C" {
  * @param ... The values to interpolate in the format.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t rom_printf(const char *format, ...)
-    __attribute__((format(printf, 1, 2)));
+void dbg_printf(const char *format, ...) __attribute__((format(printf, 1, 2)));
+
+/**
+ * Print the ePMP configuration to the console.
+ */
+void dbg_print_epmp(void);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ROM_PRINT_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DBG_PRINT_H_

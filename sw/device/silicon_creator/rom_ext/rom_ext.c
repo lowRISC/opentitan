@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -31,7 +32,6 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
-#include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/bootstrap.h"
@@ -210,7 +210,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Jump to OWNER entry point.
-  OT_DISCARD(rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point));
+  dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();
 
   return kErrorRomExtBootFailed;
@@ -386,7 +386,7 @@ static rom_error_t rom_ext_try_boot(void) {
 void rom_ext_main(void) {
   rom_ext_check_rom_expectations();
   rom_ext_init();
-  OT_DISCARD(rom_printf("Starting ROM_EXT\r\n"));
+  dbg_printf("Starting ROM_EXT\r\n");
   rom_error_t error = rom_ext_try_boot();
   // If the boot failed, enter bootstrap if it's enabled.
   if (launder32(error) != kErrorOk &&
