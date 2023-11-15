@@ -97,7 +97,6 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
-    opts.init.init_target()?;
     let transport = opts.init.init_target()?;
 
     execute_test!(manuf_cp_yield_test, &opts, &transport);

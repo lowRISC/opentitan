@@ -66,7 +66,7 @@ impl<'a> BootstrapTest<'a> {
         };
         transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(b.reset_delay, true)?;
-        let spi = transport.spi("0").unwrap();
+        let spi = transport.spi("BOOTSTRAP").unwrap();
         SpiFlash::from_spi(&*spi)
             .unwrap()
             .chip_erase(&*spi)
@@ -81,7 +81,7 @@ impl<'a> Drop for BootstrapTest<'a> {
         let bootstrapping = self.transport.pin_strapping("ROM_BOOTSTRAP").unwrap();
         bootstrapping.apply().unwrap();
         self.transport.reset_target(self.reset_delay, true).unwrap();
-        let spi = self.transport.spi("0").unwrap();
+        let spi = self.transport.spi("BOOTSTRAP").unwrap();
         SpiFlash::from_spi(&*spi)
             .unwrap()
             .chip_erase(&*spi)
@@ -114,7 +114,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
         bail!("FAIL: {:?}", result);
     };
     // Now check whether the SPI device is responding to status messages
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x00);
 
     Ok(())
@@ -144,7 +144,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
     // Note: CIPO line is in high-z state when CMD_INFO registers are not configured.
     // Use READ_SFDP instead of READ_STATUS to avoid false negatives when bootstrap is not
     // requested
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     assert!(matches!(
         SpiFlash::read_sfdp(&*spi)
             .unwrap_err()
@@ -158,7 +158,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
 fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let id = SpiFlash::read_jedec_id(&*spi, 16)?;
     log::info!("Read jedec id: {:x?}", id);
     let mut index = 0;
@@ -180,7 +180,7 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
 
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x0);
 
@@ -196,7 +196,7 @@ fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Resul
 fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let sfdp = SpiFlash::read_sfdp(&*spi)?;
     log::info!("SFDP: {:#x?}", sfdp);
 
@@ -297,7 +297,7 @@ fn test_bootstrap_shutdown(
 ) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(2, 0)),
@@ -335,7 +335,7 @@ fn test_bootstrap_shutdown(
 fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     // RESET should be ignored and we should not see any messages.
     let mut console = UartConsole {
@@ -357,7 +357,7 @@ fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Res
 fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -390,7 +390,7 @@ fn test_bootstrap_phase1_erase(
     erase_cmd: u8,
 ) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let mut console = UartConsole {
@@ -438,7 +438,7 @@ fn test_bootstrap_phase1_erase(
 
 fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -475,7 +475,7 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
 fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -508,7 +508,7 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
 
 fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     SpiFlash::from_spi(&*spi)?
         // Send CHIP_ERASE to transition to phase 2.
@@ -539,7 +539,7 @@ fn test_bootstrap_phase2_erase(
     erase_cmd: u8,
 ) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let erase = || match erase_cmd {
@@ -575,7 +575,7 @@ fn test_bootstrap_phase2_erase(
 
 fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
     let uart = transport.uart("console")?;
     let mut read_buf = [0u8; 8];
 
@@ -609,8 +609,8 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
 
 fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
-    let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(2, 0)),
         exit_success: Some(Regex::new(r".+")?),
