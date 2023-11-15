@@ -23,9 +23,13 @@ class rv_dm_jtag_dtm_idle_hint_vseq  extends rv_dm_base_vseq;
      csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
      `DV_CHECK_EQ(1,get_field_val(jtag_dtm_ral.dtmcs.idle,rdata))
      cfg.m_jtag_agent_cfg.min_rti = 1;
-     //back to back dmi accesses
-     csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(wdata));
-     csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(wdata));
+     //back to back indirect dmi accesses {op,address,data}
+     csr_wr(.ptr(jtag_dtm_ral.dmi), .value('h1034563252));
+     csr_rd(.ptr(jtag_dtm_ral.dmi), .value(rdata), .blocking(1));
+     csr_wr(.ptr(jtag_dtm_ral.dmi), .value('h8034003212));
+     csr_rd(.ptr(jtag_dtm_ral.dmi), .value(rdata), .blocking(1));
+     csr_wr(.ptr(jtag_dtm_ral.dmi), .value('h5c34003212));
+     csr_rd(.ptr(jtag_dtm_ral.dmi), .value(rdata), .blocking(1));
      csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
      `DV_CHECK_EQ(0,get_field_val(jtag_dtm_ral.dtmcs.dmistat,rdata))
   endtask
