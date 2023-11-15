@@ -61,6 +61,11 @@ typedef enum device_type {
    * FPGA board blessed for OpenTitan development, containing a Xilinx FPGA.
    */
   kDeviceFpgaCw340 = 4,
+  /**
+   * Represents the "Silicon" device, i.e., an instantiation of OpenTitan in
+   * Silicon.
+   */
+  kDeviceSilicon = 5,
 } device_type_t;
 
 /**
