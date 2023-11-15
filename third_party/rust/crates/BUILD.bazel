@@ -194,6 +194,12 @@ alias(
 )
 
 alias(
+    name = "memchr",
+    actual = "@crate_index__memchr-2.6.4//:memchr",
+    tags = ["manual"],
+)
+
+alias(
     name = "memoffset",
     actual = "@crate_index__memoffset-0.9.0//:memoffset",
     tags = ["manual"],
@@ -238,6 +244,12 @@ alias(
 alias(
     name = "once_cell",
     actual = "@crate_index__once_cell-1.18.0//:once_cell",
+    tags = ["manual"],
+)
+
+alias(
+    name = "openssl",
+    actual = "@crate_index__openssl-0.10.59//:openssl",
     tags = ["manual"],
 )
 
