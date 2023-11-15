@@ -162,12 +162,23 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(1);
 
-  // Disable access to silicon creator info pages and OTP partitions until next
-  // reset.
+  // Disable access to silicon creator info pages, the OTP creator partition
+  // and the OTP direct access interface until the next reset.
   flash_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
+
+  // Reconfigure the ePMP MMIO region to be a NAPOT region, thus freeing
+  // up a region for OTP DAI lockout.
+  rom_ext_epmp_mmio_adjust();
+  // Use the ePMP to forbid access to the OTP DAI interface.
+  // TODO(cfrantz): This lockout is for silicon validation testing.
+  // We want to prevent accidental OTP programming by test programs before we
+  // commit to a finalized OTP configuration on test chips.  Since the OTP
+  // controller doesn't have a per-boot register lockout, we'll use the ePMP to
+  // disable access to the programming interface.
+  rom_ext_epmp_otp_dai_lockout();
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
@@ -209,6 +220,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   rom_ext_epmp_unlock_owner_stage_rx(text_region);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
+  dbg_print_epmp();
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();

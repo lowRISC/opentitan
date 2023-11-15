@@ -61,6 +61,24 @@ void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t image);
  * permission.
  */
 void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region);
+
+/**
+ * Adjusts the ePMP MMIO region from a TOR region to a NAPOT region.
+ *
+ * The earlgrey MMIO region is 0x4000_0000 to 0x5000_0000.  We adjust
+ * this to a NAPOT region to free up an ePMP entry for other use.
+ */
+void rom_ext_epmp_mmio_adjust(void);
+
+/**
+ * Lock out access to the OTP DAI interface.
+ *
+ * The OTP controller doesn't have a per-boot software lock-out capability.
+ * In order to forbid accidental OTP programming during the bring-up process,
+ * we use the ePMP to forbid access to the OTP register space.
+ */
+void rom_ext_epmp_otp_dai_lockout(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

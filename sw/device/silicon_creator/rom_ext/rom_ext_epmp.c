@@ -54,3 +54,57 @@ void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region) {
   CSR_SET_BITS(CSR_REG_PMPCFG0,
                ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 16));
 }
+
+void rom_ext_epmp_mmio_adjust(void) {
+  const int kEntry = 11;
+  epmp_region_t region = {
+      .start = 0x40000000,
+      .end = 0x50000000,
+  };
+  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedReadWrite);
+
+  // Update the hardware configuration (CSRs).
+  //
+  // Entry is hardcoded as 2. Make sure to modify hardcoded values if changing
+  // kEntry.
+  //
+  // The `pmp11cfg` configuration is the fourth field in `pmpcfg2`.
+  //
+  //            32          24          16           8           0
+  //             +-----------+-----------+-----------+-----------+
+  // `pmpcfg2` = |  `pmp11cfg |  `pmp10cfg`| `pmp9cfg` | `pmp8cfg` |
+  //             +-----------+-----------+-----------+-----------+
+  CSR_WRITE(CSR_REG_PMPADDR11,
+            (uint32_t)region.start >> 2 |
+                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, 0xff << 24);
+  CSR_SET_BITS(CSR_REG_PMPCFG2,
+               ((kEpmpModeNapot | kEpmpPermLockedReadWrite) << 24));
+}
+
+void rom_ext_epmp_otp_dai_lockout(void) {
+  const int kEntry = 10;
+  epmp_region_t region = {
+      .start = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
+      .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
+  };
+  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedNoAccess);
+
+  // Update the hardware configuration (CSRs).
+  //
+  // Entry is hardcoded as 10. Make sure to modify hardcoded values if changing
+  // kEntry.
+  //
+  // The `pmp11cfg` configuration is the third field in `pmpcfg2`.
+  //
+  //            32          24          16           8           0
+  //             +-----------+-----------+-----------+-----------+
+  // `pmpcfg2` = | `pmp11cfg`| `pmp10cfg`| `pmp9cfg` | `pmp8cfg` |
+  //             +-----------+-----------+-----------+-----------+
+  CSR_WRITE(CSR_REG_PMPADDR10,
+            (uint32_t)region.start >> 2 |
+                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, 0xff << 16);
+  CSR_SET_BITS(CSR_REG_PMPCFG2,
+               ((kEpmpModeNapot | kEpmpPermLockedNoAccess) << 16));
+}
