@@ -435,8 +435,8 @@ opentitan_functest(
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
         exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         test_cmds = [
-            "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
             "--exec=\"transport init\"",
+            "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
             # We clear the bitstream to force any subsequent test to load a
