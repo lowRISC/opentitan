@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -15,6 +16,8 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 enum {
+  /* Number of words for a SHA-256 digest. */
+  kSha256DigestWords = 256 / 32,
   /* Number of bytes for RSA-2048 modulus and private exponent. */
   kRsa2048NumBytes = 2048 / 8,
   /* Number of words for RSA-2048 modulus and private exponent. */
@@ -95,10 +98,16 @@ status_t keygen_then_sign_test(void) {
   }
   TRY_CHECK(d_large_enough);
 
-  crypto_const_byte_buf_t msg_buf = {
-      .len = kTestMessageLen,
-      .data = kTestMessage,
+  // Hash the message.
+  crypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
+                                     .len = kTestMessageLen};
+  uint32_t msg_digest_data[kSha256DigestWords];
+  hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = kHashModeSha256,
   };
+  TRY(otcrypto_hash(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa2048NumWords];
   crypto_word32_buf_t sig_buf = {
@@ -112,8 +121,7 @@ status_t keygen_then_sign_test(void) {
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha256,
-                        &sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kRsaPaddingPkcs, &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -121,7 +129,7 @@ status_t keygen_then_sign_test(void) {
   // p and q, incorrect d), then this is likely to fail.
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
-  TRY(otcrypto_rsa_verify(&public_key, msg_buf, kRsaPaddingPkcs, kRsaHashSha256,
+  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kRsaPaddingPkcs,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());

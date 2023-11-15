@@ -313,6 +313,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -350,6 +351,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -387,6 +389,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
