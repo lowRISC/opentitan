@@ -14,7 +14,7 @@ use serde_annotate::Annotate;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, trigger_volatile_raw_unlock};
 
@@ -144,6 +144,66 @@ impl CommandDispatch for RawUnlock {
 }
 
 #[derive(Debug, Args)]
+/// Reads the LC controller's status register.
+pub struct Status {
+    /// Reset duration when switching the LC TAP straps.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
+    pub reset_delay: Duration,
+
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+}
+
+#[derive(serde::Serialize)]
+pub struct LcStatusResult {
+    pub initialized: bool,
+    pub ready: bool,
+    pub ext_clock_switched: bool,
+    pub transition_successful: bool,
+    pub transition_count_error: bool,
+    pub transition_error: bool,
+    pub token_error: bool,
+    pub flash_rma_error: bool,
+    pub otp_error: bool,
+    pub state_error: bool,
+    pub bus_integrity_error: bool,
+    pub otp_partition_error: bool,
+}
+
+impl CommandDispatch for Status {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Set the TAP straps for the lifecycle controller and reset.
+        transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        transport.reset_target(self.reset_delay, true)?;
+
+        // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
+        let jtag = self.jtag_params.create(transport)?;
+        jtag.connect(JtagTap::LcTap)?;
+        let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
+        jtag.disconnect()?;
+
+        Ok(Some(Box::new(LcStatusResult {
+            initialized: (status & LcCtrlStatus::INITIALIZED.bits()) != 0,
+            ready: (status & LcCtrlStatus::READY.bits()) != 0,
+            ext_clock_switched: (status & LcCtrlStatus::EXT_CLOCK_SWITCHED.bits()) != 0,
+            transition_successful: (status & LcCtrlStatus::TRANSITION_SUCCESSFUL.bits()) != 0,
+            transition_count_error: (status & LcCtrlStatus::TRANSITION_COUNT_ERROR.bits()) != 0,
+            transition_error: (status & LcCtrlStatus::TRANSITION_ERROR.bits()) != 0,
+            token_error: (status & LcCtrlStatus::TOKEN_ERROR.bits()) != 0,
+            flash_rma_error: (status & LcCtrlStatus::FLASH_RMA_ERROR.bits()) != 0,
+            otp_error: (status & LcCtrlStatus::OTP_ERROR.bits()) != 0,
+            state_error: (status & LcCtrlStatus::STATE_ERROR.bits()) != 0,
+            bus_integrity_error: (status & LcCtrlStatus::BUS_INTEG_ERROR.bits()) != 0,
+            otp_partition_error: (status & LcCtrlStatus::OTP_PARTITION_ERROR.bits()) != 0,
+        })))
+    }
+}
+
+#[derive(Debug, Args)]
 /// Reads the LC transition count register of the LC controller.
 pub struct TransitionCount {
     /// Reset duration when switching the LC TAP straps.
@@ -236,6 +296,7 @@ impl CommandDispatch for VolatileRawUnlock {
 pub enum LcCommand {
     Read(LcStateRead),
     RawUnlock(RawUnlock),
+    Status(Status),
     TransitionCount(TransitionCount),
     VolatileRawUnlock(VolatileRawUnlock),
 }
