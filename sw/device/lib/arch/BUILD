@@ -18,7 +18,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )
@@ -29,7 +29,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )
@@ -40,7 +40,7 @@ cc_library(
     deps = [
         ":device",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
     ],
 )

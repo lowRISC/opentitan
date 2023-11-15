@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/macros.h"
 
 // The context is declared as weak so that the ROM and ROM_EXT may
 // override its location.

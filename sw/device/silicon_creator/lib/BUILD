@@ -216,22 +216,25 @@ cc_library(
 )
 
 cc_library(
-    name = "rom_print",
-    srcs = ["rom_print.c"],
-    hdrs = ["rom_print.h"],
+    name = "dbg_print",
+    srcs = ["dbg_print.c"],
+    hdrs = ["dbg_print.h"],
     deps = [
+        ":epmp_defs",
         ":error",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
 
 cc_test(
-    name = "rom_print_unittest",
-    srcs = ["rom_print_unittest.cc"],
+    name = "dbg_print_unittest",
+    srcs = ["dbg_print_unittest.cc"],
     deps = [
+        ":dbg_print",
         ":error",
-        ":rom_print",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "@googletest//:gtest_main",
     ],
