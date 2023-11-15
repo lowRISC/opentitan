@@ -262,7 +262,7 @@ pub fn trigger_volatile_raw_unlock(
 }
 
 pub fn wait_for_status(jtag: &Rc<dyn Jtag>, timeout: Duration, status: LcCtrlStatus) -> Result<()> {
-    let jtag_tap = jtag.get_tap().unwrap();
+    let jtag_tap = jtag.tap().unwrap();
 
     // Wait for LC controller to be ready.
     poll::poll_until(timeout, Duration::from_millis(50), || {

@@ -387,7 +387,7 @@ impl Jtag for OpenOcdJtagChain {
         self.stop()
     }
 
-    fn get_tap(&self) -> Option<JtagTap> {
+    fn tap(&self) -> Option<JtagTap> {
         self.jtag_tap.get()
     }
 
