@@ -1214,8 +1214,7 @@ module dma
     // - transitions from IDLE out
     // - clearing the go bit (going back to idle)
     // - abort               (going back to idle)
-    hw2reg.status.busy.de = ((ctrl_state_q  == DmaIdle) && (ctrl_state_d != DmaIdle)) ||
-                            hw2reg.control.go.de;
+    hw2reg.status.busy.de = ((ctrl_state_q  == DmaIdle) && (ctrl_state_d != DmaIdle)) || clear_go;
     // If transitioning from IDLE, set busy, otherwise clear it
     hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) &&
                             (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
