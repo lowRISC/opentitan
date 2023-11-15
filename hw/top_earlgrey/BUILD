@@ -203,6 +203,7 @@ fpga_cw340(
 ###########################################################################
 # Silicon Environments
 ###########################################################################
+# This exec_env targets running software at the ROM_EXT stage on silicon.
 silicon(
     name = "silicon_creator",
     testonly = True,
@@ -210,10 +211,7 @@ silicon(
         "--rcfile=",
         "--logging=info",
         "--interface={interface}",
-    ] + select({
-        "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
-        "//conditions:default": [],
-    }),
+    ],
     design = "earlgrey",
     exec_env = "silicon_creator",
     lib = "//sw/device/lib/arch:silicon",
