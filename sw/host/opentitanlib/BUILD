@@ -319,6 +319,9 @@ rust_test(
         "src/otp/testdata/otp_ctrl_img_dev.hjson",
         "src/otp/testdata/otp_ctrl_mmap.hjson",
         "src/otp/testdata/output.vmem",
+        ":e2e_command",
+        ":gpio",
+        ":pinmux_config",
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
