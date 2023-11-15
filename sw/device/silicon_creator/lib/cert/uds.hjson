@@ -1,0 +1,89 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "uds",
+
+    variables: {
+        // Creator public key: this is an EC point on
+        // the prime256v1 curve so it has two components
+        // (x and y) which are 32-bytes integers.
+        creator_pub_key_ec_x: {
+            type: "integer",
+            size: 32,
+        },
+        creator_pub_key_ec_y: {
+            type: "integer",
+            size: 32,
+        },
+        // Creator public key ID: this is a 20-byte hash
+        // derived from the creator public key.
+        creator_pub_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Authority key ID: this is the identifier of
+        // the key that will be used to sign this certificate
+        // offline.
+        auth_key_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Hash of the creator_sw_cfg OTP partition (SHA256).
+        otp_creator_sw_cfg_hash: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Hash of the owner_sw_cfg OTP partition (SHA256).
+        otp_owner_sw_cfg_hash: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Hash of the hw_cfg OTP partition (SHA256).
+        otp_hw_cfg_hash: {
+            type: "byte-array",
+            size: 20,
+        },
+    },
+
+    certificate: {
+        serial_number: { var: "creator_pub_key_id", convert: "little-endian" },
+        issuer: {
+            country: "UK",
+            common_name: "lowRISC CIC",
+        },
+        subject: {
+            serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex"},
+        },
+        subject_public_key_info: {
+            algorithm: "ec-public-key",
+            curve: "prime256v1",
+            public_key: {
+                x: { var: "creator_pub_key_ec_x" },
+                y: { var: "creator_pub_key_ec_y" },
+            },
+        },
+        authority_key_identifier: { var: "auth_key_key_id" },
+        subject_key_identifier: { var: "creator_pub_key_id" },
+        vendor: "OpenTitan",
+        model: "Device",
+        layer: "0",
+        svn: "0",
+        fw_ids: [
+            { hash_algorithm: "sha256", digest: { var: "otp_creator_sw_cfg_hash" } },
+            { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
+            { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg_hash" } },
+        ],
+        flags: {
+            not_configured: false,
+            not_secure: false,
+            recovery: false,
+            debug: false,
+        }
+        signature: {
+            algorithm: "ecdsa-with-sha256",
+            // The value field is optional: since the UDS is signed offline, we don't
+            // need to be able to set the signature from the ROM.
+        }
+    }
+}

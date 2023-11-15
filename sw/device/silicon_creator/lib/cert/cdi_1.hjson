@@ -1,0 +1,94 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "cdi_1",
+
+    variables: {
+        // Owner public key: this is an EC point on
+        // the prime256v1 curve so it has two components
+        // (x and y) which are 32-bytes integers.
+        owner_pub_key_ec_x: {
+            type: "integer",
+            size: 32,
+        },
+        owner_pub_key_ec_y: {
+            type: "integer",
+            size: 32,
+        },
+        // Owner public key ID: this is a 20-byte hash
+        // derived from the owner public key.
+        owner_pub_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        // This is the identifier of the public key used to
+        // sign this certificate (owner intermediate key).
+        owner_intermediate_pub_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Hash of the owner stage firmware.
+        owner_firmware_hash: {
+            type: "byte-array",
+            size: 20,
+        },
+        // Owner security version, used to prevent rollback.
+        owner_security_version: {
+            type: "integer",
+            size: 4,
+        }
+        // Certificate signature: the result of signing with ECDSA
+        // are two integers named "r" and "s"
+        cert_signature_r: {
+            type: "integer",
+            size: 32,
+        },
+        cert_signature_s: {
+            type: "integer",
+            size: 32,
+        },
+    },
+
+    certificate: {
+        serial_number: { var: "owner_pub_key_id", convert: "little-endian" },
+        issuer: {
+            serial_number: { var: "owner_intermediate_pub_key_id", convert: "lowercase-hex" },
+        },
+        subject: {
+            serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" },
+        },
+        subject_public_key_info: {
+            algorithm: "ec-public-key",
+            curve: "prime256v1",
+            public_key: {
+                x: { var: "owner_pub_key_ec_x" },
+                y: { var: "owner_pub_key_ec_y" },
+            },
+        },
+        authority_key_identifier: { var: "owner_intermediate_pub_key_id" },
+        subject_key_identifier: { var: "owner_pub_key_id" },
+        vendor: "OpenTitan",
+        model: "Owner",
+        svn: { var: "owner_security_version" },
+        layer: 2,
+        fw_ids: [
+            { hash_algorithm: "sha256", digest: { var: "owner_firmware_hash" } },
+        ],
+        flags: {
+            not_configured: false,
+            not_secure: false,
+            recovery: false,
+            debug: false,
+        }
+        signature: {
+            algorithm: "ecdsa-with-sha256",
+            // The value field is optional: if not present, the signature will be cleared.
+            // Otherwise, we can reference the various fields of the signature.
+            value: {
+                r: { var: "cert_signature_r" },
+                s: { var: "cert_signature_s" }
+            }
+        }
+    }
+}
