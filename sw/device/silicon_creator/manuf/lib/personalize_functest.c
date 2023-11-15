@@ -104,12 +104,14 @@ bool test_main(void) {
     if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
       LOG_INFO("Provisioning OTP SECRET1 ...");
       CHECK_STATUS_OK(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
+      // Wait in a loop so that the test harness can trigger a second bootstrap
+      // operation. This is required because the flash scrambling setting may
+      // have changed in OTP.
+      // The following log message is polled in the host side of this test.
+      LOG_INFO("Provisioning OTP SECRET1 Done ...");
+      abort();
     }
-    // We move the SW reset outside the above if-clause so the next block of the
-    // outter conditional (the block executed under a soft reset condition) is
-    // always executed. This facilitates test-reruns.
-    sw_reset();
-  } else if (info == kDifRstmgrResetInfoSw) {
+
     // Provision the OTP SECRET2 partition and flash info pages.
     if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
       // Wait for host ECC pubkey, used to generate a shared AES key to export
@@ -146,7 +148,7 @@ bool test_main(void) {
       // Reset the chip to activate the OTP partitions and flash pages.
       sw_reset();
     }
-
+  } else if (info == kDifRstmgrResetInfoSw) {
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
     LOG_INFO("Exporting RMA unlock token ...");
