@@ -330,8 +330,8 @@ opentitan_test(
     cw310 = cw310_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """
-            --exec="fpga load-bitstream {bitstream}"
             --exec="transport init"
+            --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
             console

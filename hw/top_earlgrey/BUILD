@@ -78,8 +78,8 @@ fpga_cw310(
     rom = "//sw/device/lib/testing/test_rom:test_rom",
     rom_mmi = "//hw/bitstream:rom_mmi",
     test_cmd = """
-        --exec="fpga load-bitstream {bitstream}"
         --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
