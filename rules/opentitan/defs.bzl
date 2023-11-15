@@ -22,6 +22,12 @@ load(
     _fpga_cw340 = "fpga_cw340",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    _silicon = "silicon",
+    _silicon_jtag_params = "silicon_jtag_params",
+    _silicon_params = "silicon_params",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
     _sim_verilator = "sim_verilator",
     _verilator_params = "verilator_params",
@@ -50,6 +56,10 @@ fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
 cw310_jtag_params = _cw310_jtag_params
+
+silicon = _silicon
+silicon_params = _silicon_params
+silicon_jtag_params = _silicon_jtag_params
 
 sim_verilator = _sim_verilator
 verilator_params = _verilator_params
@@ -92,6 +102,8 @@ def _parameter_name(env, pname):
             pname = "verilator"
         elif "dv" in suffix:
             pname = "dv"
+        elif "silicon" in suffix:
+            pname = "silicon"
         else:
             fail("Unable to identify parameter block name:", env)
     return pname
@@ -124,6 +136,7 @@ def opentitan_test(
         exec_env = {},
         cw310 = _cw310_params(),
         dv = _dv_params(),
+        silicon = _silicon_params(),
         verilator = _verilator_params(),
         **kwargs):
     """Instantiate a test per execution environment.
@@ -146,15 +159,17 @@ def opentitan_test(
       exec_env: A dictionary of execution environments.  The keys are labels to
                 execution environments.  The values are the kwargs parameter names
                 of the exec_env override or None.  If None, the default parameter
-                names of `cw310`, `dv` or `verilator` will be guessed.
+                names of `cw310`, `dv`, `silicon`, or `verilator` will be guessed.
       cw310: Execution overrides for a CW310-based test.
       dv: Execution overrides for a DV-based test.
+      silicon: Execution overrides for a silicon-based test.
       verilator: Execution overrides for a verilator-based test.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
         "cw310": cw310,
         "dv": dv,
+        "silicon": silicon,
         "verilator": verilator,
     }
     test_parameters.update(kwargs)
