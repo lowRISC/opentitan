@@ -36,6 +36,7 @@
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
+#include "sw/ip/socdbg_ctrl/dif/dif_socdbg_ctrl.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
@@ -86,6 +87,7 @@ static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
 static dif_sensor_ctrl_t sensor_ctrl;
 static dif_soc_proxy_t soc_proxy;
+static dif_socdbg_ctrl_t socdbg_ctrl;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_sram_ctrl_t sram_ctrl_main;
@@ -205,6 +207,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_soc_proxy_init(base_addr, &soc_proxy));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOCDBG_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_socdbg_ctrl_init(base_addr, &socdbg_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -798,6 +803,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdSocProxyFatalAlertIntg + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write socdbg_ctrl's alert_test reg and check alert_cause.
+  for (dif_socdbg_ctrl_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_socdbg_ctrl_alert_force(&socdbg_ctrl, kDifSocdbgCtrlAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdSocdbgCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

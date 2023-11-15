@@ -121,7 +121,7 @@ Crossbar configuration format.
 # by inspecting the base addresses. Note that the validation
 # script also ensures that base addresses are aligned with
 # to this granularity.
-MIN_DEVICE_SPACING = 0x0100  # TODO(#475): general minimum should be 4 KiB
+MIN_DEVICE_SPACING = 0x0040  # TODO(#475): general minimum should be 4 KiB
 
 
 def check_keys(obj, control, prefix=""):

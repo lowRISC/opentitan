@@ -99,6 +99,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_socdbg_ctrl__core"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_sensor_ctrl"
       act:    "req"
       package: "tlul_pkg"

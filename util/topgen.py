@@ -474,10 +474,11 @@ def generate_pwrmgr(top, repo_top_path, out_path):
     original_rtl_path = orig_ip_path / "rtl"
 
     # Render and write out hjson
+    # Adding one additional input for CPU halt feature
     render_dict = {
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
-        "NumRomInputs": n_rom_ctrls,
+        "NumRomInputs": n_rom_ctrls + 1,
         "rst_reqs": top["reset_requests"],
         "NumRstReqs": n_rstreqs,
         "gen_core_comment": GEN_CORE_COMMENT

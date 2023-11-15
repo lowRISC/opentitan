@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[153] = {
+    top_darjeeling_plic_interrupt_for_peripheral[154] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -87,6 +87,7 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdAlertHandlerClassb] = kTopDarjeelingPlicPeripheralAlertHandler,
   [kTopDarjeelingPlicIrqIdAlertHandlerClassc] = kTopDarjeelingPlicPeripheralAlertHandler,
   [kTopDarjeelingPlicIrqIdAlertHandlerClassd] = kTopDarjeelingPlicPeripheralAlertHandler,
+  [kTopDarjeelingPlicIrqIdSocdbgCtrlDebugAttention] = kTopDarjeelingPlicPeripheralSocdbgCtrl,
   [kTopDarjeelingPlicIrqIdSpiHost0Error] = kTopDarjeelingPlicPeripheralSpiHost0,
   [kTopDarjeelingPlicIrqIdSpiHost0SpiEvent] = kTopDarjeelingPlicPeripheralSpiHost0,
   [kTopDarjeelingPlicIrqIdPwrmgrAonWakeup] = kTopDarjeelingPlicPeripheralPwrmgrAon,
@@ -175,7 +176,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[99] = {
+    top_darjeeling_alert_for_peripheral[100] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -189,6 +190,7 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdLcCtrlFatalProgError] = kTopDarjeelingAlertPeripheralLcCtrl,
   [kTopDarjeelingAlertIdLcCtrlFatalStateError] = kTopDarjeelingAlertPeripheralLcCtrl,
   [kTopDarjeelingAlertIdLcCtrlFatalBusIntegError] = kTopDarjeelingAlertPeripheralLcCtrl,
+  [kTopDarjeelingAlertIdSocdbgCtrlFatalFault] = kTopDarjeelingAlertPeripheralSocdbgCtrl,
   [kTopDarjeelingAlertIdSpiHost0FatalFault] = kTopDarjeelingAlertPeripheralSpiHost0,
   [kTopDarjeelingAlertIdPwrmgrAonFatalFault] = kTopDarjeelingAlertPeripheralPwrmgrAon,
   [kTopDarjeelingAlertIdRstmgrAonFatalFault] = kTopDarjeelingAlertPeripheralRstmgrAon,

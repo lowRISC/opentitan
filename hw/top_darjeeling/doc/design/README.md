@@ -396,6 +396,7 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 |                   |               | 0x30138000 (prim) |
 | lc_ctrl           | lc_ctrl       | 0x30140000 (regs) |
 | alert_handler     | alert_handler | 0x30150000 (regs) |
+| socdbg_ctrl       | socdbg_ctrl   | 0x30160000 (core) |
 | spi_host0         | spi_host      | 0x30300000 (regs) |
 | pwrmgr_aon        | pwrmgr        | 0x30400000 (regs) |
 | rstmgr_aon        | rstmgr        | 0x30410000 (regs) |

@@ -53,6 +53,7 @@
       sram_ctrl_ret_aon.ram
       sram_ctrl_ret_aon.regs
       aon_timer_aon
+      socdbg_ctrl.core
     ]
   }
   nodes:
@@ -337,6 +338,27 @@
             hart: 0x30140000
           }
           size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: socdbg_ctrl.core
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: socdbg_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x30160000
+          }
+          size_byte: 0x20
         }
       ]
       xbar: false

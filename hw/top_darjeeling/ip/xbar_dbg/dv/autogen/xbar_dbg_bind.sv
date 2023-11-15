@@ -20,5 +20,11 @@ module xbar_dbg_bind;
     .h2d    (tl_mbx_jtag__soc_o),
     .d2h    (tl_mbx_jtag__soc_i)
   );
+  bind xbar_dbg tlul_assert #(.EndpointType("Host")) tlul_assert_device_socdbg_ctrl__jtag (
+    .clk_i  (clk_dbg_i),
+    .rst_ni (rst_dbg_ni),
+    .h2d    (tl_socdbg_ctrl__jtag_o),
+    .d2h    (tl_socdbg_ctrl__jtag_i)
+  );
 `endif
 endmodule

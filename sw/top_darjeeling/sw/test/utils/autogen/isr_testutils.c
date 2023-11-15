@@ -27,6 +27,7 @@
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
+#include "sw/ip/socdbg_ctrl/dif/dif_socdbg_ctrl.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/uart/dif/dif_uart.h"
@@ -710,6 +711,90 @@ void isr_testutils_soc_proxy_isr(
   CHECK_DIF_OK(dif_soc_proxy_irq_get_type(soc_proxy_ctx.soc_proxy, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge(soc_proxy_ctx.soc_proxy, irq));
+  }
+
+  // Complete the IRQ at the PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
+                                        plic_irq_id));
+}
+
+void isr_testutils_soc_proxy_isr(
+    plic_isr_ctx_t plic_ctx, soc_proxy_isr_ctx_t soc_proxy_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_soc_proxy_irq_t *irq_serviced) {
+  // Claim the IRQ at the PLIC.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
+
+  // Get the peripheral the IRQ belongs to.
+  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+
+  // Get the IRQ that was fired from the PLIC IRQ ID.
+  dif_soc_proxy_irq_t irq =
+      (dif_soc_proxy_irq_t)(plic_irq_id -
+                            soc_proxy_ctx.plic_soc_proxy_start_irq_id);
+  *irq_serviced = irq;
+
+  // Check if it is supposed to be the only IRQ fired.
+  if (soc_proxy_ctx.is_only_irq) {
+    dif_soc_proxy_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(
+        dif_soc_proxy_irq_get_state(soc_proxy_ctx.soc_proxy, &snapshot));
+    CHECK(snapshot == (dif_soc_proxy_irq_state_snapshot_t)(1 << irq),
+          "Only soc_proxy IRQ %d expected to fire. Actual IRQ state = %x", irq,
+          snapshot);
+  }
+
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_soc_proxy_irq_get_type(soc_proxy_ctx.soc_proxy, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge(soc_proxy_ctx.soc_proxy, irq));
+  }
+
+  // Complete the IRQ at the PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
+                                        plic_irq_id));
+}
+
+void isr_testutils_socdbg_ctrl_isr(
+    plic_isr_ctx_t plic_ctx, socdbg_ctrl_isr_ctx_t socdbg_ctrl_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_socdbg_ctrl_irq_t *irq_serviced) {
+  // Claim the IRQ at the PLIC.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
+
+  // Get the peripheral the IRQ belongs to.
+  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+
+  // Get the IRQ that was fired from the PLIC IRQ ID.
+  dif_socdbg_ctrl_irq_t irq =
+      (dif_socdbg_ctrl_irq_t)(plic_irq_id -
+                              socdbg_ctrl_ctx.plic_socdbg_ctrl_start_irq_id);
+  *irq_serviced = irq;
+
+  // Check if it is supposed to be the only IRQ fired.
+  if (socdbg_ctrl_ctx.is_only_irq) {
+    dif_socdbg_ctrl_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(
+        dif_socdbg_ctrl_irq_get_state(socdbg_ctrl_ctx.socdbg_ctrl, &snapshot));
+    CHECK(snapshot == (dif_socdbg_ctrl_irq_state_snapshot_t)(1 << irq),
+          "Only socdbg_ctrl IRQ %d expected to fire. Actual IRQ state = %x",
+          irq, snapshot);
+  }
+
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(
+      dif_socdbg_ctrl_irq_get_type(socdbg_ctrl_ctx.socdbg_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_socdbg_ctrl_irq_acknowledge(socdbg_ctrl_ctx.socdbg_ctrl, irq));
   }
 
   // Complete the IRQ at the PLIC.

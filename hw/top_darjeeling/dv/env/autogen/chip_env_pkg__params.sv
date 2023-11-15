@@ -18,6 +18,7 @@ parameter string LIST_OF_ALERTS[] = {
   "lc_ctrl_fatal_prog_error",
   "lc_ctrl_fatal_state_error",
   "lc_ctrl_fatal_bus_integ_error",
+  "socdbg_ctrl_fatal_fault",
   "spi_host0_fatal_fault",
   "pwrmgr_aon_fatal_fault",
   "rstmgr_aon_fatal_fault",
@@ -106,4 +107,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 99;
+parameter uint NUM_ALERTS = 100;
