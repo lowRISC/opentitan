@@ -230,7 +230,7 @@ opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_dev_individualized",
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """

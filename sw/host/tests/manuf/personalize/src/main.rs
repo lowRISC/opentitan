@@ -43,10 +43,6 @@ struct Opts {
 }
 
 fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    // Reset the chip, select the LC TAP, we will connect to it later.
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-
     // Load host (HSM) generated ECC keys.
     let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.host_ecc_sk)?;
     let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
@@ -71,9 +67,20 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         },
     };
 
-    // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
+
+    // Wait for the program to complete SECRET1 configuration and apply a ROM
+    // bootstrap operation. This is needed because the flash scrambling key
+    // may cause the flash contents to be garbled after locking the SECRET1
+    // partition.
+    let _ = UartConsole::wait_for(&*uart, r"Provisioning OTP SECRET1 Done ...", opts.timeout)?;
+    uart.clear_rx_buffer()?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    opts.init.bootstrap.init(transport)?;
+
     let _ = UartConsole::wait_for(
         &*uart,
         r"Ready to receive host ECC pubkey ...",

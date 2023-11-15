@@ -7,8 +7,6 @@ load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
 )
-load("//rules:otp.bzl", "otp_image")
-load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
@@ -202,24 +200,6 @@ opentitan_binary(
     ],
 )
 
-# This is the same as //hw/ip/otp_ctrl/data:img_test_locked* but with *_SW_CFG
-# partitions unprovisioned (and as a result, ROM execution also disabled).
-otp_image(
-    name = "otp_img_post_cp_test_locked0",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_locked0",
-    overlays = ["//hw/ip/otp_ctrl/data:otp_json_fixed_secret0"],
-    visibility = ["//visibility:private"],
-)
-
-bitstream_splice(
-    name = "bitstream_post_cp_test_locked0",
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_post_cp_test_locked0",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 opentitan_test(
     name = "ft_provision",
     srcs = ["ft_personalize_1.c"],
@@ -228,7 +208,7 @@ opentitan_test(
             ":sram_ft_individualize": "sram_ft_individualize",
             ":ft_personalize_2": "ft_personalize_2",
         },
-        bitstream = ":bitstream_post_cp_test_locked0",
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_test_locked0",
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         tags = ["manuf"],
         test_cmd = """

@@ -2,10 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST", "get_lc_items")
+load("//rules:lc.bzl", "lc_raw_unlock_token")
 load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
 )
+load("//rules:otp.bzl", "otp_image")
+load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
@@ -14,10 +18,6 @@ load(
     "rsa_key_for_lc_state",
     "silicon_jtag_params",
 )
-load("//rules:const.bzl", "CONST", "get_lc_items")
-load("//rules:lc.bzl", "lc_raw_unlock_token")
-load("//rules:otp.bzl", "otp_image")
-load("//rules:splice.bzl", "bitstream_splice")
 
 _TEST_UNLOCKED_LC_ITEMS = get_lc_items(
     CONST.LCV.TEST_UNLOCKED0,

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 load(
     "//rules:otp.bzl",
     "otp_alert_classification",
@@ -15,7 +16,6 @@ load(
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
-load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 
 package(default_visibility = ["//visibility:public"])
 

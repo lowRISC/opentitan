@@ -53,7 +53,6 @@ def get_otp_images():
 
     img_targets = [
         "//hw/ip/otp_ctrl/data:img_dev",
-        "//hw/ip/otp_ctrl/data:img_dev_individualized",
         "//hw/ip/otp_ctrl/data:img_rma",
         "//hw/ip/otp_ctrl/data:img_test_locked0",
         "//hw/ip/otp_ctrl/data:img_test_locked1",

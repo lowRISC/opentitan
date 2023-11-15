@@ -146,8 +146,10 @@ bitstream_splice(
         update_usr_access = True,
     )
     for (otp_name, img_target) in [
+        ("sival_test_locked0", "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_post_cp_test_locked0"),
         ("sival_prod_personalized", "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_personalized"),
         ("sival_prod_end_personalized", "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_end_personalized"),
+        ("sival_dev_individualized", "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_individualized"),
         ("sival_dev_personalized", "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_personalized"),
     ]
     for authenticity in KEY_AUTHENTICITY
