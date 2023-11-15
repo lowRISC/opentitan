@@ -10,6 +10,7 @@ load(
     "fpga_cw305",
     "fpga_cw310",
     "fpga_cw340",
+    "silicon",
     "sim_dv",
     "sim_verilator",
 )
@@ -193,6 +194,39 @@ fpga_cw340(
     },
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+###########################################################################
+# Silicon Environments
+###########################################################################
+silicon(
+    name = "silicon_creator",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+    ] + select({
+        "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+        "//conditions:default": [],
+    }),
+    design = "earlgrey",
+    exec_env = "silicon_creator",
+    lib = "//sw/device/lib/arch:silicon",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    test_cmd = """
+        --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
