@@ -322,6 +322,7 @@ _NORMAL_DEPENDENCIES = {
             "libftdi1-sys": "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
             "log": "@crate_index__log-0.4.20//:log",
             "mdbook": "@crate_index__mdbook-0.4.34//:mdbook",
+            "memchr": "@crate_index__memchr-2.6.4//:memchr",
             "memoffset": "@crate_index__memoffset-0.9.0//:memoffset",
             "mio": "@crate_index__mio-0.8.8//:mio",
             "mio-signals": "@crate_index__mio-signals-0.2.0//:mio_signals",
@@ -330,6 +331,7 @@ _NORMAL_DEPENDENCIES = {
             "num_enum": "@crate_index__num_enum-0.7.0//:num_enum",
             "object": "@crate_index__object-0.32.1//:object",
             "once_cell": "@crate_index__once_cell-1.18.0//:once_cell",
+            "openssl": "@crate_index__openssl-0.10.59//:openssl",
             "p256": "@crate_index__p256-0.13.2//:p256",
             "pem-rfc7468": "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
             "pest": "@crate_index__pest-2.7.3//:pest",
@@ -1261,6 +1263,26 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__foreign-types-0.3.2",
+        sha256 = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/foreign-types/0.3.2/download"],
+        strip_prefix = "foreign-types-0.3.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.foreign-types-0.3.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__foreign-types-shared-0.1.1",
+        sha256 = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/foreign-types-shared/0.1.1/download"],
+        strip_prefix = "foreign-types-shared-0.1.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.foreign-types-shared-0.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__form_urlencoded-1.2.0",
         sha256 = "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652",
         type = "tar.gz",
@@ -1969,6 +1991,36 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/opener/0.6.1/download"],
         strip_prefix = "opener-0.6.1",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.opener-0.6.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__openssl-0.10.59",
+        sha256 = "7a257ad03cd8fb16ad4172fedf8094451e1af1c4b70097636ef2eac9a5f0cc33",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/openssl/0.10.59/download"],
+        strip_prefix = "openssl-0.10.59",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.openssl-0.10.59.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__openssl-macros-0.1.1",
+        sha256 = "a948666b637a0f465e8564c73e89d4dde00d72d4d473cc972f390fc3dcee7d9c",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/openssl-macros/0.1.1/download"],
+        strip_prefix = "openssl-macros-0.1.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.openssl-macros-0.1.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__openssl-sys-0.9.95",
+        sha256 = "40a4130519a360279579c2053038317e40eff64d13fd3f004f9e1b72b8a6aaf9",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/openssl-sys/0.9.95/download"],
+        strip_prefix = "openssl-sys-0.9.95",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.openssl-sys-0.9.95.bazel"),
     )
 
     maybe(
