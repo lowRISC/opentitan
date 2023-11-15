@@ -20,7 +20,10 @@ rust_test(
     compile_data = [
         ":example",
     ],
-    data = ["//sw/device/lib/ujson:example_roundtrip"],
+    data = [
+        ":example",
+        "//sw/device/lib/ujson:example_roundtrip",
+    ],
     env = {
         "ROUNDTRIP_CLIENT": "$(rootpath //sw/device/lib/ujson:example_roundtrip)",
         "RUST_BACKTRACE": "1",

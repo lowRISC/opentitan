@@ -17,12 +17,6 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "serde_with",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-        "@crate_index__chrono-0.4.31//:chrono": "chrono_0_4",
-        "@crate_index__indexmap-1.9.3//:indexmap": "indexmap_1",
-        "@crate_index__indexmap-2.0.0//:indexmap": "indexmap_2",
-        "@crate_index__time-0.3.28//:time": "time_0_3",
-    },
     compile_data = glob(
         include = ["**"],
         exclude = [
@@ -89,10 +83,6 @@ rust_library(
     }),
     version = "3.4.0",
     deps = [
-        "@crate_index__chrono-0.4.31//:chrono",
-        "@crate_index__indexmap-1.9.3//:indexmap",
-        "@crate_index__indexmap-2.0.0//:indexmap",
         "@crate_index__serde-1.0.189//:serde",
-        "@crate_index__time-0.3.28//:time",
     ],
 )
