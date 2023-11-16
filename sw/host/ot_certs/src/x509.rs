@@ -13,10 +13,13 @@ use openssl::hash::MessageDigest;
 use openssl::nid::Nid;
 use openssl::pkey::PKey;
 use openssl::pkey::{Private, Public};
+use openssl::x509::extension as openssl_ext;
 use openssl::x509::{X509NameBuilder, X509};
 
 use crate::offsets::{CertificateWithVariables, OffsetGenerator};
 use crate::template;
+
+mod extension;
 
 // Convert a template curve name to an openssl one.
 fn ecgroup_from_curve(curve: &template::EcCurve) -> EcGroup {
@@ -224,6 +227,148 @@ pub fn generate_certificate(
     }
     let subject = subject_builder.build();
     builder.set_subject_name(&subject)?;
+
+    // From the Open Profile for DICE specification:
+    // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
+    // The standard extensions are fixed by the specification.
+    builder.append_extension(
+        openssl_ext::BasicConstraints::new()
+            .critical()
+            .ca()
+            .build()?,
+    )?;
+
+    builder.append_extension(
+        openssl_ext::KeyUsage::new()
+            .critical()
+            .key_cert_sign()
+            .build()?,
+    )?;
+
+    // The rust openssl binding does not allow to choose the subject key ID
+    // and always defaults to the "hash" method of the standard. We need to use
+    // raw ASN1 to work around this.
+    let subject_key_id = generator
+        .get_or_register_value(&tmpl.certificate.subject_key_identifier)
+        .context("cannot get value for the certificate subject key ID")?;
+    builder.append_extension(extension::subject_key_id_extension(&subject_key_id)?)?;
+
+    // Openssl does not support creating an auth key identifier extension without a CA
+    // or without some low-level fiddling. We need to use raw ASN1 for that.
+    let auth_key_identifier =
+        generator.get_or_register_value(&tmpl.certificate.authority_key_identifier)?;
+    builder.append_extension(extension::auth_key_id_extension(&auth_key_identifier)?)?;
+
+    // Collect firmware IDs.
+    let fwids_digests: Vec<Vec<u8>> = tmpl
+        .certificate
+        .fw_ids
+        .as_ref()
+        .unwrap_or(&vec![])
+        .iter()
+        .enumerate()
+        .map(|(i, fwid)| {
+            let digest = generator
+                .get_or_register_value(&fwid.digest)
+                .with_context(|| {
+                    format!("cannot get value for the certificate fw_id entry {}", i + 1)
+                })?;
+            if digest.len() != fwid.hash_algorithm.digest_size() {
+                bail!(
+                    "hash algorithm {:?} has digest size {} but the specified digest has size {}",
+                    fwid.hash_algorithm,
+                    fwid.hash_algorithm.digest_size(),
+                    digest.len()
+                );
+            }
+            Ok(digest)
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    let fwids = tmpl.certificate.fw_ids.as_ref().map(|fw_ids| {
+        let mut fwids = Vec::new();
+        for (i, fwid) in fw_ids.iter().enumerate() {
+            fwids.push(extension::Fwid {
+                hash_alg: fwid.hash_algorithm.oid(),
+                digest: &fwids_digests[i],
+            });
+        }
+        fwids
+    });
+
+    // DICE TcbInfo
+    let vendor = tmpl
+        .certificate
+        .vendor
+        .as_ref()
+        .map(|vendor| {
+            generator
+                .get_or_register_value(vendor)
+                .context("cannot get value for the certificate DICE vendor")
+        })
+        .transpose()?;
+    let model = tmpl
+        .certificate
+        .model
+        .as_ref()
+        .map(|model| {
+            generator
+                .get_or_register_value(model)
+                .context("cannot get value for the certificate DICE model")
+        })
+        .transpose()?;
+    let version = tmpl
+        .certificate
+        .version
+        .as_ref()
+        .map(|ver| {
+            generator
+                .get_or_register_value(ver)
+                .context("cannot get value for the certificate DICE version")
+        })
+        .transpose()?;
+    let svn = tmpl
+        .certificate
+        .svn
+        .as_ref()
+        .map(|svn| {
+            generator
+                .get_or_register_value(svn)
+                .context("cannot get value for the certificate DICE svn")
+        })
+        .transpose()?
+        .as_ref()
+        .map(extension::Asn1OwnedBigInt::from_biguint);
+    let layer = tmpl
+        .certificate
+        .layer
+        .as_ref()
+        .map(|layer| {
+            generator
+                .get_or_register_value(layer)
+                .context("cannot get value for the certificate DICE svn")
+        })
+        .transpose()?
+        .as_ref()
+        .map(extension::Asn1OwnedBigInt::from_biguint);
+    let dice_tcb_info = extension::DiceTcbInfo {
+        vendor: vendor.as_deref().map(asn1::Utf8String::new),
+        model: model.as_deref().map(asn1::Utf8String::new),
+        version: version.as_deref().map(asn1::Utf8String::new),
+        svn: svn.as_ref().map(extension::Asn1OwnedBigInt::to_asn1_bigint),
+        index: None,
+        layer: layer
+            .as_ref()
+            .map(extension::Asn1OwnedBigInt::to_asn1_bigint),
+        fwids: fwids
+            .as_deref()
+            .map(asn1::SequenceOfWriter::new)
+            .map(extension::Asn1ReadableOrWritable::new_write),
+        flags: tmpl.certificate.flags,
+        vendor_info: None,
+        tcb_type: None,
+    };
+    builder.append_extension(extension::dice_tcb_info_extension(&dice_tcb_info)?)?;
 
     // Get the public key specified in the template or generate a random one.
     // OpenSSL will not allow us to produce an unsigned certificate so if the
