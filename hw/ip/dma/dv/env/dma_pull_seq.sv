@@ -27,7 +27,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
 
   function new (string name = "");
     super.new(name);
-    min_rsp_delay = 1;
+    min_rsp_delay = 0;
     max_rsp_delay = 4;
     bytes_read = 0;
     bytes_written = 0;
@@ -49,6 +49,11 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   virtual function void add_fifo_reg(bit [31:0] addr, bit [31:0] data);
     `uvm_info(`gfn, $sformatf("Add FIFO addr: 0x%0x wr_val: 0x%0x", addr, data), UVM_DEBUG)
     fifo_intr_clear_reg[addr] = data;
+  endfunction
+
+  // Enable/disable bus errors, with the given percentage probability/word
+  virtual function void enable_bus_errors(int pct);
+    d_error_pct = pct;
   endfunction
 
   virtual function void update_mem(REQ rsp);
@@ -103,7 +108,9 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
 
   virtual function void randomize_rsp(REQ rsp);
     rsp.disable_a_chan_randomization();
+
     if (d_error_pct > 0) rsp.no_d_error_c.constraint_mode(0);
+
     `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
       rsp.d_valid_delay inside {[min_rsp_delay : max_rsp_delay]};
       if (rsp.a_opcode == tlul_pkg::Get) {

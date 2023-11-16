@@ -376,6 +376,13 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.handshake_interrupt_enable, 32'd1);
   endtask : enable_handshake_interrupt
 
+  // Enable/disable errors on TL-UL buses with the given percentage probability/word
+  function void enable_bus_errors(int pct);
+    seq_ctn.enable_bus_errors(pct);
+    seq_sys.enable_bus_errors(pct);
+    seq_host.enable_bus_errors(pct);
+  endfunction
+
   function void set_seq_fifo_read_mode(asid_encoding_e asid, bit read_fifo_en);
     case (asid)
       OtInternalAddr: begin
