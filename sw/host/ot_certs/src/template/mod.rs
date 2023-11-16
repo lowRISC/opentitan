@@ -33,7 +33,7 @@
 
 use anyhow::Result;
 use num_bigint_dig::BigUint;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, As, DeserializeAs, Same};
 use std::collections::HashMap;
 
@@ -213,7 +213,7 @@ where
 }
 
 /// Conversion to apply to a variable when inserting it into the certificate.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Conversion {
     /// Lower case hex: convert a byte array to a string in lowercase
@@ -307,7 +307,7 @@ pub enum HashAlgorithm {
 }
 
 /// Declaration of a variable that can be filled into the template.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub enum VariableType {
     /// Raw array of bytes.
