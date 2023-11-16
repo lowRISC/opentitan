@@ -12,6 +12,8 @@ module tb;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "cip_macros.svh"
+
 
   wire aon_clk, aon_rst_n;
   wire usb_clk, usb_rst_n;
@@ -33,8 +35,10 @@ module tb;
   wire intr_rx_pid_err;
   wire intr_rx_bitstuff_err;
   wire intr_frame;
-
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire usb_vbus;
+  wire usb_p;
+  wire usb_n;
 
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
@@ -42,8 +46,10 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
-  usb20_if usb20_if();
-
+  usb20_if usb20_if(.clk_i(usb_clk), .rst_ni(usb_rst_n), .usb_vbus(usb_vbus),
+  .usb_p(usb_p), .usb_n(usb_n));
+  usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
+  .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
  `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
 
   // dut
@@ -60,35 +66,31 @@ module tb;
     .alert_tx_o           (alert_tx   ),
 
     // USB Interface
-    // TOOD: need to hook up an interface
-    .cio_usb_dp_i           (1'b1),
-    .cio_usb_dn_i           (1'b0),
-    .usb_rx_d_i             (1'b0),
-    .cio_usb_dp_o           (),
-    .cio_usb_dp_en_o        (),
-    .cio_usb_dn_o           (),
-    .cio_usb_dn_en_o        (),
-    .usb_tx_d_o             (),
-    .usb_tx_se0_o           (),
-
-    .cio_sense_i            (1'b0),
-    .usb_dp_pullup_o        (),
-    .usb_dn_pullup_o        (),
-    .usb_rx_enable_o        (),
-    .usb_tx_use_d_se0_o     (),
-
+    .cio_usb_dp_i           (usb20_block_if.usb_dp_i     ),
+    .cio_usb_dn_i           (usb20_block_if.usb_dn_i     ),
+    .usb_rx_d_i             (usb20_block_if.usb_rx_d_i   ),
+    .cio_usb_dp_o           (usb20_block_if.usb_dp_o     ),
+    .cio_usb_dp_en_o        (usb20_block_if.usb_dp_en_o  ),
+    .cio_usb_dn_o           (usb20_block_if.usb_dn_o     ),
+    .cio_usb_dn_en_o        (usb20_block_if.usb_dn_en_o  ),
+    .usb_tx_d_o             (usb20_block_if.usb_tx_d_o   ),
+    .usb_tx_se0_o           (usb20_block_if.usb_tx_se0_o ),
+    .cio_sense_i            (usb20_block_if.usb_sense_i        ),
+    .usb_dp_pullup_o        (usb20_block_if.usb_dp_pullup_o    ),
+    .usb_dn_pullup_o        (usb20_block_if.usb_dn_pullup_o    ),
+    .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
+    .usb_tx_use_d_se0_o     (usb20_block_if.usb_tx_use_d_se0_o ),
     // Direct pinmux aon detect connections
     .usb_aon_suspend_req_o  (),
     .usb_aon_wake_ack_o     (),
-
     // Events and debug info from wakeup module
     .usb_aon_bus_reset_i          ('0),
     .usb_aon_sense_lost_i         ('0),
     .usb_aon_wake_detect_active_i ('0),
 
     // SOF reference for clock calibration
-    .usb_ref_val_o          (),
-    .usb_ref_pulse_o        (),
+    .usb_ref_val_o          (usb20_block_if.usb_ref_val_o  ),
+    .usb_ref_pulse_o        (usb20_block_if.usb_ref_pulse_o),
 
     // memory configuration
     .ram_cfg_i              ('0),
@@ -96,7 +98,7 @@ module tb;
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
     .intr_pkt_sent_o        (intr_pkt_sent        ),
-    .intr_powered_o         (intr_powered       ),
+    .intr_powered_o         (intr_powered         ),
     .intr_disconnected_o    (intr_disconnected    ),
     .intr_host_lost_o       (intr_host_lost       ),
     .intr_link_reset_o      (intr_link_reset      ),
@@ -111,6 +113,11 @@ module tb;
     .intr_rx_pid_err_o      (intr_rx_pid_err      ),
     .intr_rx_bitstuff_err_o (intr_rx_bitstuff_err ),
     .intr_frame_o           (intr_frame           )
+  );
+
+  Clock_Divider clk_div (
+    .clk     (usb_clk           ),
+    .clk_out (usb20_block_if.usb_clk  )
   );
 
   // Hook up the interrupt pins to the intr_if
@@ -131,6 +138,7 @@ module tb;
   assign interrupts[IntrRxPidErr]       = intr_rx_pid_err;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
   assign interrupts[IntrFrame]          = intr_frame;
+  //assign usb_vbus = 1'b1;
 
   initial begin
     // drive clk and rst_n from clk_if
@@ -142,6 +150,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual usb20_if)::set(null, "*.env.m_usb20_agent*", "vif", usb20_if);
+    uvm_config_db#(virtual usb20_block_if)::set(null, "*.env.m_usb20_agent*","bif",usb20_block_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
