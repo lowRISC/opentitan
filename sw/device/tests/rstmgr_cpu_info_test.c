@@ -51,14 +51,11 @@ enum {
 extern const uint32_t _ottf_interrupt_vector;
 
 // The labels to points in the code of which the memory address is needed.
-extern const char kSingleFaultAddrLower[];
-extern const char kSingleFaultAddrUpper[];
+extern const char kSingleFaultAddr[];
 extern const char kSingleFaultAddrCurrentPc[];
 extern const char kSingleFaultAddrNextPc[];
-extern const char kDoubleFaultFirstAddrLower[];
-extern const char kDoubleFaultFirstAddrUpper[];
-extern const char kDoubleFaultSecondAddrLower[];
-extern const char kDoubleFaultSecondAddrUpper[];
+extern const char kDoubleFaultFirstAddr[];
+extern const char kDoubleFaultSecondAddr[];
 
 // A handle to the reset manager.
 static dif_rstmgr_t rstmgr;
@@ -78,9 +75,8 @@ volatile static bool double_fault;
  */
 void ottf_exception_handler(void) {
   if (double_fault) {
-    OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddrLower);
+    OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddr);
     mmio_region_write32(mmio_region_from_addr(kIllegalAddr2), 0, 0);
-    OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddrUpper);
   } else {
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     // Write to `addr_val` so that the 'last data access' address is
@@ -121,29 +117,6 @@ static dif_rv_core_ibex_crash_dump_info_t get_dump(
 }
 
 /**
- * Holds the expected cpu info dump values for the current state.
- */
-typedef struct rstmgr_cpu_info_test_exp_state {
-  uint32_t mtval;   ///< The last exception address.
-  uint32_t mpec_l;  ///< The last exception PC lower bound.
-  uint32_t mpec_u;  ///< The last exception PC upper bound.
-  uint32_t mdaa;    ///< The last data access address.
-  uint32_t mnpc;    ///< The next PC.
-  uint32_t mcpc;    ///< The current PC.
-} rstmgr_cpu_info_test_exp_state_t;
-
-/**
- * Holds the expected cpu info dump values for the previous state.
- */
-typedef struct rstmgr_cpu_info_test_exp_prev_state {
-  uint32_t mtval;  ///< The exception address for the previous crash.
-  uint32_t
-      mpec_l;  ///< The last exception PC lower bound for the previous crash.
-  uint32_t
-      mpec_u;  ///< The last exception PC upper bound for the previous crash.
-} rstmgr_cpu_info_test_exp_prev_state_t;
-
-/**
  * Checks the 'current' section of the cpu info dump against the given expected
  * values.
  *
@@ -155,7 +128,7 @@ typedef struct rstmgr_cpu_info_test_exp_prev_state {
  * @param double_fault The states correspond to a double fault.
  */
 static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
-                        rstmgr_cpu_info_test_exp_state_t exp_state,
+                        dif_rv_core_ibex_crash_dump_state_t exp_state,
                         dif_toggle_t double_fault) {
   CHECK(exp_state.mtval == obs_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
@@ -175,10 +148,9 @@ static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
   CHECK(exp_state.mdaa == obs_state.mdaa,
         "Last Data Access Addr: Expected 0x%x != Observed 0x%x", exp_state.mdaa,
         obs_state.mdaa);
-  CHECK(
-      exp_state.mpec_l <= obs_state.mpec && obs_state.mpec < exp_state.mpec_u,
-      "The Observed MPEC, 0x%x, was not in the expected range of [0x%x, 0x%x)",
-      obs_state.mpec, exp_state.mpec_l, exp_state.mpec_u);
+  CHECK(exp_state.mpec == obs_state.mpec,
+        "The Observed MPEC, 0x%x, was not in the expected 0x%x", obs_state.mpec,
+        exp_state.mpec);
 }
 
 /**
@@ -190,15 +162,14 @@ static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
  */
 static void check_prev_state(
     dif_rv_core_ibex_previous_crash_dump_state_t obs_prev_state,
-    rstmgr_cpu_info_test_exp_prev_state_t exp_prev_state) {
+    dif_rv_core_ibex_previous_crash_dump_state_t exp_prev_state) {
   CHECK(exp_prev_state.mtval == obs_prev_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
         exp_prev_state.mtval, obs_prev_state.mtval);
-  CHECK(exp_prev_state.mpec_l <= obs_prev_state.mpec &&
-            obs_prev_state.mpec < exp_prev_state.mpec_u,
+  CHECK(exp_prev_state.mpec == obs_prev_state.mpec,
         "The Observed Previous MPEC, 0x%x, "
-        "was not in the expected range of [0x%x, 0x%x)",
-        obs_prev_state.mpec, exp_prev_state.mpec_l, exp_prev_state.mpec_u);
+        "was not in the expected 0x%x",
+        obs_prev_state.mpec, exp_prev_state.mpec);
 }
 
 bool test_main(void) {
@@ -226,9 +197,8 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
       double_fault = false;
-      OT_ADDRESSABLE_LABEL(kSingleFaultAddrLower);
+      OT_ADDRESSABLE_LABEL(kSingleFaultAddr);
       addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr0), 0);
-      OT_ADDRESSABLE_LABEL(kSingleFaultAddrUpper);
       CHECK(false,
             "This should be unreachable; a single fault should have occurred.");
       break;
@@ -244,10 +214,9 @@ bool test_main(void) {
           "fault.");
 
       check_state(dump.fault_state,
-                  (rstmgr_cpu_info_test_exp_state_t){
+                  (dif_rv_core_ibex_crash_dump_state_t){
                       .mtval = (uint32_t)kIllegalAddr0,
-                      .mpec_l = (uint32_t)kSingleFaultAddrLower,
-                      .mpec_u = (uint32_t)kSingleFaultAddrUpper,
+                      .mpec = (uint32_t)kSingleFaultAddr + 4,
                       .mdaa = (uint32_t)&addr_val,
                       .mcpc = (uint32_t)kSingleFaultAddrCurrentPc,
                       .mnpc = (uint32_t)kSingleFaultAddrNextPc,
@@ -276,9 +245,8 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
       double_fault = true;
-      OT_ADDRESSABLE_LABEL(kDoubleFaultFirstAddrLower);
+      OT_ADDRESSABLE_LABEL(kDoubleFaultFirstAddr);
       addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr1), 0);
-      OT_ADDRESSABLE_LABEL(kDoubleFaultFirstAddrUpper);
       CHECK(false,
             "This should be unreachable; a double fault should have occured.");
       break;
@@ -299,21 +267,19 @@ bool test_main(void) {
       // The next pc is always the exception handler, because that's
       // where execution would have gone if it had not halted
       check_state(dump.fault_state,
-                  (rstmgr_cpu_info_test_exp_state_t){
+                  (dif_rv_core_ibex_crash_dump_state_t){
                       .mtval = (uint32_t)kIllegalAddr2,
-                      .mpec_l = (uint32_t)kDoubleFaultSecondAddrLower,
-                      .mpec_u = (uint32_t)kDoubleFaultSecondAddrUpper,
+                      .mpec = (uint32_t)kDoubleFaultSecondAddr,
                       .mdaa = (uint32_t)kIllegalAddr2,
-                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower + 4,
+                      .mcpc = (uint32_t)kDoubleFaultSecondAddr + 4,
                       .mnpc = (uint32_t)&_ottf_interrupt_vector,
                   },
                   kDifToggleEnabled);
 
       check_prev_state(dump.previous_fault_state,
-                       (rstmgr_cpu_info_test_exp_prev_state_t){
+                       (dif_rv_core_ibex_previous_crash_dump_state_t){
                            .mtval = (uint32_t)kIllegalAddr1,
-                           .mpec_l = (uint32_t)kDoubleFaultFirstAddrLower,
-                           .mpec_u = (uint32_t)kDoubleFaultFirstAddrUpper,
+                           .mpec = (uint32_t)kDoubleFaultFirstAddr + 4,
                        });
 
       return true;
