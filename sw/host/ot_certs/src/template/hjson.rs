@@ -11,7 +11,7 @@
 
 use hex::FromHex;
 use num_bigint_dig::BigUint as InnerBigUint;
-use num_traits::{Num, ToPrimitive};
+use num_traits::{FromPrimitive, Num, ToPrimitive};
 use serde::de;
 use serde::{Deserialize, Deserializer};
 use serde_with::DeserializeAs;
@@ -52,7 +52,7 @@ impl<'de> DeserializeAs<'de, InnerBigUint> for BigUint {
         D: Deserializer<'de>,
     {
         deserializer
-            .deserialize_str(BigUintVisitor)
+            .deserialize_any(BigUintVisitor)
             .map(InnerBigUint::from)
     }
 }
@@ -112,6 +112,16 @@ impl<'de> serde::de::Visitor<'de> for BigUintVisitor {
         InnerBigUint::from_str_radix(s, radix)
             .map_err(de::Error::custom)
             .map(|biguint| BigUint { biguint })
+    }
+
+    fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        // Unless the string starts with '0x', expect a decimal string.
+        Ok(BigUint {
+            biguint: InnerBigUint::from_u64(v).expect("cannot create BigUInt from u64"),
+        })
     }
 }
 
