@@ -29,7 +29,7 @@ load(
     new_verilator_params = "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_hex", "otp_image", "otp_json", "otp_partition")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -1295,6 +1295,89 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# Generate hard coded secret2 partition but unlocked.
+otp_json(
+    name = "otp_json_test_rma",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
+            },
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                # This RMA token is a cSHAKE128 digest.
+                # Source is hardcoded to host test file.
+                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+# rom exec is disabled to mitigate sram execution.
+# Without this, it will cause continuous watch dog timeout.
+# secret2 unlocked dev state is required to write secret to all necessary info partitions
+# (creator, owner and isolation partition)
+otp_image(
+    name = "img_dev_exec_disabled",
+    src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+    overlays = STD_OTP_OVERLAYS + [
+        "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+        ":otp_json_test_rma",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+# This test is fpga only.
+opentitan_test(
+    name = "flash_ctrl_rma_test",
+    srcs = ["flash_ctrl_rma_test.c"],
+    cw310 = cw310_jtag_params(
+        otp = ":img_dev_exec_disabled",
+        tags = ["cw310_rom_with_fake_keys"],
+        test_cmd = " ".join([
+            "--elf=\"{firmware}\"",
+            " \"{firmware}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/flash_ctrl:host_rma_test",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    # Test goes from Dev to RMA.
+    # So prod rsa key is required.
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
 
