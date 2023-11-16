@@ -37,6 +37,16 @@ package dma_env_pkg;
   parameter uint DMA_ERROR = 1;
   parameter uint DMA_MEMORY_BUFFER_LIMIT_INTR = 2;
 
+  // Completion status bits (DV-internal)
+  typedef enum {
+    StatusDone,
+    StatusError,
+    StatusAborted,
+    StatusTimeout
+  } status_e;
+  // Bitmask of completion reason(s)
+  typedef uint status_t;
+
   // types
   typedef virtual dma_if dma_vif;
   //typedef virtual clk_if clk_rst_vif;
