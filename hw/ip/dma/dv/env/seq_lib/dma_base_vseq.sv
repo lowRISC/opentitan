@@ -14,8 +14,8 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
-  dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH)) seq_ctn;
-  dma_pull_seq #(.AddrWidth(SYS_ADDR_WIDTH)) seq_sys;
+  dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH))  seq_ctn;
+  dma_pull_seq #(.AddrWidth(SYS_ADDR_WIDTH))  seq_sys;
 
   // DMA configuration item
   dma_seq_item dma_config;
@@ -33,7 +33,7 @@ class dma_base_vseq extends cip_base_vseq #(
     super.new(name);
     dma_config = dma_seq_item::type_id::create("dma_config");
     // response sequences
-    seq_ctn = dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH))::type_id::create("seq_ctn");
+    seq_ctn  = dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH))::type_id::create("seq_ctn");
     seq_host = dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH))::type_id::create("seq_host");
     seq_sys  = dma_pull_seq #(.AddrWidth(SYS_ADDR_WIDTH))::type_id::create("seq_sys");
     // Create memory models
@@ -648,18 +648,6 @@ class dma_base_vseq extends cip_base_vseq #(
       delay(pollrate);
     end
   endtask : poll_status
-
-  // Monitors busy bit in STATUS register
-  task wait_for_idle();
-    forever begin
-      uvm_reg_data_t data;
-      csr_rd(ral.status, data);
-      if (!get_field_val(ral.status.busy, data)) begin
-        `uvm_info(`gfn, "DMA in Idle state", UVM_MEDIUM)
-        break;
-      end
-    end
-  endtask
 
   // Task: Simulate a clock delay
   virtual task delay(int num = 1);

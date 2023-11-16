@@ -93,6 +93,7 @@ class dma_generic_vseq extends dma_base_vseq;
     `uvm_info(`gfn, $sformatf("%s DMA-enabled memory range randomization", action), UVM_HIGH)
   endfunction
 
+  // Clear the STATUS.error indication after reporting it and vetting the cause of the error.
   task clear_errors(ref dma_seq_item dma_config);
     uvm_reg_data_t status;
     csr_rd(ral.status, status);
