@@ -87,6 +87,10 @@ typedef enum dif_mbx_irq {
    * An abort request was received from the requester.
    */
   kDifMbxIrqMbxAbort = 1,
+  /**
+   * The mailbox instance generated an error.
+   */
+  kDifMbxIrqMbxError = 2,
 } dif_mbx_irq_t;
 
 /**

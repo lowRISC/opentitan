@@ -60,6 +60,9 @@ static bool mbx_get_irq_bit_index(dif_mbx_irq_t irq,
     case kDifMbxIrqMbxAbort:
       *index_out = MBX_INTR_COMMON_MBX_ABORT_BIT;
       break;
+    case kDifMbxIrqMbxError:
+      *index_out = MBX_INTR_COMMON_MBX_ERROR_BIT;
+      break;
     default:
       return false;
   }
@@ -70,12 +73,13 @@ static bool mbx_get_irq_bit_index(dif_mbx_irq_t irq,
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent,
     kDifIrqTypeEvent,
+    kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_mbx_irq_get_type(const dif_mbx_t *mbx, dif_mbx_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (mbx == NULL || type == NULL || irq == kDifMbxIrqMbxAbort + 1) {
+  if (mbx == NULL || type == NULL || irq == kDifMbxIrqMbxError + 1) {
     return kDifBadArg;
   }
 
