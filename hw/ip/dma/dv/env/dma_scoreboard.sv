@@ -43,6 +43,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Bit to indicate if DMA operation is explicitly aborted with register write
   bit abort_via_reg_write;
 
+  // Interrupt enable state
+  bit intr_enable_done;
+  bit intr_enable_error;
+  bit intr_enable_mem_limit;
+
   // bit to indicate if dma_memory_buffer_limit interrupt is reached
   bit exp_buffer_limit_intr;
   // Bit to indicate if dma_error interrupt is asserted
@@ -182,12 +187,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                        "Source");
       `DV_CHECK_EQ(clear_int, 1'b0, "Unexpected Read access to Clear Interrupt address")
 
-        // Update the expected value of memory buffer limit interrupt for source address
-      if (dma_config.src_asid == OtInternalAddr && item.a_addr > dma_config.mem_buffer_limit) begin
-        exp_buffer_limit_intr = 1;
-        `uvm_info(`gfn, $sformatf("Source item addr:%0x crosses mem buffer limit: %0x",
-                                  item.a_addr, dma_config.mem_buffer_limit), UVM_HIGH)
-      end
       // Push addr item to source queue
       src_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for source item"), UVM_HIGH)
@@ -244,12 +243,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK(a_opcode inside {PutFullData},
                   $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
       end
-      // Update the expected value of memory buffer limit interrupt for source address
-      if (dma_config.src_asid == OtInternalAddr && item.a_addr > dma_config.mem_buffer_limit) begin
-        exp_buffer_limit_intr = 1;
-        `uvm_info(`gfn, $sformatf("Source item addr:%0x crosses mem buffer limit: %0x",
-                                  item.a_addr, dma_config.mem_buffer_limit), UVM_LOW)
-      end
+
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
@@ -269,12 +263,25 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
     end
 
+    // Update the expected value of memory buffer limit interrupt for this address
+    exp_buffer_limit_intr = (dma_config.handshake & dma_config.auto_inc_buffer) &&
+                            (item.a_addr >= dma_config.mem_buffer_limit ||
+                             item.a_addr >= dma_config.mem_buffer_almost_limit);
+    if (exp_buffer_limit_intr) begin
+      `uvm_info(`gfn, $sformatf("Memory address:%0x crosses almost limit: 0x%0x limit: 0x%0x",
+                                item.a_addr, dma_config.mem_buffer_almost_limit,
+                                dma_config.mem_buffer_limit), UVM_LOW)  // UVM_HIGH)
+
+      // Interrupt is expected only if enabled.
+      exp_buffer_limit_intr = intr_enable_mem_limit;
+    end
+
     // Track byte-counting within the transfer since it determines the prediction of completion
     `uvm_info(`gfn, $sformatf("num_bytes_transferred 0x%x total_transfer_size 0x%x",
                               num_bytes_transferred, dma_config.total_transfer_size), UVM_HIGH);
 
     // Update expected value of dma_done interrupt
-    exp_dma_done_intr = (num_bytes_transferred >= exp_bytes_transferred);
+    exp_dma_done_intr = (num_bytes_transferred >= exp_bytes_transferred) & intr_enable_done;
   endtask
 
   // Process items on Data channel
@@ -283,6 +290,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     bit got_dest_item = 0;
     uint queue_idx = 0;
     tl_d_op_e d_opcode = tl_d_op_e'(item.d_opcode);
+
     // Check if there is a previous address request with the
     // same source id as the current data request
     foreach (src_queue[i]) begin
@@ -337,6 +345,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
                 UVM_HIGH)
       dst_queue.delete(queue_idx);
     end
+
+    // Errors are expected to raise an interrupt if enabled
+    exp_dma_err_intr = item.d_error & intr_enable_error;
   endtask
 
   // Method to process requests on TL interfaces
@@ -571,6 +582,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
     case (csr.get_name())
+      "intr_enable": begin
+        `uvm_info(`gfn, $sformatf("Got intr_enable = %0x", item.a_data), UVM_HIGH)
+        intr_enable_done      = item.a_data[DMA_DONE];
+        intr_enable_error     = item.a_data[DMA_ERROR];
+        intr_enable_mem_limit = item.a_data[DMA_MEMORY_BUFFER_LIMIT_INTR];
+      end
       "source_address_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got source_address_lo = %0x",
