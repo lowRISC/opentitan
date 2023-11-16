@@ -12,7 +12,7 @@ module mbx_fsm #(
   // Control input signals
   input  logic mbx_range_valid_i,
   input  logic hostif_abort_ack_i,
-  input  logic hostif_control_error_set_i,
+  input  logic mbx_error_set_i,
   input  logic sysif_control_abort_set_i,
   input  logic sys_read_all_i,
   input  logic writer_close_mbx_i,
@@ -34,7 +34,8 @@ module mbx_fsm #(
     MbxWrite         = 3'b001,
     MbxWaitFinalWord = 3'b010,
     MbxRead          = 3'b011,
-    MbxSysAbortHost  = 3'b100
+    MbxError         = 3'b100,
+    MbxSysAbortHost  = 3'b101
   } mbx_ctrl_state_e;
 
   mbx_ctrl_state_e ctrl_state_q, ctrl_state_d;
@@ -75,7 +76,7 @@ module mbx_fsm #(
 
   // MbxRead is a common state for imbx and ombx
   // Exit of MbxRead is used to clear imbx.Busy and ombx.Ready
-  assign ombx_clear_ready = CfgOmbx & (hostif_control_error_set_i |
+  assign ombx_clear_ready = CfgOmbx & (mbx_error_set_i |
                                        sysif_control_abort_set_i |
                                        mbx_read_o & sys_read_all_i);
 
@@ -98,8 +99,10 @@ module mbx_fsm #(
           end
         end
 
-        // If system wants to abort, it has the highest priority
-        if (sysif_control_abort_set_i) begin
+        // If system wants to error or abort, it has the highest priority
+        if (mbx_error_set_i) begin
+          ctrl_state_d = MbxError;
+        end else if (sysif_control_abort_set_i) begin
           ctrl_state_d = MbxSysAbortHost;
         end
       end
@@ -107,9 +110,9 @@ module mbx_fsm #(
       // Inbound mailbox being written by the system = writer
       // Outbound mailbox: not applicable
       MbxWrite: begin
-        if (hostif_control_error_set_i) begin                 // Host asserts an error
-          ctrl_state_d = MbxIdle;
-        end else if (sysif_control_abort_set_i) begin         // System wants to abort
+        if (mbx_error_set_i) begin                     // Host asserts an error
+          ctrl_state_d = MbxError;
+        end else if (sysif_control_abort_set_i) begin  // System wants to abort
           ctrl_state_d = MbxSysAbortHost;
         end else if (writer_close_mbx_i) begin  // Writer decided to close the mailbox
           if (writer_last_word_written_i) begin
@@ -123,8 +126,8 @@ module mbx_fsm #(
       // Inbound mailbox being written by the system = writer
       // Outbound mailbox: not applicable
       MbxWaitFinalWord: begin
-        if (hostif_control_error_set_i) begin           // Host asserts an error
-          ctrl_state_d = MbxIdle;
+        if (mbx_error_set_i) begin                      // Host asserts an error
+          ctrl_state_d = MbxError;
         end else if (sysif_control_abort_set_i) begin   // System wants to abort
           ctrl_state_d = MbxSysAbortHost;
         end else if (writer_last_word_written_i) begin
@@ -135,14 +138,21 @@ module mbx_fsm #(
       // Inbound mailbox being read by the reader = host
       // Outbound mailbox being read by the reader = system
       MbxRead: begin
-        if (hostif_control_error_set_i) begin           // Host asserts an error
-          ctrl_state_d = MbxIdle;
+        if (mbx_error_set_i) begin                      // Host asserts an error
+          ctrl_state_d = MbxError;
         end else if (sysif_control_abort_set_i) begin   // System wants to abort
           ctrl_state_d = MbxSysAbortHost;
         end else if (sys_read_all_i) begin
           // Inbound and outbound mailbox go back to idle after all data has
           // been read by the sys requester
           ctrl_state_d = MbxIdle;
+        end
+      end
+
+      // Wait for the abort request to occur
+      MbxError: begin
+        if (sysif_control_abort_set_i) begin
+          ctrl_state_d = MbxSysAbortHost;
         end
       end
 
