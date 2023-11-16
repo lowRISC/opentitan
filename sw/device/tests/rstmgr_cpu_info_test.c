@@ -230,7 +230,7 @@ bool test_main(void) {
       addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr0), 0);
       OT_ADDRESSABLE_LABEL(kSingleFaultAddrUpper);
       CHECK(false,
-            "This should be unreachable; a single fault should have occured.");
+            "This should be unreachable; a single fault should have occurred.");
       break;
 
     case kDifRstmgrResetInfoSw:  // The power-up after the single fault.
@@ -255,9 +255,12 @@ bool test_main(void) {
                   kDifToggleDisabled);
 
       LOG_INFO("Setting up watch dog and triggering a double fault.");
+      // When we boot through the ROM the watchdog is configured to generate an
+      // NMI on barking, so we want the watchdog to bark before the first
+      // exception to avoid the NMI messing with the fault dump.
       uint32_t bark_cycles = 0;
       CHECK_STATUS_OK(
-          aon_timer_testutils_get_aon_cycles_from_us(100, &bark_cycles));
+          aon_timer_testutils_get_aon_cycles_from_us(1, &bark_cycles));
       uint32_t bite_cycles = 0;
       CHECK_STATUS_OK(
           aon_timer_testutils_get_aon_cycles_from_us(100, &bite_cycles));
