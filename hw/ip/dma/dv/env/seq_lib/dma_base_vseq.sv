@@ -20,12 +20,6 @@ class dma_base_vseq extends cip_base_vseq #(
   // DMA configuration item
   dma_seq_item dma_config;
 
-  // Event triggers
-  event e_busy;
-  event e_complete;
-  event e_aborted;
-  event e_errored;
-
   // Access to CONTROL register
   semaphore sem_control;
 
@@ -370,6 +364,12 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.intr_enable, (1 << ral.intr_enable.get_n_bits()) - 1);
   endtask : enable_interrupt
 
+  // Clear one or more interrupts
+  task clear_interrupts(bit [31:0] clear);
+    `uvm_info(`gfn, $sformatf("DMA: Clear Interrupt(s) 0x%0x", clear), UVM_HIGH)
+    csr_wr(ral.intr_state, clear);
+  endtask : clear_interrupts
+
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
@@ -580,6 +580,20 @@ class dma_base_vseq extends cip_base_vseq #(
                 1'b1); // Go
   endtask
 
+  // Clear 'STATUS.abort' field after an Abort request has been actioned.
+  task clear_aborted();
+    `uvm_info(`gfn, "DMA: Clear STATUS.abort", UVM_HIGH)
+    ral.status.aborted.set(1'b1);
+    csr_update(.csr(ral.status));
+  endtask : clear_aborted
+
+  // Clear 'STATUS.done' field after a transfer has completed.
+  task clear_done();
+    `uvm_info(`gfn, "DMA: Clear STATUS.done", UVM_HIGH)
+    ral.status.done.set(1'b1);
+    csr_update(.csr(ral.status));
+  endtask : clear_done
+
   // Task: Abort the current transaction
   task abort();
     uvm_reg_data_t data = 0;
@@ -596,64 +610,66 @@ class dma_base_vseq extends cip_base_vseq #(
     sem_control.put(1);
   endtask : abort
 
-  // Task: Clear DMA Status
-  task clear();
-    `uvm_info(`gfn, "DMA: Clear DMA State", UVM_HIGH)
-
-    ral.status.done.set(1'b1);
-    ral.status.aborted.set(1'b1);
-    ral.status.error.set(1'b1);
-    csr_update(.csr(ral.status));
-  endtask : clear
-
   // Task: Wait for Completion
-  task wait_for_completion(output int status);
+  task wait_for_completion(bit intr_driven, output status_t status);
     int timeout = 1000000;
+    status = 0;
     fork
+      // Timeout condition due to simulation hang
       begin
-        // Case 1: Timeout condition due to simulation hang
         delay(timeout);
-        status = -1;
         `uvm_fatal(`gfn, $sformatf("ERROR: Timeout Condition Reached at %d cycles", timeout))
       end
-      poll_status();
-      // Case 2: Test completion via 'status.done' bit
-      begin
-        wait(e_complete.triggered);
-        status = 0;
-        `uvm_info(`gfn, "DMA: Completion Seen", UVM_MEDIUM)
-      end
-      // Case 3: Response to 'control.abort' request, leading to 'status.abort' being asserted
-      begin
-        wait(e_aborted.triggered);
-        status = 1;
-        `uvm_info(`gfn, "DMA: Aborted Seen", UVM_MEDIUM)
-      end
-      // Case 4: Error raised, leading to 'status.error' set
-      begin
-        wait(e_errored.triggered);
-        status = 2;
-        `uvm_info(`gfn, "DMA: Error Seen", UVM_MEDIUM)
-      end
+      // Completion detection when interrupt driven
+      await_interrupt(intr_driven, status);
+      // Completion signaling when we're just polling CSRs
+      // Note: this thread is the only one that completes, which is important because terminating
+      // the CSR polling may leave the RAL locked.
+      poll_status(intr_driven, status);
     join_any
     disable fork;
+
+    // Presently, since the scoreboard is substantially updated by reads of the STATUS register,
+    // we need to ensure that at least one such read occurs.
+    if (intr_driven) begin
+      poll_status(1'b0, status, 0);
+    end
   endtask : wait_for_completion
 
+  // Await the receipt of an interrupt from the DMA controller.
+  task await_interrupt(bit intr_driven, ref status_t status);
+    if (intr_driven) begin
+      forever begin
+        delay(1);
+        if (cfg.intr_vif.pins[DMA_DONE])  status[StatusDone]  = 1'b1;
+        if (cfg.intr_vif.pins[DMA_ERROR]) status[StatusError] = 1'b1;
+      end
+    end else begin
+      // Rely upon the CSR reading in `poll_status` to detect completion.
+      forever delay(100);
+    end
+  endtask : await_interrupt
+
   // Task: Continuously poll status until completion every N cycles
-  task poll_status(int pollrate = 10);
+  task poll_status(bit intr_driven, ref status_t status, input int pollrate = 10);
     bit [31:0] v;
 
     `uvm_info(`gfn, "DMA: Polling DMA Status", UVM_HIGH)
-    while (1) begin
+    do begin
       csr_rd(ral.status, v);
-      if (v[0]) begin ->e_busy;     end
-      if (v[1]) begin ->e_complete; end
-      if (v[2]) begin ->e_aborted;  end
-      if (v[3]) begin ->e_errored;  end
+      // Collect some STATUS bit that do not generate interrupts, and inform parallel threads
+      // if (v[0]) ->e_busy;
+      if (v[2]) status[StatusAborted] = 1'b1;
+      // Respond to the STATUS.done and STATUS.error bits only if we're not insisting upon
+      // interrupt-driven completion.
+      if (!intr_driven) begin
+        if (v[1]) status[StatusDone]  = 1'b1;
+        if (v[3]) status[StatusError] = 1'b1;
+      end
       // Note: sha2_digest_valid is not a completion event
       // v[12]
       delay(pollrate);
-    end
+    end while (~|status);
   endtask : poll_status
 
   // Task: Simulate a clock delay

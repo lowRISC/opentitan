@@ -12,10 +12,18 @@ class dma_generic_vseq extends dma_base_vseq;
   // Number of transactions per iteration.
   rand uint num_txns;
 
+  // Decide whether to generate a valid DMA configuration
   virtual function bit pick_if_config_valid();
     bit valid_config;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(valid_config, valid_config dist { 0 := 20, 1 := 80};)
     return valid_config;
+  endfunction
+
+  // Decide whether to use interrupts to drive/monitor this transfer
+  virtual function bit pick_if_intr_driven();
+    bit intr_driven;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(intr_driven, intr_driven dist { 0 := 80, 1 := 20};)
+    return intr_driven;
   endfunction
 
   // Randomization of DMA configuration and transfer properties
@@ -73,7 +81,7 @@ class dma_generic_vseq extends dma_base_vseq;
   endtask
 
   virtual task ending_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config,
-                          int status);
+                          status_t status);
     // Possibly overridden in derived classes.
   endtask
 
@@ -96,17 +104,24 @@ class dma_generic_vseq extends dma_base_vseq;
   // Clear the STATUS.error indication after reporting it and vetting the cause of the error.
   task clear_errors(ref dma_seq_item dma_config);
     uvm_reg_data_t status;
+    `uvm_info(`gfn, "Clear error status", UVM_MEDIUM)
     csr_rd(ral.status, status);
     if (get_field_val(ral.status.error, status)) begin
-      // TODO: There are other causes of errors in more complex tests
-      bit valid = dma_config.check_config("clear_errors");
-      `DV_CHECK(!valid);
-      ral.control.go.set(1'b0);
-      csr_update(ral.control);
-      `uvm_info(`gfn, "Clear error status", UVM_MEDIUM)
+      bit [31:0] error_code;
+      csr_rd(ral.error_code, error_code);
+      `uvm_info(`gfn, $sformatf("ERROR_CODE is 0x%0x", error_code), UVM_MEDIUM)
+      // Bus errors may occur whether or not the configuration is valid; all others should be
+      // only the product of an invalid configuration.
+      error_code[DmaBusErr] = 1'b0;
+      if (|error_code) begin
+        bit valid = dma_config.check_config("clear_errors");
+        `DV_CHECK(!valid);
+      end
       ral.status.error.set(1'b1);
       csr_update(ral.status);
     end
+    // Clear the Error interrupt if set
+    clear_interrupts(1 << DMA_ERROR);
   endtask
 
   virtual task body();
@@ -121,10 +136,11 @@ class dma_generic_vseq extends dma_base_vseq;
 
       // TODO: can/shall we re-randomize the transaction count on each iteration?
       for (uint j = 0; j < num_txns; j++) begin
+        bit intr_driven = pick_if_intr_driven();
         bit [31:0] num_bytes_supplied;
         logic [511:0] digest;
         bit stop = 1'b0;
-        int status;
+        status_t status;
 
         run_common_config(dma_config);
         start_device(dma_config);
@@ -146,8 +162,8 @@ class dma_generic_vseq extends dma_base_vseq;
           // - aborted, in response to abort request
           // - timeout
           while (!stop) begin
-            wait_for_completion(status);
-            if (status) begin
+            wait_for_completion(intr_driven, status);
+            if (status != StatusDone) begin
               stop = 1'b1;
             end else begin
               // 'Done' but perhaps not yet finished
@@ -239,9 +255,30 @@ class dma_generic_vseq extends dma_base_vseq;
         // Notification that the transaction is ending, indicating the completion status
         ending_txn(j, num_txns, dma_config, status);
 
-        clear_errors(dma_config);
-        // We need to clear the outputs, especially `status.done`
-        clear();
+        `uvm_info(`gfn, $sformatf("Transaction completed with status 0x%0x", int'(status)),
+                  UVM_MEDIUM)
+        // Handle the transaction completion according to its status.
+        if (status[StatusDone]) begin
+          // Clear STATUS.done bit and then clear the interrupt, if enabled.
+          clear_done();
+          clear_interrupts(1 << DMA_DONE);
+          status[StatusDone] = 1'b0;
+        end
+        if (status[StatusError]) begin
+          // Clear STATUS.error condition and associcated interrupt.
+          clear_errors(dma_config);
+          status[StatusError] = 1'b0;
+        end
+        if (status[StatusAborted]) begin
+          // A FW-initiated Abort of a transfer does not raise an interrupt, since the abort
+          // shall happen immediately from the FW perspective; we just clear STATUS.abort.
+          clear_aborted();
+          status[StatusAborted] = 1'b0;
+        end
+        if (|status) begin
+          `uvm_fatal(`gfn, $sformatf("FATAL: Unexpected/unrecognised completion status 0x%0x",
+                                     int'(status)))
+        end
 
         // Now that we've finished all DUT accesses for his iteration...
         stop_device();

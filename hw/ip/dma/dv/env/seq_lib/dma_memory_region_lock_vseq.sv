@@ -135,7 +135,7 @@ class dma_memory_region_lock_vseq extends dma_generic_vseq;
 
   // Transaction has ended
   virtual task ending_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config,
-                          int status);
+                          status_t status);
     if (operating) begin
       // Stop our parallel task
       operating = 1'b0;

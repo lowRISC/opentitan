@@ -44,7 +44,7 @@ class dma_abort_vseq extends dma_generic_vseq;
 
   // Transaction has ended
   virtual task ending_txn(int unsigned txn, int unsigned num_txns, ref dma_seq_item dma_config,
-                          int status);
+                          status_t status);
     `DV_CHECK_EQ(operating, 1'b1, "Unexpected end of transaction")
     // Stop our parallel task
     operating = 1'b0;
