@@ -2418,8 +2418,25 @@
       stage: V2
       tests: ["chip_sw_otp_ctrl_nvm_cnt"]
     }
+    {
+      name: chip_sw_otp_ctrl_sw_parts
+      desc: '''Verify that SW partitions can be programmed and read/write locked.
 
+            This test operates on three representative SW partitions with
+            different attributes and we rely on block-level coverage for the
+            remaining partitions:
+            - OWNER_SW_CFG (read and write-lockable)
+            - OWNERSHIP_SLOT_STATE (only read-lockable)
+            - EXT_NVM (only read-lockable, no ECC)
 
+            The test checks:
+            - That the first word of each partition is writable.
+            - That the dynamic read locks work for each partition.
+            - That the permanent write lock works for OWNER_SW_CFG only.
+            '''
+      stage: V2
+      tests: ["chip_sw_otp_ctrl_sw_parts"]
+    }
 
     ////////////////////////
     // Analog Peripherals //
