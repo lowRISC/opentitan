@@ -105,6 +105,7 @@
        stage: V2
        si_stage: SV1
        tests: ["chip_sw_rstmgr_cpu_info"]
+       bazel: ["//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_rom_with_fake_keys"]
        lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
        features: [
          "RV_CORE_IBEX.CRASH_DUMP"
@@ -122,6 +123,7 @@
        stage: V2
        si_stage: SV1
        tests: ["chip_sw_rstmgr_cpu_info"]
+       bazel: ["//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_rom_with_fake_keys"]
        lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
        features: [
          "RV_CORE_IBEX.CRASH_DUMP"
