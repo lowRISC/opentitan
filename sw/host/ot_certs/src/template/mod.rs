@@ -111,31 +111,35 @@ pub enum AttributeType {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Value<T> {
     /// This value will be populated on the device when variables are set.
-    Variable {
-        /// Name of the variable.
-        var: String,
-        /// Optional conversion to apply to the variable.
-        convert: Option<Conversion>,
-    },
+    Variable(Variable),
     /// Constant literal that will be set when the certificate is generated.
     Literal(T),
+}
+
+/// Value which may either be a variable name or literal.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Variable {
+    /// Name of the variable.
+    pub name: String,
+    /// Optional conversion to apply to the variable.
+    pub convert: Option<Conversion>,
 }
 
 impl<T> Value<T> {
     /// Create a variable with the given name. No conversion applied.
     pub fn variable(name: &str) -> Self {
-        Value::Variable {
-            var: name.into(),
+        Value::Variable(Variable {
+            name: name.into(),
             convert: None,
-        }
+        })
     }
 
     /// Create a variable with the given name and conversion.
     pub fn convert(var: &str, conversion: Conversion) -> Self {
-        Value::Variable {
-            var: var.into(),
+        Value::Variable(Variable {
+            name: var.into(),
             convert: Some(conversion),
-        }
+        })
     }
 
     /// Create a literal with the given value.
@@ -185,7 +189,7 @@ where
             Ok(val) => match val {
                 LocalValue::Literal(x) => Ok(Value::<T>::Literal(x)),
                 LocalValue::Variable { var, convert, .. } => {
-                    Ok(Value::<T>::Variable { var, convert })
+                    Ok(Value::<T>::Variable(Variable { name: var, convert }))
                 }
             },
             Err(_) => {
