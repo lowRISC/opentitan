@@ -856,7 +856,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000800"},
-        soc:  {soc_dbg: "0x01460200"},
+        soc:  {soc_dbg: "0x800"},
       },
     },
     { name: "mbx_pcie0",
