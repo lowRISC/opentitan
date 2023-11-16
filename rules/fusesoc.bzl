@@ -54,6 +54,7 @@ def _fusesoc_build_impl(ctx):
     )
 
     args.add_all([
+        "--verbose",
         "run",
         "--flag=fileset_top",
     ])

@@ -57,7 +57,7 @@ steps:
 
     . util/build_consts.sh
     module load "xilinx/vivado/$(VIVADO_VERSION)"
-    ci/bazelisk.sh build ${archive_target}
+    timeout 7000 ci/bazelisk.sh build ${archive_target} || cat bazel-out/_tmp/actions/*
   condition: ne(variables.bitstreamStrategy, 'cached')
   displayName: Build and splice bitstream with Vivado
 - bash: |
