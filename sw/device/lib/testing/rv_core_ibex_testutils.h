@@ -39,4 +39,23 @@ status_t rv_core_ibex_testutils_get_rnd_data(
     const dif_rv_core_ibex_t *rv_core_ibex, uint32_t timeout_usec,
     uint32_t *rnd);
 
+#define RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_DUMP(dump) \
+  LOG_INFO(                                           \
+      "\n%s = {"                                      \
+      "\n\tmtval=%08x"                                \
+      "\n\tmpec=%08x,"                                \
+      "\n\tmdaa=%08x,"                                \
+      "\n\tmnpc=%08x,"                                \
+      "\n\tmcpc=%08x,"                                \
+      "\n}\n",                                        \
+      #dump, dump.mtval, dump.mpec, dump.mdaa, dump.mnpc, dump.mcpc)
+
+#define RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_PREVIOUS_DUMP(dump) \
+  LOG_INFO(                                                    \
+      "\n%s = {"                                               \
+      "\n\tmtval=%08x"                                         \
+      "\n\tmpec=%08x,"                                         \
+      "\n}\n",                                                 \
+      #dump, dump.mtval, dump.mpec)
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RV_CORE_IBEX_TESTUTILS_H_

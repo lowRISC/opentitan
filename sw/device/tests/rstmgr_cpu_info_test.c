@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
+#include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -130,11 +131,12 @@ static dif_rv_core_ibex_crash_dump_info_t get_dump(
 static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
                         dif_rv_core_ibex_crash_dump_state_t exp_state,
                         dif_toggle_t double_fault) {
+  RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_DUMP(obs_state);
+  RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_DUMP(exp_state);
+
   CHECK(exp_state.mtval == obs_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
         exp_state.mtval, obs_state.mtval);
-  LOG_INFO("exp_mcpc=0x%x, exp_mnpc=0x%x, obs_mcpc=0x%x, obs_mnpc=0x%x",
-           exp_state.mcpc, exp_state.mnpc, obs_state.mcpc, obs_state.mnpc);
   // Check the current pc is either the expected or expected + 4, since the
   // pipeline may have stalled.
   CHECK(exp_state.mcpc == obs_state.mcpc ||
@@ -163,6 +165,8 @@ static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
 static void check_prev_state(
     dif_rv_core_ibex_previous_crash_dump_state_t obs_prev_state,
     dif_rv_core_ibex_previous_crash_dump_state_t exp_prev_state) {
+  RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_PREVIOUS_DUMP(obs_prev_state);
+  RV_CORE_IBEX_TESTUTILS_PRINT_CRASH_PREVIOUS_DUMP(exp_prev_state);
   CHECK(exp_prev_state.mtval == obs_prev_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
         exp_prev_state.mtval, obs_prev_state.mtval);
