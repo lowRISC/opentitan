@@ -60,6 +60,9 @@
     { name: "mbx_abort"
       desc: "An abort request was received from the requester."
     }
+    { name: "mbx_error"
+      desc: "The mailbox instance generated an error."
+    }
   ]
   alert_list: [
     { name: "fatal_fault"

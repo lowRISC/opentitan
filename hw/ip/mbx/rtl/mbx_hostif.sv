@@ -18,8 +18,10 @@ module mbx_hostif
   // Generated interrupt event
   input  logic                          event_intr_ready_i,
   input  logic                          event_intr_abort_i,
+  input  logic                          event_intr_error_i,
   output logic                          intr_ready_o,
   output logic                          intr_abort_o,
+  output logic                          intr_error_o,
   // External errors
   input  logic                          intg_err_i,
   input  logic                          sram_err_i,
@@ -131,6 +133,19 @@ module mbx_hostif
     .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_abort.de ),
     .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_abort.d  ),
     .intr_o                 ( intr_abort_o                   )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_error (
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
+    .event_intr_i           ( event_intr_error_i             ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.mbx_error.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_error.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_error.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_error.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_error.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_error.d  ),
+    .intr_o                 ( intr_error_o                   )
   );
 
   // Control Register

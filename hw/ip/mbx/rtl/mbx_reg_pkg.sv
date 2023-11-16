@@ -20,6 +20,9 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } mbx_error;
+    struct packed {
+      logic        q;
     } mbx_abort;
     struct packed {
       logic        q;
@@ -29,6 +32,9 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } mbx_error;
+    struct packed {
+      logic        q;
     } mbx_abort;
     struct packed {
       logic        q;
@@ -36,6 +42,10 @@ package mbx_reg_pkg;
   } mbx_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } mbx_error;
     struct packed {
       logic        q;
       logic        qe;
@@ -107,6 +117,10 @@ package mbx_reg_pkg;
       logic        d;
       logic        de;
     } mbx_abort;
+    struct packed {
+      logic        d;
+      logic        de;
+    } mbx_error;
   } mbx_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -156,9 +170,9 @@ package mbx_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [151:150]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [149:148]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [147:144]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [155:153]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [152:150]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [149:144]
     mbx_reg2hw_alert_test_reg_t alert_test; // [143:140]
     mbx_reg2hw_control_reg_t control; // [139:134]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [133:132]
@@ -171,7 +185,7 @@ package mbx_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    mbx_hw2reg_intr_state_reg_t intr_state; // [145:142]
+    mbx_hw2reg_intr_state_reg_t intr_state; // [147:142]
     mbx_hw2reg_control_reg_t control; // [141:140]
     mbx_hw2reg_status_reg_t status; // [139:136]
     mbx_hw2reg_inbound_write_ptr_reg_t inbound_write_ptr; // [135:106]
@@ -201,9 +215,10 @@ package mbx_reg_pkg;
   parameter logic [CoreAw-1:0] MBX_DOE_INTR_MSG_DATA_OFFSET = 7'h 40;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [1:0] MBX_INTR_TEST_RESVAL = 2'h 0;
+  parameter logic [2:0] MBX_INTR_TEST_RESVAL = 3'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_INTR_TEST_MBX_ERROR_RESVAL = 1'h 0;
   parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
