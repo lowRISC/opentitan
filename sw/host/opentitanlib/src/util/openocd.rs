@@ -215,8 +215,8 @@ pub struct OpenOcdJtagChain {
 /// Errors related to the OpenOCD server.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum OpenOcdError {
-    #[error("OpenOCD server is not running")]
-    OpenOcdNotRunning,
+    #[error("OpenOCD initialization failed: {0}")]
+    InitializeFailure(String),
     #[error("OpenOCD server exists prematurely")]
     PrematureExit,
     #[error("Generic error {0}")]
@@ -246,7 +246,12 @@ impl JtagChain for OpenOcdJtagChain {
             JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
         };
         self.openocd.execute(target)?;
-        self.openocd.execute("init")?;
+
+        // Capture outputs during initialization to see if error has occured during the process.
+        let resp = self.openocd.execute("capture init")?;
+        if resp.contains("JTAG scan chain interrogation failed") {
+            bail!(OpenOcdError::InitializeFailure(resp));
+        }
 
         Ok(Box::new(OpenOcdJtagTap {
             openocd: self.openocd,

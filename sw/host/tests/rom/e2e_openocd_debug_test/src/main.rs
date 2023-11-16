@@ -483,16 +483,19 @@ fn main() -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
     )?;
 
-    let mut jtag = opts
+    let jtag_result = opts
         .init
         .jtag_params
         .create(&transport)?
-        .connect(JtagTap::RiscvTap)?;
-    let result = jtag.reset(false);
-    assert_eq!(result.is_err(), opts.expect_fail);
+        .connect(JtagTap::RiscvTap);
+
     if opts.expect_fail {
+        assert!(jtag_result.is_err());
         return Ok(());
     }
+
+    let mut jtag = jtag_result?;
+    jtag.reset(false)?;
 
     let mut dbg = Some(sym.attach(jtag));
     execute_test!(asm_interrupt_handler, dbg.as_mut().unwrap());
