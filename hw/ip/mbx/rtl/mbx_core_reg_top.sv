@@ -126,14 +126,19 @@ module mbx_core_reg_top (
   logic intr_state_mbx_ready_wd;
   logic intr_state_mbx_abort_qs;
   logic intr_state_mbx_abort_wd;
+  logic intr_state_mbx_error_qs;
+  logic intr_state_mbx_error_wd;
   logic intr_enable_we;
   logic intr_enable_mbx_ready_qs;
   logic intr_enable_mbx_ready_wd;
   logic intr_enable_mbx_abort_qs;
   logic intr_enable_mbx_abort_wd;
+  logic intr_enable_mbx_error_qs;
+  logic intr_enable_mbx_error_wd;
   logic intr_test_we;
   logic intr_test_mbx_ready_wd;
   logic intr_test_mbx_abort_wd;
+  logic intr_test_mbx_error_wd;
   logic alert_test_we;
   logic alert_test_fatal_fault_wd;
   logic alert_test_recov_fault_wd;
@@ -235,6 +240,33 @@ module mbx_core_reg_top (
     .qs     (intr_state_mbx_abort_qs)
   );
 
+  //   F[mbx_error]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state_mbx_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_mbx_error_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.mbx_error.de),
+    .d      (hw2reg.intr_state.mbx_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.mbx_error.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_mbx_error_qs)
+  );
+
 
   // R[intr_enable]: V(False)
   //   F[mbx_ready]: 0:0
@@ -291,10 +323,37 @@ module mbx_core_reg_top (
     .qs     (intr_enable_mbx_abort_qs)
   );
 
+  //   F[mbx_error]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_mbx_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_mbx_error_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.mbx_error.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_mbx_error_qs)
+  );
+
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [1:0] intr_test_flds_we;
+  logic [2:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[mbx_ready]: 0:0
   prim_subreg_ext #(
@@ -327,6 +386,22 @@ module mbx_core_reg_top (
     .qs     ()
   );
   assign reg2hw.intr_test.mbx_abort.qe = intr_test_qe;
+
+  //   F[mbx_error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_mbx_error (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_mbx_error_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[2]),
+    .q      (reg2hw.intr_test.mbx_error.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.mbx_error.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -838,16 +913,22 @@ module mbx_core_reg_top (
   assign intr_state_mbx_ready_wd = reg_wdata[0];
 
   assign intr_state_mbx_abort_wd = reg_wdata[1];
+
+  assign intr_state_mbx_error_wd = reg_wdata[2];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_mbx_ready_wd = reg_wdata[0];
 
   assign intr_enable_mbx_abort_wd = reg_wdata[1];
+
+  assign intr_enable_mbx_error_wd = reg_wdata[2];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_mbx_ready_wd = reg_wdata[0];
 
   assign intr_test_mbx_abort_wd = reg_wdata[1];
+
+  assign intr_test_mbx_error_wd = reg_wdata[2];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_fatal_fault_wd = reg_wdata[0];
@@ -917,16 +998,19 @@ module mbx_core_reg_top (
       addr_hit[0]: begin
         reg_rdata_next[0] = intr_state_mbx_ready_qs;
         reg_rdata_next[1] = intr_state_mbx_abort_qs;
+        reg_rdata_next[2] = intr_state_mbx_error_qs;
       end
 
       addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_mbx_ready_qs;
         reg_rdata_next[1] = intr_enable_mbx_abort_qs;
+        reg_rdata_next[2] = intr_enable_mbx_error_qs;
       end
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
       end
 
       addr_hit[3]: begin

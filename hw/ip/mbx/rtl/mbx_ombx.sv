@@ -25,7 +25,7 @@ module mbx_ombx #(
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                          sysif_status_ready_i,
   input  logic                          hostif_control_abort_clear_i,
-  input  logic                          hostif_control_error_set_i,
+  input  logic                          mbx_error_set_i,
   input  logic                          sysif_control_abort_set_i,
   input  logic                          sysif_read_data_read_valid_i,
   input  logic                          sysif_read_data_write_valid_i,
@@ -106,6 +106,7 @@ module mbx_ombx #(
                           sysif_read_data_write_valid_i  &
                           (sram_read_ptr_q == sram_read_ptr_limit_q);
 
+  // The abort requestet was handled by the host. This re-initialzes the read pointer
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
@@ -147,7 +148,7 @@ module mbx_ombx #(
   // or the requester aborts the transaction
   logic clear_read_data;
   assign clear_read_data = sys_read_all_o             |
-                           hostif_control_error_set_i |
+                           mbx_error_set_i            |
                            sysif_control_abort_set_i;
   // Advance the SRAM read response to read data
   prim_generic_flop_en #(
@@ -239,7 +240,7 @@ module mbx_ombx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_control_error_set_i( hostif_control_error_set_i   ),
+    .mbx_error_set_i           ( mbx_error_set_i              ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( sys_read_all_o               ),
     .writer_close_mbx_i        ( writer_close_mbx             ),

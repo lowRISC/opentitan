@@ -20,6 +20,7 @@ module mbx
   // Comportable interrupt to the OT
   output logic                                      intr_mbx_ready_o,
   output logic                                      intr_mbx_abort_o,
+  output logic                                      intr_mbx_error_o,
   // Custom straps for capability register implementation
   output logic                                      doe_intr_support_o,
   output logic                                      doe_intr_en_o,
@@ -59,6 +60,7 @@ module mbx
   logic hostif_address_range_valid, hostif_address_range_valid_write;
   logic sysif_control_abort_set;
   logic doe_async_msg_en;
+  logic imbx_overflow_error_set;
 
   // Status signal inputs from the sysif to the hostif
   logic sysif_status_busy, sysif_status_error;
@@ -101,8 +103,10 @@ module mbx
     .tl_host_o                           ( core_tl_d_o                        ),
     .event_intr_ready_i                  ( hostif_event_intr_ready            ),
     .event_intr_abort_i                  ( hostif_event_intr_abort            ),
+    .event_intr_error_i                  ( imbx_overflow_error_set            ),
     .intr_ready_o                        ( intr_mbx_ready_o                   ),
     .intr_abort_o                        ( intr_mbx_abort_o                   ),
+    .intr_error_o                        ( intr_mbx_error_o                   ),
     .intg_err_i                          ( alert_signal                       ),
     .sram_err_i                          ( sram_err                           ),
     .alert_rx_i                          ( alert_rx_i                         ),
@@ -174,6 +178,11 @@ module mbx
   logic [CfgSramDataWidth-1:0] ombx_sram_read_data, sysif_read_data;
   logic sysif_read_data_read_valid, sysif_read_data_write_valid;
 
+  // Combine error outputs of all modules and distribute back error to them to bring all
+  // modules to the error state if needed
+  logic mbx_error_set;
+  assign mbx_error_set = hostif_control_error_set | imbx_overflow_error_set;
+
   mbx_sysif #(
     .CfgSramAddrWidth   ( CfgSramAddrWidth   ),
     .CfgSramDataWidth   ( CfgSramDataWidth   ),
@@ -202,7 +211,7 @@ module mbx
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
     .sysif_status_doe_intr_ready_set_i   ( ombx_doe_intr_ready_set            ),
-    .sysif_status_error_set_i            ( hostif_control_error_set           ),
+    .sysif_status_error_set_i            ( mbx_error_set                      ),
     .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
@@ -234,9 +243,10 @@ module mbx
     .imbx_irq_ready_o            ( hostif_event_intr_ready          ),
     .imbx_irq_abort_o            ( hostif_event_intr_abort          ),
     .imbx_status_busy_update_o   ( imbx_status_busy_valid           ),
+    .imbx_overflow_error_set_o   ( imbx_overflow_error_set          ),
     .imbx_status_busy_o          ( imbx_status_busy                 ),
     .hostif_control_abort_clear_i( hostif_control_abort_clear       ),
-    .hostif_control_error_set_i  ( hostif_control_error_set         ),
+    .mbx_error_set_i             ( mbx_error_set                    ),
     .sys_read_all_i              ( sys_read_all                     ),
     // SRAM range configuration
     .hostif_range_valid_write_i  ( hostif_address_range_valid_write ),
@@ -279,7 +289,7 @@ module mbx
     .sysif_status_ready_i            ( sysif_status_ready               ),
     // Writing a 1 to control.abort register clears the abort condition
     .hostif_control_abort_clear_i    ( hostif_control_abort_clear       ),
-    .hostif_control_error_set_i      ( hostif_control_error_set         ),
+    .mbx_error_set_i                 ( mbx_error_set                    ),
     .sysif_control_abort_set_i       ( sysif_control_abort_set          ),
     .sysif_read_data_read_valid_i    ( sysif_read_data_read_valid       ),
     .sysif_read_data_write_valid_i   ( sysif_read_data_write_valid      ),
