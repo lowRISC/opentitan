@@ -50,6 +50,12 @@ alias(
 )
 
 alias(
+    name = "asn1",
+    actual = "@crate_index__asn1-0.15.5//:asn1",
+    tags = ["manual"],
+)
+
+alias(
     name = "bitflags",
     actual = "@crate_index__bitflags-2.4.0//:bitflags",
     tags = ["manual"],

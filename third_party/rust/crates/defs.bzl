@@ -299,6 +299,7 @@ _NORMAL_DEPENDENCIES = {
             "anstyle": "@crate_index__anstyle-1.0.4//:anstyle",
             "anyhow": "@crate_index__anyhow-1.0.75//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.4//:arrayvec",
+            "asn1": "@crate_index__asn1-0.15.5//:asn1",
             "bitflags": "@crate_index__bitflags-2.4.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
             "byteorder": "@crate_index__byteorder-1.5.0//:byteorder",
@@ -673,6 +674,26 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/arrayvec/0.7.4/download"],
         strip_prefix = "arrayvec-0.7.4",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.arrayvec-0.7.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__asn1-0.15.5",
+        sha256 = "ae3ecbce89a22627b5e8e6e11d69715617138290289e385cde773b1fe50befdb",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/asn1/0.15.5/download"],
+        strip_prefix = "asn1-0.15.5",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.asn1-0.15.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__asn1_derive-0.15.5",
+        sha256 = "861af988fac460ac69a09f41e6217a8fb9178797b76fcc9478444be6a59be19c",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/asn1_derive/0.15.5/download"],
+        strip_prefix = "asn1_derive-0.15.5",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.asn1_derive-0.15.5.bazel"),
     )
 
     maybe(
