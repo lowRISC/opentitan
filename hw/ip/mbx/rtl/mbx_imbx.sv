@@ -16,10 +16,11 @@ module mbx_imbx #(
   output logic                        imbx_irq_abort_o,
   output logic                        imbx_status_busy_update_o,
   output logic                        imbx_status_busy_o,
+  output logic                        imbx_overflow_error_set_o,
   // Access to the control and status registers of host interface
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                        hostif_control_abort_clear_i,
-  input  logic                        hostif_control_error_set_i,
+  input  logic                        mbx_error_set_i,
   // Range configuration for the private SRAM
   input  logic                        hostif_range_valid_write_i,
   input  logic                        hostif_range_valid_i,
@@ -51,6 +52,10 @@ module mbx_imbx #(
   assign  write_req = (mbx_empty & sysif_data_write_valid_i) |
                       (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
 
+  // Raise an error if the requester tries to write out of the limits
+  assign imbx_overflow_error_set_o = mbx_write & sysif_data_write_valid_i &
+                                    (sram_write_ptr_q > hostif_limit_i);
+
   // Create a sticky TLUL write request until its granted
   logic req_q;
   assign hostif_sram_write_req_o = write_req | req_q;
@@ -64,15 +69,16 @@ module mbx_imbx #(
     .q_o   ( req_q                                              )
   );
 
-  logic sys_clear_abort;
-  logic load_write_ptr, advance_write_ptr;
+  // The abort requested was handled by the host. This re-initialzes the write pointer
+  logic host_clear_abort;
+  assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
-  assign sys_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
+  logic load_write_ptr, advance_write_ptr;
 
   // Rewind the write pointer to the base
   // Note: `mbx_empty` and `advance_write_ptr` can both be asserted if bus access is granted
   // immediately on the initial word write of a message, and we must advance the write pointer.
-  assign load_write_ptr = (mbx_empty & ~advance_write_ptr) | sys_clear_abort |
+  assign load_write_ptr = (mbx_empty & ~advance_write_ptr) | host_clear_abort |
                           (mbx_read & sys_read_all_i);
 
   // Advance the write pointer when the valid write command is granted by the tlul_adapter_host
@@ -117,13 +123,13 @@ module mbx_imbx #(
 
   // Busy logic
   logic imbx_set_busy, imbx_clear_busy;
-  assign imbx_set_busy  = (mbx_write                   &
-                           sysif_control_go_set_i      &
-                           ~hostif_control_error_set_i &
-                           ~sysif_control_abort_set_i
-                          ) |
-                          sysif_control_abort_set_i   |
-                          ~hostif_range_valid_i;
+  // Busy is set when the requester asserts the go bit and we are not at the same time
+  // getting an abort or error request. Busy also gets set when there is an abort
+  // request, as this needs to be handled, and initially when the mailbox memory ranges
+  // are not yet configured
+  assign imbx_set_busy  =
+   (mbx_write & sysif_control_go_set_i & ~mbx_error_set_i & ~sysif_control_abort_set_i) |
+   sysif_control_abort_set_i | ~hostif_range_valid_i;
 
   // Clear the busy signal if
   // - the private SRAM range becomes valid
@@ -144,7 +150,7 @@ module mbx_imbx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_control_error_set_i( hostif_control_error_set_i   ),
+    .mbx_error_set_i           ( mbx_error_set_i              ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( sys_read_all_i               ),
     .writer_close_mbx_i        ( sysif_control_go_set_i       ),
