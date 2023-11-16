@@ -308,7 +308,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Check if Data item has an outstanding address item
     `DV_CHECK(got_source_item || got_dest_item,
-              $sformatf("Data item source id doesnt match any outstanding request"))
+              $sformatf("Data item source id doesn't match any outstanding request"))
+
     // Source interface item checks
     if (got_source_item) begin
       src_tl_error_detected = item.d_error;
@@ -436,7 +437,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         @(posedge cfg.intr_vif.pins[DMA_DONE]);
         if (!cfg.en_scb) continue;
         if (!cfg.under_reset) begin
-          `DV_CHECK_EQ(exp_dma_done_intr, 1, "Unexpected assertion of DMA_DONE interrupt")
+          `DV_CHECK_EQ(exp_dma_done_intr, 1, "Unexpected assertion of dma_done interrupt")
         end
       end
     join_none
