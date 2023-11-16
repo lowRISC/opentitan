@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[153] = {
+    top_darjeeling_plic_interrupt_for_peripheral[163] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -147,24 +147,34 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit] = kTopDarjeelingPlicPeripheralDma,
   [kTopDarjeelingPlicIrqIdMbx0MbxReady] = kTopDarjeelingPlicPeripheralMbx0,
   [kTopDarjeelingPlicIrqIdMbx0MbxAbort] = kTopDarjeelingPlicPeripheralMbx0,
+  [kTopDarjeelingPlicIrqIdMbx0MbxError] = kTopDarjeelingPlicPeripheralMbx0,
   [kTopDarjeelingPlicIrqIdMbx1MbxReady] = kTopDarjeelingPlicPeripheralMbx1,
   [kTopDarjeelingPlicIrqIdMbx1MbxAbort] = kTopDarjeelingPlicPeripheralMbx1,
+  [kTopDarjeelingPlicIrqIdMbx1MbxError] = kTopDarjeelingPlicPeripheralMbx1,
   [kTopDarjeelingPlicIrqIdMbx2MbxReady] = kTopDarjeelingPlicPeripheralMbx2,
   [kTopDarjeelingPlicIrqIdMbx2MbxAbort] = kTopDarjeelingPlicPeripheralMbx2,
+  [kTopDarjeelingPlicIrqIdMbx2MbxError] = kTopDarjeelingPlicPeripheralMbx2,
   [kTopDarjeelingPlicIrqIdMbx3MbxReady] = kTopDarjeelingPlicPeripheralMbx3,
   [kTopDarjeelingPlicIrqIdMbx3MbxAbort] = kTopDarjeelingPlicPeripheralMbx3,
+  [kTopDarjeelingPlicIrqIdMbx3MbxError] = kTopDarjeelingPlicPeripheralMbx3,
   [kTopDarjeelingPlicIrqIdMbx4MbxReady] = kTopDarjeelingPlicPeripheralMbx4,
   [kTopDarjeelingPlicIrqIdMbx4MbxAbort] = kTopDarjeelingPlicPeripheralMbx4,
+  [kTopDarjeelingPlicIrqIdMbx4MbxError] = kTopDarjeelingPlicPeripheralMbx4,
   [kTopDarjeelingPlicIrqIdMbx5MbxReady] = kTopDarjeelingPlicPeripheralMbx5,
   [kTopDarjeelingPlicIrqIdMbx5MbxAbort] = kTopDarjeelingPlicPeripheralMbx5,
+  [kTopDarjeelingPlicIrqIdMbx5MbxError] = kTopDarjeelingPlicPeripheralMbx5,
   [kTopDarjeelingPlicIrqIdMbx6MbxReady] = kTopDarjeelingPlicPeripheralMbx6,
   [kTopDarjeelingPlicIrqIdMbx6MbxAbort] = kTopDarjeelingPlicPeripheralMbx6,
+  [kTopDarjeelingPlicIrqIdMbx6MbxError] = kTopDarjeelingPlicPeripheralMbx6,
   [kTopDarjeelingPlicIrqIdMbxJtagMbxReady] = kTopDarjeelingPlicPeripheralMbxJtag,
   [kTopDarjeelingPlicIrqIdMbxJtagMbxAbort] = kTopDarjeelingPlicPeripheralMbxJtag,
+  [kTopDarjeelingPlicIrqIdMbxJtagMbxError] = kTopDarjeelingPlicPeripheralMbxJtag,
   [kTopDarjeelingPlicIrqIdMbxPcie0MbxReady] = kTopDarjeelingPlicPeripheralMbxPcie0,
   [kTopDarjeelingPlicIrqIdMbxPcie0MbxAbort] = kTopDarjeelingPlicPeripheralMbxPcie0,
+  [kTopDarjeelingPlicIrqIdMbxPcie0MbxError] = kTopDarjeelingPlicPeripheralMbxPcie0,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxReady] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort] = kTopDarjeelingPlicPeripheralMbxPcie1,
+  [kTopDarjeelingPlicIrqIdMbxPcie1MbxError] = kTopDarjeelingPlicPeripheralMbxPcie1,
 };
 
 

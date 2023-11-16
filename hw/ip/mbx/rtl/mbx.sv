@@ -20,6 +20,7 @@ module mbx
   // Comportable interrupt to the OT
   output logic                                      intr_mbx_ready_o,
   output logic                                      intr_mbx_abort_o,
+  output logic                                      intr_mbx_error_o,
   // Custom straps for capability register implementation
   output logic                                      doe_intr_support_o,
   output logic                                      doe_intr_en_o,
@@ -59,6 +60,7 @@ module mbx
   logic hostif_address_range_valid, hostif_address_range_valid_write;
   logic sysif_control_abort_set;
   logic doe_async_msg_en;
+  logic imbx_overflow_error_set;
 
   // Status signal inputs from the sysif to the hostif
   logic sysif_status_busy, sysif_status_error;
@@ -101,8 +103,10 @@ module mbx
     .tl_host_o                           ( core_tl_d_o                        ),
     .event_intr_ready_i                  ( hostif_event_intr_ready            ),
     .event_intr_abort_i                  ( hostif_event_intr_abort            ),
+    .event_intr_error_i                  ( imbx_overflow_error_set            ),
     .intr_ready_o                        ( intr_mbx_ready_o                   ),
     .intr_abort_o                        ( intr_mbx_abort_o                   ),
+    .intr_error_o                        ( intr_mbx_error_o                   ),
     .intg_err_i                          ( alert_signal                       ),
     .sram_err_i                          ( sram_err                           ),
     .alert_rx_i                          ( alert_rx_i                         ),
@@ -176,7 +180,7 @@ module mbx
 
   // Combine error outputs of all modules and distribute back error to them to bring all
   // modules to the error state if needed
-  logic mbx_error_set, imbx_overflow_error_set;
+  logic mbx_error_set;
   assign mbx_error_set = hostif_control_error_set | imbx_overflow_error_set;
 
   mbx_sysif #(

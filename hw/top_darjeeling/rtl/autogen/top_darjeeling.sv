@@ -345,7 +345,7 @@ module top_darjeeling #(
   // rv_core_ibex
 
 
-  logic [152:0]  intr_vector;
+  logic [162:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -419,24 +419,34 @@ module top_darjeeling #(
   logic intr_dma_dma_memory_buffer_limit;
   logic intr_mbx0_mbx_ready;
   logic intr_mbx0_mbx_abort;
+  logic intr_mbx0_mbx_error;
   logic intr_mbx1_mbx_ready;
   logic intr_mbx1_mbx_abort;
+  logic intr_mbx1_mbx_error;
   logic intr_mbx2_mbx_ready;
   logic intr_mbx2_mbx_abort;
+  logic intr_mbx2_mbx_error;
   logic intr_mbx3_mbx_ready;
   logic intr_mbx3_mbx_abort;
+  logic intr_mbx3_mbx_error;
   logic intr_mbx4_mbx_ready;
   logic intr_mbx4_mbx_abort;
+  logic intr_mbx4_mbx_error;
   logic intr_mbx5_mbx_ready;
   logic intr_mbx5_mbx_abort;
+  logic intr_mbx5_mbx_error;
   logic intr_mbx6_mbx_ready;
   logic intr_mbx6_mbx_abort;
+  logic intr_mbx6_mbx_error;
   logic intr_mbx_jtag_mbx_ready;
   logic intr_mbx_jtag_mbx_abort;
+  logic intr_mbx_jtag_mbx_error;
   logic intr_mbx_pcie0_mbx_ready;
   logic intr_mbx_pcie0_mbx_abort;
+  logic intr_mbx_pcie0_mbx_error;
   logic intr_mbx_pcie1_mbx_ready;
   logic intr_mbx_pcie1_mbx_abort;
+  logic intr_mbx_pcie1_mbx_error;
 
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
@@ -2113,6 +2123,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx0_mbx_abort),
+      .intr_mbx_error_o (intr_mbx0_mbx_error),
       // [75]: fatal_fault
       // [76]: recov_fault
       .alert_tx_o  ( alert_tx[76:75] ),
@@ -2141,6 +2152,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx1_mbx_abort),
+      .intr_mbx_error_o (intr_mbx1_mbx_error),
       // [77]: fatal_fault
       // [78]: recov_fault
       .alert_tx_o  ( alert_tx[78:77] ),
@@ -2169,6 +2181,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx2_mbx_ready),
       .intr_mbx_abort_o (intr_mbx2_mbx_abort),
+      .intr_mbx_error_o (intr_mbx2_mbx_error),
       // [79]: fatal_fault
       // [80]: recov_fault
       .alert_tx_o  ( alert_tx[80:79] ),
@@ -2197,6 +2210,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx3_mbx_ready),
       .intr_mbx_abort_o (intr_mbx3_mbx_abort),
+      .intr_mbx_error_o (intr_mbx3_mbx_error),
       // [81]: fatal_fault
       // [82]: recov_fault
       .alert_tx_o  ( alert_tx[82:81] ),
@@ -2225,6 +2239,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx4_mbx_ready),
       .intr_mbx_abort_o (intr_mbx4_mbx_abort),
+      .intr_mbx_error_o (intr_mbx4_mbx_error),
       // [83]: fatal_fault
       // [84]: recov_fault
       .alert_tx_o  ( alert_tx[84:83] ),
@@ -2253,6 +2268,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx5_mbx_ready),
       .intr_mbx_abort_o (intr_mbx5_mbx_abort),
+      .intr_mbx_error_o (intr_mbx5_mbx_error),
       // [85]: fatal_fault
       // [86]: recov_fault
       .alert_tx_o  ( alert_tx[86:85] ),
@@ -2281,6 +2297,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx6_mbx_ready),
       .intr_mbx_abort_o (intr_mbx6_mbx_abort),
+      .intr_mbx_error_o (intr_mbx6_mbx_error),
       // [87]: fatal_fault
       // [88]: recov_fault
       .alert_tx_o  ( alert_tx[88:87] ),
@@ -2309,6 +2326,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_jtag_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_jtag_mbx_abort),
+      .intr_mbx_error_o (intr_mbx_jtag_mbx_error),
       // [89]: fatal_fault
       // [90]: recov_fault
       .alert_tx_o  ( alert_tx[90:89] ),
@@ -2337,6 +2355,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_pcie0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie0_mbx_abort),
+      .intr_mbx_error_o (intr_mbx_pcie0_mbx_error),
       // [91]: fatal_fault
       // [92]: recov_fault
       .alert_tx_o  ( alert_tx[92:91] ),
@@ -2365,6 +2384,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_mbx_ready_o (intr_mbx_pcie1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie1_mbx_abort),
+      .intr_mbx_error_o (intr_mbx_pcie1_mbx_error),
       // [93]: fatal_fault
       // [94]: recov_fault
       .alert_tx_o  ( alert_tx[94:93] ),
@@ -2463,24 +2483,34 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_mbx_pcie1_mbx_abort, // IDs [152 +: 1]
-      intr_mbx_pcie1_mbx_ready, // IDs [151 +: 1]
-      intr_mbx_pcie0_mbx_abort, // IDs [150 +: 1]
-      intr_mbx_pcie0_mbx_ready, // IDs [149 +: 1]
-      intr_mbx_jtag_mbx_abort, // IDs [148 +: 1]
-      intr_mbx_jtag_mbx_ready, // IDs [147 +: 1]
-      intr_mbx6_mbx_abort, // IDs [146 +: 1]
-      intr_mbx6_mbx_ready, // IDs [145 +: 1]
-      intr_mbx5_mbx_abort, // IDs [144 +: 1]
-      intr_mbx5_mbx_ready, // IDs [143 +: 1]
-      intr_mbx4_mbx_abort, // IDs [142 +: 1]
-      intr_mbx4_mbx_ready, // IDs [141 +: 1]
-      intr_mbx3_mbx_abort, // IDs [140 +: 1]
-      intr_mbx3_mbx_ready, // IDs [139 +: 1]
-      intr_mbx2_mbx_abort, // IDs [138 +: 1]
-      intr_mbx2_mbx_ready, // IDs [137 +: 1]
-      intr_mbx1_mbx_abort, // IDs [136 +: 1]
-      intr_mbx1_mbx_ready, // IDs [135 +: 1]
+      intr_mbx_pcie1_mbx_error, // IDs [162 +: 1]
+      intr_mbx_pcie1_mbx_abort, // IDs [161 +: 1]
+      intr_mbx_pcie1_mbx_ready, // IDs [160 +: 1]
+      intr_mbx_pcie0_mbx_error, // IDs [159 +: 1]
+      intr_mbx_pcie0_mbx_abort, // IDs [158 +: 1]
+      intr_mbx_pcie0_mbx_ready, // IDs [157 +: 1]
+      intr_mbx_jtag_mbx_error, // IDs [156 +: 1]
+      intr_mbx_jtag_mbx_abort, // IDs [155 +: 1]
+      intr_mbx_jtag_mbx_ready, // IDs [154 +: 1]
+      intr_mbx6_mbx_error, // IDs [153 +: 1]
+      intr_mbx6_mbx_abort, // IDs [152 +: 1]
+      intr_mbx6_mbx_ready, // IDs [151 +: 1]
+      intr_mbx5_mbx_error, // IDs [150 +: 1]
+      intr_mbx5_mbx_abort, // IDs [149 +: 1]
+      intr_mbx5_mbx_ready, // IDs [148 +: 1]
+      intr_mbx4_mbx_error, // IDs [147 +: 1]
+      intr_mbx4_mbx_abort, // IDs [146 +: 1]
+      intr_mbx4_mbx_ready, // IDs [145 +: 1]
+      intr_mbx3_mbx_error, // IDs [144 +: 1]
+      intr_mbx3_mbx_abort, // IDs [143 +: 1]
+      intr_mbx3_mbx_ready, // IDs [142 +: 1]
+      intr_mbx2_mbx_error, // IDs [141 +: 1]
+      intr_mbx2_mbx_abort, // IDs [140 +: 1]
+      intr_mbx2_mbx_ready, // IDs [139 +: 1]
+      intr_mbx1_mbx_error, // IDs [138 +: 1]
+      intr_mbx1_mbx_abort, // IDs [137 +: 1]
+      intr_mbx1_mbx_ready, // IDs [136 +: 1]
+      intr_mbx0_mbx_error, // IDs [135 +: 1]
       intr_mbx0_mbx_abort, // IDs [134 +: 1]
       intr_mbx0_mbx_ready, // IDs [133 +: 1]
       intr_dma_dma_memory_buffer_limit, // IDs [132 +: 1]

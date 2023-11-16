@@ -1224,7 +1224,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx0;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx0, irq, true));
@@ -1237,7 +1237,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx1;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx1, irq, true));
@@ -1250,7 +1250,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx2;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx2, irq, true));
@@ -1263,7 +1263,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx3;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx3 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx3, irq, true));
@@ -1276,7 +1276,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx4;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx4 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx4, irq, true));
@@ -1289,7 +1289,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx5;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx5 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx5, irq, true));
@@ -1302,7 +1302,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbx6;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx6 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx6, irq, true));
@@ -1315,7 +1315,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbxJtag;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx_jtag IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx_jtag, irq, true));
@@ -1328,7 +1328,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbxPcie0;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx_pcie0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx_pcie0, irq, true));
@@ -1341,7 +1341,7 @@ static void peripheral_irqs_trigger(void) {
 
   peripheral_expected = kTopDarjeelingPlicPeripheralMbxPcie1;
   for (dif_mbx_irq_t irq = kDifMbxIrqMbxReady;
-       irq <= kDifMbxIrqMbxAbort; ++irq) {
+       irq <= kDifMbxIrqMbxError; ++irq) {
     mbx_irq_expected = irq;
     LOG_INFO("Triggering mbx_pcie1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_mbx_irq_force(&mbx_pcie1, irq, true));

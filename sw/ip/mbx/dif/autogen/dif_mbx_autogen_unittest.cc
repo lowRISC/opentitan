@@ -75,7 +75,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_mbx_irq_get_type(
-      &mbx_, static_cast<dif_mbx_irq_t>(kDifMbxIrqMbxAbort + 1), &type));
+      &mbx_, static_cast<dif_mbx_irq_t>(kDifMbxIrqMbxError + 1), &type));
 }
 
 TEST_F(IrqGetTypeTest, Success) {
@@ -148,8 +148,8 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the last IRQ state.
   irq_state = true;
   EXPECT_READ32(MBX_INTR_STATE_REG_OFFSET,
-                {{MBX_INTR_STATE_MBX_ABORT_BIT, false}});
-  EXPECT_DIF_OK(dif_mbx_irq_is_pending(&mbx_, kDifMbxIrqMbxAbort, &irq_state));
+                {{MBX_INTR_STATE_MBX_ERROR_BIT, false}});
+  EXPECT_DIF_OK(dif_mbx_irq_is_pending(&mbx_, kDifMbxIrqMbxError, &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -161,7 +161,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  const uint32_t num_irqs = 2;
+  const uint32_t num_irqs = 3;
   const uint32_t irq_mask = (1u << num_irqs) - 1;
   dif_mbx_irq_state_snapshot_t irq_snapshot = 1;
 
@@ -214,8 +214,8 @@ TEST_F(IrqAcknowledgeTest, Success) {
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(MBX_INTR_STATE_REG_OFFSET,
-                 {{MBX_INTR_STATE_MBX_ABORT_BIT, true}});
-  EXPECT_DIF_OK(dif_mbx_irq_acknowledge(&mbx_, kDifMbxIrqMbxAbort));
+                 {{MBX_INTR_STATE_MBX_ERROR_BIT, true}});
+  EXPECT_DIF_OK(dif_mbx_irq_acknowledge(&mbx_, kDifMbxIrqMbxError));
 }
 
 class IrqForceTest : public MbxTest {};
@@ -237,8 +237,8 @@ TEST_F(IrqForceTest, Success) {
 
   // Force last IRQ.
   EXPECT_WRITE32(MBX_INTR_TEST_REG_OFFSET,
-                 {{MBX_INTR_TEST_MBX_ABORT_BIT, true}});
-  EXPECT_DIF_OK(dif_mbx_irq_force(&mbx_, kDifMbxIrqMbxAbort, true));
+                 {{MBX_INTR_TEST_MBX_ERROR_BIT, true}});
+  EXPECT_DIF_OK(dif_mbx_irq_force(&mbx_, kDifMbxIrqMbxError, true));
 }
 
 class IrqGetEnabledTest : public MbxTest {};
@@ -276,8 +276,8 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(MBX_INTR_ENABLE_REG_OFFSET,
-                {{MBX_INTR_ENABLE_MBX_ABORT_BIT, false}});
-  EXPECT_DIF_OK(dif_mbx_irq_get_enabled(&mbx_, kDifMbxIrqMbxAbort, &irq_state));
+                {{MBX_INTR_ENABLE_MBX_ERROR_BIT, false}});
+  EXPECT_DIF_OK(dif_mbx_irq_get_enabled(&mbx_, kDifMbxIrqMbxError, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
@@ -309,8 +309,8 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
   EXPECT_MASK32(MBX_INTR_ENABLE_REG_OFFSET,
-                {{MBX_INTR_ENABLE_MBX_ABORT_BIT, 0x1, false}});
-  EXPECT_DIF_OK(dif_mbx_irq_set_enabled(&mbx_, kDifMbxIrqMbxAbort, irq_state));
+                {{MBX_INTR_ENABLE_MBX_ERROR_BIT, 0x1, false}});
+  EXPECT_DIF_OK(dif_mbx_irq_set_enabled(&mbx_, kDifMbxIrqMbxError, irq_state));
 }
 
 class IrqDisableAllTest : public MbxTest {};

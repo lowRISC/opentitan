@@ -1218,25 +1218,35 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit = 132, /**< dma_dma_memory_buffer_limit */
   kTopDarjeelingPlicIrqIdMbx0MbxReady = 133, /**< mbx0_mbx_ready */
   kTopDarjeelingPlicIrqIdMbx0MbxAbort = 134, /**< mbx0_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx1MbxReady = 135, /**< mbx1_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx1MbxAbort = 136, /**< mbx1_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx2MbxReady = 137, /**< mbx2_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx2MbxAbort = 138, /**< mbx2_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx3MbxReady = 139, /**< mbx3_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx3MbxAbort = 140, /**< mbx3_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx4MbxReady = 141, /**< mbx4_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx4MbxAbort = 142, /**< mbx4_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx5MbxReady = 143, /**< mbx5_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx5MbxAbort = 144, /**< mbx5_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbx6MbxReady = 145, /**< mbx6_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbx6MbxAbort = 146, /**< mbx6_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbxJtagMbxReady = 147, /**< mbx_jtag_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbxJtagMbxAbort = 148, /**< mbx_jtag_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbxPcie0MbxReady = 149, /**< mbx_pcie0_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbxPcie0MbxAbort = 150, /**< mbx_pcie0_mbx_abort */
-  kTopDarjeelingPlicIrqIdMbxPcie1MbxReady = 151, /**< mbx_pcie1_mbx_ready */
-  kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort = 152, /**< mbx_pcie1_mbx_abort */
-  kTopDarjeelingPlicIrqIdLast = 152, /**< \internal The Last Valid Interrupt ID. */
+  kTopDarjeelingPlicIrqIdMbx0MbxError = 135, /**< mbx0_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx1MbxReady = 136, /**< mbx1_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx1MbxAbort = 137, /**< mbx1_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx1MbxError = 138, /**< mbx1_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx2MbxReady = 139, /**< mbx2_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx2MbxAbort = 140, /**< mbx2_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx2MbxError = 141, /**< mbx2_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx3MbxReady = 142, /**< mbx3_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx3MbxAbort = 143, /**< mbx3_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx3MbxError = 144, /**< mbx3_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx4MbxReady = 145, /**< mbx4_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx4MbxAbort = 146, /**< mbx4_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx4MbxError = 147, /**< mbx4_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx5MbxReady = 148, /**< mbx5_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx5MbxAbort = 149, /**< mbx5_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx5MbxError = 150, /**< mbx5_mbx_error */
+  kTopDarjeelingPlicIrqIdMbx6MbxReady = 151, /**< mbx6_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbx6MbxAbort = 152, /**< mbx6_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbx6MbxError = 153, /**< mbx6_mbx_error */
+  kTopDarjeelingPlicIrqIdMbxJtagMbxReady = 154, /**< mbx_jtag_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbxJtagMbxAbort = 155, /**< mbx_jtag_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbxJtagMbxError = 156, /**< mbx_jtag_mbx_error */
+  kTopDarjeelingPlicIrqIdMbxPcie0MbxReady = 157, /**< mbx_pcie0_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbxPcie0MbxAbort = 158, /**< mbx_pcie0_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbxPcie0MbxError = 159, /**< mbx_pcie0_mbx_error */
+  kTopDarjeelingPlicIrqIdMbxPcie1MbxReady = 160, /**< mbx_pcie1_mbx_ready */
+  kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort = 161, /**< mbx_pcie1_mbx_abort */
+  kTopDarjeelingPlicIrqIdMbxPcie1MbxError = 162, /**< mbx_pcie1_mbx_error */
+  kTopDarjeelingPlicIrqIdLast = 162, /**< \internal The Last Valid Interrupt ID. */
 } top_darjeeling_plic_irq_id_t;
 
 /**
@@ -1246,7 +1256,7 @@ typedef enum top_darjeeling_plic_irq_id {
  * `top_darjeeling_plic_peripheral_t`.
  */
 extern const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[153];
+    top_darjeeling_plic_interrupt_for_peripheral[163];
 
 /**
  * PLIC Interrupt Target.

@@ -15598,6 +15598,12 @@
       module_name: mbx0
     }
     {
+      name: mbx0_mbx_error
+      width: 1
+      type: interrupt
+      module_name: mbx0
+    }
+    {
       name: mbx1_mbx_ready
       width: 1
       type: interrupt
@@ -15605,6 +15611,12 @@
     }
     {
       name: mbx1_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx1
+    }
+    {
+      name: mbx1_mbx_error
       width: 1
       type: interrupt
       module_name: mbx1
@@ -15622,6 +15634,12 @@
       module_name: mbx2
     }
     {
+      name: mbx2_mbx_error
+      width: 1
+      type: interrupt
+      module_name: mbx2
+    }
+    {
       name: mbx3_mbx_ready
       width: 1
       type: interrupt
@@ -15629,6 +15647,12 @@
     }
     {
       name: mbx3_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx3
+    }
+    {
+      name: mbx3_mbx_error
       width: 1
       type: interrupt
       module_name: mbx3
@@ -15646,6 +15670,12 @@
       module_name: mbx4
     }
     {
+      name: mbx4_mbx_error
+      width: 1
+      type: interrupt
+      module_name: mbx4
+    }
+    {
       name: mbx5_mbx_ready
       width: 1
       type: interrupt
@@ -15653,6 +15683,12 @@
     }
     {
       name: mbx5_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx5
+    }
+    {
+      name: mbx5_mbx_error
       width: 1
       type: interrupt
       module_name: mbx5
@@ -15670,6 +15706,12 @@
       module_name: mbx6
     }
     {
+      name: mbx6_mbx_error
+      width: 1
+      type: interrupt
+      module_name: mbx6
+    }
+    {
       name: mbx_jtag_mbx_ready
       width: 1
       type: interrupt
@@ -15677,6 +15719,12 @@
     }
     {
       name: mbx_jtag_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx_jtag
+    }
+    {
+      name: mbx_jtag_mbx_error
       width: 1
       type: interrupt
       module_name: mbx_jtag
@@ -15694,6 +15742,12 @@
       module_name: mbx_pcie0
     }
     {
+      name: mbx_pcie0_mbx_error
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie0
+    }
+    {
       name: mbx_pcie1_mbx_ready
       width: 1
       type: interrupt
@@ -15701,6 +15755,12 @@
     }
     {
       name: mbx_pcie1_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie1
+    }
+    {
+      name: mbx_pcie1_mbx_error
       width: 1
       type: interrupt
       module_name: mbx_pcie1
