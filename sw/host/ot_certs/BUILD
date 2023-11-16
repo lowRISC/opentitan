@@ -15,12 +15,14 @@ rust_library(
         "src/template/mod.rs",
         "src/types.rs",
         "src/x509.rs",
+        "src/x509/extension.rs",
     ],
     proc_macro_deps = [
         "@crate_index//:indoc",
     ],
     deps = [
         "@crate_index//:anyhow",
+        "@crate_index//:asn1",
         "@crate_index//:deser-hjson",
         "@crate_index//:hex",
         "@crate_index//:log",
