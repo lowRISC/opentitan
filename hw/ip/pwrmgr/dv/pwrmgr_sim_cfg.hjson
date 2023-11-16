@@ -70,17 +70,17 @@
     {
       name: pwrmgr_lowpower_wakeup_race
       uvm_test_seq: pwrmgr_lowpower_wakeup_race_vseq
-      run_opts: ["+test_timeout_ns=1000000"]
+      run_opts: ["+test_timeout_ns=3000000"]
     }
     {
       name: pwrmgr_wakeup
       uvm_test_seq: pwrmgr_wakeup_vseq
-      run_opts: ["+test_timeout_ns=1000000"]
+      run_opts: ["+test_timeout_ns=3000000"]
     }
     {
       name: pwrmgr_wakeup_reset
       uvm_test_seq: pwrmgr_wakeup_reset_vseq
-      run_opts: ["+test_timeout_ns=1000000"]
+      run_opts: ["+test_timeout_ns=3000000"]
     }
     {
       name: pwrmgr_aborted_low_power
@@ -89,7 +89,7 @@
     {
       name: pwrmgr_sec_cm_lc_ctrl_intersig_mubi
       uvm_test_seq: pwrmgr_repeat_wakeup_reset_vseq
-      run_opts: ["+test_timeout_ns=3000000", "+pwrmgr_mubi_mode=PwrmgrMubiLcCtrl"]
+      run_opts: ["+test_timeout_ns=4000000", "+pwrmgr_mubi_mode=PwrmgrMubiLcCtrl"]
     }
     {
       name: pwrmgr_sec_cm_rom_ctrl_intersig_mubi

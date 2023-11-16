@@ -93,12 +93,12 @@ interface pwrmgr_if (
   always_comb wakeup_en = `PATH_TO_DUT.reg2hw.wakeup_en;
 
   // Wakeup_status ro CSR.
-  // the multireg is an array of interleaved d / de fields. taking every second bit starting from 0
+  // the multireg is an array of interleaved d / de fields. taking every second bit starting from 1
   // will extract all d fields.
   always_comb begin
     logic [2*pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status_raw;
     wakeup_status_raw = `PATH_TO_DUT.hw2reg.wake_status;
-    for (int k = 0; k < pwrmgr_reg_pkg::NumWkups; k++) wakeup_status[k] = wakeup_status_raw[k*2];
+    for (int k = 0; k < pwrmgr_reg_pkg::NumWkups; k++) wakeup_status[k] = wakeup_status_raw[k*2+1];
   end
 
   always_comb wakeup_capture_en = !`PATH_TO_DUT.u_reg.wake_info_capture_dis_qs;
@@ -170,7 +170,7 @@ interface pwrmgr_if (
     if (!internal_assertion_disabled) begin
       internal_assertion_disabled = 1'b1;
       `uvm_info("pwrmgr_if", "disabling power glitch related SVA", UVM_MEDIUM)
-      $assertoff(1, dut.u_slow_fsm.IntRstReq_A);
+      $assertoff(1, tb.dut.u_slow_fsm.IntRstReq_A);
     end
     repeat (2) @(posedge clk_slow);
     rst_main_n = 1'b1;

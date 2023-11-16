@@ -107,7 +107,7 @@ module pwrmgr_sec_cm_checker_assert
 // sec_cm_main_pd_rst_local_esc
 // if power is up and rst_main_ni goes low, pwr_rst_o.rstreqs[ResetMainPwrIdx] should be asserted
   `ASSERT(RstreqChkMainpd_A,
-          slow_mp_rst_req && slow_fsm_idle |-> ##[0:5] pwr_rst_o.rstreqs[ResetMainPwrIdx], clk_i,
+          slow_mp_rst_req |-> ##[0:5] pwr_rst_o.rstreqs[ResetMainPwrIdx], clk_i,
           reset_or_disable)
 
 endmodule // pwrmgr_sec_cm_checker_assert

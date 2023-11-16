@@ -6,7 +6,7 @@
 // Adaptor to bind vector of rom_ctrl mubi fields
 
 interface pwrmgr_rom_ctrl_mubi_cov_if #(
-  parameter int Width
+  parameter int Width = 8
 ) (
   input rom_ctrl_pkg::pwrmgr_data_t [Width-1:0] rom_ctrl_i,
   input logic rst_ni
