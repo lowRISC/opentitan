@@ -9,7 +9,6 @@ load(
     "RSA_ONLY_KEY_STRUCTS",
 )
 load("//rules:otp.bzl", "otp_image")
-load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
@@ -160,27 +159,13 @@ opentitan_test(
     for i in range(0, 8)
 ]
 
-# Bitstream with ROM and above OTP image that is in the test_unlocked* LC state
-# with ROM execution disabled.
-[
-    bitstream_splice(
-        name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
-        visibility = ["//visibility:public"],
-    )
-    for i in range(0, 8)
-]
-
 [
     opentitan_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
         cw310 = cw310_jtag_params(
-            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
             lc_state = lc_state,  # will be expanded in test_cmd
+            otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = "--initial-lc-state={lc_state}",
             test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
@@ -218,7 +203,7 @@ cc_library(
 )
 
 # We are using a bitstream with ROM execution disabled so the contents of flash
-# does not matter but opentitan_functest() is unhappy if we don't provide one.
+# does not matter but opentitan_test() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
@@ -226,7 +211,7 @@ cc_library(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
         cw310 = cw310_jtag_params(
-            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
@@ -310,7 +295,7 @@ opentitan_binary(
             binaries = {
                 ":sram_device_info_flash_wr_functest": "sram_program",
             },
-            bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),
+            otp = ":otp_img_rom_exec_disabled_{}".format(init_lc_state.lower()),
             tags = ["manuf"],
             target_lc_state = target_lc_state,  # will be expanded in test_cmd
             test_cmd = """
@@ -381,7 +366,7 @@ opentitan_binary(
 )
 
 # We are using a bitstream with disabled execution so the content of the flash
-# does not matter but opentitan_functest() is unhappy if we don't provide one.
+# does not matter but opentitan_test() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
 # attempt to bootstrap.
 [
@@ -392,7 +377,7 @@ opentitan_binary(
             binaries = {
                 ":sram_exec_test": "sram_program",
             },
-            bitstream = ":bitstream_rom_exec_disabled_{}".format(lc_state.lower()),
+            otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = """
                 --elf={sram_program}
@@ -425,7 +410,7 @@ opentitan_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_jtag_params(
-        bitstream = ":bitstream_otp_ctrl_functest",
+        otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
     ),
@@ -447,20 +432,11 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-bitstream_splice(
-    name = "bitstream_otp_ctrl_functest",
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_otp_ctrl_functest",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 opentitan_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
     cw310 = cw310_jtag_params(
-        bitstream = ":bitstream_otp_ctrl_functest",
+        otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
     ),
