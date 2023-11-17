@@ -7439,3 +7439,25 @@ opentitan_test(
     ),
     deps = [":rom_exit_immediately_lib"],
 )
+
+opentitan_test(
+    name = "dma_inline_hashing",
+    srcs = ["dma_inline_hashing.c"],
+    exec_env = {
+        "//hw/top_darjeeling:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:dma",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:dma_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
