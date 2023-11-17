@@ -12,7 +12,9 @@ extern "C" {
 // clang-format off
 
 #define COMMAND(_, value) \
-    value(_, Aes)
+    value(_, Aes) \
+    value(_, PrngSca) \
+    value(_, AesSca)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on

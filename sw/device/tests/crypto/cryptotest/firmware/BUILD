@@ -28,6 +28,39 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "aes_sca",
+    srcs = ["aes_sca.c"],
+    hdrs = ["aes_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:aes",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:aes_sca_commands",
+    ],
+)
+
+cc_library(
+    name = "prng_sca",
+    srcs = ["prng_sca.c"],
+    hdrs = ["prng_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/tests/crypto/cryptotest/json:prng_sca_commands",
+    ],
+)
+
 opentitan_binary(
     name = "firmware",
     testonly = True,
@@ -37,6 +70,8 @@ opentitan_binary(
     ],
     deps = [
         ":aes",
+        ":aes_sca",
+        ":prng_sca",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing/test_framework:check",

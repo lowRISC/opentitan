@@ -17,3 +17,17 @@ cc_library(
     hdrs = ["aes_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
+
+cc_library(
+    name = "aes_sca_commands",
+    srcs = ["aes_sca_commands.c"],
+    hdrs = ["aes_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "prng_sca_commands",
+    srcs = ["prng_sca_commands.c"],
+    hdrs = ["prng_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
