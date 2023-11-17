@@ -176,45 +176,6 @@ dif_result_t dif_dma_is_memory_range_valid(const dif_dma_t *dma,
   return kDifOk;
 }
 
-dif_result_t dif_dma_irq_thresholds_set(const dif_dma_t *dma,
-                                        uint64_t almost_limit, uint64_t limit) {
-  if (dma == NULL || almost_limit > limit) {
-    return kDifBadArg;
-  }
-
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET,
-                      almost_limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET,
-                      almost_limit >> (sizeof(uint32_t) * 8));
-
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET,
-                      limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET,
-                      limit >> (sizeof(uint32_t) * 8));
-
-  return kDifOk;
-}
-
-dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
-                                        uint64_t *almost_limit,
-                                        uint64_t *limit) {
-  if (dma == NULL || almost_limit == NULL || limit == NULL) {
-    return kDifBadArg;
-  }
-
-  uint64_t val_lo = mmio_region_read32(dma->base_addr,
-                                       DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET);
-  uint64_t val_hi = mmio_region_read32(dma->base_addr,
-                                       DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET);
-  *almost_limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
-
-  val_lo = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET);
-  val_hi = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET);
-  *limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
-
-  return kDifOk;
-}
-
 dif_result_t dif_dma_status_get(const dif_dma_t *dma,
                                 dif_dma_status_t *status) {
   if (dma == NULL || status == NULL) {
@@ -266,6 +227,28 @@ dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
   return kDifOk;
 }
 
+dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
+                                       uint32_t *digest_len) {
+  if (digest_len == NULL) {
+    return kDifBadArg;
+  }
+  switch (opcode) {
+    case kDifDmaSha256Opcode:
+      *digest_len = 8;
+      break;
+    case kDifDmaSha384Opcode:
+      *digest_len = 12;
+      break;
+    case kDifDmaSha512Opcode:
+      *digest_len = 16;
+      break;
+    default:
+      return kDifBadArg;
+      break;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
                                      dif_dma_transaction_opcode_t opcode,
                                      uint32_t digest[]) {
@@ -273,22 +256,10 @@ dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  uint32_t regs_num;
-  switch (opcode) {
-    case kDifDmaSha256Opcode:
-      regs_num = 8;
-      break;
-    case kDifDmaSha384Opcode:
-      regs_num = 12;
-      break;
-    case kDifDmaSha512Opcode:
-      regs_num = 16;
-      break;
-    default:
-      regs_num = 0;
-  }
+  uint32_t digest_len;
+  DIF_RETURN_IF_ERROR(dif_dma_get_digest_length(opcode, &digest_len));
 
-  for (int i = 0; i < regs_num; ++i) {
+  for (int i = 0; i < digest_len; ++i) {
     ptrdiff_t offset = DMA_SHA2_DIGEST_0_REG_OFFSET +
                        (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t);
 
