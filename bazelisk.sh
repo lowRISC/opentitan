@@ -79,16 +79,16 @@ function outquery_starlark_expr() {
             echo "target.files.to_list()[0].path"
             ;;
         -all)
-            echo "\"\\n\".join([f.path for f in target.files.to_list()])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list()])"
             ;;
         -providers)
             echo "providers(target)"
             ;;
         -*)
-            echo "\"\\n\".join([f.path for f in target.files.to_list() if \"$q\"[1:] in f.path])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list() if \"$q\"[1:] in f.path])"
             ;;
         .*)
-            echo "\"\\n\".join([f.path for f in target.files.to_list() if f.path.endswith(\"$q\")])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list() if f.path.endswith(\"$q\")])"
             ;;
     esac
 }

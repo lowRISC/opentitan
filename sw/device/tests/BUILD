@@ -140,13 +140,10 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-# TODO(#19926): The `opentitan_test` rule doesn't propagate --copt accross all
-# dependencies, causing issues when compiling targets against
-# --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_.
-# Using `opentitan_functest` as a workaround.
-opentitan_functest(
+opentitan_test(
     name = "aes_smoketest",
     srcs = ["aes_smoketest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

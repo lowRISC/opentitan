@@ -339,12 +339,17 @@ jobs:
     displayName: Build & execute tests
   - template: ci/publish-bazel-test-results.yml
   # TODO: build and cache the verilator model to avoid building twice (#12574)
+  # NOTE: The new build/test rules reference verilator as a dependency, but under the
+  #       platforms transition of that rule.  Therefore, verilator is built under a
+  #       configuration like 'k8-opt-exec-$host-FOR-$target'.  In order to get the
+  #       verilator binary, we query the output of one of the verilated tests and ask
+  #       for the verilator binary, which is in a subdir named 'build.verilator_<stuff>'.
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/scripts/target-location.sh //hw:verilator) \
+      cp $(./bazelisk.sh outquery-build.verilator //sw/device/tests:uart_smoketest_sim_verilator) \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy //hw:verilator to $BIN_DIR
+    displayName: Copy verilated binary to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
