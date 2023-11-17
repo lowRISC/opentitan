@@ -343,6 +343,17 @@ typedef enum dif_dma_error_code {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
                                     dif_dma_error_code_t *error);
+
+/**
+ * Return the digest length given a DMA opcode.
+ *
+ * @param opcode A DMA opcode.
+ * @param digest_len The digest length.
+ * @return The result of the operation.
+ */
+dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
+                                       uint32_t *digest_len);
+
 /**
  * Read out the SHA2 digest
  *

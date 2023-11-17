@@ -481,6 +481,26 @@ TEST_F(StatusPollTest, BadArg) {
   EXPECT_DIF_BADARG(dif_dma_status_poll(nullptr, kDifDmaStatusDone));
 }
 
+class GetDigestLenTest : public DmaTestInitialized {};
+
+TEST_F(GetDigestLenTest, Success) {
+  uint32_t digest_len;
+  EXPECT_DIF_OK(dif_dma_get_digest_length(kDifDmaSha256Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 8);
+
+  EXPECT_DIF_OK(dif_dma_get_digest_length(kDifDmaSha384Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 12);
+
+  EXPECT_DIF_OK(dif_dma_get_digest_length(kDifDmaSha512Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 16);
+}
+
+TEST_F(GetDigestLenTest, BadArg) {
+  uint32_t digest_len;
+  EXPECT_DIF_BADARG(dif_dma_get_digest_length(kDifDmaSha256Opcode, nullptr));
+  EXPECT_DIF_BADARG(dif_dma_get_digest_length(kDifDmaCopyOpcode, &digest_len));
+}
+
 typedef struct digest_reg {
   dif_dma_transaction_opcode_t opcode;
   uint32_t num_digest_regs;
@@ -515,7 +535,6 @@ INSTANTIATE_TEST_SUITE_P(GetDigestTest, GetDigestTest,
                              {kDifDmaSha256Opcode, 8},
                              {kDifDmaSha384Opcode, 12},
                              {kDifDmaSha512Opcode, 16},
-                             {kDifDmaCopyOpcode, 0},
                          }}));
 
 TEST_F(GetDigestTest, BadArg) {
@@ -524,6 +543,7 @@ TEST_F(GetDigestTest, BadArg) {
       dif_dma_sha2_digest_get(nullptr, kDifDmaSha256Opcode, digest));
   EXPECT_DIF_BADARG(
       dif_dma_sha2_digest_get(&dma_, kDifDmaSha256Opcode, nullptr));
+  EXPECT_DIF_BADARG(dif_dma_sha2_digest_get(&dma_, kDifDmaCopyOpcode, digest));
 }
 
 // DMA handshake irq enable tests

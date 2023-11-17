@@ -266,6 +266,28 @@ dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
   return kDifOk;
 }
 
+dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
+                                       uint32_t *digest_len) {
+  if (digest_len == NULL) {
+    return kDifBadArg;
+  }
+  switch (opcode) {
+    case kDifDmaSha256Opcode:
+      *digest_len = 8;
+      break;
+    case kDifDmaSha384Opcode:
+      *digest_len = 12;
+      break;
+    case kDifDmaSha512Opcode:
+      *digest_len = 16;
+      break;
+    default:
+      return kDifBadArg;
+      break;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
                                      dif_dma_transaction_opcode_t opcode,
                                      uint32_t digest[]) {
@@ -273,22 +295,10 @@ dif_result_t dif_dma_sha2_digest_get(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  uint32_t regs_num;
-  switch (opcode) {
-    case kDifDmaSha256Opcode:
-      regs_num = 8;
-      break;
-    case kDifDmaSha384Opcode:
-      regs_num = 12;
-      break;
-    case kDifDmaSha512Opcode:
-      regs_num = 16;
-      break;
-    default:
-      regs_num = 0;
-  }
+  uint32_t digest_len;
+  DIF_RETURN_IF_ERROR(dif_dma_get_digest_length(opcode, &digest_len));
 
-  for (int i = 0; i < regs_num; ++i) {
+  for (int i = 0; i < digest_len; ++i) {
     ptrdiff_t offset = DMA_SHA2_DIGEST_0_REG_OFFSET +
                        (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t);
 

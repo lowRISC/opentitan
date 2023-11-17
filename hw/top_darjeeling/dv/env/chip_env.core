@@ -14,6 +14,7 @@ filesets:
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:aes
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:cryptoc_dpi:0.1
       - lowrisc:dv:digestpp_dpi
       - lowrisc:dv:aes_model_dpi
       - lowrisc:ip:jtag_pkg
@@ -125,6 +126,7 @@ filesets:
       - seq_lib/chip_sw_rom_e2e_jtag_inject_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_power_virus_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_ast_clk_rst_inputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_dma_spi_hw_handshake_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv
       - ast_ext_clk_if.sv

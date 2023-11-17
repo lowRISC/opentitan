@@ -450,3 +450,18 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:spi_host",
     ],
 )
+
+cc_library(
+    name = "dma_testutils",
+    srcs = ["//sw/ip/dma/test/utils:dma_testutils.c"],
+    hdrs = ["//sw/ip/dma/test/utils:dma_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/runtime:ibex",
+        "//sw/top_darjeeling/sw/dif:dma",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:spi_host",
+    ],
+)
