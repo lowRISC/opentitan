@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
     "verilator_params",
 )
 load(
@@ -35,10 +35,6 @@ load(
 load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
-)
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -166,58 +162,6 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     },
 ]
 
-[opentitan_flash_binary(
-    name = "boot_policy_bad_manifest_{}_{}_bin".format(
-        t["name"],
-        slot,
-    ),
-    testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    devices = [
-        "fpga_cw310",
-        "sim_dv",
-        "sim_verilator",
-    ],
-    manifest = manifest(dict(
-        t["manifest"],
-        name = "{}_{}".format(
-            t["name"],
-            slot,
-        ),
-    )),
-    signed = True,
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
-
-[opentitan_multislot_flash_binary(
-    name = "boot_policy_bad_manifest_{}_{}_img".format(
-        t["name"],
-        slot,
-    ),
-    testonly = True,
-    srcs = {
-        "boot_policy_bad_manifest_{}_{}_bin".format(
-            t["name"],
-            slot,
-        ): {
-            "key": RSA_ONLY_KEY_STRUCTS[0],
-            "offset": offset,
-        },
-    },
-    devices = [
-        "fpga_cw310",
-        "sim_dv",
-        "sim_verilator",
-    ],
-) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot, offset in SLOTS.items()]
-
 [
     otp_json(
         name = "otp_json_sec_ver_{}".format(sec_ver),
@@ -254,57 +198,48 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_boot_policy_bad_manifest_{}_sec_ver_{}".format(
-            lc_state,
-            sec_ver,
+    manifest(dict(
+        t["manifest"],
+        name = "{}_{}".format(
+            t["name"],
+            slot,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
-            lc_state,
-            sec_ver,
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, _ in get_lc_items()
-    for sec_ver in [
-        0,
-        1,
-    ]
+    ))
+    for t in BOOT_POLICY_BAD_MANIFEST_CASES
+    for slot in SLOTS
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "boot_policy_bad_manifest_{}_{}_{}".format(
             lc_state,
             t["name"],
             slot,
         ),
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
-            bitstream = "bitstream_boot_policy_bad_manifest_{}_sec_ver_{}".format(
+            assemble = "{firmware}@{offset}",
+            exit_success = t["exit_success"],
+            offset = SLOTS[slot],
+            otp = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
                 lc_state,
                 t.get("sec_ver", 0),
             ),
-            exit_success = t["exit_success"],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = "multislot",
-        ot_flash_binary = "boot_policy_bad_manifest_{}_{}_img".format(
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        manifest = ":{}_{}".format(
             t["name"],
             slot,
         ),
-        targets = [
-            "cw310_rom_with_fake_keys",
-            "verilator",
+        # Use the prod key because it is valid in every LC state.
+        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
         ],
-        verilator = verilator_params(
-            tags = [
-                # FIXME:#16056 Verilator fails to set up test.
-                "broken",
-            ],
-        ),
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in BOOT_POLICY_BAD_MANIFEST_CASES
