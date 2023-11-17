@@ -155,6 +155,7 @@ pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
     second_bootstrap: PathBuf,
+    third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     timeout: Duration,
 ) -> Result<()> {
@@ -208,6 +209,11 @@ pub fn run_ft_personalize(
     let out_data = ManufPersoDataOut::recv(&*uart, timeout, false)?;
     // TODO(#19455): write the wrapped RMA unlock token to a file.
     log::info!("{:x?}", out_data);
+    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+
+    // Bootstrap third personalization binary into flash.
+    uart.clear_rx_buffer()?;
+    init.bootstrap.load(transport, &third_bootstrap)?;
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     Ok(())
