@@ -431,7 +431,8 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
   sca_set_trigger_low();
-
+  // Acknowledge command
+  simple_serial_send_status(0);
   // send last ciphertext
   simple_serial_send_packet('r', (uint8_t *)ciphertext.data, kAesTextLength);
 }
