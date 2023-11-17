@@ -501,6 +501,13 @@ cc_library(
 )
 
 cc_library(
+    name = "attestation_key_diversifiers",
+    srcs = ["attestation_key_diversifiers.c"],
+    hdrs = ["attestation_key_diversifiers.h"],
+    deps = ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+)
+
+cc_library(
     name = "otbn_boot_services",
     srcs = ["otbn_boot_services.c"],
     hdrs = ["otbn_boot_services.h"],
