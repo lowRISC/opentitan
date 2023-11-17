@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_binary",
+    "opentitan_test",
 )
 load(
     "//rules:const.bzl",
@@ -13,12 +14,6 @@ load(
     "get_lc_items",
     "hex",
     "hex_digits",
-)
-load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-    "opentitan_flash_binary",
-    "opentitan_multislot_flash_binary",
 )
 load(
     "//rules:manifest.bzl",
@@ -35,14 +30,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
-    "@bazel_skylib//lib:shell.bzl",
-    "shell",
-)
-load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "SLOTS",
 )
@@ -55,48 +42,42 @@ SEC_VERS = [
     2,
 ]
 
-[manifest({
-    "name": "manifest_sec_ver_{}".format(sec_ver),
-    "address_translation": hex(CONST.HARDENED_FALSE),
-    "identifier": hex(CONST.ROM_EXT),
-    "security_version": hex(sec_ver),
-}) for sec_ver in SEC_VERS]
+[
+    manifest({
+        "name": "manifest_sec_ver_{}".format(sec_ver),
+        "address_translation": hex(CONST.HARDENED_FALSE),
+        "identifier": hex(CONST.ROM_EXT),
+        "security_version": hex(sec_ver),
+    })
+    for sec_ver in SEC_VERS
+]
 
-[opentitan_flash_binary(
-    name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
-    testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    devices = ["fpga_cw310"],
-    local_defines = [
-        shell.quote("EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()"),
-    ],
-    manifest = ":manifest_sec_ver_{}".format(sec_ver),
-    signed = True,
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-    ],
-) for slot in SLOTS for sec_ver in SEC_VERS]
-
-[opentitan_multislot_flash_binary(
-    name = "sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
-    testonly = True,
-    srcs = {
-        ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
-            "key": RSA_ONLY_KEY_STRUCTS[2],
-            "offset": SLOTS["a"],
-        },
-        ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
-            "key": RSA_ONLY_KEY_STRUCTS[2],
-            "offset": SLOTS["b"],
-        },
-    },
-    devices = ["fpga_cw310"],
-) for sec_ver_a in SEC_VERS for sec_ver_b in SEC_VERS]
+[
+    opentitan_binary(
+        name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
+        testonly = True,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+        ],
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        local_defines = [
+            "EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()",
+        ],
+        manifest = ":manifest_sec_ver_{}".format(sec_ver),
+        # Use the prod key because it is valid in every LC state.
+        rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for slot in SLOTS
+    for sec_ver in SEC_VERS
+]
 
 BOOT_POLICY_NEWER_CASES = [
     {
@@ -121,42 +102,37 @@ BOOT_POLICY_NEWER_CASES = [
     },
 ]
 
-[otp_image(
-    name = "otp_img_boot_policy_newer_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-    overlays = STD_OTP_OVERLAYS,
-) for lc_state, _ in get_lc_items()]
-
-# Splice OTP images into bitstreams
 [
-    bitstream_splice(
-        name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_boot_policy_newer_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        update_usr_access = True,
+    otp_image(
+        name = "otp_img_boot_policy_newer_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "boot_policy_newer_{}_a_{}_b_{}".format(
             lc_state,
             t["a"],
             t["b"],
         ),
         cw310 = cw310_params(
-            bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state),
+            assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
+            binaries = {
+                ":empty_test_slot_a_sec_ver_{}".format(t["a"]): "fw_a",
+                ":empty_test_slot_b_sec_ver_{}".format(t["b"]): "fw_b",
+            },
             exit_success = t["exit_success"].format(hex_digits(lc_state_val)),
+            otp = ":otp_img_boot_policy_newer_{}".format(lc_state),
+            slot_a = SLOTS["a"],
+            slot_b = SLOTS["b"],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = "multislot",
-        ot_flash_binary = ":sec_ver_{}_{}_image".format(
-            t["a"],
-            t["b"],
-        ),
-        targets = ["cw310_rom_with_fake_keys"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in BOOT_POLICY_NEWER_CASES
