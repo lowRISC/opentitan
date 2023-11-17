@@ -16,24 +16,23 @@ An example of how the SiVal ROM\_EXT will configure the ePMP:
 ```
  0: 20010400 ----- ---- sz=00000000     ; OWNER code start.
  1: 20013d24   TOR LX-R sz=00003924     ; OWNER code end.
- 2: 00008000 NAPOT L--R sz=00008000     ; ROM data (can be cleared).
+ 2: 00008000 NAPOT L--R sz=00008000     ; OWNER data (if using remap window, else ROM data region)
  3: 20000400 ----- ---- sz=00000000     ; ROM_EXT code start.
- 4: 20004fa0   TOR LX-R sz=00004ba0     ; ROM_EXT code end.
- 5: 20000000 NAPOT L--R sz=00100000     ; FLASH read access.
+ 4: 20004fe8   TOR LX-R sz=00004be8     ; ROM_EXT code end.
+ 5: 20000000 NAPOT L--R sz=00100000     ; FLASH data (1 MB).
+ 6: 40130000 NAPOT L--- sz=00001000     ; OTP MMIO lockout.
  6: 00000000 ----- ---- sz=00000000
  7: 00000000 ----- ---- sz=00000000
  8: 00000000 ----- ---- sz=00000000
  9: 00000000 ----- ---- sz=00000000
-10: 40130000 NAPOT L--- sz=00001000     ; OTP MMIO lockout.
+10: 00000000 ----- ---- sz=00000000
 11: 40000000 NAPOT L-WR sz=10000000     ; MMIO region.
 12: 00000000 ----- ---- sz=00000000
 13: 00010000 NAPOT LXWR sz=00001000     ; RvDM region (not PROD, RMA/DEV only).
 14: 1001c000   NA4 L--- sz=00000004     ; Stack guard.
 15: 10000000 NAPOT L-WR sz=00020000     ; RAM region.
-mseccfg = 00000006                      ; RLB=1, MMWP=1, MML=0.
+mseccfg = 00000002                      ; RLB=0, MMWP=1, MML=0.
 ```
-
-TODO: Clear RLB so ePMP rules can not be overidden by owner code.
 
 ### OTP
 

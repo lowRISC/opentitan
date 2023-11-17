@@ -60,3 +60,22 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "epmp_rlb_lockdown",
+    srcs = ["epmp_rlb_lockdown.c"],
+    cw310 = cw310_params(
+        exit_failure = "(PASS|FAIL|BFV|FAULT).*\r\n",
+        # Make sure the test program failed to modify the ePMP.
+        exit_success = "6: 40130000 NAPOT L--- sz=00001000\r\n",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:dbg_print",
+    ],
+)
