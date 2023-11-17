@@ -60,6 +60,10 @@ struct Opts {
     #[arg(long)]
     second_bootstrap: PathBuf,
 
+    /// Third personalization binary to bootstrap.
+    #[arg(long)]
+    third_bootstrap: PathBuf,
+
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
@@ -111,6 +115,7 @@ fn main() -> Result<()> {
         &transport,
         &opts.init,
         opts.second_bootstrap,
+        opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
         opts.timeout,
     )?;

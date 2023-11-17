@@ -175,10 +175,8 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//sw/device/silicon_creator/manuf/lib:otp_fields",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -213,6 +211,36 @@ opentitan_binary(
     ],
 )
 
+opentitan_binary(
+    name = "ft_personalize_3",
+    testonly = True,
+    srcs = ["ft_personalize_3.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/otbn/crypto:boot",
+    ],
+)
+
 opentitan_test(
     name = "ft_provision",
     srcs = ["ft_personalize_1.c"],
@@ -220,6 +248,7 @@ opentitan_test(
         binaries = {
             ":sram_ft_individualize": "sram_ft_individualize",
             ":ft_personalize_2": "ft_personalize_2",
+            ":ft_personalize_3": "ft_personalize_3",
         },
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_post_cp_test_locked0",
@@ -231,6 +260,7 @@ opentitan_test(
             --elf={sram_ft_individualize}
             --bootstrap={firmware}
             --second-bootstrap={ft_personalize_2}
+            --third-bootstrap={ft_personalize_3}
             --target-mission-mode-lc-state="prod"
             --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
