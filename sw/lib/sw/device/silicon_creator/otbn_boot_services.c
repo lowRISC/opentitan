@@ -68,7 +68,39 @@ enum {
    * Value taken from `boot.s`.
    */
   kOtbnBootModeAttestationKeySave = 0x64d,
+  /* Size of the OTBN attestation seed buffer in 32-bit words (rounding the
+     attestation seed size up to the next OTBN wide word). */
+  kOtbnAttestationSeedBufferWords =
+      ((kAttestationSeedWords + kOtbnWideWordNumWords - 1) /
+       kOtbnWideWordNumWords) *
+      kOtbnWideWordNumWords,
 };
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t load_attestation_keygen_seed(
+    attestation_key_seed_t additional_seed, uint32_t *seed) {
+  // Set flash page configuration and permissions.
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageAttestationKeySeeds,
+                            (flash_ctrl_perms_t){
+                                .read = kMultiBitBool4True,
+                                .write = kMultiBitBool4False,
+                                .erase = kMultiBitBool4False,
+                            });
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageAttestationKeySeeds,
+                          (flash_ctrl_cfg_t){
+                              .scrambling = kMultiBitBool4True,
+                              .ecc = kMultiBitBool4True,
+                              .he = kMultiBitBool4False,
+                          });
+
+  // Read seed from flash info page.
+  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedWords);
+  HARDENED_RETURN_IF_ERROR(
+      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
+                           seed_flash_offset, kAttestationSeedWords, seed));
+
+  return kErrorOk;
+}
 
 rom_error_t otbn_boot_app_load(void) { return otbn_load_app(kOtbnAppBoot); }
 
@@ -86,15 +118,19 @@ rom_error_t otbn_boot_attestation_keygen(
       otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Load the additional seed from flash info.
-  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedWords);
   uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(
-      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords, seed));
+  HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(additional_seed, seed));
 
   // Write the additional seed to OTBN DMEM.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
       kAttestationSeedWords, seed, kOtbnVarBootAttestationAdditionalSeed));
+  // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
+  // (since data is aligned to 256-bit words).
+  uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
+      0};
+  HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
+      ARRAYSIZE(zero_buf), zero_buf,
+      kOtbnVarBootAttestationAdditionalSeed + kAttestationSeedBytes));
 
   // Run the OTBN program (blocks until OTBN is done).
   HARDENED_RETURN_IF_ERROR(otbn_execute());
@@ -124,13 +160,17 @@ rom_error_t otbn_boot_attestation_key_save(
       otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
 
   // Load the additional seed from flash info.
-  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedWords);
   uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(
-      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords, seed));
+  HARDENED_RETURN_IF_ERROR(load_attestation_keygen_seed(additional_seed, seed));
+  // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
+  // (since data is aligned to 256-bit words).
+  uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
+      0};
+  HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
+      ARRAYSIZE(zero_buf), zero_buf,
+      kOtbnVarBootAttestationAdditionalSeed + kAttestationSeedBytes));
 
-  // Write the additional seed.
+  // Write the additional seed to OTBN DMEM.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
       kAttestationSeedWords, seed, kOtbnVarBootAttestationAdditionalSeed));
 

@@ -33,15 +33,15 @@ rom_error_t otbn_boot_app_load(void);
  * Generate an attestation public key from a keymgr-derived secret.
  *
  * This routine triggers the key manager to sideload key material into OTBN,
- * and also takes in an extra seed to XOR with the key material. The final
+ * and also loads in an extra seed to XOR with the key material. The final
  * private key is:
  *   d = (additional_seed ^ keymgr_seed) mod n
  * ...where n is the P256 curve order. The public key is d*G, where G is the
  * P256 base point.
  *
- * The `additional_seed` is expected to be the output from a specially seeded
- * DRBG, and is provisioned into flash at manufacturing time. It must be fully
- * independent from the key manager seed.
+ * The extra seed is expected to be the output from a specially seeded DRBG, and
+ * is provisioned into flash at manufacturing time. It must be fully independent
+ * from the key manager seed.
  *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
