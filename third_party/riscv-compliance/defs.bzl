@@ -4,7 +4,12 @@
 
 """Helper macros for generating RISC-V compliance test targets."""
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
+    "verilator_params",
+)
 
 def rv_compliance_test(name, arch):
     test_file = "@riscv-compliance//:riscv-test-suite/{}/src/{}.S".format(arch, name)
@@ -24,7 +29,7 @@ def rv_compliance_test(name, arch):
         """.format(reference_output),
     )
 
-    opentitan_functest(
+    opentitan_test(
         name = name,
         srcs = [
             test_file,
@@ -32,6 +37,7 @@ def rv_compliance_test(name, arch):
             "compliance_main.c",
             "compliance_main.S",
         ],
+        exec_env = EARLGREY_TEST_ENVS,
         verilator = verilator_params(
             timeout = "long",
         ),
