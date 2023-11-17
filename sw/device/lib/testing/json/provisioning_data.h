@@ -30,11 +30,27 @@ UJSON_SERDE_STRUCT(EccP256PublicKey, \
  * Data imported during device personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_PERSO_DATA_IN(field, string) \
+#define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_IN(field, string) \
     field(host_pk, ecc_p256_public_key_t)
-UJSON_SERDE_STRUCT(ManufPersoDataIn, \
-                   manuf_perso_data_in_t, \
-                   STRUCT_MANUF_PERSO_DATA_IN);
+UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
+                   manuf_rma_token_perso_data_in_t, \
+                   STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_IN);
+// clang-format on
+
+/**
+ * Data imported during device certificate personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_CERT_PERSO_DATA_IN(field, string) \
+    field(rom_ext_measurement, uint32_t, 8) \
+    field(rom_ext_measurement_valid, bool) \
+    field(owner_manifest_measurement, uint32_t, 8) \
+    field(owner_manifest_measurement_valid, bool) \
+    field(owner_measurement, uint32_t, 8) \
+    field(owner_measurement_valid, bool)
+UJSON_SERDE_STRUCT(ManufCertPersoDataIn, \
+                   manuf_cert_perso_data_in_t, \
+                   STRUCT_MANUF_CERT_PERSO_DATA_IN);
 // clang-format on
 
 /**
@@ -69,11 +85,11 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
  * Data exported during device personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_PERSO_DATA_OUT(field, string) \
+#define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT(field, string) \
     field(wrapped_rma_unlock_token, wrapped_rma_unlock_token_t)
-UJSON_SERDE_STRUCT(ManufPersoDataOut, \
-                   manuf_perso_data_out_t, \
-                   STRUCT_MANUF_PERSO_DATA_OUT);
+UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
+                   manuf_rma_token_perso_data_out_t, \
+                   STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT);
 // clang-format on
 
 /**

@@ -73,11 +73,10 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * @param[out] out_data UJSON struct of data to export from the device.
  * @return OK_STATUS on success.
  */
-status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
-                                          const dif_lc_ctrl_t *lc_ctrl,
-                                          const dif_otp_ctrl_t *otp_ctrl,
-                                          manuf_perso_data_in_t *in_data,
-                                          manuf_perso_data_out_t *out_data);
+status_t manuf_personalize_device_secrets(
+    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
+    const dif_otp_ctrl_t *otp_ctrl, manuf_rma_token_perso_data_in_t *in_data,
+    manuf_rma_token_perso_data_out_t *out_data);
 
 /**
  * Checks the device personalization end state.

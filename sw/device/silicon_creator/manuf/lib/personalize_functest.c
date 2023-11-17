@@ -58,8 +58,8 @@ static void sw_reset(void) {
 }
 
 status_t export_data_over_console(ujson_t *uj,
-                                  manuf_perso_data_out_t *out_data) {
-  RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, out_data);
+                                  manuf_rma_token_perso_data_out_t *out_data) {
+  RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj, out_data);
   return OK_STATUS();
 }
 
@@ -95,8 +95,8 @@ bool test_main(void) {
   // retention SRAM (namely in the creator partition) as it is faster than
   // storing it in flash, and still persists across a SW initiated reset.
   retention_sram_t *ret_sram_data = retention_sram_get();
-  manuf_perso_data_out_t *out_data =
-      (manuf_perso_data_out_t *)&ret_sram_data->creator.reserved;
+  manuf_rma_token_perso_data_out_t *out_data =
+      (manuf_rma_token_perso_data_out_t *)&ret_sram_data->creator.reserved;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
@@ -117,8 +117,9 @@ bool test_main(void) {
       // Wait for host ECC pubkey, used to generate a shared AES key to export
       // the RMA unlock token, to arrive over the console.
       LOG_INFO("Ready to receive host ECC pubkey ...");
-      manuf_perso_data_in_t in_data;
-      CHECK_STATUS_OK(ujson_deserialize_manuf_perso_data_in_t(&uj, &in_data));
+      manuf_rma_token_perso_data_in_t in_data;
+      CHECK_STATUS_OK(
+          ujson_deserialize_manuf_rma_token_perso_data_in_t(&uj, &in_data));
 
       // Perform OTP and flash info writes.
       LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
