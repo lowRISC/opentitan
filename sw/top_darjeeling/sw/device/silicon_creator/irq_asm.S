@@ -30,13 +30,6 @@ _asm_exception_handler:
   li t1, MULTIBIT_ASM_BOOL4_TRUE
   sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
-  // Disable access to flash.
-  //
-  // This is done after requesting a reset so that this function will
-  // work even if it is in flash.
-  li t0, TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR
-  sw zero, FLASH_CTRL_DIS_REG_OFFSET(t0)
-
   wfi
   j   .L_exception_loop
   .size _asm_exception_handler, .-_asm_exception_handler
