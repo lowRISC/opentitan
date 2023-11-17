@@ -11,6 +11,9 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
+static_assert(kAttestationSeedWords <= 16,
+              "Additional attestation seed needs must be <= 516 bits.");
+
 OTBN_DECLARE_APP_SYMBOLS(boot);             // The OTBN boot-services app.
 OTBN_DECLARE_SYMBOL_ADDR(boot, mode);       // Application mode.
 OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_mod);    // RSA modulus.
