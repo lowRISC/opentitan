@@ -111,6 +111,7 @@ cc_library(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:check",
     ],
 )
 
@@ -127,6 +128,7 @@ opentitan_test(
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":individualize",
+        ":otp_fields",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",

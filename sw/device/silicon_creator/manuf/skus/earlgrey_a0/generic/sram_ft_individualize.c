@@ -17,6 +17,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
@@ -31,6 +32,8 @@ static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
+
+static manuf_ft_individualize_data_t in_data;
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -55,11 +58,14 @@ static status_t peripheral_handles_init(void) {
  * field is not provisioned until after the Secret1 partition is provisioned
  * during personalization.
  */
-static status_t provision(void) {
+static status_t provision(ujson_t *uj) {
+  LOG_INFO("Waiting for FT SRAM provisioning data ...");
+  TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
+  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
+                                        kFlashInfoPage0Permissions,
+                                        in_data.device_id));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
-                                        kFlashInfoPage0Permissions));
   LOG_INFO("FT SRAM provisioning done.");
   return OK_STATUS();
 }
@@ -68,12 +74,13 @@ bool sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
+  ujson_t uj = ujson_ottf_console();
 
   // Check we are in in TEST_UNLOCKED1.
   CHECK_STATUS_OK(
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
-  CHECK_STATUS_OK(provision());
+  CHECK_STATUS_OK(provision(&uj));
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission
   // mode, as ROM execution should be active now.

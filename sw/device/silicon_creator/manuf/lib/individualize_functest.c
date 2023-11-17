@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -65,8 +66,11 @@ bool test_main(void) {
         .prog_en = kMultiBitBool4True,
         .rd_en = kMultiBitBool4True,
         .scramble_en = kMultiBitBool4False};
+    uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords] = {
+        0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB,
+        0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
     CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
-        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions));
+        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions, device_id));
     sw_reset();
   }
 

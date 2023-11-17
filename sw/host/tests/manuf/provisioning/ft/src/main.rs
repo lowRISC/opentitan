@@ -13,11 +13,21 @@ use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
+use ujson_lib::provisioning_data::ManufFtIndividualizeData;
 use util_lib::hex_string_to_u32_arrayvec;
 
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
+    /// Device ID to provision.
+    ///
+    /// Must match the device ID provisioned in to flash during CP, if one was provisioned then.
+    #[arg(
+        long,
+        default_value = "0xCAFEBABE_11112222_33334444_55556666_77778888_9999AAAA_BBBBCCCC_DEADBEEF"
+    )]
+    pub device_id: String,
+
     /// TestUnlock token.
     #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
     pub test_unlock_token: String,
@@ -48,7 +58,7 @@ struct Opts {
 
     /// Second personalization binary to bootstrap.
     #[arg(long)]
-    secondary_bootstrap: PathBuf,
+    second_bootstrap: PathBuf,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -65,10 +75,16 @@ fn main() -> Result<()> {
     transport.apply_default_configuration()?;
     InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
+    // Format test tokens.
     let test_unlock_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
     let test_exit_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
+
+    // Format ujson data payload(s).
+    let ft_individualize_data_in = ManufFtIndividualizeData {
+        device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,
+    };
 
     test_unlock(
         &transport,
@@ -81,6 +97,7 @@ fn main() -> Result<()> {
         &opts.init.jtag_params,
         opts.init.bootstrap.options.reset_delay,
         &opts.sram_program,
+        &ft_individualize_data_in,
         opts.timeout,
     )?;
     test_exit(
@@ -93,7 +110,7 @@ fn main() -> Result<()> {
     run_ft_personalize(
         &transport,
         &opts.init,
-        opts.secondary_bootstrap,
+        opts.second_bootstrap,
         opts.provisioning_data.host_ecc_sk,
         opts.timeout,
     )?;

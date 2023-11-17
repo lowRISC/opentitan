@@ -28,7 +28,7 @@ pub struct ManufCpProvisioningDataInput {
     /// Device ID to provision.
     #[arg(
         long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
+        default_value = "0xCAFEBABE_11112222_33334444_55556666_77778888_9999AAAA_BBBBCCCC_DEADBEEF"
     )]
     pub device_id: String,
 
@@ -47,11 +47,11 @@ pub struct ManufCpProvisioningDataInput {
     pub wafer_auth_secret: String,
 
     /// TestUnlock token to provision.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
     pub test_unlock_token: String,
 
     /// TestExit token to provision.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
     pub test_exit_token: String,
 }
 
