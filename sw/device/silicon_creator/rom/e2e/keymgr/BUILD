@@ -6,6 +6,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
     "dv_params",
+    "hyper310_params",
     "opentitan_binary",
     "opentitan_test",
     "verilator_params",
@@ -97,9 +98,14 @@ rom_e2e_keymgr_init_configs = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+        hyper310 = hyper310_params(
+            binaries = {":rom_e2e_keymgr_init_test": "firmware"},
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             binaries = {":rom_e2e_keymgr_init_test": "firmware"},

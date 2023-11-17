@@ -20,6 +20,8 @@ load(
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
+    _hyper310_params = "hyper310_params",
+    _hyper310_jtag_params = "hyper310_jtag_params",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
@@ -57,6 +59,8 @@ fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
 cw310_jtag_params = _cw310_jtag_params
+hyper310_params = _hyper310_params
+hyper310_jtag_params = _hyper310_jtag_params
 
 silicon = _silicon
 silicon_params = _silicon_params
@@ -75,6 +79,8 @@ rsa_key_by_name = _rsa_key_by_name
 EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_hyper310_test_rom": "hyper310",
+    "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": "hyper310",
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
 }
@@ -100,6 +106,8 @@ def _parameter_name(env, pname):
         (_, suffix) = env.split(":")
         if "cw310" in suffix:
             pname = "cw310"
+        elif "hyper310" in suffix:
+            pname = "hyper310"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -113,7 +121,8 @@ def _parameter_name(env, pname):
 def _hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
-    if suffix.startswith("fpga_cw310_") or suffix.startswith("fpga_cw340_"):
+    if (suffix.startswith("fpga_cw310_") or suffix.startswith("fpga_cw340_") or
+        suffix.startswith("fpga_hyper310_")):
         # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
@@ -140,6 +149,7 @@ def opentitan_test(
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
+        hyper310 = _hyper310_params(),
         **kwargs):
     """Instantiate a test per execution environment.
 
@@ -170,6 +180,7 @@ def opentitan_test(
     """
     test_parameters = {
         "cw310": cw310,
+        "hyper310": hyper310,
         "dv": dv,
         "silicon": silicon,
         "verilator": verilator,

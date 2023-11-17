@@ -7,6 +7,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -148,6 +149,11 @@ opentitan_test(
         # [test-triage] test not constant time with icache enabled
     ),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(
+        timeout = "long",
+        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
+        # [test-triage] test not constant time with icache enabled
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
@@ -311,7 +317,12 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -349,7 +360,12 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -387,7 +403,12 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -432,8 +453,12 @@ opentitan_test(
     # we have to restrict the environments to run with the test_rom.
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "moderate",
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),

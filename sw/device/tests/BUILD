@@ -22,6 +22,8 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
     new_cw310_params = "cw310_params",
@@ -76,6 +78,10 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_sival": None,
+        "//hw/top_earlgrey:fpga_hyper310_sival_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -144,6 +150,7 @@ opentitan_test(
     srcs = ["alert_handler_ping_timeout_test.c"],
     cw310 = new_cw310_params(timeout = "moderate"),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(timeout = "moderate"),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
@@ -330,6 +337,7 @@ opentitan_test(
     srcs = ["aon_timer_irq_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -533,8 +541,10 @@ opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    # The measurement for clk_main is failing
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(tags = ["broken"]),
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
@@ -912,6 +922,7 @@ opentitan_test(
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(tags = ["broken"]),
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1067,6 +1078,14 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/mem",
     ),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/mem",
+    ),
     verilator = new_verilator_params(
         timeout = "eternal",
         tags = ["manual"],
@@ -1127,6 +1146,7 @@ opentitan_test(
     srcs = ["flash_ctrl_idle_low_power_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -1289,8 +1309,10 @@ opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    # Various ECC / integrity errors ostensibly coming from the underlying flash macro
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(tags = ["broken"]),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//sw/device/lib/base:mmio",
@@ -1367,6 +1389,7 @@ opentitan_test(
     exec_env = {
         # Not compatible with the verilated top level.
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     deps = [
@@ -1561,6 +1584,7 @@ opentitan_test(
     # TODO(#15530): EDN doesn't timeout on FPGA
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1690,8 +1714,10 @@ opentitan_test(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
     # TODO(#12486) [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    # SecureIbex parameter not set on FPGA, so ECC / integrity errors will not occur.
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(tags = ["broken"]),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1882,8 +1908,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1913,8 +1947,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1944,8 +1986,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1975,8 +2025,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2006,8 +2064,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -2036,8 +2102,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -2066,8 +2140,16 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2286,7 +2368,9 @@ opentitan_test(
     cw310 = new_cw310_params(timeout = "moderate"),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
+    hyper310 = hyper310_params(timeout = "moderate"),
     deps = [
         ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2309,6 +2393,7 @@ opentitan_test(
     srcs = ["spi_host_winbond_flash_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":spi_host_flash_test_impl",
@@ -2332,6 +2417,7 @@ opentitan_test(
     srcs = ["spi_host_irq_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2436,6 +2522,8 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_sival": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2561,6 +2649,7 @@ opentitan_test(
     srcs = ["usbdev_pincfg_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2583,6 +2672,7 @@ opentitan_test(
     srcs = ["usbdev_vbus_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2602,6 +2692,7 @@ opentitan_test(
     srcs = ["usbdev_pullup_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2621,6 +2712,7 @@ opentitan_test(
     srcs = ["usbdev_setuprx_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2641,10 +2733,12 @@ opentitan_test(
     cw310 = new_cw310_params(tags = ["manual"]),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
     verilator = new_verilator_params(timeout = "long"),
+    hyper310 = hyper310_params(tags = ["manual"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -2667,9 +2761,14 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2692,9 +2791,14 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2716,10 +2820,15 @@ opentitan_test(
         tags = ["manual"],
     ),
     exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2738,6 +2847,7 @@ opentitan_test(
     srcs = ["rstmgr_alert_info_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2972,19 +3082,15 @@ opentitan_test(
 opentitan_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
-    cw310 = new_cw310_params(
-        # TODO: This test will need hyperdebug once we start using multi-lane
-        # SPI modes.
-        # interface = "hyper310",
-        # tags = ["manual"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+    },
+    hyper310 = hyper310_params(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
@@ -3044,28 +3150,28 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
+        tags = ["flaky"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/jtag:openocd_test",
+    ),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
+# TODO(#19903): Migrate to `opentitan_test` once there is support for the
+# hyperdebug340 target. #19903 covers support for hyperdebug340, and #19901
 # covers support for cw340_params.
 opentitan_functest(
-    name = "openocd_hyperdebug_test",
+    name = "openocd_hyper340_test",
     srcs = ["example_test_from_flash.c"],
-    cw310 = cw310_params(
-        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
-        interface = "hyper310",
-        tags = ["flaky"],
-        test_cmds = [
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
-    ),
     cw340 = cw340_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
         interface = "hyper340",
@@ -3118,26 +3224,21 @@ opentitan_functest(
     ],
 )
 
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target.
-opentitan_functest(
+opentitan_test(
     name = "i2c_target_test",
     srcs = [
         "i2c_target_test.c",
     ],
-    cw310 = cw310_params(
-        # This test needs hyperdebug to serve as I2C host to OpenTitan's
-        # I2C target device.
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+    },
+    hyper310 = hyper310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/i2c_target",
     ),
-    targets = [
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/i2c_target",
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
@@ -3174,7 +3275,12 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
+    hyper310 = hyper310_params(
+        exit_failure = "PASS!",
+        exit_success = _STATUS_REPORT_TEST_MSG,
+    ),
     deps = [
         "//sw/device/lib/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3199,7 +3305,12 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
+    hyper310 = hyper310_params(
+        exit_failure = "PASS!",
+        exit_success = _STATUS_REPORT_OVERFLOW_TEST_MSG,
+    ),
     deps = [
         "//sw/device/lib/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3218,6 +3329,14 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/example_sival",
     ),
     exec_env = EARLGREY_TEST_ENVS,
+    hyper310 = hyper310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/example_sival",
+    ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_utils",

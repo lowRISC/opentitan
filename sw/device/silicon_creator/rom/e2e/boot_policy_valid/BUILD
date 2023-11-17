@@ -69,6 +69,7 @@ BOOT_POLICY_VALID_CASES = [
 ]
 
 # Splice OTP images into bitstreams
+# TODO: Add hyper310 targets?
 [
     bitstream_splice(
         name = "bitstream_boot_policy_valid_{}".format(lc_state),

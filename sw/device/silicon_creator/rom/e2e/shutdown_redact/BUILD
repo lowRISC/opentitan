@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
 )
 load(
@@ -98,7 +99,24 @@ REDACT.update({"INVALID": 0x0})
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            binaries = {
+                "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
+            },
+            exit_failure = MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(error_redact(
+                CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER,
+                lc_state_val,
+                redact_val,
+            ))),
+            otp = ":img_{}_{}".format(
+                lc_state,
+                redact.lower(),
+            ),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         # Skip signing by clearing the manifest configuration.
         manifest = None,
     )

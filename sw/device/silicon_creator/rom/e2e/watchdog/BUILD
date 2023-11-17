@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -139,8 +140,19 @@ WATCHDOG_OTP = {
         ),
         exec_env = {
             "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "@//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "@//hw/top_earlgrey:sim_verilator": None,
         },
+        hyper310 = hyper310_params(
+            binaries = {
+                ":test_watchdog_{}_{}".format(
+                    WATCHDOG_TEST_CASES[watchdog_config][lc_state],
+                    lc_state,
+                ): "firmware",
+            },
+            otp = WATCHDOG_OTP[watchdog_config].format(lc_state),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         verilator = verilator_params(
             timeout = "eternal",
             binaries = {

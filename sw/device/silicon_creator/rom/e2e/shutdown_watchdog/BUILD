@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -118,7 +119,19 @@ SHUTDOWN_WATCHDOG_CASES = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            exit_success = t["exit_success"],
+            otp = ":otp_img_shutdown_watchdog_{}_{}".format(
+                t["lc_state"],
+                t["bite_threshold"],
+            ),
+            tags = maybe_skip_in_ci(getattr(
+                CONST.LCV,
+                t["lc_state"].upper(),
+            )),
+        ),
         local_defines = [
             "HANG_SECS=2",
         ],

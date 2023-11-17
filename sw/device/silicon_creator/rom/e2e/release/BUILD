@@ -34,6 +34,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
+# TODO: Add hyper310 targets?
 bitstream_splice(
     name = "bitstream_sigverify_spx_rma",
     src = "//hw/bitstream:rom_with_real_keys",
@@ -78,6 +79,7 @@ opentitan_flash_binary(
     ],
 )
 
+# TODO: Add hyper310 targets?
 bitstream_splice(
     name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
     src = "//hw/bitstream:rom_with_real_keys",

@@ -253,6 +253,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     ]
 ]
 
+# TODO: Add hyper310 targets?
 [
     bitstream_splice(
         name = "bitstream_boot_policy_bad_manifest_{}_sec_ver_{}".format(

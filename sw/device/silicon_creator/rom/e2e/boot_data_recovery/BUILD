@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -154,7 +155,19 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
+            otp = ":otp_img_boot_data_recovery_{}_{}".format(
+                case["lc_state"],
+                case["default_boot_data"],
+            ),
+            tags = maybe_skip_in_ci(getattr(
+                CONST.LCV,
+                case["lc_state"].upper(),
+            )),
+        ),
         manifest = BOOT_DATA_RECOVERY_MANIFEST,
         # PROD keys can sign binaries able to run across all life cycle states.
         rsa_key = rsa_key_for_lc_state(

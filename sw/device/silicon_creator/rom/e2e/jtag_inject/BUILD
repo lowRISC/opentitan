@@ -5,14 +5,8 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
     "opentitan_test",
-)
-load(
-    "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
-    "cw310_params",
-    "opentitan_functest",
 )
 load(
     "//rules:const.bzl",
@@ -108,7 +102,15 @@ LC_STATES_DEBUG_DISALLOWED = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_jtag_params(
+            timeout = "moderate",
+            logging = "debug",
+            otp = ":img_{}_exec_disabled".format(lc_state),
+            test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
+        ),
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",

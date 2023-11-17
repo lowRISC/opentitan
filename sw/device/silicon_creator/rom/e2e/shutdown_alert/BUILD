@@ -63,6 +63,7 @@ ALERT_LC_STATES = get_lc_items(
     overlays = STD_OTP_OVERLAYS,
 ) for lc_state, _ in ALERT_LC_STATES]
 
+# TODO: Add hyper310 targets?
 [bitstream_splice(
     name = "bitstream_alert_{}".format(lc_state),
     src = "//hw/bitstream:rom_with_fake_keys",
@@ -199,6 +200,7 @@ otp_alert_digest(
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
 
+# TODO: Add hyper310 targets?
 [bitstream_splice(
     name = "bitstream_shutdown_alert_{}".format(lc_state),
     src = "//hw/bitstream:rom_with_fake_keys",

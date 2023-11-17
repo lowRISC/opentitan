@@ -164,6 +164,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat0_header",
@@ -181,6 +182,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat1_header",
@@ -198,6 +200,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat2_header",
@@ -215,6 +218,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat3_header",
@@ -232,6 +236,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat4_header",
@@ -249,6 +254,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat5_header",
@@ -266,6 +272,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat6_header",
@@ -283,6 +290,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat7_header",
@@ -300,6 +308,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat8_header",
@@ -317,6 +326,7 @@ opentitan_test(
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat9_header",

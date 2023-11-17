@@ -9,6 +9,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -100,7 +101,11 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "long",
+    ),
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -350,7 +355,11 @@ opentitan_test(
     exec_env = {
         # Test set is too large as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
     },
+    hyper310 = hyper310_params(
+        timeout = "long",
+    ),
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

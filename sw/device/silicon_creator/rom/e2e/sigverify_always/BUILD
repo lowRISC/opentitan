@@ -6,6 +6,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
+    "hyper310_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -103,7 +104,31 @@ SIGVERIFY_BAD_CASES = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            assemble = " ".join([
+                "{{slot_{}}}@{}".format(slot, addr)
+                for (slot, addr) in SLOTS.items()
+                if case[slot] == "bad"
+            ]),
+            binaries = {
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_{}_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin"
+                    .format(
+                    slot,
+                    filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0].rsa.name,
+                ): "slot_{}".format(slot)
+                for (slot, addr) in SLOTS.items()
+                if case[slot] == "bad"
+            },
+            exit_failure = MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV_LCV.format(
+                case["expected_bfv"],
+                hex_digits(lc_state_val),
+            ),
+            otp = ":otp_img_sigverify_always_{}".format(lc_state),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
     )
     for case in SIGVERIFY_BAD_CASES
     for lc_state, lc_state_val in get_lc_items()

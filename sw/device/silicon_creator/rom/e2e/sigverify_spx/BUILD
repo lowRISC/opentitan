@@ -174,6 +174,7 @@ opentitan_flash_binary(
     for t in SIGVERIFY_SPX_CASES
 ]
 
+# TODO: Add hyper310 targets?
 [
     bitstream_splice(
         name = "bitstream_sigverify_spx_{}_{}".format(

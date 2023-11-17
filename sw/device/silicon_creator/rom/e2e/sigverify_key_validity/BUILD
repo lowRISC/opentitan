@@ -74,6 +74,7 @@ otp_json(
     for lc_state, _ in get_lc_items()
 ]
 
+# TODO: Add hyper310 targets?
 [
     bitstream_splice(
         name = "bitstream_sigverify_key_validity_{}".format(

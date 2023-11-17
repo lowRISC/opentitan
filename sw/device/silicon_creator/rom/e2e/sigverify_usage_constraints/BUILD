@@ -6,6 +6,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -284,7 +285,14 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            exit_failure = t["exit_failure"],
+            exit_success = t["exit_success"],
+            otp = t["otp"],
+            tags = maybe_skip_in_ci(t["lc_state_val"]),
+        ),
         manifest = manifest(
             dict(
                 t["manifest"],

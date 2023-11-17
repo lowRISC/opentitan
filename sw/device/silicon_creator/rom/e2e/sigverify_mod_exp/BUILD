@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -93,7 +94,16 @@ SIGVERIFY_MOD_EXP_CASES = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_params(
+            exit_success = t["exit_success"][lc_state],
+            otp = ":otp_img_sigverify_mod_exp_{}_{}".format(
+                lc_state,
+                t["name"],
+            ),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         rsa_key = rsa_key_for_lc_state(
             RSA_ONLY_KEY_STRUCTS,

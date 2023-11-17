@@ -4,6 +4,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -38,7 +39,18 @@ package(default_visibility = ["//visibility:public"])
 #     ),
 #     exec_env = {
 #         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+#         "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
 #     },
+#     hyper310 = hyper310_params(
+#         timeout = "long",
+#         binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+#         data = testvector_targets,
+#         test_cmd = """
+#             --bootstrap={firmware}
+#             --bitstream={bitstream}
+#         """ + testvector_args,
+#         test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
+#     ),
 # )
 
 KAT_TYPE = [
@@ -112,6 +124,16 @@ TESTVECTOR_ARGS = {
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         },
+        hyper310 = hyper310_params(
+            timeout = "long",
+            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+            data = TESTVECTOR_TARGETS[mode],
+            test_cmd = """
+                --bootstrap={firmware}
+                --bitstream={bitstream}
+            """ + TESTVECTOR_ARGS[mode],
+            test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
+        ),
     )
     for mode in [
         "cbc",

@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "hyper310_params",
     "opentitan_test",
     new_cw310_params = "cw310_params",
 )
@@ -39,7 +40,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+        },
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["a"],
+    ),
 )
 
 opentitan_test(
@@ -55,7 +66,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+        },
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["b"],
+    ),
 )
 
 opentitan_test(
@@ -71,7 +92,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+        },
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        offset = SLOTS["b"],
+    ),
 )
 
 opentitan_test(
@@ -87,7 +118,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+        },
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
+        offset = SLOTS["a"],
+    ),
 )
 
 opentitan_test(
@@ -103,7 +144,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+        },
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["a"],
+    ),
 )
 
 opentitan_test(
@@ -119,7 +170,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+        },
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_STARTING_ROM_EXT,
+        offset = SLOTS["b"],
+    ),
 )
 
 opentitan_test(
@@ -135,7 +196,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        assemble = "{firmware}@{offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation": "firmware",
+        },
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        offset = SLOTS["a"],
+    ),
 )
 
 test_suite(

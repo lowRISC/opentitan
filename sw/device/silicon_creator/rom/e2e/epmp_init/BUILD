@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
     "verilator_params",
@@ -35,8 +36,13 @@ package(default_visibility = ["//visibility:public"])
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+        hyper310 = hyper310_params(
+            bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_" + lc_state,
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         local_defines = [
             "EXPECT_DEBUG={}".format(1 if lc_state_val in [
                 CONST.LCV.TEST_UNLOCKED0,

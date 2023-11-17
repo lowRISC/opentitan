@@ -13,6 +13,7 @@ load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -81,7 +82,19 @@ _MANUF_TEST_LOCKED_KEY = None
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
+        hyper310 = hyper310_jtag_params(
+            bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            lc_state = lc_state,  # will be expanded in test_cmd
+            tags = ["manuf"],
+            test_cmd = (
+                "" if (
+                    (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS
+                ) else "--bootstrap={firmware}"
+            ) + " --initial-lc-state={lc_state}",
+            test_harness = "//sw/host/tests/manuf/manuf_scrap",
+        ),
         rsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else rsa_key_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_val),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -114,7 +127,13 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
+    ),
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -134,7 +153,13 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
+    ),
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -160,6 +185,7 @@ opentitan_test(
 
 # Bitstream with ROM and above OTP image that is in the test_unlocked* LC state
 # with ROM execution disabled.
+# TODO: Add hyper310 targets too?
 [
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
@@ -444,6 +470,7 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
+# TODO: Add hyper310 targets too?
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
     src = "//hw/bitstream:rom_with_fake_keys",

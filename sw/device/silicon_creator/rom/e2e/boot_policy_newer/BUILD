@@ -128,6 +128,7 @@ BOOT_POLICY_NEWER_CASES = [
 ) for lc_state, _ in get_lc_items()]
 
 # Splice OTP images into bitstreams
+# TODO: Add hyper310 targets?
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),

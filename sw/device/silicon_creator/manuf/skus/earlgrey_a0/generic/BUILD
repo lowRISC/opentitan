@@ -10,6 +10,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -111,7 +112,19 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+        },
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_cmd = """
+            --elf={sram_cp_provision}
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/cp",
+    ),
 )
 
 opentitan_test(
@@ -131,7 +144,21 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+            ":sram_cp_provision_functest": "sram_cp_provision_functest",
+        },
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_cmd = """
+            --provisioning-sram-elf={sram_cp_provision}
+            --test-sram-elf={sram_cp_provision_functest}
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
+    ),
 )
 
 opentitan_binary(
@@ -222,7 +249,25 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        binaries = {
+            ":sram_ft_individualize": "sram_ft_individualize",
+            ":ft_personalize_2": "ft_personalize_2",
+        },
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_sival_test_locked0",
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        tags = ["manuf"],
+        test_cmd = """
+            --elf={sram_ft_individualize}
+            --bootstrap={firmware}
+            --second-bootstrap={ft_personalize_2}
+            --target-mission-mode-lc-state="prod"
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/ft",
+    ),
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.PROD,

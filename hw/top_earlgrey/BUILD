@@ -147,6 +147,108 @@ fpga_cw310(
 )
 
 ###########################################################################
+# FPGA CW310+Hyperdebug Environments
+###########################################################################
+fpga_cw310(
+    name = "fpga_hyper310",
+    design = "earlgrey",
+    exec_env = "fpga_hyper310",
+    lib = "//sw/device/lib/arch:fpga_cw310",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    test_cmd = "testing-not-supported",
+)
+
+fpga_cw310(
+    name = "fpga_hyper310_test_rom",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+    ],
+    base = ":fpga_hyper310",
+    base_bitstream = "//hw/bitstream/hyperdebug:test_rom",
+    exec_env = "fpga_hyper310_test_rom",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
+    rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
+    test_cmd = """
+        --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+fpga_cw310(
+    name = "fpga_hyper310_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_hyper310_test_rom",
+    exec_env = "fpga_hyper310_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+)
+
+fpga_cw310(
+    name = "fpga_hyper310_rom_ext",
+    testonly = True,
+    base = ":fpga_hyper310_test_rom",
+    exec_env = "fpga_hyper310_rom_ext",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
+# FPGA configuration used to emulate silicon targets. This rule can be used by
+# targets that require executing at the `rom_ext` stage level in flash, as well
+# as SRAM programs. Use the `fpga_hyper310_sival_rom_ext` execution environment
+# to emulate silicon targets containing a `rom_ext` stage.
+fpga_cw310(
+    name = "fpga_hyper310_sival",
+    testonly = True,
+    base = ":fpga_hyper310_rom_with_fake_keys",
+    # TODO(cfrantz): remove in favor of the OTP config.
+    base_bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_sival_prod_personalized",
+    exec_env = "fpga_hyper310_sival",
+
+    # PROD keys are allowed to run across all life cycle stages. This prod key
+    # is used to enable execution across life cycle stages with a single
+    # binary.
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+)
+
+# FPGA configuration used to emulate silicon targets containing a `rom_ext`
+# stage. See `fpga_cw310_sival` for more details.
+fpga_cw310(
+    name = "fpga_hyper310_sival_rom_ext",
+    testonly = True,
+    base = ":fpga_hyper310_rom_ext",
+    # TODO(cfrantz): remove in favor of the OTP config.
+    base_bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_sival_prod_personalized",
+    exec_env = "fpga_hyper310_sival_rom_ext",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
+)
+
+###########################################################################
 # FPGA CW305 Environments
 #
 # TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure

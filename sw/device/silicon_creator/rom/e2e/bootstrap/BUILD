@@ -6,6 +6,8 @@ load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
     "cw310_params",
+    "hyper310_jtag_params",
+    "hyper310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
 )
@@ -83,7 +85,17 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        otp = "otp_img_bootstrap_rma",
+        # We need to clear the bitstream between consecutive runs of this
+        # test since it modifies OTP state (i.e., the LC state).
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
+    ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
@@ -115,6 +127,20 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        # Since the bitstream disables bootstrap, there is no firmware to
+        # load into the chip.  However, opentitan_functest wants to build a
+        # binary target.  We'll build an unsigned do-nothing binary.
+        binaries = {
+            "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
+        },
+        otp = "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
+        test_cmd = """
+            --bitstream="{bitstream}"
+        """,
+        test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
+    ),
     manifest = None,
 )

@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "hyper310_params",
     "opentitan_test",
 )
 load(
@@ -54,7 +55,12 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        otp = ":otp_img_reset_ret_ram",
+        tags = maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:rstmgr",
@@ -73,7 +79,11 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        tags = maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//sw/device/lib/base:memory",

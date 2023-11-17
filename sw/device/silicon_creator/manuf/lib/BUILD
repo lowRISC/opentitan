@@ -8,6 +8,8 @@ load(
     "OPENTITAN_CPU",
     "cw310_jtag_params",
     "cw310_params",
+    "hyper310_jtag_params",
+    "hyper310_params",
     "opentitan_test",
 )
 
@@ -184,7 +186,18 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_params(
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
+        tags = ["manuf"],
+        test_cmd = """
+        --clear-bitstream
+        --bitstream={bitstream}
+        --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/individualize_sw_cfg",
+    ),
     deps = [
         ":individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -241,7 +254,18 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
+    hyper310 = hyper310_jtag_params(
+        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_sival_dev_individualized",
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        tags = ["manuf"],
+        test_cmd = """
+            --bootstrap={firmware}
+            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+        """,
+        test_harness = "//sw/host/tests/manuf/personalize",
+    ),
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":flash_info_fields",
