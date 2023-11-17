@@ -26,7 +26,7 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
-use provisioning_data::{EccP256PublicKey, ManufPersoDataIn, ManufPersoDataOut};
+use provisioning_data::{EccP256PublicKey, ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -60,7 +60,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         .collect::<ArrayVec<u32, 8>>();
     host_pk_x.reverse();
     host_pk_y.reverse();
-    let in_data = ManufPersoDataIn {
+    let in_data = ManufRmaTokenPersoDataIn {
         host_pk: EccP256PublicKey {
             x: host_pk_x,
             y: host_pk_y,
@@ -92,7 +92,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     // Wait for output data to be transimitted over the console.
     let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
-    let export_data = ManufPersoDataOut::recv(&*uart, opts.timeout, false)?;
+    let export_data = ManufRmaTokenPersoDataOut::recv(&*uart, opts.timeout, false)?;
     log::info!("{:x?}", export_data);
 
     // Load device-generated EC public key.

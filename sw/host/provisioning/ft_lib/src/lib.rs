@@ -22,7 +22,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufFtIndividualizeData, ManufPersoDataIn, ManufPersoDataOut,
+    EccP256PublicKey, ManufFtIndividualizeData, ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -189,7 +189,7 @@ pub fn run_ft_personalize(
         .collect::<ArrayVec<u32, 8>>();
     host_pk_x.reverse();
     host_pk_y.reverse();
-    let in_data = ManufPersoDataIn {
+    let in_data = ManufRmaTokenPersoDataIn {
         host_pk: EccP256PublicKey {
             x: host_pk_x,
             y: host_pk_y,
@@ -206,7 +206,7 @@ pub fn run_ft_personalize(
     // Wait until device exports provisioning data, including the wrapped RMA unlock token and
     // device certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting FT provisioning data ...", timeout)?;
-    let out_data = ManufPersoDataOut::recv(&*uart, timeout, false)?;
+    let out_data = ManufRmaTokenPersoDataOut::recv(&*uart, timeout, false)?;
     // TODO(#19455): write the wrapped RMA unlock token to a file.
     log::info!("{:x?}", out_data);
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;

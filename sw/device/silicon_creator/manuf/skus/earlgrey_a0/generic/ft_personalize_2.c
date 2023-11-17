@@ -25,8 +25,8 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 
-static manuf_perso_data_in_t in_data;
-static manuf_perso_data_out_t out_data;
+static manuf_rma_token_perso_data_in_t in_data;
+static manuf_rma_token_perso_data_out_t out_data;
 
 /**
  * Initializes all DIF handles used in this program.
@@ -59,11 +59,11 @@ static void sw_reset(void) {
 static status_t personalize(ujson_t *uj) {
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     LOG_INFO("Waiting for FT provisioning data ...");
-    TRY(ujson_deserialize_manuf_perso_data_in_t(uj, &in_data));
+    TRY(ujson_deserialize_manuf_rma_token_perso_data_in_t(uj, &in_data));
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
                                          &in_data, &out_data));
     LOG_INFO("Exporting FT provisioning data ...");
-    RESP_OK(ujson_serialize_manuf_perso_data_out_t, uj, &out_data);
+    RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj, &out_data);
     // We need to reset the chip here to activate the keymgr seeds.
     sw_reset();
   }

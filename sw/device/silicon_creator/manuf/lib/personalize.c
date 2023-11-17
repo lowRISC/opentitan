@@ -315,11 +315,10 @@ static status_t otp_partition_secret2_configure(
   return OK_STATUS();
 }
 
-status_t manuf_personalize_device_secrets(dif_flash_ctrl_state_t *flash_state,
-                                          const dif_lc_ctrl_t *lc_ctrl,
-                                          const dif_otp_ctrl_t *otp_ctrl,
-                                          manuf_perso_data_in_t *in_data,
-                                          manuf_perso_data_out_t *out_data) {
+status_t manuf_personalize_device_secrets(
+    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
+    const dif_otp_ctrl_t *otp_ctrl, manuf_rma_token_perso_data_in_t *in_data,
+    manuf_rma_token_perso_data_out_t *out_data) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
