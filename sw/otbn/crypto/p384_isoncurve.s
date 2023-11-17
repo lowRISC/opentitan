@@ -11,8 +11,8 @@
 /**
  * Checks if a point is a valid curve point on curve P-384
  *
- * Returns r = x^3 + ax + b  mod p
- *     and s = y^2  mod p
+ * Returns rhs = x^3 + ax + b  mod p
+ *     and lhs = y^2  mod p
  *         where x,y are the affine coordinates of the curve point and
  *              a, b and p being the domain parameters of curve P-384.
  *
@@ -29,10 +29,10 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where right
- *                               side result r will be stored
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where left side
- *                               result s will be stored
+ * @param[in]  dmem[12]: dptr_rhs, pointer to dmem location where right
+ *                               side result will be stored
+ * @param[in]  dmem[16]: dptr_lhs, pointer to dmem location where left side
+ *                               result will be stored
  * @param[in]  dmem[20]: dptr_x, pointer to dmem location containing affine
  *                               x-coordinate of input point
  * @param[in]  dmem[24]: dptr_y, pointer to dmem location containing affine
@@ -83,8 +83,8 @@ p384_isoncurve:
   bn.mov    w17, w3
   jal       x1, p384_mulmod_p
 
-  /* store result (left side): dmem[dptr_s] <= y^2 = [w17,w16] */
-  la        x3, dptr_s
+  /* store result (left side): dmem[dptr_lhs] <= y^2 = [w17,w16] */
+  la        x3, dptr_lhs
   lw        x3, 0(x3)
   li        x2, 16
   bn.sid    x2++, 0(x3)
@@ -122,8 +122,8 @@ p384_isoncurve:
   bn.sel    w17, w17, w11, C
 
   /* store result (right side)
-     dmem[dptr_r] <= x^3 + ax + b mod p = [w17,w16] */
-  la        x3, dptr_r
+     dmem[dptr_rhs] <= x^3 + ax + b mod p = [w17,w16] */
+  la        x3, dptr_rhs
   lw        x3, 0(x3)
   li        x2, 16
   bn.sid    x2++, 0(x3)
@@ -145,10 +145,10 @@ p384_isoncurve:
  * This routine raises a software error and halts operation if the curve point
  * is invalid.
  *
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where right
- *                               side result r will be stored
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where left side
- *                               result s will be stored
+ * @param[in]  dmem[12]: dptr_rhs, pointer to dmem location where right hand
+ *                               side result rhs will be stored
+ * @param[in]  dmem[16]: dptr_lhs, pointer to dmem location where left hand
+ *                               side result lhs will be stored
  * @param[in]  dmem[20]: dptr_x, pointer to dmem location containing affine
  *                               x-coordinate of input point
  * @param[in]  dmem[24]: dptr_y, pointer to dmem location containing affine
@@ -214,19 +214,19 @@ p384_curve_point_valid:
   _y_valid:
 
   /* Compute both sides of the Weierstrauss equation.
-       dmem[r] <= (x^3 + ax + b) mod p
-       dmem[s] <= (y^2) mod p */
+       dmem[rhs] <= (x^3 + ax + b) mod p
+       dmem[lhs] <= (y^2) mod p */
   jal       x1, p384_isoncurve
 
   /* Load both sides of the equation.
-       [w7, w6] <= dmem[r]
-       [w5, w4] <= dmem[s] */
-  la        x22, dptr_r
+       [w7, w6] <= dmem[rhs]
+       [w5, w4] <= dmem[lhs] */
+  la        x22, dptr_rhs
   lw        x22, 0(x22)
   li        x2, 6
   bn.lid    x2++, 0(x22)
   bn.lid    x2, 32(x22)
-  la        x23, dptr_s
+  la        x23, dptr_lhs
   lw        x23, 0(x23)
   li        x2, 4
   bn.lid    x2++, 0(x23)
@@ -268,15 +268,15 @@ p384_curve_point_valid:
 .data
 
 /* Right side of Weierstrass equation */
-.globl r
+.globl rhs
 .balign 32
-r:
+rhs:
   .zero 64
 
 /* Left side of Weierstrass equation */
-.globl s
+.globl lhs
 .balign 32
-s:
+lhs:
   .zero 64
 
 /* Curve point x-coordinate. */
@@ -293,14 +293,14 @@ x:
 y:
   .zero 64
 
-/* pointer to R (dptr_r) */
-.globl dptr_r
-dptr_r:
+/* pointer to R (dptr_rhs) */
+.globl dptr_rhs
+dptr_rhs:
   .zero 4
 
-/* pointer to S (dptr_s) */
-.globl dptr_s
-dptr_s:
+/* pointer to S (dptr_lhs) */
+.globl dptr_lhs
+dptr_lhs:
   .zero 4
 
 /* pointer to X (dptr_x) */
