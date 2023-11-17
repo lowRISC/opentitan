@@ -30,7 +30,7 @@ BAZEL_BINARIES = [
     '//sw/device/lib/testing/test_rom',
     '//sw/device/sca:aes_serial',
     '//sw/device/examples/hello_world',
-    '//sw/device/tests:aes_smoketest_prog',
+    '//sw/device/tests:aes_smoketest_sim_verilator',
 ]
 
 
@@ -182,6 +182,7 @@ def main():
         'build',
         '--features=-rv32_bitmanip',
         '--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_',
+        '--define=DISABLE_VERILATOR_BUILD=true',
     ] + BAZEL_BINARIES)
 
 
