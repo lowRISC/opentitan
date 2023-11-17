@@ -445,7 +445,6 @@ cc_test(
 [pkg_files(
     name = "package_{}".format(authenticity),
     testonly = testonly,
-    #srcs = [":pre_package_{}".format(authenticity)],
     srcs = [":pre_package_{}".format(authenticity)],
     prefix = "earlgrey/rom",
 ) for authenticity, testonly in (

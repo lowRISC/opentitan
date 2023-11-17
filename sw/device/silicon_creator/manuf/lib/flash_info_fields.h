@@ -51,21 +51,4 @@ status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
                                      flash_info_field_t field, uint32_t *buf,
                                      size_t len);
 
-/**
- * Reads info flash page field.
- *
- * Assumes the page containing the field has already been configured for read
- * access.
- *
- * @param flash_state Flash controller instance.
- * @param field Flash info field information.
- * @param[out] data_out Output buffer.
- * @param num_words Number of words to read from flash and write to `data_out`.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
-                                     flash_info_field_t field, uint32_t *buf,
-                                     size_t len);
-
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_FLASH_INFO_FIELDS_H_
