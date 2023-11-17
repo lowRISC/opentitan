@@ -9,170 +9,6 @@
  .section .text
 
 /**
- * 384-bit variable time modular multiplicative inverse computation
- *
- * Returns c <= a^(-1) mod m
- *         where 'a' is a bigint of length 384 bit with a < m
- *               'm' is the modulus with a length of 384 bit
- *               'c' is a 384-bit result
- *
- * This routine implements the computation of the modular multiplicative
- * inverse based on the binary GCD or Stein's algorithm.
- * The implemented variant is based on the "right-shift binary extended GCD"
- * as it is described in section 3.1 of [1] (Algorithm 1).
- * [1] https://doi.org/10.1155/ES/2006/32192
- *
- * Note that this is a variable time implementation. I.e. this routine will
- * show a data-dependent timing and execution profile. Only use where a
- * full white-box scenario is acceptable.
- *
- * Flags: Flags have no meaning beyond the scope of this subroutine.
- *
- * @param[in]  [w30, w29]: a, 384-bit operand
- * @param[in]  [w13, w12]: m, modulus
- * @param[in]  w31: all-zero
- * @param[out] [w17,w16]: result c
- *
- * clobbered registers: x2, w2, w4 to w11, w16 to w19
- * clobbered flag groups: FG0
- */
-mod_inv_var:
-  /* [w5,w4] = r <= 0 */
-  bn.xor    w4, w4, w4
-  bn.xor    w5, w5, w5
-
-  /* [w7,w6] = s <= 1 */
-  bn.addi   w6, w31, 1
-  bn.xor    w7, w7, w7
-
-  /* [w9,w8] = u <= m = [w13, w12]*/
-  bn.mov    w8, w12
-  bn.mov    w9, w13
-
-  /* [w11,w10] = v <= [w30, w29] */
-  bn.mov    w10, w29
-  bn.mov    w11, w30
-
-  ebgcd_loop:
-  /* test if u is odd */
-  bn.or     w8, w8, w8
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 4
-  bne       x2, x0, ebgcd_u_odd
-
-  /* u is even: */
-  /* [w9,w8] = u <= u/2 = [w9,w8] >> 1 */
-  bn.rshi   w8, w9, w8 >> 1
-  bn.rshi   w9, w31, w9 >> 1
-
-  /* test if r is odd */
-  bn.or     w4, w4, w4
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 4
-  bne       x2, x0, ebgcd_r_odd
-
-  /* r is even: */
-  /* [w5,w4] = r <= r/2 = [w5,w4] >> 1 */
-  bn.rshi   w4, w5, w4 >> 1
-  bn.rshi   w5, w31, w5 >> 1
-  jal       x0, ebgcd_loop
-
-  ebgcd_r_odd:
-  /* [w5,w4] = r <= (r + m)/2 = ([w5,w4] + [w13,w12]) >> 1 */
-  bn.add    w4, w4, w12
-  bn.addc   w5, w5, w13
-  bn.rshi   w4, w5, w4 >> 1
-  bn.rshi   w5, w31, w5 >> 1
-  jal       x0, ebgcd_loop
-
-  ebgcd_u_odd:
-  /* test if v is odd */
-  bn.or     w10, w10, w10
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 4
-  bne       x2, x0, ebgcd_uv_odd
-
-  /* v is even: */
-  /* [w11,w10] = v <= v/2 = [w11,w10] >> 1 */
-  bn.rshi   w10, w11, w10 >> 1
-  bn.rshi   w11, w31, w11 >> 1
-
-  /* test if s is odd */
-  bn.or     w6, w6, w6
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 4
-  bne       x2, x0, ebgcd_s_odd
-
-  /* s is even: */
-  /* [w7,w6] = s <= s/2 = [w7,w6] >> 1 */
-  bn.rshi   w6, w7, w6 >> 1
-  bn.rshi   w7, w31, w7 >> 1
-  jal       x0, ebgcd_loop
-
-  ebgcd_s_odd:
-  /* [w7,w6] = s <= (s + m)/2 = ([w7,w6] + [w13,w12]) >> 1 */
-  bn.add    w6, w6, w12
-  bn.addc   w7, w7, w13
-  bn.rshi   w6, w7, w6 >> 1
-  bn.rshi   w7, w31, w7 >> 1
-  jal       x0, ebgcd_loop
-
-  ebgcd_uv_odd:
-  /* test if v >= u */
-  bn.cmp    w10, w8
-  bn.cmpb   w11, w9
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  beq       x2, x0, ebgcd_v_gte_u
-
-  /* u > v: */
-  /* [w5,w4] = r <= r - s = [w5,w4] - [w7,w6]; if (r < 0): r <= r + m */
-  bn.sub    w4, w4, w6
-  bn.subb   w5, w5, w7
-  bn.add    w18, w4, w12
-  bn.addc   w19, w5, w13
-  bn.sel    w4, w18, w4, C
-  bn.sel    w5, w19, w5, C
-
-  /* [w9,w8] = u <= u - v = [w9,w8] - [w11,w10] */
-  bn.sub    w8, w8, w10
-  bn.subb   w9, w9, w11
-  jal       x0, ebgcd_loop
-
-  ebgcd_v_gte_u:
-  /* [w7,w6] = s <= s - r = [w7,w6] - [w5,w4]; if (s < 0) s <= s + m */
-  bn.sub    w6, w6, w4
-  bn.subb   w7, w7, w5
-  bn.add    w18, w6, w12
-  bn.addc   w19, w7, w13
-  bn.sel    w6, w18, w6, C
-  bn.sel    w7, w19, w7, C
-
-  /* [w11,w10] = v <= v - u = [w11,w10] - [w9,w8] */
-  bn.sub    w10, w10, w8
-  bn.subb   w11, w11, w9
-
-  /* if v > 0 go back to start of loop */
-  bn.cmp    w31, w10
-  bn.cmpb   w31, w11
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  bne       x2, x0, ebgcd_loop
-
-  /* v <= 0: */
-  /* if (r > m): [w17,w16] = a <= r - m = [w5,w4] - [w13,w12]
-     else: [w17,w16] = a <= r = [w5,w4] */
-  bn.sub    w18, w4, w12
-  bn.subb   w19, w5, w13
-  bn.cmp    w12, w4
-  bn.cmpb   w13, w5
-  bn.sel    w16, w18, w4, C
-  bn.sel    w17, w19, w5, C
-
-  ret
-
-
-/**
  * Store curve point in projective coordinates (non randomized)
  *
  * Reads an affine P-384 from dmem, addressed by two independent pointers for
@@ -214,7 +50,6 @@ store_aff_proj:
   nop
 
   ret
-
 
 /**
  * Store curve point in projective coordinates (non randomized)
@@ -270,7 +105,8 @@ store_proj:
  *
  * Scratchpad memory layout:
  * The routine expects at least 896 bytes of scratchpad memory at dmem
- * location 'scratchpad' (sp). Internally the scratchpad is used as follows:
+ * location 'scratchpad' (sp).
+ * Internally the scratchpad is used as follows:
  * dptr_sp     .. dptr_sp+191: point C, projective
  * dptr_sp+192 .. dptr_sp+383: point G, projective
  * dptr_sp+384 .. dptr_sp+575: point Q, projective
@@ -318,18 +154,18 @@ p384_verify:
   andi      x2, x2, 1
   beq       x2, x0, fail
 
-  /* Compute modular inverse of S
-     Note: This can be replaced by the 'mod_inv_n_p384' subroutine at the
-           cost of ~60k cycles if reduced code size is targeted */
-  /* [w9,w8] <= [w17,w16] <= s^-1  mod n = [w30,w29]^-1 mod [w13,w12] */
-  jal       x1, mod_inv_var
-  bn.mov    w8, w16
-  bn.mov    w9, w17
-
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
      no need to compute the high part):
      w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
   bn.sub    w14, w31, w12
+
+  /* Compute modular inverse of S
+     Note: This can be replaced by the 'mod_inv_n_p384' subroutine at the
+           cost of ~60k cycles if reduced code size is targeted */
+  /* [w9,w8] <= [w17,w16] <= s^-1  mod n = [w30,w29]^-1 mod [w13,w12] */
+  jal       x1, mod_inv_n_p384
+  bn.mov    w8, w16
+  bn.mov    w9, w17
 
   /* set regfile pointers to in/out regs of Barrett routine */
   li        x22, 10
@@ -527,8 +363,20 @@ p384_verify:
     jal       x1, store_proj
     nop
 
-  /* compute inverse of z-coordinate: [w1,w0] <= z_c^-1  mod p */
-  jal       x1, mod_inv_var
+  /* load domain parameter p (order of finite field)
+     [w13, w12] <= p = dmem[p384_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* Compute Solinas constant k for modulus p (we know it is only 191 bits, so
+     no need to compute the high part):
+     w14 <= 2^256 - p[255:0] = (2^384 - p) mod (2^256) = 2^384 - p */
+  bn.sub    w14, w31, w12
+
+  /* compute inverse of z-coordinate: [w17,w16] <= z_c^-1  mod p */
+  jal       x1, mod_inv_n_p384
 
   /* convert x-coordinate of C back to affine: x1 = x_c * z_c^-1  mod p */
   bn.mov    w10, w25
@@ -563,38 +411,46 @@ p384_verify:
 /* pointers and scratchpad memory */
 .section .data
 
-/* pointer to k (dptr_k) */
-.globl dptr_k
-dptr_k:
-  .zero 4
-
 /* pointer to rnd (dptr_rnd)
    used for result here */
 .globl dptr_rnd
+.weak dptr_rnd
 dptr_rnd:
   .zero 4
 
 /* pointer to msg (dptr_msg) */
 .globl dptr_msg
+.weak dptr_msg
 dptr_msg:
   .zero 4
 
 /* pointer to X (dptr_x) */
 .globl dptr_x
+.weak dptr_x
 dptr_x:
   .zero 4
 
 /* pointer to Y (dptr_y) */
 .globl dptr_y
+.weak dptr_y
 dptr_y:
   .zero 4
 
-/* pointer to D (dptr_d) */
-.globl dptr_d
-dptr_d:
+/* pointer to R (dptr_r) */
+.globl dptr_r
+.weak dptr_r
+dptr_r:
+  .zero 4
+
+/* pointer to S (dptr_s) */
+.globl dptr_s
+.weak dptr_s
+dptr_s:
   .zero 4
 
 /* Scratchpad memory */
 .balign 32
+.globl scratchpad
+.weak scratchpad
 scratchpad:
   .zero 896

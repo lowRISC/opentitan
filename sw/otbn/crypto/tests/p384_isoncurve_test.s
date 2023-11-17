@@ -15,11 +15,11 @@
 p384_oncurve_test:
 
   /* set dmem to result */
-  la       x2, r
-  la       x3, dptr_r
+  la       x2, rhs
+  la       x3, dptr_rhs
   sw       x2, 0(x3)
-  la       x2, s
-  la       x3, dptr_s
+  la       x2, lhs
+  la       x3, dptr_lhs
   sw       x2, 0(x3)
 
   /* set dmem pointer to point to cuve point */
@@ -35,10 +35,10 @@ p384_oncurve_test:
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, r
+  la        x3, rhs
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
-  la        x3, s
+  la        x3, lhs
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
@@ -48,11 +48,11 @@ p384_oncurve_test:
 .data
 
 /* buffer for right side result of Weierstrass equation */
-r:
+rhs:
   .zero 64
 
 /* buffer for left side result of Weierstrass equation */
-s:
+lhs:
   .zero 64
 
 /* point affine x-coordinate */
