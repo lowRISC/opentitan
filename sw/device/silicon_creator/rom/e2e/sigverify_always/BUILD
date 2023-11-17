@@ -32,10 +32,6 @@ load(
     "maybe_skip_in_ci",
 )
 load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
-load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV",
@@ -51,19 +47,6 @@ package(default_visibility = ["//visibility:public"])
     src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
     overlays = STD_OTP_OVERLAYS,
 ) for lc_state, _ in get_lc_items()]
-
-# Splice OTP images into bitstreams
-[
-    bitstream_splice(
-        name = "bitstream_sigverify_always_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_sigverify_always_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-    )
-    for lc_state, lc_state_val in get_lc_items()
-]
 
 SIGVERIFY_BAD_CASES = [
     {
@@ -110,7 +93,6 @@ SIGVERIFY_BAD_CASES = [
                 for (slot, addr) in SLOTS.items()
                 if case[slot] == "bad"
             },
-            bitstream = ":bitstream_sigverify_always_{}".format(lc_state),
             exit_failure = MSG_PASS,
             exit_success = MSG_TEMPLATE_BFV_LCV.format(
                 case["expected_bfv"],
