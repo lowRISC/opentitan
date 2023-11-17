@@ -237,14 +237,26 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
+      // Normally we'd want to clear the ROM region since we aren't using it
+      // anymore and since it isn't being used to encode access to the virtual
+      // window.  However, for SiVal, we want to keep low entries locked to
+      // prevent using low entries to override policy in higher entries.
+      // rom_ext_epmp_clear_rom_region();
       break;
     default:
       HARDENED_TRAP();
   }
 
-  // Unlock execution of owner stage executable code (text) sections.
+  // Allow execution of owner stage executable code (text) sections,
+  // unlock the ROM_EXT code regions so the next stage can re-use those
+  // entries and clear RLB to prevent further changes to locked ePMP regions.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   rom_ext_epmp_unlock_owner_stage_rx(text_region);
+  // We'd normally want to unlock the ROM_EXT regions so they can be re-used by
+  // OWNER code, however we need to prevent OWNER code from overriding the OTP
+  // lockout in entry 6.
+  // rom_ext_epmp_final_cleanup();
+  rom_ext_epmp_clear_rlb();
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Forbid code execution from SRAM.

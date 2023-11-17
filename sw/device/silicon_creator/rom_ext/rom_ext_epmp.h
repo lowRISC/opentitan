@@ -79,6 +79,27 @@ void rom_ext_epmp_mmio_adjust(void);
  */
 void rom_ext_epmp_otp_dai_lockout(void);
 
+/**
+ * Clear the ROM mapping from the ePMP.
+ *
+ * The ROM memory mapping is no longer needed once the ROM_EXT starts.
+ */
+void rom_ext_epmp_clear_rom_region(void);
+
+/**
+ * Perform final cleanups to the ePMP configuration before owner handoff.
+ *
+ * Unlock the ROM_EXT code segments so they can be ovewritten by the next stage.
+ */
+void rom_ext_epmp_final_cleanup(void);
+
+/**
+ * Clear the rule-locking-bypass (RLB) bit.
+ *
+ * Clearing RLB causes the Lock bit in the ePMP to be enforced.
+ */
+void rom_ext_epmp_clear_rlb(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
