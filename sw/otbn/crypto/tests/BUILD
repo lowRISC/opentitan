@@ -372,8 +372,8 @@ otbn_sim_test(
     exp = "p384_base_mult_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_base_mult",
         "//sw/otbn/crypto:p384_internal_mult",
-        "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
 
@@ -424,6 +424,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_sign",
     ],
 )
@@ -437,6 +438,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
+        "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_verify",
     ],
 )
