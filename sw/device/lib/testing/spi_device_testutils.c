@@ -118,6 +118,24 @@ status_t spi_device_testutils_configure_passthrough(
           .payload_io_type = kDifSpiDevicePayloadIoQuad,
           .payload_dir_to_host = true,
       },
+      {
+          // Slot 9: Read4b
+          .opcode = kSpiDeviceFlashOpRead4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .passthrough_swap_address = true,
+          .dummy_cycles = 0,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
+      {
+          // Slot 10: ReadFast4b
+          .opcode = kSpiDeviceFlashOpReadFast4b,
+          .address_type = kDifSpiDeviceFlashAddr4Byte,
+          .passthrough_swap_address = true,
+          .dummy_cycles = 8,
+          .payload_io_type = kDifSpiDevicePayloadIoSingle,
+          .payload_dir_to_host = true,
+      },
   };
   static_assert(ARRAYSIZE(read_commands) <= UINT8_MAX,
                 "Length of read_commands must fit in uint8_t or we must change "

@@ -19,7 +19,9 @@ typedef enum spi_device_flash_opcode {
   kSpiDeviceFlashOpReadJedec = 0x9f,
   kSpiDeviceFlashOpReadSfdp = 0x5a,
   kSpiDeviceFlashOpReadNormal = 0x03,
+  kSpiDeviceFlashOpRead4b = 0x13,
   kSpiDeviceFlashOpReadFast = 0x0b,
+  kSpiDeviceFlashOpReadFast4b = 0x0c,
   kSpiDeviceFlashOpReadDual = 0x3b,
   kSpiDeviceFlashOpReadQuad = 0x6b,
   kSpiDeviceFlashOpWriteEnable = 0x06,
@@ -59,7 +61,9 @@ enum spi_device_command_slot {
  *  - ReadJedec
  *  - ReadSfdp
  *  - ReadNormal
+ *  - Read4b
  *  - ReadFast
+ *  - ReadFast4b
  *  - ReadDual
  *  - ReadQuad
  *  - WriteEnable

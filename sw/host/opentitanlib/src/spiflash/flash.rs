@@ -26,6 +26,8 @@ pub enum Error {
     BadSequenceLength(usize),
     #[error("unsupported mode: {0:?}")]
     UnsupportedMode(ReadMode),
+    #[error("unsupported opcode: {0:x?}")]
+    UnsupportedOpcode(u8),
 }
 
 impl From<SupportedAddressModes> for AddressMode {
@@ -152,6 +154,10 @@ impl SpiFlash {
     pub const FAST_READ: u8 = 0x0b;
     pub const FAST_DUAL_READ: u8 = 0x3b;
     pub const FAST_QUAD_READ: u8 = 0x6b;
+    pub const READ_4B: u8 = 0x13;
+    pub const FAST_READ_4B: u8 = 0x0c;
+    pub const FAST_DUAL_READ_4B: u8 = 0x3c;
+    pub const FAST_QUAD_READ_4B: u8 = 0x6c;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const SECTOR_ERASE: u8 = 0x20;
     pub const BLOCK_ERASE_32K: u8 = 0x52;
@@ -344,7 +350,7 @@ impl SpiFlash {
 
     /// Read into `buffer` from the SPI flash starting at `address`.
     pub fn read(&self, spi: &dyn Target, address: u32, buffer: &mut [u8]) -> Result<&Self> {
-        self.read_with_progress(spi, address, buffer, &NoProgressBar)
+        self.read_with_progress(spi, address, buffer, &NoProgressBar, false)
     }
 
     fn select_read(&self) -> Result<(Mode, &FastReadParam)> {
@@ -369,19 +375,33 @@ impl SpiFlash {
         mut address: u32,
         buffer: &mut [u8],
         progress: &dyn ProgressIndicator,
+        use_4b_opcodes: bool,
     ) -> Result<&Self> {
         progress.new_stage("", buffer.len());
         let (mode, param) = self.select_read()?;
+        let (address_mode, opcode) = if use_4b_opcodes {
+            // If we've been asked to use the 4-byte version of the read opcodes,
+            // map the opcode to its 4b counterpart.
+            (
+                AddressMode::Mode4b,
+                match param.opcode {
+                    SpiFlash::READ => SpiFlash::READ_4B,
+                    SpiFlash::FAST_READ => SpiFlash::FAST_READ_4B,
+                    SpiFlash::FAST_DUAL_READ => SpiFlash::FAST_DUAL_READ_4B,
+                    SpiFlash::FAST_QUAD_READ => SpiFlash::FAST_QUAD_READ_4B,
+                    _ => return Err(Error::UnsupportedOpcode(param.opcode).into()),
+                },
+            )
+        } else {
+            (self.address_mode, param.opcode)
+        };
         // Break the read up according to the maximum chunksize the backend can handle.
         let chunk_size = spi.get_eeprom_max_transfer_sizes()?.read;
         for (idx, chunk) in buffer.chunks_mut(chunk_size).enumerate() {
             progress.progress(idx * chunk_size);
             spi.run_eeprom_transactions(&mut [Transaction::Read(
-                mode.dummy_cycles(param.wait_states).cmd_addr(
-                    param.opcode,
-                    address,
-                    self.address_mode,
-                ),
+                mode.dummy_cycles(param.wait_states)
+                    .cmd_addr(opcode, address, address_mode),
                 chunk,
             )])?;
             address += chunk.len() as u32;
