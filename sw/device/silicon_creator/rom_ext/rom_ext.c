@@ -41,6 +41,7 @@
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "sram_ctrl_regs.h"
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
@@ -82,6 +83,32 @@ void rom_ext_init(void) {
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
+}
+
+void rom_ext_sram_exec(hardened_bool_t enable) {
+  switch (enable) {
+    case kHardenedBoolTrue:
+      // In the case where we enable SRAM exec, we do not lock the register as
+      // some later code may want to disable it.
+      HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);
+      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+                           SRAM_CTRL_EXEC_REG_OFFSET,
+                       kMultiBitBool4True);
+      break;
+    case kHardenedBoolFalse:
+      // In the case where we disable SRAM exec, we lock the register so that it
+      // cannot be re-enabled later.
+      HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+                           SRAM_CTRL_EXEC_REG_OFFSET,
+                       kMultiBitBool4False);
+      sec_mmio_write32(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR +
+                           SRAM_CTRL_EXEC_REGWEN_REG_OFFSET,
+                       0);
+      break;
+    default:
+      HARDENED_TRAP();
+  }
 }
 
 OT_WARN_UNUSED_RESULT
@@ -219,6 +246,9 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   rom_ext_epmp_unlock_owner_stage_rx(text_region);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
+
+  // Forbid code execution from SRAM.
+  rom_ext_sram_exec(kHardenedBoolFalse);
 
   dbg_print_epmp();
   // Jump to OWNER entry point.
