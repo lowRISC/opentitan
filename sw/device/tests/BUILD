@@ -2993,6 +2993,7 @@ opentitan_test(
         # interface = "hyper310",
         # tags = ["manual"],
         test_cmd = """
+            --bitstream={bitstream}
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",

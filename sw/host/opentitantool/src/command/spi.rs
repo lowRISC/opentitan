@@ -136,6 +136,8 @@ pub struct SpiRead {
         default_value = "standard"
     )]
     pub mode: ReadMode,
+    #[arg(short = '4', long, default_value = "false")]
+    pub use_4b_opcodes: bool,
     /// Hexdump the data.
     #[arg(long)]
     hexdump: bool,
@@ -175,7 +177,13 @@ impl CommandDispatch for SpiRead {
 
         let mut buffer = vec![0u8; self.length];
         let progress = StagedProgressBar::new();
-        flash.read_with_progress(&*spi, self.start, &mut buffer, &progress)?;
+        flash.read_with_progress(
+            &*spi,
+            self.start,
+            &mut buffer,
+            &progress,
+            self.use_4b_opcodes,
+        )?;
 
         if self.filename.to_str() == Some("-") {
             self.write_file(io::stdout(), &buffer)?;
