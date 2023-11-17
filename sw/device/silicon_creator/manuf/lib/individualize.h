@@ -21,7 +21,10 @@
  * - Various digital logic configuration settings.
  *
  * Preconditions:
- * - DeviceId & ManufState are pre-populated in the appropriate flash info page.
+ * - ManufState is pre-populated in the appropriate flash info page.
+ * - If DeviceId is already written to flash, the device ID provided must match.
+ *   If the DeviceId slot in flash is all 0s, then the provided DeviceId will be
+ *   what is written to OTP.
  *
  * Note: The test will skip all programming steps and succeed if the HW_CFG
  * parition is already locked. This is to facilitate test re-runs.
@@ -35,11 +38,14 @@
  * @param flash_info_page_0_permissions Access permissions to set on flash info
  *                                      page 0 (which temporarily holds
  *                                      device_id and manuf_state).
+ * @param device_id DeviceId to check exists in flash, or inject in into OTP if
+ *                  running in a test environment.
  * @return OK_STATUS on success.
  */
 status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions);
+    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
+    uint32_t *device_id);
 
 /**
  * Checks the HW_CFG OTP partition end state.

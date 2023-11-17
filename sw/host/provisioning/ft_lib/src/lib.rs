@@ -21,7 +21,9 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
-use ujson_lib::provisioning_data::{EccP256PublicKey, ManufPersoDataIn, ManufPersoDataOut};
+use ujson_lib::provisioning_data::{
+    EccP256PublicKey, ManufFtIndividualizeData, ManufPersoDataIn, ManufPersoDataOut,
+};
 
 pub fn test_unlock(
     transport: &TransportWrapper,
@@ -68,6 +70,7 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     reset_delay: Duration,
     sram_program: &SramProgramParams,
+    ft_individualize_data_in: &ManufFtIndividualizeData,
     timeout: Duration,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
@@ -90,6 +93,16 @@ pub fn run_sram_ft_individualize(
 
     // Get UART, set flow control, and wait for SRAM program to complete execution.
     uart.set_flow_control(true)?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Waiting for FT SRAM provisioning data ...",
+        timeout,
+    )?;
+
+    // Inject provisioning data into the device.
+    ft_individualize_data_in.send(&*uart)?;
+
+    // Wait for provisioning operations to complete.
     let _ = UartConsole::wait_for(&*uart, r"FT SRAM provisioning done.", timeout)?;
 
     jtag.disconnect()?;
@@ -141,7 +154,7 @@ pub fn test_exit(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    secondary_bootstrap: PathBuf,
+    second_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     timeout: Duration,
 ) -> Result<()> {
@@ -154,7 +167,7 @@ pub fn run_ft_personalize(
 
     // Bootstrap second personalization binary into flash.
     uart.clear_rx_buffer()?;
-    init.bootstrap.load(transport, &secondary_bootstrap)?;
+    init.bootstrap.load(transport, &second_bootstrap)?;
 
     // Load host (HSM) generated ECC keys.
     let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(host_ecc_sk)?;
@@ -193,9 +206,9 @@ pub fn run_ft_personalize(
     // device certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting FT provisioning data ...", timeout)?;
     let out_data = ManufPersoDataOut::recv(&*uart, timeout, false)?;
-
     // TODO(#19455): write the wrapped RMA unlock token to a file.
     log::info!("{:x?}", out_data);
+    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     Ok(())
 }

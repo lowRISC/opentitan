@@ -29,7 +29,7 @@ static manuf_perso_data_in_t in_data;
 static manuf_perso_data_out_t out_data;
 
 /**
- * Initializes all DIF handles used in this SRAM program.
+ * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(

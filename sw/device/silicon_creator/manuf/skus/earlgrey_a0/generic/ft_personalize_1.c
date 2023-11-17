@@ -21,7 +21,7 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 
 /**
- * Initializes all DIF handles used in this SRAM program.
+ * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),

@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
@@ -84,7 +85,8 @@ static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
 
 status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions) {
+    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
+    uint32_t *device_id) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                       &is_locked));
@@ -103,9 +105,28 @@ status_t manuf_individualize_device_hw_cfg(
       /*offset=*/NULL));
 
   // Configure DeviceID
-  uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
+  uint32_t device_id_from_flash[kHwCfgDeviceIdSizeIn32BitWords];
+  uint32_t empty_device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
   TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldDeviceId,
-                                  device_id, kHwCfgDeviceIdSizeIn32BitWords));
+                                  device_id_from_flash,
+                                  kHwCfgDeviceIdSizeIn32BitWords));
+  bool flash_device_id_empty = true;
+  for (size_t i = 0;
+       flash_device_id_empty && i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
+    flash_device_id_empty &= device_id_from_flash[i] == 0;
+  }
+
+  // If the device ID read from flash is non-empty, then it must match the
+  // device ID provided. If the device ID read from flash is empty, we check to
+  // ensure the device ID provided is also not empty. An empty (all zero) device
+  // ID will prevent the keymgr from advancing.
+  if (!flash_device_id_empty) {
+    TRY_CHECK_ARRAYS_EQ(device_id_from_flash, device_id,
+                        kHwCfgDeviceIdSizeIn32BitWords);
+  } else {
+    TRY_CHECK_ARRAYS_NE(device_id, empty_device_id,
+                        kHwCfgDeviceIdSizeIn32BitWords);
+  }
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgDeviceIdOffset, device_id,
                                      kHwCfgDeviceIdSizeIn32BitWords));
