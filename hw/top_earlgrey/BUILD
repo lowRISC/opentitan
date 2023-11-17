@@ -86,6 +86,30 @@ fpga_cw310(
     """,
 )
 
+# Hyperdebug + CW310 is a sub-type of CW310.
+# All of the parameters are the same except the `interface` and
+# bitstream-related parameters.
+fpga_cw310(
+    name = "fpga_hyper310_test_rom",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+        # Unlike CW310, we don't need the UART overrides.
+    ],
+    base = ":fpga_cw310_test_rom",
+    base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
+    exec_env = "fpga_hyper310_test_rom",
+    otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
+)
+
 fpga_cw310(
     name = "fpga_cw310_rom_with_fake_keys",
     testonly = True,

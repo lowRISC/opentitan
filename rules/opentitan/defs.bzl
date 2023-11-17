@@ -100,6 +100,8 @@ def _parameter_name(env, pname):
         (_, suffix) = env.split(":")
         if "cw310" in suffix:
             pname = "cw310"
+        elif "hyper310" in suffix:
+            pname = "hyper310"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -135,6 +137,8 @@ def opentitan_test(
         rsa_key = None,
         spx_key = None,
         manifest = None,
+        test_cmd = None,
+        test_harness = None,
         exec_env = {},
         cw310 = _cw310_params(),
         dv = _dv_params(),
@@ -153,11 +157,13 @@ def opentitan_test(
       defines: Compiler defines for this test.
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
+      linkopts: Linker options for this test.
       linker_script: Linker script for this test.
       rsa_key: RSA key to sign the binary for this test.
       spx_key: SPX key to sign the binary for this test.
-      manifest: manifest used during signing for this test.
-      linkopts: Linker options for this test.
+      manifest: Manifest used during signing for this test.
+      test_cmd: Test command to use for this test.
+      test_harness: Test harness to use for this test.
       exec_env: A dictionary of execution environments.  The keys are labels to
                 execution environments.  The values are the kwargs parameter names
                 of the exec_env override or None.  If None, the default parameter
@@ -182,6 +188,12 @@ def opentitan_test(
         pname = _parameter_name(env, pname)
         extra_tags = _hacky_tags(env)
         tparam = test_parameters[pname]
+
+        # Set up some parameters that can either be parameters of the rule
+        # and/or params-block parameters.
+        cmd = tparam.test_cmd if tparam.test_cmd else test_cmd
+        harness = tparam.test_harness if tparam.test_harness else test_harness
+
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
         (_, suffix) = env.split(":")
@@ -205,13 +217,13 @@ def opentitan_test(
             timeout = tparam.timeout,
             local = tparam.local,
             # Override parameters in the test rule.
-            test_harness = tparam.test_harness,
+            test_harness = harness,
+            test_cmd = cmd,
             binaries = tparam.binaries,
             rom = tparam.rom,
             rom_ext = tparam.rom_ext,
             otp = tparam.otp,
             bitstream = tparam.bitstream,
-            test_cmd = tparam.test_cmd,
             param = tparam.param,
             data = tparam.data,
             rsa_key = rsa_key,
