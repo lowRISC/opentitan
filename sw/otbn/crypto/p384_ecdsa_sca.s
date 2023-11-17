@@ -157,3 +157,48 @@ x_r:
 .globl dptr_rnd
 dptr_rnd:
   .zero 4
+
+/* pointer to k0 (dptr_k0) */
+.globl dptr_k0
+dptr_k0:
+  .zero 4
+
+/* pointer to k1 (dptr_k1) */
+.globl dptr_k1
+dptr_k1:
+  .zero 4
+
+/* pointer to msg (dptr_msg) */
+.globl dptr_msg
+dptr_msg:
+  .zero 4
+
+/* pointer to R (dptr_r) */
+.globl dptr_r
+dptr_r:
+  .zero 4
+
+/* pointer to S (dptr_s) */
+.globl dptr_s
+dptr_s:
+  .zero 4
+
+/* pointer to X (dptr_x) */
+.globl dptr_x
+dptr_x:
+  .zero 4
+
+/* pointer to Y (dptr_y) */
+.globl dptr_y
+dptr_y:
+  .zero 4
+
+/* pointer to d0 (dptr_d0) */
+.globl dptr_d0
+dptr_d0:
+  .zero 4
+
+/* pointer to d1 (dptr_d1) */
+.globl dptr_d1
+dptr_d1:
+  .zero 4

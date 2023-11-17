@@ -185,6 +185,20 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_base_mult",
+    srcs = [
+        "p384_base_mult.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_modinv",
+    srcs = [
+        "p384_modinv.s",
+    ],
+)
+
+otbn_library(
     name = "p384_scalar_mult",
     srcs = [
         "p384_scalar_mult.s",
@@ -342,6 +356,7 @@ otbn_binary(
     deps = [
         ":p384_base",
         ":p384_internal_mult",
+        ":p384_modinv",
         ":p384_sign",
     ],
 )
@@ -365,9 +380,52 @@ otbn_binary(
     deps = [
         ":p384_a2b",
         ":p384_base",
+        ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_keygen",
         ":p384_scalar_mult",
+    ],
+)
+
+otbn_binary(
+    name = "p384_ecdsa_keygen",
+    srcs = [
+        "p384_ecdsa_keygen.s",
+    ],
+    deps = [
+        ":p384_base",
+        ":p384_base_mult",
+        ":p384_internal_mult",
+        ":p384_keygen",
+    ],
+)
+
+otbn_binary(
+    name = "p384_ecdsa_sign",
+    srcs = [
+        "p384_ecdsa_sign.s",
+    ],
+    deps = [
+        ":p384_base",
+        ":p384_base_mult",
+        ":p384_internal_mult",
+        ":p384_keygen",
+        ":p384_modinv",
+        ":p384_sign",
+    ],
+)
+
+otbn_binary(
+    name = "p384_ecdsa_verify",
+    srcs = [
+        "p384_ecdsa_verify.s",
+    ],
+    deps = [
+        ":p384_base",
+        ":p384_base_mult",
+        ":p384_internal_mult",
+        ":p384_modinv",
+        ":p384_verify",
     ],
 )
 
