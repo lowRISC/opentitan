@@ -573,3 +573,18 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "dma_testutils",
+    srcs = ["dma_testutils.c"],
+    hdrs = ["dma_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/dif:dma",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
