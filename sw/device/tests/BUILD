@@ -1400,24 +1400,23 @@ opentitan_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    hyper310 = hyper310_params(
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/gpio",
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/gpio",
-    verilator = verilator_params(
+    verilator = new_verilator_params(
         timeout = "eternal",
-        test_cmds = [],
+        test_harness = "//sw/host/tests/chip/gpio",
     ),
     deps = [
         "//sw/device/lib/dif:gpio",
