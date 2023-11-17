@@ -95,11 +95,7 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
  */
 typedef struct dif_dma_handshake {
   /* Auto Increments the memory buffer address register by total data size to
-   * point to the next memory buffer address. Generate a warning (assert
-   * interrupt) if the auto-incremented address reaches the threshold set in
-   * DMAC Memory Buffer Almost Limit Threshold Register to prevent destination
-   * buffer overflow. Enables firmware to take appropriate action prior to
-   * reaching the limit */
+   * point to the next memory buffer address.*/
   bool memory_auto_increment;
 
   /* If `true`, reads/writes from/to incremental addresses for FIFO data
@@ -218,42 +214,6 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_is_memory_range_valid(const dif_dma_t *dma,
                                            bool *is_valid);
 
-/**
- * Set thresholds for detecting the level of the buffer.Used in conjunction with
- * the address auto-increment mode for hardware handshake operation to generate
- * an interrupt when the buffer address approaches to the buffer address limit.
- *
- * This function is expected to be called when `memory_auto_increment` is
- * enabled via the function `dif_dma_handshake_enable`.
- *
- * @param dma A DMA Controller handle.
- * @param almost_limit Threshold for detecting that the buffer limit is
- * approaching to prevent destination buffer overflow.
- * @param limit Threshold for detecting the buffer limit.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_thresholds_set(const dif_dma_t *dma,
-                                        uint64_t almost_limit, uint64_t limit);
-
-/**
- * Set thresholds for detecting the level of the buffer.Used in conjunction with
- * the address auto-increment mode for hardware handshake operation to generate
- * an interrupt when the buffer address approaches to the buffer address limit.
- *
- * This function is expected to be called when `memory_auto_increment` is
- * enabled via the function `dif_dma_handshake_enable`.
- *
- * @param dma A DMA Controller handle.
- * @param[out] almost_limit Out-param for the almost limit address.
- * @param[out] limit Out-param for the limit address.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
-                                        uint64_t *almost_limit,
-                                        uint64_t *limit);
-
 typedef enum dif_dma_status_code {
   // DMA operation is active.
   kDifDmaStatusBusy = 0x01 << DMA_STATUS_BUSY_BIT,
@@ -344,6 +304,17 @@ typedef enum dif_dma_error_code {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
                                     dif_dma_error_code_t *error);
+
+/**
+ * Return the digest length given a DMA opcode.
+ *
+ * @param opcode A DMA opcode.
+ * @param digest_len The digest length.
+ * @return The result of the operation.
+ */
+dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
+                                       uint32_t *digest_len);
+
 /**
  * Read out the SHA2 digest
  *
