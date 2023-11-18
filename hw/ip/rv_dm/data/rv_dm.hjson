@@ -270,8 +270,19 @@
       // (debug ROM), some memory mapped CSRs and a RAM portion (program buffer). This region is
       // accessible over the TL interface only if debug mode is active.
       { skipto: "0x100" }
-      { name:  "HALTED"
-        desc: "Write halt index (0) to this address to acknowledge that the core has halted.",
+      { name:  "HALTED",
+        desc: '''
+              Written by a hart whenever it enters debug mode.
+
+              A hart entering debug mode must write its ID to this address to indicate that it has halted.
+              When the debug module triggers a debug mode (aka halt) request to the hart, the hart will jump to the debug ROM.
+              In that debug ROM, the hart must write its ID here to acknowledge completion of the request.
+              When the write is received, the debug module will record that the hart is halted in its status register.
+              In addition, the debug module may begin to accept abstract commands that run on that hart.
+
+              Note that this write upon entering debug mode is also important for indicating that a sequence of debug mode instructions completed.
+              In that case, the hart would write to this address while it was already halted.
+              ''',
         swaccess: "wo",
         hwaccess: "hrw", // updated by write to RESUMING
         fields: [
@@ -282,7 +293,15 @@
       },
       { skipto: "0x108" }
       { name: "GOING",
-        desc: "Write to this address to acknowledge that the core is executing.",
+        desc: '''
+              Written by a hart to acknowledge a command.
+
+              A hart that receives an abstract command (indicated by its corresponds !!FLAGS register) must write to this address to acknowledge it received the command.
+              The value written is unused, but it is conventionally 0.
+
+              Upon receiving the write, the debug module will reset the GO field in the selected hart's !!FLAGS register.
+              The debug module will transition to a state where it awaits the write to !!HALTED to indicate the command has completed.
+              ''',
         swaccess: "wo",
         hwaccess: "hro",
         fields: [
@@ -293,7 +312,13 @@
       },
       { skipto: "0x110" }
      {  name:  "RESUMING"
-        desc: "Write halt index (0) to this address to acknowledge that the core is resuming non-debug operation.",
+        desc: '''
+              Written by a hart to acknowledge a resume request.
+
+              A hart that receives the command to resume from debug mode (via the RESUME flag in its !!FLAGS register) must write its ID to this address.
+
+              This write tells the debug module that the command has been acknowledged, and the hart is no longer halted.
+              ''',
         swaccess: "wo",
         hwaccess: "hro",
         fields: [
@@ -315,7 +340,15 @@
       },
       { skipto: "0x300" }
       { name: "WHERETO",
-        desc: "TODO: No description provided in the spec.",
+        desc: '''
+              A jump instruction the hart executes to begin a command.
+
+              When a debugger sends an abstract command to the debug module, the debug module indicates the instruction to run here, which is invariably a jump.
+              The hart receiving the command must execute the instruction at this address after acknowledging the command with the write to !!GOING.
+
+              Similarly, when a debugger requests that a hart resume, the debug module supplies a jump instruction to execute here.
+              In the resume request case, the hart must execute the indicated instruction after acknolwedging the request with the write to !!RESUMING.
+              ''',
         swaccess: "ro",
         hwaccess: "hrw",
         fields: [
@@ -328,7 +361,13 @@
       { multireg: {
           cname: "ABSTRACTCMD"
           name:  "ABSTRACTCMD"
-          desc:  "TODO: No description provided in the spec."
+          desc:  '''
+                 A ROM containing instructions for implementing abstract commands.
+
+                 The hart executes these instructions at the debug modules behest.
+                 The debug module's jump instruction at !!WHERETO will land here, except for the AccessRegister command with the "postexec" bit set and the "transfer" bit unset.
+                 See the RISC-V Debug Specification for more information on the encoding of abstract commands.
+                 ''',
           count: "10"
           swaccess: "ro"
           hwaccess: "hro"
@@ -344,7 +383,12 @@
       { multireg: {
           cname: "PROGRAM_BUFFER"
           name:  "PROGRAM_BUFFER"
-          desc:  "TODO: No description provided in the spec."
+          desc:  '''
+                 A buffer for the debugger to write small debug mode programs.
+
+                 The hart may run these programs by command from the debugger.
+                 See the RISC-V Debug Specification for more information about the Program Buffer and how it is used with abstract commands and the "postexec" bit.
+                 ''',
           count: "8"
           swaccess: "ro"
           hwaccess: "hro"
@@ -358,7 +402,11 @@
       { multireg: {
           cname: "DATAADDR"
           name:  "DATAADDR"
-          desc:  "TODO: No description provided in the spec."
+          desc:  '''
+                 Message Registers for passing arguments and/or return values for abstract commands.
+
+                 See the RISC-V Debug Specification for more information about Message Registers and their relationship to abstract commands.
+                 '''
           count: "2"
           swaccess: "rw"
           hwaccess: "hro"
@@ -375,7 +423,22 @@
       { multireg: {
           cname: "FLAGS"
           name:  "FLAGS"
-          desc:  "TODO: No description provided in the spec."
+          desc:  '''
+                 Flags indicating what a hart in debug mode should do.
+
+                 These flags are how a debug module signals whether a hart should execute an abstract command, resume from debug mode, or remain idle.
+
+                 Each hart has its own FLAGS register that is a single byte.
+                 Bit 0 is the GO flag, indicating a request for the selected hart to execute the command.
+                 Bit 1 is the RESUME flag, indication a request for the selected hart to resume from halt/ debug mode.
+                 The other bits are reserved.
+
+                 The hart finds its own FLAGS register by taking the base address of this group and adding the hart's ID to the byte address.
+
+                 These are written by the debug module.
+                 When a selected hart writes the !!GOING register, the corresponding GO flag is cleared.
+                 When a selected hart writes the !!RESUMING register, the corresponding RESUME flag is cleared.
+                 '''
           count: "256"
           swaccess: "ro"
           hwaccess: "hro"
