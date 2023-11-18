@@ -103,13 +103,12 @@ otp_json(
                 "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Enable AST initialization.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
-                # TODO: This enables a busyloop in the ROM to give time to
-                # trigger an RMA lifecycle transition via JTAG.  The current
-                # value of 10 cycles is useful for test code which verifies
-                # the path through the ROM.  This value is not useful for a
-                # real chip.
+                # This enables a busyloop in the ROM to give time to
+                # trigger an RMA lifecycle transition via JTAG.
+                # TODO: The following value needs to be updated once we have an
+                # idea of how many cycles are needed to enter RMA.
                 "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": otp_hex(0x2000000),
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": otp_hex(0xffffffff),

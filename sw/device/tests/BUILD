@@ -1298,52 +1298,15 @@ opentitan_test(
     ],
 )
 
-# Generate hard coded secret2 partition but unlocked.
-otp_json(
-    name = "otp_json_test_rma",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
-            },
-        ),
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                # This RMA token is a cSHAKE128 digest.
-                # Source is hardcoded to host test file.
-                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
-                "CREATOR_ROOT_KEY_SHARE0": "<random>",
-                "CREATOR_ROOT_KEY_SHARE1": "<random>",
-            },
-        ),
-    ],
-    visibility = ["//visibility:private"],
-)
-
-# rom exec is disabled to mitigate sram execution.
-# Without this, it will cause continuous watch dog timeout.
-# secret2 unlocked dev state is required to write secret to all necessary info partitions
-# (creator, owner and isolation partition)
-otp_image(
-    name = "img_dev_exec_disabled",
-    src = "//hw/ip/otp_ctrl/data:otp_json_dev",
-    overlays = STD_OTP_OVERLAYS + [
-        "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
-        ":otp_json_test_rma",
-    ],
-    visibility = ["//visibility:private"],
-)
-
-# This test is fpga only.
 opentitan_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
     cw310 = cw310_jtag_params(
-        otp = ":img_dev_exec_disabled",
-        tags = ["cw310_rom_with_fake_keys"],
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_personalized",
+        tags = [
+            "fpga_cw310_sival",
+            "lc_dev",
+        ],
         test_cmd = " ".join([
             "--elf=\"{firmware}\"",
             " \"{firmware}\"",
@@ -1351,16 +1314,10 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/flash_ctrl:host_rma_test",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
-    # Test goes from Dev to RMA.
-    # So prod rsa key is required.
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.PROD,
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

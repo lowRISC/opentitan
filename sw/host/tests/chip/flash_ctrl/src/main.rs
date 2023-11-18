@@ -6,10 +6,8 @@ use anyhow::Result;
 use clap::Parser;
 
 use anyhow::Context;
+use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::test_utils::lc_transition;
-use opentitanlib::dif::lc_ctrl::{
-    DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus,
-};
 
 use std::collections::HashMap;
 use std::fs;
@@ -19,12 +17,11 @@ use std::time::Duration;
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::test_utils::mem::{MemRead32Req, MemWrite32Req};
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::io::jtag::JtagTap;
-use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams
-};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -41,7 +38,6 @@ struct Opts {
 
     #[command(flatten)]
     sram_program: SramProgramParams,
-
 }
 
 fn test_update_phase(
@@ -68,9 +64,15 @@ fn test_end(opts: &Opts, end_test_address: u32, transport: &TransportWrapper) ->
 }
 
 fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    //
-    // Connect to the RISC-V TAP
-    //
+    // Connect to the RISC-V TAP.
+    // Since the test runs in DEV mode, we need to enter bootstrap mode to
+    // avoid triggering the watchdog timer.
+    let bootstrap_strapping = transport.pin_strapping("ROM_BOOTSTRAP")?;
+
+    bootstrap_strapping
+        .apply()
+        .context("failed to apply ROM_BOOTSTRAP strapping")?;
+
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
@@ -88,6 +90,11 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         .load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
 
     jtag.disconnect()?;
+
+    bootstrap_strapping
+        .remove()
+        .context("failed to remove strapping ROM_BOOTSTRAP")?;
+
     Ok(())
 }
 
@@ -137,14 +144,15 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     assert_eq!(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?, 5);
 
     lc_transition::trigger_lc_transition(
-       transport,
-       jtag,
-       DifLcCtrlState::Rma,
-       Some(rma_unlock_token.into_register_values()),
-       /*use_external_clk=*/ false,
-       opts.init.bootstrap.options.reset_delay,
-       Some(JtagTap::LcTap),
-    ).expect("failed to trigger transition to rma");
+        transport,
+        jtag,
+        DifLcCtrlState::Rma,
+        Some(rma_unlock_token.into_register_values()),
+        /*use_external_clk=*/ false,
+        opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
+    )
+    .expect("failed to trigger transition to rma");
 
     // Remove the RMA strapping so that future resets bring up normally.
     rma_bootstrap_strapping
@@ -157,7 +165,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
         .context("failed to remove strapping PINMUX_TAP_LC")?;
 
     Ok(())
- }
+}
 
 fn main() -> Result<()> {
     let opts = Opts::parse();
