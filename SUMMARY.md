@@ -470,13 +470,13 @@
     - [Developer Guide](./sw/device/tests/doc/sival/devguide.md)
 
 - [Host Software](./sw/host/README.md)
+  - [OpenTitanLib](./sw/host/opentitanlib/README.md)
+  - [OpenTitanTool](./sw/host/opentitantool/README.md)
+  - [OpenTitanSession](./sw/host/opentitansession/README.md)
   - [OpenTitan Certificate Generator](./sw/host/ot_certs/README.md)
   - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
     - [Requirements](./sw/host/hsmtool/doc/requirements.md)
     - [Signing Guide](./signing/README.md)
-  - [OpenTitanLib](./sw/host/opentitanlib/README.md)
-  - [OpenTitanSession](./sw/host/opentitansession/README.md)
-  - [OpenTitanTool](./sw/host/opentitantool/README.md)
   - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
 
 # Tooling
