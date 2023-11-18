@@ -22,7 +22,8 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufFtIndividualizeData, ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
+    EccP256PublicKey, ManufCertPersoDataIn, ManufFtIndividualizeData, ManufRmaTokenPersoDataIn,
+    ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -157,6 +158,7 @@ pub fn run_ft_personalize(
     second_bootstrap: PathBuf,
     third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
+    attestation_tcb_measurements: &ManufCertPersoDataIn,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
@@ -189,7 +191,7 @@ pub fn run_ft_personalize(
         .collect::<ArrayVec<u32, 8>>();
     host_pk_x.reverse();
     host_pk_y.reverse();
-    let in_data = ManufRmaTokenPersoDataIn {
+    let rma_token_wrapping_keys = ManufRmaTokenPersoDataIn {
         host_pk: EccP256PublicKey {
             x: host_pk_x,
             y: host_pk_y,
@@ -200,8 +202,8 @@ pub fn run_ft_personalize(
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
 
-    // Send data into the device over the console.
-    in_data.send(&*uart)?;
+    // Send RMA token wrapping ECC keys into the device over the console.
+    rma_token_wrapping_keys.send(&*uart)?;
 
     // Wait until device exports provisioning data, including the wrapped RMA unlock token and
     // device certificates.
@@ -214,6 +216,14 @@ pub fn run_ft_personalize(
     // Bootstrap third personalization binary into flash.
     uart.clear_rx_buffer()?;
     init.bootstrap.load(transport, &third_bootstrap)?;
+
+    // Get UART, set flow control, and wait for test to start running.
+    uart.set_flow_control(true)?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
+
+    // Send attestation TCB measurements for generating certificates.
+    attestation_tcb_measurements.send(&*uart)?;
+
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     Ok(())

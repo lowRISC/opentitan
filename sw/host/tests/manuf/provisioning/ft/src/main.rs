@@ -13,7 +13,7 @@ use opentitanlib::backend;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
-use ujson_lib::provisioning_data::ManufFtIndividualizeData;
+use ujson_lib::provisioning_data::{ManufCertPersoDataIn, ManufFtIndividualizeData};
 use util_lib::hex_string_to_u32_arrayvec;
 
 /// Provisioning data command-line parameters.
@@ -43,6 +43,18 @@ pub struct ManufFtProvisioningDataInput {
     /// Host (HSM) generated ECC (P256) private key DER file.
     #[arg(long)]
     host_ecc_sk: PathBuf,
+
+    /// Measurement of the ROM_EXT image to be loaded onto the device.
+    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    pub rom_ext_measurement: String,
+
+    /// Measurement of the Ownership Manifest to be loaded onto the device.
+    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    pub owner_manifest_measurement: String,
+
+    /// Measurement of the Owner image to be loaded onto the device.
+    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    pub owner_measurement: String,
 }
 
 #[derive(Debug, Parser)]
@@ -69,6 +81,18 @@ struct Opts {
     timeout: Duration,
 }
 
+/// Returns true if all elements of the array are zero.
+fn is_all_zero(array: &[u32]) -> bool {
+    if array.is_empty() {
+        return true;
+    }
+    let first = array[0];
+    if first == 0 {
+        return array.iter().all(|&item| item == first);
+    }
+    false
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -88,6 +112,21 @@ fn main() -> Result<()> {
     // Format ujson data payload(s).
     let ft_individualize_data_in = ManufFtIndividualizeData {
         device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,
+    };
+    let rom_ext_measurement =
+        hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.rom_ext_measurement.as_str())?;
+    let owner_manifest_measurement = hex_string_to_u32_arrayvec::<8>(
+        opts.provisioning_data.owner_manifest_measurement.as_str(),
+    )?;
+    let owner_measurement =
+        hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
+    let attestation_tcb_measurements = ManufCertPersoDataIn {
+        rom_ext_measurement: rom_ext_measurement.clone(),
+        rom_ext_measurement_valid: !is_all_zero(rom_ext_measurement.as_slice()),
+        owner_manifest_measurement: owner_manifest_measurement.clone(),
+        owner_manifest_measurement_valid: !is_all_zero(owner_manifest_measurement.as_slice()),
+        owner_measurement: owner_measurement.clone(),
+        owner_measurement_valid: !is_all_zero(owner_measurement.as_slice()),
     };
 
     test_unlock(
@@ -117,6 +156,7 @@ fn main() -> Result<()> {
         opts.second_bootstrap,
         opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
+        &attestation_tcb_measurements,
         opts.timeout,
     )?;
 
