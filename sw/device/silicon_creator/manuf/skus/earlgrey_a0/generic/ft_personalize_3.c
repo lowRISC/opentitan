@@ -18,10 +18,16 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
+static manuf_cert_perso_data_in_t in_data;
+
 /**
  * Crank the keymgr to produce the attestation keys and certificates.
  */
 static status_t personalize(ujson_t *uj) {
+  // Retrieve certificate provisioning data.
+  LOG_INFO("Waiting for FT provisioning data ...");
+  TRY(ujson_deserialize_manuf_cert_perso_data_in_t(uj, &in_data));
+
   // Advance keymgr to Initialized state.
   TRY(entropy_complex_init());
   keymgr_advance_state();
@@ -46,35 +52,38 @@ static status_t personalize(ujson_t *uj) {
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kCdi0KeymgrDiversifier));
 
-  // TODO(#19455): only advance keymgr further if firmware measurements have
-  // been provided as an input. Advance keymgr and generate CDI_0 attestation
-  // keys / cert.
-  // TODO(#19455): set attestation binding to ROM_EXT / Ownership Manifest
-  // measurements.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
-  TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
-                                   kCdi0KeymgrDiversifier, &curr_pubkey));
-  // TODO(#19455): create certificate with key, endorse it, and write it to
-  // flash info.
-  TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
-                                     kCdi0KeymgrDiversifier));
+  if (in_data.rom_ext_measurement_valid &&
+      in_data.owner_manifest_measurement_valid) {
+    // Advance keymgr and generate CDI_0 attestation keys / cert.
+    // TODO(#19455): set attestation binding to ROM_EXT / Ownership Manifest
+    // measurements.
+    keymgr_advance_state();
+    TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+    TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
+                                     kCdi0KeymgrDiversifier, &curr_pubkey));
+    // TODO(#19455): create certificate with key, endorse it, and write it to
+    // flash info.
+    TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
+                                       kCdi0KeymgrDiversifier));
 
-  // Advance keymgr and generate CDI_1 attestation keys / cert.
-  // TODO(#19455): set attestation binding to OWNER measurement.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerKey));
-  TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
-                                   kCdi1KeymgrDiversifier, &curr_pubkey));
-  // TODO(#19455): create certificate with key, endorse it, and write it to
-  // flash info.
-  TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
-                                     kCdi1KeymgrDiversifier));
+    if (in_data.owner_measurement_valid) {
+      // Advance keymgr and generate CDI_1 attestation keys / cert.
+      // TODO(#19455): set attestation binding to OWNER measurement.
+      keymgr_advance_state();
+      TRY(keymgr_state_check(kKeymgrStateOwnerKey));
+      TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
+                                       kCdi1KeymgrDiversifier, &curr_pubkey));
+      // TODO(#19455): create certificate with key, endorse it, and write it to
+      // flash info.
+      TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
+                                         kCdi1KeymgrDiversifier));
+    }
 
-  LOG_INFO("Exporting attestation certificates ...");
-  // TODO(#19455): export certificates.
-  LOG_INFO("Wait for UDS attestation certificate endorsement ...");
-  // TODO(#19455): update UDS certificate signature field and commit to flash.
+    LOG_INFO("Exporting attestation certificates ...");
+    // TODO(#19455): export certificates.
+    LOG_INFO("Wait for UDS attestation certificate endorsement ...");
+    // TODO(#19455): update UDS certificate signature field and commit to flash.
+  }
 
   return OK_STATUS();
 }

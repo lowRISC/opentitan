@@ -137,7 +137,8 @@ otp_json(
                 # sw/device/lib/base/hardened.h.
                 "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value.
+                # manager attestation binding value. Since our attestation
+                # scheme has changed, we keep this as false (disabled).
                 "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
