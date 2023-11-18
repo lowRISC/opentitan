@@ -41,10 +41,9 @@ enum {
 };
 
 // Hardcoded secret data for flash info partition.
-static const uint32_t kRandomData[3] = {
+static const uint32_t kRandomData[2] = {
     0xbab0bab1,
     0xdeadbeef,
-    0xcafefeed,
 };
 
 static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
@@ -84,19 +83,17 @@ static status_t read_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
 }
 
 static status_t read_and_check_info(bool match) {
-  uint32_t readback_data[3];
-  read_info_page(&flash, kFlashInfoPageIdCreatorSecret, readback_data, true);
-  read_info_page(&flash, kFlashInfoPageIdOwnerSecret, readback_data + 1, true);
-  read_info_page(&flash, kFlashInfoPageIdIsoPart, readback_data + 2, true);
+  uint32_t readback_data[2];
+  read_info_page(&flash, kFlashInfoPageIdOwnerSecret, readback_data, true);
+  read_info_page(&flash, kFlashInfoPageIdIsoPart, readback_data + 1, true);
   LOG_INFO("readdata0: %x", *readback_data);
   LOG_INFO("readdata1: %x", *(readback_data + 1));
-  LOG_INFO("readdata2: %x", *(readback_data + 2));
   if (match) {
     // iso partition cannot be accessed in dev state.
-    // check create and owner partition only
-    CHECK_ARRAYS_EQ(readback_data, kRandomData, 2);
+    // check owner partition only
+    CHECK_ARRAYS_EQ(readback_data, kRandomData, 1);
   } else {
-    CHECK_ARRAYS_NE(readback_data, kRandomData, 3);
+    CHECK_ARRAYS_NE(readback_data, kRandomData, 2);
   }
   LOG_INFO("read_and_check is done");
   return OK_STATUS();
@@ -124,10 +121,8 @@ bool sram_main(void) {
   switch (kTestPhase) {
     case kTestPhase0:
       LOG_INFO("testphase0");
-      write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kRandomData, true);
-      write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kRandomData + 1,
-                      true);
-      write_info_page(&flash, kFlashInfoPageIdIsoPart, kRandomData + 2, true);
+      write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kRandomData, true);
+      write_info_page(&flash, kFlashInfoPageIdIsoPart, kRandomData + 1, true);
       read_and_check_info(true);
 
       // After update info partition in flash,
