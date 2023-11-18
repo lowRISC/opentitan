@@ -464,6 +464,7 @@
     - [Manufacturer Test Hooks](./sw/device/tests/closed_source/README.md)
     - [Crypto Library Tests](./sw/device/tests/crypto/README.md)
     - [Cryptotest](./sw/device/tests/crypto/cryptotest/README.md)
+  - [Silicon Validation](./sw/device/tests/doc/sival/overview.md)
 
 - [Host Software](./sw/host/README.md)
   - [OpenTitan Certificate Generator](./sw/host/ot_certs/README.md)
