@@ -35,7 +35,7 @@ Finally, we provide the same set of information for all available [top level des
   * [DV document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
-## Earl Grey top-level results
+## Earl Grey top-level
 
 * [Datasheet](./top_earlgrey/doc/datasheet.md)
 * [Specification](./top_earlgrey/doc/design/README.md)
@@ -52,6 +52,6 @@ Finally, we provide the same set of information for all available [top level des
 
 {{#dashboard top_earlgrey }}
 
-## Darjeeling top-level results
+## Darjeeling top-level
 
 * [Datasheet](./top_darjeeling/doc/datasheet.md)
