@@ -22,6 +22,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "fpga_cw_params",
     "hyper310_jtag_params",
     "hyper310_params",
     "opentitan_test",
@@ -3147,6 +3148,17 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
+    cw340 = fpga_cw_params(
+        bitstream = "//hw/bitstream/cw340:rom_with_fake_keys_otp_test_unlocked0",
+        data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        interface = "hyper340",
+        tags = ["flaky"],
+        test_cmd = " ".join(OPENTITANTOOL_OPENOCD_TEST_CMDS) + """
+            --bitstream={bitstream}
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/jtag:openocd_test",
+    ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
@@ -3165,56 +3177,30 @@ opentitan_test(
     ],
 )
 
-# TODO(#19903): Migrate to `opentitan_test` once there is support for the
-# hyperdebug340 target. #19903 covers support for hyperdebug340, and #19901
-# covers support for cw340_params.
-opentitan_functest(
-    name = "openocd_hyper340_test",
-    srcs = ["example_test_from_flash.c"],
-    cw340 = cw340_params(
-        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
-        interface = "hyper340",
-        tags = ["flaky"],
-        test_cmds = [
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
-    ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/chip/jtag:openocd_test",
-    deps = [
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
-# covers support for cw340_params.
-opentitan_functest(
+opentitan_test(
     name = "spi_device_ottf_console_test",
     srcs = ["spi_device_ottf_console_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    cw340 = cw340_params(
+    cw340 = fpga_cw_params(
         interface = "hyper340",
         tags = ["manual"],
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     ),
-    targets = [
-        "cw310_test_rom",
-        "cw340_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": "cw340",
+    },
+    hyper310 = hyper310_params(
+        interface = "hyper310",
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:spi_device",

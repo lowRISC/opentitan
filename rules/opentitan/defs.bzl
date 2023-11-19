@@ -17,6 +17,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:fpga_cw310.bzl",
     _cw310_jtag_params = "cw310_jtag_params",
     _cw310_params = "cw310_params",
+    _fpga_cw_params = "fpga_cw_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
@@ -59,6 +60,7 @@ fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
 cw310_jtag_params = _cw310_jtag_params
+fpga_cw_params = _fpga_cw_params
 hyper310_params = _hyper310_params
 hyper310_jtag_params = _hyper310_jtag_params
 
@@ -146,6 +148,7 @@ def opentitan_test(
         manifest = None,
         exec_env = {},
         cw310 = _cw310_params(),
+        cw340 = _fpga_cw_params(interface = "cw340"),
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
@@ -180,6 +183,7 @@ def opentitan_test(
     """
     test_parameters = {
         "cw310": cw310,
+        "cw340": cw340,
         "hyper310": hyper310,
         "dv": dv,
         "silicon": silicon,
