@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,21 +39,17 @@ enum {
 };
 
 /**
- * Configure the instruction and data bus in the address translation slot 0.
+ * Get the number of address remapper slots.
  *
- * @param matching_addr When an incoming transaction matches the matching
- * region, it is redirected to the new address. If a transaction does not match,
- * then it is directly passed through.
- * @param remap_addr  The region where the matched transtaction will be
- * redirected to.
- * @param size The size of the regions mapped.
+ * @return Number of remapper slots.
  */
-void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
-                           size_t size);
+OT_WARN_UNUSED_RESULT
+unsigned ibex_addr_remap_slots(void);
 
 /**
- * Configure the instruction and data bus in the address translation slot 1.
+ * Configure the instruction and data bus in an address translation slot.
  *
+ * @param slot Index of the address translation slot to configure.
  * @param matching_addr When an incoming transaction matches the matching
  * region, it is redirected to the new address. If a transaction does not match,
  * then it is directly passed through.
@@ -60,8 +57,18 @@ void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
  * redirected to.
  * @param size The size of the regions mapped.
  */
-void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
-                           size_t size);
+OT_WARN_UNUSED_RESULT
+rom_error_t ibex_addr_remap_set(size_t slot, uint32_t matching_addr,
+                                uint32_t remap_addr, size_t size);
+
+/**
+ * Lock an address translation slot for the instruction and data bus.
+ *
+ * @param slot Index of the address translation slot to lock.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t ibex_addr_remap_lock(size_t slot);
+
 #ifdef __cplusplus
 }
 #endif
