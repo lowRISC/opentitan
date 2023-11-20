@@ -27,6 +27,7 @@ enum module_ {
   // clang-format off
   kModuleUnknown = 0,
   kModuleAlertHandler = MODULE_CODE('A', 'H'),
+  kModuleIbex =         MODULE_CODE('I', 'B'),
   kModuleSigverify =    MODULE_CODE('S', 'V'),
   kModuleKeymgr =       MODULE_CODE('K', 'M'),
   kModuleManifest =     MODULE_CODE('M', 'A'),
@@ -94,6 +95,8 @@ enum module_ {
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
+  \
+  X(kErrorIbexBadRemapSlot,           ERROR_(1, kModuleIbex, kInvalidArgument)), \
   \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
   \

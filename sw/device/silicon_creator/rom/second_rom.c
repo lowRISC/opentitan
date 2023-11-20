@@ -243,8 +243,9 @@ static rom_error_t rom_try_boot(void) {
 
   // TODO: Remap the ROM ext virtual region to shared SRAM.
   // Use a reserved remapper, that must not be used by ROM patches.
-  // ibex_addr_remap_1_set((uintptr_t)_rom_ext_virtual_start,
-  //                       rom_ext_lma, (size_t)_rom_ext_virtual_size);
+  // HARDENED_RETURN_IF_ERROR(
+  //    ibex_addr_remap_set(1, (uintptr_t)_rom_ext_virtual_start, rom_ext_lma,
+  //                        (size_t)_rom_ext_virtual_size));
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // TODO: Do not hardcode the start and end offset for the ePMP region.
