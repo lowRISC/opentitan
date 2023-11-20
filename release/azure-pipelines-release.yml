@@ -29,7 +29,7 @@ variables:
   TOOLCHAIN_VERSION: 20220210-1
     # This controls where builds happen, and gets picked up by build_consts.sh.
   BUILD_ROOT: $(Build.ArtifactStagingDirectory)
-  VIVADO_VERSION: "2020.2"
+  VIVADO_VERSION: "2021.1"
 
 jobs:
 - job: checkout
