@@ -230,9 +230,12 @@ opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_dev_individualized",
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        tags = ["manuf"],
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_individualized",
+        tags = [
+            "lc_dev",
+            "manuf",
+        ],
         test_cmd = """
             --bootstrap={firmware}
             --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
@@ -240,7 +243,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/personalize",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [

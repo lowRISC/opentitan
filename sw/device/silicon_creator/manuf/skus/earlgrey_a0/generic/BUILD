@@ -208,9 +208,12 @@ opentitan_test(
             ":sram_ft_individualize": "sram_ft_individualize",
             ":ft_personalize_2": "ft_personalize_2",
         },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_test_locked0",
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        tags = ["manuf"],
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_post_cp_test_locked0",
+        tags = [
+            "lc_test_locked0",
+            "manuf",
+        ],
         test_cmd = """
             --elf={sram_ft_individualize}
             --bootstrap={firmware}
@@ -221,7 +224,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
