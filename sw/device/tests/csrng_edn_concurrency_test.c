@@ -215,8 +215,7 @@ static void ibex_task(void *task_parameters) {
 }
 
 /**
- * Verifies that the entropy req interrupt is triggered on EDN instantiate and
- * reseed commands.
+ * Configures the entropy complex and starts both EDNs in auto mode.
  */
 static void entropy_config(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
