@@ -81,7 +81,7 @@ module edn_main_sm import edn_pkg::*; #(
     send_rescmd_o          = 1'b0;
     main_sm_done_pulse_o   = 1'b0;
     main_sm_err_o          = 1'b0;
-    sw_cmd_valid_o         = 1'b1;
+    sw_cmd_valid_o         = 1'b0;
     unique case (state_q)
       Idle: begin
         if (boot_req_mode_i && edn_enable_i) begin
@@ -129,6 +129,7 @@ module edn_main_sm import edn_pkg::*; #(
       end
       //-----------------------------------
       AutoLoadIns: begin
+        sw_cmd_valid_o = 1'b1;
         auto_set_intr_gate_o = 1'b1;
         auto_first_ack_wait_o = 1'b1;
         if (sw_cmd_req_load_i) begin
@@ -136,6 +137,7 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoFirstAckWait: begin
+        sw_cmd_valid_o = 1'b1;
         auto_first_ack_wait_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           auto_clr_intr_gate_o = 1'b1;
@@ -143,7 +145,6 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoAckWait: begin
-        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         if (csrng_cmd_ack_i) begin
           state_d = AutoDispatch;
@@ -151,7 +152,6 @@ module edn_main_sm import edn_pkg::*; #(
       end
       AutoDispatch: begin
         auto_req_mode_busy_o = 1'b1;
-        sw_cmd_valid_o = 1'b0;
         if (!auto_req_mode_i) begin
           main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
@@ -164,13 +164,11 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoCaptGenCnt: begin
-        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         capt_gencmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendGenCmd;
       end
       AutoSendGenCmd: begin
-        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         send_gencmd_o = 1'b1;
         if (cmd_sent_i) begin
@@ -178,13 +176,11 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       AutoCaptReseedCnt: begin
-        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         capt_rescmd_fifo_cnt_o = 1'b1;
         state_d = AutoSendReseedCmd;
       end
       AutoSendReseedCmd: begin
-        sw_cmd_valid_o = 1'b0;
         auto_req_mode_busy_o = 1'b1;
         send_rescmd_o = 1'b1;
         if (cmd_sent_i) begin
@@ -192,6 +188,7 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       SWPortMode: begin
+        sw_cmd_valid_o = 1'b1;
       end
       Error: begin
         main_sm_err_o = 1'b1;
