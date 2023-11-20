@@ -2308,6 +2308,7 @@ opentitan_test(
     name = "spi_host_winbond_flash_test",
     srcs = ["spi_host_winbond_flash_test.c"],
     exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     deps = [

@@ -29,6 +29,10 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_sw_spi_host_tx_rx"]
+      bazel: [
+        "//sw/device/tests:spi_host_winbond_flash_test_fpga_cw310_rom_with_fake_keys",
+        "//sw/device/tests/pmod:spi_host_macronix_flash_test_fpga_cw310_rom_with_fake_keys"
+      ]
     }
     {
       name: chip_sw_spi_host_pass_through

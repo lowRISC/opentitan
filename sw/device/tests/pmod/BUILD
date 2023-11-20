@@ -20,6 +20,7 @@ opentitan_test(
         ],  # Requires the BoB in CI.
     ),
     exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     deps = [
