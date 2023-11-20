@@ -1242,7 +1242,7 @@ test_suite(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
         cw310 = new_cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_sival_{}_personalized".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_{}_personalized".format(lc_state),
         ),
         dv = new_dv_params(
             otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_{}_personalized".format(lc_state),
