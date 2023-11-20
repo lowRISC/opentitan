@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:usbdev_sva
     files:
       - tb/tb.sv
+      - tb/Clock_Divider.sv
     file_type: systemVerilogSource
 
 targets:
