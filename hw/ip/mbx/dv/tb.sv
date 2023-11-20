@@ -19,6 +19,7 @@ module tb;
   wire intr_doe;
   wire intr_ready;
   wire intr_abort;
+  wire intr_error;
 
   clk_rst_if i_clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_scxb_mbx_core_if(.clk(clk), .rst_n(rst_n));
@@ -37,6 +38,7 @@ module tb;
     .doe_intr_support_o(),
     .doe_intr_en_o(),
     .doe_intr_o(intr_doe),
+    .doe_async_msg_support_o(),
     // various tlul interfaces
     .core_tl_d_o(i_tl_agxb_mbx_core_if.d2h),
     .core_tl_d_i(i_tl_agxb_mbx_core_if.h2d),
@@ -47,6 +49,7 @@ module tb;
     // alerts and interrupts
     .intr_mbx_ready_o(intr_ready),
     .intr_mbx_abort_o(intr_abort),
+    .intr_mbx_error_o(intr_error),
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx)
   );
@@ -54,6 +57,7 @@ module tb;
   // Connect the interrupts
   assign interrupts[MbxCoreReady] = intr_ready;
   assign interrupts[MbxCoreAbort] = intr_abort;
+  assign interrupts[MbxCoreError] = intr_error;
 
   initial begin
     // drive clk and rst_n from clk_if
