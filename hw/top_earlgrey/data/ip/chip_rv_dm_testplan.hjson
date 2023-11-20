@@ -211,6 +211,7 @@
       si_stage: SV2
       tests: ["chip_rv_dm_lc_disabled"],
       bazel: [
+        "//sw/device/tests:rv_dm_lc_disabled_tl",
         "//sw/device/tests:rv_dm_lc_disabled_jtag",
       ],
       lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD",

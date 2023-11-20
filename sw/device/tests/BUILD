@@ -3048,6 +3048,15 @@ opentitan_test(
     ],
 )
 
+# TL tests are done on Ibex, so requires execution to be enabled.
+_RV_DM_LC_DISABLED_TL_LC_STATES = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED1,
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+    CONST.LCV.RMA,
+)
+
 _RV_DM_LC_DISABLED_JTAG_LC_STATES = get_lc_items(
     CONST.LCV.TEST_UNLOCKED1,
     CONST.LCV.TEST_LOCKED0,
@@ -3071,6 +3080,39 @@ _SIVAL_OTP_IMAGE = {
     "prod_end": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_end_manuf_personalized",
     "rma": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_rma_manuf_personalized",
 }
+
+[
+    opentitan_test(
+        name = "rv_dm_lc_disabled_tl_{}".format(lc_state),
+        srcs = ["rv_dm_lc_disabled.c"],
+        cw310 = new_cw310_params(
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _RV_DM_LC_DISABLED_TL_LC_STATES
+]
+
+test_suite(
+    name = "rv_dm_lc_disabled_tl",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_lc_disabled_tl_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_LC_DISABLED_TL_LC_STATES
+    ],
+)
 
 [
     opentitan_test(
