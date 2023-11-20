@@ -57,6 +57,9 @@ pub trait JtagChain {
 
 /// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
+    /// Stop further operation and returns raw OpenOCD instance.
+    fn into_raw(self: Box<Self>) -> Result<crate::util::openocd::OpenOcd>;
+
     /// Disconnect from the TAP.
     fn disconnect(self: Box<Self>) -> Result<()>;
     /// Get TAP we are currently connected too.

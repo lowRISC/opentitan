@@ -352,6 +352,10 @@ impl OpenOcdJtagTap {
 }
 
 impl Jtag for OpenOcdJtagTap {
+    fn into_raw(self: Box<Self>) -> Result<OpenOcd> {
+        Ok(self.openocd)
+    }
+
     fn disconnect(self: Box<Self>) -> Result<()> {
         self.openocd.shutdown()
     }
