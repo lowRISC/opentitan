@@ -37,7 +37,8 @@ package mbx_env_pkg;
   } reg_op_e;
   typedef enum {
     MbxCoreReady,
-    MbxCoreAbort
+    MbxCoreAbort,
+    MbxCoreError
   } mbx_core_intr_e;
 
   // functions
