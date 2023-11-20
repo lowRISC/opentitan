@@ -1357,8 +1357,8 @@
       sw_images: ["//sw/device/tests:edn_auto_mode:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
       // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
-      run_opts: ["+sw_test_timeout_ns=300_000_000_000", "+rng_srate_value=5"]
-      run_timeout_mins: 300
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value=5"]
+      run_timeout_mins: 90
     }
     {
       name: chip_sw_edn_boot_mode
@@ -1366,8 +1366,8 @@
       sw_images: ["//sw/device/tests:edn_boot_mode:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
       // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
-      run_opts: ["+sw_test_timeout_ns=300_000_000_000", "+rng_srate_value=5"]
-      run_timeout_mins: 300
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value=5"]
+      run_timeout_mins: 90
     }
     {
       name: chip_sw_edn_kat
