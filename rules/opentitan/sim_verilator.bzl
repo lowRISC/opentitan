@@ -22,8 +22,8 @@ _TEST_SCRIPT = """#!/bin/bash
 set -e
 
 TEST_CMD=({test_cmd})
-echo Invoking test: {test_harness} {args} "${{TEST_CMD[@]}}"
-RUST_BACKTRACE=1 {test_harness} {args} "${{TEST_CMD[@]}}"
+echo Invoking test: {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
+RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
