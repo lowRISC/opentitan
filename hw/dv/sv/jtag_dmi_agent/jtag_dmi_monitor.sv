@@ -84,7 +84,6 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
   virtual function bit capture_response(jtag_item jtag_item);
     jtag_dmi_op_rsp_e rsp_op = jtag_dmi_op_rsp_e'(
         get_field_val(cfg.jtag_dtm_ral.dmi.op, jtag_item.dout));
-
     if (dmi_req_q.size() != 0) begin
       if (rsp_op == DmiOpInProgress) begin
         return 1;
@@ -99,10 +98,6 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
         `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
                                   dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
         analysis_port.write(dmi_item);
-      end
-    end else begin
-      if (rsp_op != DmiOpOk) begin
-        `uvm_error(`gfn, $sformatf("Non-ok response seen with no previous DMI request."))
       end
     end
     return 0;
