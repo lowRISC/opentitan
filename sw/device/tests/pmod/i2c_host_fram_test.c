@@ -33,6 +33,8 @@ enum {
   kProductId = 0x510,
 
   kDefaultTimeoutMicros = 5000,
+
+  kI2cInstances = 3,
 };
 
 static status_t write_byte(dif_i2c_t *i2c, const uint8_t addr[2],
@@ -129,6 +131,48 @@ static status_t write_read_page(dif_i2c_t *i2c) {
   return OK_STATUS();
 }
 
+static status_t throughput(dif_i2c_t *i2c, uint32_t expected_kbps) {
+  enum { kTimeoutMicros = 1000 * 1000, kTxSize = 512 };
+
+  dif_rv_core_ibex_t rv_core_ibex;
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  const uint8_t kAddr[2] = {0x04, 0x00};
+  uint8_t data[kTxSize + sizeof(kAddr)] = {kAddr[0], kAddr[1]};
+  // Init buffer with random data.
+  for (int i = sizeof(kAddr); i < sizeof(data); ++i) {
+    uint32_t rand;
+    TRY(rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, 2000, &rand));
+    data[i] = rand & 0xFF;
+  }
+  ibex_timeout_t timer = ibex_timeout_init(kTimeoutMicros);
+  TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(data), data, false));
+  IBEX_TRY_SPIN_FOR(TRY(i2c_testutils_fmt_fifo_empty(i2c)) == true,
+                    kTimeoutMicros);
+  uint64_t elapsed = ibex_timeout_elapsed(&timer);
+  uint32_t kbps = (kTxSize * 8 * 1000) / (uint32_t)elapsed;
+  LOG_INFO("Wrote %u bytes, in %u micros, %u kbps. Expected was %u kbps",
+           kTxSize, (uint32_t)elapsed, kbps, expected_kbps);
+  TRY_CHECK(kbps >= expected_kbps, "%u kbps is less than %u kpbs", kbps,
+            expected_kbps);
+
+  uint8_t read_data[kTxSize] = {0};
+  TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(kAddr), kAddr, true));
+  timer = ibex_timeout_init(kTimeoutMicros);
+  TRY(i2c_testutils_read(i2c, kDeviceAddr, kTxSize, read_data, kTimeoutMicros));
+  elapsed = ibex_timeout_elapsed(&timer);
+  kbps = (kTxSize * 8 * 1000) / (uint32_t)elapsed;
+  LOG_INFO("Read %u bytes, in %u micros, %u kbps. Expected was %u kbps",
+           kTxSize, (uint32_t)elapsed, kbps, expected_kbps);
+  TRY_CHECK(kbps >= expected_kbps);
+  // Check the read bytes match what we wrote.
+  TRY_CHECK_ARRAYS_EQ(read_data, data + 2, sizeof(read_data));
+
+  return OK_STATUS();
+}
+
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                               uint8_t i2c_instance,
                               i2c_pinmux_platform_id_t platform) {
@@ -156,27 +200,40 @@ static status_t test_shutdown(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
   return i2c_testutils_detach_pinmux(pinmux, i2c_instance);
 }
 
+typedef struct test_setup {
+  dif_i2c_speed_t speed;
+  uint32_t kbps;
+} test_setup_t;
+
+const test_setup_t kSetup[] = {
+    // kbps: We discount 85% for the start and stop bits plus a difference
+    // between the frequency configured and the frequency measured on the clk
+    // verified on the cw310.
+    // TODO: To be adjusted when #18958 #18962 are fixed.
+    {.speed = kDifI2cSpeedStandard, .kbps = (uint32_t)(100 * 0.92 * 0.85)},
+    {.speed = kDifI2cSpeedFast, .kbps = (uint32_t)(400 * 0.74 * 0.85)},
+    {.speed = kDifI2cSpeedFastPlus, .kbps = (uint32_t)(1000 * 0.42 * 0.85)}};
+
 bool test_main(void) {
   dif_pinmux_t pinmux;
   dif_i2c_t i2c;
+
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdCw310Pmod;
-  status_t test_result;
-  for (uint8_t i2c_instance = 0; i2c_instance < 3; ++i2c_instance) {
+  status_t test_result = OK_STATUS();
+  for (uint8_t i2c_instance = 0; i2c_instance < kI2cInstances; ++i2c_instance) {
     LOG_INFO("Testing i2c%d", i2c_instance);
     CHECK_STATUS_OK(i2c_configure(&i2c, &pinmux, i2c_instance, platform));
 
-    dif_i2c_speed_t speeds[] = {kDifI2cSpeedStandard, kDifI2cSpeedFast,
-                                kDifI2cSpeedFastPlus};
-
-    test_result = OK_STATUS();
-    for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
+    for (size_t i = 0; i < ARRAYSIZE(kSetup); ++i) {
+      CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSetup[i].speed));
       EXECUTE_TEST(test_result, read_device_id, &i2c);
       EXECUTE_TEST(test_result, write_read_byte, &i2c);
       EXECUTE_TEST(test_result, write_read_page, &i2c);
+      EXECUTE_TEST(test_result, throughput, &i2c, kSetup[i].kbps);
+      CHECK_STATUS_OK(test_result);
     }
     CHECK_STATUS_OK(test_shutdown(&i2c, &pinmux, i2c_instance));
   }
