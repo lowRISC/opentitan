@@ -792,7 +792,7 @@ mod_inv:
 
   /* subtract 2 from modulus for Fermat's little theorem
      w2 = MOD - 2 = m - 2 */
-  bn.wsrr   w2, 0
+  bn.wsrr   w2, MOD
   bn.subi   w2, w2, 2
 
   /* init square and multiply: w1 = 1 */
@@ -1278,7 +1278,7 @@ p256_scalar_mult:
 
   /* Fetch a fresh random number as mask.
        w2 <= URND() */
-  bn.wsrr   w2, 0x2 /* URND */
+  bn.wsrr   w2, URND
 
   /* Subtract random mask from x coordinate of
      projective point.
@@ -1311,7 +1311,7 @@ p256_scalar_mult:
 
   /* Get field modulus p.
      w29 <= MOD() */
-  bn.wsrr   w29, 0x00 /* MOD */
+  bn.wsrr   w29, MOD
 
   /* Move z^-1 and x coordinate mask to
      mod_mul_256x256 input WDRs.
@@ -1392,17 +1392,17 @@ p256_random_scalar:
 
   random_scalar_retry:
   /* Obtain 768 bits of randomness from RND. */
-  bn.wsrr   w15, 0x1 /* RND */
-  bn.wsrr   w16, 0x1 /* RND */
-  bn.wsrr   w17, 0x1 /* RND */
+  bn.wsrr   w15, RND
+  bn.wsrr   w16, RND
+  bn.wsrr   w17, RND
 
   /* XOR with bits from URND, just in case there's any vulnerability in EDN
      that lets the attacker recover bits before they reach OTBN. */
-  bn.wsrr   w20, 0x2 /* URND */
+  bn.wsrr   w20, URND
   bn.xor    w15, w15, w20
-  bn.wsrr   w20, 0x2 /* URND */
+  bn.wsrr   w20, URND
   bn.xor    w16, w16, w20
-  bn.wsrr   w20, 0x2 /* URND */
+  bn.wsrr   w20, URND
   bn.xor    w17, w17, w20
 
   /* Shift bits to get 320-bit seeds.
@@ -1414,7 +1414,7 @@ p256_random_scalar:
 
   /* Generate a random masking parameter.
      w14 <= URND(127) + 1 = x */
-  bn.wsrr   w14, 0x2 /* URND */
+  bn.wsrr   w14, URND
   bn.addi   w14, w14, 1
 
   /* w12 <= ([w15,w16] * w14) mod n = (seed0 * x) mod n */

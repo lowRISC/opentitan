@@ -19,7 +19,7 @@ main:
   li      x2, 2
   la      x3, modulus
   bn.lid  x2, 0(x3)
-  bn.wsrw 0x0, w2
+  bn.wsrw MOD, w2
 
   /* w19 <= 19 */
   bn.addi w19, w31, 19
