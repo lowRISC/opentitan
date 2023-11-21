@@ -98,24 +98,24 @@ test_label_3:
 # use mod WSR to load bignum registers with base li psuedo-instruction
 # mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 li x23, 0x78fccc06
-csrrw x0, 0x7d7, x23
+csrrw x0, mod7, x23
 li x23, 0x2228e9d6
-csrrw x0, 0x7d6, x23
+csrrw x0, mod6, x23
 li x23, 0x89c9b54f
-csrrw x0, 0x7d5, x23
+csrrw x0, mod5, x23
 li x23, 0x887cf14e
-csrrw x0, 0x7d4, x23
+csrrw x0, mod4, x23
 li x23, 0xc79af825
-csrrw x0, 0x7d3, x23
+csrrw x0, mod3, x23
 li x23, 0x69be586e
-csrrw x0, 0x7d2, x23
+csrrw x0, mod2, x23
 li x23, 0x9866bb3b
-csrrw x0, 0x7d1, x23
+csrrw x0, mod1, x23
 li x23, 0x53769ada
-csrrw x0, 0x7d0, x23
+csrrw x0, mod0, x23
 
 # x22 = 0x89c9b54f
-csrrs x23, 0x7d5, x0
+csrrs x23, mod5, x0
 
 # Note that some instructions used the fixed inputs (from w1 and w2) others use
 # results from previous instructions. When debugging an failure it is recommened
@@ -126,7 +126,7 @@ csrrs x23, 0x7d5, x0
 bn.wsrr w1, 0x0 /* MOD */
 
 # Request an RND value with a write to CSR RND_PREFETCH
-csrrw x0, 0x7d8, x0
+csrrw x0, rnd_prefetch, x0
 
 # sim environment provides a fixed value for RND (in other environment RND isn't
 # fixed so this test will have a different final state)
@@ -185,7 +185,7 @@ bn.addc w15, w10, w11, FG0
 bn.subb w17, w3, w4, FG1
 
 # x24 = {fg1, fg0} = 0x52
-csrrs x24, 0x7c8, x0
+csrrs x24, flags, x0
 
 # w18 = w1 + (w2 << 136) = 0x23a7769f_bbc28381_34745fe9_22168a4e_c79af825_69be586e_9866bb3b_53769ada
 bn.add w18, w1, w2 << 136

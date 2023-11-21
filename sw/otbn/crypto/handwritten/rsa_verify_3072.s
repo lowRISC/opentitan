@@ -229,7 +229,7 @@ mont_loop:
   bn.movr   x10++, x13
 
   /* No subtracion if carry bit of addition of carry words not set. */
-  csrrs     x2, 0x7c1, x0
+  csrrs     x2, FG1, x0
   andi      x2, x2, 1
   beq       x2, x0, mont_loop_no_sub
 
@@ -388,7 +388,7 @@ modexp_var_3072_f4:
     bn.lid    x9, 0(x16++)
     bn.subb   w2, w2, w3
     bn.movr   x17++, x11
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   /* TODO: currently we subtract the modulus if out_buf == M. This should
             never happen in an RSA context. We could catch this and raise an
             alert. */
