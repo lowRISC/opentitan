@@ -20,8 +20,8 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:openocd.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_SI_TEST_CMD",
+    "OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_CMSIS_SI_TEST_CMD",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -212,7 +212,7 @@ def silicon_jtag_params(
         rom_ext = rom_ext,
         otp = None,
         bitstream = None,
-        test_cmd = OPENTITANTOOL_OPENOCD_SI_TEST_CMD + test_cmd,
-        data = OPENTITANTOOL_OPENOCD_DATA_DEPS + data,
+        test_cmd = OPENTITANTOOL_OPENOCD_CMSIS_SI_TEST_CMD + test_cmd,
+        data = OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS + data,
         param = kwargs,
     )

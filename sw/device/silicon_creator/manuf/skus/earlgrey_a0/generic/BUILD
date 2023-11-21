@@ -13,6 +13,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
+    "silicon_jtag_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -29,6 +30,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -111,7 +113,18 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
+    silicon = silicon_jtag_params(
+        binaries = {
+            ":sram_cp_provision": "sram_cp_provision",
+        },
+        interface = "hyper310",
+        test_cmd = """
+            --elf={sram_cp_provision}
+        """,
+        test_harness = "//sw/host/tests/manuf/provisioning/cp",
+    ),
 )
 
 opentitan_test(

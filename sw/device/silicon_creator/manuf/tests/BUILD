@@ -235,6 +235,7 @@ cc_library(
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         silicon = silicon_jtag_params(
+            interface = "hyper310",
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
