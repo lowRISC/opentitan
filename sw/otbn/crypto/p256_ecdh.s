@@ -211,10 +211,10 @@ secret_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0
        w10,w11 <= seed1 */
-  bn.wsrr  w20, 0x4 /* KEY_S0_L */
-  bn.wsrr  w21, 0x5 /* KEY_S0_H */
-  bn.wsrr  w10, 0x6 /* KEY_S1_L */
-  bn.wsrr  w11, 0x7 /* KEY_S1_H */
+  bn.wsrr  w20, KEY_S0_L
+  bn.wsrr  w21, KEY_S0_H
+  bn.wsrr  w10, KEY_S1_L
+  bn.wsrr  w11, KEY_S1_H
 
   /* Generate secret key shares.
        w20, w21 <= d0

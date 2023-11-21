@@ -86,7 +86,7 @@ arithmetic_to_boolean_mod:
 
   /* Get field modulus p.
      w29 <= MOD() */
-  bn.wsrr   w29, 0x00 /* MOD */
+  bn.wsrr   w29, MOD
 
   /* Convert input A ([w12,w11]) to an unreduced value
      in the 2^257 domain. For this add (2^257 - p) to A.

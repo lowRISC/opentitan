@@ -31,8 +31,8 @@ p384_arithmetic_to_boolean_test:
 
   /* w18 <= URND
      w19 <= URND (129 bits) */
-  bn.wsrr   w18, 0x02
-  bn.wsrr   w19, 0x02
+  bn.wsrr   w18, URND
+  bn.wsrr   w19, URND
   bn.rshi   w19, w31, w19 >> 127
 
   /* Arithmetic masking */
