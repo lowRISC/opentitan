@@ -258,21 +258,20 @@ bool test_main(void) {
       LOG_INFO("Setting up watch dog and triggering a double fault.");
       uint32_t bark_cycles = 0;
       CHECK_STATUS_OK(
-          aon_timer_testutils_get_aon_cycles_from_us(100, &bark_cycles));
+          aon_timer_testutils_get_aon_cycles_from_us(1, &bark_cycles));
       uint32_t bite_cycles = 0;
       CHECK_STATUS_OK(
           aon_timer_testutils_get_aon_cycles_from_us(100, &bite_cycles));
 
       // Set wdog as a reset source.
       CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-          &pwrmgr, kDifPwrmgrReqTypeReset, kDifPwrmgrResetRequestSourceTwo,
+          &pwrmgr, kDifPwrmgrReqTypeReset, kDifPwrmgrResetRequestSourceOne,
           kDifToggleEnabled));
       // Setup the watchdog bark and bite timeouts.
       CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
           &aon_timer, bark_cycles, bite_cycles, false));
       // Enable cpu info.
       CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
-
       double_fault = true;
       OT_ADDRESSABLE_LABEL(kDoubleFaultFirstAddrLower);
       addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr1), 0);
