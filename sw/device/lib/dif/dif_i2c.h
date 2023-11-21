@@ -586,6 +586,20 @@ dif_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
                                     dif_i2c_fmt_flags_t flags);
 
 /**
+ * Writes a chunk of raw bytes and format flags onto the FMT FIFO.
+ *
+ * @param i2c An I2C handle.
+ * @param size The number of bytes to push onto the FIFO.
+ * @param bytes Buffer with the values to push onto the FIFO.
+ * @param flags The format flags to use for this write.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_write_bytes_raw(const dif_i2c_t *i2c, size_t size,
+                                     const uint8_t *bytes,
+                                     dif_i2c_fmt_flags_t flags);
+
+/**
  * Pushes a write entry onto the FMT FIFO, consisting of a byte and a format
  * code. This function can be called in sequence to enqueue an I2C
  * transmission.
