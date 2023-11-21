@@ -98,13 +98,13 @@ double_mod_var:
 
   /* Extract final carry bit from flags register.
        x2 <= aa[3072] */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   andi      x2, x2, 1
 
   jal       x1, subtract_modulus_var
 
   /* Extract final borrow bit from flags register. */
-  csrrs     x3, 0x7c0, x0
+  csrrs     x3, FG0, x0
   andi      x3, x3, 1
 
   /**

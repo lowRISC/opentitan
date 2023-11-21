@@ -124,7 +124,7 @@ p384_random_scalar:
 
   /* Read the FG0.Z flag (position 3).
      x2 <= 8 if FG0.Z else 0 */
-  csrrw     x2, 0x7c0, x0
+  csrrw     x2, FG0, x0
   andi      x2, x2, 8
 
   /* Compare w17 to 0. */
@@ -132,7 +132,7 @@ p384_random_scalar:
 
   /* Read the FG0.Z flag (position 3).
      x3 <= 8 if FG0.Z else 0 */
-  csrrw     x3, 0x7c0, x0
+  csrrw     x3, FG0, x0
   andi      x3, x3, 8
 
   /* Check if both registers w16 and w17 are equal to 0.
