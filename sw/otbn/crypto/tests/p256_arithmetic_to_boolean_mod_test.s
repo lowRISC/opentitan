@@ -24,7 +24,7 @@ p256_arithmetic_to_boolean_test:
   bn.lid    x2, 0(x4)
 
   /* Set MOD to p */
-  bn.wsrw   0x00, w29
+  bn.wsrw   MOD, w29
 
   /* Load values into WDRs */
 
@@ -35,7 +35,7 @@ p256_arithmetic_to_boolean_test:
   bn.addm   w11, w11, w31
 
   /* w19 <= URND mod p */
-  bn.wsrr   w19, 0x02
+  bn.wsrr   w19, URND
   bn.addm   w19, w19, w31
 
   /* Arithmetic masking */

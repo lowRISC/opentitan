@@ -48,7 +48,7 @@ main:
 
   /* Generate a random 127-bit number.
        w4 <= URND()[255:129] */
-  bn.wsrr  w4, 0x2 /* URND */
+  bn.wsrr  w4, URND
   bn.rshi  w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
