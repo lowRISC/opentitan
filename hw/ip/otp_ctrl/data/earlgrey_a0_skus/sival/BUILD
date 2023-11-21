@@ -80,9 +80,10 @@ cc_library(
 )
 
 # Initial test_unlocked state. Only applicable for test_unlocked0. All other
-# test states required the SECRET0 partition to be configured.
+# test states require the SECRET0 partition to be configured.
 # In this configuration, ROM execution is disabled by default. JTAG should be
 # used to bootstrap code into SRAM or FLASH.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 otp_image(
     name = "otp_img_test_unlocked0_manuf_empty",
     src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
@@ -94,6 +95,7 @@ otp_image(
 
 # `MANUF_INITIALIZED` configuration. This configuration will be generally used
 # to lock the chips before shipping to the Final-Test test house.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 otp_image(
     name = "otp_img_post_cp_test_locked0",
     src = "//hw/ip/otp_ctrl/data:otp_json_test_locked0",
@@ -101,6 +103,7 @@ otp_image(
 )
 
 # `MANUF_INITIALIZED` OTP configuration. Available on TEST_UNLOCK states 1-7.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
         name = "otp_img_test_unlocked{}_manuf_initialized".format(i),
@@ -114,6 +117,7 @@ otp_image(
 # well as dev, prod, prod_end and rma. This configuration has flash scrambling
 # disabled. See the personalized OTP configuration for targets requiring flash
 # scrambling enabled.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
         name = "otp_img_{}_individualized".format(lc_state),
@@ -136,6 +140,7 @@ otp_image(
 
 # `MANUF_PERSONALIZED` configuration. Available on `LC_MISSION_STATES` life
 # cycle states.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
         name = "otp_img_{}_personalized".format(lc_state),
