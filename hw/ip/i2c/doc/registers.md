@@ -10,9 +10,9 @@
 | i2c.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                                              |
 | i2c.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                                                  |
 | i2c.[`CTRL`](#ctrl)                           | 0x10     |        4 | I2C Control Register                                                                 |
-| i2c.[`STATUS`](#status)                       | 0x14     |        4 | I2C Live Status Register                                                             |
+| i2c.[`STATUS`](#status)                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                   |
 | i2c.[`RDATA`](#rdata)                         | 0x18     |        4 | I2C Read Data                                                                        |
-| i2c.[`FDATA`](#fdata)                         | 0x1c     |        4 | I2C Format Data                                                                      |
+| i2c.[`FDATA`](#fdata)                         | 0x1c     |        4 | I2C Host Format Data                                                                 |
 | i2c.[`FIFO_CTRL`](#fifo_ctrl)                 | 0x20     |        4 | I2C FIFO control register                                                            |
 | i2c.[`FIFO_STATUS`](#fifo_status)             | 0x24     |        4 | I2C FIFO status register                                                             |
 | i2c.[`OVRD`](#ovrd)                           | 0x28     |        4 | I2C Override Control Register                                                        |
@@ -158,7 +158,7 @@ I2C Control Register
 |   0    |   rw   |   0x0   | ENABLEHOST   | Enable Host I2C functionality                                                                              |
 
 ## STATUS
-I2C Live Status Register
+I2C Live Status Register for Host and Target modes
 - Offset: `0x14`
 - Reset default: `0x33c`
 - Reset mask: `0x3ff`
@@ -172,16 +172,16 @@ I2C Live Status Register
 |  Bits  |  Type  |  Reset  | Name       | Description                                                        |
 |:------:|:------:|:-------:|:-----------|:-------------------------------------------------------------------|
 | 31:10  |        |         |            | Reserved                                                           |
-|   9    |   ro   |   0x1   | ACQEMPTY   | ACQ FIFO is empty                                                  |
-|   8    |   ro   |   0x1   | TXEMPTY    | TX FIFO is empty                                                   |
-|   7    |   ro   |    x    | ACQFULL    | ACQ FIFO is full                                                   |
-|   6    |   ro   |    x    | TXFULL     | TX FIFO is full                                                    |
-|   5    |   ro   |   0x1   | RXEMPTY    | RX FIFO is empty                                                   |
+|   9    |   ro   |   0x1   | ACQEMPTY   | Target mode receive FIFO is empty                                  |
+|   8    |   ro   |   0x1   | TXEMPTY    | Target mode TX FIFO is empty                                       |
+|   7    |   ro   |    x    | ACQFULL    | Target mode receive FIFO is full                                   |
+|   6    |   ro   |    x    | TXFULL     | Target mode TX FIFO is full                                        |
+|   5    |   ro   |   0x1   | RXEMPTY    | Host mode RX FIFO is empty                                         |
 |   4    |   ro   |   0x1   | TARGETIDLE | Target functionality is idle. No Target transaction is in progress |
 |   3    |   ro   |   0x1   | HOSTIDLE   | Host functionality is idle. No Host transaction is in progress     |
-|   2    |   ro   |   0x1   | FMTEMPTY   | FMT FIFO is empty                                                  |
-|   1    |   ro   |    x    | RXFULL     | RX FIFO is full                                                    |
-|   0    |   ro   |    x    | FMTFULL    | FMT FIFO is full                                                   |
+|   2    |   ro   |   0x1   | FMTEMPTY   | Host mode FMT FIFO is empty                                        |
+|   1    |   ro   |    x    | RXFULL     | Host mode RX FIFO is full                                          |
+|   0    |   ro   |    x    | FMTFULL    | Host mode FMT FIFO is full                                         |
 
 ## RDATA
 I2C Read Data
@@ -201,7 +201,7 @@ I2C Read Data
 |  7:0   |   ro   |    x    | RDATA  |               |
 
 ## FDATA
-I2C Format Data
+I2C Host Format Data
 - Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
@@ -294,16 +294,16 @@ I2C FIFO status register
 {"reg": [{"name": "FMTLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "TXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "RXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "ACQLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                    |
-|:------:|:------:|:-------:|:-------|:-------------------------------|
-|   31   |        |         |        | Reserved                       |
-| 30:24  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo |
-|   23   |        |         |        | Reserved                       |
-| 22:16  |   ro   |    x    | RXLVL  | Current fill level of RX fifo  |
-|   15   |        |         |        | Reserved                       |
-|  14:8  |   ro   |    x    | TXLVL  | Current fill level of TX fifo  |
-|   7    |        |         |        | Reserved                       |
-|  6:0   |   ro   |    x    | FMTLVL | Current fill level of FMT fifo |
+|  Bits  |  Type  |  Reset  | Name   | Description                                  |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------|
+|   31   |        |         |        | Reserved                                     |
+| 30:24  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo (Target mode) |
+|   23   |        |         |        | Reserved                                     |
+| 22:16  |   ro   |    x    | RXLVL  | Current fill level of RX fifo (Host mode)    |
+|   15   |        |         |        | Reserved                                     |
+|  14:8  |   ro   |    x    | TXLVL  | Current fill level of TX fifo (Target mode)  |
+|   7    |        |         |        | Reserved                                     |
+|  6:0   |   ro   |    x    | FMTLVL | Current fill level of FMT fifo (Host mode)   |
 
 ## OVRD
 I2C Override Control Register
