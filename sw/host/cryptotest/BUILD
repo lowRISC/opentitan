@@ -8,7 +8,7 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 rust_library(
     name = "cryptotest_parser",
-    srcs = ["cryptotest_parser.rs"],
+    srcs = ["src/lib.rs"],
     deps = [
         "@crate_index//:once_cell",
         "@crate_index//:regex",
