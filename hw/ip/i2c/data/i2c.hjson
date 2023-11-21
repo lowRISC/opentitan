@@ -209,27 +209,27 @@
       ]
     }
     { name:     "STATUS"
-      desc:     "I2C Live Status Register"
+      desc:     "I2C Live Status Register for Host and Target modes"
       swaccess: "ro"
       hwaccess: "hwo"
       hwext:    "true"
       fields: [
         { bits: "0"
           name: "FMTFULL"
-          desc: "FMT FIFO is full"
+          desc: "Host mode FMT FIFO is full"
         }
         { bits: "1"
           name: "RXFULL"
-          desc: "RX FIFO is full"
+          desc: "Host mode RX FIFO is full"
         }
         { bits: "2"
           name: "FMTEMPTY"
-          desc: "FMT FIFO is empty"
+          desc: "Host mode FMT FIFO is empty"
           resval: "1"
         }
         { bits: "5"
           name: "RXEMPTY"
-          desc: "RX FIFO is empty"
+          desc: "Host mode RX FIFO is empty"
           resval: "1"
         }
         { bits: "3"
@@ -244,20 +244,20 @@
         }
         { bits: "6"
           name: "TXFULL"
-          desc: "TX FIFO is full"
+          desc: "Target mode TX FIFO is full"
         }
         { bits: "7"
           name: "ACQFULL"
-          desc: "ACQ FIFO is full"
+          desc: "Target mode receive FIFO is full"
         }
         { bits: "8"
           name: "TXEMPTY"
-          desc: "TX FIFO is empty"
+          desc: "Target mode TX FIFO is empty"
           resval: "1"
         }
         { bits: "9"
           name: "ACQEMPTY"
-          desc: "ACQ FIFO is empty"
+          desc: "Target mode receive FIFO is empty"
           resval: "1"
         }
       ]
@@ -277,7 +277,7 @@
              "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "FDATA"
-      desc: "I2C Format Data"
+      desc: "I2C Host Format Data"
       swaccess: "wo"
       hwaccess: "hro"
       hwqe: "true"
@@ -396,19 +396,19 @@
       fields: [
         { bits: "6:0"
           name: "FMTLVL"
-          desc: "Current fill level of FMT fifo"
+          desc: "Current fill level of FMT fifo (Host mode)"
         }
         { bits: "22:16"
           name: "RXLVL"
-          desc: "Current fill level of RX fifo"
+          desc: "Current fill level of RX fifo (Host mode)"
         }
         { bits: "14:8"
           name: "TXLVL"
-          desc: "Current fill level of TX fifo"
+          desc: "Current fill level of TX fifo (Target mode)"
         }
         { bits: "30:24"
           name: "ACQLVL"
-          desc: "Current fill level of ACQ fifo"
+          desc: "Current fill level of ACQ fifo (Target mode)"
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.
