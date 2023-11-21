@@ -185,7 +185,7 @@ p384_curve_point_valid:
   bn.subb   w0, w11, w13
 
   /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _x_valid
   unimp
@@ -206,7 +206,7 @@ p384_curve_point_valid:
   bn.subb   w0, w9, w13
 
   /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _y_valid
   unimp
@@ -240,7 +240,7 @@ p384_curve_point_valid:
   bn.cmp    w0, w31
 
   /* Trigger a fault if FG0.Z is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pt_1st_reg_valid
@@ -253,7 +253,7 @@ p384_curve_point_valid:
   bn.cmp    w1, w31
 
   /* Trigger a fault if FG0.Z is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pt_valid
