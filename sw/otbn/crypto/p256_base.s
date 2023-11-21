@@ -47,7 +47,7 @@
 trigger_fault_if_fg0_z:
   /* Read the FG0.Z flag (position 3).
        x2 <= FG0.Z */
-  csrrw     x2, 0x7c0, x0
+  csrrw     x2, FG0, x0
   andi      x2, x2, 8
   srli      x2, x2, 3
 
@@ -813,7 +813,7 @@ mod_inv:
 
     /* skip multiplication if C flag not set */
     bn.sel    w1, w1, w3, C
-    csrrs     x2, 0x7c0, x0
+    csrrs     x2, FG0, x0
     andi      x2, x2, 1
     beq       x2, x0, nomul
 
@@ -1440,7 +1440,7 @@ p256_random_scalar:
 
   /* Read the FG0.Z flag (position 3).
      x2 <= 8 if FG0.Z else 0 */
-  csrrw     x2, 0x7c0, x0
+  csrrw     x2, FG0, x0
   andi      x2, x2, 8
 
   /* Retry if x2 != 0. */

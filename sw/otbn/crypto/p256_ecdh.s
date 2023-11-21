@@ -273,7 +273,7 @@ check_public_key_valid:
   bn.cmp    w2, w29
 
   /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _x_valid
   unimp
@@ -291,7 +291,7 @@ check_public_key_valid:
   bn.cmp    w2, w29
 
   /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _y_valid
   unimp
@@ -317,7 +317,7 @@ check_public_key_valid:
   bn.cmp    w2, w3
 
   /* Trigger a fault if FG0.Z is false. */
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pk_valid

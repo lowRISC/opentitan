@@ -132,7 +132,7 @@ cmp_dmem_reg_buf:
 
   /* compare limbs and store comparison result in x3 */
   bn.cmp    w2, w3, FG1
-  csrrs     x3, 0x7c1, x0
+  csrrs     x3, FG1, x0
 
   /* leave loop if lowest limb was reached */
   beq       x8, x7, cmp_end
@@ -230,7 +230,7 @@ compute_rr:
 
     /* In case of final carry in doubling procedure substract modulus */
     /* Jump to 'rr_sub' if FG1.C == 1 */
-    csrrs     x3, 0x7c1, x0
+    csrrs     x3, FG1, x0
     andi      x3, x3, 1
     bne       x3, x0, rr_sub
 
@@ -239,7 +239,7 @@ compute_rr:
     bn.lid    x10, 0(x17)
     bn.movr   x11, x9
     bn.cmp    w2, w3, FG1
-    csrrs     x3, 0x7c1, x0
+    csrrs     x3, FG1, x0
 
     /* If the highest limbs of buf and mod are equal we have to run a
        multi-limb comparison. This is very unlikely to happen. If this
@@ -501,7 +501,7 @@ mont_loop:
   bn.movr   x10++, x13
 
   /* No subtracion if carry bit of addition of carry words not set. */
-  csrrs     x2, 0x7c1, x0
+  csrrs     x2, FG1, x0
   andi      x2, x2, 1
   beq       x2, x0, mont_loop_no_sub
 
@@ -698,7 +698,7 @@ modexp_var:
     bn.lid    x9, 0(x16++)
     bn.subb   w2, w2, w3
     bn.movr   x17++, x11
-  csrrs     x2, 0x7c0, x0
+  csrrs     x2, FG0, x0
   /* TODO: currently we subtract the modulus if out_buf == M. This should
             never happen in an RSA context. We could catch this and raise an
             alert. */

@@ -260,7 +260,7 @@ scalar_mult_int_p384:
     bn.xor    w8, w0, w1
     /* Create conditional offeset into scratchpad.
        if (s0[512] xor s1[512]) x27 <= x30 else x27 <= x30+256 */
-    csrrs     x3, 0x7c0, x0
+    csrrs     x3, FG0, x0
     xori      x3, x3, -1
     andi      x3, x3, 2
     slli      x27, x3, 7
