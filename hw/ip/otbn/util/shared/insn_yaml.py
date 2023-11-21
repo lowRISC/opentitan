@@ -162,8 +162,9 @@ class Insn:
 
         self.straight_line = yd.get('straight-line', True)
 
+        iflow_what = 'iflow field for {}'.format(what)
         self.iflow = InsnInformationFlow.from_yaml(yd.get('iflow', None),
-                'iflow field for {}'.format(what), self.operands)
+                                                   iflow_what, self.operands)
 
     def enc_vals_to_op_vals(self,
                             cur_pc: int,
