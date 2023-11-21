@@ -156,3 +156,11 @@ PROD, PROD\_END | N              | Y               | Y
 **Lifecycle**   | **Bare Metal** | **Node Locked** | **PROD ROM\_EXT**
 :-------------- | :------------: | :-------------: | :---------------:
 PROD, PROD\_END | N              | Y               | Y
+
+## Read More
+
+*  [SiVal Developer Guide](./devguide.md)
+*  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
+*  [Build & Test Rules](../../../../../rules/opentitan/README.md)
+*  [OTP Build and Test Infrastructure](../../../../../hw/ip/otp_ctrl/data/README.md)
+*  [FPGA Bitstreams](../../../../../hw/bitstream/README.md)
