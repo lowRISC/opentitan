@@ -116,9 +116,9 @@ miller_rabin_round:
   addi     x2, x14, 0
   loop     x30, 4
     /* w22 <= URND() */
-    bn.wsrr  w22, 0x1
+    bn.wsrr  w22, URND
     /* w23 <= RND() */
-    bn.wsrr  w23, 0x2
+    bn.wsrr  w23, RND
     /* w23 <= w22 ^ w23 */
     bn.xor   w23, w22, w23
     /* b[i] <= w23 */

@@ -188,14 +188,14 @@ attestation_endorse:
        dmem[d0], dmem[d1] <= RND */
   li        x20, 20
   la        x2, d0
-  bn.wsrr   w20, 0x1 /* RND */
+  bn.wsrr   w20, RND
   bn.sid    x20, 0(x2++)
-  bn.wsrr   w20, 0x1 /* RND */
+  bn.wsrr   w20, RND
   bn.sid    x20, 0(x2)
   la        x2, d1
-  bn.wsrr   w20, 0x1 /* RND */
+  bn.wsrr   w20, RND
   bn.sid    x20, 0(x2++)
-  bn.wsrr   w20, 0x1 /* RND */
+  bn.wsrr   w20, RND
   bn.sid    x20, 0(x2)
 
   ecall

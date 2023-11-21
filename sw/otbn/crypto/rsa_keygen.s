@@ -320,7 +320,7 @@ modinv_f4:
   bn.add   w22, w23, w23 << 16
 
   /* MOD <= 65537 */
-  bn.wsrw  0x0, w22
+  bn.wsrw  MOD, w22
 
   /* Calculate number of loop iterations = bitlen(m) + bitlen(65537).
        x31 <= (x30 << 8) + 17 = 256*n + 17 */
@@ -509,7 +509,7 @@ modinv_f4:
 
     /* Conditionally add to B.
          w27 <= B + (65537 & w23) */
-    bn.wsrr  w24, 0x0 /* MOD */
+    bn.wsrr  w24, MOD
     bn.and   w24, w24, w23
     bn.add   w27, w27, w24
 
@@ -574,7 +574,7 @@ modinv_f4:
 
     /* Conditionally add to D.
          w28 <= D + (65537 & w23) */
-    bn.wsrr  w24, 0x0 /* MOD */
+    bn.wsrr  w24, MOD
     bn.and   w24, w24, w23
     bn.add   w28, w28, w24
 
@@ -1103,9 +1103,9 @@ generate_prime_candidate:
   addi     x2, x16, 0
   loop     x30, 4
     /* w20 <= RND() */
-    bn.wsrr  w20, 0x1 /* RND */
+    bn.wsrr  w20, RND
     /* w21 <= URND() */
-    bn.wsrr  w21, 0x2 /* URND */
+    bn.wsrr  w21, URND
     /* w20 <= w20 ^ w21 */
     bn.xor   w20, w20, w21
     /* dmem[x2] <= w20 */
@@ -1187,7 +1187,7 @@ relprime_f4:
        MOD <= 2^16 + 1 */
   bn.addi  w22, w31, 1
   bn.add   w22, w22, w22 << 16
-  bn.wsrw  0x0, w22
+  bn.wsrw  MOD, w22
 
   /* Initialize constants for loop. */
   li      x22, 22

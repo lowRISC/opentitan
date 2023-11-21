@@ -104,9 +104,9 @@ p384_scalar_mult:
 
   /* Fetch a fresh randomness for mask.
      [w20, w19, w18] <= URND() = r */
-  bn.wsrr   w18, 0x2 /* URND */
-  bn.wsrr   w19, 0x2 /* URND */
-  bn.wsrr   w20, 0x2 /* URND */
+  bn.wsrr   w18, URND
+  bn.wsrr   w19, URND
+  bn.wsrr   w20, URND
 
   /* Reduce r mod p
      [w19, w18] <= [w20, w19, w18] mod [w13, w12] = r mod p */

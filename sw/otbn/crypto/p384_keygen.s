@@ -59,20 +59,20 @@ p384_random_scalar:
 
   random_scalar_retry:
   /* Obtain 1024 bits of randomness from RND. */
-  bn.wsrr   w6, 0x1 /* RND */
-  bn.wsrr   w7, 0x1 /* RND */
-  bn.wsrr   w8, 0x1 /* RND */
-  bn.wsrr   w9, 0x1 /* RND */
+  bn.wsrr   w6, RND
+  bn.wsrr   w7, RND
+  bn.wsrr   w8, RND
+  bn.wsrr   w9, RND
 
   /* XOR with bits from URND, just in case there's any vulnerability in EDN
      that lets the attacker recover bits before they reach OTBN. */
-  bn.wsrr   w5, 0x2 /* URND */
+  bn.wsrr   w5, URND
   bn.xor    w6, w6, w5
-  bn.wsrr   w5, 0x2 /* URND */
+  bn.wsrr   w5, URND
   bn.xor    w7, w7, w5
-  bn.wsrr   w5, 0x2 /* URND */
+  bn.wsrr   w5, URND
   bn.xor    w8, w8, w5
-  bn.wsrr   w5, 0x2 /* URND */
+  bn.wsrr   w5, URND
   bn.xor    w9, w9, w5
 
   /* Shift bits to get 448-bit seeds.
@@ -89,7 +89,7 @@ p384_random_scalar:
 
   /* Generate a random 127-bit number.
      w4 <= URND()[255:129] */
-  bn.wsrr   w4, 0x2 /* URND */
+  bn.wsrr   w4, URND
   bn.rshi   w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
