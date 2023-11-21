@@ -316,6 +316,7 @@ _NORMAL_DEPENDENCIES = {
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.31//:erased_serde",
             "foreign-types": "@crate_index__foreign-types-0.3.2//:foreign_types",
+            "heck": "@crate_index__heck-0.4.1//:heck",
             "hex": "@crate_index__hex-0.4.3//:hex",
             "humantime": "@crate_index__humantime-2.1.0//:humantime",
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
