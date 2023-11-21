@@ -106,6 +106,21 @@
       ]
     },
     {
+      "name": "PINMUX_TAP_DFT",
+      "pins": [
+        {
+          "name": "TAP_STRAP0",
+          "mode": "PushPull",
+          "level": true
+        },
+        {
+          "name": "TAP_STRAP1",
+          "mode": "PushPull",
+          "level": true
+        }
+      ]
+    },
+    {
       "name": "RESET",
       "pins": [
         {

@@ -182,6 +182,9 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_tap_straps_rma"]
+      bazel: [
+        "//sw/device/tests:rv_dm_jtag_tap_sel",
+      ],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [
