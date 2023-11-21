@@ -67,14 +67,14 @@ test_rnd:
 
 
   /* Read the RND WSR. */
-  bn.wsrr w0, 0x1 /* RND */
+  bn.wsrr w0, RND
 
   /* Write w0 to DMEM. */
   la x11, rnd_out
   bn.sid x0, 0(x11)
 
   /* Read the RND WSR again. */
-  bn.wsrr w1, 0x1 /* RND */
+  bn.wsrr w1, RND
 
   jal x1, error_checking
   ret
@@ -100,14 +100,14 @@ test_urnd:
 
 
   /* Read the URND WSR. */
-  bn.wsrr w0, 0x2 /* URND */
+  bn.wsrr w0, URND
 
   /* Write w0 to DMEM. */
   la x11, urnd_out
   bn.sid x0, 0(x11)
 
   /* Read the URND WSR again. */
-  bn.wsrr w1, 0x2 /* URND */
+  bn.wsrr w1, URND
 
   jal x1, error_checking
   ret
