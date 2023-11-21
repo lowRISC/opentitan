@@ -119,6 +119,7 @@ fpga_cw310(
 # targets that require executing at the `rom_ext` stage level in flash, as well
 # as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
 # emulate silicon targets containing a `rom_ext` stage.
+# See sw/device/tests/doc/sival/devguide.md for more details.
 fpga_cw310(
     name = "fpga_cw310_sival",
     testonly = True,
@@ -133,7 +134,9 @@ fpga_cw310(
 )
 
 # FPGA configuration used to emulate silicon targets containing a `rom_ext`
-# stage. See `fpga_cw310_sival` for more details.
+# stage.
+# See `fpga_cw310_sival` for more details.
+# Also, see sw/device/tests/doc/sival/devguide.md.
 fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
