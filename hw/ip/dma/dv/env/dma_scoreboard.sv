@@ -378,8 +378,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
       dst_queue.delete(queue_idx);
     end
 
-    // Errors are expected to raise an interrupt if enabled
-    exp_dma_err_intr = item.d_error & intr_enable_error;
+    // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
+    // error whilst error-free 'clear interrupt' writes are occurring.
+    exp_dma_err_intr = exp_dma_err_intr | (item.d_error & intr_enable_error);
   endtask
 
   // Method to process requests on TL interfaces
@@ -810,7 +811,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           dma_config.is_valid_config = dma_config.check_config("scoreboard starting transfer");
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
-          exp_dma_err_intr = !dma_config.is_valid_config;
+          exp_dma_err_intr = !dma_config.is_valid_config & intr_enable_error;
           // Expect digest to be cleared even for rejected configurations
           exp_digest = '{default:0};
           if (cfg.en_cov) begin

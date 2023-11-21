@@ -358,11 +358,13 @@ class dma_base_vseq extends cip_base_vseq #(
                                  dma_config.mem_range_lock);
   endtask : run_common_config
 
-  // Task: Enable Interrupt
-  task enable_interrupt();
-    `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
-    csr_wr(ral.intr_enable, (1 << ral.intr_enable.get_n_bits()) - 1);
-  endtask : enable_interrupt
+  // Task: Enable/Disable Interrupt(s)
+  task enable_interrupts(bit [31:0] interrupts = 32'hFFFF_FFFF, bit enable = 1'b1);
+    string action;
+    action = enable ? "Enable" : "Disable";
+    `uvm_info(`gfn, $sformatf("DMA: %s interrupt(s) 0x%0x", action, interrupts), UVM_HIGH)
+    cfg_interrupts(interrupts, enable);
+  endtask : enable_interrupts
 
   // Clear one or more interrupts
   task clear_interrupts(bit [31:0] clear);
@@ -775,6 +777,6 @@ class dma_base_vseq extends cip_base_vseq #(
   // Body: Need to override for inherited tests
   task body();
     init_model();
-    enable_interrupt();
+    enable_interrupts();
   endtask : body
 endclass
