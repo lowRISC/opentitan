@@ -78,7 +78,7 @@ otp_json(
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true {firmware}"
-                --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
                 --exec="fpga clear-bitstream"
                 no-op
             """,

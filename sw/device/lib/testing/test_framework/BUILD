@@ -333,7 +333,7 @@ opentitan_test(
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            --exec="console --non-interactive --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
             console
             --flow-control
             --send="{flow_control_message}\n"
@@ -348,7 +348,7 @@ opentitan_test(
     verilator = verilator_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """
-            --exec "console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
+            --exec "console --non-interactive --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control"
             console
             --flow-control
             --send="{flow_control_message}\n"

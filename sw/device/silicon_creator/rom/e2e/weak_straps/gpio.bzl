@@ -46,7 +46,7 @@ def strap_combination(strap):
 def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_verilator_args = ""):
     settings = strap_combination(value)
     if evaluator == None:
-        evaluator = "console --exit-success=\"{pass}\" --exit-failure=\"{fail}\""
+        evaluator = "console --non-interactive --exit-success=\"{pass}\" --exit-failure=\"{fail}\""
     settings["evaluator"] = evaluator.format(**settings)
 
     opentitan_test(
