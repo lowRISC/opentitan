@@ -121,6 +121,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     fork m_tl_sba_device_seq.start(p_sequencer.tl_sba_sequencer_h); join_none
     // To ensure the seq above starts executing before the code following it starts executing.
     #0;
+    // TODO: for some reason, one #0 does not cut it and a second one is required to ensure the fork
+    // above is executing. Without this, the forked process hangs when m_tl_sba_device_seq.seq_stop
+    // (); is called right after forking it. This may also be a hidden race condition in the
+    // m_tl_sba_device_seq implementation.
+    #0;
     // TODO: sba_tl_device_seq_disable_tlul_assert_host_sba_resp_svas();
   endtask
 
