@@ -195,12 +195,6 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
   return OK_STATUS(nak);
 }
 
-status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
-  dif_i2c_status_t status;
-  TRY(dif_i2c_get_status(i2c, &status));
-  return OK_STATUS(status.rx_fifo_empty);
-}
-
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
                             uint8_t byte_count, uint8_t *data, size_t timeout) {
   uint32_t nak_count = 0;

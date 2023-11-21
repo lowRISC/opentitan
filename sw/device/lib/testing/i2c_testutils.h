@@ -154,6 +154,7 @@ status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
                                      uint8_t i2c_id);
+
 /**
  * Return whether the fifo is empty.
  *
@@ -161,7 +162,50 @@ status_t i2c_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
  * @return `kOk(dir)` Where `dir` is true if the fifo is empty. Or an error.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c);
+static inline status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.rx_fifo_empty);
+}
+
+/**
+ * Return whether the tx fifo is full.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the tx fifo is full. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_tx_fifo_full(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.tx_fifo_full);
+}
+
+/**
+ * Return whether the tx fifo is empty.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the tx fifo is empty. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_tx_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.tx_fifo_empty);
+}
+
+/**
+ * Return whether the fmt fifo is empty.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return `kOk(dir)` Where `dir` is true if the fmt fifo is empty. Or an error.
+ */
+OT_WARN_UNUSED_RESULT
+static inline status_t i2c_testutils_fmt_fifo_empty(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  TRY(dif_i2c_get_status(i2c, &status));
+  return OK_STATUS(status.fmt_fifo_empty);
+}
 
 /**
  * Issue an i2c read transaction, check for a nak and retry until timeout in
