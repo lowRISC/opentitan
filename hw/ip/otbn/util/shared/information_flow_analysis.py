@@ -8,7 +8,8 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .cache import Cache, CacheEntry
 from .constants import ConstantContext, get_op_val_str
-from .control_flow import ControlLoc, ControlGraph, Cycle, Ecall, ImemEnd, LoopStart, Ret
+from .control_flow import (ControlLoc, ControlGraph, Cycle, Ecall,
+                           ImemEnd, LoopStart, Ret)
 from .decode import OTBNProgram
 from .information_flow import InformationFlowGraph
 from .insn_yaml import Insn
@@ -410,7 +411,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
         constants.update_insn(last_insn, last_op_vals)
 
     # We're only returning constants that are the same in all RET branches
-    common_constants = None
+    common_consts = None
 
     for loc in edges:
         if isinstance(loc, Ecall) or isinstance(loc, ImemEnd):
@@ -424,8 +425,8 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                     '{:#x})'.format(section.end, loop_end_pc))
             # Ret nodes are expected to be the only edge
             assert len(edges) == 1
-            # Since this is the only edge, common_constants must be unset
-            common_constants = constants
+            # Since this is the only edge, common_consts must be unset
+            common_consts = constants
             return_iflow.update(iflow)
         elif isinstance(loc, Cycle):
             # Add the flow from start PC to this cyclic PC to the existing
@@ -448,10 +449,10 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
             # If there were any return paths, take values on which existing and
             # recursive constants agree.
             if rec_return_iflow.exists:
-                if common_constants is None:
-                    common_constants = local_constants
+                if common_consts is None:
+                    common_consts = local_constants
                 else:
-                    common_constants = common_constants.intersect(local_constants)
+                    common_consts = common_consts.intersect(local_constants)
 
             # Update return_iflow with the current iflow composed with return
             # paths
@@ -462,13 +463,13 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
                     section.end, type(loc)))
 
     # Update used_constants to include any constant dependencies of
-    # common_constants, since common_constants will be cached
-    if common_constants is not None:
-        # If there is no return branch, we would expect common_constants to be
+    # common_consts, since common_consts will be cached
+    if common_consts is not None:
+        # If there is no return branch, we would expect common_consts to be
         # None.
         assert return_iflow.exists
         used_constants.update(
-            return_iflow.sources_for_any(common_constants.values.keys()))
+            return_iflow.sources_for_any(common_consts.values.keys()))
 
     # If this PC is the start of one of the cycles we're currently processing,
     # see if it can be finalized.
@@ -490,7 +491,8 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
         # If all starting constants were stable, just loop() the information
         # flow graph for this cycle to get the combined flow for all paths that
-        # cycle back to this point (including no cycling, i.e. the empty graph).
+        # cycle back to this point (including no cycling, i.e. the empty
+        # graph).
         cycle_iflow = cycle_iflow.loop()
 
         # The final information flow for all paths is the graph of any valid
@@ -520,15 +522,17 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
     control_deps.pop('x0', None)
 
     # Update the cache and return
-    out = (used_constants, return_iflow, program_end_iflow, common_constants,
+    out = (used_constants, return_iflow, program_end_iflow, common_consts,
            cycles, control_deps)
 
     _get_iflow_cache_update(start_pc, start_constants, out, cache)
     return out
 
 
-def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
-        subroutine_name: str, start_constants: Dict[str,int]) -> SubroutineIFlow:
+def get_subroutine_iflow(program: OTBNProgram,
+                         graph: ControlGraph,
+                         subroutine_name: str,
+                         start_constants: Dict[str, int]) -> SubroutineIFlow:
     '''Gets the information-flow graphs for the subroutine.
 
     Returns three items:
@@ -542,7 +546,7 @@ def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
     '''
     if 'x0' in start_constants and start_constants['x0'] != 0:
         raise ValueError('The x0 register is always 0; cannot require '
-                f'x0={start_constants["x0"]}')
+                         f'x0={start_constants["x0"]}')
     start_constants['x0'] = 0
     constants = ConstantContext(start_constants)
     start_pc = program.get_pc_at_symbol(subroutine_name)

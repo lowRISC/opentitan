@@ -85,9 +85,9 @@ class ConstantContext:
 
         Currently, this procedure supports only a limited set of instructions.
         Since constant values only need to be known in order to decode indirect
-        references to WDRs and loop counts, this set is chosen based on operations
-        likely to happen to those registers: `addi`, `lui`, and bignum instructions
-        containing `_inc` op_vals.
+        references to WDRs and loop counts, this set is chosen based on
+        operations likely to happen to those registers: `addi`, `lui`, and
+        bignum instructions containing `_inc` op_vals.
         '''
         new_values = {}
         if insn.mnemonic == 'addi':
@@ -110,10 +110,10 @@ class ConstantContext:
                     if inc_name in self.values:
                         new_values[inc_name] = self.values[inc_name] + 1
 
-        # If the instruction's information-flow graph indicates that we updated any
-        # constant register other than the ones handled above, the value of that
-        # register can no longer be determined; remove it from the constants
-        # dictionary.
+        # If the instruction's information-flow graph indicates that we updated
+        # any constant register other than the ones handled above, the value of
+        # that register can no longer be determined; remove it from the
+        # constants dictionary.
         iflow = insn.iflow.evaluate(op_vals, self.values)
         self.removemany(iflow.all_sinks())
 
