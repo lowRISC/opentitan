@@ -252,6 +252,11 @@ impl JtagChain for OpenOcdJtagChain {
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));
         }
+        static CONNECT_FAILED_REGEX: Lazy<Regex> =
+            Lazy::new(|| Regex::new(r"target \S+ examination failed").unwrap());
+        if CONNECT_FAILED_REGEX.is_match(&resp) {
+            bail!(OpenOcdError::InitializeFailure(resp));
+        }
 
         Ok(Box::new(OpenOcdJtagTap {
             openocd: self.openocd,
