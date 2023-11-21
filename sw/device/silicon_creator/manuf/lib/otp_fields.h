@@ -41,12 +41,16 @@ enum {
   kSecret0TestUnlockTokenOffset =
       OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
   kSecret0TestUnlockTokenSizeInBytes = OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_SIZE,
+  kSecret0TestUnlockTokenSizeIn32BitWords =
+      kSecret0TestUnlockTokenSizeInBytes / sizeof(uint32_t),
   kSecret0TestUnlockTokenSizeIn64BitWords =
       kSecret0TestUnlockTokenSizeInBytes / sizeof(uint64_t),
 
   kSecret0TestExitTokenOffset =
       OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
   kSecret0TestExitTokenSizeInBytes = OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
+  kSecret0TestExitTokenSizeIn32BitWords =
+      kSecret0TestExitTokenSizeInBytes / sizeof(uint32_t),
   kSecret0TestExitTokenSizeIn64BitWords =
       kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
 
