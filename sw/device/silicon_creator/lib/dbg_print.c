@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-void print_integer(unsigned value, bool is_signed) {
+static void print_integer(unsigned value, bool is_signed) {
   char buf[12];
   char *b = buf + sizeof(buf);
   if (is_signed && (int)value < 0) {
