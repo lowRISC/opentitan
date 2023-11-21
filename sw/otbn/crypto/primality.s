@@ -56,7 +56,7 @@ miller_rabin:
     bn.cmp   w31, w21
 
     /* x2 <= CSRs[FG0][0] = FG0.C */
-    csrrs    x2, 0x7c0, x0
+    csrrs    x2, FG0, x0
     andi     x2, x2, 1
 
     /* Skip the rest of the loop if w is composite (x2 == 0). We can't exit
@@ -142,7 +142,7 @@ miller_rabin_round:
 
   /* Extract FG0.C into a small register and jump back to the start if it is 0.
        x2 <= CSRs[FG0][0] = FG0.C */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   andi     x2, x2, 1
   beq      x2, x0, miller_rabin_round
 
@@ -164,7 +164,7 @@ miller_rabin_round:
 
   /* Extract FG0.C into a small register and retry if it is 0.
        x2 <= CSRs[FG0][0] = FG0.C */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   andi     x2, x2, 1
   beq      x2, x0, miller_rabin_round
 

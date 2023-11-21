@@ -145,7 +145,7 @@ derive_d:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
@@ -620,7 +620,7 @@ modinv_f4:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
@@ -746,7 +746,7 @@ _generate_p_counter_nonzero:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
@@ -819,7 +819,7 @@ _generate_q_counter_nonzero:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
@@ -903,7 +903,7 @@ check_p:
 
   /* Get the FG0.C flag into a register.
        x2 <= CSRs[FG0][0] = FG0.C */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   andi     x2, x2, 1
 
   /* If the flag is set, then the check failed and we can skip the remaining
@@ -928,7 +928,7 @@ check_p:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
@@ -1067,7 +1067,7 @@ check_q:
 
   /* Get the FG0.Z flag into a register.
        x2 <= (CSRs[FG0] >> 3) & 1 = FG0.Z */
-  csrrs    x2, 0x7c0, x0
+  csrrs    x2, FG0, x0
   srli     x2, x2, 3
   andi     x2, x2, 1
 
