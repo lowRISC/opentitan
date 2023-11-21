@@ -81,7 +81,7 @@ fpga_cw310(
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"
-        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
 )
@@ -205,7 +205,7 @@ fpga_cw340(
     test_cmd = """
         --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"
-        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
 )
@@ -236,7 +236,7 @@ silicon(
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
-        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
 )
@@ -282,7 +282,7 @@ sim_verilator(
     },
     rom = "//sw/device/lib/testing/test_rom:test_rom",
     test_cmd = """
-        --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
 )

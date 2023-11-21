@@ -22,9 +22,9 @@ pub struct Console {
     #[command(flatten)]
     params: UartParams,
 
-    /// Do not print console start end exit messages.
-    #[arg(short, long)]
-    quiet: bool,
+    /// Do not run in interactive mode and forward stdin.
+    #[arg(long, default_value = "false")]
+    non_interactive: bool,
 
     /// Log console output to a file.
     #[arg(short, long)]
@@ -84,7 +84,11 @@ impl CommandDispatch for Console {
         let status = {
             // Put the terminal into raw mode.  The tty guard will restore the
             // console settings when it goes out of scope.
-            let mut stdin = RawTty::new(std::io::stdin())?;
+            let mut stdin = if self.non_interactive {
+                None
+            } else {
+                Some(RawTty::new(std::io::stdin())?)
+            };
             let mut stdout = std::io::stdout();
 
             let uart = self.params.create(transport)?;
@@ -92,13 +96,13 @@ impl CommandDispatch for Console {
                 log::info!("Sending: {:?}", send);
                 uart.write(send.as_bytes())?;
             }
-            if !self.quiet {
+            if !self.non_interactive {
                 eprintln!("Starting interactive console");
                 eprintln!("[CTRL+C] to exit.\n");
             }
-            console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
+            console.interact(&*uart, stdin.as_mut().map(|x| x as _), Some(&mut stdout))?
         };
-        if !self.quiet {
+        if !self.non_interactive {
             eprintln!("\n\nExiting interactive console.");
         }
 

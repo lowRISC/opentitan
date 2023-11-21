@@ -235,7 +235,7 @@ def fpga_params(
             "--exec=\"transport init\"",
             "--exec=\"fpga load-bitstream $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
+            "--exec=\"console --non-interactive --exit-success={exit_success} --exit-failure={exit_failure}\"",
             "{clear_bitstream}",
         ],
         # CW-specific Parameters

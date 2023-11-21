@@ -438,7 +438,7 @@ opentitan_functest(
             "--exec=\"transport init\"",
             "--exec=\"fpga load-bitstream $(rootpath {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
-            "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
+            "--exec=\"console --non-interactive --exit-success={exit_success} --exit-failure={exit_failure}\"",
             # We clear the bitstream to force any subsequent test to load a
             # fresh bitstream and clear all memories (ie: flash-based boot policy).
             "--exec=\"fpga clear-bitstream\"",
