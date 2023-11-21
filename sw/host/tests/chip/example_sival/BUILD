@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "example_sival",
     srcs = [
-        "main.rs",
+        "src/main.rs",
     ],
     deps = [
         "//sw/host/opentitanlib",
