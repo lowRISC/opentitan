@@ -4,12 +4,6 @@
 
 /* Test access to randomness from OTBN. */
 
-.equ CSR_FG0,          0x7c0
-.equ CSR_FG1,          0x7c1
-.equ CSR_RND_PREFETCH, 0x7d8
-.equ CSR_RND,          0xfc0
-.equ CSR_URND,         0xfc1
-
 .section .text.start
 /* Test entry point, no arguments need to be passed in nor results returned. */
 .globl main
@@ -45,10 +39,10 @@ main:
  */
 test_rnd:
   /* Initial read. */
-  csrrs x2, CSR_RND, x0
+  csrrs x2, RND, x0
 
   /* Read again, should block for a while. */
-  csrrs x3, CSR_RND, x0
+  csrrs x3, RND, x0
 
   /* If two consecutive reads return the same random number that's most likely
      a bug. (But it doesn't have to be a bug! Re-run the test if it fails.) */
@@ -56,7 +50,7 @@ test_rnd:
   beq x2, x3, exit_fail
 
   /* Request a RND value from the EDN by writing to RND_PREFETCH. */
-  csrrw x0, CSR_RND_PREFETCH, x0
+  csrrw x0, RND_PREFETCH, x0
 
   /* Give the prefetch a while to complete. */
   /* An EDN request for a random number can take up to around 5 ms. Do not
@@ -65,7 +59,7 @@ test_rnd:
     nop
 
   /* Read RND again, should block less. */
-  csrrs x2, CSR_RND, x0
+  csrrs x2, RND, x0
 
   /* Compare to previous value again to detect RND getting stuck. */
   addi x31, x0, 2
@@ -94,10 +88,10 @@ test_rnd:
  */
 test_urnd:
   /* Read the URND CSR. */
-  csrrs x2, CSR_URND, x0
+  csrrs x2, URND, x0
 
   /* Read again. */
-  csrrs x3, CSR_URND, x0
+  csrrs x3, URND, x0
 
   /* If two consecutive reads return the same random number that's most likely
      a bug. (But it doesn't have to be a bug! Re-run the test if it fails.) */
@@ -132,7 +126,7 @@ consume_entropy:
 
   loop x10, 1
     /* Read the RND CSR. */
-    csrrs x2, CSR_RND, x0
+    csrrs x2, RND, x0
 
 skip_loops:
   ret
@@ -147,14 +141,14 @@ skip_loops:
 error_checking:
   /* Fail the test if the two numbers read from RND are equal. */
   bn.cmp w0, w1
-  csrrs x2, CSR_FG0, x0
+  csrrs x2, FG0, x0
   andi x2, x2, 8 /* Extract Z (zero) bit.*/
   addi x31, x31, 1
   bne x2, x0, exit_fail
 
   /* Fail the test if all the bits are zero.*/
   bn.cmp w0, w31
-  csrrs x2, CSR_FG0, x0
+  csrrs x2, FG0, x0
   andi x2, x2, 8 /* Extract Z (zero) bit.*/
   addi x31, x31, 1
   bne x2, x0, exit_fail
@@ -162,7 +156,7 @@ error_checking:
   /* Fail the test if all the bits are one. */
   bn.not w2, w31 /*`w2 = ~0`*/
   bn.cmp w0, w2
-  csrrs x2, CSR_FG0, x0
+  csrrs x2, FG0, x0
   andi x2, x2, 8 /* Extract Z (zero) bit.*/
   addi x31, x31, 1
   bne x2, x0, exit_fail

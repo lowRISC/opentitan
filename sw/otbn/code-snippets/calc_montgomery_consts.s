@@ -100,7 +100,7 @@ compute_rr_sample:
     bn.sid      x0, 0(x9++)
   /* Check that the most significant limb of m is >=2^255 */
   /* isolate FG0.M from calculating highest limb of 2-complement */
-  csrrs       x8, 0x7c0, x0
+  csrrs       x8, FG0, x0
   andi        x9, x8, 2
   beq         x9, x0, m_ok
   /* Return 1 if error. */
@@ -276,7 +276,7 @@ compute_rr_sample_fast:
 
   /* Check that the most significant limb of m is >=2^255 */
   /* isolate FG0.M from calculating highest limb of 2-complement */
-  csrrs       x8, 0x7c0, x0
+  csrrs       x8, FG0, x0
   andi        x9, x8, 2
   beq         x9, x0, m_OK
   /* Return 1 if error. */
