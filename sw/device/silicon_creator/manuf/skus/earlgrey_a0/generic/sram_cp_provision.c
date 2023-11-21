@@ -116,6 +116,23 @@ static status_t wafer_auth_secret_flash_info_page_write(
   return OK_STATUS();
 }
 
+static status_t print_tokens_to_console(
+    manuf_cp_provisioning_data_t *provisioning_data) {
+  LOG_INFO("Device ID:");
+  for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
+    LOG_INFO("0x%x", provisioning_data->device_id[i]);
+  }
+  LOG_INFO("Test Unlock Token:");
+  for (size_t i = 0; i < kSecret0TestUnlockTokenSizeIn32BitWords; ++i) {
+    LOG_INFO("0x%x", provisioning_data->test_unlock_token[i]);
+  }
+  LOG_INFO("Test Exit Token:");
+  for (size_t i = 0; i < kSecret0TestExitTokenSizeIn32BitWords; ++i) {
+    LOG_INFO("0x%x", provisioning_data->test_exit_token[i]);
+  }
+  return OK_STATUS();
+}
+
 /**
  * Provision flash info pages 0 and 3, and OTP Secret0 partition.
  */
@@ -123,6 +140,7 @@ static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for CP provisioning data ...");
   manuf_cp_provisioning_data_t provisioning_data;
   TRY(ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
+  TRY(print_tokens_to_console(&provisioning_data));
   TRY(device_id_and_manuf_state_flash_info_page_erase(&provisioning_data));
   TRY(wafer_auth_secret_flash_info_page_erase(&provisioning_data));
   TRY(device_id_and_manuf_state_flash_info_page_write(&provisioning_data));
