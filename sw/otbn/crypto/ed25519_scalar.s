@@ -35,7 +35,7 @@ sc_init:
   li      x2, 14
   la      x3, ed25519_scalar_L
   bn.lid  x2, 0(x3)
-  bn.wsrw 0x0, w14
+  bn.wsrw MOD, w14
 
   /* Load lower half of precomputed constant mu (260 bits).
        w14 <= mu mod 2^256 */
@@ -188,7 +188,7 @@ sc_reduce:
 
   /* Load L from the MOD register.
        w11 <= WSR[0x0] = MOD = L */
-  bn.wsrr  w11, 0x0
+  bn.wsrr  w11, MOD
 
   /* Compute the value r2 = (q3 * L) mod 2^256. Since q3 has 260 bits and L has
      253, we use a 320x256-bit multiplication, but we stop after the lowest 256

@@ -47,9 +47,9 @@ p256_arithmetic_to_boolean_test:
   bn.sid    x3, 64(x4)
 
   /* [w20,w19,w18] <= URND = r */
-  bn.wsrr   w18, 0x02
-  bn.wsrr   w19, 0x02
-  bn.wsrr   w20, 0x02
+  bn.wsrr   w18, URND
+  bn.wsrr   w19, URND
+  bn.wsrr   w20, URND
 
   /* Reduce r mod p
      [w7,w6] <= [w20,w19,w18] mod [w13,w12] = r mod p */

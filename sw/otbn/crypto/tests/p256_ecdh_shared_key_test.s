@@ -31,7 +31,7 @@ p256_ecdh_shared_key_test:
   bn.lid    x2, 0(x4)
 
   /* Set MOD to p */
-  bn.wsrw   0x00, w29
+  bn.wsrw   MOD, w29
 
   /* Call scalar point multiplication routine for shared key generation in P-256 lib. */
   jal      x1, p256_scalar_mult
