@@ -308,9 +308,9 @@ def _get_next_control_locations(insn: Insn, operands: Dict[str, int],
     elif insn.mnemonic == 'ecall':
         return [Ecall()]
 
-    raise RuntimeError(
-        'Unrecognized control flow instruction (straight-line=false) at PC {:#x}: {}'
-        .format(pc, insn.disassemble(pc, operands)))
+    raise RuntimeError('Unrecognized control flow instruction '
+                       '(straight-line=false) at PC {:#x}: {}'
+                       .format(pc, insn.disassemble(pc, operands)))
 
 
 def _populate_control_graph(graph: ControlGraph, program: OTBNProgram,
