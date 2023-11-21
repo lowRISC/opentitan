@@ -133,22 +133,12 @@ static const i2c_platform_pins_t kI2cPlatformPins[] = {
         }}};
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
-                             uint8_t byte_count, const uint8_t *data,
+                             size_t byte_count, const uint8_t *data,
                              bool skip_stop) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
 
-  // The current function does not support initializing a write while another
-  // transaction is in progress
-
-  // TODO: The current function does not support write payloads
-  // larger than the fifo depth.
-  TRY_CHECK(byte_count <= I2C_PARAM_FIFO_DEPTH);
-
-  // TODO: #15377 The I2C DIF says: "Callers should prefer
-  // `dif_i2c_write_byte()` instead, since that function provides clearer
-  // semantics. This function should only really be used for testing or
-  // troubleshooting a device.
+  TRY_CHECK(byte_count > 0);
 
   // First write the address.
   flags.start = true;
@@ -157,11 +147,12 @@ status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
 
   // Once address phase is through, blast the rest as generic data.
   flags = kDefaultFlags;
-  for (uint8_t i = 0; i < byte_count; ++i) {
-    // Issue a stop for the last byte.
-    flags.stop = ((i == byte_count - 1) && !skip_stop);
-    TRY(dif_i2c_write_byte_raw(i2c, data[i], flags));
+  if (byte_count > 1) {
+    TRY(dif_i2c_write_bytes_raw(i2c, byte_count - 1, data, flags));
   }
+  // Issue a stop for the last byte.
+  flags.stop = !skip_stop;
+  TRY(dif_i2c_write_byte_raw(i2c, data[byte_count - 1], flags));
 
   // TODO: Check for errors / status.
   return OK_STATUS();
