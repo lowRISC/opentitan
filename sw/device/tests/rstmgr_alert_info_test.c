@@ -193,7 +193,7 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
             .test_name = "Single class(ClassA)",
             .alert_info =
                 {
-                    .class_accum_cnt = {3, 0, 0, 0},
+                    .class_accum_cnt = {1, 0, 0, 0},  // Single i2c fatal alert
                     .class_esc_state = {kCstatePhase0, kCstateIdle, kCstateIdle,
                                         kCstateIdle},
                 },
@@ -203,7 +203,7 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
             .test_name = "Multi classes(ClassB,C)",
             .alert_info =
                 {
-                    .class_accum_cnt = {0, 1, 4, 0},
+                    .class_accum_cnt = {0, 1, 1, 0},  // otp and uart
                     .class_esc_state = {kCstateIdle, kCstatePhase1,
                                         kCstatePhase0, kCstateIdle},
                 },
@@ -524,7 +524,7 @@ static void peripheral_init(void) {
 
   // Set pwrmgr reset_en
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
 }
 

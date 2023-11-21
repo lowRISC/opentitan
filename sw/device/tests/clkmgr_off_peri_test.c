@@ -93,7 +93,7 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
       dif_clkmgr_gateable_clock_set_enabled(clkmgr, clock, kDifToggleEnabled));
   // Enable watchdog bite reset.
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
   LOG_INFO("Testing peripheral clock %d", clock);
 

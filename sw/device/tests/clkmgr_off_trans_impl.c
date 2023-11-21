@@ -161,7 +161,7 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     // Enable watchdog bite reset.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                                kDifPwrmgrResetRequestSourceTwo,
+                                                kDifPwrmgrResetRequestSourceOne,
                                                 kDifToggleEnabled));
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
