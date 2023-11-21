@@ -158,6 +158,12 @@ alias(
 )
 
 alias(
+    name = "heck",
+    actual = "@crate_index__heck-0.4.1//:heck",
+    tags = ["manual"],
+)
+
+alias(
     name = "hex",
     actual = "@crate_index__hex-0.4.3//:hex",
     tags = ["manual"],

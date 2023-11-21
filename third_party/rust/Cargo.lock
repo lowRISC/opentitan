@@ -296,6 +296,7 @@ dependencies = [
  "env_logger",
  "erased-serde",
  "foreign-types",
+ "heck",
  "hex",
  "humantime",
  "humantime-serde",
