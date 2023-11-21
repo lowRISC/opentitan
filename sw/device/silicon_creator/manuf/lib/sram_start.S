@@ -28,7 +28,7 @@
   .option norelax
 
   /**
-   * `_ottf_interrupt_vector` is an ibex-compatible interrupt vector.
+   * `sram_interrupt_vector` is an ibex-compatible interrupt vector.
    *
    * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
    * The vector must be 256-byte aligned, as Ibex's vectoring mechanism requires
