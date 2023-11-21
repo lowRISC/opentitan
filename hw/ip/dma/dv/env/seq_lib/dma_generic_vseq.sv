@@ -128,7 +128,6 @@ class dma_generic_vseq extends dma_base_vseq;
     super.body();
 
     for (uint i = 0; i < num_iters; i++) begin
-      enable_interrupt();
       randomize_iter_config(dma_config);
 
       // Notification that this iteration (= series of transactions/transfers) is commencing.
@@ -138,6 +137,7 @@ class dma_generic_vseq extends dma_base_vseq;
       for (uint j = 0; j < num_txns; j++) begin
         bit intr_driven = pick_if_intr_driven();
         bit [31:0] num_bytes_supplied;
+        bit [31:0] intr_enables;
         logic [511:0] digest;
         bit stop = 1'b0;
         status_t status;
@@ -148,6 +148,18 @@ class dma_generic_vseq extends dma_base_vseq;
         // Notification that transaction is just starting; after the configuration has been decided
         // and programmed into the DMA controller, but before the transfer has commenced.
         starting_txn(j, num_txns, dma_config);
+
+        // Set the Interrupt Enables appropriately for this transfer; DONE and ERROR - which
+        // terminate the test - must be enabled if this transfer is to be interrupt-driven.
+        // They may optionally be exercised when using polling. The MEMORY_BUFFER_LIMIT interrupt is
+        // always optional.
+        intr_enables = $urandom;
+        if (intr_driven) begin
+          intr_enables[DMA_DONE]  = 1'b1;
+          intr_enables[DMA_ERROR] = 1'b1;
+        end
+        enable_interrupts( intr_enables, 1'b1);
+        enable_interrupts(~intr_enables, 1'b0);
 
         // Start the Initial chunk of the transfer.
         start_chunk(dma_config, 1'b1);
