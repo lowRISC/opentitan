@@ -53,6 +53,9 @@ impl_serializable_error!(JtagError);
 pub trait JtagChain {
     /// Connect to the given JTAG TAP on this chain.
     fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
+
+    /// Stop further setup and returns raw OpenOCD instance.
+    fn into_raw(self: Box<Self>) -> Result<crate::util::openocd::OpenOcd>;
 }
 
 /// A trait which represents a TAP on a JTAG chain.
