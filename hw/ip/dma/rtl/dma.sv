@@ -1260,7 +1260,7 @@ module dma
     hw2reg.status.done.de = ((!cfg_abort_en) && data_move_state && clear_go) | clear_status;
     hw2reg.status.done.d  = clear_status? 1'b0 : 1'b1;
 
-    hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.status.error.de = (ctrl_state_q == DmaError) | clear_status;
     hw2reg.status.error.d  = clear_status? 1'b0 : 1'b1;
 
     hw2reg.status.aborted.de = cfg_abort_en | clear_status;
@@ -1298,14 +1298,14 @@ module dma
     end
 
     // Fiddle out error signals
-    hw2reg.error_code.src_address_error.de = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.dst_address_error.de = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.opcode_error.de      = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.size_error.de        = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.bus_error.de         = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.base_limit_error.de  = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError) | clear_status;
-    hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError) | clear_status;
+    hw2reg.error_code.src_address_error.de = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.dst_address_error.de = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.opcode_error.de      = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.size_error.de        = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.bus_error.de         = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.base_limit_error.de  = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.range_valid_error.de = (ctrl_state_q == DmaError) | clear_status;
+    hw2reg.error_code.asid_error.de        = (ctrl_state_q == DmaError) | clear_status;
 
     hw2reg.error_code.src_address_error.d  = clear_status? '0 : next_error[DmaSourceAddrErr];
     hw2reg.error_code.dst_address_error.d  = clear_status? '0 : next_error[DmaDestAddrErr];
