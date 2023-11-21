@@ -390,7 +390,7 @@ pub fn execute_sram_program(
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
     prepare_epmp(jtag)?;
-    // To avoid unexpected behaviors, we always make sure that the return addreess
+    // To avoid unexpected behaviors, we always make sure that the return address
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
     log::info!("set RA to {:x}", ret_addr);
