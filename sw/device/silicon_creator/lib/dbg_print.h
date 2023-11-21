@@ -18,10 +18,10 @@ extern "C" {
  *
  * This function only supports the format specifiers required by the
  * ROM:
- * - %c, which prints a null-terminated string.
+ * - %c, which prints a single character.
  * - %d, which prints a signed int in decimal.
  * - %u, which prints an unsigned int in decimal.
- * - %s, which prints a null-terminated string.
+ * - %s, which prints a nul-terminated string.
  * - %p, which prints pointer in hexadecimal.
  * - %x, which prints an `unsigned int` in hexadecimal using lowercase
  *   characters.
