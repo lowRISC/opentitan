@@ -3049,6 +3049,52 @@ opentitan_test(
     ],
 )
 
+_SIVAL_OTP_IMAGE = {
+    "test_unlocked1": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_unlocked1_manuf_individualized",
+    "test_locked0": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
+    "dev": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_personalized",
+    "prod": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+    "prod_end": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_end_manuf_personalized",
+    "rma": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_rma_manuf_personalized",
+}
+
+_RV_DM_JTAG_LC_STATES = get_lc_items(
+    CONST.LCV.TEST_UNLOCKED1,
+    CONST.LCV.DEV,
+    CONST.LCV.RMA,
+)
+
+[
+    opentitan_test(
+        name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
+        srcs = ["example_test_from_flash.c"],
+        cw310 = cw310_jtag_params(
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_harness = "//sw/host/tests/chip/rv_dm:jtag_tap_sel",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
+    name = "rv_dm_jtag_tap_sel",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_jtag_tap_sel_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    ],
+)
+
 # TL tests are done on Ibex, so requires execution to be enabled.
 _RV_DM_LC_DISABLED_TL_LC_STATES = get_lc_items(
     CONST.LCV.TEST_UNLOCKED1,
@@ -3072,15 +3118,6 @@ _LC_STATES_DEBUG_DISALLOWED = [
     CONST.LCV.PROD,
     CONST.LCV.PROD_END,
 ]
-
-_SIVAL_OTP_IMAGE = {
-    "test_unlocked1": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_unlocked1_manuf_individualized",
-    "test_locked0": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
-    "dev": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_personalized",
-    "prod": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
-    "prod_end": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_end_manuf_personalized",
-    "rma": "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_rma_manuf_personalized",
-}
 
 [
     opentitan_test(
