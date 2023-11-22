@@ -25,7 +25,12 @@ module dm_top #(
   // that don't use hart numbers in a contiguous fashion.
   parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}},
   // toggle new behavior to drive master_be_o during a read
-  parameter bit                 ReadByteEnable   = 1
+  parameter bit                 ReadByteEnable   = 1,
+  // Subsequent debug modules can be chained by setting the nextdm register value to the offset of
+  // the next debug module. The RISC-V debug spec mandates that the first debug module located at
+  // 0x0, and that the last debug module in the chain sets the nextdm register to 0x0. The nextdm
+  // register is a word address and not a byte address.
+  parameter logic [31:0]        NextDmAddr       = '0
 ) (
   input  logic                  clk_i,       // clock
   // asynchronous reset active low, connect PoR here, not the system reset
@@ -111,7 +116,8 @@ module dm_top #(
   dm_csrs #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
-    .SelectableHarts(SelectableHarts)
+    .SelectableHarts(SelectableHarts),
+    .NextDmAddr(NextDmAddr)
   ) i_dm_csrs (
     .clk_i,
     .rst_ni,
