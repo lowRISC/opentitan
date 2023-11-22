@@ -568,6 +568,18 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte);
 
 /**
+ * Reads off a chunk of bytes from the RX FIFO.
+ *
+ * @param i2c An I2C handle.
+ * @param[out] size The size of the buffer.
+ * @param[out] buffer A buffer to receive the bytes read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_read_bytes(const dif_i2c_t *i2c, size_t size,
+                                uint8_t *buffer);
+
+/**
  * Pushes a raw write entry onto the FMT FIFO, consisting of a byte and format
  * flags. This function can be called in sequence to enqueue an I2C
  * transmission.
