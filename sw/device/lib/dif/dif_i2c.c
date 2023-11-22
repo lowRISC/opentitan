@@ -464,6 +464,21 @@ dif_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte) {
   return kDifOk;
 }
 
+dif_result_t dif_i2c_read_bytes(const dif_i2c_t *i2c, size_t size,
+                                uint8_t *buffer) {
+  if (i2c == NULL || buffer == NULL) {
+    return kDifBadArg;
+  }
+
+  while (size--) {
+    spin_while_status_bit(i2c, I2C_STATUS_RXEMPTY_BIT, /*set*/ true);
+    uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
+    *(buffer++) = (uint8_t)bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
+  }
+
+  return kDifOk;
+}
+
 static inline dif_result_t parse_flags(dif_i2c_fmt_flags_t flags,
                                        uint32_t *fmt_byte) {
   // Validate that "write only" flags and "read only" flags are not set
