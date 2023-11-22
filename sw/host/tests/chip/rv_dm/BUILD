@@ -48,3 +48,17 @@ rust_binary(
         "@crate_index//:rand",
     ],
 )
+
+rust_binary(
+    name = "ndm_reset_req",
+    srcs = [
+        "src/ndm_reset_req.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)

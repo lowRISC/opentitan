@@ -96,6 +96,9 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_rv_dm_ndm_reset_req"]
+      bazel: [
+        "//sw/device/tests:rv_dm_ndm_reset_req",
+      ],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [
