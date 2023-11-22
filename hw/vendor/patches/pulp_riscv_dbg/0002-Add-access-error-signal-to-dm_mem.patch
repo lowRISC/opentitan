@@ -1,7 +1,7 @@
 From 0fa994dd7783812dd42a7bd6c32f6ca3715723ca Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:49 -0700
-Subject: [PATCH 2/4] Add access error signal to dm_mem
+Subject: [PATCH 2/5] Add access error signal to dm_mem
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 

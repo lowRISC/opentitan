@@ -1,7 +1,7 @@
 From cb348aa5f31dbf24946f2fd45a9daa27960b231c Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:27:27 -0700
-Subject: [PATCH 3/4] Use lowrisc instead of PULP primitives
+Subject: [PATCH 3/5] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
