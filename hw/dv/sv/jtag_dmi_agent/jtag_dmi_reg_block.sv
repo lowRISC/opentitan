@@ -21,6 +21,7 @@ typedef class jtag_dmi_reg_hartinfo;
 typedef class jtag_dmi_reg_haltsum1;
 typedef class jtag_dmi_reg_abstractcs;
 typedef class jtag_dmi_reg_command;
+typedef class jtag_dmi_reg_nextdm;
 typedef class jtag_dmi_reg_abstractauto;
 typedef class jtag_dmi_reg_progbuf;
 typedef class jtag_dmi_reg_haltsum2;
@@ -805,6 +806,38 @@ class jtag_dmi_reg_command extends dv_base_reg;
   endfunction : build
 endclass : jtag_dmi_reg_command
 
+class jtag_dmi_reg_nextdm extends dv_base_reg;
+  // fields
+  rand dv_base_reg_field address;
+
+  `uvm_object_utils(jtag_dmi_reg_nextdm)
+
+  function new(string       name = "jtag_dmi_reg_nextdm",
+               int unsigned n_bits = 32,
+               int          has_coverage = UVM_NO_COVERAGE);
+    super.new(name, n_bits, has_coverage);
+  endfunction : new
+
+  virtual function void build(csr_excl_item csr_excl = null);
+    // create fields
+    address = (dv_base_reg_field::
+               type_id::create("address"));
+    address.configure(
+      .parent(this),
+      .size(32),
+      .lsb_pos(0),
+      .access("RO"),
+      .volatile(0),
+      .reset(32'h0),
+      .has_reset(1),
+      .is_rand(1),
+      .individually_accessible(0));
+
+    address.set_original_access("RO");
+
+  endfunction : build
+endclass : jtag_dmi_reg_nextdm
+
 class jtag_dmi_reg_abstractauto extends dv_base_reg;
   // fields
   rand dv_base_reg_field autoexecdata;
@@ -1519,6 +1552,7 @@ class jtag_dmi_reg_block extends dv_base_reg_block;
   rand jtag_dmi_reg_haltsum1 haltsum1;
   rand jtag_dmi_reg_abstractcs abstractcs;
   rand jtag_dmi_reg_command command;
+  rand jtag_dmi_reg_nextdm nextdm;
   rand jtag_dmi_reg_abstractauto abstractauto;
   rand jtag_dmi_reg_progbuf progbuf[16];
   rand jtag_dmi_reg_haltsum2 haltsum2;
@@ -1679,6 +1713,13 @@ class jtag_dmi_reg_block extends dv_base_reg_block;
     command.build(csr_excl);
     default_map.add_reg(.rg(command),
                         .offset(32'h17));
+
+    nextdm = (jtag_dmi_reg_nextdm::
+              type_id::create("nextdm"));
+    nextdm.configure(.blk_parent(this));
+    nextdm.build(csr_excl);
+    default_map.add_reg(.rg(nextdm),
+                        .offset(32'h1d));
 
     abstractauto = (jtag_dmi_reg_abstractauto::
                     type_id::create("abstractauto"));

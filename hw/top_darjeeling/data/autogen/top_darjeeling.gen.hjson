@@ -4231,7 +4231,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: NextDmAddr
+          desc:
+            '''
+            32bit word address of the next debug module.
+            Set to 0x0 if this is the last debug module in the chain.,
+            '''
+          type: logic [31:0]
+          default: "'0"
+          expose: "true"
+          name_top: RvDmNextDmAddr
+        }
+      ]
       inter_signal_list:
       [
         {
