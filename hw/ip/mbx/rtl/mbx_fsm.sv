@@ -67,21 +67,23 @@ module mbx_fsm #(
   assign mbx_irq_ready_o  = (ctrl_state_d == MbxRead);
 
   logic ombx_set_ready, ombx_clear_ready;
-  // Outbound mailbox is ready
+  // Outbound mailbox is Ready, but only if not simultaneous with the exceptional conditions that
+  // demand clearing of the Ready status bit.
   assign ombx_set_ready = CfgOmbx
                             & mbx_idle
                             & mbx_range_valid_i
-                            & writer_close_mbx_i
-                            & ~sysif_control_abort_set_i;
+                            & writer_close_mbx_i;
 
   // MbxRead is a common state for imbx and ombx
-  // Exit of MbxRead is used to clear imbx.Busy and ombx.Ready
+  // Exit of MbxRead is used to clear imbx.Busy and ombx.Ready.
+  // This must also happen when an Error, Abort or FW-initiated reset occurs.
   assign ombx_clear_ready = CfgOmbx & (mbx_error_set_i |
                                        sysif_control_abort_set_i |
+                                       hostif_abort_ack_i |
                                        mbx_read_o & sys_read_all_i);
 
   assign mbx_ready_update_o = CfgOmbx & (ombx_set_ready | ombx_clear_ready);  // MUTEX(set,clr)
-  assign mbx_ready_o        = ombx_set_ready;
+  assign mbx_ready_o        = !ombx_clear_ready;  // Clearing overrules setting.
 
   always_comb begin
     ctrl_state_d      = ctrl_state_q;

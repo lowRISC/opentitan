@@ -16,6 +16,9 @@ module mbx_sramrwarb
   output  logic                       intg_err_o,
   output  logic                       sram_err_o,
 
+  // Host-side acknowledgement of an Abort operation
+  input   logic                       hostif_control_abort_clear_i,
+
   // Interface to the inbound mailbox
   input  logic                        imbx_sram_write_req_i,
   output logic                        imbx_sram_write_gnt_o,
@@ -60,9 +63,20 @@ module mbx_sramrwarb
   // FIFO Counting logic for maximum outstanding requests
   logic [LCFG_MAX_REQS_LOG2-1:0] outstanding_req_count_d, outstanding_req_count_q;
   logic inc_cnt, dec_cnt;
-  assign  inc_cnt                 = sram_req & ~max_outstanding_reqs_reached & sram_gnt;
-  assign  dec_cnt                 = sram_valid;
-  assign  outstanding_req_count_d = outstanding_req_count_q + inc_cnt - dec_cnt;
+
+  // Do we have knowledge of any outstanding requests, including one currently being accepted?
+  // Note: a device may respond in the same cycle as accepting the request.
+  logic any_outstanding_reqs;
+  assign any_outstanding_reqs = inc_cnt || (outstanding_req_count_q != '0);
+
+  // Increment the count of outstanding requests when a new request is accepted onto the bus,
+  // being sure not to drive out more requests than we can track.
+  assign inc_cnt = sram_req & ~max_outstanding_reqs_reached & sram_gnt;
+  // Decrement the count when a reply is received, being sure not to underflow if we have had to
+  // process an Abort operation whilst one or more requests was still outstanding.
+  assign dec_cnt = sram_valid & any_outstanding_reqs;
+  assign outstanding_req_count_d = hostif_control_abort_clear_i ? '0 :
+                                  (outstanding_req_count_q + inc_cnt - dec_cnt);
 
   prim_generic_flop_en #(
     .Width(LCFG_MAX_REQS_LOG2)
@@ -111,8 +125,10 @@ module mbx_sramrwarb
   // to look if the response was a response with data or not. It it's with data, it was a read
   // request and we serve ombx_sram_read_resp_vld_o. If it was a response without data
   // it was a write request.
-  assign  ombx_sram_read_resp_vld_o  = sram_valid & (tl_host_i.d_opcode == tlul_pkg::AccessAckData);
+  // We also ensure that any responses are not propagated after an Abort operation.
+  assign ombx_sram_read_resp_vld_o = sram_valid & any_outstanding_reqs &
+                                    (tl_host_i.d_opcode == tlul_pkg::AccessAckData);
 
   // Functional Coverage
-  `COVER(MaxOutstandingRequetsReached_C, sram_req & max_outstanding_reqs_reached)
+  `COVER(MaxOutstandingRequestsReached_C, sram_req & max_outstanding_reqs_reached)
 endmodule

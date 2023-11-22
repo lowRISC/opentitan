@@ -314,24 +314,26 @@ module mbx
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
   ) u_sramrwarb (
-    .clk_i                     ( clk_i                    ),
-    .rst_ni                    ( rst_ni                   ),
-    .tl_host_o                 ( sram_tl_h_o              ),
-    .tl_host_i                 ( sram_tl_h_i              ),
-    .intg_err_o                ( tl_sram_intg_err         ),
-    .sram_err_o                ( sram_err                 ),
+    .clk_i                        ( clk_i                      ),
+    .rst_ni                       ( rst_ni                     ),
+    .tl_host_o                    ( sram_tl_h_o                ),
+    .tl_host_i                    ( sram_tl_h_i                ),
+    .intg_err_o                   ( tl_sram_intg_err           ),
+    .sram_err_o                   ( sram_err                   ),
+    // Host-side acknowledgement of an Abort operation
+    .hostif_control_abort_clear_i ( hostif_control_abort_clear ),
     // Interface to the inbound mailbox
-    .imbx_sram_write_req_i     ( imbx_sram_write_req      ),
-    .imbx_sram_write_gnt_o     ( imbx_sram_write_gnt      ),
-    .imbx_sram_write_ptr_i     ( imbx_sram_write_ptr      ),
-    .imbx_sram_all_vld_rcvd_o  ( imbx_sram_all_vld_rcvd   ),
-    .imbx_write_data_i         ( sysif_write_data         ),
+    .imbx_sram_write_req_i        ( imbx_sram_write_req        ),
+    .imbx_sram_write_gnt_o        ( imbx_sram_write_gnt        ),
+    .imbx_sram_write_ptr_i        ( imbx_sram_write_ptr        ),
+    .imbx_sram_all_vld_rcvd_o     ( imbx_sram_all_vld_rcvd     ),
+    .imbx_write_data_i            ( sysif_write_data           ),
     // Interface to the outbound mailbox
-    .ombx_sram_read_req_i      ( ombx_sram_read_req       ),
-    .ombx_sram_read_gnt_o      ( ombx_sram_read_gnt       ),
-    .ombx_sram_read_ptr_i      ( ombx_sram_read_ptr       ),
-    .ombx_sram_read_resp_vld_o ( ombx_sram_read_resp_vld  ),
-    .ombx_sram_read_resp_o     ( ombx_sram_read_data      )
+    .ombx_sram_read_req_i         ( ombx_sram_read_req         ),
+    .ombx_sram_read_gnt_o         ( ombx_sram_read_gnt         ),
+    .ombx_sram_read_ptr_i         ( ombx_sram_read_ptr         ),
+    .ombx_sram_read_resp_vld_o    ( ombx_sram_read_resp_vld    ),
+    .ombx_sram_read_resp_o        ( ombx_sram_read_data        )
   );
 
   // Assertions

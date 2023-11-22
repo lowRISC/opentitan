@@ -63,6 +63,12 @@ module mbx_ombx #(
                     (sram_read_ptr_q <= hostif_limit_i)         &
                     (sram_read_ptr_q < sram_read_ptr_limit_q));
 
+  // Waiting for a read request to be accepted onto the TL-UL bus; reset state if the host side
+  // is acknowledging an Abort request from the SoC side.
+  logic awaiting_gnt;
+  assign awaiting_gnt = ombx_sram_read_req_o & ~ombx_sram_read_gnt_i &
+                       ~hostif_control_abort_clear_i;
+
   // Create a sticky TLUL read request until its granted
   logic req_q;
   assign ombx_sram_read_req_o = read_req | req_q;
@@ -70,10 +76,10 @@ module mbx_ombx #(
   prim_flop #(
     .Width(1)
   ) u_req_state (
-    .clk_i ( clk_i                                        ),
-    .rst_ni( rst_ni                                       ),
-    .d_i   ( ombx_sram_read_req_o & ~ombx_sram_read_gnt_i ),
-    .q_o   ( req_q                                        )
+    .clk_i ( clk_i        ),
+    .rst_ni( rst_ni       ),
+    .d_i   ( awaiting_gnt ),
+    .q_o   ( req_q        )
   );
 
   // Backpressure the next read data until the current write data brings back the data from SRAM
@@ -86,14 +92,15 @@ module mbx_ombx #(
   assign set_pending   = mbx_read & sysif_read_data_write_valid_i &
                         (sram_read_ptr_q <= hostif_limit_i)       &
                         (sram_read_ptr_q < sram_read_ptr_limit_q);
-  assign clear_pending = ombx_sram_read_resp_valid_i;
+  // Reset state if the host side is acknowledging an Abort request.
+  assign clear_pending = ombx_sram_read_resp_valid_i | hostif_control_abort_clear_i;
 
   prim_flop #(
     .Width(1)
   ) u_pending (
     .clk_i ( clk_i                                           ),
     .rst_ni( rst_ni                                          ),
-    .d_i   ( set_pending | (ombx_pending_o & ~clear_pending) ),
+    .d_i   ( ~clear_pending & (set_pending | ombx_pending_o) ),
     .q_o   ( ombx_pending_o                                  )
   );
 
@@ -144,12 +151,18 @@ module mbx_ombx #(
   );
   assign ombx_sram_read_ptr_o = sram_read_ptr_q;
 
-  // Clear ombx read data register in case of all data is read, an error happens,
-  // or the requester aborts the transaction
+  // Abort has been requested by the SoC but not yet acknowledged on the host side.
+  logic aborting;
+  assign aborting = sysif_control_abort_set_i | mbx_sys_abort;
+
+  // Clear ombx read data register in case of all data is read, an error happens, or an Abort or
+  // FW-initiated reset occurs.
   logic clear_read_data;
-  assign clear_read_data = sys_read_all_o             |
-                           mbx_error_set_i            |
-                           sysif_control_abort_set_i;
+  assign clear_read_data = sys_read_all_o             |   // Normal completion of Response
+                           mbx_error_set_i            |   // Error raised by host side
+                           aborting                   |   // Abort requested by SoC side
+                           hostif_control_abort_clear_i;  // Abort ack or FW reset from host side
+
   // Advance the SRAM read response to read data
   prim_generic_flop_en #(
     .Width(CfgSramDataWidth)
@@ -184,10 +197,10 @@ module mbx_ombx #(
   logic [CfgObjectSizeWidth-1:0] hostif_ob_object_size_minus_one;
   // Update the hostif.object_size register on every transaction or when aborting the transaction
   assign hostif_ombx_object_size_update_o = (ombx_sram_read_req_o & ombx_sram_read_gnt_i) |
-                                             sysif_control_abort_set_i;
+                                             hostif_control_abort_clear_i;
   // The updated value is the decremented by 1 size or zero-ed out if the transaction is aborted
   assign hostif_ob_object_size_minus_one = hostif_ombx_object_size_i - 1;
-  assign hostif_ombx_object_size_o       = {CfgObjectSizeWidth{~sysif_control_abort_set_i}} &
+  assign hostif_ombx_object_size_o       = {CfgObjectSizeWidth{~hostif_control_abort_clear_i}} &
                                            hostif_ob_object_size_minus_one;
 
   prim_flop #(
