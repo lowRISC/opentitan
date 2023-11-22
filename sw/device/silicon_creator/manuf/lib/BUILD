@@ -231,7 +231,7 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_individualized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",
