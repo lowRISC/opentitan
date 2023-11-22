@@ -3216,33 +3216,56 @@ test_suite(
     ],
 )
 
-opentitan_test(
+[
+    opentitan_test(
+        name = "rv_dm_ndm_reset_req_{}".format(lc_state),
+        srcs = ["rv_dm_ndm_reset_req.c"],
+        cw310 = cw310_jtag_params(
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_cmd = """
+                --bootstrap="{firmware}"
+            """,
+            test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+        deps = [
+            "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+            "//hw/ip/keymgr/data:keymgr_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:adc_ctrl",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:keymgr",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/dif:sysrst_ctrl",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
     name = "rv_dm_ndm_reset_req",
-    srcs = ["rv_dm_ndm_reset_req.c"],
-    exec_env = {
-        "//hw/top_earlgrey:sim_dv": None
-    },
-    deps = [
-        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
-        "//hw/ip/keymgr/data:keymgr_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_ndm_reset_req_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
     ],
 )
 

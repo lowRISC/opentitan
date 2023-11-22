@@ -82,7 +82,9 @@
         "RSTMGR.RESET_INFO.CLEAR",
       ]
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: []
+      bazel: [
+        "//sw/device/tests:rv_dm_ndm_reset_req",
+      ],
     }
     {
       name: chip_sw_rstmgr_cpu_info
