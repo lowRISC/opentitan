@@ -15,7 +15,8 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter logic [31:0]          NextDmAddr   = '0
 ) (
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
@@ -406,7 +407,8 @@ module rv_dm
     // However, we require that the DM can be placed at arbitrary offsets in the system, which
     // requires the generalized debug ROM implementation and two scratch registers. We hence set
     // this parameter to a non-zero value (inside dm_mem, this just feeds into a comparison with 0).
-    .DmBaseAddress  (1)
+    .DmBaseAddress  (1),
+    .NextDmAddr     (NextDmAddr)
   ) u_dm_top (
     .clk_i,
     .rst_ni,

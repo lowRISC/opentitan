@@ -48,6 +48,7 @@ module top_darjeeling #(
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for rv_dm
+  parameter logic [31:0] RvDmNextDmAddr = '0,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -1645,7 +1646,8 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
   rv_dm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:53])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:53]),
+    .NextDmAddr(RvDmNextDmAddr)
   ) u_rv_dm (
       // [53]: fatal_fault
       .alert_tx_o  ( alert_tx[53:53] ),
