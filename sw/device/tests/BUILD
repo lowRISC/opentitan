@@ -3,6 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:const.bzl",
+    "CONST",
+    "get_lc_items",
+)
+load(
     "//rules:opentitan.bzl",
     "OPENTITAN_CPU",
     "RSA_ONLY_KEY_STRUCTS",
@@ -19,6 +24,13 @@ load(
     "verilator_params",
 )
 load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
@@ -29,13 +41,6 @@ load(
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
-)
-load("//rules:splice.bzl", "bitstream_splice")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_hex", "otp_image", "otp_json", "otp_partition")
-load(
-    "//rules:const.bzl",
-    "CONST",
-    "get_lc_items",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -2907,20 +2912,11 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-bitstream_splice(
-    name = "power_virus_systemtest_bitstream",
-    src = "//hw/bitstream:test_rom",
-    data = ":power_virus_systemtest_otp_img_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 opentitan_test(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
     cw310 = new_cw310_params(
-        bitstream = ":power_virus_systemtest_bitstream",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_personalized",
         test_cmd = """
             --bitstream="{bitstream}"
             --bootstrap="{firmware}"
@@ -2931,7 +2927,9 @@ opentitan_test(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
     exec_env = {
-        # TODO(#14814): add more targets
+        # This test does not support the fpga_cw310_sival target because the
+        # test program doesn't fit inside the ROM_EXT partition size (~64KB).
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
