@@ -222,7 +222,7 @@ static inline status_t i2c_testutils_fmt_fifo_empty(const dif_i2c_t *i2c) {
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
-                            uint8_t byte_count, uint8_t *data, size_t timeout);
+                            size_t byte_count, uint8_t *data, size_t timeout);
 
 /**
  * Set the i2c timing parameters based on the desired speed mode.
