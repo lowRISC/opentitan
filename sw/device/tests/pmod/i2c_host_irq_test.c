@@ -229,8 +229,9 @@ static status_t rx_threshold_irq(void) {
   const uint8_t kAddr[2] = {0x03, 0x21};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 2, kAddr, true));
   // Try to read more than the watermark to trigger the IRQ.
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
-                         kDefaultTimeoutMicros));
+  while (TRY(i2c_testutils_issue_read(&i2c, kDeviceAddr, sizeof(bytes))))
+    ;
+  TRY(dif_i2c_reset_rx_fifo(&i2c));
 
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqRxThreshold);
 
@@ -251,8 +252,8 @@ static status_t rx_overflow_irq(void) {
   uint8_t bytes[I2C_PARAM_FIFO_DEPTH + 1];
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 2, kAddr, true));
   // Try to read more than the fifo depth to trigger the IRQ.
-  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
-                         kDefaultTimeoutMicros));
+  TRY(i2c_testutils_issue_read(&i2c, kDeviceAddr, sizeof(bytes)));
+  TRY(dif_i2c_reset_rx_fifo(&i2c));
 
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqRxOverflow);
 
