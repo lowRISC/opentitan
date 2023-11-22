@@ -156,7 +156,7 @@ void set_up_reset_request(void) {
   // Prepare rstmgr for a reset.
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
