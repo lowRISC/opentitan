@@ -48,9 +48,15 @@ module mbx_imbx #(
   // hostif_sram_write_req_o is actually sticky because the sys-side TLUL_adapter_reg is
   // NOT ack'ed until the command is granted by the host-side TLUL_adapter_host
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
-  logic   write_req;
-  assign  write_req = (mbx_empty & sysif_data_write_valid_i) |
-                      (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
+  logic write_req;
+  assign write_req = (mbx_empty & sysif_data_write_valid_i) |
+                     (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
+
+  // Waiting for a write request to be accepted onto the TL-UL bus; reset state if the host side
+  // is acknowledging an Abort request from the SoC side.
+  logic awaiting_gnt;
+  assign awaiting_gnt = hostif_sram_write_req_o & ~hostif_sram_write_gnt_i &
+                       ~hostif_control_abort_clear_i;
 
   // Raise an error if the requester tries to write out of the limits
   assign imbx_overflow_error_set_o = mbx_write & sysif_data_write_valid_i &
@@ -63,10 +69,10 @@ module mbx_imbx #(
   prim_flop #(
     .Width(1)
   ) u_req_state (
-    .clk_i ( clk_i                                              ),
-    .rst_ni( rst_ni                                             ),
-    .d_i   ( hostif_sram_write_req_o & ~hostif_sram_write_gnt_i ),
-    .q_o   ( req_q                                              )
+    .clk_i ( clk_i        ),
+    .rst_ni( rst_ni       ),
+    .d_i   ( awaiting_gnt ),
+    .q_o   ( req_q        )
   );
 
   // The abort requested was handled by the host. This re-initialzes the write pointer
@@ -108,9 +114,10 @@ module mbx_imbx #(
   // Backpressure the next write data until the current write data is granted by the TLUL adapter
   logic set_pending, clear_pending;
 
-  // Block the request from TLUL until the SRAM write is complete
+  // Block the request from TLUL until the SRAM write is complete.
+  // Reset state if the host side is acknowledging an Abort request.
   assign set_pending   = write_req;
-  assign clear_pending = hostif_sram_write_gnt_i;
+  assign clear_pending = hostif_sram_write_gnt_i | hostif_control_abort_clear_i;
 
   prim_flop #(
     .Width(1)
