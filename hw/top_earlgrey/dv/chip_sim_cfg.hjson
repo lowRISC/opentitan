@@ -1828,7 +1828,7 @@
     {
       name: chip_rv_dm_ndm_reset_req
       uvm_test_seq: "chip_rv_dm_ndm_reset_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:rv_dm_ndm_reset_req:1:new_rules"]
+      sw_images: ["//sw/device/tests:rv_dm_ndm_reset_req:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb_tl_err_chk=0", "+use_jtag_dmi=1"]
     }
