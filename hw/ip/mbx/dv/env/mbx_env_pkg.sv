@@ -40,6 +40,9 @@ package mbx_env_pkg;
     MbxCoreAbort,
     MbxCoreError
   } mbx_core_intr_e;
+  typedef enum {
+    MbxSocDOE
+  } mbx_soc_intr_e;
 
   // functions
 

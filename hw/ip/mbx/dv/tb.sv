@@ -16,17 +16,14 @@ module tb;
 
   wire clk, rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
-  wire intr_doe;
-  wire intr_ready;
-  wire intr_abort;
-  wire intr_error;
+  wire [NUM_MAX_INTERRUPTS-1:0] interrupts_soc;
 
   clk_rst_if i_clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_scxb_mbx_core_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_agxb_mbx_core_if(.clk(clk), .rst_n(rst_n));
   tl_if i_tl_mbx_agxb_device_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) i_intr_core_if(interrupts);
-  pins_if #(NUM_MAX_INTERRUPTS) i_intr_soc_if({intr_doe});
+  pins_if #(NUM_MAX_INTERRUPTS) i_intr_soc_if(interrupts_soc);
 
   `DV_ALERT_IF_CONNECT()
 
@@ -37,7 +34,7 @@ module tb;
     .rst_ni(rst_n),
     .doe_intr_support_o(),
     .doe_intr_en_o(),
-    .doe_intr_o(intr_doe),
+    .doe_intr_o(interrupts_soc[MbxSocDOE]),
     .doe_async_msg_support_o(),
     // various tlul interfaces
     .core_tl_d_o(i_tl_agxb_mbx_core_if.d2h),
@@ -47,17 +44,12 @@ module tb;
     .sram_tl_h_o(i_tl_mbx_agxb_device_if.h2d),
     .sram_tl_h_i(i_tl_mbx_agxb_device_if.d2h),
     // alerts and interrupts
-    .intr_mbx_ready_o(intr_ready),
-    .intr_mbx_abort_o(intr_abort),
-    .intr_mbx_error_o(intr_error),
+    .intr_mbx_ready_o(interrupts[MbxCoreReady]),
+    .intr_mbx_abort_o(interrupts[MbxCoreAbort]),
+    .intr_mbx_error_o(interrupts[MbxCoreError]),
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx)
   );
-
-  // Connect the interrupts
-  assign interrupts[MbxCoreReady] = intr_ready;
-  assign interrupts[MbxCoreAbort] = intr_abort;
-  assign interrupts[MbxCoreError] = intr_error;
 
   initial begin
     // drive clk and rst_n from clk_if
