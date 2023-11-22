@@ -153,7 +153,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       disable fork;
     end join
     `uvm_info(`gfn, $sformatf("wait_for_soc_interrupt -- End"), UVM_DEBUG)
-  endtask: wait_for_core_interrupt
+  endtask: wait_for_soc_interrupt
 
   virtual task body();
     `uvm_info(get_full_name(), "body -- Start", UVM_DEBUG)
