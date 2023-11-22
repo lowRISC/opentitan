@@ -40,7 +40,7 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
 
   // Set wdog as a reset source.
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
 
   // Setup the wdog bark and bite timeouts.
@@ -89,7 +89,7 @@ static void sleep_wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
   // Program the pwrmgr to go to deep sleep state (clocks off).
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
+      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, 0));
   // Enter in low power mode.
   wait_for_interrupt();
   // If we arrive here the test must fail.
