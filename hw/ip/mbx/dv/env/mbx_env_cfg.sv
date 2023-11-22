@@ -5,11 +5,12 @@
 class mbx_env_cfg extends cip_base_env_cfg #(
   .RAL_T(mbx_core_reg_block)
 );
+  import dv_utils_pkg::*;
 
   string mbx_mem_ral_name = "mbx_mem_reg_block";
   string mbx_soc_ral_name = "mbx_soc_reg_block";
 
-  intr_vif intr_soc_vif;
+  virtual pins_if #(NUM_MAX_INTERRUPTS) intr_soc_vif;
 
   `uvm_object_utils(mbx_env_cfg)
 
