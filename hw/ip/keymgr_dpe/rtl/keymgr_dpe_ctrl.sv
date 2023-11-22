@@ -210,15 +210,18 @@ module keymgr_dpe_ctrl
     end
   end
 
-  // prevents unknowns from reaching the outside world.
-  // - whatever operation causes the input data select to be disabled should not expose the key
-  //   state.
-  // - when there are no operations, the key state also should be exposed.
-  assign key_o.valid = op_req;
+  // The key released from this ctrl interface is MUXed in sideload_ctrl. The
+  // following bit decides whether the slot secret or sideload key is used to
+  // drive KMAC key interface.
+  assign key_o.valid = adv_req || gen_req;
 
-  // Check invalidity of the slot
+  // If requested operation is invalid or does not need the key, then pass
+  // random data to sideload ctrl interface.
+  logic release_real_key;
+  assign release_real_key = active_key_slot_o.valid && !invalid_op &&
+                            (adv_req || gen_req);
   for (genvar i = 0; i < Shares; i++) begin : gen_key_out_assign
-    assign key_o.key[i] = active_key_slot_o.valid ?
+    assign key_o.key[i] = release_real_key ?
                           active_key_slot_o.key[i] :
                           {EntropyRounds{entropy_i[i]}};
   end
