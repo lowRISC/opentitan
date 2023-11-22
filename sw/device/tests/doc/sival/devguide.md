@@ -91,7 +91,7 @@ Represents the initial DUT test unlocked state, which is only applicable for
 ROM execution is disabled in this configuration. JTAG should be used to
 bootstrap code into SRAM or FLASH.
 
-### `:otp_img_post_cp_test_locked0`
+### `:otp_img_test_locked0_manuf_initialized`
 
 Represents a DUT with the `SECRET0` partition initialized in the `test_locked0`
 life cycle state. This configuration will be generally used to lock the DUT
@@ -115,7 +115,7 @@ Notes:
    Use OTP images with the `manuf_personalized` suffix to test flash
    scrambling.
 
-### `:otp_img_{lc_state}_individualized`
+### `:otp_img_{lc_state}_manuf_individualized`
 
 Represents an individualized DUT configuration. Available on the following
 life cycle states:
@@ -151,7 +151,7 @@ Notes:
    Use OTP images with the `manuf_personalized` suffix to test flash
    scrambling.
 
-### `:otp_img_{}_personalized`
+### `:otp_img_{lc_state}_manuf_personalized`
 
 Represents a personalized DUT configuration. Available on the following
 life cycle states:

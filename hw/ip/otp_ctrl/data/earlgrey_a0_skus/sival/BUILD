@@ -97,7 +97,7 @@ otp_image(
 # to lock the chips before shipping to the Final-Test test house.
 # See sw/device/tests/doc/sival/devguide.md for more details.
 otp_image(
-    name = "otp_img_post_cp_test_locked0",
+    name = "otp_img_test_locked0_manuf_initialized",
     src = "//hw/ip/otp_ctrl/data:otp_json_test_locked0",
     overlays = MANUF_INITIALIZED,
 )
@@ -120,7 +120,7 @@ otp_image(
 # See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
-        name = "otp_img_{}_individualized".format(lc_state),
+        name = "otp_img_{}_manuf_individualized".format(lc_state),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
         overlays = MANUF_INDIVIDUALIZED,
     )

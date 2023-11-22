@@ -251,7 +251,7 @@ opentitan_test(
             ":ft_personalize_3": "ft_personalize_3",
         },
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_post_cp_test_locked0",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
         tags = [
             "lc_test_locked0",
             "manuf",
