@@ -1263,14 +1263,15 @@
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_execution_main_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    {
-      name: chip_sw_sleep_sram_ret_contents
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_scb_tl_err_chk=0",
-                 "+bypass_alert_ready_to_end_check=1"]
-    }
+// Refactor test to remove flash dependency
+//    {
+//      name: chip_sw_sleep_sram_ret_contents
+//      uvm_test_seq: chip_sw_base_vseq
+//      sw_images: ["//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_test:6"]
+//      en_run_modes: ["sw_test_mode_test_rom"]
+//      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_scb_tl_err_chk=0",
+//                 "+bypass_alert_ready_to_end_check=1"]
+//    }
     {
       name: chip_sw_sensor_ctrl_alert
       uvm_test_seq: chip_sw_base_vseq
