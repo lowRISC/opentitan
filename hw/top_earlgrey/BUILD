@@ -131,6 +131,7 @@ fpga_cw310(
     # is used to enable execution across life cycle stages with a single
     # binary.
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    tags = ["cw310_sival"],
 )
 
 # FPGA configuration used to emulate silicon targets containing a `rom_ext`
@@ -145,6 +146,7 @@ fpga_cw310(
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
+    tags = ["cw310_sival_rom_ext"],
 )
 
 ###########################################################################

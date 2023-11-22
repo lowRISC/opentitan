@@ -2153,7 +2153,14 @@ opentitan_test(
 opentitan_test(
     name = "rstmgr_cpu_info_test",
     srcs = ["rstmgr_cpu_info_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = new_verilator_params(
         timeout = "long",
         tags = ["broken"],
@@ -2783,7 +2790,14 @@ opentitan_test(
         "rv_core_ibex_rnd_test.S",
         "rv_core_ibex_rnd_test.c",
     ],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
