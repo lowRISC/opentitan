@@ -13,6 +13,18 @@ def args(p):
 %>\
 #include <limits.h>
 
+// This test is getting too big so we need to split it up. To do so,
+// each peripheral is given an ID (according to their alphabetical order)
+// and we define TEST_MIN_IRQ_PERIPHERAL and TEST_MAX_IRQ_PERIPHERAL to
+// choose which ones are being tested.
+#ifndef TEST_MIN_IRQ_PERIPHERAL
+#define TEST_MIN_IRQ_PERIPHERAL 0
+#endif
+
+#ifndef TEST_MAX_IRQ_PERIPHERAL
+#define TEST_MAX_IRQ_PERIPHERAL ${len(irq_peripheral_names)}
+#endif
+
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
@@ -28,7 +40,13 @@ def args(p):
 #include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
 
 % for p in helper.irq_peripherals:
+<%
+  i = irq_peripheral_names.index(p.name)
+%>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 static dif_${p.name}_t ${p.inst_name};
+#endif
+
 % endfor
 static dif_rv_plic_t plic;
 static const top_${top["name"]}_plic_target_t kHart = kTop${top["name"].capitalize()}PlicTargetIbex0;
@@ -48,11 +66,14 @@ static volatile top_${top["name"]}_plic_peripheral_t peripheral_expected;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-% for n in irq_peripheral_names:
+
+% for i, n in enumerate(irq_peripheral_names):
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 static volatile dif_${n}_irq_t ${n}_irq_expected;
 static volatile dif_${n}_irq_t ${n}_irq_serviced;
-% endfor
+#endif
 
+% endfor
 /**
  * Provides external IRQ handling for this test.
  *
@@ -78,6 +99,10 @@ void ottf_external_isr(void) {
 
   switch (peripheral) {
     % for p in helper.irq_peripherals:
+<%
+  i = irq_peripheral_names.index(p.name)
+%>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
     case ${p.plic_name}: {
       dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
           plic_irq_id -
@@ -99,6 +124,7 @@ void ottf_external_isr(void) {
       CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
       break;
     }
+#endif
 
     % endfor
     default:
@@ -117,8 +143,13 @@ static void peripherals_init(void) {
   mmio_region_t base_addr;
 
   % for p in helper.irq_peripherals:
+<%
+  i = irq_peripheral_names.index(p.name)
+%>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(${p.base_addr_name});
   CHECK_DIF_OK(dif_${p.name}_init(base_addr, &${p.inst_name}));
+#endif
 
   % endfor
   base_addr = mmio_region_from_addr(TOP_${top["name"].upper()}_RV_PLIC_BASE_ADDR);
@@ -130,7 +161,13 @@ static void peripherals_init(void) {
  */
 static void peripheral_irqs_clear(void) {
   % for p in helper.irq_peripherals:
+<%
+  i = irq_peripheral_names.index(p.name)
+%>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_${p.name}_irq_acknowledge_all(${args(p)}));
+#endif
+${"" if loop.last else "\n"}\
   % endfor
 }
 
@@ -138,18 +175,22 @@ static void peripheral_irqs_clear(void) {
  * Enables all IRQs in all peripherals.
  */
 static void peripheral_irqs_enable(void) {
-  % for n in irq_peripheral_names:
+  % for i, n in enumerate(irq_peripheral_names):
 <%
   if n == "aon_timer": continue
 %>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
   dif_${n}_irq_state_snapshot_t ${n}_irqs =
       (dif_${n}_irq_state_snapshot_t)UINT_MAX;
-  % endfor
+#endif
 
+  % endfor
   % for p in helper.irq_peripherals:
 <%
   if p.name == "aon_timer": continue
+  i = irq_peripheral_names.index(p.name)
 %>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 <%
   indent = ""
 %>\
@@ -166,6 +207,8 @@ static void peripheral_irqs_enable(void) {
   % if p.inst_name == "uart0":
   }
   % endif
+#endif
+${"" if loop.last else "\n"}\
   % endfor
 }
 
@@ -180,6 +223,10 @@ static void peripheral_irqs_enable(void) {
  */
 static void peripheral_irqs_trigger(void) {
   % for p in helper.irq_peripherals:
+<%
+  i = irq_peripheral_names.index(p.name)
+%>\
+#if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 <%
   indent = ""
 %>\
@@ -206,6 +253,7 @@ static void peripheral_irqs_trigger(void) {
   % if p.inst_name == "uart0":
   }
   % endif
+#endif
 ${"" if loop.last else "\n"}\
   % endfor
 }
