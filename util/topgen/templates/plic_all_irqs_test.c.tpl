@@ -230,12 +230,15 @@ static void peripheral_irqs_trigger(void) {
 <%
   indent = ""
 %>\
-  % if p.inst_name == "uart0":
+  % if p.inst_name == "uart0" or p.name == "aon_timer":
 <%
   indent = "  "
 %>\
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
+  // aon_timer may generate a NMI instead of a PLIC IRQ depending on the ROM.
+  // Since there are other tests covering this already, we just skip this for
+  // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
   % endif
   ${indent}peripheral_expected = ${p.plic_name};
@@ -250,7 +253,7 @@ static void peripheral_irqs_trigger(void) {
   ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
   ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   ${indent}}
-  % if p.inst_name == "uart0":
+  % if p.inst_name == "uart0" or p.name == "aon_timer":
   }
   % endif
 #endif

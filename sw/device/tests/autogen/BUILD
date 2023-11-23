@@ -23,6 +23,7 @@ load(
             "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
         ],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
