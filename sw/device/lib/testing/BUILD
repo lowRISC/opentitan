@@ -458,6 +458,22 @@ cc_library(
 )
 
 cc_library(
+    name = "uart_testutils",
+    srcs = ["uart_testutils.c"],
+    hdrs = ["uart_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/uart/data:uart_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "usb_testutils",
     srcs = [
         "usb_testutils.c",
