@@ -19,7 +19,11 @@
       stage: V2
       si_stage: SV2
       features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
-      tests: ["chip_plic_all_irqs"]
+      tests: [
+        "chip_plic_all_irqs_0",
+        "chip_plic_all_irqs_10",
+        "chip_plic_all_irqs_20",
+      ]
     }
     {
       name: chip_sw_plic_sw_irq

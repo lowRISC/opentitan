@@ -1638,9 +1638,21 @@
       run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0"]
     }
     {
-      name: chip_plic_all_irqs
+      name: chip_plic_all_irqs_0
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test:1:new_rules"]
+      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_0:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_plic_all_irqs_10
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_10:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_plic_all_irqs_20
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_20:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -2067,7 +2079,9 @@
               "chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_device_tx_rx",
               "chip_sw_flash_scrambling_smoketest",
-              "chip_plic_all_irqs",
+              "chip_plic_all_irqs_0",
+              "chip_plic_all_irqs_10",
+              "chip_plic_all_irqs_20",
               "chip_sw_example_flash",
               "chip_sw_example_rom",
               "chip_sw_example_manufacturer",
