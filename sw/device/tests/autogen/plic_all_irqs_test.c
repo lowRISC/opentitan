@@ -1653,17 +1653,24 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
-  for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired;
-       irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
-    aon_timer_irq_expected = irq;
-    LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
+  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
+  // from the logging facility.
+  // aon_timer may generate a NMI instead of a PLIC IRQ depending on the ROM.
+  // Since there are other tests covering this already, we just skip this for
+  // non-DV setups.
+  if (kDeviceType == kDeviceSimDV) {
+    peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
+    for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired;
+         irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
+      aon_timer_irq_expected = irq;
+      LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
+      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
 
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(aon_timer_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
+      // This avoids a race where *irq_serviced is read before
+      // entering the ISR.
+      IBEX_SPIN_FOR(aon_timer_irq_serviced == irq, 1);
+      LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
+    }
   }
 #endif
 
@@ -2000,6 +2007,9 @@ static void peripheral_irqs_trigger(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
   // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
   // from the logging facility.
+  // aon_timer may generate a NMI instead of a PLIC IRQ depending on the ROM.
+  // Since there are other tests covering this already, we just skip this for
+  // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
     peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
     for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
