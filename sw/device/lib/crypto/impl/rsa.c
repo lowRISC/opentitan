@@ -15,30 +15,59 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'a')
 
-crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
-                                    rsa_public_key_t *rsa_public_key,
-                                    rsa_private_key_t *rsa_private_key) {
-  HARDENED_TRY(otcrypto_rsa_keygen_async_start(required_key_len));
-  return otcrypto_rsa_keygen_async_finalize(rsa_public_key, rsa_private_key);
+crypto_status_t otcrypto_rsa_public_key_length(rsa_size_t size,
+                                               size_t *key_length) {
+  *key_length = 0;
+  switch (size) {
+    case kRsaSize2048:
+      *key_length = sizeof(rsa_2048_public_key_t);
+      break;
+    case kRsaSize3072:
+      *key_length = sizeof(rsa_3072_public_key_t);
+      break;
+    case kRsaSize4096:
+      *key_length = sizeof(rsa_4096_public_key_t);
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(*key_length, 0);
+
+  return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
-                                  const hash_digest_t *message_digest,
-                                  rsa_padding_t padding_mode,
-                                  crypto_word32_buf_t *signature) {
-  HARDENED_TRY(otcrypto_rsa_sign_async_start(rsa_private_key, message_digest,
-                                             padding_mode));
-  return otcrypto_rsa_sign_async_finalize(signature);
+crypto_status_t otcrypto_rsa_private_key_length(rsa_size_t size,
+                                                size_t *key_length,
+                                                size_t *keyblob_length) {
+  *key_length = 0;
+  *keyblob_length = 0;
+  switch (size) {
+    case kRsaSize2048:
+      *key_length = sizeof(rsa_2048_int_t);
+      *keyblob_length = sizeof(rsa_2048_private_key_t);
+      break;
+    case kRsaSize3072:
+      *key_length = sizeof(rsa_3072_int_t);
+      *keyblob_length = sizeof(rsa_3072_private_key_t);
+      break;
+    case kRsaSize4096:
+      *key_length = sizeof(rsa_4096_int_t);
+      *keyblob_length = sizeof(rsa_4096_private_key_t);
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(*key_length, 0);
+  HARDENED_CHECK_NE(*keyblob_length, 0);
+
+  return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
-                                    const hash_digest_t *message_digest,
-                                    rsa_padding_t padding_mode,
-                                    crypto_const_word32_buf_t signature,
-                                    hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_rsa_verify_async_start(rsa_public_key, signature));
-  return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
-                                            verification_result);
+crypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
+                                    crypto_unblinded_key_t *public_key,
+                                    crypto_blinded_key_t *private_key) {
+  HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
+  return otcrypto_rsa_keygen_async_finalize(public_key, private_key);
 }
 
 /**
@@ -62,6 +91,250 @@ static status_t rsa_mode_check(const key_mode_t mode) {
   return OTCRYPTO_FATAL_ERR;
 }
 
+crypto_status_t otcrypto_rsa_public_key_construct(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t exponent,
+    crypto_unblinded_key_t *public_key) {
+  if (modulus.data == NULL || public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(rsa_mode_check(public_key->key_mode));
+
+  switch (size) {
+    case kRsaSize2048: {
+      if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
+          modulus.len != kRsa2048NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      pk->e = exponent;
+      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      break;
+    }
+    case kRsaSize3072: {
+      if (public_key->key_length != sizeof(rsa_3072_public_key_t) ||
+          modulus.len != kRsa3072NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      pk->e = exponent;
+      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      break;
+    }
+    case kRsaSize4096: {
+      if (public_key->key_length != sizeof(rsa_4096_public_key_t) ||
+          modulus.len != kRsa4096NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      pk->e = exponent;
+      hardened_memcpy(pk->n.data, modulus.data, modulus.len);
+      break;
+    }
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Basic structural validity checks for RSA private key buffers.
+ *
+ * Checks for bad length, invalid key modes, or an unsupported configuration.
+ * Does not verify checksums or actual key data requirements because this
+ * routine is used for keygen as well as other operations, when the key data is
+ * not yet populated.
+ *
+ * @param size RSA size parameter.
+ * @param private_key Key to check.
+ * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
+ */
+static status_t private_key_structural_check(
+    const rsa_size_t size, const crypto_blinded_key_t *private_key) {
+  // Check that the key mode is a valid RSA mode.
+  HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
+
+  // Sideloaded keys are not supported for RSA.
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the lengths against the RSA size.
+  size_t key_length;
+  size_t keyblob_length;
+  HARDENED_TRY(
+      otcrypto_rsa_private_key_length(size, &key_length, &keyblob_length));
+  if (private_key->config.key_length != key_length ||
+      private_key->keyblob_length != keyblob_length) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+crypto_status_t otcrypto_rsa_private_key_from_exponents(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
+    crypto_const_word32_buf_t d_share0, crypto_const_word32_buf_t d_share1,
+    crypto_blinded_key_t *private_key) {
+  if (modulus.data == NULL || d_share0.data == NULL || d_share1.data == NULL ||
+      private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
+
+  // Ensure that the length of the private exponent shares matches the length
+  // of the modulus.
+  if (d_share0.len != modulus.len || d_share1.len != modulus.len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the public exponent is odd and greater than 2^16 (see FIPS 186-5,
+  // section A.1.1).
+  if ((e & 1) != 1 || e >> 16 == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the mode and lengths for the private key.
+  HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  switch (size) {
+    case kRsaSize2048: {
+      if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
+          modulus.len != kRsa2048NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
+      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      // TODO: RSA keys are currently unblinded, so combine the shares.
+      for (size_t i = 0; i < d_share1.len; i++) {
+        sk->d.data[i] ^= d_share1.data[i];
+      }
+      break;
+    }
+    case kRsaSize3072: {
+      if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
+          modulus.len != kRsa3072NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
+      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      // TODO: RSA keys are currently unblinded, so combine the shares.
+      for (size_t i = 0; i < d_share1.len; i++) {
+        sk->d.data[i] ^= d_share1.data[i];
+      }
+      break;
+    }
+    case kRsaSize4096: {
+      if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
+          modulus.len != kRsa4096NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      hardened_memcpy(sk->n.data, modulus.data, modulus.len);
+      hardened_memcpy(sk->d.data, d_share0.data, d_share0.len);
+      // TODO: RSA keys are currently unblinded, so combine the shares.
+      for (size_t i = 0; i < d_share1.len; i++) {
+        sk->d.data[i] ^= d_share1.data[i];
+      }
+      break;
+    }
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  private_key->checksum = integrity_blinded_checksum(private_key);
+  return OTCRYPTO_OK;
+}
+
+crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
+                                  const hash_digest_t *message_digest,
+                                  rsa_padding_t padding_mode,
+                                  crypto_word32_buf_t *signature) {
+  HARDENED_TRY(
+      otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
+  return otcrypto_rsa_sign_async_finalize(signature);
+}
+
+crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
+                                    const hash_digest_t *message_digest,
+                                    rsa_padding_t padding_mode,
+                                    crypto_const_word32_buf_t signature,
+                                    hardened_bool_t *verification_result) {
+  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
+  return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
+                                            verification_result);
+}
+
+/**
+ * Infer the RSA key size from the length of the public key.
+ *
+ * @param public_key Public key.
+ * @param[out] key_size RSA key size.
+ * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
+ */
+static status_t rsa_size_from_public_key(
+    const crypto_unblinded_key_t *public_key, rsa_size_t *key_size) {
+  size_t pk_len = 0;
+  HARDENED_TRY(otcrypto_rsa_public_key_length(kRsaSize2048, &pk_len));
+  if (public_key->key_length == pk_len) {
+    *key_size = kRsaSize2048;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_TRY(otcrypto_rsa_public_key_length(kRsaSize3072, &pk_len));
+  if (public_key->key_length == pk_len) {
+    *key_size = kRsaSize3072;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_TRY(otcrypto_rsa_public_key_length(kRsaSize4096, &pk_len));
+  if (public_key->key_length == pk_len) {
+    *key_size = kRsaSize4096;
+    return OTCRYPTO_OK;
+  }
+
+  // No matches.
+  return OTCRYPTO_BAD_ARGS;
+}
+
+/**
+ * Infer the RSA key size from the length of the private key.
+ *
+ * @param private_key Private key.
+ * @param[out] key_size RSA key size.
+ * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
+ */
+static status_t rsa_size_from_private_key(
+    const crypto_blinded_key_t *private_key, rsa_size_t *key_size) {
+  size_t key_len = 0;
+  size_t keyblob_len = 0;
+  HARDENED_TRY(
+      otcrypto_rsa_private_key_length(kRsaSize2048, &key_len, &keyblob_len));
+  if (private_key->config.key_length == key_len) {
+    *key_size = kRsaSize2048;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_TRY(
+      otcrypto_rsa_private_key_length(kRsaSize3072, &key_len, &keyblob_len));
+  if (private_key->config.key_length == key_len) {
+    *key_size = kRsaSize3072;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_TRY(
+      otcrypto_rsa_private_key_length(kRsaSize4096, &key_len, &keyblob_len));
+  if (private_key->config.key_length == key_len) {
+    *key_size = kRsaSize4096;
+    return OTCRYPTO_OK;
+  }
+
+  // No matches.
+  return OTCRYPTO_BAD_ARGS;
+}
+
 /**
  * Basic structural validity checks for RSA public key buffers.
  *
@@ -73,105 +346,21 @@ static status_t rsa_mode_check(const key_mode_t mode) {
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t public_key_structural_check(
-    const rsa_public_key_t *public_key) {
-  // Check for NULL pointers.
-  if (public_key == NULL || public_key->n.key == NULL ||
-      public_key->e.key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check that the modulus key mode is a valid RSA mode.
-  HARDENED_TRY(rsa_mode_check(public_key->n.key_mode));
-
-  // Check that the key modes match each other.
-  if (public_key->n.key_mode != public_key->e.key_mode) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the size of the public exponent (should always be one 32b integer).
-  if (public_key->e.key_length != sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  return OTCRYPTO_OK;
+    const crypto_unblinded_key_t *public_key) {
+  // Check that the key mode is a valid RSA mode.
+  return rsa_mode_check(public_key->key_mode);
 }
 
-/**
- * Basic structural validity checks for RSA private key buffers.
- *
- * Checks for NULL pointers or invalid key modes. Does not verify checksums
- * or actual key data requirements because this routine is used for keygen as
- * well as other operations, when the key data is not yet populated.
- *
- * @param private_key Key to check.
- * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
- */
-static status_t private_key_structural_check(
-    const rsa_private_key_t *private_key) {
-  // Check for NULL pointers.
-  if (private_key == NULL || private_key->n.key == NULL ||
-      private_key->d.keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check that the modulus key mode is a valid RSA mode.
-  HARDENED_TRY(rsa_mode_check(private_key->n.key_mode));
-
-  // Check that the key modes match each other.
-  if (private_key->n.key_mode != private_key->d.config.key_mode) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Sideloaded keys are not supported for RSA.
-  if (private_key->d.config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check that the unblinded size for the private exponent matches the length
-  // of the modulus.
-  if (private_key->d.config.key_length != private_key->n.key_length) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  return OTCRYPTO_OK;
-}
-
-/**
- * Infer the RSA key size from the length of the modulus buffer.
- *
- * @param modulus Modulus buffer.
- * @param[out] key_size RSA key size.
- * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
- */
-static status_t key_length_from_modulus(const crypto_unblinded_key_t *modulus,
-                                        rsa_key_size_t *key_size) {
-  switch (modulus->key_length) {
-    case kRsa2048NumBytes:
-      *key_size = kRsaKeySize2048;
-      break;
-    case kRsa3072NumBytes:
-      *key_size = kRsaKeySize3072;
-      break;
-    case kRsa4096NumBytes:
-      *key_size = kRsaKeySize4096;
-      break;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
-  return OTCRYPTO_OK;
-}
-
-crypto_status_t otcrypto_rsa_keygen_async_start(
-    rsa_key_size_t required_key_len) {
+crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  switch (required_key_len) {
-    case kRsaKeySize2048:
+  switch (size) {
+    case kRsaSize2048:
       return rsa_keygen_2048_start();
-    case kRsaKeySize3072:
+    case kRsaSize3072:
       return rsa_keygen_3072_start();
-    case kRsaKeySize4096:
+    case kRsaSize4096:
       return rsa_keygen_4096_start();
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -183,74 +372,46 @@ crypto_status_t otcrypto_rsa_keygen_async_start(
 }
 
 crypto_status_t otcrypto_rsa_keygen_async_finalize(
-    rsa_public_key_t *rsa_public_key, rsa_private_key_t *rsa_private_key) {
-  // Check the caller-provided public key buffer.
-  HARDENED_TRY(public_key_structural_check(rsa_public_key));
-
-  // Check the caller-provided private key buffer.
-  HARDENED_TRY(private_key_structural_check(rsa_private_key));
-
-  // Infer the key length from the public key modulus.
-  rsa_key_size_t key_len;
-  HARDENED_TRY(key_length_from_modulus(&rsa_public_key->n, &key_len));
-
-  // Infer the key length from the private key modulus and ensure it matches.
-  rsa_key_size_t key_len_private;
-  HARDENED_TRY(key_length_from_modulus(&rsa_private_key->n, &key_len_private));
-  if (key_len != key_len_private) {
+    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+  // Check for NULL pointers.
+  if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // Infer the RSA size from the public key modulus.
+  rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  // Check the caller-provided public key buffer.
+  HARDENED_TRY(public_key_structural_check(public_key));
+
+  // Check the caller-provided private key buffer.
+  HARDENED_TRY(private_key_structural_check(size, private_key));
 
   // Call the required finalize() operation.
-  // TODO: the private exponent is not currently blinded; data is copied to the
-  // keyblob directly.
-  switch (key_len) {
-    case kRsaKeySize2048: {
+  switch (size) {
+    case kRsaSize2048: {
       // Finalize the keygen operation and retrieve the keys.
-      rsa_2048_public_key_t public_key2k;
-      rsa_2048_private_key_t private_key2k;
-      HARDENED_TRY(rsa_keygen_2048_finalize(&public_key2k, &private_key2k));
-
-      // Copy the keys into the caller-allocated structs.
-      hardened_memcpy(rsa_public_key->n.key, public_key2k.n.data,
-                      kRsa2048NumWords);
-      rsa_public_key->e.key[0] = public_key2k.e;
-      hardened_memcpy(rsa_private_key->n.key, private_key2k.n.data,
-                      kRsa2048NumWords);
-      hardened_memcpy(rsa_private_key->d.keyblob, private_key2k.d.data,
-                      kRsa2048NumWords);
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      HARDENED_TRY(rsa_keygen_2048_finalize(pk, sk));
       break;
     }
-    case kRsaKeySize3072: {
+    case kRsaSize3072: {
       // Finalize the keygen operation and retrieve the keys.
-      rsa_3072_public_key_t public_key3k;
-      rsa_3072_private_key_t private_key3k;
-      HARDENED_TRY(rsa_keygen_3072_finalize(&public_key3k, &private_key3k));
-
-      // Copy the keys into the caller-allocated structs.
-      hardened_memcpy(rsa_public_key->n.key, public_key3k.n.data,
-                      kRsa3072NumWords);
-      rsa_public_key->e.key[0] = public_key3k.e;
-      hardened_memcpy(rsa_private_key->n.key, private_key3k.n.data,
-                      kRsa3072NumWords);
-      hardened_memcpy(rsa_private_key->d.keyblob, private_key3k.d.data,
-                      kRsa3072NumWords);
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      HARDENED_TRY(rsa_keygen_3072_finalize(pk, sk));
       break;
     }
-    case kRsaKeySize4096: {
+    case kRsaSize4096: {
       // Finalize the keygen operation and retrieve the keys.
-      rsa_4096_public_key_t public_key4k;
-      rsa_4096_private_key_t private_key4k;
-      HARDENED_TRY(rsa_keygen_4096_finalize(&public_key4k, &private_key4k));
-
-      // Copy the keys into the caller-allocated structs.
-      hardened_memcpy(rsa_public_key->n.key, public_key4k.n.data,
-                      kRsa4096NumWords);
-      rsa_public_key->e.key[0] = public_key4k.e;
-      hardened_memcpy(rsa_private_key->n.key, private_key4k.n.data,
-                      kRsa4096NumWords);
-      hardened_memcpy(rsa_private_key->d.keyblob, private_key4k.d.data,
-                      kRsa4096NumWords);
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      HARDENED_TRY(rsa_keygen_4096_finalize(pk, sk));
       break;
     }
     default:
@@ -258,90 +419,58 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  // Construct checksums for all the new keys.
-  rsa_public_key->n.checksum = integrity_unblinded_checksum(&rsa_public_key->n);
-  rsa_public_key->e.checksum = integrity_unblinded_checksum(&rsa_public_key->e);
-  rsa_private_key->n.checksum =
-      integrity_unblinded_checksum(&rsa_private_key->n);
-  rsa_private_key->d.checksum = integrity_blinded_checksum(&rsa_private_key->d);
-
-  // Extra sanity check that the public modulus is equal for the public/private
-  // key; the checksums should be exactly the same.
-  if (rsa_private_key->n.checksum != rsa_public_key->n.checksum) {
-    return OTCRYPTO_FATAL_ERR;
-  }
+  // Construct checksums for the new keys.
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+  private_key->checksum = integrity_blinded_checksum(private_key);
 
   return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_rsa_sign_async_start(
-    const rsa_private_key_t *rsa_private_key,
+    const crypto_blinded_key_t *private_key,
     const hash_digest_t *message_digest, rsa_padding_t padding_mode) {
+  // Check for NULL pointers.
+  if (message_digest == NULL || message_digest->data == NULL ||
+      private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Infer the RSA size from the private key.
+  rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_private_key(private_key, &size));
+
   // Check the caller-provided private key buffer.
-  HARDENED_TRY(private_key_structural_check(rsa_private_key));
+  HARDENED_TRY(private_key_structural_check(size, private_key));
 
-  // Check for NULL digest buffer.
-  if (message_digest->data == NULL) {
+  // Verify the checksum.
+  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Verify the checksum for the modulus.
-  if (integrity_unblinded_key_check(&rsa_private_key->n) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Verify the checksum for the exponent.
-  if (integrity_blinded_key_check(&rsa_private_key->d) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Infer the key length from the private key modulus.
-  rsa_key_size_t key_len;
-  HARDENED_TRY(key_length_from_modulus(&rsa_private_key->n, &key_len));
-
-  switch (key_len) {
-    case kRsaKeySize2048: {
-      // Construct the private key.
-      rsa_2048_private_key_t private_key2k;
-      hardened_memcpy(private_key2k.n.data, rsa_private_key->n.key,
-                      kRsa2048NumWords);
-      hardened_memcpy(private_key2k.d.data, rsa_private_key->d.keyblob,
-                      kRsa2048NumWords);
-
-      // Start signature generation.
+  // Start the appropriate signature generation routine.
+  switch (size) {
+    case kRsaSize2048: {
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_2048_start(
-          &private_key2k, message_digest,
-          (rsa_signature_padding_t)padding_mode);
+          sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
-    case kRsaKeySize3072: {
-      // Construct the private key.
-      rsa_3072_private_key_t private_key3k;
-      hardened_memcpy(private_key3k.n.data, rsa_private_key->n.key,
-                      kRsa3072NumWords);
-      hardened_memcpy(private_key3k.d.data, rsa_private_key->d.keyblob,
-                      kRsa3072NumWords);
-
-      // Start signature generation.
+    case kRsaSize3072: {
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_3072_start(
-          &private_key3k, message_digest,
-          (rsa_signature_padding_t)padding_mode);
+          sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
-    case kRsaKeySize4096: {
-      // Construct the private key.
-      rsa_4096_private_key_t private_key4k;
-      hardened_memcpy(private_key4k.n.data, rsa_private_key->n.key,
-                      kRsa4096NumWords);
-      hardened_memcpy(private_key4k.d.data, rsa_private_key->d.keyblob,
-                      kRsa4096NumWords);
-
-      // Start signature generation.
+    case kRsaSize4096: {
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_4096_start(
-          &private_key4k, message_digest,
-          (rsa_signature_padding_t)padding_mode);
+          sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
     default:
-      // Invalid key size.
-      return OTCRYPTO_BAD_ARGS;
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
@@ -358,110 +487,73 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(
 
   // Determine the size based on the signature buffer length.
   switch (signature->len) {
-    case kRsa2048NumWords: {
-      rsa_2048_int_t sig;
-      HARDENED_TRY(rsa_signature_generate_2048_finalize(&sig));
-      hardened_memcpy(signature->data, sig.data, kRsa2048NumWords);
-      break;
-    }
-    case kRsa3072NumWords: {
-      rsa_3072_int_t sig;
-      HARDENED_TRY(rsa_signature_generate_3072_finalize(&sig));
-      hardened_memcpy(signature->data, sig.data, kRsa3072NumWords);
-      break;
-    }
-    case kRsa4096NumWords: {
-      rsa_4096_int_t sig;
-      HARDENED_TRY(rsa_signature_generate_4096_finalize(&sig));
-      hardened_memcpy(signature->data, sig.data, kRsa4096NumWords);
-      break;
-    }
+    case kRsa2048NumWords:
+      return rsa_signature_generate_2048_finalize(
+          (rsa_2048_int_t *)signature->data);
+    case kRsa3072NumWords:
+      return rsa_signature_generate_3072_finalize(
+          (rsa_3072_int_t *)signature->data);
+    case kRsa4096NumWords:
+      return rsa_signature_generate_4096_finalize(
+          (rsa_4096_int_t *)signature->data);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
-  return OTCRYPTO_OK;
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 crypto_status_t otcrypto_rsa_verify_async_start(
-    const rsa_public_key_t *rsa_public_key,
+    const crypto_unblinded_key_t *public_key,
     crypto_const_word32_buf_t signature) {
-  // Check the caller-provided public key buffer.
-  HARDENED_TRY(public_key_structural_check(rsa_public_key));
-
   // Check for NULL pointers.
-  if (signature.data == NULL) {
+  if (public_key == NULL || public_key->key == NULL || signature.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Verify the checksum for the modulus.
-  if (integrity_unblinded_key_check(&rsa_public_key->n) != kHardenedBoolTrue) {
+  // Check the caller-provided public key buffer.
+  HARDENED_TRY(public_key_structural_check(public_key));
+
+  // Verify the checksum.
+  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Verify the checksum for the exponent.
-  if (integrity_unblinded_key_check(&rsa_public_key->e) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  // Infer the RSA size from the public key.
+  rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
-  // Infer the key length from the public key modulus.
-  rsa_key_size_t key_len;
-  HARDENED_TRY(key_length_from_modulus(&rsa_public_key->n, &key_len));
-
-  switch (key_len) {
-    case kRsaKeySize2048: {
-      // Construct the public key.
-      rsa_2048_public_key_t public_key2k;
-      hardened_memcpy(public_key2k.n.data, rsa_public_key->n.key,
-                      kRsa2048NumWords);
-      public_key2k.e = rsa_public_key->e.key[0];
-
-      // Construct the signature buffer.
+  switch (size) {
+    case kRsaSize2048: {
       if (signature.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_2048_int_t sig2k;
-      hardened_memcpy(sig2k.data, signature.data, kRsa2048NumWords);
-
-      // Start signature verification.
-      return rsa_signature_verify_2048_start(&public_key2k, &sig2k);
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      rsa_2048_int_t *sig = (rsa_2048_int_t *)signature.data;
+      return rsa_signature_verify_2048_start(pk, sig);
     }
-    case kRsaKeySize3072: {
-      // Construct the public key.
-      rsa_3072_public_key_t public_key3k;
-      hardened_memcpy(public_key3k.n.data, rsa_public_key->n.key,
-                      kRsa3072NumWords);
-      public_key3k.e = rsa_public_key->e.key[0];
-
-      // Construct the signature buffer.
+    case kRsaSize3072: {
       if (signature.len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_3072_int_t sig3k;
-      hardened_memcpy(sig3k.data, signature.data, kRsa3072NumWords);
-
-      // Start signature verification.
-      return rsa_signature_verify_3072_start(&public_key3k, &sig3k);
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      rsa_3072_int_t *sig = (rsa_3072_int_t *)signature.data;
+      return rsa_signature_verify_3072_start(pk, sig);
     }
-    case kRsaKeySize4096: {
-      // Construct the public key.
-      rsa_4096_public_key_t public_key4k;
-      hardened_memcpy(public_key4k.n.data, rsa_public_key->n.key,
-                      kRsa4096NumWords);
-      public_key4k.e = rsa_public_key->e.key[0];
-
-      // Construct the signature buffer.
+    case kRsaSize4096: {
       if (signature.len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
-      rsa_4096_int_t sig4k;
-      hardened_memcpy(sig4k.data, signature.data, kRsa4096NumWords);
-
-      // Start signature verification.
-      return rsa_signature_verify_4096_start(&public_key4k, &sig4k);
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      rsa_4096_int_t *sig = (rsa_4096_int_t *)signature.data;
+      return rsa_signature_verify_4096_start(pk, sig);
     }
     default:
-      // Invalid key size.
-      return OTCRYPTO_BAD_ARGS;
+      // Invalid key size. Since the size was inferred, should be unreachable.
+      HARDENED_TRAP();
+      return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
@@ -472,16 +564,14 @@ crypto_status_t otcrypto_rsa_verify_async_start(
 crypto_status_t otcrypto_rsa_verify_async_finalize(
     const hash_digest_t *message_digest, rsa_padding_t padding_mode,
     hardened_bool_t *verification_result) {
+  // Check for NULL pointers.
+  if (message_digest == NULL || message_digest->data == NULL ||
+      verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Initialize verification result to false by default.
   *verification_result = kHardenedBoolFalse;
-
-  // Check for NULL pointers.
-  if (message_digest->data == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (verification_result == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Call the unified `finalize` operation, which will determine the RSA size
   // based on the mode stored in OTBN.
