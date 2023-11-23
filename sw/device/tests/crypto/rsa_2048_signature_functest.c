@@ -116,27 +116,42 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       return INVALID_ARGUMENT();
   };
 
+  // Create two shares for the private exponent (second share is all-zero).
+  crypto_const_word32_buf_t d_share0 = {
+      .data = kTestPrivateExponent,
+      .len = ARRAYSIZE(kTestPrivateExponent),
+  };
+  uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
+  crypto_const_word32_buf_t d_share1 = {
+      .data = share1,
+      .len = ARRAYSIZE(share1),
+  };
+
+  // Construct the private key.
+  size_t key_length;
+  size_t keyblob_length;
+  TRY(otcrypto_rsa_private_key_length(kRsaSize2048, &key_length,
+                                      &keyblob_length));
   crypto_key_config_t private_key_config = {
       .version = kCryptoLibVersion1,
       .key_mode = key_mode,
-      .key_length = kRsa2048NumBytes,
+      .key_length = key_length,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
   };
-
-  rsa_private_key_t private_key = {
-      .n = {.key_mode = key_mode,
-            .key_length = sizeof(kTestModulus),
-            .key = kTestModulus,
-            .checksum = 0},
-      .d = {.config = private_key_config,
-            .keyblob = kTestPrivateExponent,
-            .keyblob_length = sizeof(kTestPrivateExponent),
-            .checksum = 0},
+  uint32_t keyblob[ceil_div(keyblob_length, sizeof(uint32_t))];
+  crypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = keyblob_length,
   };
-
-  private_key.n.checksum = integrity_unblinded_checksum(&private_key.n);
-  private_key.d.checksum = integrity_blinded_checksum(&private_key.d);
+  crypto_const_word32_buf_t modulus = {
+      .data = kTestModulus,
+      .len = ARRAYSIZE(kTestModulus),
+  };
+  TRY(otcrypto_rsa_private_key_from_exponents(kRsaSize2048, modulus,
+                                              kTestPublicExponent, d_share0,
+                                              d_share1, &private_key));
 
   // Hash the message.
   crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
@@ -189,19 +204,23 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       return INVALID_ARGUMENT();
   };
 
-  rsa_public_key_t public_key = {
-      .n = {.key_mode = key_mode,
-            .key_length = sizeof(kTestModulus),
-            .key = kTestModulus,
-            .checksum = 0},
-      .e = {.key_mode = key_mode,
-            .key_length = sizeof(kTestPublicExponent),
-            .key = &kTestPublicExponent,
-            .checksum = 0},
-  };
+  // Get the public key length from the size.
+  size_t key_length;
+  TRY(otcrypto_rsa_public_key_length(kRsaSize2048, &key_length));
 
-  public_key.n.checksum = integrity_unblinded_checksum(&public_key.n);
-  public_key.e.checksum = integrity_unblinded_checksum(&public_key.e);
+  // Construct the public key.
+  crypto_const_word32_buf_t modulus = {
+      .data = kTestModulus,
+      .len = ARRAYSIZE(kTestModulus),
+  };
+  uint32_t public_key_data[ceil_div(key_length, sizeof(uint32_t))];
+  crypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = key_length,
+      .key = public_key_data,
+  };
+  TRY(otcrypto_rsa_public_key_construct(kRsaSize2048, modulus,
+                                        kTestPublicExponent, &public_key));
 
   // Hash the message.
   crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
