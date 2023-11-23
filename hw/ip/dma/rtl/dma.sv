@@ -801,7 +801,7 @@ module dma
             next_error[DmaSizeErr] = 1'b1;
           end
 
-          if (!(reg2hw.control.opcode.q inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
+          if (!(control_q.opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
             next_error[DmaOpcodeErr] = 1'b1;
           end
 
@@ -1268,7 +1268,7 @@ module dma
     hw2reg.status.sha2_digest_valid.de = sha2_digest_set | clear_sha_status;
     hw2reg.status.sha2_digest_valid.d  = sha2_digest_set;
 
-     // Write digest to CSRs when needed. The digest is an 8-element  64-bit datatype. Depending on
+    // Write digest to CSRs when needed. The digest is an 8-element 64-bit datatype. Depending on
     // the selected hashing algorithm, the digest is stored differently in the digest datatype:
     // SHA2-256: digest[0-7][31:0] store the 256-bit digest. The upper 32-bits of all digest
     //           elements are zero
@@ -1278,22 +1278,28 @@ module dma
       hw2reg.sha2_digest[i].de = sha2_digest_set | clear_sha_status;
     end
 
-    for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
-      unique case (reg2hw.control.opcode.q)
-        OpcSha256: begin
-          hw2reg.sha2_digest[i].d = clear_sha_status? '0 : sha2_digest[i][0 +: 32];
-        end
-        OpcSha384: begin
-          if (i < 6) begin
-            hw2reg.sha2_digest[i*2].d     = clear_sha_status? '0 : sha2_digest[i][32 +: 32];
-            hw2reg.sha2_digest[(i*2)+1].d = clear_sha_status? '0 : sha2_digest[i][0  +: 32];
+    // Only mux the digest data when sha2_digest_set is set. Setting the digest happens during the
+    // DmaFinalze state, where we need to use the stored and locked  control_q.opcode value.
+    // In case of clear_sha_status being asserted, the default value from hw2reg = '0; clears
+    // the digest
+    if (sha2_digest_set) begin
+      for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
+        unique case (control_q.opcode)
+          OpcSha256: begin
+            hw2reg.sha2_digest[i].d = sha2_digest[i][0 +: 32];
           end
-        end
-        default: begin // SHA2-512
-          hw2reg.sha2_digest[i*2].d     = clear_sha_status? '0 : sha2_digest[i][32 +: 32];
-          hw2reg.sha2_digest[(i*2)+1].d = clear_sha_status? '0 : sha2_digest[i][0  +: 32];
-        end
-      endcase
+          OpcSha384: begin
+            if (i < 6) begin
+              hw2reg.sha2_digest[i*2].d     = sha2_digest[i][32 +: 32];
+              hw2reg.sha2_digest[(i*2)+1].d = sha2_digest[i][0  +: 32];
+            end
+          end
+          default: begin // SHA2-512
+            hw2reg.sha2_digest[i*2].d     = sha2_digest[i][32 +: 32];
+            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest[i][0  +: 32];
+          end
+        endcase
+      end
     end
 
     // Fiddle out error signals
