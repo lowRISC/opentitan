@@ -18,6 +18,8 @@ use ot_certs::{template, x509};
 pub enum CertificateCommand {
     /// Generate a certificate template.
     GenTemplate(GenTplCommand),
+    /// Parse a certificate.
+    Parse(ParseCertificate),
 }
 
 /// Generate a certificate template.
@@ -67,5 +69,27 @@ impl CommandDispatch for GenTplCommand {
         /* Generate pem certificate for debugging and inspection */
         fs::write(output_x509, &x509.cert)?;
         Ok(Some(Box::new(x509)))
+    }
+}
+
+/// Generate a certificate template.
+#[derive(Debug, Args)]
+pub struct ParseCertificate {
+    /// Filename of the template.
+    certificate: PathBuf,
+    /// Certificate format
+    #[arg(long, value_enum, default_value_t = CertFormat::X509)]
+    cert_format: CertFormat,
+}
+
+impl CommandDispatch for ParseCertificate {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let cert = fs::read(&self.certificate).context("could not read certificate from file")?;
+        let cert = x509::parse_certificate(&cert)?;
+        Ok(Some(Box::new(cert)))
     }
 }
