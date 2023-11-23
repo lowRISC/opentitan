@@ -116,8 +116,11 @@ module mbx_ombx #(
   logic range_valid_set;
   assign range_valid_set = hostif_range_valid_write_i & hostif_range_valid_i;
 
-  // Rewind the read pointer to the base
-  assign load_read_ptr = range_valid_set | set_first_req | sys_read_all_o | host_clear_abort;
+  // Rewind the read pointer to the base when
+  assign load_read_ptr = (range_valid_set & mbx_empty) |  // host wrote a valid range
+                         set_first_req                 |  // initiating the first transfer
+                         sys_read_all_o                |  // all data was read by the SOC
+                         host_clear_abort;                // abort was acked
 
   // Advance the read pointer when one request went through
   assign advance_read_ptr = ombx_sram_read_req_o & ombx_sram_read_gnt_i;
