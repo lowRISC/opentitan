@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -16,6 +17,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/lib/testing/uart_testutils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -24,8 +26,10 @@
 
 #define UART_DATASET_SIZE 128
 
-static dif_uart_t uart;
+static dif_clkmgr_t clkmgr;
+static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
+static dif_uart_t uart;
 
 /**
  * UART TX RX test
@@ -133,37 +137,6 @@ static volatile bool exp_uart_irq_tx_empty;
 static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
-
-// Configures the pinmux to connect the UART instance to chip IOs based on the
-// ChromeOS pinout configuration.
-//
-// The pinout configuration is documented here:
-// https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/data/top_earlgrey.hjson
-// TODO: Pinout configuration APIs based on customer usecases will be
-// auto-generated in future. This function is a stop-gap solution until that is
-// made available.
-static void pinmux_connect_uart_to_pads(uint32_t rx_pin_in_idx,
-                                        uint32_t rx_uart_idx,
-                                        uint32_t tx_pin_out_idx,
-                                        uint32_t tx_uart_idx) {
-  mmio_region_t reg32 = mmio_region_from_addr(
-      TOP_EARLGREY_PINMUX_AON_BASE_ADDR + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET);
-  uint32_t reg_value = rx_pin_in_idx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  ptrdiff_t reg_offset = (ptrdiff_t)rx_uart_idx << 2;
-  uint32_t mask = PINMUX_MIO_PERIPH_INSEL_0_IN_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-
-  reg32 = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR +
-                                PINMUX_MIO_OUTSEL_0_REG_OFFSET);
-  reg_value = tx_uart_idx;
-  // We've got one insel configuration field per register. Hence, we have to
-  // convert the enumeration index into a byte address using << 2.
-  reg_offset = (ptrdiff_t)tx_pin_out_idx << 2;
-  mask = PINMUX_MIO_OUTSEL_0_OUT_0_MASK;
-  mmio_region_write32(reg32, reg_offset, reg_value & mask);
-}
 
 void update_uart_base_addr_and_irq_id(void) {
   switch (kUartIdx) {
@@ -527,28 +500,21 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  dif_clkmgr_t clkmgr;
-  mmio_region_t clkmgr_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(clkmgr_base_addr, &clkmgr));
+  mmio_region_t base_addr;
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   update_uart_base_addr_and_irq_id();
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
-  pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIoc3, kTopEarlgreyPinmuxPeripheralInUart0Rx,
-      kTopEarlgreyPinmuxMioOutIoc4, kTopEarlgreyPinmuxOutselUart0Tx);
-  pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIob4, kTopEarlgreyPinmuxPeripheralInUart1Rx,
-      kTopEarlgreyPinmuxMioOutIob5, kTopEarlgreyPinmuxOutselUart1Tx);
-  // TODO: the UARTs below still need to be mapped to the correct location.
-  pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIoa4, kTopEarlgreyPinmuxPeripheralInUart2Rx,
-      kTopEarlgreyPinmuxMioOutIoa5, kTopEarlgreyPinmuxOutselUart2Tx);
-  pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIoa0, kTopEarlgreyPinmuxPeripheralInUart3Rx,
-      kTopEarlgreyPinmuxMioOutIoa1, kTopEarlgreyPinmuxOutselUart3Tx);
+  // Attach the UART under test.
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx,
+                                               UartPinmuxPlatformIdDvsim));
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);

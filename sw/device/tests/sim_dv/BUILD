@@ -23,6 +23,7 @@ opentitan_test(
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:uart_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
