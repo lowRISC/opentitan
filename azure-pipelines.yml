@@ -568,7 +568,7 @@ jobs:
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
-  timeoutInMinutes: 60
+  timeoutInMinutes: 90
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
