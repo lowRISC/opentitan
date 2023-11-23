@@ -2310,6 +2310,37 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "spi_device_smoketest",
+    srcs = ["spi_device_smoketest.c"],
+    cw310 = new_cw310_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
@@ -3414,6 +3445,7 @@ opentitan_functest(
         ],
     ),
     targets = [
+        "cw310_rom_with_fake_keys",
         "cw310_test_rom",
         "cw340_test_rom",
     ],

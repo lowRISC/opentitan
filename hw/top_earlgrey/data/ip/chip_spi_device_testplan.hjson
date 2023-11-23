@@ -39,7 +39,7 @@
         "SPI_DEVICE.MODE.GENERIC.DPSRAM_TXF_RXF",
       ]
       tests: ["chip_sw_spi_device_tx_rx"]
-      bazel: []
+      bazel: ["//sw/device/tests:spi_device_smoketest_cw310_sival"]
     }
     {
       name: chip_sw_spi_device_flash_mode
