@@ -7,7 +7,7 @@ package(default_visibility = ["//visibility:public"])
 load("//rules:autogen.bzl", "autogen_hjson_header")
 
 autogen_hjson_header(
-    name = "i2c_regs",
+    name = "socdbg_ctrl_regs",
     srcs = [
         "i2c.hjson",
     ],
