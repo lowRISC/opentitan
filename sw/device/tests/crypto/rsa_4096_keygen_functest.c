@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -18,81 +19,75 @@
 enum {
   /* Number of words for a SHA-512 digest. */
   kSha512DigestWords = 512 / 32,
-  /* Number of bytes for RSA-4096 modulus and private exponent. */
-  kRsa4096NumBytes = 4096 / 8,
-  /* Number of words for RSA-4096 modulus and private exponent. */
-  kRsa4096NumWords = kRsa4096NumBytes / sizeof(uint32_t),
 };
 
 // Message data for testing.
 static const unsigned char kTestMessage[] = "Test message.";
 static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
 
-// Configuration for the private exponent.
-static const crypto_key_config_t kRsaPrivateKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeRsaSignPkcs,
-    .key_length = kRsa4096NumBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
-};
+// RSA key mode for testing.
+static const key_mode_t kTestKeyMode = kKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
-  // Allocate buffers for the public key.
-  uint32_t pub_n[kRsa4096NumWords] = {0};
-  uint32_t pub_e = 0;
-  rsa_public_key_t public_key = {
-      .n =
-          (crypto_unblinded_key_t){
-              .key_mode = kRsaPrivateKeyConfig.key_mode,
-              .key_length = kRsa4096NumBytes,
-              .key = pub_n,
-              .checksum = 0,
-          },
-      .e =
-          (crypto_unblinded_key_t){
-              .key_mode = kRsaPrivateKeyConfig.key_mode,
-              .key_length = sizeof(uint32_t),
-              .key = &pub_e,
-              .checksum = 0,
-          },
+  // Get the key lengths from the size.
+  size_t public_key_length;
+  TRY(otcrypto_rsa_public_key_length(kRsaSize4096, &public_key_length));
+  size_t private_key_length;
+  size_t private_keyblob_length;
+  TRY(otcrypto_rsa_private_key_length(kRsaSize4096, &private_key_length,
+                                      &private_keyblob_length));
+
+  // Allocate buffer for the public key.
+  uint32_t public_key_data[ceil_div(public_key_length, sizeof(uint32_t))];
+  memset(public_key_data, 0, sizeof(public_key_data));
+  crypto_unblinded_key_t public_key = {
+      .key_mode = kTestKeyMode,
+      .key_length = public_key_length,
+      .key = public_key_data,
   };
 
   // Allocate buffers for the private key.
-  uint32_t priv_n[kRsa4096NumWords] = {0};
-  uint32_t priv_d[kRsa4096NumWords] = {0};
-  rsa_private_key_t private_key = {
-      .n =
-          (crypto_unblinded_key_t){
-              .key_mode = kRsaPrivateKeyConfig.key_mode,
-              .key_length = kRsa4096NumBytes,
-              .key = priv_n,
-              .checksum = 0,
+  uint32_t keyblob[ceil_div(private_keyblob_length, sizeof(uint32_t))];
+  memset(keyblob, 0, sizeof(keyblob));
+  crypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kCryptoLibVersion1,
+              .key_mode = kTestKeyMode,
+              .key_length = private_key_length,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kSecurityLevelLow,
           },
-      .d =
-          (crypto_blinded_key_t){
-              .config = kRsaPrivateKeyConfig,
-              .keyblob_length = kRsa4096NumBytes,
-              .keyblob = priv_d,
-              .checksum = 0,
-          },
+      .keyblob_length = private_keyblob_length,
+      .keyblob = keyblob,
   };
 
   // Generate the key pair.
   LOG_INFO("Starting keypair generation...");
-  TRY(otcrypto_rsa_keygen(kRsaKeySize4096, &public_key, &private_key));
+  TRY(otcrypto_rsa_keygen(kRsaSize4096, &public_key, &private_key));
   LOG_INFO("Keypair generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
+  // Interpret public key using internal RSA datatype.
+  TRY_CHECK(public_key_length == sizeof(rsa_4096_public_key_t));
+  rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key.key;
+
+  // Interpret private key using internal RSA datatype.
+  TRY_CHECK(private_keyblob_length == sizeof(rsa_4096_private_key_t));
+  rsa_4096_private_key_t *sk = (rsa_4096_private_key_t *)private_key.keyblob;
+
   // Check that the key uses the F4 exponent.
-  TRY_CHECK(public_key.e.key_length == sizeof(uint32_t));
-  TRY_CHECK(public_key.e.key[0] == 65537);
+  TRY_CHECK(pk->e == 65537);
+
+  // Check that the moduli match.
+  TRY_CHECK(ARRAYSIZE(pk->n.data) == ARRAYSIZE(sk->n.data));
+  TRY_CHECK_ARRAYS_EQ(pk->n.data, sk->n.data, ARRAYSIZE(pk->n.data));
 
   // Check that d is at least 2^(len(n) / 2) (this is a FIPS requirement) by
   // ensuring that the most significant half is nonzero.
   bool d_large_enough = false;
   for (size_t i = kRsa4096NumWords / 2; i < kRsa4096NumWords; i++) {
-    if (private_key.d.keyblob[i] != 0) {
+    if (sk->d.data[i] != 0) {
       d_large_enough = true;
     }
   }

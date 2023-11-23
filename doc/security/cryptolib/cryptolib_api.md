@@ -150,9 +150,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 #### RSA data structures
 
 {{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_padding }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_private_key }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_key_size }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_public_key }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_size }}
 
 ### Private data structures
 
@@ -302,7 +300,11 @@ Always ensure that you fully understand the security implications of the padding
 
 ### RSA Synchronous API
 
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_public_key_length }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_length }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_public_key_construct }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
 

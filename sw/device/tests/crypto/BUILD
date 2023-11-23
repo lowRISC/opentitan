@@ -316,6 +316,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:profile",
@@ -354,6 +355,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:profile",
@@ -392,6 +394,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:profile",
