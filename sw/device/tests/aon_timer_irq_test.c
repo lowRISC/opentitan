@@ -27,6 +27,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static const uint32_t kTickFreqHz = 1000 * 1000;  // 1Mhz / 1us
+static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_rv_timer_t rv_timer;
 static dif_rv_plic_t plic;
@@ -191,6 +192,28 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 }
 
+/**
+ * OTTF external NMI internal IRQ handler.
+ * The ROM configures the watchdog to generates a NMI at bark, so we clean the
+ * NMI and wait the external irq handler next.
+ */
+void ottf_external_nmi_handler(void) {
+  bool is_pending;
+  // The watchdog bark external interrupt is also connected to the NMI input
+  // of rv_core_ibex. We therefore expect the interrupt to be pending on the
+  // peripheral side (the check is done later in the test function).
+  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
+      &aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
+  CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
+  // In order to handle the NMI we need to acknowledge the interrupt status
+  // bit it at the peripheral side.
+  CHECK_DIF_OK(
+      dif_aon_timer_irq_acknowledge(&aon_timer, kDifAonTimerIrqWdogTimerBark));
+
+  CHECK_DIF_OK(dif_rv_core_ibex_clear_nmi_state(&rv_core_ibex,
+                                                kDifRvCoreIbexNmiSourceAll));
+}
+
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -202,6 +225,10 @@ bool test_main(void) {
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =
