@@ -62,7 +62,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the sw logger interface.
     foreach (cfg.sw_images[i]) begin
-      if (i inside {SwTypeRom, SwTypeDebug, SwTypeTestSlotA, SwTypeTestSlotB, SwTypeCtn}) begin
+      if (i inside {SwTypeRom, SwTypeSecondRom, SwTypeDebug,
+                    SwTypeTestSlotA, SwTypeTestSlotB, SwTypeCtn}) begin
         cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
       end
     end
@@ -121,6 +122,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `else
     cfg.mem_bkdr_util_h[Rom0].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
+
+    if (cfg.sw_images.exists(SwTypeSecondRom)) begin
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+      cfg.mem_bkdr_util_h[Rom1]
+        .load_mem_from_file({cfg.sw_images[SwTypeSecondRom], ".32.vmem"});
+`else
+      cfg.mem_bkdr_util_h[Rom1]
+        .load_mem_from_file({cfg.sw_images[SwTypeSecondRom], ".39.scr.vmem"});
+`endif
+    end
 
     if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
       if (cfg.use_spi_load_bootstrap) begin

@@ -417,6 +417,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           end else begin
             sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
           end
+        // Second stage ROM
+        end else if (i == SwTypeSecondRom) begin
+          // If SecondRom type AND test_in_second_rom, append suffix to the image name.
+          if ("test_in_second_rom" inside {sw_image_flags[i]}) begin
+            sw_images[i] = $sformatf("%0s_second_rom_%0s", sw_images[i], sw_build_device);
+          // If Rom type but not test_in_second_rom, no need to tweak name further.
+          end else begin
+            sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
+          end // ("test_in_second_rom" inside {sw_image_flags[i]})
         // TODO: the CTN space should become a separate build target. For now however, we share the
         // same bazel build rules used for creating the flash images for slot A and B, hence the
         // same image names apply.
