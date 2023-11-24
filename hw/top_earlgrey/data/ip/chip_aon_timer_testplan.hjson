@@ -151,7 +151,10 @@
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["AON_TIMER.WATCHDOG.DISABLE_BY_LC_CTRL"]
       tests: ["chip_sw_aon_timer_wdog_lc_escalate"]
-      bazel: ["//sw/device/tests:aon_timer_wdog_lc_escalate_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:aon_timer_wdog_lc_escalate_test_fpga_cw310_test_rom"
+        "//sw/device/tests:aon_timer_wdog_lc_escalate_test_fpga_cw310_sival_rom_ext"
+      ]
     }
   ]
 }
