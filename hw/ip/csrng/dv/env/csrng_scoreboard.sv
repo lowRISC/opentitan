@@ -120,6 +120,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg_data_t read_data;
+    bit last_word;
+    bit genbits_valid;
 
     bit addr_phase_read   = (!write && channel == AddrChannel);
     bit addr_phase_write  = (write && channel == AddrChannel);
@@ -159,7 +162,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             end
           end
         end
-        do_read_check = 1'b0;
         do_read_check = 1'b0;
       end
       "intr_enable": begin
@@ -269,38 +271,46 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         end
       end
       "genbits": begin
-        if (data_phase_read) begin
-          cov_vif.cg_csrng_otp_en_sw_app_read_sample(
-            .read_int_state_val_reg(1'b0),
-            .read_genbits_reg(1'b1),
-            .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
-            .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
-            .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
-          );
-        end
-        do_read_check = 1'b0;
-        if (data_phase_read) begin
-          hw_genbits_reg_q.push_back(item.d_data);
-        end
-        if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/TL_DW) begin
-          for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
-            hw_genbits += hw_genbits_reg_q[i] << i*TL_DW;
+        // Only trace genbits if the genbits_vld flag is high. Since the flag is cleared
+        // right when genbits are read we can not just check the value via backdoor.
+        // The flag is cleared if the CSRNG is disabled or when the last word of the genbits
+        // is read. After a clear the genbits_vld will still be high after the first three
+        // reads. For the last read we can just check whether there is only one word left.
+        csr_rd(.ptr(ral.genbits_vld), .value(read_data), .blocking(1'b1), .backdoor(1'b1));
+        last_word = (hw_genbits_reg_q.size() == (GENBITS_BUS_WIDTH/TL_DW - 1));
+        genbits_valid = read_data & 1'b1;
+        if (genbits_valid || last_word) begin
+          do_read_check = 1'b0;
+          if (data_phase_read) begin
+            cov_vif.cg_csrng_otp_en_sw_app_read_sample(
+              .read_int_state_val_reg(1'b0),
+              .read_genbits_reg(1'b1),
+              .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
+              .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
+              .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
+            );
+            hw_genbits_reg_q.push_back(item.d_data);
           end
-          cs_item[SW_APP].genbits_q.push_back(hw_genbits);
-          hw_genbits_reg_q.delete();
-          hw_genbits = '0;
-        end
-        if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
-          for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
-            cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
-                cs_data[SW_APP];
+          if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/TL_DW) begin
+            for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
+              hw_genbits += hw_genbits_reg_q[i] << i*TL_DW;
+            end
+            cs_item[SW_APP].genbits_q.push_back(hw_genbits);
+            hw_genbits_reg_q.delete();
+            hw_genbits = '0;
           end
-          ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
-          for (int i = 0; i < cs_item[SW_APP].glen; i++) begin
-            `DV_CHECK_EQ_FATAL(cs_item[SW_APP].genbits_q[i], prd_genbits_q[SW_APP][i])
+          if (cs_item[SW_APP].genbits_q.size() == cs_item[SW_APP].glen) begin
+            for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
+              cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
+                  cs_data[SW_APP];
+            end
+            ctr_drbg_generate(SW_APP, cs_item[SW_APP].glen, cs_data[SW_APP]);
+            for (int i = 0; i < cs_item[SW_APP].glen; i++) begin
+              `DV_CHECK_EQ_FATAL(cs_item[SW_APP].genbits_q[i], prd_genbits_q[SW_APP][i])
+            end
+            prd_genbits_q[SW_APP].delete();
+            cs_data[SW_APP] = 'h0;
           end
-          prd_genbits_q[SW_APP].delete();
-          cs_data[SW_APP] = 'h0;
         end
       end
       "int_state_num": begin
