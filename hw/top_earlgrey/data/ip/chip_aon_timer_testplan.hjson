@@ -127,7 +127,10 @@
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.PAUSE"]
       tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
-      bazel: ["//sw/device/tests:aon_timer_sleep_wdog_sleep_pause_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:aon_timer_sleep_wdog_sleep_pause_test_fpga_cw310_test_rom",
+        "//sw/device/tests:aon_timer_sleep_wdog_sleep_pause_test_fpga_cw310_sival_rom_ext",
+      ]
     }
     {
       name: chip_sw_aon_timer_wdog_lc_escalate
