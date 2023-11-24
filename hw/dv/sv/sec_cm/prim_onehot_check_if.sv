@@ -53,7 +53,7 @@ interface prim_onehot_check_if #(
       super.new(name);
     endfunction : new
 
-    virtual function sample_cov(onehot_fault_type_e onehot_fault_type);
+    virtual function void sample_cov(onehot_fault_type_e onehot_fault_type);
       `uvm_fatal(msg_id, "sample_cov in base class")
     endfunction
 
@@ -157,7 +157,7 @@ interface prim_onehot_check_if #(
       }
     endgroup
 
-    virtual function sample_cov(onehot_fault_type_e onehot_fault_type);
+    virtual function void sample_cov(onehot_fault_type_e onehot_fault_type);
       onehot_with_addr_fault_cg.sample(onehot_fault_type);
     endfunction
 
@@ -186,7 +186,7 @@ interface prim_onehot_check_if #(
       }
     endgroup
 
-    virtual function sample_cov(onehot_fault_type_e onehot_fault_type);
+    virtual function void sample_cov(onehot_fault_type_e onehot_fault_type);
       `DV_CHECK_NE(onehot_fault_type, OnehotAddrFault)
       onehot_without_addr_fault_cg.sample(onehot_fault_type);
     endfunction
