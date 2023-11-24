@@ -20,12 +20,31 @@ ld_library(
     ],
 )
 
+ld_library(
+    name = "second_rom_linker_script",
+    script = "test_second_rom.ld",
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
+        "//sw/device:info_sections",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical_sections",
+    ],
+)
+
 opentitan_rom_binary(
     name = "test_rom",
     mode = "base-rom",
     deps = [
         ":linker_script",
         ":test_rom_lib",
+    ],
+)
+
+opentitan_rom_binary(
+    name = "test_second_rom",
+    mode = "second-rom",
+    deps = [
+        ":second_rom_linker_script",
+        ":test_second_rom_lib",
     ],
 )
 
@@ -142,6 +161,43 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+    ],
+)
+
+cc_library(
+    name = "test_second_rom_lib",
+    srcs = [
+        "test_second_rom.c",
+        "test_second_rom_start.S",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":test_rom_manifest",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:mmio",
+        "//sw/lib/sw/device/crt",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
+        "//sw/top_darjeeling/sw/dif:clkmgr",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:uart",
         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
