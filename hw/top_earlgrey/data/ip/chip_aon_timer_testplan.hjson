@@ -44,7 +44,10 @@
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST"]
       tests: ["chip_sw_pwrmgr_smoketest"]
-      bazel: ["//sw/device/tests:pwrmgr_smoketest_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_smoketest_fpga_cw310_test_rom"
+        "//sw/device/tests:pwrmgr_smoketest_fpga_cw310_sival_rom_ext"
+      ]
     }
     {
       name: chip_sw_aon_timer_wdog_bark_irq
