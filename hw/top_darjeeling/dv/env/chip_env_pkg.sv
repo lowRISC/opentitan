@@ -109,7 +109,8 @@ package chip_env_pkg;
     SwTypeOtbn      = 3, // Otbn SW
     SwTypeOtp       = 4, // Customized OTP image
     SwTypeDebug     = 5, // Debug SW - injected into SRAM.
-    SwTypeCtn       = 6  // Ibex SW - test SW in CTN SRAM.
+    SwTypeCtn       = 6, // Ibex SW - test SW in CTN SRAM.
+    SwTypeSecondRom = 7  // Ibex SW - second stage boot ROM
   } sw_type_e;
 
   // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
