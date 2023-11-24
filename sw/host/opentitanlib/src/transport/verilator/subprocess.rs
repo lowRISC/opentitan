@@ -17,6 +17,8 @@ pub struct Options {
     pub executable: String,
     /// The ROM image used to boot the CPU.
     pub rom_image: String,
+    /// The optional second ROM image.
+    pub second_rom_image: Option<String>,
     /// The flash images stored in internal flash memory, one file per bank.
     pub flash_images: Vec<String>,
     /// The OTP settings.
@@ -43,6 +45,13 @@ impl Subprocess {
         if !options.rom_image.is_empty() {
             args.push(format!("--meminit=rom,{}", options.rom_image));
         }
+
+        if let Some(second_rom_image) = options.second_rom_image {
+            if !second_rom_image.is_empty() {
+                args.push(format!("--meminit=second_rom,{}", second_rom_image));
+            }
+        }
+
         if !options.flash_images.is_empty() {
             let re = Regex::new(r"^(?P<fname>.*?)(:(?P<slot>\d+))?$").unwrap();
             for image in options.flash_images.iter() {
@@ -132,6 +141,7 @@ mod test {
         let options = Options {
             executable: "/bin/echo".to_owned(),
             rom_image: "".to_owned(),
+            second_rom_image: Some("".to_owned()),
             flash_images: vec!["/dev/null:1".to_owned()],
             otp_image: "".to_owned(),
             ram_ctn_image: "".to_owned(),
