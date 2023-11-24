@@ -33,6 +33,7 @@ Throughout the OpenTitan repository, `BUILD` files describe targets and dependen
 To maintain the invariant that hand-written files not be included in autogen directories, there are `BUILD` files that describe how to build and depend on auto-generated files in autogen subdirectories.
 
 # General Commands
+
 - Build everything (software and Verilator hardware):
   ```sh
   bazel build //...
@@ -116,6 +117,7 @@ All device software, regardless of the device, is built with Bazel.
 However, only Verilator simulation and FPGA device software tests can be run with Bazel.
 
 ### ROM Tests
+
 * Query for all ROM functional and E2E tests for FPGA:
   ```sh
   bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
@@ -150,6 +152,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```
 
 ### Chip-Level Tests
+
 * Query for all chip-level tests for FPGA:
   ```sh
   bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
@@ -190,6 +193,7 @@ The subsections below describe how to use them.
 All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
 
 ## Linting C/C++ Code
+
 The OpenTitan supported linter for C/C++ files is `clang-format`.
 It can be run with Bazel as shown below.
 
@@ -200,6 +204,33 @@ bazel test //quality:clang_format_check --test_output=streamed
 and run the following to fix it, if it is not formatted correctly.
 ```sh
 bazel run //quality:clang_format_fix
+```
+
+## Formatting Rust Code
+
+The OpenTitan project uses `rustfmt` to format Rust code.
+It can be run with Bazel as shown below.
+
+Run the following to check if all Rust code as been formatted correctly:
+```sh
+bazel test //quality:rustfmt_check --test_output=streamed
+```
+and run the following to fix it, if it is not formatted correctly.
+```sh
+bazel run //quality:rustfmt_fix
+```
+
+## Formatting Bazel files
+
+The OpenTitan project uses `buildifier` to automatically format Bazel files.
+
+Run the following to check if all BUILD files has been formatted correctly:
+```sh
+bazel test //quality:buildifier_check --test_output=streamed
+```
+and run the following to fix it, if it is not formatted correctly.
+```sh
+bazel run //quality:buildifier_fix
 ```
 
 ## Linting Starlark
