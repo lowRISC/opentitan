@@ -379,7 +379,7 @@ stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
 The command below tells OpenOCD to connect to the ChipWhisperer FPGA board via an JTAG adapter.
 (Note that a different JTAG adapter will require a different config file `//third_party/openocd:jtag_*_cfg`.)
 
-** CW340 - FTDI adapter**
+**CW340 - FTDI adapter**
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
@@ -388,7 +388,7 @@ cd $REPO_TOP
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
-** CW310 - Olimex adapter**
+**CW310 - Olimex adapter**
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
