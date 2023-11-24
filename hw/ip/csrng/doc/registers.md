@@ -218,9 +218,9 @@ Generate bits returned register
 
 ### GENBITS . GENBITS
 Reading this register will get the generated bits that were requested with
-the generate request. This register must be four times for each request
-number made. For example, a application command generate request with
-a `creq` value of 4 requires this register to be read 16 times to get all
+the generate request. This register must be read four times for each request
+made. For example, an application command generate request with
+a `clen` value of 4 requires this register to be read 16 times to get all
 of the data out of the FIFO path.
 Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [`CTRL.SW_APP_ENABLE`](#ctrl) needs to be set to `kMultiBitBool4True`.
 In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
