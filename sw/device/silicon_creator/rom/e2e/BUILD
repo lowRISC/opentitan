@@ -237,6 +237,22 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "base_rom_e2e_smoke",
+    srcs = ["base_rom_e2e_smoke.c"],
+    targets = [
+        "dv",
+        "verilator",
+    ],
+    test_in_second_rom = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_rom:second_rom_linker_script",
+        "//sw/device/lib/testing/test_rom:test_second_rom_lib",
+    ],
+)
+
+opentitan_functest(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
