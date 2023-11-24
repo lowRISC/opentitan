@@ -39,7 +39,8 @@ _BASE_PARAMS = {
     "data": [],
     "local": True,
     "otp": "@//hw/ip/otp_ctrl/data:img_rma",
-    "rom": "@//sw/device/lib/testing/test_rom",
+    "rom": "@//sw/device/silicon_creator/rom:base_rom_with_fake_keys",
+    "second_rom": "@//sw/device/lib/testing/test_rom:test_second_rom",
     "tags": [],
     "test_runner": "@//util:opentitan_functest_runner.sh",
     "test_cmds": [],  # Passed to test_runner via TEST_CMDS env var.
@@ -57,6 +58,7 @@ def dv_params(
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"],
+        second_rom = _BASE_PARAMS["second_rom"],
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = "@//util:dvsim_test_runner.sh",
@@ -99,6 +101,7 @@ def dv_params(
         local = local,
         otp = otp,
         rom = rom,
+        second_rom = second_rom,
         tags = required_tags + tags,
         test_runner = test_runner,
         test_cmds = required_test_cmds + test_cmds,
@@ -116,6 +119,7 @@ def verilator_params(
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"],
+        second_rom = _BASE_PARAMS["second_rom"],
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
@@ -151,6 +155,7 @@ def verilator_params(
         "--interface=verilator",
         "--verilator-bin=$(location @//hw/top_darjeeling:verilator)",
         "--verilator-rom=$(location {rom})",
+        "--verilator-second-rom=$(location {second_rom})",
         # TODO: we need to split the build rules here so that both CTN SRAM and
         # flash options can co-exist.
         "--verilator-ram-ctn=$(location {flash})",
@@ -169,6 +174,7 @@ def verilator_params(
         local = local,
         otp = otp,
         rom = rom,
+        second_rom = second_rom,
         tags = required_tags + tags,
         test_runner = test_runner,
         test_cmds = required_test_cmds + test_cmds,
@@ -258,6 +264,7 @@ def opentitan_functest(
         data = [],
         tags = [],
         test_in_rom = False,
+        test_in_second_rom = False,
         ot_flash_binary = None,
         signed = True,
         manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
@@ -383,8 +390,21 @@ def opentitan_functest(
             **kwargs
         )
 
+    if test_in_second_rom:
+        if any(["cw310" in t for t in targets]):
+            fail("Tests that run in ROM stage cannot run on FPGA.")
+        ot_second_rom_binary = name + "_second_rom"
+        opentitan_rom_binary(
+            name = ot_second_rom_binary,
+            mode = "second-rom",
+            deps = deps,
+            devices = devices_to_build_for,
+            testonly = True,
+            **kwargs
+        )
+
     # Generate SW artifacts for the tests.
-    if not ot_flash_binary:
+    if (not ot_flash_binary and not (test_in_rom or test_in_second_rom)):
         # Set the linker script for the specified slot.
         if slot not in _FLASH_SLOTS:
             fail("Invalid slot: {}. Valid slots are: silicon_creator_{a,b,virtual}".format(slot))
@@ -463,6 +483,24 @@ def opentitan_functest(
             target_data.append(rom)
             target_data.append(rom_filegroup)
 
+        second_rom = params.pop("second_rom", None)
+        if second_rom:
+            if test_in_second_rom:
+                second_rom_filegroup = "{}_second_rom_{}".format(name, target)
+                second_rom = "{}_scr_vmem".format(second_rom_filegroup)
+            else:
+                second_rom_label = Label(second_rom)
+                second_rom_filegroup = "@{}//{}:{}_{}".format(
+                    second_rom_label.workspace_name,
+                    second_rom_label.package,
+                    second_rom_label.name,
+                    target,
+                )
+                second_rom = "{}_scr_vmem".format(second_rom_filegroup)
+
+            target_data.append(second_rom)
+            target_data.append(second_rom_filegroup)
+
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             # TODO: we need to create a separate rule for backdoor loading the
@@ -495,7 +533,7 @@ def opentitan_functest(
         # as a placeholder (since execution will never reach flash). Moreover,
         # there is no need to update the data dependencies list as the ROM
         # targets were already added above.
-        if test_in_rom:
+        if (test_in_rom or test_in_second_rom):
             flash = rom
         else:
             target_data.append(flash)
@@ -545,6 +583,7 @@ def opentitan_functest(
             "name": name,
             "flash": flash,
             "rom": rom,
+            "second_rom": second_rom,
             "otp": otp,
             "dvsim_config": dvsim_config,
             "clear_bitstream": clear_bitstream,
