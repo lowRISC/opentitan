@@ -12,17 +12,6 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
 
-enum {
-  /**
-   * Number of 32-bit words in a hardware-backed key's keyblob.
-   */
-  kHwBackedKeyblobWords = kKeymgrSaltNumWords,
-  /**
-   * Number of bytes in a hardware-backed key's keyblob.
-   */
-  kHwBackedKeyblobBytes = kHwBackedKeyblobWords * sizeof(uint32_t),
-};
-
 /**
  * Determine the number of bytes in one share of a blinded key.
  *
@@ -62,7 +51,7 @@ size_t keyblob_share_num_words(const crypto_key_config_t config) {
 size_t keyblob_num_words(const crypto_key_config_t config) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolTrue);
-    return kHwBackedKeyblobWords;
+    return kKeyblobHwBackedWords;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
   return 2 * keyblob_share_num_words(config);
@@ -105,6 +94,26 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   hardened_memcpy(keyblob + share_words, share1, share_words);
 }
 
+status_t keyblob_buffer_to_keymgr_diversification(
+    const uint32_t *keyblob, key_mode_t mode,
+    keymgr_diversification_t *diversification) {
+  // Set the version to the first word of the keyblob.
+  diversification->version = launder32(keyblob[0]);
+
+  // Copy the remainder of the keyblob into the salt.
+  hardened_memcpy(diversification->salt, &keyblob[1], kKeymgrSaltNumWords - 1);
+
+  // Set the key mode as the last word of the salt.
+  diversification->salt[kKeymgrSaltNumWords - 1] = launder32(mode);
+
+  HARDENED_CHECK_EQ(diversification->version, keyblob[0]);
+  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &keyblob[1],
+                                   kKeymgrSaltNumWords - 1),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1], mode);
+  return OTCRYPTO_OK;
+}
+
 status_t keyblob_to_keymgr_diversification(
     const crypto_blinded_key_t *key,
     keymgr_diversification_t *diversification) {
@@ -114,28 +123,12 @@ status_t keyblob_to_keymgr_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kHwBackedKeyblobBytes) {
+  if (key->keyblob_length != kKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Set the version to the first word of the keyblob.
-  diversification->version = launder32(key->keyblob[0]);
-
-  // Copy the remainder of the keyblob into the salt.
-  hardened_memcpy(diversification->salt, &key->keyblob[1],
-                  kKeymgrSaltNumWords - 1);
-
-  // Set the key mode as the last word of the salt.
-  diversification->salt[kKeymgrSaltNumWords - 1] =
-      launder32(key->config.key_mode);
-
-  HARDENED_CHECK_EQ(diversification->version, key->keyblob[0]);
-  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &key->keyblob[1],
-                                   kKeymgrSaltNumWords - 1),
-                    kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1],
-                    key->config.key_mode);
-  return OTCRYPTO_OK;
+  return keyblob_buffer_to_keymgr_diversification(
+      key->keyblob, key->config.key_mode, diversification);
 }
 
 status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {

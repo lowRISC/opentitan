@@ -301,8 +301,8 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * @param[out] ctx Initialized context object.
  * @return Error status; OK if no errors.
  */
-status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
-                      const uint32_t *iv, aes_gcm_context_t *ctx) {
+static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
+                             const uint32_t *iv, aes_gcm_context_t *ctx) {
   // Check for null pointers and IV length (must be 96 or 128 bits = 3 or 4
   // words).
   if (ctx == NULL || iv == NULL || (iv_len != 3 && iv_len != 4)) {

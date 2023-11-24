@@ -107,7 +107,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test,
 
   // Call encrypt() with a cycle count timing profile.
   uint64_t t_start = profile_start();
-  crypto_status_t err = otcrypto_aes_encrypt_gcm(
+  crypto_status_t err = otcrypto_aes_gcm_encrypt(
       &key, plaintext, iv, aad, tag_len, &actual_ciphertext, &actual_tag);
   *cycles = profile_end(t_start);
 
@@ -186,7 +186,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   // Call decrypt() with a cycle count timing profile.
   icache_invalidate();
   uint64_t t_start = profile_start();
-  crypto_status_t err = otcrypto_aes_decrypt_gcm(
+  crypto_status_t err = otcrypto_aes_gcm_decrypt(
       &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, tag_valid);
   *cycles = profile_end(t_start);
   icache_invalidate();

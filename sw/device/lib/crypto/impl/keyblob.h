@@ -13,6 +13,17 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Number of 32-bit words in a hardware-backed key's keyblob.
+   */
+  kKeyblobHwBackedWords = kKeymgrSaltNumWords,
+  /**
+   * Number of bytes in a hardware-backed key's keyblob.
+   */
+  kKeyblobHwBackedBytes = kKeyblobHwBackedWords * sizeof(uint32_t),
+};
+
 /**
  * Get the word-length of the full blinded keyblob for a given key length.
  *
@@ -65,6 +76,22 @@ status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
  */
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                          const crypto_key_config_t config, uint32_t *keyblob);
+
+/**
+ * Construct key manager diversification data from a raw keyblob.
+ *
+ * The keyblob must be exactly 8 32-bit words long. The first word is the
+ * version and subsequent words are the salt. The key mode is appended to the
+ * salt to prevent key manager keys being used for different modes.
+ *
+ * @param keyblob Pointer to the keyblob.
+ * @param mode Key mode to use in the diversification.
+ * @param[out] Destination key manager diversification struct.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_buffer_to_keymgr_diversification(
+    const uint32_t *keyblob, key_mode_t mode,
+    keymgr_diversification_t *diversification);
 
 /**
  * Construct key manager diversification data from a blinded key.
