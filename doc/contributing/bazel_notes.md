@@ -34,16 +34,16 @@ To maintain the invariant that hand-written files not be included in autogen dir
 
 # General Commands
 - Build everything (software and Verilator hardware):
-  ```console
+  ```sh
   bazel build //...
   ```
 - Build and run all tests (on-host tests, and Verilator/FPGA on-device tests):
-  ```console
+  ```sh
   bazel test --test_tag_filters=-broken,-dv //sw/...
   ```
   Note: this will take several hours.
 - Clean all build outputs and reclaim all disk and memory traces of a Bazel instance:
-  ```console
+  ```sh
   bazel clean --expunge
   ```
   Note: you should rarely need to run this, see [below](#troubleshooting-builds) for when this may be necessary.
@@ -58,11 +58,11 @@ Therefore, it cannot be run with a standalone `bazel ...` invocation.
 ## `opentitan_{rom,flash}_binary` Artifacts
 
 - Query the locations of all Bazel-built artifacts for all OpenTitan devices for an `opentitan_{rom,flash}_binary` macro:
-  ```console
+  ```sh
   ./bazelisk.sh outquery-all <target>
   ```
 - Query the locations of all Bazel-built artifacts for a specific OpenTitan device for an `opentitan_{rom,flash}_binary` macro:
-  ```console
+  ```sh
   ./bazelisk.sh outquery-all <target>_<device>
   ```
   Note: `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
@@ -76,23 +76,23 @@ Since running tests on multiple OpenTitan devices (whether DV or Verilator simul
 This macro is called `opentitan_functest`.
 
 - List all `sh_test` targets instantiated by a `opentitan_functest`, e.g. the UART smoketest:
-  ```console
+  ```sh
   bazel query 'labels(tests, //sw/device/tests:uart_smoketest)'
   ```
 - Query the HW and SW dependencies of a specific `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
-  ```console
+  ```sh
   bazel query 'labels(data, //sw/device/tests:uart_smoketest_fpga_cw310)'
   ```
   or for any `opentitan_functest` target and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
-  ```console
+  ```sh
   bazel query 'labels(data, <target>_<device>)'
   ```
 - Query the software artifacts built for the `opentitan_flash_binary` that is a dependency of an `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
-  ```console
+  ```sh
   bazel query 'labels(srcs, //sw/device/tests:uart_smoketest_prog_fpga_cw310)'
   ```
   or for any `opentitan_functest` `<target>` and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
-  ```console
+  ```sh
   bazel query 'labels(srcs, <target>_prog_<device>)'
   ```
   Note: if an `opentitan_functest` target has the name `foo`, then the `opentitan_flash_binary` target that is instantiated by the `opentitan_functest` will be named `foo_prog_<device>`.
@@ -100,7 +100,7 @@ This macro is called `opentitan_functest`.
 # Building Software
 
 * To build OpenTitan software see [here](../getting_started/build_sw.md#building-software-with-bazel), or run
-  ```console
+  ```sh
   bazel build <target>
   ```
 
@@ -117,23 +117,23 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 
 ### ROM Tests
 * Query for all ROM functional and E2E tests for FPGA:
-  ```console
+  ```sh
   bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
   ```
   and for Verilator:
-  ```console
+  ```sh
   bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/silicon_creator/...))'
   ```
 * Run all ROM functional and E2E tests on FPGA:
-  ```console
+  ```sh
   bazel test --test_tag_filters=cw310 //sw/device/silicon_creator/...
   ```
   and for Verilator:
-  ```console
+  ```sh
   bazel test --test_tag_filters=verilator //sw/device/silicon_creator/...
   ```
 * Run a single ROM functional or E2E test on FPGA and see the output in real time:
-  ```console
+  ```sh
   bazel test \
     --define DISABLE_VERILATOR_BUILD=true \
     --test_tag_filters=cw310 \
@@ -141,33 +141,33 @@ However, only Verilator simulation and FPGA device software tests can be run wit
     //sw/device/silicon_creator/lib:boot_data_functest
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
-  ```console
+  ```sh
   bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310
   ```
   and similarly for Verilator:
-  ```console
+  ```sh
   bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_sim_verilator
   ```
 
 ### Chip-Level Tests
 * Query for all chip-level tests for FPGA:
-  ```console
+  ```sh
   bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
   ```
   and for Verilator:
-  ```console
+  ```sh
   bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/tests/...))'
   ```
 * Run all chip-level tests on FPGA:
-  ```console
+  ```sh
   bazel test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw310 //sw/device/tests/...
   ```
   and for Verilator:
-  ```console
+  ```sh
   bazel test --test_tag_filters=verilator //sw/device/tests/...
   ```
 * Run a single chip-level test on FPGA and see the output in real time:
-  ```console
+  ```sh
   bazel test \
     --define DISABLE_VERILATOR_BUILD=true
     --test_tag_filters=cw310 \
@@ -175,11 +175,11 @@ However, only Verilator simulation and FPGA device software tests can be run wit
     //sw/device/tests:uart_smoketest
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
-  ```console
+  ```sh
   bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
   ```
   and similarly for Verilator:
-  ```console
+  ```sh
   bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
   ```
 
@@ -194,11 +194,11 @@ The OpenTitan supported linter for C/C++ files is `clang-format`.
 It can be run with Bazel as shown below.
 
 Run the following to check if all C/C++ code as been formatted correctly:
-```console
+```sh
 bazel test //quality:clang_format_check --test_output=streamed
 ```
 and run the following to fix it, if it is not formatted correctly.
-```console
+```sh
 bazel run //quality:clang_format_fix
 ```
 
@@ -208,18 +208,18 @@ The OpenTitan supported linter for Bazel files is `buildifier`.
 It can be run with Bazel as shown below.
 
 Run the following to check if all `WORKSPACE`, `BUILD`, and `.bzl` files have been formatted correctly:
-```console
+```sh
 bazel test //quality:buildifier_check --test_output=streamed
 ```
 and run the following to fix them, if they are not formatted correctly.
-```console
+```sh
 bazel run //quality:buildifier_fix
 ```
 
 ## Checking License Headers
 
 Lastly, the OpenTitan supported linter for checking that every source code file contains a license header may be run with:
-```console
+```sh
 bazel run //quality:license_check --test_output=streamed
 ```
 
@@ -231,7 +231,7 @@ Bazel is aware of all dependency relationships, and knows what prerequisites to 
 - Build FPGA bitstream with (test) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
 - Build FPGA bitstream with (production) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
 - Build Verilator simulation binary:
-  ```console
+  ```sh
   bazel build //hw:verilator
   ```
 
@@ -241,11 +241,11 @@ Bazel is aware of all dependency relationships, and knows what prerequisites to 
 
 If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `bazel clean` command to erase any existing building directories to yield a clean build.
 Specifically, according to the Bazel [documentation](https://docs.bazel.build/versions/main/user-manual.html#clean), issuing a
-```console
+```sh
 bazel clean
 ```
 deletes all the output build directories, while running a
-```console
+```sh
 bazel clean --expunge
 ```
 will wipe all disk and memory traces (i.e., any cached intermediate files) produced by Bazel.
@@ -296,7 +296,7 @@ This is useful for sharing build artifacts across multiple [`git` worktrees](htt
 
 Use the `--disk_cache=<filename>` to specify a cache directory.
 For example, running
-```console
+```sh
 bazel build //... --disk_cache=~/.cache/bazel-disk-cache
 ```
 will cache all built artifacts.
@@ -306,7 +306,7 @@ Note that Bazel does not perform any garbage collection on the disk cache.
 To clean out the disk cache, you can set a cron job to periodically delete all files that have not been accessed for a certain amount of time.
 For example add the following line with the path to your disk cache to your crontab (using `crontab -e`) to delete all files that were last accessed over 60 days ago.
 
-```console
+```sh
 0 0 * * 0 /usr/bin/find /path/to/disk/cache -type f -atime +60 -delete
 ```
 
@@ -319,7 +319,7 @@ The Verilator simulation binary is slow to build.
 To avoid building it, use the
 `--define DISABLE_VERILATOR_BUILD=true` build option.
 For example, to build the UART smoke test artifacts but not the Verilator simulation binary run
-```console
+```sh
 bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smoketest
 ```
 
@@ -327,7 +327,7 @@ bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smokete
 
 By default, Bazel does not write test outputs to STDOUT.
 To see a test's output in real time, use the `--test_output=streamed` flag, like:
-```console
+```sh
 bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
 ```
 
@@ -336,7 +336,7 @@ bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
 Some tests are marked known to be broken (and are in the process of being triaged).
 To prevent running these tests when running a block of tests, use the `test_tag_filters=-broken` flag.
 For example, to run all chip-level tests except the broken ones on FPGA:
-```console
+```sh
 bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
 ```
 
@@ -358,7 +358,7 @@ Here are some tips that can improve the developer experience when using worktree
 ### Cannot find ld
 
 One issue encountered while using bazel is the following error message when attempting to build:
-```console
+```sh
   = note: collect2: fatal error: cannot find 'ld'
           compilation terminated.
 ```
