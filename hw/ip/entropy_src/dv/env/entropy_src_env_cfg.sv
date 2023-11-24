@@ -229,12 +229,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     m_xht_agent_cfg       = entropy_src_xht_agent_cfg::type_id::create("m_xht_agent_cfg");
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
 
     // get entropy_src assert interface handle
     if (!uvm_config_db#(virtual entropy_src_assert_if)::

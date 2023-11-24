@@ -77,12 +77,7 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
     end
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;

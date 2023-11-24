@@ -8,14 +8,14 @@ class pattgen_env_cfg extends cip_base_env_cfg #(.RAL_T(pattgen_reg_block));
 
   // pattgen_agent_cfg
   rand pattgen_agent_cfg m_pattgen_agent_cfg;
-  
+
   // seq cfg
   pattgen_seq_cfg seq_cfg;
 
   `uvm_object_utils_begin(pattgen_env_cfg)
     `uvm_field_object(m_pattgen_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
-  
+
   `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
@@ -30,11 +30,6 @@ class pattgen_env_cfg extends cip_base_env_cfg #(.RAL_T(pattgen_reg_block));
     seq_cfg = pattgen_seq_cfg::type_id::create("seq_cfg");
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
   endfunction
 endclass : pattgen_env_cfg

@@ -18,12 +18,7 @@ class sysrst_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(sysrst_ctrl_reg_bloc
     super.initialize(csr_base_addr);
 
     // set num_interrupts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
