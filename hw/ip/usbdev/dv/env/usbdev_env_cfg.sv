@@ -41,12 +41,7 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
     m_usb20_agent_cfg = usb20_agent_cfg::type_id::create("m_usb20_agent_cfg");
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
   endfunction
 
   // ral flow is limited in terms of setting correct field access policies and reset values

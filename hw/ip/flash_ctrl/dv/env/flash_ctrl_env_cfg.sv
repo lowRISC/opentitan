@@ -307,12 +307,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     m_fpp_agent_cfg.en_cov = 0;
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
+
     m_tl_agent_cfg.max_outstanding_req = 1;
     m_tl_agent_cfgs[flash_ral_name].max_outstanding_req = 2;
     m_tl_agent_cfgs[prim_ral_name].max_outstanding_req = 1;

@@ -25,12 +25,7 @@ class alert_handler_env_cfg extends cip_base_env_cfg #(.RAL_T(alert_handler_reg_
     shadow_storage_err_status_fields[ral.loc_alert_cause[LocalShadowRegStorageErr].la] = 1;
 
     // set num_interrupts & num_alerts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
-    end
+    num_interrupts = ral.intr_state.get_n_used_bits();
 
     alert_host_cfg = new[NUM_ALERTS];
     esc_device_cfg = new[NUM_ESCS];
