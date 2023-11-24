@@ -63,6 +63,7 @@ SECTIONS {
     KEEP(*(.rodata))
     KEEP(*(.rodata.*))
     . = ALIGN(4);
+    __rodata_end = .;
   } > ram_main
 
   .data : ALIGN(4) {
