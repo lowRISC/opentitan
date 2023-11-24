@@ -64,13 +64,13 @@ As mentioned above, we maintain two boot ROM programs, one for testing (_test RO
 To build an FPGA bitstream with the _test ROM_ for the chosen board, use:
 ```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_${BOARD}_test_rom
+./bazelisk.sh build //hw/bitstream/vivado:fpga_${BOARD}_test_rom
 ```
 
 To build an FPGA bitstream with the _ROM_ for the chosen board, use:
 ```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom
+./bazelisk.sh build //hw/bitstream/vivado:fpga_${BOARD}_rom
 ```
 
 >**Note**: Building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
@@ -164,27 +164,27 @@ To ensure that you have sufficient access permissions, set up the udev rules as 
 
 You will then need to run this command to configure the board. You only need to run it once.
 ```sh
-bazel run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll
+./bazelisk.sh run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll
 ```
 
 Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 ### Troubleshooting
 
 If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`) then try adding `--rcfile=` to the `set-pll` command:
 ```sh
-bazel run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll
+./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll
 ```
 It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if you face continued errors.
 
 ## Flash the bitstream onto the FPGA and bootstrap software into flash
 
 There are two ways to load a bitstream on to the FPGA and bootstrap software into the OpenTitan embedded flash:
-1. **automatically**, on single invocations of `bazel test ...`.
+1. **automatically**, on single invocations of `./bazelisk.sh test ...`.
 2. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
 Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
@@ -195,16 +195,16 @@ See below for details on both approaches.
 ### Automatically loading FPGA bitstreams and bootstrapping software with Bazel
 
 A majority of on-device software tests are defined using the custom `opentitan_functest` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
-In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `bazel test ...`.
+In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `./bazelisk.sh test ...`.
 For example, to run the UART smoke test (which is an `opentitan_functest` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
 ```sh
 cd $REPO_TOP
-bazel test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:uart_smoketest
+./bazelisk.sh test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:uart_smoketest
 ```
 or
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to both:
@@ -215,17 +215,17 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 
 #### Configuring Bazel to load the Vivado-built bitstream
 
-By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.
+By default, the above invocations of `./bazelisk.sh test ...` use the pre-built (Internet downloaded) FPGA bitstream.
 To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
 ```sh
-bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 #### Configuring Bazel to skip loading a bitstream
 
 Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
 ```sh
-bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
@@ -253,12 +253,12 @@ To flash the bitstream onto the FPGA using `opentitantool`, use the following co
 **If you downloaded the bitstream from the Internet:**
 ```sh
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
+./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
 ```
 **if you built the bitstream yourself:**
 ```sh
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
+./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
@@ -284,9 +284,9 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the 
 3. Run `opentitantool`.
    ```sh
    cd ${REPO_TOP}
-   bazel run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll # This needs to be done only once.
-   bazel build //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin
-   bazel run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)
+   ./bazelisk.sh run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll # This needs to be done only once.
+   ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin
+   ./bazelisk.sh run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)
    ```
 
    And then output like this should appear from the UART:
@@ -308,7 +308,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the 
 5. Exit `screen` by pressing CTRL-a k, and confirm with y.
 6. Alternatively you can use the console embedded into `opentitantool` to see the output from the UART instead of `screen`.
 ```sh
-bazel run //sw/host/opentitantool -- \
+./bazelisk.sh run //sw/host/opentitantool -- \
 --exec "bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)"\
 console
 ```
@@ -383,7 +383,7 @@ The command below tells OpenOCD to connect to the ChipWhisperer FPGA board via a
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
-    -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_ftdi_cfg)" \
+    -f "util/openocd/board/cw340_ftdi.cfg" \
     -c "adapter speed 500; transport select jtag; reset_config trst_only" \
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
@@ -437,10 +437,10 @@ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 ### Debug with GDB
 
 First, make sure the device software has been built with debug symbols (by default Bazel does not build software with debug symbols).
-For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
+For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `./bazelisk.sh test ...` command:
 ```sh
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_test_rom
+./bazelisk.sh test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_test_rom
 ```
 
 Then a connection between OpenOCD and GDB may be established with:
@@ -531,8 +531,8 @@ The FPGA tests attempt to load the latest bitstream by default, but because we w
 
 ```console
 # Load the bitstream with opentitantool
-bazel run //sw/host/opentitantool --interface=cw340 fpga load-bitstream <path_to_your_bitstream>
+./bazelisk.sh run //sw/host/opentitantool --interface=cw340 fpga load-bitstream <path_to_your_bitstream>
 
 # Run the broken test locally, showing all test output and skipping the bitstream loading
-bazel test <broken_test_rule> --define bitstream=skip --test_output=streamed
+./bazelisk.sh test <broken_test_rule> --define bitstream=skip --test_output=streamed
 ```
