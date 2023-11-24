@@ -17,6 +17,8 @@ pub struct VerilatorOpts {
 
     #[structopt(long, default_value)]
     verilator_rom: String,
+    #[structopt(long)]
+    verilator_second_rom: Option<String>,
     #[structopt(long, required = false)]
     verilator_flash: Vec<String>,
     #[structopt(long, default_value)]
@@ -35,6 +37,7 @@ pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
     let options = Options {
         executable: args.verilator_bin.clone(),
         rom_image: args.verilator_rom.clone(),
+        second_rom_image: args.verilator_second_rom.clone(),
         flash_images: args.verilator_flash.clone(),
         otp_image: args.verilator_otp.clone(),
         ram_ctn_image: args.verilator_ram_ctn.clone(),
