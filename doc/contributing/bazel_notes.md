@@ -189,6 +189,10 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 # Linting Software
 
 There are several Bazel rules that enable running quality checks and fixers on code.
+They can be listed by running the following:
+```sh
+bazel query //quality:all
+```
 The subsections below describe how to use them.
 All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
 
