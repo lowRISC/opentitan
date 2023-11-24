@@ -270,13 +270,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "genbits": begin
         if (data_phase_read) begin
-          uvm_reg ctrl = cfg.ral_models[ral_name].get_reg_by_name("ctrl");
           cov_vif.cg_csrng_otp_en_sw_app_read_sample(
             .read_int_state_val_reg(1'b0),
             .read_genbits_reg(1'b1),
             .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
-            .read_int_state(ctrl.get_field_by_name("read_int_state").get_mirrored_value()),
-            .sw_app_enable(ctrl.get_field_by_name("sw_app_enable").get_mirrored_value())
+            .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
+            .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
           );
         end
         do_read_check = 1'b0;
@@ -309,13 +308,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "int_state_val": begin
         do_read_check = 1'b0;
         if (data_phase_read) begin
-          uvm_reg ctrl = cfg.ral_models[ral_name].get_reg_by_name("ctrl");
           cov_vif.cg_csrng_otp_en_sw_app_read_sample(
             .read_int_state_val_reg(1'b1),
             .read_genbits_reg(1'b0),
             .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
-            .read_int_state(ctrl.get_field_by_name("read_int_state").get_mirrored_value()),
-            .sw_app_enable(ctrl.get_field_by_name("sw_app_enable").get_mirrored_value())
+            .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
+            .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
           );
         end
       end
