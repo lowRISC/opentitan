@@ -107,6 +107,21 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.reseed_interval_shadowed));
   endtask : keymgr_dpe_init
 
+  virtual task keymgr_dpe_erase(bit wait_done = 1);
+    `uvm_info(`gfn,
+      $sformatf("Start keymgr_dpe_erase"), UVM_MEDIUM)
+
+    ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeErase);
+    ral.control_shadowed.slot_src_sel.set(src_slot);
+    ral.control_shadowed.slot_dst_sel.set(dst_slot);
+    csr_update(.csr(ral.control_shadowed));
+    csr_wr(.ptr(ral.start), .value(1));
+
+    if (wait_done)
+      wait_op_done();
+
+  endtask : keymgr_dpe_erase
+
   // advance to next state and generate output, clear output
   virtual task keymgr_dpe_operations(bit advance_state = $urandom_range(0, 1),
                                      int num_gen_op    = $urandom_range(1, 4),
@@ -197,11 +212,12 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
         is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
       end
       keymgr_dpe_pkg::OpDpeErase: begin
-        is_good_op = !(current_state inside {
+        is_good_op &= !(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeReset
         });
+        is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[dst_slot].valid == 1;
       end
       keymgr_dpe_pkg::OpDpeDisable: begin
         is_good_op = !(current_state inside {
