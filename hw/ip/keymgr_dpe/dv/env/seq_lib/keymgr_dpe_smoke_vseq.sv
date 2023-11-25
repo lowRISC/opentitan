@@ -56,13 +56,29 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
         // boot_stage would be exhausted by the last slot
         // so src_slot must != the last dst_slot used
         else if (iter == keymgr_dpe_pkg::DpeNumSlots) begin
-          src_slot = $urandom_range(0,2);
+          src_slot = $urandom_range(0,(keymgr_dpe_pkg::DpeNumSlots-1)-2);
           dst_slot ++;
         end
         `uvm_info(`gfn,
           $sformatf("Key Manager DPE Smoke Iter %0d: src_slot %d dst_slot %d",
             iter, src_slot ,dst_slot), UVM_HIGH)
         keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(1,4)), .clr_output(1));
+      end
+
+      // check to make sure all key slots are valid
+      for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+        `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
+      end
+
+      for (int iter = 1; iter<keymgr_dpe_pkg::DpeNumSlots; iter++) begin
+        dst_slot = iter;
+        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(src_slot)
+        keymgr_dpe_erase();
+      end
+
+      // check to make sure all key slots are invalid
+      for (int slot = 1; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+        `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 0)
       end
   endtask : body
 
