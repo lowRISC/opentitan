@@ -17,6 +17,7 @@ module keymgr_dpe_op_state_ctrl
   input adv_req_i,
   input gen_req_i,
   input erase_req_i,
+  input disable_req_i,
 
   // `op_ack_o` signals to the top module that the requested operation is completed
   output logic op_ack_o,
@@ -32,12 +33,16 @@ module keymgr_dpe_op_state_ctrl
 
 );
 
-  localparam int OpStateWidth = 8;
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 10 \
+  //      -s 20231126 --language=sv
+  localparam int OpStateWidth = 10;
   typedef enum logic [OpStateWidth-1:0] {
-    StIdle   = 8'b10010101,
-    StAdv    = 8'b00101000,
-    StErase  = 8'b01000011,
-    StWait   = 8'b11111110
+    StIdle  = 10'b1111111010,
+    StAdv   = 10'b1010101001,
+    StErase = 10'b1100000110,
+    StWait  = 10'b0001100011,
+    StDis   = 10'b1011010100
   } state_e;
 
   state_e state_q, state_d;
@@ -60,7 +65,9 @@ module keymgr_dpe_op_state_ctrl
 
     unique case (state_q)
       StIdle: begin
-        if (adv_req_i) begin
+        if (disable_req_i) begin
+          state_d = StDis;
+        end else if (adv_req_i) begin
           state_d = StAdv;
         end else if (gen_req_i) begin
           state_d = StWait;
@@ -72,7 +79,15 @@ module keymgr_dpe_op_state_ctrl
       // Erasing happens in a single clock cycle in keymgr slot MUX of ctrl, therefore:
       // `op_update_o` signal is used as input to MUX (so that MUX is activated to update the slot)
       // `op_ack_o` signal is used to communicate successful completion of command
-      StErase:begin
+      StErase: begin
+        op_ack_o = 1'b1;
+        op_update_o = 1'b1;
+        state_d = StIdle;
+      end
+
+      // Similar to erasing, this state exists for acknowledging disable transition. See comments
+      // for `StErase`.
+      StDis: begin
         op_ack_o = 1'b1;
         op_update_o = 1'b1;
         state_d = StIdle;
