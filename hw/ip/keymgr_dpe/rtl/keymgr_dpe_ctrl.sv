@@ -66,6 +66,7 @@ module keymgr_dpe_ctrl
   output logic gen_en_o,
   output hw_key_req_t key_o,
   output keymgr_dpe_slot_t active_key_slot_o,
+  output invalid_advance_o,
 
   input kmac_done_i,
   input kmac_input_invalid_i, // asserted when selected data fails criteria check
@@ -620,6 +621,13 @@ module keymgr_dpe_ctrl
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
   assign invalid_gen = gen_req & (~active_key_slot_o.valid | ~key_version_vld_o);
+
+  // This is similar to `invalid_advance` except that it does not depend on a incoming request.
+  // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance
+  // operation is not valid. It is better be loose here and ask to invalidate even when there is no
+  // advance request.
+  assign invalid_advance_o = invalid_allow_child | invalid_max_boot_stage |
+                                      invalid_src_slot | invalid_retain_parent;
 
   // Exportable DPE is not yet implemented, so mark it unused for lint.
   logic unused_exportable_bit;
