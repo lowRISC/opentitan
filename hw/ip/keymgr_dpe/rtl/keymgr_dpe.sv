@@ -279,6 +279,7 @@ module keymgr_dpe
   keymgr_dpe_slot_t active_key_slot;
   logic op_start;
   assign op_start = reg2hw.start.q;
+  logic invalid_advance;
   keymgr_dpe_ctrl u_ctrl (
     .clk_i,
     .rst_ni,
@@ -320,6 +321,7 @@ module keymgr_dpe
     .gen_en_o(gen_en),
     .key_o(kmac_key),
     .active_key_slot_o(active_key_slot),
+    .invalid_advance_o(invalid_advance),
     .kmac_done_i(kmac_done),
     .kmac_input_invalid_i(kmac_input_invalid),
     .kmac_fsm_err_i(kmac_fsm_err),
@@ -574,7 +576,8 @@ module keymgr_dpe
   // It does not check the validity of the requested operation, with respect to other inputs
   // such as policy violation etc.
   logic [3:0] invalid_data;
-  assign invalid_data[OpAdvance]  = ~key_vld | ~adv_dvalid[active_key_slot.boot_stage];
+  assign invalid_data[OpAdvance]  = ~key_vld | invalid_advance |
+                                    ~adv_dvalid[active_key_slot.boot_stage];
   // Keymgr_dpe does not have identity generation, therefore `id_en = 0`. The value of
   // `invalid_data[OpGenId] does not matter, but assign it to 0 for the sake of lint.
   assign invalid_data[OpGenId] = 1'b0;
