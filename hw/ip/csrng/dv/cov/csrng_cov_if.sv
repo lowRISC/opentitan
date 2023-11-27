@@ -280,7 +280,8 @@ interface csrng_cov_if (
                                                 acmd_e                acmd,
                                                 bit [3:0]             clen,
                                                 bit [3:0]             flags,
-                                                bit [11:0]            glen
+                                                bit [11:0]            glen,
+                                                bit [1:0]             flags_transition
                                                );
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;
@@ -328,6 +329,16 @@ interface csrng_cov_if (
       bins one         = { 1 };
       bins multiple    = { [2:$] };
       ignore_bins zero = { 0 };
+    }
+
+    // Coverpoint for all of the possible transitions of flag0 that can cause a
+    // transition in the fips bit. Transitions are only recorded after reseeds since
+    // the state_db is cleared between instantiates.
+    cp_flags_transition: coverpoint flags_transition iff (acmd == RES) {
+      bins false_to_false = { 2'b00 };
+      bins false_to_true = { 2'b01 };
+      bins true_to_false = { 2'b10 };
+      bins true_to_true = { 2'b11 };
     }
 
     app_acmd_cross: cross cp_app, cp_acmd {
@@ -430,13 +441,39 @@ interface csrng_cov_if (
                                                     iff(read_genbits_reg);
   endgroup
 
-  covergroup csrng_genbits_cg with function sample(bit genbits_fips, bit genbits_valid);
+  covergroup csrng_genbits_cg with function sample(bit genbits_fips,
+                                                   bit[1:0] genbits_fips_transition,
+                                                   uint app,
+                                                   bit valid,
+                                                   bit record_transition);
     option.per_instance  = 1;
     option.name          = "csrng_genbits_cg";
+
     // Coverpoint for indicating FIPS/CC compliant bits on genbits register
-    genbits_fips_cp: coverpoint genbits_fips iff (genbits_valid) {
+    cp_genbits_fips: coverpoint genbits_fips iff (record_transition) {
       bins fips_compliant = { 1'b1 };
       bins fips_non_compliant = { 1'b0 };
+    }
+
+    // Coverpoint for all of the possible transitions of genbits_fips that can cause a
+    // transition in the fips bit at the output.
+    cp_genbits_fips_transition: coverpoint genbits_fips_transition iff (record_transition) {
+      bins false_to_false = { 2'b00 };
+      bins false_to_true = { 2'b01 };
+      bins true_to_false = { 2'b10 };
+      bins true_to_true = { 2'b11 };
+    }
+
+    cp_genbits_app: coverpoint app {
+      bins software = { SW_APP };
+      bins hardware = { [0:SW_APP-1] };
+      ignore_bins invalid_app = { [SW_APP+1:$] };
+    }
+
+    // Coverpoint for the valid bit.
+    cp_genbits_valid: coverpoint valid {
+      bins valid = { 1'b1 };
+      bins invalid = { 1'b0 };
     }
   endgroup
 
@@ -461,12 +498,17 @@ interface csrng_cov_if (
                             );
   endfunction
 
-  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp, csrng_item cs_item);
+  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp,
+                                         csrng_item cs_item,
+                                         mubi4_t flags_previous);
+    bit flags_previous_bit = (flags_previous == MuBi4True) ? 1'b1 : 1'b0;
+    bit flags_current_bit = (cs_item.flags == MuBi4True) ? 1'b1 : 1'b0;
     csrng_cmds_cg_inst.sample(hwapp,
                               cs_item.acmd,
                               cs_item.clen,
                               cs_item.flags,
-                              cs_item.glen
+                              cs_item.glen,
+                              {flags_previous_bit, flags_current_bit}
                              );
     csrng_sts_cg_inst.sample();
   endfunction
@@ -506,8 +548,16 @@ interface csrng_cov_if (
     );
   endfunction
 
-  function automatic void cg_csrng_genbits_sample(bit genbits_fips, bit genbits_valid);
-    csrng_genbits_cg_inst.sample(genbits_fips, genbits_valid);
+  function automatic void cg_csrng_genbits_sample(bit genbits_fips,
+                                                  bit genbits_fips_previous,
+                                                  uint app,
+                                                  bit valid,
+                                                  bit record_transition);
+    csrng_genbits_cg_inst.sample(genbits_fips,
+                                 {genbits_fips_previous, genbits_fips},
+                                 app,
+                                 valid,
+                                 record_transition);
   endfunction
 
 endinterface : csrng_cov_if

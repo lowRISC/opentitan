@@ -21,6 +21,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit                                                     fips[NUM_HW_APPS + 1];
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [3:0] intr_pins;
+  bit [SW_APP:0] genbits_fips_previous;
+  bit [SW_APP:0] genbits_fips_received = '0;
+  mubi4_t [SW_APP:0] cmd_flag0_previous;
 
   virtual csrng_cov_if                                    cov_vif;
 
@@ -202,7 +205,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             more_cmd_data -= 1;
             cs_item[SW_APP].cmd_data_q.push_back(item.a_data);
           end
-          cov_vif.cg_cmds_sample(SW_APP, cs_item[SW_APP]);
+          cov_vif.cg_cmds_sample(SW_APP, cs_item[SW_APP], cmd_flag0_previous[SW_APP]);
           if (!more_cmd_data) begin
             for (int i = 0; i < cs_item[SW_APP].cmd_data_q.size(); i++) begin
               cs_data[SW_APP] = (cs_item[SW_APP].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
@@ -210,6 +213,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             end
             case (cs_item[SW_APP].acmd)
               INS: begin
+                // Record previous flag0 only after INS or RES commands.
+                cmd_flag0_previous[SW_APP] = cs_item[SW_APP].flags;
                 if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
                   bit disabled;
@@ -226,6 +231,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                 ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
               end
               RES: begin
+                // Record previous flag0 only after INS or RES commands.
+                cmd_flag0_previous[SW_APP] = cs_item[SW_APP].flags;
                 if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
                   bit disabled;
@@ -266,8 +273,16 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
         if (data_phase_read) begin
           cov_vif.cg_csrng_genbits_sample(
-            .genbits_valid(item.a_data[0]),
-            .genbits_fips(item.a_data[1]));
+              .genbits_fips(item.d_data[1]),
+              .genbits_fips_previous(genbits_fips_previous[SW_APP]),
+              .app(SW_APP),
+              .valid(item.d_data[0]),
+              .record_transition(genbits_fips_received[SW_APP] && item.d_data[0]));
+          // Record the previous fips bit only if the current valid bit is high.
+          if (item.d_data[0]) begin
+            genbits_fips_previous[SW_APP] = item.d_data[1];
+            genbits_fips_received[SW_APP] = 1'b1;
+          end
         end
       end
       "genbits": begin
@@ -541,10 +556,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         cs_data[app] = (cs_item[app].cmd_data_q[i] << i * CSRNG_CMD_WIDTH) +
                        cs_data[app];
       end
-      cov_vif.cg_cmds_sample(app, cs_item[app]);
+      cov_vif.cg_cmds_sample(app, cs_item[app], cmd_flag0_previous[app]);
 
       case (cs_item[app].acmd)
         INS: begin
+          // Record previous flag0 only after INS or RES commands.
+          cmd_flag0_previous[app] = cs_item[app].flags;
           if (cs_item[app].flags != MuBi4True) begin
             // Get seed
             bit disabled;
@@ -574,6 +591,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           ctr_drbg_uninstantiate(app);
         end
         RES: begin
+          // Record previous flag0 only after INS or RES commands.
+          cmd_flag0_previous[app] = cs_item[app].flags;
           if (cs_item[app].flags != MuBi4True) begin
             // Get seed
             bit disabled;
