@@ -11,7 +11,15 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"  // Generated.
+#include "otp_ctrl_regs.h"    // Generated.
+
+// Ensure all the fields in the manuf page fit.
+// static_assert((OTP_CTRL_PARAM_DEVICE_ID_SIZE +
+static_assert((OTP_CTRL_PARAM_DEVICE_ID_SIZE + OTP_CTRL_PARAM_MANUF_STATE_SIZE +
+               kFlashInfoFieldMaxAstCalibrationDataSizeInBytes) <=
+                  FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+              "Last field (AST calibration data) in manuf page does not fit.");
 
 /**
  * Partition 0 pages and fields.
@@ -30,6 +38,14 @@ const flash_info_field_t kFlashInfoFieldManufState = {
     .bank = 0,
     .page = 0,
     .byte_offset = OTP_CTRL_PARAM_DEVICE_ID_SIZE,
+};
+
+const flash_info_field_t kFlashInfoFieldAstCalibrationData = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset =
+        OTP_CTRL_PARAM_DEVICE_ID_SIZE + OTP_CTRL_PARAM_MANUF_STATE_SIZE,
 };
 
 const flash_info_field_t kFlashInfoFieldCreatorSeed = {
