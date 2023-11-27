@@ -589,6 +589,32 @@ jobs:
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
+- job: execute_sival_fpga_tests_cw310
+  displayName: CW310 SiVal Tests
+  pool:
+    name: $(fpga_pool)
+    demands: BOARD -equals cw310
+  timeoutInMinutes: 30
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/scripts/run-fpga-tests.sh cw310 cw310_sival,-manuf,-hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
+
 - job: execute_hyperdebug_tests_cw310
   displayName: Hyperdebug CW310 Tests (Experimental)
   pool:
