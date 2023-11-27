@@ -1483,7 +1483,7 @@ module dma
   ) u_sys_read_be (
     .clk_i ( gated_clk                      ),
     .rst_ni( rst_ni                         ),
-    .en_i  ( sys_req_d.vld_vec[SysCmdWrite] ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdRead ] ),
     .d_i   ( sys_req_d.read_be              ),
     .q_o   ( sys_o.read_be                  )
   );
