@@ -4250,8 +4250,7 @@ opentitan_test(
         binaries = {
             ":rv_core_ibex_isa_test": "sram_program",
         },
-        bitstream =
-            "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
+        otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         tags = ["manual"],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
@@ -4300,17 +4299,17 @@ opentitan_test(
         binaries = {
             ":rv_core_ibex_epmp_test": "sram_program",
         },
-        bitstream =
-            "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
+        otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         tags = ["manual"],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
     exec_env = {
+        # This test is not compatible with the test_rom because the test_rom
+        # does not respect the exec_disabled OTP config word.
         "//hw/top_earlgrey:fpga_cw310_sival": "hyper310",
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     hyper310 = hyper310_jtag_params(
         binaries = {
@@ -4421,8 +4420,7 @@ opentitan_test(
         binaries = {
             ":rv_core_ibex_mem_test": "sram_program",
         },
-        bitstream =
-            "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
+        otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         tags = [
             "broken",
             "manual",
