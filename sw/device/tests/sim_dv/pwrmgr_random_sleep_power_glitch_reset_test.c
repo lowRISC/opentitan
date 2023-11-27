@@ -298,7 +298,7 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
                                                       bite_cycles, false));
   // Set wdog as a reset source.
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
+                                              kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
 }
 
