@@ -7831,7 +7831,7 @@
         }
         soc:
         {
-          soc_dbg: 0x800
+          soc_dbg: 0x1000
         }
       }
       clock_connections:
@@ -12468,7 +12468,7 @@
             {
               base_addrs:
               {
-                soc_dbg: 0x800
+                soc_dbg: 0x1000
               }
               size_byte: 0x20
             }
