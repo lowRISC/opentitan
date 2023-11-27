@@ -265,7 +265,7 @@ interface csrng_cov_if (
     option.name         = "csrng_err_code_test_cg";
     option.per_instance = 1;
 
-    err_code_test_cp: coverpoint err_test;
+    cp_err_code_test: coverpoint err_test;
 
   endgroup : csrng_err_code_test_cg
 
@@ -273,7 +273,7 @@ interface csrng_cov_if (
     option.name         = "csrng_recov_alert_sts_cg";
     option.per_instance = 1;
 
-    recov_alert_sts_cp: coverpoint recov_alert;
+    cp_recov_alert_sts: coverpoint recov_alert;
   endgroup : csrng_recov_alert_sts_cg
 
   covergroup csrng_cmds_cg with function sample(bit [NUM_HW_APPS-1:0] app,
