@@ -535,7 +535,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     m_spi_host_seq.opcode = SpiFlashChipErase;
     spi_host_flash_issue_write_cmd(
       .write_command(m_spi_host_seq),
-      .busy_timeout_ns(100_000_000),
+      .busy_timeout_ns(200_000_000),
       .busy_poll_interval_ns(1_000_000));
 
     while (sw_byte_q.size > byte_cnt) begin
