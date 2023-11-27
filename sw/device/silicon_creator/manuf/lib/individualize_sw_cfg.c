@@ -7,11 +7,15 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 /**
@@ -40,8 +44,15 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // provisioned. Therefore we require explicit provisioning of this field
     // immediately before the transport image is loaded, after all other
     // provisioning is complete.
+    //
+    // Additionally, we skip the provisioning of the AST configuration data, as
+    // this should already be written to a flash info page. We will pull the
+    // data directly from there.
     if (kv[i].offset ==
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET) {
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
+        (kv[i].offset >= OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET &&
+         kv[i].offset < OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET +
+                            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE)) {
       continue;
     }
     uint32_t offset;
@@ -100,10 +111,48 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
   return OK_STATUS();
 }
 
+static status_t manuf_individualize_device_ast_cfg(
+    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
+  // Copy AST configuration data out of the flash info page.
+  uint32_t ast_cfg_data[kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords];
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      flash_state, kFlashInfoFieldAstCalibrationData.page,
+      kFlashInfoFieldAstCalibrationData.bank,
+      kFlashInfoFieldAstCalibrationData.partition,
+      (dif_flash_ctrl_region_properties_t){
+          .ecc_en = kMultiBitBool4True,
+          .high_endurance_en = kMultiBitBool4False,
+          .erase_en = kMultiBitBool4False,
+          .prog_en = kMultiBitBool4False,
+          .rd_en = kMultiBitBool4True,
+          .scramble_en = kMultiBitBool4False},
+      /*offset=*/NULL));
+  TRY(manuf_flash_info_field_read(
+      flash_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
+      kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords));
+
+  // Write AST configuration data to OTP.
+  // Note: the length is the first word, after which follows <addr><data> word
+  // pairs, where each word (including the length) is 32-bits.
+  for (size_t i = 0; i < ast_cfg_data[0]; ++i) {
+    uint32_t addr = ast_cfg_data[(i * 2) + 1] - TOP_EARLGREY_AST_BASE_ADDR +
+                    OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET;
+    uint32_t data = ast_cfg_data[(i * 2) + 2];
+    uint32_t relative_addr;
+    TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg, addr,
+                                      &relative_addr));
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl,
+                                       kDifOtpCtrlPartitionCreatorSwCfg,
+                                       relative_addr, &data, /*len=*/1));
+  }
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_creator_sw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl) {
+    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                     kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
+  TRY(manuf_individualize_device_ast_cfg(otp_ctrl, flash_state));
   return OK_STATUS();
 }
 
