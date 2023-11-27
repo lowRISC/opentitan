@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -22,12 +23,16 @@ OTTF_DEFINE_TEST_CONFIG();
  * Keep this list sorted in alphabetical order.
  */
 static dif_otp_ctrl_t otp_ctrl;
+static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_rstmgr_t rstmgr;
 
 /**
  * Initializes all DIF handles used in this module.
  */
 static status_t peripheral_handles_init(void) {
+  TRY(dif_flash_ctrl_init_state(
+      &flash_ctrl_state,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
@@ -48,7 +53,8 @@ bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
-    CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
+        &otp_ctrl, &flash_ctrl_state));
     CHECK_STATUS_OK(
         manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
