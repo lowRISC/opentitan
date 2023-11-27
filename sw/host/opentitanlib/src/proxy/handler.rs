@@ -67,7 +67,7 @@ impl<'a> TransportCommandHandler<'a> {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
             }
             Request::ApplyDefaultConfiguration => {
-                self.transport.apply_default_configuration()?;
+                self.transport.apply_default_configuration(None)?;
                 Ok(Response::ApplyDefaultConfiguration)
             }
             Request::Gpio { id, command } => {
@@ -408,6 +408,13 @@ impl<'a> TransportCommandHandler<'a> {
                 ProxyRequest::RemovePinStrapping { strapping_name } => {
                     self.transport.pin_strapping(strapping_name)?.remove()?;
                     Ok(Response::Proxy(ProxyResponse::RemovePinStrapping))
+                }
+                ProxyRequest::ApplyDefaultConfigurationWithStrapping { strapping_name } => {
+                    self.transport
+                        .apply_default_configuration(Some(strapping_name))?;
+                    Ok(Response::Proxy(
+                        ProxyResponse::ApplyDefaultConfigurationWithStrapping,
+                    ))
                 }
             },
         }

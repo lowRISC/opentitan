@@ -78,9 +78,6 @@ impl<'a> SessionHandler<'a> {
             NonblockingUartRegistry::new(),
             socket,
         )?;
-        // Configure all GPIO pins to default direction and level, according to
-        // configuration files provided, and configures SPI port mode/speed, etc.
-        transport.apply_default_configuration()?;
         Ok(Self {
             port,
             socket_server,

@@ -169,6 +169,9 @@ pub trait ProxyOps {
     fn bootstrap(&self, options: &BootstrapOptions, payload: &[u8]) -> Result<()>;
     fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()>;
     fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()>;
+
+    /// Applies the default transport init configuration expect with the specify strap applied.
+    fn apply_default_configuration_with_strap(&self, strapping_name: &str) -> Result<()>;
 }
 
 /// Used by Transport implementations dealing with emulated OpenTitan

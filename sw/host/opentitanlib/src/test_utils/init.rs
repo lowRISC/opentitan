@@ -136,7 +136,7 @@ impl InitializeTest {
         let transport = backend::create(&self.backend_opts)?;
 
         // Set up the default pin configurations as specified in the transport's config file.
-        transport.apply_default_configuration()?;
+        transport.apply_default_configuration(None)?;
 
         // Create the UART first to initialize the desired parameters.
         let _uart = self.bootstrap.options.uart_params.create(&transport)?;

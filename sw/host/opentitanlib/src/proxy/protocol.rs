@@ -298,6 +298,9 @@ pub enum ProxyRequest {
     RemovePinStrapping {
         strapping_name: String,
     },
+    ApplyDefaultConfigurationWithStrapping {
+        strapping_name: String,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -308,4 +311,5 @@ pub enum ProxyResponse {
     Bootstrap,
     ApplyPinStrapping,
     RemovePinStrapping,
+    ApplyDefaultConfigurationWithStrapping,
 }

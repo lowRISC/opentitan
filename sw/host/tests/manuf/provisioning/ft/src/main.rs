@@ -85,7 +85,7 @@ fn main() -> Result<()> {
     // We call the below functions, instead of calling `opts.init.init_target()` since we do not
     // want to perform bootstrap yet.
     let transport = backend::create(&opts.init.backend_opts)?;
-    transport.apply_default_configuration()?;
+    transport.apply_default_configuration(None)?;
     InitializeTest::print_result("load_bitstream", opts.init.load_bitstream.init(&transport))?;
 
     // Format test tokens.
