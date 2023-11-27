@@ -21,7 +21,11 @@ use opentitanlib::transport::UpdateFirmware;
 /// typically involves setting pins as input/output, open drain, etc. according to configuration
 /// files.
 #[derive(Debug, Args)]
-pub struct TransportInit {}
+pub struct TransportInit {
+    /// Optional gpio strap to apply during transport initialization.
+    #[arg(short, long)]
+    pub gpio_strap: Option<String>,
+}
 
 impl CommandDispatch for TransportInit {
     fn run(
@@ -31,7 +35,8 @@ impl CommandDispatch for TransportInit {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Configure all GPIO pins to default direction and level, according to
         // configuration files provided, and configures SPI port mode/speed, etc.
-        transport.apply_default_configuration()?;
+        // Also apply an optional, named gpio strap while performing pin initialization.
+        transport.apply_default_configuration(self.gpio_strap.as_deref())?;
         Ok(None)
     }
 }
