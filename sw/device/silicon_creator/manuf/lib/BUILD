@@ -53,6 +53,8 @@ cc_library(
     hdrs = ["flash_info_fields.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/ip/ast/data:ast_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",

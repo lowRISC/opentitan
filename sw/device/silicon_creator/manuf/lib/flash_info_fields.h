@@ -10,6 +10,8 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
+#include "ast_regs.h"  // Generated.
+
 typedef struct flash_info_field {
   uint32_t partition;
   uint32_t bank;
@@ -18,6 +20,20 @@ typedef struct flash_info_field {
 } flash_info_field_t;
 
 enum {
+  /**
+   * AST Calibration Data Size - Bank 0, Page 0
+   *
+   * The format of data written to this field is:
+   *
+   * <# of address/data pairs><<address><data>>...<<address><data>>
+   *
+   * where each subfield (including the first length field) is a 32-bit word.
+   */
+  kFlashInfoFieldMaxAstCalibrationDataSizeInBytes =
+      ((AST_REGAL_REG_OFFSET + 4) * 2) + 4,
+  kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords =
+      kFlashInfoFieldMaxAstCalibrationDataSizeInBytes / sizeof(uint32_t),
+
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
 
@@ -27,6 +43,7 @@ enum {
 
 extern const flash_info_field_t kFlashInfoFieldDeviceId;
 extern const flash_info_field_t kFlashInfoFieldManufState;
+extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;
 extern const flash_info_field_t kFlashInfoFieldOwnerSeed;
 extern const flash_info_field_t kFlashInfoFieldWaferAuthSecret;
