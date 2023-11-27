@@ -81,6 +81,7 @@ class csrng_monitor extends dv_base_monitor #(
             for (int i = 0; i < cs_item.glen; i++) begin
               @(posedge cfg.vif.mon_cb.cmd_rsp.genbits_valid);
               cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
+              cs_item.fips_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_fips);
             end
           end
           // Illegal commands fail without getting acknowledged.
