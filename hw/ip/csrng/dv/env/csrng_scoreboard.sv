@@ -290,6 +290,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
             );
             hw_genbits_reg_q.push_back(item.d_data);
+            // Check if the FIPS compliance bit is set correctly.
+            `DV_CHECK_EQ_FATAL((read_data >> 1) & 1'b1, cfg.compliance[SW_APP])
           end
           if (hw_genbits_reg_q.size() == GENBITS_BUS_WIDTH/TL_DW) begin
             for (int i = 0; i < hw_genbits_reg_q.size(); i++) begin
@@ -562,6 +564,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           ctr_drbg_generate(app, cs_item[app].glen, cs_data[app]);
           for (int i = 0; i < cs_item[app].glen; i++) begin
             `DV_CHECK_EQ_FATAL(cs_item[app].genbits_q[i], prd_genbits_q[app][i])
+            // Check if the FIPS compliance bit is set correctly.
+            `DV_CHECK_EQ_FATAL(cs_item[app].fips_q[i], cfg.compliance[app])
           end
           // Deletes the predicted genbits before the next comparison.
           prd_genbits_q[app].delete();
