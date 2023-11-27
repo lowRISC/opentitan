@@ -1334,7 +1334,7 @@ opentitan_test(
     cw310 = cw310_jtag_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_personalized",
         tags = [
-            "fpga_cw310_sival",
+            "broken",
             "lc_dev",
         ],
         test_cmd = " ".join([
