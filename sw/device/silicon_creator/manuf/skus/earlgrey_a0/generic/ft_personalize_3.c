@@ -12,13 +12,22 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static manuf_cert_perso_data_in_t in_data;
+
+enum {
+  kAttestMeasurementSizeInBits = 256,
+  kAttestMeasurementSizeInBytes = kAttestMeasurementSizeInBits / 8,
+  kAttestMeasurementSizeIn32BitWords =
+      kAttestMeasurementSizeInBytes / sizeof(uint32_t),
+};
 
 /**
  * Crank the keymgr to produce the attestation keys and certificates.
@@ -54,9 +63,24 @@ static status_t personalize(ujson_t *uj) {
 
   if (in_data.rom_ext_measurement_valid &&
       in_data.owner_manifest_measurement_valid) {
+    // Set attestation binding to ROM_EXT / Ownership Manifest measurements.
+    // Note: we set the sealing binding value to all zeros as it is currently
+    // unused in the personalization flow. This may be changed in the future.
+    keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+    keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+    uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
+    hmac_digest_t combined_measurements;
+    memcpy(rom_ext_measurements, in_data.rom_ext_measurement,
+           kAttestMeasurementSizeInBytes);
+    memcpy(&rom_ext_measurements[kAttestMeasurementSizeIn32BitWords],
+           in_data.owner_manifest_measurement, kAttestMeasurementSizeInBytes);
+    hmac_sha256(rom_ext_measurements, kAttestMeasurementSizeInBytes * 2,
+                &combined_measurements);
+    memcpy(attestation_binding_value.data, combined_measurements.digest,
+           kAttestMeasurementSizeInBytes);
+    keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
+
     // Advance keymgr and generate CDI_0 attestation keys / cert.
-    // TODO(#19455): set attestation binding to ROM_EXT / Ownership Manifest
-    // measurements.
     keymgr_advance_state();
     TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
     TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
@@ -67,8 +91,13 @@ static status_t personalize(ujson_t *uj) {
                                        kCdi0KeymgrDiversifier));
 
     if (in_data.owner_measurement_valid) {
+      // Set attestation binding to OWNER measurement.
+      // Note: we keep the sealing binding value to all zeros as it is currently
+      // unused in the personalization flow. This may be changed in the future.
+      memcpy(attestation_binding_value.data, in_data.owner_measurement,
+             kAttestMeasurementSizeInBytes);
+
       // Advance keymgr and generate CDI_1 attestation keys / cert.
-      // TODO(#19455): set attestation binding to OWNER measurement.
       keymgr_advance_state();
       TRY(keymgr_state_check(kKeymgrStateOwnerKey));
       TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
