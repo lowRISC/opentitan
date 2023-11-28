@@ -161,10 +161,6 @@ bool test_main(void) {
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-  // First check the flash stored value
-  uint32_t event_idx = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
-
   // Enable flash access
   CHECK_STATUS_OK(
       flash_ctrl_testutils_default_region_access(&flash_ctrl,
@@ -174,6 +170,10 @@ bool test_main(void) {
                                                  /*scramble_en*/ false,
                                                  /*ecc_en*/ false,
                                                  /*he_en*/ false));
+
+  // First check the flash stored value
+  uint32_t event_idx = 0;
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
   // Increment flash counter to know where we are
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
