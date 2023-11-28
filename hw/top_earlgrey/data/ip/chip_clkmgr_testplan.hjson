@@ -144,12 +144,8 @@
               "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
               "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
-              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
-              "manuf_cp_unlock_raw",
-              "manuf_cp_yield_test"]
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma"]
       bazel: [
-        "//sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest_fpga_cw310_rom_with_fake_keys",
-        "//sw/device/silicon_creator/manuf/tests:manuf_cp_yield_test_functest_test_unlocked0_fpga_cw310_rom_with_fake_keys",
         "//sw/device/tests:ast_clk_outs_test_cw310_test_rom",
         "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_cw310_test_rom",
         "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_cw310_test_rom",
@@ -172,11 +168,8 @@
         "RAW",
         "TEST_LOCKED0",
       ]
-      tests: [
-        "chip_sw_clkmgr_external_clk_src_for_lc",
-        "manuf_cp_unlock_raw",
-      ]
-      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest_fpga_cw310_rom_with_fake_keys"]
+      tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
+      bazel: []
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw
