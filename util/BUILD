@@ -101,3 +101,11 @@ py_binary(
     srcs = ["fusesoc_build.py"],
     deps = all_requirements,
 )
+
+py_test(
+    name = "verible_format_test",
+    srcs = [
+        "verible-format.py",
+        "verible_format_test.py",
+    ],
+)

@@ -8,6 +8,8 @@ set -e
 usage()
 {
     echo "Usage: install-package-dependencies.sh --verilator-version V"
+    # TODO: Remove vestigial `--verible-version` flag once the "CI (private)"
+    # pipeline stops passing it.
     echo "                                       --verible-version V"
     exit 1
 }
@@ -22,14 +24,13 @@ long="verilator-version:,verible-version:"
 ARGS="$(getopt -o "" -l "$long" -- "$@")" || usage
 
 VERILATOR_VERSION=
-VERIBLE_VERSION=
 
 eval set -- "$ARGS"
 while :
 do
     case "$1" in
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
-        --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
+        --verible-version) echo "##[warning]Ignoring deprecated flag: --verible-version"; shift 2 ;;
         --) shift; break ;;
         *)  error "getopt / case statement mismatch"
     esac
@@ -37,7 +38,6 @@ done
 
 # Check that we've seen all the expected versions
 test -n "$VERILATOR_VERSION" || error "Missing --verilator-version"
-test -n "$VERIBLE_VERSION"   || error "Missing --verible-version"
 
 # Check that there aren't any positional arguments
 test $# = 0 || error "Unexpected positional arguments"
@@ -92,25 +92,8 @@ export PATH=$HOME/.local/bin:$PATH
 
 python3 -m pip install --user -r python-requirements.txt --require-hashes
 
-# Install Verible
-lsb_sr="$(lsb_release -sr)"
-lsb_sc="$(lsb_release -sc)"
-VERIBLE_BASE_URL="https://github.com/google/verible/releases/download"
-VERIBLE_TARBALL="verible-${VERIBLE_VERSION}-Ubuntu-${lsb_sr}-${lsb_sc}-x86_64.tar.gz"
-VERIBLE_URL="${VERIBLE_BASE_URL}/${VERIBLE_VERSION}/${VERIBLE_TARBALL}"
-
-verible_tar="$TMPDIR/verible.tar.gz"
-
-curl -f -Ls -o "$verible_tar" "${VERIBLE_URL}" || {
-    error "Failed to download verible from ${VERIBLE_URL}"
-}
-
-sudo mkdir -p /tools/verible
-sudo chmod 777 /tools/verible
-tar -C /tools/verible -xf "$verible_tar" --strip-components=1
-export PATH=/tools/verible/bin:$PATH
-
 # Install verilator
+lsb_sr="$(lsb_release -sr)"
 if [ $lsb_sr = "18.04" ]; then
   UBUNTU_SUFFIX="-u18"
 fi

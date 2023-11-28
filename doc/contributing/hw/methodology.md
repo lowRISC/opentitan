@@ -84,8 +84,15 @@ Note that a pull request cannot be merged if it is not lint-clean, since the con
 
 To complement the Verilator lint explained above, we also leverage the Verible style linter, which captures different aspects of the code and detects style elements that are in violation of our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 
-The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we recommend IP designers install the tool as described [here](../../getting_started/README.md#step-6a-install-verible-optional) and in the [Lint Flow README](../../../hw/lint/README.md), and use the flow locally to close the errors and warnings.
+Verible is an open source SystemVerilog style linter and formatting tool (see the [Verible GitHub page](https://github.com/chipsalliance/verible)).
+The style linter is relatively mature and we use it as part of our [RTL design flow](https://opentitan.org/book/doc/contributing/hw/methodology.html).
+The formatter is still under active development, and hence its usage is more experimental in OpenTitan.
+
+You do not need to install Verible manually; OpenTitan manages it automatically with Bazel.
+The tool can be invoked on specific SystemVerilog files with the following command:
+```shell
+./bazelisk.sh run //third_party/verible:verible-verilog-lint -- path/to/file.sv
+```
 
 Developers should run their code through the Verible style lint tool before creating a design pull request.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
@@ -203,8 +210,8 @@ The formatter follows our [Verilog Style Guide](https://github.com/lowRISC/style
 Note that this formatter is still under development and not entirely production ready yet due to some remaining formatting bugs and discrepancies - hence automatic code formatting is not enforced in CI at this point.
 However, the tool is mature enough for manual use on individual files (i.e., certain edits may have to be manually amended after using it).
 
-The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we encourage IP designers to install the tool as described [here](../../getting_started/README.md#step-6a-install-verible-optional), and run their code through the formatter tool before creating a design pull request.
+The tool is open source and freely available on the [Verible GitHub page](https://github.com/chipsalliance/verible).
+Hence, we encourage IP designers to run their code through the formatter tool before creating a design pull request.
 
 The tool can be invoked on specific SystemVerilog files with the following command:
 ```shell

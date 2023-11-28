@@ -106,6 +106,9 @@ riscv_compliance_repos()
 load("//third_party/coremark:repos.bzl", "coremark_repos")
 coremark_repos()
 
+load("//third_party/verible:repos.bzl", "verible_repos")
+verible_repos()
+
 # The standard Keccak algorithms
 load("//third_party/xkcp:repos.bzl", "xkcp_repos")
 xkcp_repos()

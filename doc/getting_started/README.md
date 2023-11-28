@@ -153,55 +153,16 @@ Hopefully you got a "Hello World!" demo running on OpenTitan using either the Ve
 
 Depending on the specific way you want to use or contribute to OpenTitan, there may be a few extra steps you want to do.
 In particular:
-* *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 7a to install Verible.
-* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7b to set up formal verification.
-* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7c to set it up.
+* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7a to set up formal verification.
+* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7b to set it up.
 
 It also may make sense to stick with the basic setup and come back to these steps if you find you need them later.
 
-### Step 7a: Install Verible (optional)
-
-Verible is an open source SystemVerilog style linter and formatting tool.
-The style linter is relatively mature and we use it as part of our [RTL design flow](../contributing/hw/methodology.md).
-The formatter is still under active development, and hence its usage is more experimental in OpenTitan.
-
-You can download and build Verible from scratch as explained on the [Verible GitHub page](https://github.com/google/verible/).
-But since this requires the Bazel build system the recommendation is to download and install a pre-built binary as described below.
-
-Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
-
-The example below is for Ubuntu 20.04:
-
-```
-export VERIBLE_VERSION={{#tool-version verible }}
-wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
-tar -xf verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
-```
-
-If you are using Ubuntu 18.04 then instead use:
-
-```console
-export VERIBLE_VERSION={{#tool-version verible }}
-wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
-tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
-```
-
-Then install Verible within 'tools' using:
-
-```
-sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
-sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
-```
-
-After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.
-
-Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
-
-### Step 7b: Set up formal verification (optional)
+### Step 7a: Set up formal verification (optional)
 
 See the [formal verification setup guide](./setup_formal.md)
 
-### Step 7c: Set up Siemens Questa (optional)
+### Step 7b: Set up Siemens Questa (optional)
 
 Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 

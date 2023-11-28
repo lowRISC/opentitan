@@ -3,47 +3,65 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import shutil
 import sys
 import os
 import argparse
 import subprocess
 import logging
 import difflib
+import enum
 
 logger = logging.getLogger('verible_format')
 
-VERIBLE_ARGS = ["--formal_parameters_indentation=indent",
-                "--named_parameter_indentation=indent",
-                "--named_port_indentation=indent",
-                "--port_declarations_indentation=indent"]
+VERIBLE_ARGS = [
+    "--formal_parameters_indentation=indent",
+    "--named_parameter_indentation=indent",
+    "--named_port_indentation=indent",
+    "--port_declarations_indentation=indent",
+]
+
+
+class VeribleTool(enum.Enum):
+    FORMAT = "verible-verilog-format"
+    SYNTAX = "verible-verilog-syntax"
+
+    def build_bazel_args(self) -> list[str]:
+        """Get a list of args that will run this tool through Bazel."""
+        return [
+            os.path.join(get_repo_top(), "bazelisk.sh"),
+            "run",
+            "--ui_event_filters=-info,-stdout,-stderr",
+            "--noshow_progress",
+            "//third_party/verible:" + self.value,
+            "--",
+        ]
+
+    def get_version(self) -> str:
+        return subprocess.run(
+            self.build_bazel_args() + ['--version'],
+            check=True,
+            universal_newlines=True,
+            stdout=subprocess.PIPE).stdout.strip().split('\n')[0]
 
 
 def get_repo_top():
     return subprocess.run(['git', 'rev-parse', '--show-toplevel'],
-                          check=True, universal_newlines=True,
+                          check=True,
+                          universal_newlines=True,
                           stdout=subprocess.PIPE).stdout.strip()
 
 
-def get_verible_executable_path():
-    return shutil.which('verible-verilog-format')
-
-
-def get_verible_version(verible_exec_path):
-    return subprocess.run([verible_exec_path, '--version'],
-                          check=True, universal_newlines=True,
-                          stdout=subprocess.PIPE).stdout.strip().split('\n')[0]
-
-
-def process_file(filename_abs, verible_exec_path,
-                 inplace=False, show_diff=False, show_cst=False):
-    args = [verible_exec_path] + VERIBLE_ARGS
+def process_file(filename_abs, inplace=False, show_diff=False, show_cst=False):
+    args = VeribleTool.FORMAT.build_bazel_args() + VERIBLE_ARGS
     if inplace:
         args.append('--inplace')
     args.append(filename_abs)
 
-    verible = subprocess.run(args, check=False, universal_newlines=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    verible = subprocess.run(args,
+                             check=False,
+                             universal_newlines=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
 
     ret = 0
 
@@ -57,9 +75,13 @@ def process_file(filename_abs, verible_exec_path,
 
         formatted = verible.stdout.split('\n')
 
-        diff = list(difflib.unified_diff(orig, formatted, lineterm='', n=3,
-                                         fromfile=filename_abs,
-                                         tofile=filename_abs + '.formatted'))
+        diff = list(
+            difflib.unified_diff(orig,
+                                 formatted,
+                                 lineterm='',
+                                 n=3,
+                                 fromfile=filename_abs,
+                                 tofile=filename_abs + '.formatted'))
         ret = len(diff) > 0
 
         if not show_diff and len(diff) > 0:
@@ -71,9 +93,10 @@ def process_file(filename_abs, verible_exec_path,
                 logger.info(line)
 
         if len(diff) > 0 and show_cst:
-            cst = subprocess.run(['verible-verilog-syntax',
-                                  '--printtree', filename_abs],
-                                 check=False, universal_newlines=True,
+            cst = subprocess.run(VeribleTool.SYNTAX.build_bazel_args() +
+                                 ['--printtree', filename_abs],
+                                 check=False,
+                                 universal_newlines=True,
                                  stdout=subprocess.PIPE)
             logger.info(cst.stdout)
 
@@ -81,24 +104,51 @@ def process_file(filename_abs, verible_exec_path,
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Format source code with Verible formatter')
-    parser.add_argument('-q', '--quiet', action='store_true', default=False,
+    parser = argparse.ArgumentParser(
+        description='Format source code with Verible formatter')
+    parser.add_argument('-q',
+                        '--quiet',
+                        action='store_true',
+                        default=False,
                         help='print only errors and warnings')
-    parser.add_argument('-v', '--verbose', action='store_true', default=False,
+    parser.add_argument('-v',
+                        '--verbose',
+                        action='store_true',
+                        default=False,
                         help='print extra debug messages')
-    parser.add_argument('--show-diff', action='store_true', default=False,
+    parser.add_argument('--show-diff',
+                        action='store_true',
+                        default=False,
                         help='print diff (when files differ)')
-    parser.add_argument('--show-cst', action='store_true', default=False,
+    parser.add_argument('--show-cst',
+                        action='store_true',
+                        default=False,
                         help='print CST tree')
-    parser.add_argument('--progress', action='store_true', default=False,
+    parser.add_argument('--progress',
+                        action='store_true',
+                        default=False,
                         help='show progress')
-    parser.add_argument('--inplace', action='store_true', default=False,
-                        help='format files in place (overwrite original files)')
-    parser.add_argument('-l', '--allowlist', action='store_true', default=False,
+    parser.add_argument(
+        '--inplace',
+        action='store_true',
+        default=False,
+        help='format files in place (overwrite original files)')
+    parser.add_argument('-l',
+                        '--allowlist',
+                        action='store_true',
+                        default=False,
                         help='process only files from allow list')
-    parser.add_argument('-a', '--all', action='store_true', default=False,
+    parser.add_argument('-a',
+                        '--all',
+                        action='store_true',
+                        default=False,
                         help='process all files in repository (.sv and .svh)')
-    parser.add_argument('-f', '--files', metavar='file', type=str, nargs='+', default=[],
+    parser.add_argument('-f',
+                        '--files',
+                        metavar='file',
+                        type=str,
+                        nargs='+',
+                        default=[],
                         help='process provided files')
     args = parser.parse_args()
 
@@ -110,19 +160,14 @@ def main():
             logger.setLevel(logging.DEBUG)
 
     if args.inplace:
-        logger.warning('WARNING: Operating in-place - so make sure to make a backup or '
-                       'run this on an experimental branch')
+        logger.warning(
+            'WARNING: Operating in-place - so make sure to make a backup or '
+            'run this on an experimental branch')
 
-    verible_exec_path = get_verible_executable_path()
-
-    if not verible_exec_path:
-        logger.error('verible-verilog-format either not installed or not visible in PATH')
-        sys.exit(1)
-    else:
-        logger.info('Using Verible formatter version: ' + get_verible_version(verible_exec_path))
+    logger.info('Using Verible formatter version: ' +
+                VeribleTool.FORMAT.get_version())
 
     logger.debug('repo_top: ' + get_repo_top())
-    logger.debug('verible exec: ' + verible_exec_path)
     logger.debug('verible args: ' + str(VERIBLE_ARGS))
 
     repo_top_dir = get_repo_top()
@@ -140,7 +185,8 @@ def main():
             verible_files.append(filename_abs)
 
     if args.allowlist:
-        with open(repo_top_dir + '/util/verible-format-allowlist.txt', 'r') as fp:
+        with open(repo_top_dir + '/util/verible-format-allowlist.txt',
+                  'r') as fp:
             for line in fp:
                 if line[0] == '#':
                     continue
@@ -169,7 +215,7 @@ def main():
 
     ret = 0
     for i, f in enumerate(verible_files):
-        r = process_file(f, verible_exec_path,
+        r = process_file(f,
                          inplace=args.inplace,
                          show_diff=args.show_diff,
                          show_cst=args.show_cst)

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+set -e
+
+[ -v DVSIM_SCRATCH_PATH ]
+
+SRC_DIR="$(realpath ../src/)"
+
+# If we pass an empty waiver file to verible-verilog-lint, it will fail with the
+# message: "Broken waiver config handle". To work around this behavior, we can
+# preemptively add a comment to all empty waiver files in the scratch directory.
+#
+# Note that multiple invocations of this script may race each other, so we use
+# an exclusive file lock.
+#
+# This empty file adjustment only needs to happen once per dvsim run. Otherwise
+# we'll spend a lot of time running the `find` command. The presence of the
+# marker file is insufficient to determine we can skip the adjustment. For
+# instance, if the user runs dvsim twice on the same scratch directory, the
+# source files will be re-copied, but the marker file won't be deleted. A quick
+# hack to detect this situation is to compare the ctime of the marker file to
+# the source directory. directory.
+ADJUSTED_EMPTY_FILES_MARKER="$SRC_DIR/adjusted_empty_files.done"
+if [ ! -e "$ADJUSTED_EMPTY_FILES_MARKER" ] || [ "$ADJUSTED_EMPTY_FILES_MARKER" -ot "$SRC_DIR" ]; then
+    (
+        flock --exclusive 9
+        find "$SRC_DIR" \
+            -type f \
+            \( -name '*.vbl' -o -name '*.vbw' \) \
+            -size 0 \
+            -printf 'Adjusting empty waiver file: %p\n' \
+            -exec bash -c 'echo "# Autogen comment to make file non-empty" >> "$1"' shellname {} \; || true
+        touch "$ADJUSTED_EMPTY_FILES_MARKER"
+    ) 9>"$DVSIM_SCRATCH_PATH/../dvsim-verible-verilog-lint.lock"
+fi
+
+source "$(dirname "$0")/common.sh"
+verible_wrapper_run verible-verilog-lint "$@"

@@ -19,7 +19,16 @@
   build_log:  "{build_dir}/{tool}.log"
 
   // We rely on fusesoc to run lint for us.
-  build_cmd:  "{job_prefix} fusesoc"
+  build_cmd:
+    '''
+    touch "$$("{proj_root}/bazelisk.sh" info execution_root)/FUSESOC_IGNORE"
+    env -v
+      DVSIM_PROJ_ROOT="{proj_root}" \
+      DVSIM_SCRATCH_PATH="{scratch_path}" \
+      PATH="$$(realpath {lint_root}/tools/dvsim/tool_wrappers):$$PATH" \
+      {job_prefix} fusesoc
+    '''
+
   build_opts: ["--cores-root {proj_root}",
                "run",
                "--flag=fileset_{design_level}",

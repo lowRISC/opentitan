@@ -23,8 +23,8 @@ ci/scripts/build-docs.sh
 echo -e "\n### Ensure all generated files are clean and up-to-date"
 ci/scripts/check-generated.sh
 
-echo -e "\n### Use buiildifier to check Bazel coding style"
-bazel test //quality:buildifier_check --test_output=streamed
+echo -e "\n### Use buildifier to check Bazel coding style"
+ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
 
 echo "### Check vendored directories are up-to-date"
 ci/scripts/check-vendoring.sh

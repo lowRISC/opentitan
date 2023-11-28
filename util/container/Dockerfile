@@ -7,7 +7,6 @@
 
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
-ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 # This should match the version in bazelish.sh.
@@ -20,7 +19,6 @@ ARG CLANG_VERSION=16
 # Main container image.
 FROM ubuntu:20.04 AS opentitan
 ARG VERILATOR_VERSION
-ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG BAZELISK_VERSION
 ARG GCC_VERSION
@@ -144,13 +142,6 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
         done; \
         ${cmd} ; \
     )
-
-# Install Verible
-RUN curl -f -Ls -o verible.tar.gz \
-        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz \
-    && mkdir -p /tools/verible \
-    && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
-ENV PATH "/tools/verible/bin:${PATH}"
 
 # Set Locale to utf-8 everywhere
 ENV LC_ALL en_US.UTF-8
