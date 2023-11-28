@@ -125,7 +125,7 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_cw310_rom_with_fake_keys",
     exec_env = "fpga_cw310_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
     # is used to enable execution across life cycle stages with a single
@@ -143,7 +143,7 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_cw310_rom_ext",
     exec_env = "fpga_cw310_sival_rom_ext",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
     tags = ["cw310_sival_rom_ext"],
