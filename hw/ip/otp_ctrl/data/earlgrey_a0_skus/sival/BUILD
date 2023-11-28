@@ -149,3 +149,10 @@ otp_image(
     )
     for lc_state, _ in LC_MISSION_STATES
 ]
+
+# `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
+otp_image(
+    name = "otp_img_rma_manuf_personalized",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = MANUF_PERSONALIZED,
+)
