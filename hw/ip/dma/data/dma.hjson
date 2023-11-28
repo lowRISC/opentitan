@@ -319,6 +319,7 @@
             '''
       swaccess: "ro"
       hwaccess: "hwo"
+      hwext: "true"
       fields: [
         { bits: "3:0"
           mubi: "true"
