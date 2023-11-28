@@ -41,8 +41,11 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
     };
   }
 
-  virtual task body();
+  virtual task pre_body();
     stop = 0; // Allow sequence to restart after stop
+  endtask
+
+  virtual task body();
     fork
       begin: isolation_thread
         fork
