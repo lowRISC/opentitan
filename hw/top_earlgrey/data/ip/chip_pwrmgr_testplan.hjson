@@ -117,7 +117,7 @@
       bazel: ["//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
-      name: chip_sw_pwrmgr_sleep_por_reset
+      name: chip_sw_pwrmgr_normal_sleep_por_reset
       desc: '''Verify POR in normal sleep mode.
 
             This verifies that the pwrmgr can handle POR in normal sleep. The chip is placed
@@ -139,7 +139,7 @@
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.POR_REQUEST",
       ]
-      tests: ["chip_sw_pwrmgr_sleep_por_reset"]
+      tests: ["chip_sw_pwrmgr_normal_sleep_por_reset"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom"]
     }
     {
