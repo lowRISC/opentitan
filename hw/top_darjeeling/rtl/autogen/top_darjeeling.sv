@@ -205,8 +205,8 @@ module top_darjeeling #(
   output logic       mbx_pcie1_doe_async_msg_support_o,
   input  tlul_pkg::tl_h2d_t       mbx_jtag_dmi_req_i,
   output tlul_pkg::tl_d2h_t       mbx_jtag_dmi_rsp_o,
-  input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
-  output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
+  input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_req_i,
+  output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_rsp_o,
   input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       rv_dm_dmi_d2h_o,
   output logic       pwrmgr_strap_en_o,
@@ -648,8 +648,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_prim_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_prim_tl_rsp;
-  tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
-  tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       lc_ctrl_core_tl_req;
+  tlul_pkg::tl_d2h_t       lc_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
@@ -680,6 +680,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx_pcie1_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_tl_req;
+  tlul_pkg::tl_d2h_t       lc_ctrl_dmi_tl_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -1178,8 +1180,6 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[12:10] ),
 
       // Inter-module signals
-      .dmi_tl_h2d_i(lc_ctrl_dmi_h2d_i),
-      .dmi_tl_d2h_o(lc_ctrl_dmi_d2h_o),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),
@@ -1215,8 +1215,10 @@ module top_darjeeling #(
       .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
       .hw_rev_o(),
       .strap_en_override_o(lc_ctrl_strap_en_override),
-      .tl_i(lc_ctrl_tl_req),
-      .tl_o(lc_ctrl_tl_rsp),
+      .core_tl_i(lc_ctrl_core_tl_req),
+      .core_tl_o(lc_ctrl_core_tl_rsp),
+      .dmi_tl_i(lc_ctrl_dmi_tl_req),
+      .dmi_tl_o(lc_ctrl_dmi_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
@@ -2848,9 +2850,9 @@ module top_darjeeling #(
     .tl_otp_ctrl__prim_o(otp_ctrl_prim_tl_req),
     .tl_otp_ctrl__prim_i(otp_ctrl_prim_tl_rsp),
 
-    // port: tl_lc_ctrl
-    .tl_lc_ctrl_o(lc_ctrl_tl_req),
-    .tl_lc_ctrl_i(lc_ctrl_tl_rsp),
+    // port: tl_lc_ctrl__core
+    .tl_lc_ctrl__core_o(lc_ctrl_core_tl_req),
+    .tl_lc_ctrl__core_i(lc_ctrl_core_tl_rsp),
 
     // port: tl_sensor_ctrl
     .tl_sensor_ctrl_o(sensor_ctrl_tl_req),
@@ -2937,6 +2939,23 @@ module top_darjeeling #(
     // port: tl_mbx_jtag__soc
     .tl_mbx_jtag__soc_o(mbx_jtag_soc_tl_d_req),
     .tl_mbx_jtag__soc_i(mbx_jtag_soc_tl_d_rsp),
+
+
+    .scanmode_i
+  );
+  xbar_lc_ctrl_dmi u_xbar_lc_ctrl_dmi (
+    .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
+    .clk_peri_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .rst_main_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_peri_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
+
+    // port: tl_lc_ctrl_dmi
+    .tl_lc_ctrl_dmi_i(lc_ctrl_dmi_req_i),
+    .tl_lc_ctrl_dmi_o(lc_ctrl_dmi_rsp_o),
+
+    // port: tl_lc_ctrl__dmi
+    .tl_lc_ctrl__dmi_o(lc_ctrl_dmi_tl_req),
+    .tl_lc_ctrl__dmi_i(lc_ctrl_dmi_tl_rsp),
 
 
     .scanmode_i

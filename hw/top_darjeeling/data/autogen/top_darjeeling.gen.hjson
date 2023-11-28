@@ -464,6 +464,10 @@
       name: soc_dbg
       desc: SoC address space for debug module interfaces
     }
+    {
+      name: soc_lc_ctrl_dmi
+      desc: SoC address space for lifecycle controller's DMI interface
+    }
   ]
   module:
   [
@@ -1277,6 +1281,17 @@
           domain: "0"
         }
       }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x30140000
+        }
+        dmi:
+        {
+          soc_lc_ctrl_dmi: 0x0
+        }
+      }
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
@@ -1381,36 +1396,6 @@
       ]
       inter_signal_list:
       [
-        {
-          name: dmi_tl_h2d
-          desc: TL-UL-based DMI request input port
-          struct: tl_h2d
-          package: tlul_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: lc_ctrl
-          default: ""
-          external: true
-          top_signame: lc_ctrl_dmi_h2d
-          conn_type: false
-          index: -1
-        }
-        {
-          name: dmi_tl_d2h
-          desc: TL-UL-based DMI response output port
-          struct: tl_d2h
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: lc_ctrl
-          default: ""
-          external: true
-          top_signame: lc_ctrl_dmi_d2h
-          conn_type: false
-          index: -1
-        }
         {
           name: esc_scrap_state0_tx
           struct: esc_tx
@@ -1813,7 +1798,7 @@
           index: -1
         }
         {
-          name: tl
+          name: core_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -1822,17 +1807,23 @@
           inst_name: lc_ctrl
           default: ""
           end_idx: -1
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: dmi_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: lc_ctrl_dmi_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x30140000
-        }
-      }
     }
     {
       name: alert_handler
@@ -9425,9 +9416,9 @@
       [
         peri.tl_otp_ctrl__prim
       ]
-      lc_ctrl.tl:
+      lc_ctrl.core_tl:
       [
-        peri.tl_lc_ctrl
+        peri.tl_lc_ctrl__core
       ]
       sensor_ctrl.tl:
       [
@@ -9488,6 +9479,10 @@
       mbx_jtag.soc_tl_d:
       [
         dbg.tl_mbx_jtag__soc
+      ]
+      lc_ctrl.dmi_tl:
+      [
+        lc_ctrl_dmi.tl_lc_ctrl__dmi
       ]
     }
     top:
@@ -9568,8 +9563,7 @@
       mbx_pcie1.doe_intr_support: mbx_pcie1_doe_intr_support
       mbx_pcie1.doe_async_msg_support: mbx_pcie1_doe_async_msg_support
       dbg.tl_dbg: mbx_jtag_dmi
-      lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
-      lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
+      lc_ctrl_dmi.tl_lc_ctrl_dmi: lc_ctrl_dmi
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
       rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
       pwrmgr_aon.strap: pwrmgr_strap_en
@@ -11348,7 +11342,7 @@
           pinmux_aon
           otp_ctrl.core
           otp_ctrl.prim
-          lc_ctrl
+          lc_ctrl.core
           sensor_ctrl
           alert_handler
           ast
@@ -11625,7 +11619,7 @@
           req_fifo_pass: true
         }
         {
-          name: lc_ctrl
+          name: lc_ctrl.core
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -11937,7 +11931,7 @@
           index: -1
         }
         {
-          name: tl_lc_ctrl
+          name: tl_lc_ctrl__core
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -11945,7 +11939,7 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_core_tl
           index: -1
         }
         {
@@ -12510,6 +12504,118 @@
           inst_name: dbg
           default: ""
           top_signame: mbx_jtag_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: lc_ctrl_dmi
+      clock_srcs:
+      {
+        clk_main_i: main
+        clk_peri_i: io_div4
+      }
+      clock_group: infra
+      reset: rst_main_ni
+      reset_connections:
+      {
+        rst_main_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+        rst_peri_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_main_i: clkmgr_aon_clocks.clk_main_infra
+        clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      connections:
+      {
+        lc_ctrl_dmi:
+        [
+          lc_ctrl.dmi
+        ]
+      }
+      nodes:
+      [
+        {
+          name: lc_ctrl_dmi
+          type: host
+          addr_space: soc_lc_ctrl_dmi
+          clock: clk_main_i
+          reset: rst_main_ni
+          xbar: true
+          pipeline: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: lc_ctrl.dmi
+          type: device
+          addr_space: soc_lc_ctrl_dmi
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: lc_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_lc_ctrl_dmi: 0x0
+              }
+              size_byte: 0x2
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+      ]
+      addr_spaces:
+      [
+        soc_lc_ctrl_dmi
+      ]
+      clock: clk_main_i
+      type: xbar
+      inter_signal_list:
+      [
+        {
+          name: tl_lc_ctrl_dmi
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl_dmi
+          default: ""
+          external: true
+          top_signame: lc_ctrl_dmi
+          conn_type: false
+          index: -1
+        }
+        {
+          name: tl_lc_ctrl__dmi
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: lc_ctrl_dmi
+          default: ""
+          top_signame: lc_ctrl_dmi_tl
           index: -1
         }
       ]
@@ -17660,36 +17766,6 @@
         index: -1
       }
       {
-        name: dmi_tl_h2d
-        desc: TL-UL-based DMI request input port
-        struct: tl_h2d
-        package: tlul_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: lc_ctrl
-        default: ""
-        external: true
-        top_signame: lc_ctrl_dmi_h2d
-        conn_type: false
-        index: -1
-      }
-      {
-        name: dmi_tl_d2h
-        desc: TL-UL-based DMI response output port
-        struct: tl_d2h
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: lc_ctrl
-        default: ""
-        external: true
-        top_signame: lc_ctrl_dmi_d2h
-        conn_type: false
-        index: -1
-      }
-      {
         name: esc_scrap_state0_tx
         struct: esc_tx
         package: prim_esc_pkg
@@ -18091,7 +18167,7 @@
         index: -1
       }
       {
-        name: tl
+        name: core_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -18100,7 +18176,20 @@
         inst_name: lc_ctrl
         default: ""
         end_idx: -1
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: dmi_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: lc_ctrl_dmi_tl
         index: -1
       }
       {
@@ -22813,7 +22902,7 @@
         index: -1
       }
       {
-        name: tl_lc_ctrl
+        name: tl_lc_ctrl__core
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -22821,7 +22910,7 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_core_tl
         index: -1
       }
       {
@@ -23044,6 +23133,32 @@
         inst_name: dbg
         default: ""
         top_signame: mbx_jtag_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_lc_ctrl_dmi
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl_dmi
+        default: ""
+        external: true
+        top_signame: lc_ctrl_dmi
+        conn_type: false
+        index: -1
+      }
+      {
+        name: tl_lc_ctrl__dmi
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: lc_ctrl_dmi
+        default: ""
+        top_signame: lc_ctrl_dmi_tl
         index: -1
       }
       {
@@ -23950,9 +24065,9 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: lc_ctrl_dmi_h2d_i
+        signame: lc_ctrl_dmi_req_i
         width: 1
-        type: uni
+        type: req_rsp
         default: ""
         direction: in
         conn_type: false
@@ -23962,9 +24077,9 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: lc_ctrl_dmi_d2h_o
+        signame: lc_ctrl_dmi_rsp_o
         width: 1
-        type: uni
+        type: req_rsp
         default: ""
         direction: out
         conn_type: false
@@ -26496,7 +26611,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: lc_ctrl_tl_req
+        signame: lc_ctrl_core_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -26507,7 +26622,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: lc_ctrl_tl_rsp
+        signame: lc_ctrl_core_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -26838,6 +26953,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: mbx_jtag_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: lc_ctrl_dmi_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: lc_ctrl_dmi_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

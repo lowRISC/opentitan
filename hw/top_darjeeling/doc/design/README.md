@@ -394,7 +394,7 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | rv_timer          | rv_timer      | 0x30100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x30130000 (core) |
 |                   |               | 0x30138000 (prim) |
-| lc_ctrl           | lc_ctrl       | 0x30140000 (regs) |
+| lc_ctrl           | lc_ctrl       | 0x30140000 (core) |
 | alert_handler     | alert_handler | 0x30150000 (regs) |
 | spi_host0         | spi_host      | 0x30300000 (regs) |
 | pwrmgr_aon        | pwrmgr        | 0x30400000 (regs) |

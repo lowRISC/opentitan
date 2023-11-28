@@ -1,0 +1,91 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson -o hw/top_darjeeling/
+
+{
+  name: lc_ctrl_dmi
+  clock_srcs:
+  {
+    clk_main_i: main
+    clk_peri_i: io_div4
+  }
+  clock_group: infra
+  reset: rst_main_ni
+  reset_connections:
+  {
+    rst_main_ni:
+    {
+      name: lc
+      domain: "0"
+    }
+    rst_peri_ni:
+    {
+      name: lc_io_div4
+      domain: "0"
+    }
+  }
+  clock_connections:
+  {
+    clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    lc_ctrl_dmi:
+    [
+      lc_ctrl.dmi
+    ]
+  }
+  nodes:
+  [
+    {
+      name: lc_ctrl_dmi
+      type: host
+      addr_space: soc_lc_ctrl_dmi
+      clock: clk_main_i
+      reset: rst_main_ni
+      xbar: true
+      pipeline: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: lc_ctrl.dmi
+      type: device
+      addr_space: soc_lc_ctrl_dmi
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: lc_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_lc_ctrl_dmi: 0x0
+          }
+          size_byte: 0x2
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+  ]
+  addr_spaces:
+  [
+    soc_lc_ctrl_dmi
+  ]
+  clock: clk_main_i
+  type: xbar
+}

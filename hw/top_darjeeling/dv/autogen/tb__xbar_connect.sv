@@ -93,7 +93,7 @@ tl_if clkmgr_aon_tl_if(clk_io_div4, rst_n);
 tl_if pinmux_aon_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl__core_tl_if(clk_io_div4, rst_n);
 tl_if otp_ctrl__prim_tl_if(clk_io_div4, rst_n);
-tl_if lc_ctrl_tl_if(clk_io_div4, rst_n);
+tl_if lc_ctrl__core_tl_if(clk_io_div4, rst_n);
 tl_if sensor_ctrl_tl_if(clk_io_div4, rst_n);
 tl_if alert_handler_tl_if(clk_io_div4, rst_n);
 tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io_div4, rst_n);
@@ -110,6 +110,7 @@ tl_if mbx6__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie1__soc_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
+tl_if lc_ctrl__dmi_tl_if(clk_io_div4, rst_n);
 
 initial begin
   wait (xbar_mode !== 1'bx);
@@ -120,6 +121,7 @@ initial begin
     $asserton(0, tb.dut.top_darjeeling.u_xbar_peri);
     $asserton(0, tb.dut.top_darjeeling.u_xbar_mbx);
     $asserton(0, tb.dut.top_darjeeling.u_xbar_dbg);
+    $asserton(0, tb.dut.top_darjeeling.u_xbar_lc_ctrl_dmi);
 
 
     // These are all zero-time: anything that consumes time go at the end.
@@ -131,6 +133,8 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
     force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_dbg.clk_dbg_i = clk_main;
+    force tb.dut.top_darjeeling.u_xbar_lc_ctrl_dmi.clk_main_i = clk_main;
+    force tb.dut.top_darjeeling.u_xbar_lc_ctrl_dmi.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
@@ -139,6 +143,8 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_mbx.rst_mbx_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_dbg.rst_dbg_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_lc_ctrl_dmi.rst_main_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_lc_ctrl_dmi.rst_peri_ni = rst_n;
 
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
@@ -200,7 +206,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__prim, otp_ctrl, prim_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl, lc_ctrl, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__core, lc_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl)
@@ -217,6 +223,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__soc, mbx_pcie0, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie1__soc, mbx_pcie1, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__dmi, lc_ctrl, dmi_tl)
 `endif
 
     // And this can consume time, so they go at the end of this block.
