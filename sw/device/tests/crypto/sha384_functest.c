@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
@@ -134,6 +135,7 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, one_block_test);
   EXECUTE_TEST(test_result, two_block_test);

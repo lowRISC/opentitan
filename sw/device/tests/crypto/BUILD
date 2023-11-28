@@ -23,6 +23,7 @@ opentitan_test(
     ),
     deps = [
         ":aes_testvectors",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -574,6 +575,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:kdf",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/runtime:log",

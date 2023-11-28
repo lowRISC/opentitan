@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
@@ -33,6 +34,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
+
+  CHECK_STATUS_OK(entropy_complex_init());
 
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     LOG_INFO("Starting AES-GCM test %d of %d...", i + 1,

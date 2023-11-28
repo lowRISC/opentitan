@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
@@ -177,6 +178,7 @@ bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC driver.");
 
   // Initialize the core with default parameters
+  CHECK_STATUS_OK(entropy_complex_init());
   CHECK_STATUS_OK(kmac_hwip_default_configure());
 
   status_t test_result = OK_STATUS();
