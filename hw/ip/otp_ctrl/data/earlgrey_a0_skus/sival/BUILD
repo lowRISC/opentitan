@@ -143,7 +143,7 @@ otp_image(
 # See sw/device/tests/doc/sival/devguide.md for more details.
 [
     otp_image(
-        name = "otp_img_{}_personalized".format(lc_state),
+        name = "otp_img_{}_manuf_personalized".format(lc_state),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
         overlays = MANUF_PERSONALIZED,
     )
