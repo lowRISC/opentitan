@@ -39,6 +39,23 @@ cc_library(
 )
 
 cc_library(
+    name = "rsa_padding",
+    srcs = ["rsa_padding.c"],
+    hdrs = ["rsa_padding.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rsa_datatypes",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
+    ],
+)
+
+cc_library(
     name = "rsa_signature",
     srcs = ["rsa_signature.c"],
     hdrs = ["rsa_signature.h"],
@@ -46,6 +63,7 @@ cc_library(
     deps = [
         ":rsa_datatypes",
         ":rsa_modexp",
+        ":rsa_padding",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
