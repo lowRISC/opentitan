@@ -206,6 +206,7 @@
          "RV_CORE_IBEX.CPU.ICACHE",
          "RV_CORE_IBEX.CPU.MEMORY"
        ]
+       bazel: ["//sw/device/tests:rv_core_ibex_mem_test_functest_fpga_cw310_sival"]
     }
     {
      name: chip_sw_rv_core_ibex_lockstep_glitch
