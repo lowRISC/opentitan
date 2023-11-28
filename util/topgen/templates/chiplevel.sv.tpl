@@ -1380,8 +1380,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % if top["name"] in ["darjeeling"]:
     // DMI into lc_ctrl
-    .lc_ctrl_dmi_h2d_i            ( lc_ctrl_dmi_h2d            ),
-    .lc_ctrl_dmi_d2h_o            ( lc_ctrl_dmi_d2h            ),
+    .lc_ctrl_dmi_req_i            ( lc_ctrl_dmi_h2d            ),
+    .lc_ctrl_dmi_rsp_o            ( lc_ctrl_dmi_d2h            ),
 
     // DMI into RV_DM
     .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),
@@ -1627,8 +1627,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % if top["name"] in ["darjeeling"]:
     // DMI into lc_ctrl
-    .lc_ctrl_dmi_h2d_i            ( lc_ctrl_dmi_h2d            ),
-    .lc_ctrl_dmi_d2h_o            ( lc_ctrl_dmi_d2h            ),
+    .lc_ctrl_dmi_req_i            ( lc_ctrl_dmi_h2d            ),
+    .lc_ctrl_dmi_rsp_o            ( lc_ctrl_dmi_d2h            ),
 
     // DMI into RV_DM
     .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),

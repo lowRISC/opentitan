@@ -169,6 +169,7 @@
     { name: "hart", desc: "The main address space, shared between the CPU and DM"},
     { name: "soc_mbx", desc: "SoC address space for mailbox access"},
     { name: "soc_dbg", desc: "SoC address space for debug module interfaces"},
+    { name: "soc_lc_ctrl_dmi", desc: "SoC address space for lifecycle controller's DMI interface"},
   ]
 
   // `module` defines the peripherals.
@@ -255,9 +256,10 @@
       clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
-      base_addr: {
-        hart: "0x30140000",
-      },
+      base_addrs: {
+        core: {hart: "0x30140000"},
+        dmi: {soc_lc_ctrl_dmi: "0x0"},
+      }
       param_decl: {
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
@@ -1255,8 +1257,7 @@
         'mbx_pcie1.doe_intr_support'      : 'mbx_pcie1_doe_intr_support',
         'mbx_pcie1.doe_async_msg_support' : 'mbx_pcie1_doe_async_msg_support',
         'dbg.tl_dbg'                      : 'mbx_jtag_dmi',
-        'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
-        'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
+        'lc_ctrl_dmi.tl_lc_ctrl_dmi'      : 'lc_ctrl_dmi',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',
         'rv_dm.dmi_tl_d2h'                : 'rv_dm_dmi_d2h',
         'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
@@ -1319,6 +1320,14 @@
       clock_group: "infra",
       reset: "lc",
       reset_connections: {rst_dbg_ni: "lc"},
+    },
+    { name: "lc_ctrl_dmi",
+      clock_srcs: {clk_main_i: "main",
+                   clk_peri_i: "io_div4"},
+      clock_group: "infra",
+      reset: "lc",
+      reset_connections: {rst_main_ni: "lc",
+                          rst_peri_ni: "lc_io_div4"},
     },
   ],
 

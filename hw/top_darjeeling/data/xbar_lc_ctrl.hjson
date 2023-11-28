@@ -1,0 +1,34 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "lc_ctrl_dmi",
+  type: "xbar",
+  clock_primary: "clk_main_i", // Main clock, used in sockets
+  other_clock_list: ["clk_peri_i"], // Secondary clocks used by specific nodes
+  reset_primary: "rst_main_ni", // Main reset, used in sockets
+  other_reset_list: ["rst_peri_ni"], // Secondary resets used by specific nodes
+
+  nodes: [
+    { name:       "lc_ctrl_dmi",
+      type:       "host",
+      addr_space: "soc_lc_ctrl_dmi",
+      clock:      "clk_main_i",
+      reset:      "rst_main_ni",
+      xbar:       "true",
+      pipeline:   false,
+    },
+    { name:       "lc_ctrl.dmi",
+      type:       "device",
+      addr_space: "soc_lc_ctrl_dmi",
+      clock:      "clk_peri_i",
+      reset:      "rst_peri_ni",
+      pipeline:   false,
+    },
+  ],
+
+  connections: {
+    lc_ctrl_dmi: [
+      "lc_ctrl.dmi",
+    ],
+  },
+}
