@@ -360,14 +360,13 @@
   `define GET_PARITY(val, odd=0) (^val ^ odd)
 `endif
 
-// Wait a task or statement with exit condition
-// Kill the thread when either the wait statement is completed or exit condition occurs
-// input WAIT_ need to be a statement. Here are some examples
-// `DV_SPINWAIT(wait(...);, "Wait for ...")
-// `DV_SPINWAIT(
-//              while (1) begin
-//                ...
-//              end)
+// Wait for a statement but stop early if the EXIT statement completes.
+//
+// Example usage:
+//
+//    `DV_SPINWAIT_EXIT(do_something_time_consuming();,
+//                      wait(stop_now_flag);,
+//                      "The stop flag was set when we were working")
 `ifndef DV_SPINWAIT_EXIT
 `define DV_SPINWAIT_EXIT(WAIT_, EXIT_, MSG_ = "exit condition occurred!", ID_ =`gfn) \
   begin \
@@ -398,7 +397,7 @@
   end
 `endif
 
-// wait a task or statement with timer watchdog
+// Wait for a statement, but exit early after a timeout
 `ifndef DV_SPINWAIT
 `define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
   `DV_SPINWAIT_EXIT(WAIT_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
