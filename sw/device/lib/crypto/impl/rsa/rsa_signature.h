@@ -52,6 +52,7 @@ typedef enum rsa_signature_padding {
  * @param padding_mode Signature padding mode.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_2048_start(
     const rsa_2048_private_key_t *private_key,
     const hash_digest_t *message_digest,
@@ -66,6 +67,7 @@ status_t rsa_signature_generate_2048_start(
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature);
 
 /**
@@ -77,6 +79,7 @@ status_t rsa_signature_generate_2048_finalize(rsa_2048_int_t *signature);
  * @param signature Signature to verify.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature);
 
@@ -97,6 +100,7 @@ status_t rsa_signature_verify_2048_start(
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_finalize(
     const hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode,
@@ -114,6 +118,7 @@ status_t rsa_signature_verify_finalize(
  * @param padding_mode Signature padding mode.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
     const hash_digest_t *message_digest,
@@ -128,6 +133,7 @@ status_t rsa_signature_generate_3072_start(
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
 
 /**
@@ -139,6 +145,7 @@ status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
  * @param signature Signature to verify.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_3072_start(
     const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature);
 
@@ -154,6 +161,7 @@ status_t rsa_signature_verify_3072_start(
  * @param padding_mode Signature padding mode.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_4096_start(
     const rsa_4096_private_key_t *private_key,
     const hash_digest_t *message_digest,
@@ -168,6 +176,7 @@ status_t rsa_signature_generate_4096_start(
  * @param[out] signature Generated signature.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
 
 /**
@@ -179,6 +188,7 @@ status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
  * @param signature Signature to verify.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_4096_start(
     const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature);
 
