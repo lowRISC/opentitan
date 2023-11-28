@@ -192,7 +192,9 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
+        ":flash_info_fields",
         ":individualize_sw_cfg_earlgrey_a0_sku_generic",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -200,6 +202,8 @@ opentitan_test(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
