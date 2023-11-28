@@ -41,6 +41,14 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
     };
   }
 
+  // In case this seq start in the middle of other body.
+  // If we set `stop` at the beginning of this body, then
+  // there is a risk to get the race when start and stop are called
+  // at the same time.
+  virtual task pre_body();
+    stop = 0;
+  endtask
+
   virtual task body();
     fork
       begin: isolation_thread
