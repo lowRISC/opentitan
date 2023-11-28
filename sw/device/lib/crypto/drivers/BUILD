@@ -17,6 +17,7 @@ cc_library(
     srcs = ["aes.c"],
     hdrs = ["aes.h"],
     deps = [
+        ":entropy",
         "//hw/ip/aes/data:aes_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -88,6 +89,7 @@ cc_library(
         "//sw/device/lib/crypto/include:datatypes.h",
     ],
     deps = [
+        ":entropy",
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -176,6 +178,7 @@ cc_library(
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
     deps = [
+        ":entropy",
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",

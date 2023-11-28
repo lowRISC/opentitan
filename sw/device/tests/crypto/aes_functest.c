@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
@@ -250,6 +251,9 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
+
+  // Start the entropy complex.
+  CHECK_STATUS_OK(entropy_complex_init());
 
   for (size_t i = 0; i < ARRAYSIZE(kAesTests); i++) {
     LOG_INFO("Starting AES test %d of %d...", i + 1, ARRAYSIZE(kAesTests));

@@ -138,6 +138,8 @@ static status_t keymgr_wait_until_done(void) {
 
 status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
                                 keymgr_output_t *key) {
+  // Ensure that the entropy complex has been initialized and keymgr is idle.
+  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a software-visible key.
@@ -164,6 +166,8 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
 }
 
 status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
+  // Ensure that the entropy complex has been initialized and keymgr is idle.
+  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an AES key.
@@ -175,6 +179,8 @@ status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
 }
 
 status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
+  // Ensure that the entropy complex has been initialized and keymgr is idle.
+  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a KMAC key.
@@ -186,6 +192,8 @@ status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
 }
 
 status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
+  // Ensure that the entropy complex has been initialized and keymgr is idle.
+  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an OTBN key.
@@ -207,10 +215,9 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification) {
  * @param slot Value to write to the SIDELOAD_CLEAR register.
  */
 static status_t keymgr_sideload_clear(uint32_t slot) {
-  HARDENED_TRY(keymgr_is_idle());
-
-  // Ensure that the entropy complex has been initialized.
+  // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
+  HARDENED_TRY(keymgr_is_idle());
 
   // Set SIDELOAD_CLEAR to begin continuously clearing the requested slot.
   abs_mmio_write32(
