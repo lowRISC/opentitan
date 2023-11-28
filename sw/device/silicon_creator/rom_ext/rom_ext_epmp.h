@@ -80,6 +80,15 @@ void rom_ext_epmp_mmio_adjust(void);
 void rom_ext_epmp_otp_dai_lockout(void);
 
 /**
+ * Lock out access to the AST registers.
+ *
+ * The AST peripheral contains all of the low-level analog configuration
+ * registers (sensors, clock trimming, etc).  After ROM_EXT completes,
+ * the ePMP will forbid access to the AST register space.
+ */
+void rom_ext_epmp_ast_lockout(void);
+
+/**
  * Clear the ROM mapping from the ePMP.
  *
  * The ROM memory mapping is no longer needed once the ROM_EXT starts.
