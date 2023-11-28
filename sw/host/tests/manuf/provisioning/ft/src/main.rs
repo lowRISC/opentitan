@@ -45,15 +45,24 @@ pub struct ManufFtProvisioningDataInput {
     host_ecc_sk: PathBuf,
 
     /// Measurement of the ROM_EXT image to be loaded onto the device.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(
+        long,
+        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+    )]
     pub rom_ext_measurement: String,
 
     /// Measurement of the Ownership Manifest to be loaded onto the device.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(
+        long,
+        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+    )]
     pub owner_manifest_measurement: String,
 
     /// Measurement of the Owner image to be loaded onto the device.
-    #[arg(long, default_value = "0x00000000_00000000_00000000_00000000")]
+    #[arg(
+        long,
+        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+    )]
     pub owner_measurement: String,
 }
 
