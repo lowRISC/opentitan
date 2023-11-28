@@ -9,9 +9,11 @@ load(
 )
 load(
     "//rules:otp.bzl",
+    "otp_hex",
     "otp_image",
     "otp_image_consts",
     "otp_json",
+    "otp_partition",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -42,6 +44,7 @@ MANUF_INITIALIZED = [
 MANUF_SW_INITIALIZED = [
     "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:alert_digest_cfg",
     "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:otp_json_creator_sw_cfg",
+    "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_json_manuf_state_creator_sival",
     "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:otp_json_owner_sw_cfg",
 ]
 
@@ -57,6 +60,18 @@ MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
     "//hw/ip/otp_ctrl/data:otp_json_secret1",
     "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
+
+otp_json(
+    name = "otp_json_manuf_state_creator_sival",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
+            },
+        ),
+    ],
+)
 
 # OTP SW Configuration. Used to generate a configuration program used during
 # manufacturing. The `MANUF_SW_INITIALIZED` OTP profile is also used to derive

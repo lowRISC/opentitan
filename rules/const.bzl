@@ -112,6 +112,9 @@ CONST = struct(
         ESC_PHASE_2 = 0x25,
         ESC_PHASE_3 = 0x76,
     ),
+    MANUF_STATE = struct(
+        SIVAL = 0x30305653,  # ASCII `SV00`.
+    ),
 )
 
 _DEFAULT_LC_STATES = [

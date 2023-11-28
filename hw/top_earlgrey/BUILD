@@ -144,7 +144,7 @@ fpga_cw310(
     base = ":fpga_cw310_rom_ext",
     exec_env = "fpga_cw310_sival_rom_ext",
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_sival_prod_signed_slot_a",
+    rom_ext = "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
     tags = ["cw310_sival_rom_ext"],
 )
