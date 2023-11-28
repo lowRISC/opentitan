@@ -109,6 +109,33 @@ void rom_ext_epmp_otp_dai_lockout(void) {
                ((kEpmpModeNapot | kEpmpPermLockedNoAccess) << 16));
 }
 
+void rom_ext_epmp_ast_lockout(void) {
+  const int kEntry = 7;
+  epmp_region_t region = {
+      .start = TOP_EARLGREY_AST_BASE_ADDR,
+      .end = TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES,
+  };
+  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedNoAccess);
+
+  // Update the hardware configuration (CSRs).
+  //
+  // Entry is hardcoded as 7. Make sure to modify hardcoded values if changing
+  // kEntry.
+  //
+  // The `pmp7cfg` configuration is the fourth field in `pmpcfg1`.
+  //
+  //            32          24          16           8           0
+  //             +-----------+-----------+-----------+-----------+
+  // `pmpcfg1` = |  `pmp7cfg |  `pmp6cfg`| `pmp5cfg` | `pmp4cfg` |
+  //             +-----------+-----------+-----------+-----------+
+  CSR_WRITE(CSR_REG_PMPADDR7,
+            (uint32_t)region.start >> 2 |
+                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 24);
+  CSR_SET_BITS(CSR_REG_PMPCFG1,
+               ((kEpmpModeNapot | kEpmpPermLockedNoAccess) << 24));
+}
+
 void rom_ext_epmp_clear_rom_region(void) {
   const int kEntry = 2;
   const uint32_t kMask = (0xFF << 16);

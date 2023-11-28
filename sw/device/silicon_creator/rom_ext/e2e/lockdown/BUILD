@@ -67,7 +67,10 @@ opentitan_test(
     cw310 = cw310_params(
         exit_failure = "(PASS|FAIL|BFV|FAULT).*\r\n",
         # Make sure the test program failed to modify the ePMP.
-        exit_success = "6: 40130000 NAPOT L--- sz=00001000\r\n",
+        exit_success = (
+            "6: 40130000 NAPOT L--- sz=00001000\r\n" +
+            "7: 40480000 NAPOT L--- sz=00000400\r\n"
+        ),
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

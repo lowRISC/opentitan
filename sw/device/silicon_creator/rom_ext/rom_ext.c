@@ -206,6 +206,10 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // controller doesn't have a per-boot register lockout, we'll use the ePMP to
   // disable access to the programming interface.
   rom_ext_epmp_otp_dai_lockout();
+  // TODO(cfrantz): This lockout is for silicon validation testing.
+  // We want to prevent access to the AST by test programs before we commit
+  // to a finalized AST configuration set in OTP.
+  rom_ext_epmp_ast_lockout();
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.

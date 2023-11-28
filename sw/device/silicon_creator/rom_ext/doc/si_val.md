@@ -21,8 +21,7 @@ An example of how the SiVal ROM\_EXT will configure the ePMP:
  4: 20004fe8   TOR LX-R sz=00004be8     ; ROM_EXT code end.
  5: 20000000 NAPOT L--R sz=00100000     ; FLASH data (1 MB).
  6: 40130000 NAPOT L--- sz=00001000     ; OTP MMIO lockout.
- 6: 00000000 ----- ---- sz=00000000
- 7: 00000000 ----- ---- sz=00000000
+ 7: 40480000 NAPOT L--- sz=00000400     ; AST MMIO lockout.
  8: 00000000 ----- ---- sz=00000000
  9: 00000000 ----- ---- sz=00000000
 10: 00000000 ----- ---- sz=00000000
