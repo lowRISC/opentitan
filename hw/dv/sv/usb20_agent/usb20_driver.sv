@@ -13,11 +13,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   bit [1:0] EOP = 2'b00;
   token_pkt m_token_pkt;
   data_pkt  m_data_pkt ;
-  bit token_pkt[];
-  bit comp_token_pkt[];
-  bit data_pkt[];
-  bit comp_data_pkt[];
-  bit nrzi_out[];
+  handshake_pkt m_handshake_pkt;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -59,25 +55,23 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
 
   task drive_token_packet( usb20_item seq_item, usb20_item rsp_item);
+    bit driver_token_pkt[];
+    bit comp_token_pkt[];
+    bit nrzi_out[];
     $cast(m_token_pkt, seq_item);
-    m_token_pkt.pack(token_pkt);
+    m_token_pkt.pack(driver_token_pkt);
     m_token_pkt.print();
-    `uvm_info(`gfn, $sformatf(" Driver Token_Packet=%p",  token_pkt), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(" Driver Token_Packet=%p",  driver_token_pkt), UVM_LOW)
     // Shift the token packet to send LSB first
-    for (int i = 0; i < token_pkt.size() / 2; i = i + 1) begin
-      bit temp = token_pkt[i];
-      token_pkt[i] = token_pkt[token_pkt.size() - 1 - i];
-      token_pkt[token_pkt.size() - 1 - i] = temp;
-    end
-    `uvm_info(`gfn, $sformatf(" Shifted Driver Token_Packet=%p",  token_pkt), UVM_LOW)
-
+   driver_token_pkt = {<<{driver_token_pkt}};
+   `uvm_info(`gfn, $sformatf(" Shifted Driver Token_Packet=%p",  driver_token_pkt), UVM_LOW)
     // to make complete packet need to attach SYNC at start of packet
-    comp_token_pkt = new[token_pkt.size() +8];
+    comp_token_pkt = new[driver_token_pkt.size() +8];
     for (int i = 0; i < 8; i = i + 1) begin
       comp_token_pkt[i] = SYNC_PATTERN[i];
     end
-    for (int i = 0; i < token_pkt.size(); i = i + 1) begin
-      comp_token_pkt[i + 8] = token_pkt[i];
+    for (int i = 0; i < driver_token_pkt.size(); i = i + 1) begin
+      comp_token_pkt[i + 8] = driver_token_pkt[i];
     end
     `uvm_info(`gfn, $sformatf(" Complete Token_Packet=%p", comp_token_pkt), UVM_LOW)
 
@@ -99,20 +93,23 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task drive_data_packet (usb20_item seq_item, usb20_item rsp_item);
+    bit driver_data_pkt[];
+    bit comp_data_pkt[];
+    bit nrzi_out[];
     $cast(m_data_pkt, seq_item);
-    m_data_pkt.pack(data_pkt);
+    m_data_pkt.pack(driver_data_pkt);
     m_data_pkt.print();
-    `uvm_info(`gfn, $sformatf(" Driver Data_Packet=%p",  data_pkt), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(" Driver Data_Packet=%p",  driver_data_pkt), UVM_LOW)
     // Shift the packet to send LSB first
-    data_pkt = {<<{data_pkt}};
-    `uvm_info(`gfn, $sformatf(" Shifted Driver Data_Packet=%p",  data_pkt), UVM_LOW)
+    driver_data_pkt = {<<{driver_data_pkt}};
+    `uvm_info(`gfn, $sformatf(" Shifted Driver Data_Packet=%p",  driver_data_pkt), UVM_LOW)
     // to make complete packet need to attach SYNC at start of packet
-    comp_data_pkt = new[data_pkt.size() +8];
+    comp_data_pkt = new[driver_data_pkt.size() +8];
     for (int i = 0; i < 8; i = i + 1) begin
       comp_data_pkt[i] = SYNC_PATTERN[i];
     end
-    for (int i = 0; i < data_pkt.size(); i = i + 1) begin
-      comp_data_pkt[i + 8] = data_pkt[i];
+    for (int i = 0; i < driver_data_pkt.size(); i = i + 1) begin
+      comp_data_pkt[i + 8] = driver_data_pkt[i];
     end
     `uvm_info(`gfn, $sformatf(" Complete Data_Packet=%p", comp_data_pkt), UVM_LOW)
 
@@ -134,16 +131,46 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task drive_handshake_packet(usb20_item seq_item, usb20_item rsp_item);
-    //TODO: Drive method to drive handshake packet
+    bit driver_handshake_pkt[];
+    bit comp_handshake_pkt[];
+    bit nrzi_out[];
+    $cast(m_handshake_pkt, seq_item);
+    m_handshake_pkt.pack(driver_handshake_pkt);
+    m_handshake_pkt.print();
+    `uvm_info(`gfn, $sformatf("Driver Handshake_Packet=%p", driver_handshake_pkt), UVM_LOW)
+    // Shift the packet to send LSB first
+     driver_handshake_pkt = {<<{driver_handshake_pkt}};
+    `uvm_info(`gfn, $sformatf("Shifted Driver Handshake_Packet=%p", driver_handshake_pkt), UVM_LOW)
+    // to make complete packet need to attach SYNC at start of packet
+    comp_handshake_pkt = new[driver_handshake_pkt.size() +8];
+    for (int i = 0; i < 8; i = i + 1) begin
+      comp_handshake_pkt[i] = SYNC_PATTERN[i];
+    end
+    for (int i = 0; i < driver_handshake_pkt.size(); i = i + 1) begin
+      comp_handshake_pkt[i + 8] = driver_handshake_pkt[i];
+    end
+    `uvm_info(`gfn, $sformatf(" Complete Handshake_Packet=%p",  comp_handshake_pkt), UVM_LOW)
+
+    // Bit Stuffing performed on packet
+    bit_stuffing(comp_handshake_pkt);
+
+    // NRZI Implementation
+    nrzi_encoder(comp_handshake_pkt, nrzi_out);
+    `uvm_info(`gfn, $sformatf("Complete Handshake_Packet after NRZI=%p", nrzi_out), UVM_LOW)
+    foreach (nrzi_out[i]) begin
+      @(posedge cfg.bif.usb_clk)
+      cfg.bif.drive_p =  nrzi_out[i];
+      cfg.bif.drive_n = ~nrzi_out[i];
+    end
+    end_of_packet();
+    seq_item_port.item_done();
   endtask
 
   task  drive_sof_packet( usb20_item seq_item, usb20_item rsp_item);
     //TODO: Drive method to drive SOF packet
   endtask
 
-
-
-  // EOP Task
+   // EOP Task
   // -------------------------------
   task end_of_packet();
     for (int j =0; j <2; j=j+1) begin
