@@ -47,6 +47,22 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex_fi",
+    srcs = ["ibex_fi.c"],
+    hdrs = ["ibex_fi.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
+    ],
+)
+
+cc_library(
     name = "prng_sca",
     srcs = ["prng_sca.c"],
     hdrs = ["prng_sca.h"],
@@ -71,6 +87,7 @@ opentitan_binary(
     deps = [
         ":aes",
         ":aes_sca",
+        ":ibex_fi",
         ":prng_sca",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -80,5 +97,6 @@ opentitan_binary(
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
         "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )

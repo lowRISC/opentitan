@@ -26,6 +26,13 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex_fi_commands",
+    srcs = ["ibex_fi_commands.c"],
+    hdrs = ["ibex_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "prng_sca_commands",
     srcs = ["prng_sca_commands.c"],
     hdrs = ["prng_sca_commands.h"],

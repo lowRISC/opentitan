@@ -13,8 +13,9 @@ extern "C" {
 
 #define COMMAND(_, value) \
     value(_, Aes) \
-    value(_, PrngSca) \
-    value(_, AesSca)
+    value(_, AesSca) \
+    value(_, IbexFi) \
+    value(_, PrngSca)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on
