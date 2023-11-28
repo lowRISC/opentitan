@@ -170,6 +170,7 @@ module dma_reg_top (
   logic range_regwen_we;
   logic [3:0] range_regwen_qs;
   logic [3:0] range_regwen_wd;
+  logic cfg_regwen_re;
   logic [3:0] cfg_regwen_qs;
   logic total_data_size_we;
   logic [31:0] total_data_size_qs;
@@ -901,30 +902,18 @@ module dma_reg_top (
   );
 
 
-  // R[cfg_regwen]: V(False)
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+  // R[cfg_regwen]: V(True)
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_cfg_regwen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (cfg_regwen_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.cfg_regwen.de),
     .d      (hw2reg.cfg_regwen.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-
-    // to register interface (read)
     .qs     (cfg_regwen_qs)
   );
 
@@ -3266,6 +3255,7 @@ module dma_reg_top (
   assign range_regwen_we = addr_hit[12] & reg_we & !reg_error;
 
   assign range_regwen_wd = reg_wdata[3:0];
+  assign cfg_regwen_re = addr_hit[13] & reg_re & !reg_error;
   assign total_data_size_we = addr_hit[14] & reg_we & !reg_error;
 
   assign total_data_size_wd = reg_wdata[31:0];

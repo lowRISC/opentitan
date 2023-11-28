@@ -234,7 +234,6 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [3:0]  d;
-    logic        de;
   } dma_hw2reg_cfg_regwen_reg_t;
 
   typedef struct packed {
@@ -350,12 +349,12 @@ package dma_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [702:697]
-    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [696:664]
-    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [663:631]
-    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [630:598]
-    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [597:565]
-    dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [564:560]
+    dma_hw2reg_intr_state_reg_t intr_state; // [701:696]
+    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [695:663]
+    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [662:630]
+    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [629:597]
+    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [596:564]
+    dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [563:560]
     dma_hw2reg_control_reg_t control; // [559:554]
     dma_hw2reg_status_reg_t status; // [553:544]
     dma_hw2reg_error_code_reg_t error_code; // [543:528]
@@ -436,6 +435,8 @@ package dma_reg_pkg;
   parameter logic [0:0] DMA_INTR_TEST_DMA_MEMORY_BUFFER_LIMIT_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [3:0] DMA_CFG_REGWEN_RESVAL = 4'h 6;
+  parameter logic [3:0] DMA_CFG_REGWEN_REGWEN_RESVAL = 4'h 6;
 
   // Register index
   typedef enum int {

@@ -102,7 +102,6 @@ module dma
   logic cfg_abort_en;
   assign cfg_abort_en = reg2hw.control.abort.q;
 
-  logic clear_cfg_regwen, set_cfg_regwen;
   logic cfg_handshake_en;
 
   logic [SYS_METADATA_WIDTH-1:0] src_metadata;
@@ -1198,13 +1197,8 @@ module dma
     hw2reg.control.go.de = clear_go || cfg_abort_en;
     hw2reg.control.go.d  = 1'b0;
 
-    // Lock or unlock the regwen when leaving or returning back to DmaIdle
-    clear_cfg_regwen = (ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle);
-    set_cfg_regwen   = hw2reg.control.go.de;
-    // Convert the regwen set/clear signal to the multi bit
-    hw2reg.cfg_regwen.de = set_cfg_regwen | clear_cfg_regwen;
-    hw2reg.cfg_regwen.d  = prim_mubi_pkg::mubi4_bool_to_mubi(set_cfg_regwen);
-
+    // Unlock the register set when we are in the idle state
+    hw2reg.cfg_regwen.d = prim_mubi_pkg::mubi4_bool_to_mubi(ctrl_state_q == DmaIdle);
 
     // If we are in hardware handshake mode with auto-increment increment the corresponding address
     // when finishing a DMA operation when transitioning from a data move state to the idle state
