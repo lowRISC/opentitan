@@ -120,11 +120,15 @@
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
-                    size: "156"
+                    size: "124"
                 }
                 {
                     name: "CREATOR_SW_CFG_AST_INIT_EN",
                     size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_OVERRIDES",
+                    size: "32"
                 }
                 {
                     name: "CREATOR_SW_CFG_ROM_EXT_SKU",
