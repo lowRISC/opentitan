@@ -18,6 +18,13 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
+enum {
+  kValidAstCfgOtpAddrLow = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET,
+  kInvalidAstCfgOtpAddrHigh =
+      kValidAstCfgOtpAddrLow + OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
+
+};
+
 /**
  * Writes OTP values to target OTP `partition`.
  *
@@ -50,9 +57,8 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // data directly from there.
     if (kv[i].offset ==
             OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
-        (kv[i].offset >= OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET &&
-         kv[i].offset < (OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET +
-                         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE))) {
+        (kv[i].offset >= kValidAstCfgOtpAddrLow &&
+         kv[i].offset < kInvalidAstCfgOtpAddrHigh)) {
       continue;
     }
     uint32_t offset;
@@ -139,6 +145,10 @@ static status_t manuf_individualize_device_ast_cfg(
                     OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET;
     uint32_t data = ast_cfg_data[(i * 2) + 2];
     uint32_t relative_addr;
+    // Check the range is valid.
+    if (addr < kValidAstCfgOtpAddrLow || addr >= kInvalidAstCfgOtpAddrHigh) {
+      return OUT_OF_RANGE();
+    }
     TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg, addr,
                                       &relative_addr));
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl,
