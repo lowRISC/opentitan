@@ -244,19 +244,31 @@
     { name: "CreatorSwCfgAstCfgSize",
       desc: "Size of CREATOR_SW_CFG_AST_CFG",
       type: "int",
-      default: "156",
+      default: "124",
       local: "true"
     },
     { name: "CreatorSwCfgAstInitEnOffset",
       desc: "Offset of CREATOR_SW_CFG_AST_INIT_EN",
       type: "int",
-      default: "220",
+      default: "188",
       local: "true"
     },
     { name: "CreatorSwCfgAstInitEnSize",
       desc: "Size of CREATOR_SW_CFG_AST_INIT_EN",
       type: "int",
       default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgOverridesOffset",
+      desc: "Offset of CREATOR_SW_CFG_OVERRIDES",
+      type: "int",
+      default: "192",
+      local: "true"
+    },
+    { name: "CreatorSwCfgOverridesSize",
+      desc: "Size of CREATOR_SW_CFG_OVERRIDES",
+      type: "int",
+      default: "32",
       local: "true"
     },
     { name: "CreatorSwCfgRomExtSkuOffset",

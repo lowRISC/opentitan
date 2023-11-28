@@ -7,8 +7,9 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |:-------:|:---------------------:|:----------:|:----------------:|:-------------------------------------------------------------------:|:--------------:|:----------:|
 |    0    |      VENDOR_TEST      |     64     |      32bit       |                               SCRATCH                               |     0x000      |     56     |
 |         |                       |            |      64bit       |           [VENDOR_TEST_DIGEST](#Reg_vendor_test_digest_0)           |     0x038      |     8      |
-|    1    |    CREATOR_SW_CFG     |    320     |      32bit       |                       CREATOR_SW_CFG_AST_CFG                        |     0x040      |    156     |
-|         |                       |            |      32bit       |                     CREATOR_SW_CFG_AST_INIT_EN                      |     0x0DC      |     4      |
+|    1    |    CREATOR_SW_CFG     |    320     |      32bit       |                       CREATOR_SW_CFG_AST_CFG                        |     0x040      |    124     |
+|         |                       |            |      32bit       |                     CREATOR_SW_CFG_AST_INIT_EN                      |     0x0BC      |     4      |
+|         |                       |            |      32bit       |                      CREATOR_SW_CFG_OVERRIDES                       |     0x0C0      |     32     |
 |         |                       |            |      32bit       |                     CREATOR_SW_CFG_ROM_EXT_SKU                      |     0x0E0      |     4      |
 |         |                       |            |      32bit       |            CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN             |     0x0E4      |     4      |
 |         |                       |            |      32bit       |                 CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN                 |     0x0E8      |     8      |

@@ -1049,14 +1049,6 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         reg2hw.rega27,
                         reg2hw.rega28,
                         reg2hw.rega29,
-                        reg2hw.rega30,
-                        reg2hw.rega31,
-                        reg2hw.rega32,
-                        reg2hw.rega33,
-                        reg2hw.rega34,
-                        reg2hw.rega35,
-                        reg2hw.rega36,
-                        reg2hw.rega37,
                         reg2hw.regb   // [0:3]
                       };
 
