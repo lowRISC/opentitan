@@ -42,9 +42,14 @@
       tests: [
         "chip_sw_pwrmgr_smoketest",
         "chip_sw_pwrmgr_random_sleep_all_reset_reqs",
+        "chip_sw_pwrmgr_all_reset_reqs",
         "chip_sw_pwrmgr_wdog_reset",
       ]
-      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_sys_reset_info
@@ -132,7 +137,10 @@
       ]
       features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
-      bazel: ["//sw/device/tests:rstmgr_sw_req_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:rstmgr_sw_req_test_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_alert_info
@@ -237,7 +245,7 @@
         "RSTMGR.ALERT_INFO.CAPTURE",
       ]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables

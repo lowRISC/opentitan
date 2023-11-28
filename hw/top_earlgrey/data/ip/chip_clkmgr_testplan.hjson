@@ -148,6 +148,8 @@
               "manuf_cp_unlock_raw",
               "manuf_cp_yield_test"]
       bazel: [
+        "//sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest_fpga_cw310_rom_with_fake_keys",
+        "//sw/device/silicon_creator/manuf/tests:manuf_cp_yield_test_functest_test_unlocked0_fpga_cw310_rom_with_fake_keys",
         "//sw/device/tests:ast_clk_outs_test_cw310_test_rom",
         "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_cw310_test_rom",
         "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_cw310_test_rom",
@@ -174,7 +176,7 @@
         "chip_sw_clkmgr_external_clk_src_for_lc",
         "manuf_cp_unlock_raw",
       ]
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest_fpga_cw310_rom_with_fake_keys"]
     }
     {
       name: chip_sw_clkmgr_external_clk_src_for_sw
@@ -189,7 +191,7 @@
             clock. Ensure the chip operates normally.
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             SiVal: The only necessary test is that the internal clocks are running
-            with the right frequency after calibration.
+            with the right frequency after calibration. There are a few such tests already.
             '''
       stage: V2
       si_stage: None
@@ -204,7 +206,10 @@
               "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
               "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma"]
-      bazel: []
+      bazel: [
+        "//sw/device/tests:clkmgr_sleep_frequency_test_cw310_test_rom",
+        "//sw/device/tests:clkmgr_reset_frequency_test_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_clkmgr_jitter
