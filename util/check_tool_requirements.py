@@ -199,7 +199,6 @@ class VerilatorToolReq(ToolReq):
             # relies on perl magic to parse command line arguments.
             version_str = subprocess.run('verilator --version', shell=True,
                                          check=True, stdout=subprocess.PIPE,
-                                         stderr=subprocess.STDOUT,
                                          universal_newlines=True)
         except subprocess.CalledProcessError as err:
             raise RuntimeError('Unable to call Verilator to check version: {}'
