@@ -122,10 +122,9 @@
 
             SiVal: These tests should be run after clock calibration is completed.
             Any LC cycle stage after calibration is done.
-            Testing the software enabled external clock cycle measurements seems mute after clocks are calibrated.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: SV2
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
@@ -158,16 +157,10 @@
             On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
             it when lc_program completes. This also triggers divided clocks to step down. It may be
             best to verify this via SVA, unless we implement clock cycle counters.
-            SiVal: There is no way to test clock frequencies before clocks are calibrated.
-            So the only way to actually test this is by the success of OTP updates for calibration.
-            This can be tested after the fact by clock measurements of the internal, calibrated clocks.
+            SiVal: This is implicitly tested by the success of OTP updates for calibration.
             '''
       stage: V2
-      si_stage: SV1
-      lc_states: [
-        "RAW",
-        "TEST_LOCKED0",
-      ]
+      si_stage: None
       tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
       bazel: []
     }
