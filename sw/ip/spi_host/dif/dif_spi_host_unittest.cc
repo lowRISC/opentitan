@@ -278,13 +278,13 @@ TEST_F(ConfigTest, SpiTxRxWatermark) {
   EXPECT_DIF_OK(dif_spi_host_configure(&spi_host_, config_));
 }
 
-class TransactionTest : public SpiHostTest {
+class TransactionStartTest : public SpiHostTest {
  protected:
   MockFifo fifo_;
 };
 
 // Checks that an opcode segment is sent correctly.
-TEST_F(TransactionTest, IssueOpcode) {
+TEST_F(TransactionStartTest, IssueOpcode) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeOpcode;
   segment.opcode = 0x5a;
@@ -301,7 +301,7 @@ TEST_F(TransactionTest, IssueOpcode) {
 }
 
 // Checks that an address segment is sent correctly in 3-byte mode.
-TEST_F(TransactionTest, IssueAddressMode3b) {
+TEST_F(TransactionStartTest, IssueAddressMode3b) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeAddress;
   segment.address.width = kDifSpiHostWidthStandard;
@@ -320,7 +320,7 @@ TEST_F(TransactionTest, IssueAddressMode3b) {
 }
 
 // Checks that an address segment is sent correctly in 4-byte mode.
-TEST_F(TransactionTest, IssueAddressMode4b) {
+TEST_F(TransactionStartTest, IssueAddressMode4b) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeAddress;
   segment.address.width = kDifSpiHostWidthStandard;
@@ -339,7 +339,7 @@ TEST_F(TransactionTest, IssueAddressMode4b) {
 }
 
 // Checks that a dummy segment is sent correctly.
-TEST_F(TransactionTest, IssueDummy) {
+TEST_F(TransactionStartTest, IssueDummy) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeDummy;
   segment.dummy.width = kDifSpiHostWidthStandard;
@@ -352,6 +352,11 @@ TEST_F(TransactionTest, IssueDummy) {
 
   EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
+
+class TransactionTest : public SpiHostTest {
+ protected:
+  MockFifo fifo_;
+};
 
 // Checks that a transmit segment is sent correctly.
 TEST_F(TransactionTest, TransmitDual) {

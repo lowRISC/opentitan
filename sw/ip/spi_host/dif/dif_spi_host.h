@@ -195,6 +195,21 @@ dif_result_t dif_spi_host_fifo_read(const dif_spi_host_t *spi_host, void *dst,
                                     uint16_t len);
 
 /**
+ * Begins a SPI Host transaction without reading the FIFOs.
+ *
+ * @param spi_host A SPI Host handle.
+ * @param csid The chip-select ID of the SPI target.
+ * @param segments The SPI segments to send in this transaction.
+ * @param length The number of SPI segments in this transaction.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_start_transaction(const dif_spi_host_t *spi_host,
+                                            uint32_t csid,
+                                            dif_spi_host_segment_t *segments,
+                                            size_t length);
+
+/**
  * Begins a SPI Host transaction.
  *
  * @param spi_host A SPI Host handle.
