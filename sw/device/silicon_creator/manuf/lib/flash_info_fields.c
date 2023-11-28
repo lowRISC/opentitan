@@ -15,7 +15,6 @@
 #include "otp_ctrl_regs.h"    // Generated.
 
 // Ensure all the fields in the manuf page fit.
-// static_assert((OTP_CTRL_PARAM_DEVICE_ID_SIZE +
 static_assert((OTP_CTRL_PARAM_DEVICE_ID_SIZE + OTP_CTRL_PARAM_MANUF_STATE_SIZE +
                kFlashInfoFieldMaxAstCalibrationDataSizeInBytes) <=
                   FLASH_CTRL_PARAM_BYTES_PER_PAGE,

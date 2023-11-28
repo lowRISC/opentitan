@@ -23,7 +23,7 @@ struct Opts {
     timeout: Duration,
 }
 
-fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    execute_test!(rma_unlock_token_export, &opts, &transport);
+    execute_test!(individualize_sw_cfg, &opts, &transport);
 
     Ok(())
 }

@@ -51,8 +51,8 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     if (kv[i].offset ==
             OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
         (kv[i].offset >= OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET &&
-         kv[i].offset < OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET +
-                            OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE)) {
+         kv[i].offset < (OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET +
+                         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE))) {
       continue;
     }
     uint32_t offset;
