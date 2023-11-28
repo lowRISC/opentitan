@@ -18,6 +18,13 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
 
   `uvm_object_new
 
+  constraint lc_hw_debug_en_c {
+    lc_hw_debug_en == lc_ctrl_pkg::On;
+  }
+  constraint scanmode_c {
+    scanmode == prim_mubi_pkg::MuBi4False;
+  }
+
   task body();
     // Read the JTAG IDCODE register and verify that it matches the expected value.
     jtag_item req;
