@@ -118,31 +118,31 @@
  * @return Either `kOk` or `kInternal`.
  */
 
-#define CHECK_ARRAYS_IMPL(expect_eq_, actual_, ref_, size_, ...)           \
-  ({                                                                       \
-    static_assert(sizeof(*(actual_)) == sizeof(*(ref_)),                   \
-                  "CHECK_ARRAYS requires arguments of equal size.");       \
-    status_t sts_ = OK_STATUS();                                           \
-    volatile bool is_eq =                                                  \
-        memcmp((actual_), (ref_), size_ * sizeof(*(actual_))) == 0;        \
-    if (is_eq != expect_eq_) {                                             \
-      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                       \
-        LOG_ERROR("CHECK-fail: " #actual_ "%smatches " #ref_,              \
-                  expect_eq_ ? " un" : " ");                               \
-      } else {                                                             \
-        LOG_ERROR("CHECK-fail: " __VA_ARGS__);                             \
-      }                                                                    \
-      for (size_t i = 0; i < size_; ++i) {                                 \
-        if (expect_eq_) {                                                  \
-          LOG_ERROR(SHOW_MISMATCH_FMT_STR_((actual_)[i]), i, (actual_)[i], \
-                    (ref_)[i]);                                            \
-        } else {                                                           \
-          LOG_ERROR(SHOW_MATCH_FMT_STR_((actual_)[i]), i, (actual_)[i]);   \
-        }                                                                  \
-      }                                                                    \
-      sts_ = INTERNAL();                                                   \
-    }                                                                      \
-    sts_;                                                                  \
+#define CHECK_ARRAYS_IMPL(expect_eq_, actual_, ref_, size_, ...)          \
+  ({                                                                      \
+    static_assert(sizeof(*(actual_)) == sizeof(*(ref_)),                  \
+                  "CHECK_ARRAYS requires arguments of equal size.");      \
+    status_t sts_ = OK_STATUS();                                          \
+    volatile bool is_eq =                                                 \
+        memcmp((actual_), (ref_), size_ * sizeof(*(actual_))) == 0;       \
+    if (is_eq != expect_eq_) {                                            \
+      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                      \
+        LOG_INFO("CHECK-fail: " #actual_ " %smatches " #ref_,             \
+                 expect_eq_ ? " un" : " ");                               \
+      } else {                                                            \
+        LOG_INFO("CHECK-fail: " __VA_ARGS__);                             \
+      }                                                                   \
+      for (size_t i = 0; i < size_; ++i) {                                \
+        if (expect_eq_) {                                                 \
+          LOG_INFO(SHOW_MISMATCH_FMT_STR_((actual_)[i]), i, (actual_)[i], \
+                   (ref_)[i]);                                            \
+        } else {                                                          \
+          LOG_INFO(SHOW_MATCH_FMT_STR_((actual_)[i]), i, (actual_)[i]);   \
+        }                                                                 \
+      }                                                                   \
+      sts_ = INTERNAL();                                                  \
+    }                                                                     \
+    sts_;                                                                 \
   })
 
 /**
