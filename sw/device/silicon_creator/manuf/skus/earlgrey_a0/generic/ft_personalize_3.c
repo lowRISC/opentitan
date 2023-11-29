@@ -61,58 +61,57 @@ static status_t personalize(ujson_t *uj) {
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kCdi0KeymgrDiversifier));
 
-  if (in_data.rom_ext_measurement_valid &&
-      in_data.owner_manifest_measurement_valid) {
-    // Set attestation binding to ROM_EXT / Ownership Manifest measurements.
-    // Note: we set the sealing binding value to all zeros as it is currently
-    // unused in the personalization flow. This may be changed in the future.
-    keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-    keymgr_binding_value_t sealing_binding_value = {.data = {0}};
-    uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
-    hmac_digest_t combined_measurements;
-    memcpy(rom_ext_measurements, in_data.rom_ext_measurement,
-           kAttestMeasurementSizeInBytes);
-    memcpy(&rom_ext_measurements[kAttestMeasurementSizeIn32BitWords],
-           in_data.owner_manifest_measurement, kAttestMeasurementSizeInBytes);
-    hmac_sha256(rom_ext_measurements, kAttestMeasurementSizeInBytes * 2,
-                &combined_measurements);
-    memcpy(attestation_binding_value.data, combined_measurements.digest,
-           kAttestMeasurementSizeInBytes);
-    keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
+  // Set attestation binding to ROM_EXT / Ownership Manifest measurements.
+  // We set the sealing binding value to all zeros as it is unused in the
+  // current personalization flow. This may be changed in the future.
+  keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+  keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+  uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
+  hmac_digest_t combined_measurements;
+  memcpy(rom_ext_measurements, in_data.rom_ext_measurement,
+         kAttestMeasurementSizeInBytes);
+  memcpy(&rom_ext_measurements[kAttestMeasurementSizeIn32BitWords],
+         in_data.owner_manifest_measurement, kAttestMeasurementSizeInBytes);
+  hmac_sha256(rom_ext_measurements, kAttestMeasurementSizeInBytes * 2,
+              &combined_measurements);
+  memcpy(attestation_binding_value.data, combined_measurements.digest,
+         kAttestMeasurementSizeInBytes);
+  keymgr_sw_binding_unlock_wait();
+  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
 
-    // Advance keymgr and generate CDI_0 attestation keys / cert.
-    keymgr_advance_state();
-    TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
-    TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
-                                     kCdi0KeymgrDiversifier, &curr_pubkey));
-    // TODO(#19455): create certificate with key, endorse it, and write it to
-    // flash info.
-    TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
-                                       kCdi0KeymgrDiversifier));
+  // Advance keymgr and generate CDI_0 attestation keys / cert.
+  keymgr_advance_state();
+  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
+                                   kCdi0KeymgrDiversifier, &curr_pubkey));
+  // TODO(#19455): create certificate with key, endorse it, and write it to
+  // flash info.
+  TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
+                                     kCdi0KeymgrDiversifier));
 
-    if (in_data.owner_measurement_valid) {
-      // Set attestation binding to OWNER measurement.
-      // Note: we keep the sealing binding value to all zeros as it is currently
-      // unused in the personalization flow. This may be changed in the future.
-      memcpy(attestation_binding_value.data, in_data.owner_measurement,
-             kAttestMeasurementSizeInBytes);
+  // Set attestation binding to OWNER measurement.
+  // We keep the sealing binding value to all zeros as it is unused in the
+  // current personalization flow. This may be changed in the future.
+  memcpy(attestation_binding_value.data, in_data.owner_measurement,
+         kAttestMeasurementSizeInBytes);
+  keymgr_sw_binding_unlock_wait();
+  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
 
-      // Advance keymgr and generate CDI_1 attestation keys / cert.
-      keymgr_advance_state();
-      TRY(keymgr_state_check(kKeymgrStateOwnerKey));
-      TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
-                                       kCdi1KeymgrDiversifier, &curr_pubkey));
-      // TODO(#19455): create certificate with key, endorse it, and write it to
-      // flash info.
-      TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
-                                         kCdi1KeymgrDiversifier));
-    }
+  // Advance keymgr and generate CDI_1 attestation keys / cert.
+  keymgr_advance_state();
+  TRY(keymgr_state_check(kKeymgrStateOwnerKey));
+  TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
+                                   kCdi1KeymgrDiversifier, &curr_pubkey));
+  // TODO(#19455): create certificate with key, endorse it, and write it to
+  // flash info.
+  TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
+                                     kCdi1KeymgrDiversifier));
 
-    LOG_INFO("Exporting attestation certificates ...");
-    // TODO(#19455): export certificates.
-    LOG_INFO("Wait for UDS attestation certificate endorsement ...");
-    // TODO(#19455): update UDS certificate signature field and commit to flash.
-  }
+  LOG_INFO("Exporting attestation certificates ...");
+  // TODO(#19455): export certificates.
+
+  LOG_INFO("Wait for UDS attestation certificate endorsement ...");
+  // TODO(#19455): update UDS certificate signature field and commit to flash.
 
   return OK_STATUS();
 }

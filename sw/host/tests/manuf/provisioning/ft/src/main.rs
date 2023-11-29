@@ -47,21 +47,21 @@ pub struct ManufFtProvisioningDataInput {
     /// Measurement of the ROM_EXT image to be loaded onto the device.
     #[arg(
         long,
-        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
     )]
     pub rom_ext_measurement: String,
 
     /// Measurement of the Ownership Manifest to be loaded onto the device.
     #[arg(
         long,
-        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
     )]
     pub owner_manifest_measurement: String,
 
     /// Measurement of the Owner image to be loaded onto the device.
     #[arg(
         long,
-        default_value = "0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
+        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
     )]
     pub owner_measurement: String,
 }
@@ -88,18 +88,6 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
-}
-
-/// Returns true if all elements of the array are zero.
-fn is_all_zero(array: &[u32]) -> bool {
-    if array.is_empty() {
-        return true;
-    }
-    let first = array[0];
-    if first == 0 {
-        return array.iter().all(|&item| item == first);
-    }
-    false
 }
 
 fn main() -> Result<()> {
@@ -131,11 +119,8 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
     let attestation_tcb_measurements = ManufCertPersoDataIn {
         rom_ext_measurement: rom_ext_measurement.clone(),
-        rom_ext_measurement_valid: !is_all_zero(rom_ext_measurement.as_slice()),
         owner_manifest_measurement: owner_manifest_measurement.clone(),
-        owner_manifest_measurement_valid: !is_all_zero(owner_manifest_measurement.as_slice()),
         owner_measurement: owner_measurement.clone(),
-        owner_measurement_valid: !is_all_zero(owner_measurement.as_slice()),
     };
 
     test_unlock(
