@@ -4,7 +4,7 @@
 //
 // HMAC Core implementation
 
-module hmac_core import hmac_pkg::*; (
+module hmac_core import prim_sha2_pkg::*; (
   input clk_i,
   input rst_ni,
 
@@ -23,16 +23,16 @@ module hmac_core import hmac_pkg::*; (
   input        sha_hash_done,
 
   // fifo
-  output logic      sha_rvalid,
-  output sha_fifo_t sha_rdata,
-  input             sha_rready,
+  output logic        sha_rvalid,
+  output sha_fifo32_t sha_rdata,
+  input               sha_rready,
 
-  input             fifo_rvalid,
-  input  sha_fifo_t fifo_rdata,
-  output logic      fifo_rready,
+  input               fifo_rvalid,
+  input  sha_fifo32_t fifo_rdata,
+  output logic        fifo_rready,
 
   // fifo control (select and fifo write data)
-  output logic       fifo_wsel,    // 0: from reg, 1: from digest
+  output logic       fifo_wsel,      // 0: from reg, 1: from digest
   output logic       fifo_wvalid,
   output logic [2:0] fifo_wdata_sel, // 0: digest[0] .. 7: digest[7]
   input              fifo_wready,
@@ -43,11 +43,11 @@ module hmac_core import hmac_pkg::*; (
   output logic idle
 );
 
-  localparam int unsigned BlockSize = 512;
+  localparam int unsigned BlockSize     = 512;
   localparam int unsigned BlockSizeBits = $clog2(BlockSize);
-  localparam int unsigned HashWordBits = $clog2($bits(sha_word_t));
+  localparam int unsigned HashWordBits  = $clog2($bits(sha_word32_t));
 
-  localparam bit [63:0]            BlockSize64 = 64'(BlockSize);
+  localparam bit [63:0]            BlockSize64  = 64'(BlockSize);
   localparam bit [BlockSizeBits:0] BlockSizeBSB = BlockSize[BlockSizeBits:0];
 
   logic hash_start; // generated from internal state machine

@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module hmac
-  import hmac_pkg::*;
+  import prim_sha2_pkg::*;
   import hmac_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -45,10 +45,10 @@ module hmac
 
   logic        fifo_rvalid;
   logic        fifo_rready;
-  sha_fifo_t   fifo_rdata;
+  sha_fifo32_t fifo_rdata;
 
   logic        fifo_wvalid, fifo_wready;
-  sha_fifo_t   fifo_wdata;
+  sha_fifo32_t fifo_wdata;
   logic        fifo_full;
   logic        fifo_empty;
   logic [4:0]  fifo_depth;
@@ -67,16 +67,16 @@ module hmac
   logic        packer_ready;
   logic        packer_flush_done;
 
-  logic        reg_fifo_wvalid;
-  sha_word_t   reg_fifo_wdata;
-  sha_word_t   reg_fifo_wmask;
-  logic        hmac_fifo_wsel;
-  logic        hmac_fifo_wvalid;
-  logic [2:0]  hmac_fifo_wdata_sel;
+  logic         reg_fifo_wvalid;
+  sha_word32_t  reg_fifo_wdata;
+  sha_word32_t  reg_fifo_wmask;
+  logic         hmac_fifo_wsel;
+  logic         hmac_fifo_wvalid;
+  logic [2:0]   hmac_fifo_wdata_sel;
 
-  logic        shaf_rvalid;
-  sha_fifo_t   shaf_rdata;
-  logic        shaf_rready;
+  logic         shaf_rvalid;
+  sha_fifo32_t  shaf_rdata;
+  logic         shaf_rready;
 
   logic        sha_en;
   logic        hmac_en;
@@ -98,7 +98,7 @@ module hmac
   err_code_e   err_code;
   logic        err_valid;
 
-  sha_word_t [7:0] digest;
+  sha_word64_t [7:0] digest;
 
   hmac_reg2hw_cfg_reg_t cfg_reg;
   logic                 cfg_block;  // Prevent changing config
@@ -136,7 +136,7 @@ module hmac
   for (genvar i = 0; i < 8; i++) begin : gen_key_digest
     assign hw2reg.key[7-i].d      = '0;
     // digest
-    assign hw2reg.digest[i].d = conv_endian(digest[i], digest_swap);
+    assign hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
   end
 
   logic [3:0] unused_cfg_qe;
@@ -263,18 +263,18 @@ module hmac
   assign msg_fifo_gnt    = msg_fifo_req & ~hmac_fifo_wsel & packer_ready;
 
   // FIFO control
-  sha_fifo_t reg_fifo_wentry;
-  assign reg_fifo_wentry.data = conv_endian(reg_fifo_wdata, 1'b1); // always convert
+  sha_fifo32_t reg_fifo_wentry;
+  assign reg_fifo_wentry.data = conv_endian32(reg_fifo_wdata, 1'b1); // always convert
   assign reg_fifo_wentry.mask = {reg_fifo_wmask[0],  reg_fifo_wmask[8],
                                  reg_fifo_wmask[16], reg_fifo_wmask[24]};
   assign fifo_full   = ~fifo_wready;
   assign fifo_empty  = ~fifo_rvalid;
   assign fifo_wvalid = (hmac_fifo_wsel && fifo_wready) ? hmac_fifo_wvalid : reg_fifo_wvalid;
-  assign fifo_wdata  = (hmac_fifo_wsel) ? '{data: digest[hmac_fifo_wdata_sel], mask: '1}
+  assign fifo_wdata  = (hmac_fifo_wsel) ? '{data: digest[hmac_fifo_wdata_sel][31:0], mask: '1}
                                        : reg_fifo_wentry;
-
+  localparam int MsgFifoDepth = 16;
   prim_fifo_sync #(
-    .Width   ($bits(sha_fifo_t)),
+    .Width   ($bits(sha_fifo32_t)),
     .Pass    (1'b1),
     .Depth   (MsgFifoDepth)
   ) u_msg_fifo (
@@ -357,8 +357,8 @@ module hmac
   //    to be big-endian, [31:24] comes first. So, the data is reverted after
   //    prim_packer before the message fifo. here to reverse if not big-endian
   //    before pushing to the packer.
-  assign msg_fifo_wdata_endian = conv_endian(msg_fifo_wdata, endian_swap);
-  assign msg_fifo_wmask_endian = conv_endian(msg_fifo_wmask, endian_swap);
+  assign msg_fifo_wdata_endian = conv_endian32(msg_fifo_wdata, endian_swap);
+  assign msg_fifo_wmask_endian = conv_endian32(msg_fifo_wmask, endian_swap);
 
   prim_packer #(
     .InW          (32),
@@ -398,7 +398,7 @@ module hmac
 
     .reg_hash_start   (hash_start),
     .reg_hash_process (packer_flush_done), // Trigger after all msg written
-    .hash_done      (reg_hash_done),
+    .hash_done        (reg_hash_done),
     .sha_hash_start,
     .sha_hash_process,
     .sha_hash_done,
@@ -422,27 +422,25 @@ module hmac
     .idle           (hmac_core_idle)
   );
 
-  sha2 u_sha2 (
+  // Instantiate SHA-2 256 multi-mode engine
+  prim_sha2_32 #(
+      .MultimodeEn(0)
+  ) u_prim_sha2_256 (
     .clk_i,
     .rst_ni,
-
-    .wipe_secret,
-    .wipe_v,
-
-    .fifo_rvalid      (shaf_rvalid),
-    .fifo_rdata       (shaf_rdata),
-    .fifo_rready      (shaf_rready),
-
-    .sha_en,
-    .hash_start       (sha_hash_start),
-    .hash_process     (sha_hash_process),
-    .hash_done        (sha_hash_done),
-
-    .message_length   (sha_message_length),
-
-    .digest,
-
-    .idle             (sha_core_idle)
+    .wipe_secret_i        (wipe_secret),
+    .wipe_v_i             (wipe_v),
+    .fifo_rvalid_i        (shaf_rvalid),
+    .fifo_rdata_i         (shaf_rdata),
+    .fifo_rready_o        (shaf_rready),
+    .sha_en_i             (sha_en),
+    .hash_start_i         (sha_hash_start),
+    .digest_mode_i        (None),    // unused input port tied to ground
+    .hash_process_i       (sha_hash_process),
+    .hash_done_o          (sha_hash_done),
+    .message_length_i     ({{64'b0},sha_message_length}),
+    .digest_o             (digest), // digest[0:7][63:32] not read and tied out in unused_signals
+    .idle_o               (sha_core_idle)
   );
 
   // Register top
@@ -545,10 +543,13 @@ module hmac
   end
 
   /////////////////////
-  // Unused Signals  //
+  // Unused Signals //
   /////////////////////
-  logic unused_wmask;
-  assign unused_wmask = ^reg_fifo_wmask;
+  logic unused_signals;
+  assign unused_signals = ^{reg_fifo_wmask, digest[0][63:32], digest[1][63:32],
+                            digest[2][63:32], digest[3][63:32],
+                            digest[4][63:32], digest[5][63:32],
+                            digest[6][63:32], digest[7][63:32]};
 
   /////////////////////
   // Idle output     //
