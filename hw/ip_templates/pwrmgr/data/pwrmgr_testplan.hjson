@@ -245,6 +245,25 @@
       tests: ["pwrmgr_disable_rom_integrity_check"]
     }
     {
+      name: escalation_timeout
+      desc: '''This tests the escalation timeout feature.
+
+            If the escalation network doesn't respond to an outgoing "health"
+            requests within 128 cycles pwrmgr should issue an escalation reset
+            request.
+
+            **Stimulus**:
+            - Cause the external escalation network to stop responding, either
+              disabling the clock or jamming the differential pairs.
+
+            **Check**:
+            - After 128 cycles of inactivity an escalation reset should be
+              triggered.
+            '''
+      stage: V3
+      tests: ["pwrmgr_escalation_timeout"]
+    }
+    {
       name: stress_all
       desc: '''This runs random sequences in succession.
 

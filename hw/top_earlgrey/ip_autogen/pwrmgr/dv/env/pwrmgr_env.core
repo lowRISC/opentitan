@@ -33,6 +33,7 @@ filesets:
       - seq_lib/pwrmgr_esc_clk_rst_malfunc_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_sec_cm_ctrl_config_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_global_esc_vseq.sv: {is_include_file: true}
+      - seq_lib/pwrmgr_escalation_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_disable_rom_integrity_check_vseq.sv: {is_include_file: true}
       - seq_lib/pwrmgr_reset_invalid_vseq.sv: {is_include_file: true}
