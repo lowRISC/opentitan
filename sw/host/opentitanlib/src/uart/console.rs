@@ -24,6 +24,7 @@ pub struct UartConsole {
     pub timestamp: bool,
     pub buffer: String,
     pub newline: bool,
+    pub break_en: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,6 +41,7 @@ pub trait ReadAsFd: Read + AsFd {}
 impl<T: Read + AsFd> ReadAsFd for T {}
 
 impl UartConsole {
+    const CTRL_B: u8 = 2;
     const CTRL_C: u8 = 3;
     const BUFFER_LEN: usize = 4096;
 
@@ -226,7 +228,7 @@ impl UartConsole {
     }
 
     fn process_input<T>(
-        &self,
+        &mut self,
         device: &T,
         stdin: &mut Option<&mut (dyn ReadAsFd)>,
     ) -> Result<ExitStatus>
@@ -237,8 +239,23 @@ impl UartConsole {
             while file::wait_read_timeout(&input.as_fd(), Duration::from_millis(0)).is_ok() {
                 let mut buf = [0u8; 256];
                 let len = input.read(&mut buf)?;
-                if len == 1 && buf[0] == UartConsole::CTRL_C {
-                    return Ok(ExitStatus::CtrlC);
+                if len == 1 {
+                    if buf[0] == UartConsole::CTRL_C {
+                        return Ok(ExitStatus::CtrlC);
+                    }
+                    if buf[0] == UartConsole::CTRL_B {
+                        self.break_en = !self.break_en;
+                        eprint!(
+                            "\r\n{} break",
+                            if self.break_en { "Setting" } else { "Clearing" }
+                        );
+                        let b = device.set_break(self.break_en);
+                        if b.is_err() {
+                            eprint!(": {:?}", b);
+                        }
+                        eprint!("\r\n");
+                        break;
+                    }
                 }
                 if len > 0 {
                     device.console_write(&buf[..len])?;

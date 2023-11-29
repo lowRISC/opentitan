@@ -32,6 +32,10 @@ pub trait ConsoleDevice {
         Err(ConsoleError::UnsupportedError("console_write() not implemented.".into()).into())
     }
 
+    fn set_break(&self, _enable: bool) -> Result<()> {
+        Err(ConsoleError::GenericError("break unsupported".into()).into())
+    }
+
     /// Query if nonblocking mio mode is supported.
     fn supports_nonblocking_read(&self) -> Result<bool> {
         Ok(false)
