@@ -43,11 +43,8 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
 // clang-format off
 #define STRUCT_MANUF_CERT_PERSO_DATA_IN(field, string) \
     field(rom_ext_measurement, uint32_t, 8) \
-    field(rom_ext_measurement_valid, bool) \
     field(owner_manifest_measurement, uint32_t, 8) \
-    field(owner_manifest_measurement_valid, bool) \
-    field(owner_measurement, uint32_t, 8) \
-    field(owner_measurement_valid, bool)
+    field(owner_measurement, uint32_t, 8)
 UJSON_SERDE_STRUCT(ManufCertPersoDataIn, \
                    manuf_cert_perso_data_in_t, \
                    STRUCT_MANUF_CERT_PERSO_DATA_IN);
