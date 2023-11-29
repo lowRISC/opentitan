@@ -892,6 +892,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_soc_proxy_gpios
+      uvm_test_seq: chip_sw_soc_proxy_gpio_vseq
+      sw_images: ["//sw/device/tests:soc_proxy_gpios:6"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_aon_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:aon_timer_irq_test:6"]
