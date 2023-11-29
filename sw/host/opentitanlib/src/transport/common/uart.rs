@@ -190,6 +190,16 @@ impl Uart for SerialPortUart {
         Ok(())
     }
 
+    fn set_break(&self, enable: bool) -> Result<()> {
+        let port = self.port.borrow_mut();
+        if enable {
+            port.set_break()?;
+        } else {
+            port.clear_break()?;
+        }
+        Ok(())
+    }
+
     /// Clears the UART RX buffer.
     fn clear_rx_buffer(&self) -> Result<()> {
         self.rxbuf.borrow_mut().clear();
