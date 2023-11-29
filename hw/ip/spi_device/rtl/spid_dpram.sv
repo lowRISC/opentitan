@@ -116,6 +116,37 @@ module spid_dpram
   assign spi2sys_rd_req = sys_req_i & !sys_write_i;
   assign spi2sys_rd_addr = sys_addr_i - Spi2SysOffset;
 
+  // The SPI -> core buffer for the payload uses parity and SW has no way of initializing it since
+  // the the write port is in the SPI domain. Since the SPI side writes the payload byte by byte,
+  // we need to guard against partially initialized 32bit wordd, because these could cause TL-UL
+  // bus errors upon readout. Unfortunately, an initialization circuit that initializes the entire
+  // SRAM on the SPI clock domain is infeasible since that clock is only intermittently available.
+  // Hence, we keep track of uninitialized words using a valid bit array, and upon the first write
+  // to a word, uninitialized bytes are set to zero if the write operation is a sub-word write op.
+  logic [SramDw-1:0] spi_wdata, spi_wmask;
+  logic [Spi2SysDepth-1:0] initialized_words_d, initialized_words_q;
+  always_comb begin initialized_words_d = initialized_words_q;
+    // By default, we just loop through the data and wmask.
+    spi_wdata = spi_wdata_i;
+    spi_wmask = spi_wmask_i;
+    // If the word has not been initialized yet we modify the data and wmask to initialize all bits.
+    if (spi2sys_wr_req && !initialized_words_q[Spi2SysAw'(spi2sys_wr_addr)]) begin
+      // Mask data at this point already and set all masked bits to 0.
+      spi_wdata = spi_wdata_i & spi_wmask_i;
+      spi_wmask = {SramDw{1'b1}};
+      // Mark this word as initialized
+      initialized_words_d[Spi2SysAw'(spi2sys_wr_addr)] = 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_spi_i or negedge rst_spi_ni) begin : p_spi_regs
+    if (!rst_spi_ni) begin
+      initialized_words_q <= '0;
+    end else begin
+      initialized_words_q <= initialized_words_d;
+    end
+  end
+
   prim_ram_1r1w_async_adv #(
     .Depth                     (Spi2SysDepth),
     .Width                     (SramDw),
@@ -132,8 +163,9 @@ module spid_dpram
     .rst_b_ni                  (rst_sys_ni),
     .a_req_i                   (spi2sys_wr_req),
     .a_addr_i                  (Spi2SysAw'(spi2sys_wr_addr)),
-    .a_wdata_i                 (spi_wdata_i),
-    .a_wmask_i                 (spi_wmask_i),
+    // Use modified wdata and mask.
+    .a_wdata_i                 (spi_wdata),
+    .a_wmask_i                 (spi_wmask),
 
     .b_req_i                   (spi2sys_rd_req),
     .b_addr_i                  (Spi2SysAw'(spi2sys_rd_addr)),
