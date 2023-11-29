@@ -3,16 +3,13 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:ip:hmac:0.1"
-description: "HMAC-SHA256 engine"
+description: "HMAC- with SHA-2 engine 256-bit (MultimodeEn=0)"
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
     files:
-      - rtl/hmac_pkg.sv
-      - rtl/sha2.sv
-      - rtl/sha2_pad.sv
       - rtl/hmac_reg_pkg.sv
       - rtl/hmac_reg_top.sv
       - rtl/hmac_core.sv
@@ -68,3 +65,12 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
