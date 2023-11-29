@@ -16,6 +16,7 @@
 `include "pwrmgr_esc_clk_rst_malfunc_vseq.sv"
 `include "pwrmgr_sec_cm_ctrl_config_regwen_vseq.sv"
 `include "pwrmgr_global_esc_vseq.sv"
+`include "pwrmgr_escalation_timeout_vseq.sv"
 `include "pwrmgr_glitch_vseq.sv"
 `include "pwrmgr_disable_rom_integrity_check_vseq.sv"
 `include "pwrmgr_reset_invalid_vseq.sv"

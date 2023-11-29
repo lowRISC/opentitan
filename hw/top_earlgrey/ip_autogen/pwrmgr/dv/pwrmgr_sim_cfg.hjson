@@ -120,6 +120,10 @@
       run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
+      name: pwrmgr_escalation_timeout
+      uvm_test_seq: pwrmgr_escalation_timeout_vseq
+    }
+    {
       name: pwrmgr_glitch
       uvm_test_seq: pwrmgr_glitch_vseq
       run_opts: ["+test_timeout_ns=1000000"]
