@@ -1532,7 +1532,37 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_otbn_test",
     srcs = ["keymgr_sideload_otbn_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(timeout = "long"),
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/crypto:x25519_sideload",
+    ],
+)
+
+opentitan_test(
+    name = "keymgr_sideload_otbn_simple_test",
+    srcs = ["keymgr_sideload_otbn_test.c"],
+    copts = ["-DTEST_SIMPLE_CASE_ONLY"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+    },
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
