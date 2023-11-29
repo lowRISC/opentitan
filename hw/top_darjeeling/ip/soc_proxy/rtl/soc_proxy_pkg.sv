@@ -54,6 +54,11 @@ package soc_proxy_pkg;
   } soc_proxy_alert_e;
 
   localparam int unsigned NumSocGpio = 16;
+
+  // Keep this value in sync with pinmux and top-level configuration.
+  localparam int unsigned NumSocGpioMappedOnDio = 12;
+  localparam int unsigned NumSocGpioMuxed = NumSocGpio - NumSocGpioMappedOnDio;
+
   // Assertions on these constants are part of the `soc_proxy` module (since they can't be put into
   // this package).
   localparam int unsigned NumInternalAlerts = FatalAlertIntg - FatalAlertIntg + 1;
