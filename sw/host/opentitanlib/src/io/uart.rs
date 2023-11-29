@@ -15,6 +15,7 @@ use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
+use crate::transport::TransportError;
 
 #[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct UartParams {
@@ -92,6 +93,10 @@ pub trait Uart {
         Ok(())
     }
 
+    fn set_break(&self, _enable: bool) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     /// Query if nonblocking mio mode is supported.
     fn supports_nonblocking_read(&self) -> Result<bool> {
         Ok(false)
@@ -126,6 +131,10 @@ impl<'a> ConsoleDevice for dyn Uart + 'a {
 
     fn console_write(&self, buf: &[u8]) -> Result<()> {
         self.write(buf)
+    }
+
+    fn set_break(&self, enable: bool) -> Result<()> {
+        <Self as Uart>::set_break(self, enable)
     }
 
     fn supports_nonblocking_read(&self) -> Result<bool> {
