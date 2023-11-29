@@ -51,6 +51,9 @@ class jtag_item extends uvm_sequence_item;
   rand bit exit_to_rti_ir;
   // This field is used to indicate if at the end of DR transaction FSM moves to RunTestIdle state
   rand bit exit_to_rti_dr;
+  // This field is used to indicate how many cycles to spend in RunTestIdle
+  // state before ending the transaction (if exit_to_rti_* are set).
+  rand uint run_test_cycles;
   // This field is used to reset TAP FSM to TestLogicReset state
   rand bit reset_tap_fsm;
 
@@ -127,6 +130,10 @@ class jtag_item extends uvm_sequence_item;
     exit_via_pause_dr dist { 0 := 90, 1 := 10};
   }
 
+  constraint run_test_cycles_c {
+    soft run_test_cycles < 10;
+  }
+
   `uvm_object_utils_begin(jtag_item)
     `uvm_field_int(ir_len, UVM_DEFAULT)
     `uvm_field_int(dr_len, UVM_DEFAULT)
@@ -137,6 +144,7 @@ class jtag_item extends uvm_sequence_item;
     `uvm_field_int(skip_reselected_ir, UVM_DEFAULT)
     `uvm_field_int(ir_pause_count, UVM_NOCOMPARE | UVM_DEFAULT)
     `uvm_field_int(dr_pause_count, UVM_NOCOMPARE | UVM_DEFAULT)
+    `uvm_field_int(run_test_cycles, UVM_NOCOMPARE | UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

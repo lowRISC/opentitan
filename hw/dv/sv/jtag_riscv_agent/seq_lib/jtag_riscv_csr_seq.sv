@@ -28,6 +28,7 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
   endfunction
 
   virtual task body();
+    uint run_test_cycles = cfg.run_test_cycles;
     `uvm_create_obj(REQ, req)
     start_item(req);
 
@@ -36,7 +37,8 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
       // convert byte address to word address
       addr == (cfg.is_rv_dm ? local::addr : (local::addr >> DMI_WORD_SHIFT));
       data == local::data;
-      activate_rv_dm == 0;)
+      activate_rv_dm == 0;
+      run_test_cycles == local::run_test_cycles;)
 
     finish_item(req);
     get_response(rsp);

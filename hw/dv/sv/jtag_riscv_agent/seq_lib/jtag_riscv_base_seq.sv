@@ -35,10 +35,12 @@ class jtag_riscv_base_seq extends dv_base_seq #(
                                input bit [DMI_ADDRW-1:0]  addr,
                                output bit [DMI_DATAW-1:0] dout);
     jtag_dr_seq dr_seq;
+    uint run_test_cycles = cfg.run_test_cycles;
     `uvm_create_on(dr_seq, p_sequencer.jtag_sequencer_h);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(dr_seq,
         dr_len == DMI_DRW;
-        dr     == {addr, data, op};)
+        dr     == {addr, data, op};
+        run_test_cycles == local::run_test_cycles;)
     `uvm_send(dr_seq)
     dout = dr_seq.rsp.dout;
   endtask
