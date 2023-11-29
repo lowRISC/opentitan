@@ -120,7 +120,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                       req.ir,
                       req.ir_pause_count,
                       req.ir_pause_cycle,
-                      req.exit_to_rti_ir);
+                      req.exit_to_rti_ir,
+                      req.run_test_cycles);
       end
     end
     if (req.dr_len) begin
@@ -132,7 +133,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                     rsp.dout,
                     req.dr_pause_count,
                     req.dr_pause_cycle,
-                    req.exit_to_rti_dr);
+                    req.exit_to_rti_dr,
+                    req.run_test_cycles);
     end
     cfg.vif.tck_en <= 1'b0;
   endtask
@@ -141,7 +143,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      bit [JTAG_DRW-1:0] ir,
                      uint pause_count = 0,
                      uint pause_cycle = 0,
-                     bit exit_to_rti = 1'b1);
+                     bit exit_to_rti = 1'b1,
+                     uint run_test_cycles = 0);
     logic [JTAG_DRW-1:0] dout;
     exit_to_rti_ir_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
@@ -205,6 +208,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= 1'b0;
       @(`HOST_CB);
+      while (run_test_cycles > 0) begin
+        @(`HOST_CB);
+        run_test_cycles = run_test_cycles - 1;
+      end
     end else begin
       `uvm_info(`gfn, "drive_ir: skip going to RTI", UVM_MEDIUM)
     end
@@ -217,7 +224,8 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      output logic [JTAG_DRW-1:0] dout,
                      input  uint                 pause_count,
                      input  uint                 pause_cycle,
-                     input  bit                  exit_to_rti = 1'b1);
+                     input  bit                  exit_to_rti = 1'b1,
+                     input  uint                 run_test_cycles = 0);
     bit pause_injected = 0;
     exit_to_rti_dr_past = exit_to_rti;
     `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
@@ -289,6 +297,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       `HOST_CB.tms <= 1'b0;
       `HOST_CB.tdi <= 1'b0;
       @(`HOST_CB);
+      while (run_test_cycles > 0) begin
+        @(`HOST_CB);
+        run_test_cycles = run_test_cycles - 1;
+      end
     end else begin
       `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_MEDIUM)
     end

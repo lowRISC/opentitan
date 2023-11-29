@@ -17,12 +17,18 @@ class jtag_base_seq extends dv_base_seq #(
   rand uint dr_len;
   rand logic [JTAG_DRW-1:0] dr;
 
+  rand uint run_test_cycles;
+
   constraint ir_len_c {
     ir_len <= JTAG_IRW;
   }
 
   constraint dr_len_c {
     ir_len <= JTAG_DRW;
+  }
+
+  constraint run_test_cycles_c {
+    soft run_test_cycles < 10;
   }
 
   `uvm_object_new
@@ -42,6 +48,7 @@ class jtag_base_seq extends dv_base_seq #(
         ir     == local::ir;
         dr_len == local::dr_len;
         dr     == local::dr;
+        run_test_cycles == local::run_test_cycles;
     )
   endfunction
 endclass

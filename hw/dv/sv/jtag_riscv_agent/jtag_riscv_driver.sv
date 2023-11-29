@@ -112,7 +112,8 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     `uvm_create_obj(jtag_ir_seq, m_ir_seq);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_ir_seq,
         ir_len == DMI_IRW;
-        ir     == riscv_ir_req;)
+        ir     == riscv_ir_req;
+        run_test_cycles == 0;)
     m_ir_seq.start(cfg.jtag_sequencer_h);
   endtask
 
@@ -121,7 +122,8 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     `uvm_create_obj(jtag_dr_seq, m_dr_seq);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_dr_seq,
         dr_len == DTMCS_DRW;
-        dr     == 1 << dtmcs_req_idx;)
+        dr     == 1 << dtmcs_req_idx;
+        run_test_cycles == 0;)
     m_dr_seq.start(cfg.jtag_sequencer_h);
   endtask
 
@@ -144,11 +146,13 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
   protected virtual task send_csr_dr_req(
       input bit [DMI_OPW-1:0] op, input bit [DMI_DATAW-1:0] data,
       input bit [DMI_ADDRW-1:0] addr, output bit [DMI_DRW-1:0] dout);
+    uint run_test_cycles = cfg.run_test_cycles;
     jtag_dr_seq m_dr_seq;
     `uvm_create_obj(jtag_dr_seq, m_dr_seq);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_dr_seq,
         dr_len == DMI_DRW;
-        dr     == {addr, data, op};)
+        dr     == {addr, data, op};
+        run_test_cycles == local::run_test_cycles;)
     m_dr_seq.start(cfg.jtag_sequencer_h);
     // Might be no response item if the sequence has been killed
     if (m_dr_seq.rsp != null) dout = m_dr_seq.rsp.dout;

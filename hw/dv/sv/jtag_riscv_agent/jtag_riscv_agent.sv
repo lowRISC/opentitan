@@ -31,6 +31,7 @@ class jtag_riscv_agent extends dv_base_agent #(
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
+    cfg.run_test_cycles = 50;
   endfunction
 
   function void connect_phase(uvm_phase phase);

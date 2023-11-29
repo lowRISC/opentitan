@@ -31,6 +31,13 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   logic [DMI_OPW-1:0] status_in_reset;
 
   bit                 use_jtag_dmi = 0;
+
+  // Number of cycles to spend in Run-Test at the end of a transaction. These
+  // cycles allow the DMI to do its work to return data. Some tests should
+  // probe this value instead of hard-coding, just as would happen in a real
+  // system.
+  uint                run_test_cycles = 50;
+
   function new(string name = "");
     super.new(name);
     // Default active
