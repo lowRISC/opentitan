@@ -3318,7 +3318,10 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
     exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
     silicon = silicon_jtag_params(
         test_cmd = "--elf={firmware}",

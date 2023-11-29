@@ -166,6 +166,7 @@
        stage: V2
        si_stage: SV1
        tests: []
+       bazel: ["//sw/device/tests:rv_core_ibex_epmp_test_functest_fpga_cw310_sival"]
        lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
        features: [
          "RV_CORE_IBEX.CPU.EPMP"
