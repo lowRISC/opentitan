@@ -240,6 +240,11 @@
       uvm_test_seq: rv_dm_jtag_dmi_dm_inactive_vseq
       reseed: 2
     }
+    // rewrite this testpoint
+    {
+      name: sample
+      uvm_test_seq: rv_dm_jtag_dmi_debug_disabled_vseq
+    }
   ]
 
   // List of regressions.
