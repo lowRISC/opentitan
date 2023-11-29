@@ -139,6 +139,7 @@
       stage: V2
       si_stage: SV2
       tests: []
+      bazel: ["//sw/device/tests:keymgr_sideload_otbn_simple_test_fpga_cw310_sival"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
         "OTBN.KEYMGR",

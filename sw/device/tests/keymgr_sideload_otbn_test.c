@@ -96,6 +96,10 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   uint32_t result[8];
   run_x25519_app(otbn, result, kErrBitsOk);
 
+#ifdef TEST_SIMPLE_CASE_ONLY
+  return;
+#endif
+
   // Clear the sideload key and check that OTBN errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
   CHECK_DIF_OK(
