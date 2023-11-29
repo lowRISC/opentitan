@@ -148,10 +148,12 @@ static status_t set_message_digest(const uint32_t digest[kP256ScalarWords]) {
   // architecture than the big-endian form requested by the specification (FIPS
   // 186-5, section B.2.1).
   uint32_t digest_little_endian[kP256ScalarWords];
-  for (size_t i = 0; i < kP256ScalarWords; i++) {
+  size_t i = 0;
+  for (; launder32(i) < kP256ScalarWords; i++) {
     digest_little_endian[i] =
         __builtin_bswap32(digest[kP256ScalarWords - 1 - i]);
   }
+  HARDENED_CHECK_EQ(i, kP256ScalarWords);
   return otbn_dmem_write(kP256ScalarWords, digest_little_endian,
                          kOtbnVarEcdsaMsg);
 }

@@ -38,13 +38,17 @@ static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
   switch (launder32(key_type)) {
     case kKeyTypeEcc:
       // ECC keys have 64 extra redundant bits per share.
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeEcc);
       return config.key_length + (64 / 8);
     case kKeyTypeRsa:
       // RSA key shares are the same size as the unmasked key.
       // TODO: update once masking is implemented for RSA keys.
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeRsa);
       return config.key_length;
     default:
       // Symmetric key shares are simply the same size as the unmasked key.
+      HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeEcc);
+      HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeRsa);
       return config.key_length;
   }
   HARDENED_TRAP();
@@ -56,9 +60,11 @@ size_t keyblob_share_num_words(const crypto_key_config_t config) {
 }
 
 size_t keyblob_num_words(const crypto_key_config_t config) {
-  if (config.hw_backed == kHardenedBoolTrue) {
+  if (launder32(config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolTrue);
     return kHwBackedKeyblobWords;
   }
+  HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
   return 2 * keyblob_share_num_words(config);
 }
 
@@ -73,7 +79,7 @@ size_t keyblob_num_words(const crypto_key_config_t config) {
  */
 static status_t check_keyblob_length(const crypto_blinded_key_t *key) {
   size_t num_words = keyblob_num_words(key->config);
-  if (key->keyblob_length == num_words * sizeof(uint32_t)) {
+  if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
     HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
     HARDENED_CHECK_LE(key->keyblob_length / sizeof(uint32_t), num_words);
     return OTCRYPTO_OK;
@@ -102,30 +108,40 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
 status_t keyblob_to_keymgr_diversification(
     const crypto_blinded_key_t *key,
     keymgr_diversification_t *diversification) {
-  if (key->config.hw_backed != kHardenedBoolTrue || key->keyblob == NULL) {
+  if (launder32(key->config.hw_backed) != kHardenedBoolTrue ||
+      key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
+
   if (key->keyblob_length != kHwBackedKeyblobBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Set the version to the first word of the keyblob.
-  diversification->version = key->keyblob[0];
+  diversification->version = launder32(key->keyblob[0]);
 
   // Copy the remainder of the keyblob into the salt.
   hardened_memcpy(diversification->salt, &key->keyblob[1],
                   kKeymgrSaltNumWords - 1);
 
   // Set the key mode as the last word of the salt.
-  diversification->salt[kKeymgrSaltNumWords - 1] = key->config.key_mode;
+  diversification->salt[kKeymgrSaltNumWords - 1] =
+      launder32(key->config.key_mode);
 
+  HARDENED_CHECK_EQ(diversification->version, key->keyblob[0]);
+  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &key->keyblob[1],
+                                   kKeymgrSaltNumWords - 1),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1],
+                    key->config.key_mode);
   return OTCRYPTO_OK;
 }
 
 status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {
   // Reject hardware-backed keys, since the keyblob is not the actual key
   // material in this case but the version/salt.
-  if (config.hw_backed != kHardenedBoolFalse) {
+  if (launder32(config.hw_backed) != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolFalse);
@@ -136,19 +152,19 @@ status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {
   int32_t result = (int32_t)launder32((uint32_t)(OTCRYPTO_OK.value ^ key_type));
   switch (launder32(key_type)) {
     case kKeyTypeAes:
-      HARDENED_CHECK_EQ(key_type, kKeyTypeAes);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeAes);
       result ^= launder32(kKeyTypeAes);
       break;
     case kKeyTypeHmac:
-      HARDENED_CHECK_EQ(key_type, kKeyTypeHmac);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeHmac);
       result ^= launder32(kKeyTypeHmac);
       break;
     case kKeyTypeKmac:
-      HARDENED_CHECK_EQ(key_type, kKeyTypeKmac);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeKmac);
       result ^= launder32(kKeyTypeKmac);
       break;
     case kKeyTypeKdf:
-      HARDENED_CHECK_EQ(key_type, kKeyTypeKdf);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeKdf);
       result ^= launder32(kKeyTypeKdf);
       break;
     case kKeyTypeEcc:
@@ -174,12 +190,15 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(config));
 
-  size_t key_words = keyblob_share_num_words(config);
   // share0 = key ^ mask, share1 = mask
+  size_t key_words = keyblob_share_num_words(config);
   uint32_t share0[key_words];
-  for (size_t i = 0; i < key_words; i++) {
+  size_t i = 0;
+  for (; launder32(i) < key_words; i++) {
     share0[i] = key[i] ^ mask[i];
   }
+  HARDENED_CHECK_EQ(i, key_words);
+
   keyblob_from_shares(share0, mask, config, keyblob);
   return OTCRYPTO_OK;
 }
