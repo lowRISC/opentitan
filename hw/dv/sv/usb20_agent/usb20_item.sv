@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 typedef enum bit [2:0] {PktTypeSoF, PktTypeToken, PktTypeData, PktTypeHandshake} pkt_type_e;
-typedef enum bit [7:0] {PidTypeOutToken=8'b11100001, PidTypeInToken=8'b01101001,
-  PidTypeSofToken=8'b10100101, PidTypeSetupToken=8'b00101101, PidTypeData0=8'b11000011,
-  PidData1=8'b01001011, PidTypeData2=8'b10000111, PidTypeMData=8'b00001111,
-  PidTypeAck=8'b11010010, PidTypeNak=8'b01011010, PidTypeStall=8'b00011110,
-  PidTypeNyet=8'b10010110} pid_type_e;
+typedef enum bit [7:0] {PidTypeOutToken=8'b0001_1110, PidTypeInToken=8'b1001_0110,
+  PidTypeSofToken=8'b0101_1010, PidTypeSetupToken=8'b1101_0010, PidTypeData0=8'b0011_1100,
+  PidTypeData1=8'b1011_0100, PidTypeData2=8'b0111_1000, PidTypeMData=8'b1111_0000,
+  PidTypeAck=8'b0010_1101, PidTypeNak=8'b1010_0101, PidTypeStall=8'b1110_0001,
+  PidTypeNyet=8'b0110_1001} pid_type_e;
 
 virtual class usb20_item extends uvm_sequence_item;
   pid_type_e m_pid_type;
@@ -27,10 +27,10 @@ class token_pkt extends usb20_item;
   }
 
   `uvm_object_utils_begin (token_pkt)
-    `uvm_field_int(crc5,                     UVM_DEFAULT)
-    `uvm_field_int(endpoint,                 UVM_DEFAULT)
+    `uvm_field_enum(pid_type_e, m_pid_type,  UVM_DEFAULT)
     `uvm_field_int(address,                  UVM_DEFAULT)
-    `uvm_field_enum(pid_type_e, m_pid_type,    UVM_DEFAULT)
+    `uvm_field_int(endpoint,                 UVM_DEFAULT)
+    `uvm_field_int(crc5,                     UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -58,6 +58,8 @@ class token_pkt extends usb20_item;
 endclass
 
 class data_pkt extends usb20_item;
+   rand bit  data [];
+   bit [15:0] crc16;
   // TODO: Sequence item for data packet
   `uvm_object_utils_begin (data_pkt)
   `uvm_object_utils_end
