@@ -2602,7 +2602,7 @@
                - In DV env, ensure that the pattern shows up on the SoC input.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_soc_proxy_gpios"]
     }
 
     //////////////////

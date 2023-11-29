@@ -1729,6 +1729,22 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "soc_proxy_gpios",
+    srcs = ["soc_proxy_gpios.c"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/lib/sw/device/runtime:irq",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:soc_proxy",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],

@@ -986,6 +986,16 @@ interface chip_if;
                                    `TOP_HIER.soc_fatal_alert_rsp_o,
                                    2 * soc_proxy_pkg::NumFatalExternalAlerts)
 
+  // Signal probe function for `soc_gpi_async_o` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpi_async,
+                                   `TOP_HIER.soc_gpi_async_o,
+                                   soc_proxy_pkg::NumSocGpio)
+
+  // Signal probe function for `soc_gpo_async_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpo_async,
+                                   `TOP_HIER.soc_gpo_async_i,
+                                   soc_proxy_pkg::NumSocGpio)
+
   // Signal probe function for `soc_recov_alert_req` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_req,
                                    `TOP_HIER.soc_recov_alert_req_i,
