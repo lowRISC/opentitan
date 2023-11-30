@@ -21,11 +21,16 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_dst_asid: coverpoint dma_config.dst_asid;
   // Total transfer size for operation
   cp_transfer_size: coverpoint dma_config.total_transfer_size {
-    bins one_byte = {0};
-    bins two_byte = {1};
-    bins three_byte = {2};
-    bins four_byte = {3};
-    bins range[4] = {[4:$]};
+    bins one_byte = {1};
+    bins two_byte = {2};
+    bins three_byte = {3};
+    bins four_byte = {4};
+    bins between_5_and_15_byte = {[5:15]};
+    bins between_16_and_127_byte = {[16:127]};
+    bins between_128_and_1023_byte = {[128:1023]};
+    bins kibi_byte = {[1024:1024*1024-1]};
+    bins mebi_byte = {[1024*1024:1024*1024*1024-1]};
+    bins gibi_byte = {[1024*1024*1024:$]};
   }
   // Width of each transfer
   cp_transfer_width: coverpoint dma_config.per_transfer_width;
