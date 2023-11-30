@@ -21,9 +21,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// TODO, remove it once pinout configuration is provided
-#include "pinmux_regs.h"
-
 #define UART_DATASET_SIZE 128
 
 static dif_clkmgr_t clkmgr;
