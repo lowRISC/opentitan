@@ -327,14 +327,14 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Set handshake interrupt register
   task set_handshake_int_regs(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "Set DMA Handshake mode interrupt registers", UVM_HIGH)
-    csr_wr(ral.clear_int_src, dma_config.clear_int_src);
-    csr_wr(ral.clear_int_bus, dma_config.clear_int_bus);
+    csr_wr(ral.clear_int_src[0], dma_config.clear_int_src);
+    csr_wr(ral.clear_int_bus[0], dma_config.clear_int_bus);
     foreach (dma_config.int_src_addr[i]) begin
       csr_wr(ral.int_source_addr[i], dma_config.int_src_addr[i]);
       csr_wr(ral.int_source_wr_val[i], dma_config.int_src_wr_val[i]);
     end
-    ral.handshake_interrupt_enable.set(dma_config.handshake_intr_en);
-    csr_update(ral.handshake_interrupt_enable);
+    ral.handshake_interrupt_enable[0].set(dma_config.handshake_intr_en);
+    csr_update(ral.handshake_interrupt_enable[0]);
   endtask : set_handshake_int_regs
 
   // Task: Configure DMA controller to perform a transfer
@@ -375,7 +375,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
-    csr_wr(ral.handshake_interrupt_enable, 32'd1);
+    csr_wr(ral.handshake_interrupt_enable[0], 32'd1);
   endtask : enable_handshake_interrupt
 
   // Enable/disable errors on TL-UL buses with the given percentage probability/word

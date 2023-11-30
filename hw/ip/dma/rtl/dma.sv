@@ -242,11 +242,14 @@ module dma
   // Masking incoming handshake triggers with their enable
   lsio_trigger_t lsio_trigger;
   logic          handshake_interrupt;
+  logic          any_clear_int_src;
   always_comb begin
     lsio_trigger = '0;
+    any_clear_int_src = 1'b0;
 
     for (int i = 0; i < NumIntClearSources; i++) begin
-      lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_interrupt_enable.q[i];
+      lsio_trigger[i]    = lsio_trigger_i[i] && reg2hw.handshake_interrupt_enable[i].q;
+      any_clear_int_src |= reg2hw.clear_int_src[i].q;
     end
     handshake_interrupt = (|lsio_trigger);
   end
@@ -607,9 +610,9 @@ module dma
     clear_go       = 1'b0;
 
     // Mux the TLUL grant and response signals depending on the selected bus interface
-    int_clear_tlul_gnt       = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_gnt :
+    int_clear_tlul_gnt       = reg2hw.clear_int_bus[clear_index_q].q? dma_host_tlul_gnt :
                                                                       dma_ctn_tlul_gnt;
-    int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
+    int_clear_tlul_rsp_valid = reg2hw.clear_int_bus[clear_index_q].q? dma_host_tlul_rsp_valid :
                                                                       dma_ctn_tlul_rsp_valid;
     dma_state_error = 1'b0;
 
@@ -664,7 +667,7 @@ module dma
               ctrl_state_d = DmaAddrSetup;
             end else if (cfg_handshake_en && |lsio_trigger) begin
               // if handshake wait for interrupt
-              if (|reg2hw.clear_int_src.q) begin
+              if (any_clear_int_src) begin
                 clear_index_en = 1'b1;
                 clear_index_d  = '0;
                 ctrl_state_d   = DmaClearIntrSrc;
@@ -677,10 +680,10 @@ module dma
 
         DmaClearIntrSrc: begin
           // Clear the interrupt by writing
-          if(reg2hw.clear_int_src.q[clear_index_q]) begin
+          if(reg2hw.clear_int_src[clear_index_q].q) begin
             // Send 'clear interrupt' write to the appropriate bus
-            dma_host_clear_int = reg2hw.clear_int_bus.q[clear_index_q];
-            dma_ctn_clear_int = !reg2hw.clear_int_bus.q[clear_index_q];
+            dma_host_clear_int = reg2hw.clear_int_bus[clear_index_q].q;
+            dma_ctn_clear_int = !reg2hw.clear_int_bus[clear_index_q].q;
 
             if (int_clear_tlul_gnt) begin
               ctrl_state_d = DmaWaitIntrSrcResponse;

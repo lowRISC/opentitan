@@ -178,16 +178,16 @@ package dma_reg_pkg;
   } dma_reg2hw_status_reg_t;
 
   typedef struct packed {
-    logic [10:0] q;
-  } dma_reg2hw_handshake_interrupt_enable_reg_t;
+    logic        q;
+  } dma_reg2hw_handshake_interrupt_enable_mreg_t;
 
   typedef struct packed {
-    logic [10:0] q;
-  } dma_reg2hw_clear_int_src_reg_t;
+    logic        q;
+  } dma_reg2hw_clear_int_src_mreg_t;
 
   typedef struct packed {
-    logic [10:0] q;
-  } dma_reg2hw_clear_int_bus_reg_t;
+    logic        q;
+  } dma_reg2hw_clear_int_bus_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -341,9 +341,9 @@ package dma_reg_pkg;
         destination_address_almost_limit_hi; // [786:755]
     dma_reg2hw_control_reg_t control; // [754:743]
     dma_reg2hw_status_reg_t status; // [742:737]
-    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [736:726]
-    dma_reg2hw_clear_int_src_reg_t clear_int_src; // [725:715]
-    dma_reg2hw_clear_int_bus_reg_t clear_int_bus; // [714:704]
+    dma_reg2hw_handshake_interrupt_enable_mreg_t [10:0] handshake_interrupt_enable; // [736:726]
+    dma_reg2hw_clear_int_src_mreg_t [10:0] clear_int_src; // [725:715]
+    dma_reg2hw_clear_int_bus_mreg_t [10:0] clear_int_bus; // [714:704]
     dma_reg2hw_int_source_addr_mreg_t [10:0] int_source_addr; // [703:352]
     dma_reg2hw_int_source_wr_val_mreg_t [10:0] int_source_wr_val; // [351:0]
   } dma_reg2hw_t;

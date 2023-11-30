@@ -501,7 +501,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // Wait for at least one LSIoO trigger to be active and it is eanbled
           @(posedge cfg.dma_vif.handshake_i);
           handshake_en = `gmv(ral.control.hardware_handshake_enable);
-          handshake_intr_en = `gmv(ral.handshake_interrupt_enable);
+          handshake_intr_en = `gmv(ral.handshake_interrupt_enable[0]);
           // Update number of register writes expected in case at least one
           // of the enabled handshake interrupt is asserted
           if (handshake_en && (cfg.dma_vif.handshake_i & handshake_intr_en)) begin
@@ -715,10 +715,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
       end
       "clear_int_bus": begin
-        dma_config.clear_int_bus = `gmv(ral.clear_int_bus.bus);
+        dma_config.clear_int_bus = `gmv(ral.clear_int_bus[0]);
       end
       "clear_int_src": begin
-        dma_config.clear_int_src = `gmv(ral.clear_int_src.source);
+        dma_config.clear_int_src = `gmv(ral.clear_int_src[0]);
         clear_int_src = dma_config.clear_int_src;
       end
       "sha2_digest_0",
@@ -842,7 +842,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         end
       end
       "handshake_interrupt_enable": begin
-        dma_config.handshake_intr_en = `gmv(ral.handshake_interrupt_enable.mask);
+        dma_config.handshake_intr_en = `gmv(ral.handshake_interrupt_enable[0]);
         `uvm_info(`gfn,
                   $sformatf("Got handshake_intr_en = 0x%x", dma_config.handshake_intr_en), UVM_HIGH)
       end

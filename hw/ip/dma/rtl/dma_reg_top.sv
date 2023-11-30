@@ -245,14 +245,74 @@ module dma_reg_top (
   logic [31:0] sha2_digest_14_qs;
   logic [31:0] sha2_digest_15_qs;
   logic handshake_interrupt_enable_we;
-  logic [10:0] handshake_interrupt_enable_qs;
-  logic [10:0] handshake_interrupt_enable_wd;
+  logic handshake_interrupt_enable_mask_0_qs;
+  logic handshake_interrupt_enable_mask_0_wd;
+  logic handshake_interrupt_enable_mask_1_qs;
+  logic handshake_interrupt_enable_mask_1_wd;
+  logic handshake_interrupt_enable_mask_2_qs;
+  logic handshake_interrupt_enable_mask_2_wd;
+  logic handshake_interrupt_enable_mask_3_qs;
+  logic handshake_interrupt_enable_mask_3_wd;
+  logic handshake_interrupt_enable_mask_4_qs;
+  logic handshake_interrupt_enable_mask_4_wd;
+  logic handshake_interrupt_enable_mask_5_qs;
+  logic handshake_interrupt_enable_mask_5_wd;
+  logic handshake_interrupt_enable_mask_6_qs;
+  logic handshake_interrupt_enable_mask_6_wd;
+  logic handshake_interrupt_enable_mask_7_qs;
+  logic handshake_interrupt_enable_mask_7_wd;
+  logic handshake_interrupt_enable_mask_8_qs;
+  logic handshake_interrupt_enable_mask_8_wd;
+  logic handshake_interrupt_enable_mask_9_qs;
+  logic handshake_interrupt_enable_mask_9_wd;
+  logic handshake_interrupt_enable_mask_10_qs;
+  logic handshake_interrupt_enable_mask_10_wd;
   logic clear_int_src_we;
-  logic [10:0] clear_int_src_qs;
-  logic [10:0] clear_int_src_wd;
+  logic clear_int_src_source_0_qs;
+  logic clear_int_src_source_0_wd;
+  logic clear_int_src_source_1_qs;
+  logic clear_int_src_source_1_wd;
+  logic clear_int_src_source_2_qs;
+  logic clear_int_src_source_2_wd;
+  logic clear_int_src_source_3_qs;
+  logic clear_int_src_source_3_wd;
+  logic clear_int_src_source_4_qs;
+  logic clear_int_src_source_4_wd;
+  logic clear_int_src_source_5_qs;
+  logic clear_int_src_source_5_wd;
+  logic clear_int_src_source_6_qs;
+  logic clear_int_src_source_6_wd;
+  logic clear_int_src_source_7_qs;
+  logic clear_int_src_source_7_wd;
+  logic clear_int_src_source_8_qs;
+  logic clear_int_src_source_8_wd;
+  logic clear_int_src_source_9_qs;
+  logic clear_int_src_source_9_wd;
+  logic clear_int_src_source_10_qs;
+  logic clear_int_src_source_10_wd;
   logic clear_int_bus_we;
-  logic [10:0] clear_int_bus_qs;
-  logic [10:0] clear_int_bus_wd;
+  logic clear_int_bus_bus_0_qs;
+  logic clear_int_bus_bus_0_wd;
+  logic clear_int_bus_bus_1_qs;
+  logic clear_int_bus_bus_1_wd;
+  logic clear_int_bus_bus_2_qs;
+  logic clear_int_bus_bus_2_wd;
+  logic clear_int_bus_bus_3_qs;
+  logic clear_int_bus_bus_3_wd;
+  logic clear_int_bus_bus_4_qs;
+  logic clear_int_bus_bus_4_wd;
+  logic clear_int_bus_bus_5_qs;
+  logic clear_int_bus_bus_5_wd;
+  logic clear_int_bus_bus_6_qs;
+  logic clear_int_bus_bus_6_wd;
+  logic clear_int_bus_bus_7_qs;
+  logic clear_int_bus_bus_7_wd;
+  logic clear_int_bus_bus_8_qs;
+  logic clear_int_bus_bus_8_wd;
+  logic clear_int_bus_bus_9_qs;
+  logic clear_int_bus_bus_9_wd;
+  logic clear_int_bus_bus_10_qs;
+  logic clear_int_bus_bus_10_wd;
   logic int_source_addr_0_we;
   logic [31:0] int_source_addr_0_qs;
   logic [31:0] int_source_addr_0_wd;
@@ -2225,24 +2285,26 @@ module dma_reg_top (
   );
 
 
+  // Subregister 0 of Multireg handshake_interrupt_enable
   // R[handshake_interrupt_enable]: V(False)
   // Create REGWEN-gated WE signal
   logic handshake_interrupt_enable_gated_we;
   assign handshake_interrupt_enable_gated_we =
     handshake_interrupt_enable_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
+  //   F[mask_0]: 0:0
   prim_subreg #(
-    .DW      (11),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h7ff),
+    .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_handshake_interrupt_enable (
+  ) u_handshake_interrupt_enable_mask_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (handshake_interrupt_enable_gated_we),
-    .wd     (handshake_interrupt_enable_wd),
+    .wd     (handshake_interrupt_enable_mask_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2250,32 +2312,304 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.handshake_interrupt_enable.q),
+    .q      (reg2hw.handshake_interrupt_enable[0].q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (handshake_interrupt_enable_qs)
+    .qs     (handshake_interrupt_enable_mask_0_qs)
+  );
+
+  //   F[mask_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_1_qs)
+  );
+
+  //   F[mask_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_2_qs)
+  );
+
+  //   F[mask_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_3_qs)
+  );
+
+  //   F[mask_4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_4_qs)
+  );
+
+  //   F[mask_5]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_5_qs)
+  );
+
+  //   F[mask_6]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_6_qs)
+  );
+
+  //   F[mask_7]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_7_qs)
+  );
+
+  //   F[mask_8]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_8_qs)
+  );
+
+  //   F[mask_9]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_9_qs)
+  );
+
+  //   F[mask_10]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_handshake_interrupt_enable_mask_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (handshake_interrupt_enable_gated_we),
+    .wd     (handshake_interrupt_enable_mask_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.handshake_interrupt_enable[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (handshake_interrupt_enable_mask_10_qs)
   );
 
 
+  // Subregister 0 of Multireg clear_int_src
   // R[clear_int_src]: V(False)
   // Create REGWEN-gated WE signal
   logic clear_int_src_gated_we;
   assign clear_int_src_gated_we =
     clear_int_src_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
+  //   F[source_0]: 0:0
   prim_subreg #(
-    .DW      (11),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0),
+    .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_clear_int_src (
+  ) u_clear_int_src_source_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clear_int_src_gated_we),
-    .wd     (clear_int_src_wd),
+    .wd     (clear_int_src_source_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2283,32 +2617,304 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clear_int_src.q),
+    .q      (reg2hw.clear_int_src[0].q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clear_int_src_qs)
+    .qs     (clear_int_src_source_0_qs)
+  );
+
+  //   F[source_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_1_qs)
+  );
+
+  //   F[source_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_2_qs)
+  );
+
+  //   F[source_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_3_qs)
+  );
+
+  //   F[source_4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_4_qs)
+  );
+
+  //   F[source_5]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_5_qs)
+  );
+
+  //   F[source_6]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_6_qs)
+  );
+
+  //   F[source_7]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_7_qs)
+  );
+
+  //   F[source_8]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_8_qs)
+  );
+
+  //   F[source_9]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_9_qs)
+  );
+
+  //   F[source_10]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_src_source_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_gated_we),
+    .wd     (clear_int_src_source_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_src[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_source_10_qs)
   );
 
 
+  // Subregister 0 of Multireg clear_int_bus
   // R[clear_int_bus]: V(False)
   // Create REGWEN-gated WE signal
   logic clear_int_bus_gated_we;
   assign clear_int_bus_gated_we =
     clear_int_bus_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
+  //   F[bus_0]: 0:0
   prim_subreg #(
-    .DW      (11),
+    .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0),
+    .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_clear_int_bus (
+  ) u_clear_int_bus_bus_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clear_int_bus_gated_we),
-    .wd     (clear_int_bus_wd),
+    .wd     (clear_int_bus_bus_0_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2316,11 +2922,281 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clear_int_bus.q),
+    .q      (reg2hw.clear_int_bus[0].q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clear_int_bus_qs)
+    .qs     (clear_int_bus_bus_0_qs)
+  );
+
+  //   F[bus_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_1_qs)
+  );
+
+  //   F[bus_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_2_qs)
+  );
+
+  //   F[bus_3]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_3_qs)
+  );
+
+  //   F[bus_4]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_4_qs)
+  );
+
+  //   F[bus_5]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_5_qs)
+  );
+
+  //   F[bus_6]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_6_qs)
+  );
+
+  //   F[bus_7]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_7_qs)
+  );
+
+  //   F[bus_8]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_8_qs)
+  );
+
+  //   F[bus_9]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_9_qs)
+  );
+
+  //   F[bus_10]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_clear_int_bus_bus_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_bus_gated_we),
+    .wd     (clear_int_bus_bus_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clear_int_bus[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_bus_bus_10_qs)
   );
 
 
@@ -3316,13 +4192,73 @@ module dma_reg_top (
   assign status_error_wd = reg_wdata[3];
   assign handshake_interrupt_enable_we = addr_hit[40] & reg_we & !reg_error;
 
-  assign handshake_interrupt_enable_wd = reg_wdata[10:0];
+  assign handshake_interrupt_enable_mask_0_wd = reg_wdata[0];
+
+  assign handshake_interrupt_enable_mask_1_wd = reg_wdata[1];
+
+  assign handshake_interrupt_enable_mask_2_wd = reg_wdata[2];
+
+  assign handshake_interrupt_enable_mask_3_wd = reg_wdata[3];
+
+  assign handshake_interrupt_enable_mask_4_wd = reg_wdata[4];
+
+  assign handshake_interrupt_enable_mask_5_wd = reg_wdata[5];
+
+  assign handshake_interrupt_enable_mask_6_wd = reg_wdata[6];
+
+  assign handshake_interrupt_enable_mask_7_wd = reg_wdata[7];
+
+  assign handshake_interrupt_enable_mask_8_wd = reg_wdata[8];
+
+  assign handshake_interrupt_enable_mask_9_wd = reg_wdata[9];
+
+  assign handshake_interrupt_enable_mask_10_wd = reg_wdata[10];
   assign clear_int_src_we = addr_hit[41] & reg_we & !reg_error;
 
-  assign clear_int_src_wd = reg_wdata[10:0];
+  assign clear_int_src_source_0_wd = reg_wdata[0];
+
+  assign clear_int_src_source_1_wd = reg_wdata[1];
+
+  assign clear_int_src_source_2_wd = reg_wdata[2];
+
+  assign clear_int_src_source_3_wd = reg_wdata[3];
+
+  assign clear_int_src_source_4_wd = reg_wdata[4];
+
+  assign clear_int_src_source_5_wd = reg_wdata[5];
+
+  assign clear_int_src_source_6_wd = reg_wdata[6];
+
+  assign clear_int_src_source_7_wd = reg_wdata[7];
+
+  assign clear_int_src_source_8_wd = reg_wdata[8];
+
+  assign clear_int_src_source_9_wd = reg_wdata[9];
+
+  assign clear_int_src_source_10_wd = reg_wdata[10];
   assign clear_int_bus_we = addr_hit[42] & reg_we & !reg_error;
 
-  assign clear_int_bus_wd = reg_wdata[10:0];
+  assign clear_int_bus_bus_0_wd = reg_wdata[0];
+
+  assign clear_int_bus_bus_1_wd = reg_wdata[1];
+
+  assign clear_int_bus_bus_2_wd = reg_wdata[2];
+
+  assign clear_int_bus_bus_3_wd = reg_wdata[3];
+
+  assign clear_int_bus_bus_4_wd = reg_wdata[4];
+
+  assign clear_int_bus_bus_5_wd = reg_wdata[5];
+
+  assign clear_int_bus_bus_6_wd = reg_wdata[6];
+
+  assign clear_int_bus_bus_7_wd = reg_wdata[7];
+
+  assign clear_int_bus_bus_8_wd = reg_wdata[8];
+
+  assign clear_int_bus_bus_9_wd = reg_wdata[9];
+
+  assign clear_int_bus_bus_10_wd = reg_wdata[10];
   assign int_source_addr_0_we = addr_hit[43] & reg_we & !reg_error;
 
   assign int_source_addr_0_wd = reg_wdata[31:0];
@@ -3650,15 +4586,45 @@ module dma_reg_top (
       end
 
       addr_hit[40]: begin
-        reg_rdata_next[10:0] = handshake_interrupt_enable_qs;
+        reg_rdata_next[0] = handshake_interrupt_enable_mask_0_qs;
+        reg_rdata_next[1] = handshake_interrupt_enable_mask_1_qs;
+        reg_rdata_next[2] = handshake_interrupt_enable_mask_2_qs;
+        reg_rdata_next[3] = handshake_interrupt_enable_mask_3_qs;
+        reg_rdata_next[4] = handshake_interrupt_enable_mask_4_qs;
+        reg_rdata_next[5] = handshake_interrupt_enable_mask_5_qs;
+        reg_rdata_next[6] = handshake_interrupt_enable_mask_6_qs;
+        reg_rdata_next[7] = handshake_interrupt_enable_mask_7_qs;
+        reg_rdata_next[8] = handshake_interrupt_enable_mask_8_qs;
+        reg_rdata_next[9] = handshake_interrupt_enable_mask_9_qs;
+        reg_rdata_next[10] = handshake_interrupt_enable_mask_10_qs;
       end
 
       addr_hit[41]: begin
-        reg_rdata_next[10:0] = clear_int_src_qs;
+        reg_rdata_next[0] = clear_int_src_source_0_qs;
+        reg_rdata_next[1] = clear_int_src_source_1_qs;
+        reg_rdata_next[2] = clear_int_src_source_2_qs;
+        reg_rdata_next[3] = clear_int_src_source_3_qs;
+        reg_rdata_next[4] = clear_int_src_source_4_qs;
+        reg_rdata_next[5] = clear_int_src_source_5_qs;
+        reg_rdata_next[6] = clear_int_src_source_6_qs;
+        reg_rdata_next[7] = clear_int_src_source_7_qs;
+        reg_rdata_next[8] = clear_int_src_source_8_qs;
+        reg_rdata_next[9] = clear_int_src_source_9_qs;
+        reg_rdata_next[10] = clear_int_src_source_10_qs;
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[10:0] = clear_int_bus_qs;
+        reg_rdata_next[0] = clear_int_bus_bus_0_qs;
+        reg_rdata_next[1] = clear_int_bus_bus_1_qs;
+        reg_rdata_next[2] = clear_int_bus_bus_2_qs;
+        reg_rdata_next[3] = clear_int_bus_bus_3_qs;
+        reg_rdata_next[4] = clear_int_bus_bus_4_qs;
+        reg_rdata_next[5] = clear_int_bus_bus_5_qs;
+        reg_rdata_next[6] = clear_int_bus_bus_6_qs;
+        reg_rdata_next[7] = clear_int_bus_bus_7_qs;
+        reg_rdata_next[8] = clear_int_bus_bus_8_qs;
+        reg_rdata_next[9] = clear_int_bus_bus_9_qs;
+        reg_rdata_next[10] = clear_int_bus_bus_10_qs;
       end
 
       addr_hit[43]: begin
