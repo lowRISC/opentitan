@@ -16,17 +16,9 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   // Destination start address coverpoint
   cp_dst_addr: coverpoint dma_config.dst_addr;
   // Source address space ID
-  cp_src_asid: coverpoint dma_config.src_asid{
-    bins internal = {OtInternalAddr};
-    bins ctn = {SocControlAddr};
-    bins sys = {SocSystemAddr};
-  }
+  cp_src_asid: coverpoint dma_config.src_asid;
   // Destination address space ID
-  cp_dst_asid: coverpoint dma_config.dst_asid{
-    bins internal = {OtInternalAddr};
-    bins ctn = {SocControlAddr};
-    bins sys = {SocSystemAddr};
-  }
+  cp_dst_asid: coverpoint dma_config.dst_asid;
   // Total transfer size for operation
   cp_transfer_size: coverpoint dma_config.total_transfer_size {
     bins one_byte = {0};
@@ -36,19 +28,11 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     bins range[4] = {[4:$]};
   }
   // Width of each transfer
-  cp_transfer_width: coverpoint dma_config.per_transfer_width{
-    bins one_byte = {0};
-    bins two_byte = {1};
-    bins fourbyte = {2};
-    bins reserved = {[0:$]} with (!(item inside {0,1,2}));
-  }
+  cp_transfer_width: coverpoint dma_config.per_transfer_width;
   // Cross of transfer width and total transfer size
   cp_transfer_width_x_transfer_size: cross cp_transfer_width, cp_transfer_size;
   // Opcode
-  cp_opcode: coverpoint dma_config.opcode{
-    bins copy = {0};
-    bins reserved = {[1:$]};
-  }
+  cp_opcode: coverpoint dma_config.opcode;
   // DMA enabled memory range base coverpoint
   cp_dma_mem_base: coverpoint dma_config.mem_range_base;
   // DMA enabled memory range limit coverpoint
@@ -58,33 +42,24 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   // Memory buffer almost limit coverpoint
   cp_dma_mem_buffer_almost_limit: coverpoint dma_config.mem_buffer_almost_limit;
   // handshake mode enable
-  cp_handshake_mode: coverpoint dma_config.handshake{
-    bins en = {1};
-    bins dis = {0};
-  }
+  cp_handshake_mode: coverpoint dma_config.handshake;
   // data direction
   cp_data_direction: coverpoint dma_config.direction{
     bins read_from_fifo = {DmaRcvData};
     bins write_to_fifo = {DmaSendData};
   }
-  cp_fifo_auto_inc: coverpoint dma_config.auto_inc_fifo{
-    bins fixed_addr = {0};
-    bins incr_addr = {1};
-  }
-  cp_mem_buffer_auto_inc: coverpoint dma_config.auto_inc_buffer{
-    bins fixed_addr = {0};
-    bins incr_addr = {1};
-  }
+  cp_fifo_auto_inc: coverpoint dma_config.auto_inc_fifo;
+  cp_mem_buffer_auto_inc: coverpoint dma_config.auto_inc_buffer;
   // Handshake mode FIFO enable coverpoint
   cp_handshake_fifo_mode: cross cp_data_direction, cp_fifo_auto_inc, cp_mem_buffer_auto_inc{
     bins read_src_inc_addr = binsof(cp_data_direction.read_from_fifo) &&
-                             binsof(cp_fifo_auto_inc.incr_addr);
+                             (binsof(cp_fifo_auto_inc) intersect {1});
     bins read_src_fixed_addr = binsof(cp_data_direction.read_from_fifo) &&
-                               binsof(cp_fifo_auto_inc.fixed_addr);
+                               (binsof(cp_fifo_auto_inc) intersect {0});
     bins write_src_inc_addr = binsof(cp_data_direction.write_to_fifo) &&
-                              binsof(cp_mem_buffer_auto_inc.incr_addr);
+                              (binsof(cp_mem_buffer_auto_inc) intersect {1});
     bins write_src_fixed_addr = binsof(cp_data_direction.write_to_fifo) &&
-                                binsof(cp_mem_buffer_auto_inc.fixed_addr);
+                                (binsof(cp_mem_buffer_auto_inc) intersect {0});
   }
   // DMA enabled memory region register lock
   cp_range_lock: coverpoint dma_config.mem_range_lock{
@@ -98,10 +73,7 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   // Abort via write to CONTROL
   cp_abort: coverpoint abort;
   // Cross OP code, source_address_space_id, destination_space_id and DMA operating mode
-  cp_op_code_x_asid_x_mode: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode{
-    // Ignore reserved values of OP code
-    ignore_bins reserved = binsof (cp_opcode.reserved);
-  }
+  cp_op_code_x_asid_x_mode: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode;
   cp_transfer_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
   cp_transfer_width_x_dst_asid_x_dma_op: cross cp_transfer_width, cp_dst_asid, cp_opcode;
   cp_src_addr_x_src_asid_x_dma_op: cross cp_src_addr, cp_src_asid, cp_opcode;
@@ -111,18 +83,10 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_range_lock_x_write_to_dma_mem_region_x_dma_op: cross cp_range_lock,
                                                           write_to_dma_mem_register, cp_opcode;
   // Coverpoint for TL error on source interface
-  cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err){
-    bins internal = {OtInternalAddr};
-    bins ctn = {SocControlAddr};
-    bins sys = {SocSystemAddr};
-  }
+  cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err);
 
   // Coverpoint for TL error on destination interface
-  cp_dst_tl_err: coverpoint dma_config.dst_asid iff (tl_dst_err){
-    bins internal = {OtInternalAddr};
-    bins ctn = {SocControlAddr};
-    bins sys = {SocSystemAddr};
-  }
+  cp_dst_tl_err: coverpoint dma_config.dst_asid iff (tl_dst_err);
 
   cp_src_asid_x_tl_src_err_x_dma_op: cross cp_src_asid, cp_src_tl_err, cp_opcode;
 
