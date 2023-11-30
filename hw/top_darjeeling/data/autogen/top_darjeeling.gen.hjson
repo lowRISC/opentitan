@@ -4231,24 +4231,28 @@
         "0"
       ]
       param_decl: {}
-      memory: {}
-      param_list:
+      param_list: []
+      inter_signal_list:
       [
         {
-          name: NextDmAddr
+          name: next_dm_addr
           desc:
             '''
             32bit word address of the next debug module.
-            Set to 0x0 if this is the last debug module in the chain.,
+            Set to 0x0 if this is the last debug module in the chain.
             '''
-          type: logic [31:0]
+          struct: next_dm_addr
+          package: rv_dm_pkg
+          type: uni
+          act: rcv
+          width: 1
           default: "'0"
-          expose: "true"
-          name_top: RvDmNextDmAddr
+          inst_name: rv_dm
+          external: true
+          top_signame: rv_dm_next_dm_addr
+          conn_type: false
+          index: -1
         }
-      ]
-      inter_signal_list:
-      [
         {
           name: dmi_tl_h2d
           desc: TLUL-based DMI request input port
@@ -9572,6 +9576,7 @@
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
       rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
+      rv_dm.next_dm_addr: rv_dm_next_dm_addr
       pwrmgr_aon.strap: pwrmgr_strap_en
       rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
       peri.tl_ast: ast_tl
@@ -19618,6 +19623,25 @@
         index: -1
       }
       {
+        name: next_dm_addr
+        desc:
+          '''
+          32bit word address of the next debug module.
+          Set to 0x0 if this is the last debug module in the chain.
+          '''
+        struct: next_dm_addr
+        package: rv_dm_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: rv_dm
+        external: true
+        top_signame: rv_dm_next_dm_addr
+        conn_type: false
+        index: -1
+      }
+      {
         name: dmi_tl_h2d
         desc: TLUL-based DMI request input port
         struct: tl_h2d
@@ -23994,6 +24018,18 @@
         conn_type: false
         index: -1
         netname: rv_dm_dmi_d2h
+      }
+      {
+        package: rv_dm_pkg
+        struct: next_dm_addr
+        signame: rv_dm_next_dm_addr_i
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: rv_dm_next_dm_addr
       }
       {
         package: ""

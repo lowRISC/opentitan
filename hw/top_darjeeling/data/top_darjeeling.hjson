@@ -1259,6 +1259,7 @@
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',
         'rv_dm.dmi_tl_d2h'                : 'rv_dm_dmi_d2h',
+        'rv_dm.next_dm_addr'              : 'rv_dm_next_dm_addr',
         'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
         'rv_dm.pinmux_hw_debug_en'        : 'rv_pinmux_hw_debug_en',
         'peri.tl_ast'                     : 'ast_tl',
