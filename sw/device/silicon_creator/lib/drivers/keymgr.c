@@ -117,6 +117,14 @@ void keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
   sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
+void keymgr_owner_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioOwnerMaxVerSet, 2);
+  // Write and lock (rw0c) the max key version.
+  sec_mmio_write32_shadowed(
+      kBase + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
+  sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
+}
+
 void keymgr_advance_state(void) {
   uint32_t reg =
       bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
