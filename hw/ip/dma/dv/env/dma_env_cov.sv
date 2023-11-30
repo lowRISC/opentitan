@@ -77,8 +77,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_handshake_intr: coverpoint dma_config.handshake_intr_en;
   // Abort via write to CONTROL
   cp_abort: coverpoint abort;
-  // Cross OP code, source_address_space_id, destination_space_id and DMA operating mode
-  cp_op_code_x_asid_x_mode: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode;
+  // Cross OP code, source_address_space_id, destination_space_id and handshake mode
+  cp_op_code_x_asid_x_handshake: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode;
   cp_transfer_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
   cp_transfer_width_x_dst_asid_x_dma_op: cross cp_transfer_width, cp_dst_asid, cp_opcode;
   cp_src_addr_x_src_asid_x_dma_op: cross cp_src_addr, cp_src_asid, cp_opcode;
