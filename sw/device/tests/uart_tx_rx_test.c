@@ -67,7 +67,7 @@ typedef enum uart_direction {
  * placed in .data section in the main SRAM. We cannot backdoor write anything
  * in SRAM at the start of the test because the CRT init code wipes it to 0s.
  */
-static volatile const uint8_t kUartIdx = 0x0;
+static volatile const uint8_t kUartIdx = UART_IDX;
 
 /**
  * Indicates if ext_clk is used and what speed.
