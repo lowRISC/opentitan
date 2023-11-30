@@ -305,7 +305,10 @@ module rv_dm
 `ifndef DMIDirectTAP
   tlul_pkg::tl_h2d_t dmi_tl_h2d_gated;
   tlul_pkg::tl_d2h_t dmi_tl_d2h_gated;
-  tlul_lc_gate u_tlul_lc_gate_dmi (
+  tlul_lc_gate #(
+    // If the DMI side is gated, the spec requires the DM to return a valid all-zero response.
+    .ReturnBlankResp(1)
+  ) u_tlul_lc_gate_dmi (
     .clk_i,
     .rst_ni,
     .tl_h2d_i      (dmi_tl_h2d_i),
