@@ -23,6 +23,10 @@ class rv_dm_common_vseq extends rv_dm_base_vseq;
   }
 
   virtual task body();
+    if (common_seq_type inside {"stress_all_with_rand_reset",
+                                 "csr_mem_rw_with_rand_reset"}) begin
+      skip_csr_outstanding = 1;
+    end
     run_common_vseq_wrapper(num_trans);
   endtask : body
 

@@ -35,6 +35,9 @@ class cip_base_vseq #(
   // knob to enable/disable running csr_vseq with tl_intg_err
   bit en_csr_vseq_w_tl_intg = 1;
 
+  // Skip outstanding csr check
+  bit skip_csr_outstanding = 0;
+
   // csr queues
   dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -714,7 +717,9 @@ class cip_base_vseq #(
               ongoing_reset = 1'b0;
             end
           join_any
-          `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
+          if (!skip_csr_outstanding) begin
+            `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
+          end
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
