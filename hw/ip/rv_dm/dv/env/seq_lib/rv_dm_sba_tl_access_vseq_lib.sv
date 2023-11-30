@@ -130,12 +130,18 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
           if (req.is_err == SbaErrOther) begin
             // TODO: Verify alert fired.
             // Reset the DUT to clear the intg error.
+            csr_utils_pkg::wait_no_outstanding_access();
             dut_init();
+            // dut_init launch another tl_device_squence.
+            // If this is the last loop, it creates race condition with
+            // sba_tl_device_seq_stop at the end of the loop.
+            // To avoid the race condition add 1 clock cycle delay.
+            cfg.clk_rst_vif.wait_clks(1);
           end
         end
       end
       sba_tl_device_seq_stop();
-    end
+    end // for (int i = 1; i <= num_times; i++)
   endtask : body
 
   // Randomizes legal, valid requests.
