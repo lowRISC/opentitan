@@ -327,9 +327,9 @@
                  // Format SW image names (which are Bazel labels concatenated with an index
                  // and/or flags, see below) into output file names separated by commas to feed into
                  // +sw_images plusarg. For example, if the input list of SW images is
-                 // ["//sw/device/tests:uart_tx_rx_test:1",
+                 // ["//sw/device/tests:uart0_tx_rx_test:1",
                  //  "//sw/device/lib/testing/test_rom:test_rom:0"], then the output of this eval_cmd
-                 // will be: "uart_tx_rx_test:1,test_rom:0".
+                 // will be: "uart0_tx_rx_test:1,test_rom:0".
                  '''+sw_images={eval_cmd} \
                  reformatted_sw_images=; \
                  for image in {sw_images}; do \
@@ -525,7 +525,7 @@
     {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
       reseed: 5
@@ -533,7 +533,7 @@
     {
       name: chip_sw_uart_tx_rx_idx1
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=1", "+calibrate_usb_clk=1"]
       reseed: 5
@@ -541,7 +541,7 @@
     {
       name: chip_sw_uart_tx_rx_idx2
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=2", "+calibrate_usb_clk=1"]
       reseed: 5
@@ -549,7 +549,7 @@
     {
       name: chip_sw_uart_tx_rx_idx3
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=3", "+calibrate_usb_clk=1"]
       reseed: 5
@@ -557,7 +557,7 @@
     {
       name: chip_sw_uart_tx_rx_bootstrap
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_spi_load_bootstrap=1", "+calibrate_usb_clk=1",
                  "+test_timeout_ns=80_000_000"]
@@ -633,7 +633,7 @@
     {
       name: chip_sw_uart_rand_baudrate
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1"]
       run_timeout_mins: 120
@@ -642,7 +642,7 @@
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000",
                  "+chip_clock_source=ChipClockSourceExternal96Mhz", "+calibrate_usb_clk=1"]
@@ -652,7 +652,7 @@
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
-      sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:uart0_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1",
                  "+chip_clock_source=ChipClockSourceExternal48Mhz"]
