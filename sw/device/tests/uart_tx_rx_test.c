@@ -66,6 +66,8 @@ typedef enum uart_direction {
  * The `const` is needed to put it in the .rodata section, otherwise it gets
  * placed in .data section in the main SRAM. We cannot backdoor write anything
  * in SRAM at the start of the test because the CRT init code wipes it to 0s.
+ * This constant remains unchanged for non-simulation environments (FPGAs and
+ * silicon) where this constant must be changed at compile-time to each UART.
  */
 static volatile const uint8_t kUartIdx = UART_IDX;
 
@@ -78,8 +80,11 @@ static volatile const bool kUseExtClk = false;
 static volatile const bool kUseLowSpeedSel = false;
 
 // A set of bytes to be send out of TX.
+//
+// The first byte must be FF so we can differentiate this blob from ASCII sent
+// by the ROM when it starts. FF is not UTF-8 / ASCII.
 static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
-    0xe8, 0x50, 0xc6, 0xb4, 0xbe, 0x16, 0xed, 0x55, 0x16, 0x1d, 0xe6, 0x1c,
+    0xff, 0x50, 0xc6, 0xb4, 0xbe, 0x16, 0xed, 0x55, 0x16, 0x1d, 0xe6, 0x1c,
     0xde, 0x9f, 0xfd, 0x24, 0x89, 0x81, 0x4d, 0x0d, 0x1a, 0x12, 0x4f, 0x57,
     0xea, 0xd6, 0x6f, 0xc0, 0x7d, 0x46, 0xe7, 0x37, 0x81, 0xd3, 0x8e, 0x16,
     0xad, 0x7b, 0xd0, 0xe2, 0x4f, 0xff, 0x39, 0xe6, 0x71, 0x3c, 0x82, 0x04,
@@ -463,8 +468,10 @@ static void execute_test(const dif_uart_t *uart) {
     // Wait for the next interrupt to arrive.
     // This check here is necessary as rx interrupts may sometimes occur ahead
     // of tx interrupts.  When this happens, the tx handling code above is not
-    // triggerd and as a result an unexpected tx_empty interrupt is fired later.
-    if (!uart_irq_rx_watermark_fired && !uart_irq_tx_watermark_fired) {
+    // triggered and as a result an unexpected tx_empty interrupt is fired
+    // later.
+    if (!uart_irq_rx_watermark_fired && !uart_irq_tx_watermark_fired &&
+        !uart_irq_rx_overflow_fired) {
       wait_for_interrupt();
     }
   }
@@ -494,7 +501,9 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
       clkmgr_testutils_enable_external_clock_blocking(clkmgr, kUseLowSpeedSel));
 }
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
+                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.test_may_clobber = false);
 
 bool test_main(void) {
   mmio_region_t base_addr;
@@ -509,9 +518,17 @@ bool test_main(void) {
 
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
+  uart_pinmux_platform_id_t platform_id = UartPinmuxPlatformIdCount;
+  if (kDeviceType == kDeviceFpgaCw310) {
+    platform_id = UartPinmuxPlatformIdHyper310;
+  } else if (kDeviceType == kDeviceSimDV) {
+    platform_id = UartPinmuxPlatformIdDvsim;
+  } else {
+    CHECK(false, "Unsupported platform %d", kDeviceType);
+  }
+
   // Attach the UART under test.
-  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx,
-                                               UartPinmuxPlatformIdDvsim));
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx, platform_id));
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);

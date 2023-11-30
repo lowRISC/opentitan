@@ -3544,8 +3544,18 @@ opentitan_binary(
         name = "uart{}_tx_rx_test".format(uart_idx),
         srcs = ["uart_tx_rx_test.c"],
         copts = ["-DUART_IDX={}".format(uart_idx)],
+        cw310 = new_cw310_params(
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+            test_cmd = " ".join([
+                "--bitstream=\"{bitstream}\"",
+                "--bootstrap=\"{firmware}\"",
+                "--firmware-elf=\"{firmware:elf}\"",
+            ]),
+            test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
+        ),
         exec_env = {
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
         deps = [
             "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
