@@ -21,3 +21,4 @@
 `include "rv_dm_ndmreset_req_vseq.sv"
 `include "rv_dm_jtag_dtm_idle_hint_vseq.sv"
 `include "rv_dm_jtag_dmi_dm_inactive_vseq.sv"
+`include "rv_dm_jtag_dmi_debug_disabled_vseq.sv"
