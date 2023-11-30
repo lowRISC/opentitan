@@ -145,10 +145,6 @@ class dma_generic_vseq extends dma_base_vseq;
         run_common_config(dma_config);
         start_device(dma_config);
 
-        // Notification that transaction is just starting; after the configuration has been decided
-        // and programmed into the DMA controller, but before the transfer has commenced.
-        starting_txn(j, num_txns, dma_config);
-
         // Set the Interrupt Enables appropriately for this transfer; DONE and ERROR - which
         // terminate the test - must be enabled if this transfer is to be interrupt-driven.
         // They may optionally be exercised when using polling. The MEMORY_BUFFER_LIMIT interrupt is
@@ -160,6 +156,10 @@ class dma_generic_vseq extends dma_base_vseq;
         end
         enable_interrupts( intr_enables, 1'b1);
         enable_interrupts(~intr_enables, 1'b0);
+
+        // Notification that transaction is just starting; after the configuration has been decided
+        // and programmed into the DMA controller, but before the transfer has commenced.
+        starting_txn(j, num_txns, dma_config);
 
         // Start the Initial chunk of the transfer.
         start_chunk(dma_config, 1'b1);
