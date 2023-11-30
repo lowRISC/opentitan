@@ -284,7 +284,7 @@
     ]
     covergroups: [
       {
-        name: dma_memory_cg
+        name: dma_config_cg
         desc: '''
                - Cover Source and destination address space ID
                - Cover source and destination address
