@@ -15,12 +15,12 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter logic [31:0]          NextDmAddr   = '0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
+  input  logic [31:0]         next_dm_addr_i, // static word address of the next debug module.
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
@@ -410,11 +410,11 @@ module rv_dm
     // However, we require that the DM can be placed at arbitrary offsets in the system, which
     // requires the generalized debug ROM implementation and two scratch registers. We hence set
     // this parameter to a non-zero value (inside dm_mem, this just feeds into a comparison with 0).
-    .DmBaseAddress  (1),
-    .NextDmAddr     (NextDmAddr)
+    .DmBaseAddress  (1)
   ) u_dm_top (
     .clk_i,
     .rst_ni,
+    .next_dm_addr_i,
     .testmode_i            (testmode              ),
     .ndmreset_o            (ndmreset_req          ),
     .dmactive_o,

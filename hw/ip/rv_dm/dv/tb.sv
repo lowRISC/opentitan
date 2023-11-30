@@ -51,6 +51,7 @@ module tb;
   rv_dm dut (
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
+    .next_dm_addr_i       ('0),
 
     // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
     // will be tested at the top-level. for the purposes of this TB we connect

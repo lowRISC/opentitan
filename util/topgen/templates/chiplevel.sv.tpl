@@ -1386,6 +1386,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // DMI into RV_DM
     .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),
     .rv_dm_dmi_d2h_o              ( rv_dm_dmi_d2h              ),
+    // Quasi-static word address for next_dm register value.
+    .rv_dm_next_dm_addr_i         ( '0                         ),
 
     // Pinmux strap
     .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),
@@ -1633,6 +1635,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // DMI into RV_DM
     .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),
     .rv_dm_dmi_d2h_o              ( rv_dm_dmi_d2h              ),
+    // Quasi-static word address for next_dm register value.
+    .rv_dm_next_dm_addr_i         ( '0                         ),
 
     // Pinmux strap
     .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),

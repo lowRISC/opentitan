@@ -37,16 +37,6 @@
       desc:    "Number of hardware threads in the system."
       local:   "true"
     },
-    { name:    "NextDmAddr",
-      type:    "logic [31:0]",
-      default: "'0",
-      desc:    '''
-               32bit word address of the next debug module.
-               Set to 0x0 if this is the last debug module in the chain.,
-               '''
-      local:   "false",
-      expose:  "true"
-    },
   ]
   interrupt_list: [
   ],
@@ -58,6 +48,18 @@
     }
   ],
   inter_signal_list: [
+    {
+      package: "rv_dm_pkg"
+      struct:  "next_dm_addr"
+      type:    "uni"
+      name:    "next_dm_addr"
+      act:     "rcv"
+      default: "'0"
+      desc:    '''
+               32bit word address of the next debug module.
+               Set to 0x0 if this is the last debug module in the chain.
+               '''
+    }
     {
       struct:  "tl_h2d"
       package: "tlul_pkg"
