@@ -6,7 +6,11 @@
 // to requests to no correct address space. Responses are always one cycle
 // after request with no stalling unless response is stuck on the way out.
 
-module tlul_err_resp (
+module tlul_err_resp #(
+  // By default, we return a proper bus error. In some cases, we need to return a blank all-zero
+  // response without setting the error bit, and for those cases ReturnBlankResp can be set to 1.
+  parameter bit ReturnBlankResp = 0
+) (
   input                     clk_i,
   input                     rst_ni,
   input  tlul_pkg::tl_h2d_t tl_h_i,
@@ -50,15 +54,19 @@ module tlul_err_resp (
 
   assign tl_h_o_int.a_ready  = ~err_rsp_pending;
   assign tl_h_o_int.d_valid  = err_rsp_pending;
-  assign tl_h_o_int.d_data   = (mubi4_test_true_strict(err_instr_type)) ? DataWhenInstrError :
-                                                                          DataWhenError;
+  if (ReturnBlankResp) begin : gen_zero_resp
+    assign tl_h_o_int.d_data = '0;
+  end else begin : gen_err_resp
+    assign tl_h_o_int.d_data   = (mubi4_test_true_strict(err_instr_type)) ? DataWhenInstrError :
+                                                                            DataWhenError;
+  end
   assign tl_h_o_int.d_source = err_source;
   assign tl_h_o_int.d_sink   = '0;
   assign tl_h_o_int.d_param  = '0;
   assign tl_h_o_int.d_size   = err_size;
   assign tl_h_o_int.d_opcode = (err_opcode == Get) ? AccessAckData : AccessAck;
   assign tl_h_o_int.d_user   = '0;
-  assign tl_h_o_int.d_error  = 1'b1;
+  assign tl_h_o_int.d_error  = ~ReturnBlankResp;
 
   // Waive unused bits of tl_h_i
   logic unused_tl_h;
