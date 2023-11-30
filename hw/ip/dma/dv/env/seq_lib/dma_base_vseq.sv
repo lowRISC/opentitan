@@ -23,6 +23,11 @@ class dma_base_vseq extends cip_base_vseq #(
   // Access to CONTROL register
   semaphore sem_control;
 
+  // Remember whether we have a pending Abort request?
+  // (we cannot rely upon the RAL layer to retain this information because the CONTROL.abort field
+  //  is Write Only to software)
+  bit abort_pending;
+
   function new (string name = "");
     super.new(name);
     dma_config = dma_seq_item::type_id::create("dma_config");
@@ -341,6 +346,8 @@ class dma_base_vseq extends cip_base_vseq #(
   // (common to both 'memory-to-memory' and 'hardware handshaking' modes of operation)
   task run_common_config(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
+    // Not yet requested an Abort during this transaction.
+    abort_pending = 1'b0;
     set_source_address(dma_config.src_addr);
     set_destination_address(dma_config.dst_addr);
     set_destination_address_range(dma_config.mem_buffer_almost_limit,
@@ -546,7 +553,14 @@ class dma_base_vseq extends cip_base_vseq #(
                 data_direction),
               UVM_HIGH)
 
+    // Exclusive access to CONTROL register
+    // Note: a parallel thread may be attempting to Abort transfers using the CONTROL register.
+    sem_control.get(1);
+
     // Configure all fields except GO bit which shall initially be clear
+    // Note: Importantly we must perform this whilst we have exclusive access and we must preserve
+    // the state of the 'abort' bit, so that we do not remove a requested Abort.
+
     data = get_csr_val_with_updated_field(ral.control.opcode, data, int'(opcode));
     data = get_csr_val_with_updated_field(ral.control.initial_transfer, data, initial_transfer);
     data = get_csr_val_with_updated_field(ral.control.hardware_handshake_enable, data, handshake);
@@ -555,16 +569,13 @@ class dma_base_vseq extends cip_base_vseq #(
     data = get_csr_val_with_updated_field(ral.control.fifo_auto_increment_enable, data,
                                           auto_inc_fifo);
     data = get_csr_val_with_updated_field(ral.control.data_direction, data, data_direction);
+    data = get_csr_val_with_updated_field(ral.control.abort, data, abort_pending);
     data = get_csr_val_with_updated_field(ral.control.go, data, 1'b0);
-
-    // Exclusive access to CONTROL register
-    // Note: a parallel thread may be attempting to Abort transfers using the CONTROL register.
-    sem_control.get(1);
 
     csr_wr(ral.control, data);
     // Set GO bit to start operation (chunk/transfer)?
     if (go) begin
-      data = get_csr_val_with_updated_field(ral.control.go, data, go);
+      data = get_csr_val_with_updated_field(ral.control.go, data, 1'b1);
       csr_wr(ral.control, data);
     end
 
@@ -606,6 +617,8 @@ class dma_base_vseq extends cip_base_vseq #(
     // Exclusive access to CONTROL register
     // Note: may be called by a thread that is parallel to the main vseq.
     sem_control.get(1);
+    // Remember that we have requested an abort, so that we do not clear it in `set_control.`
+    abort_pending = 1'b1;
 
     data = get_csr_val_with_updated_field(ral.control.abort, data, 1'b1);
     csr_wr(ral.control, data);
