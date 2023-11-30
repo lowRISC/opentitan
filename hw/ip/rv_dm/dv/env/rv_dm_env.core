@@ -43,6 +43,7 @@ filesets:
       - seq_lib/rv_dm_ndmreset_req_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_jtag_dtm_idle_hint_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_jtag_dmi_dm_inactive_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_jtag_dmi_debug_disabled_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
