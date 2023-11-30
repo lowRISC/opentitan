@@ -276,9 +276,8 @@
               originally written value.
             '''
       stage: V2
-      tests: [] // TODO(#15667)
+      tests: ["rv_dm_jtag_dmi_debug_disabled"]
     }
-
     {
       name: sba_debug_disabled
       desc: '''
