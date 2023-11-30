@@ -18,7 +18,11 @@ module tlul_lc_gate
   // Number of LC gating muxes in each direction.
   // It is recommended to set this parameter to 2, which results
   // in a total of 4 gating muxes.
-  parameter int NumGatesPerDirection = 2
+  parameter int NumGatesPerDirection = 2,
+  // By default we return a TL-UL bus error response if the bus is gated. However, in some special
+  // cases we need to be able to return valid, all-zero responses instead (e.g. for the RV_DM). In
+  // those cases, ReturnBlankResp can be set to 1.
+  parameter bit ReturnBlankResp = 0
 ) (
   input clk_i,
   input rst_ni,
@@ -245,7 +249,9 @@ module tlul_lc_gate
     end
   end
 
-  tlul_err_resp u_tlul_err_resp (
+  tlul_err_resp #(
+    .ReturnBlankResp(ReturnBlankResp)
+  ) u_tlul_err_resp (
     .clk_i,
     .rst_ni,
     .tl_h_i(tl_h2d_error),
