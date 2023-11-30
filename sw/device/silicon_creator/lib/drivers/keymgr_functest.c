@@ -64,8 +64,15 @@ enum {
 };
 
 /**
- * Software binding value associated with the ROM_EXT. Programmed by
- * ROM.
+ * Software binding value associated with the ROM. Programmed by the ROM.
+ */
+const keymgr_binding_value_t kBindingValueRom = {
+    .data = {0x7c9b2405, 0x1841a738, 0xdb24005d, 0x4dbd6a17, 0x362f1673,
+             0x1d8ede70, 0x0104d346, 0x1a0806c2},
+};
+
+/**
+ * Software binding value associated with the ROM_EXT. Programmed by ROM.
  */
 const keymgr_binding_value_t kBindingValueRomExt = {
     .data = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2, 0xb8a8379d,
@@ -87,11 +94,14 @@ const uint32_t kKmacPrefix[kKmacPrefixSize] = {
     0x4d4b2001, 0x00014341, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 };
 
+/** ROM key manager maximum version. */
+const uint32_t kMaxVerRom = 1;
+
 /** ROM_EXT key manager maximum version. */
-const uint32_t kMaxVerRomExt = 1;
+const uint32_t kMaxVerRomExt = 2;
 
 /** BL0 key manager maximum version. */
-const uint32_t kMaxVerBl0 = 2;
+const uint32_t kMaxVerBl0 = 3;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -147,29 +157,28 @@ rom_error_t keymgr_rom_test(void) {
           ->creator
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER) {
-    keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
-    keymgr_creator_max_ver_set(kMaxVerRomExt);
+    // Test ROM does not set the binding / max key registers, like the ROM does.
+    keymgr_sw_binding_set(&kBindingValueRom, &kBindingValueRom);
+    keymgr_creator_max_ver_set(kMaxVerRom);
     SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                              kKeymgrSecMmioCreatorMaxVerSet);
   }
   sec_mmio_check_values(/*rnd_offset=*/0);
-  sec_mmio_check_counters(/*expected_check_count=*/1);
-  return kErrorOk;
-}
 
-/** Key manager configuration steps performed in ROM_EXT. */
-rom_error_t keymgr_rom_ext_test(void) {
   const uint16_t kEntropyReseedInterval = 0x1234;
   keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
 
+  // Advance keymgr to Initialized state.
   keymgr_advance_state();
   ASSERT_OK(keymgr_state_check(kKeymgrStateInit));
   LOG_INFO("Keymgr State: Init");
 
+  // Advance keymgr to CreatorRootKey state.
   keymgr_advance_state();
   ASSERT_OK(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  LOG_INFO("Keymgr State: CreatorRootKey");
 
   // The software binding register lock is reset after advancing the key
   // manager, so we need to call this function to update sec_mmio expectation
@@ -177,16 +186,38 @@ rom_error_t keymgr_rom_ext_test(void) {
   keymgr_sw_binding_unlock_wait();
   sec_mmio_check_values(/*rnd_offset=*/0);
 
-  keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
-  keymgr_owner_int_max_ver_set(kMaxVerBl0);
+  // Advance keymgr to OwnerIntermediateKey state.
+  keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
+  keymgr_owner_int_max_ver_set(kMaxVerRomExt);
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                            kKeymgrSecMmioOwnerIntMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-
   keymgr_advance_state();
   ASSERT_OK(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  LOG_INFO("Keymgr State: OwnerIntermediateKey");
 
-  sec_mmio_check_counters(/*expected_check_count=*/5);
+  sec_mmio_check_counters(/*expected_check_count=*/4);
+  return kErrorOk;
+}
+
+/** Key manager configuration steps performed in ROM_EXT. */
+rom_error_t keymgr_rom_ext_test(void) {
+  // The software binding register lock is reset after advancing the key
+  // manager, so we need to call this function to update sec_mmio expectation
+  // table.
+  keymgr_sw_binding_unlock_wait();
+  sec_mmio_check_values(/*rnd_offset=*/0);
+
+  // Advance keymgr to OwnerKey state.
+  keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
+  keymgr_owner_max_ver_set(kMaxVerBl0);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                           kKeymgrSecMmioOwnerMaxVerSet);
+  sec_mmio_check_values(/*rnd_offset=*/0);
+  keymgr_advance_state();
+  ASSERT_OK(keymgr_state_check(kKeymgrStateOwnerKey));
+
+  sec_mmio_check_counters(/*expected_check_count=*/7);
   return kErrorOk;
 }
 
