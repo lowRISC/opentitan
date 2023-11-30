@@ -62,7 +62,7 @@ module mbx_sramrwarb
 
   // FIFO Counting logic for maximum outstanding requests
   logic [LCFG_MAX_REQS_LOG2-1:0] outstanding_req_count_d, outstanding_req_count_q;
-  logic inc_cnt, dec_cnt;
+  logic inc_cnt, dec_cnt, update_cnt;
 
   // Do we have knowledge of any outstanding requests, including one currently being accepted?
   // Note: a device may respond in the same cycle as accepting the request.
@@ -77,13 +77,15 @@ module mbx_sramrwarb
   assign dec_cnt = sram_valid & any_outstanding_reqs;
   assign outstanding_req_count_d = hostif_control_abort_clear_i ? '0 :
                                   (outstanding_req_count_q + inc_cnt - dec_cnt);
+  // Update the count of outstanding requests.
+  assign update_cnt = inc_cnt | dec_cnt | hostif_control_abort_clear_i;
 
   prim_generic_flop_en #(
     .Width(LCFG_MAX_REQS_LOG2)
   ) u_outstanding_req_cnt (
     .clk_i  ( clk_i                   ),
     .rst_ni ( rst_ni                  ),
-    .en_i   ( inc_cnt | dec_cnt       ),
+    .en_i   ( update_cnt              ),
     .d_i    ( outstanding_req_count_d ),
     .q_o    ( outstanding_req_count_q )
   );
