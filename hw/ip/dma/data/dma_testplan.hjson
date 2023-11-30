@@ -286,7 +286,6 @@
       {
         name: dma_memory_cg
         desc: '''
-               - Cover DMA operating mode
                - Cover Source and destination address space ID
                - Cover source and destination address
                - Cover DMA memory region base and size
