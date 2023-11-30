@@ -245,6 +245,7 @@ module tb_test_env #(
 
        .clk_i             ( clk_i             ),
        .rst_ni            ( rst_ni            ),
+       .next_dm_addr_i    ( '0                ),
        .testmode_i        ( 1'b0              ),
        .ndmreset_o        ( ndmreset          ),
        .dmactive_o        (                   ), // active debug session TODO
@@ -258,6 +259,7 @@ module tb_test_env #(
        .slave_be_i        ( dm_be             ),
        .slave_wdata_i     ( dm_wdata          ),
        .slave_rdata_o     ( dm_rdata          ),
+       .slave_err_o       (                   ),
 
        .master_req_o      ( sb_req            ),
        .master_add_o      ( sb_addr           ),

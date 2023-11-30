@@ -18,11 +18,11 @@
 module dm_csrs #(
   parameter int unsigned        NrHarts          = 1,
   parameter int unsigned        BusWidth         = 32,
-  parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}},
-  parameter logic [31:0]        NextDmAddr       = '0
+  parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}}
 ) (
   input  logic                              clk_i,           // Clock
   input  logic                              rst_ni,          // Asynchronous reset active low
+  input  logic [31:0]                       next_dm_addr_i,  // Static next_dm word address.
   input  logic                              testmode_i,
   input  logic                              dmi_rst_ni,      // sync. DTM reset,
                                                              // active-low
@@ -309,7 +309,7 @@ module dm_csrs #(
         dm::AbstractCS:   resp_queue_inp.data = abstractcs;
         dm::AbstractAuto: resp_queue_inp.data = abstractauto_q;
         dm::Command:      resp_queue_inp.data = '0;
-        dm::NextDM:       resp_queue_inp.data = NextDmAddr;
+        dm::NextDM:       resp_queue_inp.data = next_dm_addr_i;
         [(dm::ProgBuf0):ProgBufEnd]: begin
           resp_queue_inp.data = progbuf_q[dmi_req_i.addr[$clog2(dm::ProgBufSize)-1:0]];
           if (!cmdbusy_i) begin
