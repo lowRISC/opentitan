@@ -152,7 +152,7 @@
             - Read the target DMI register to verify the write did not succeed.
             '''
       stage: V2
-      tests: [] // TODO(#15670)
+      tests: ["rv_dm_jtag_dtm_hard_reset"]
     }
     {
       name: jtag_dtm_idle_hint
