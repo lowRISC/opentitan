@@ -94,6 +94,7 @@ enum {
   kKeymgrSecMmioSwBindingSet = 17,
   kKeymgrSecMmioCreatorMaxVerSet = 2,
   kKeymgrSecMmioOwnerIntMaxVerSet = 2,
+  kKeymgrSecMmioOwnerMaxVerSet = 2,
 };
 
 /**
@@ -133,10 +134,18 @@ void keymgr_creator_max_ver_set(uint32_t max_key_ver);
 /**
  * Sets the Silicon Owner Intermediate max key version.
  *
- * @param max_key_ver Maximum key version associated with the Silicon Onwer
+ * @param max_key_ver Maximum key version associated with the Silicon Owner
  * Intermediate key manager stage.
  */
 void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
+
+/**
+ * Sets the Silicon Owner max key version.
+ *
+ * @param max_key_ver Maximum key version associated with the Silicon Owner
+ * key manager stage.
+ */
+void keymgr_owner_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Sets the entropy reseed interval of the key manager.

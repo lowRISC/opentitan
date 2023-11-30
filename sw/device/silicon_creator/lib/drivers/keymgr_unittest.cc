@@ -147,6 +147,13 @@ TEST_F(KeymgrTest, SetOwnerIntMaxVerKey) {
   keymgr_owner_int_max_ver_set(cfg_.max_key_ver);
 }
 
+TEST_F(KeymgrTest, SetOwnerMaxVerKey) {
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, cfg_.max_key_ver);
+  EXPECT_SEC_WRITE32(base_ + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
+  keymgr_owner_max_ver_set(cfg_.max_key_ver);
+}
+
 TEST_F(KeymgrTest, AdvanceState) {
   EXPECT_ABS_WRITE32_SHADOWED(
       base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
