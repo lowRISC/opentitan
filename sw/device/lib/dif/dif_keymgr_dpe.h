@@ -210,6 +210,21 @@ static const bitfield_field32_t kErrorBitfield = (bitfield_field32_t){
 typedef uint8_t dif_keymgr_dpe_status_codes_t;
 
 /**
+ * Initializes the keymgr_pde block by performing an advance operation.
+ *
+ * The hardware does not have an explicit initialize command. Initialization is
+ * simple the first advance call without software binding, max version or
+ * policy registers set. Use this call before calling
+ * `dif_keymgr_dpe_advance_state()`.
+ *
+ * @param keymgr_dpe A key manager handle.
+ * @param slot_dst_sel Target slot used to latch the UDS key.
+ * @return The result of the operation.
+ */
+dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
+                                       uint32_t slot_dst_sel);
+
+/**
  * Advances a keymgr_dpe slot with given parameters.
  *
  * @param keymgr_dpe A key manager handle.
