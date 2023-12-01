@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/lib/sw/device/silicon_creator/attestation.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");
@@ -87,7 +88,7 @@ static rom_error_t load_attestation_keygen_seed(
                             (flash_ctrl_perms_t){
                                 .read = kMultiBitBool4True,
                                 .write = kMultiBitBool4False,
-                                .erase = kMultiBitBool4False,
+                                .erase = kMultiBitBool4True,
                             });
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageAttestationKeySeeds,
                           (flash_ctrl_cfg_t){
@@ -98,9 +99,25 @@ static rom_error_t load_attestation_keygen_seed(
 
   // Read seed from flash info page.
   uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedWords);
-  HARDENED_RETURN_IF_ERROR(
+  rom_error_t err =
       flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords, seed));
+                           seed_flash_offset, kAttestationSeedWords, seed);
+  if (err != kErrorOk) {
+    flash_ctrl_error_code_t flash_ctrl_err_code;
+    flash_ctrl_error_code_get(&flash_ctrl_err_code);
+    if (flash_ctrl_err_code.rd_err) {
+      // If we encountered a read error, this means the attestation seed page
+      // has not been provisioned yet. In this case, we erase the page and
+      // continue, which will simply result in generating an invalid identity.
+      dbg_printf(
+          "Warning: Attestation key seed flash info page not provisioned. "
+          "Erasing page to format.\r\n");
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
+          &kFlashCtrlInfoPageAttestationKeySeeds, kFlashCtrlEraseTypePage));
+      return kErrorOk;
+    }
+    return err;
+  }
 
   return kErrorOk;
 }
