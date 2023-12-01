@@ -304,6 +304,29 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
       bitfield_bit32_read(fc_status, FLASH_CTRL_STATUS_INIT_WIP_BIT);
 }
 
+void flash_ctrl_error_code_get(flash_ctrl_error_code_t *error_code) {
+  // Read flash error code.
+  uint32_t code = abs_mmio_read32(kBase + FLASH_CTRL_ERR_CODE_REG_OFFSET);
+
+  // Extract flash controller error code bits.
+  error_code->macro_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_MACRO_ERR_BIT);
+  error_code->update_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT);
+  error_code->prog_type_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT);
+  error_code->prog_win_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT);
+  error_code->prog_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_PROG_ERR_BIT);
+  error_code->rd_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_RD_ERR_BIT);
+  error_code->mp_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_MP_ERR_BIT);
+  error_code->op_err =
+      bitfield_bit32_read(code, FLASH_CTRL_ERR_CODE_OP_ERR_BIT);
+}
+
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
                                  void *data) {
   transaction_start((transaction_params_t){
