@@ -37,6 +37,7 @@ cc_library(
     srcs = ["sram_start.S"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":ast_program",
         ":sram_start_headers",
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
@@ -276,5 +277,45 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+cc_library(
+    name = "ast_program",
+    srcs = ["ast_program.c"],
+    deps = [
+        ":flash_info_fields",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+    ],
+)
+
+opentitan_test(
+    name = "ast_program_functest",
+    srcs = [
+        "ast_program.c",
+        "ast_program_functest.c",
+    ],
+    defines = [
+        "AST_PROGRAM_UNITTEST=1",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    deps = [
+        ":flash_info_fields",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:crc32",
     ],
 )
