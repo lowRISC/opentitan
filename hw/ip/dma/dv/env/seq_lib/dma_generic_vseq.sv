@@ -182,9 +182,9 @@ class dma_generic_vseq extends dma_base_vseq;
               bit [31:0] num_written = get_bytes_written(dma_config);
               `uvm_info(`gfn,
                         $sformatf("STATUS.done bit set after 0x%0x bytes of 0x%0x-byte transfer",
-                        num_written, dma_config.total_transfer_size), UVM_MEDIUM)
+                        num_written, dma_config.total_data_size), UVM_MEDIUM)
               // Has the entire transfer been completed yet?
-              if (num_written >= dma_config.total_transfer_size) begin
+              if (num_written >= dma_config.total_data_size) begin
                 stop = 1'b1;
               end else if (!dma_config.handshake) begin
                 // Model the FirmWare running on the OT side, responding to the Done interrupt and
@@ -199,7 +199,7 @@ class dma_generic_vseq extends dma_base_vseq;
               end else begin
                 `uvm_fatal(`gfn,
                       $sformatf("STATUS.done bit set prematurely (0x%x byte(s) of 0x%x transferred",
-                      num_written, dma_config.total_transfer_size))
+                      num_written, dma_config.total_data_size))
               end
             end
           end
@@ -209,7 +209,7 @@ class dma_generic_vseq extends dma_base_vseq;
             // 'bytes read' and 'bytes written' counters to supply input and check output at the
             // appropriate times.
             while (dma_config.handshake && !stop &&
-                   num_bytes_supplied < dma_config.total_transfer_size) begin
+                   num_bytes_supplied < dma_config.total_data_size) begin
               if (num_bytes_supplied <= get_bytes_read(dma_config)) begin
                 // All supplied input data has been read; provide the next complete chunk of data
                 // in zero simulation time.
@@ -222,7 +222,7 @@ class dma_generic_vseq extends dma_base_vseq;
           end
           // Waggle the interrupt lines up and down at random times to keep the data moving
           begin
-            uint bytes_to_move = dma_config.total_transfer_size;
+            uint bytes_to_move = dma_config.total_data_size;
             while (dma_config.handshake && !stop) begin
               uint num_bytes_per_txn;
               uint bytes_moved;
