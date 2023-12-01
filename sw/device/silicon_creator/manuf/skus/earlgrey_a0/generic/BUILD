@@ -72,6 +72,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -103,17 +104,17 @@ opentitan_binary(
     ],
 )
 
+_CP_PROVISIONING_CMD_ARGS = """
+  --elf={sram_cp_provision}
+""" + CP_PROVISIONING_INPUTS
+
 opentitan_test(
     name = "cp_provision",
     cw310 = cw310_jtag_params(
-        binaries = {
-            ":sram_cp_provision": "sram_cp_provision",
-        },
+        binaries = {":sram_cp_provision": "sram_cp_provision"},
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
-        test_cmd = """
-            --elf={sram_cp_provision}
-        """ + CP_PROVISIONING_INPUTS,
+        test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
     exec_env = {
@@ -121,13 +122,9 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     silicon = silicon_jtag_params(
-        binaries = {
-            ":sram_cp_provision": "sram_cp_provision",
-        },
+        binaries = {":sram_cp_provision": "sram_cp_provision"},
         interface = "hyper310",
-        test_cmd = """
-            --elf={sram_cp_provision}
-        """,
+        test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
 )
@@ -158,6 +155,7 @@ opentitan_binary(
     srcs = ["sram_ft_individualize.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -192,6 +190,7 @@ opentitan_binary(
     srcs = ["ft_personalize_1.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rsa_key = rsa_key_for_lc_state(
@@ -216,6 +215,7 @@ opentitan_binary(
     srcs = ["ft_personalize_2.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rsa_key = rsa_key_for_lc_state(
@@ -246,6 +246,7 @@ opentitan_binary(
     srcs = ["ft_personalize_3.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rsa_key = rsa_key_for_lc_state(
@@ -270,34 +271,46 @@ opentitan_binary(
     ],
 )
 
+_FT_PROVISIONING_BINARIES = {
+    ":sram_ft_individualize": "sram_ft_individualize",
+    ":ft_personalize_1": "ft_personalize_1",
+    ":ft_personalize_2": "ft_personalize_2",
+    ":ft_personalize_3": "ft_personalize_3",
+}
+
+_FT_PROVISIONING_CMD_ARGS = """
+  --elf={sram_ft_individualize}
+  --bootstrap={ft_personalize_1}
+  --second-bootstrap={ft_personalize_2}
+  --third-bootstrap={ft_personalize_3}
+""" + FT_PROVISIONING_INPUTS
+
 opentitan_test(
     name = "ft_provision",
     cw310 = cw310_jtag_params(
-        binaries = {
-            ":sram_ft_individualize": "sram_ft_individualize",
-            ":ft_personalize_1": "ft_personalize_1",
-            ":ft_personalize_2": "ft_personalize_2",
-            ":ft_personalize_3": "ft_personalize_3",
-        },
+        binaries = _FT_PROVISIONING_BINARIES,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
         tags = [
             "lc_test_locked0",
             "manuf",
         ],
-        test_cmd = """
-            --elf={sram_ft_individualize}
-            --bootstrap={ft_personalize_1}
-            --second-bootstrap={ft_personalize_2}
-            --third-bootstrap={ft_personalize_3}
-        """ + FT_PROVISIONING_INPUTS,
+        test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     rsa_key = rsa_key_for_lc_state(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.PROD,
+    ),
+    silicon = silicon_jtag_params(
+        binaries = _FT_PROVISIONING_BINARIES,
+        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        interface = "hyper310",
+        test_cmd = _FT_PROVISIONING_CMD_ARGS,
+        test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
 )
