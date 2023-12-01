@@ -145,7 +145,7 @@
     {
       name: jtag_dtm_hard_reset
       desc: '''
-            Verify that the debugger can camcel an on-going DMI transaction with a hard reset.
+            Verify that the debugger can cancel an on-going DMI transaction with a hard reset.
 
             - Perform a random legal DMI write to a chosen DMI register and immediately write to
               dtmcs[dmihardreset] bit.
