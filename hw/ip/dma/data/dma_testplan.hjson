@@ -286,50 +286,73 @@
       {
         name: dma_config_cg
         desc: '''
-               - Cover Source and destination address space ID
-               - Cover source and destination address
-               - Cover DMA memory region base and size
-               - Cover DMA memory region threshold and limit
-               - Cover DMA memory region lock
-               - Cover total transfer width
-               - Cover transaction size
-               - Cover values of each field in DMA Control register
-                * OP code
-                * Hardware_handshake_mode
-                * Memory_buffer_auto_increment_enable
-                * Fifo_auto_increment_enable
-                * Data_direction
-                * Abort
-                * Interrupt Enable
-                * Go
-              - Cover values of each field in DMA Status register
-                * Busy
-                * Done
-                * Aborted
-                * Error
-                * Error code
-              - Cross OP code, source_Address_space_id, destination_space_id and DMA operating mode
-              - Cross transfer_size, source_address_space_id and DMA operating mode
-              - Cross transfer_size, destination_address_space_id and DMA operating mode
-              - Cross source_address, source_address_space_id and DMA operating mode
-              - Cross destination_address, destination_address_space_id and DMA operating mode
-              - Cross DMA memory base, DMA memory limit and DMA operating mode
-              - Cross DMA memory region lock, Write to DMA memory region base or limit and DMA operating mode
-              - Cross source_address_space_id, TL error on source interface and DMA operating mode
-              - Cross destination_address_space_id, TL error on destination interface and DMA operating mode
+               - Cover the following configuration registers when starting a transfer (i.e., when writing the `go` bit of the `CONTROL` register):
+                 * Source and destination address
+                 * Source and destination address space ID (ASID)
+                 * DMA-enabled memory range base and limit
+                 * Total data size
+                 * Chunk data size
+                 * Transfer width
+                 * Destination address limit
+                 * Destination address almost limit
+                 * Control register fields:
+                   + opcode
+                   + hardware handshake enable
+                   + memory buffer auto increment enable
+                   + FIFO auto increment enable
+                   + data direction
+                   + initial transfer
+                   + *exclude the `go` bit because it's used to sample this CG*
+                   + *exclude the `abort` bit because when aborting the internal state of the DMA is much more relevant than the values in the configuration registers*
+               - Cross coverage:
+                 * source address and source ASID
+                 * destination address and destination ASID
+                 * opcode, source and destination ASIDs, hardware handshake enable, and data direction
+                 * opcode, chunk data size, source and destination ASIDs, and data direction
+                 * opcode, total data size, transfer width, and data direction
+                 * opcode, hardware handshake enable, chunk data size, transfer width, and data direction
+                 * opcode, hardware handshake enable, memory buffer auto increment enable, FIFO auto increment enable, and data direction
+                 * opcode, hardware handshake enable, data direction, and initial transfer
+                 * source and destination address, DMA-enabled memory range base and limit, and data direction
+                 * source and destination address alignment, total data size alignment, and transfer width
+                 * memory buffer auto increment enable, data direction, and the results of (destination address + total data size) compared to {destination address limit, destination address almost limit}
+               '''
+      }
+      {
+        name: dma_tlul_error_cg
+        desc: '''
+              Cover TL-UL error responses differentiated between TL-UL ports and cross them with the following configuration values:
+              - source and destination ASID and data direction
               '''
       }
       {
-        name: dma_handshake_cg
+        name: dma_status_cg
         desc: '''
-              Cover the following crosses only in 'hardware handshake' mode
-              - Cross Destination address, memory buffer limit (if memory_buffer_auto_increment is set)
-              - Cross Destination address, memory buffer threshold (if memory_buffer_auto_increment is set)
-              - Cross fifo_address_auto_increment_enable and source_address_space_id
-              - Cross memory_buffer_auto_increment and destination_address_space_id
-              - Cross data_direction, source_address_space_id and destination_address_space_id
-              - Cross data_direction, source_address_space_id and fifo_address_auto_increment_enable
-              - Cross data_direction, destination_address_space_id and memory_buffer_auto_increment_enable
+              Cover all fields of the status register.
+              '''
+      }
+      {
+        name: dma_error_code_cg
+        desc: '''
+              Cover all fields of the error code register.
+              '''
+      }
+      {
+        name: dma_interrupt_cg
+        desc: '''
+              - Cover the following configuration registers when starting a transfer (i.e., when writing the `go` bit of the `CONTROL` register):
+                * handshake interrupt enable
+                * interrupt source clearing enablement
+                * interrupt source clearing bus selection
+                * interrupt source clearing destination address alignment
+                * interrupt source clearing write values; required bins:
+                  + all zeros
+                  + all ones
+                  + each of the one-hot values
+              - Cross coverage:
+                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing bus selection
+                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing destination addresses
+                * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing write values
               '''
       }
     ]
