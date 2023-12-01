@@ -186,6 +186,33 @@ cc_library(
 )
 
 cc_library(
+    name = "keymgr_dpe_testutils",
+    srcs = ["//sw/ip/keymgr_dpe/test/utils:keymgr_dpe_testutils.c"],
+    hdrs = ["//sw/ip/keymgr_dpe/test/utils:keymgr_dpe_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":flash_ctrl_testutils",
+        ":kmac_testutils",
+        ":otp_ctrl_testutils",
+        ":rstmgr_testutils",
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_regs",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/lib/sw/device/base:mmio",
+        "//sw/lib/sw/device/runtime:ibex",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:keymgr_dpe",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/drivers:keymgr_dpe",
+        "//sw/top_darjeeling/sw/drivers:kmac",
+        "//sw/top_darjeeling/sw/drivers:otp_ctrl",
+        "//sw/top_darjeeling/sw/drivers:rstmgr",
+    ],
+)
+
+cc_library(
     name = "keymgr_testutils",
     srcs = ["//sw/ip/keymgr/test/utils:keymgr_testutils.c"],
     hdrs = ["//sw/ip/keymgr/test/utils:keymgr_testutils.h"],

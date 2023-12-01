@@ -72,7 +72,7 @@ status_t keymgr_dpe_testutils_flash_init(
 }
 
 status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
-  dif_flash_ctrl_state_t flash;
+  //dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
@@ -81,14 +81,17 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
 
   // POR reset.
   if (info == kDifRstmgrResetInfoPor) {
+    //skipping flash init for integrated_dev keymgr_dpe
+    /*
     LOG_INFO("Powered up for the first time, program flash");
-
     TRY(dif_flash_ctrl_init_state(
         &flash, mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
 
+    LOG_INFO("Powered up for the first time, program flash 2");
     TRY(keymgr_dpe_testutils_flash_init(&flash, &kCreatorSecret,
                                         &kOwnerSecret));
-
+    */
+    LOG_INFO("Powered up for the first time, lock partition");
     // Lock otp secret partition.
     dif_otp_ctrl_t otp;
     TRY(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
@@ -96,6 +99,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
                                           0));
 
+    LOG_INFO("Powered up for the first time, reboot device and wait till reset");
     // Reboot device.
     rstmgr_testutils_reason_clear();
     TRY(dif_rstmgr_software_device_reset(&rstmgr));

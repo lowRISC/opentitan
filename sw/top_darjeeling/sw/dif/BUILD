@@ -330,6 +330,7 @@ cc_library(
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/runtime:log",
     ],
 )
 

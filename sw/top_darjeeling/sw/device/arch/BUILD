@@ -14,6 +14,7 @@ cc_library(
         "//sw/top_darjeeling/sw/drivers:entropy_src",
         "//sw/top_darjeeling/sw/drivers:flash_ctrl",
         "//sw/top_darjeeling/sw/drivers:keymgr",
+        "//sw/top_darjeeling/sw/drivers:keymgr_dpe",
         "//sw/top_darjeeling/sw/drivers:kmac",
         "//sw/top_darjeeling/sw/drivers:lc_ctrl",
         "//sw/top_darjeeling/sw/drivers:otp_ctrl",

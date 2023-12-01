@@ -141,6 +141,15 @@ cc_library(
 #)
 
 cc_library(
+    name = "keymgr_dpe",
+    hdrs = ["//sw/ip/keymgr_dpe/driver:keymgr_dpe.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
+cc_library(
     name = "keymgr",
     hdrs = ["//sw/ip/keymgr/driver:keymgr.h"],
     target_compatible_with = [OPENTITAN_CPU],
