@@ -26,7 +26,7 @@ class dma_handshake_smoke_vseq extends dma_handshake_vseq;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
       src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
-      total_transfer_size % 4 == 0; // Limit to multiples of 4B
+      total_data_size % 4 == 0; // Limit to multiples of 4B
       per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
       handshake == 1'b1; // Enable hardware handshake mode
       handshake_intr_en != 0; // At least one handshake interrupt signal must be enabled
