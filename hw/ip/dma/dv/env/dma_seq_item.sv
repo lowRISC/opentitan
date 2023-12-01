@@ -22,7 +22,7 @@
 // - mem_range_limit
 // Finally the addresses of data to be transferred, if the configuration must be valid
 // - chunk_data_size
-// - total_transfer_size
+// - total_data_size
 // decided before source buffer, to assist in meeting memory range requirement:
 // - src_addr
 // decided before destination buffer, to assist in preventing overlap with source:
@@ -43,7 +43,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit        mem_range_valid;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
-  rand bit [31:0] total_transfer_size;
+  rand bit [31:0] total_data_size;
   rand bit [31:0] chunk_data_size;
   rand mubi4_t mem_range_lock;
   rand opcode_e opcode;
@@ -91,7 +91,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(mem_range_base, UVM_DEFAULT)
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
     `uvm_field_enum(mubi4_t, mem_range_lock, UVM_DEFAULT)
-    `uvm_field_int(total_transfer_size, UVM_DEFAULT)
+    `uvm_field_int(total_data_size, UVM_DEFAULT)
     `uvm_field_int(chunk_data_size, UVM_DEFAULT)
     `uvm_field_enum(dma_transfer_width_e, per_transfer_width, UVM_DEFAULT)
     `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
@@ -161,7 +161,7 @@ class dma_seq_item extends uvm_sequence_item;
         // If auto increment is not used on the memory end of the operation then successive chunks
         // overlap each other, but in other cases the entire transfer must fit within the window
         if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
-          mem_range_limit - src_addr >= total_transfer_size;
+          mem_range_limit - src_addr >= total_data_size;
         }
       }
       // For valid configurations, Address must be aligned to transfer width
@@ -188,16 +188,16 @@ class dma_seq_item extends uvm_sequence_item;
         // If auto increment is not used on the memory end of the operation, then successive chunks
         // overlap each other, but in other cases the entire transfer must fit within the window
         if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
-          mem_range_limit - dst_addr >= total_transfer_size;
+          mem_range_limit - dst_addr >= total_data_size;
         }
         if (src_asid == OtInternalAddr) {
           // Avoid overlap between source and destination buffers, also leaving a slight gap so
           // that any out-of-bounds access does not hit a contiguous buffer
           //
-          // `total_transfer_size` here is often larger than the valid addressable range in
+          // `total_data_size` here is often larger than the valid addressable range in
           // handshake mode, but keeps things simpler
-          (dst_addr > src_addr + total_transfer_size + 'h10) ||
-          (src_addr > dst_addr + total_transfer_size + 'h10);
+          (dst_addr > src_addr + total_data_size + 'h10) ||
+          (src_addr > dst_addr + total_data_size + 'h10);
         }
       }
       // For valid configurations, Address must be aligned to transfer width but must further have
@@ -207,13 +207,13 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  constraint total_transfer_size_c {
-    solve mem_range_limit before total_transfer_size;
+  constraint total_data_size_c {
+    solve mem_range_limit before total_data_size;
     if (valid_dma_config) {
-      total_transfer_size <= mem_range_limit - mem_range_base;
+      total_data_size <= mem_range_limit - mem_range_base;
     }
     // Add a soft constraint on the total transfer size to limit the test run time
-    soft total_transfer_size inside {[1:1024]};
+    soft total_data_size inside {[1:1024]};
   }
 
   constraint chunk_data_size_c {
@@ -237,7 +237,7 @@ class dma_seq_item extends uvm_sequence_item;
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
     }
 
-    if (chunk_data_size < total_transfer_size) {
+    if (chunk_data_size < total_data_size) {
       // SHA2 can accept a partial 32-bit word only at the very end of the message being hashed,
       // so non-final transfers must have a size of 4n. Since 4B/txn mode demands 4n alignment
       // already, constraining the chunk size is enough to guarantee 4n alignment of the chunk end.
@@ -250,7 +250,7 @@ class dma_seq_item extends uvm_sequence_item;
 
     // Chunk size must be a multiple of the bytes/transaction
     // TODO: perhaps only for 'valid_dma_config' if at some point the DMAC enforces this
-    if (chunk_data_size < total_transfer_size) {
+    if (chunk_data_size < total_data_size) {
       per_transfer_width == DmaXfer4BperTxn -> chunk_data_size[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
     }
@@ -359,8 +359,8 @@ class dma_seq_item extends uvm_sequence_item;
         // memory space, to avoid further complicating the code
         //
         // Check against the memory buffers, again leaving a small gap to reduce confusion
-        if ((cand + gap < src_addr || cand > src_addr + total_transfer_size + gap) &&
-            (cand + gap < dst_addr || cand > dst_addr + total_transfer_size + gap)) begin
+        if ((cand + gap < src_addr || cand > src_addr + total_data_size + gap) &&
+            (cand + gap < dst_addr || cand > dst_addr + total_data_size + gap)) begin
           uint j = i;
           // Check against all of the addresses so far decided
           while (j > 0 && int_src_addr[j] != cand) begin
@@ -413,7 +413,7 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\topcode                  : %0d",    opcode),
         $sformatf("\n\tper_transfer_width      : %0d",    per_transfer_width),
         $sformatf("\n\tchunk_data_size         : 0x%x",   chunk_data_size),
-        $sformatf("\n\ttotal_transfer_size     : 0x%x",   total_transfer_size)
+        $sformatf("\n\ttotal_data_size         : 0x%x",   total_data_size)
     };
 
     // Verdict on whether this is a valid DMA configuration, eg. post-randomization
@@ -498,7 +498,7 @@ class dma_seq_item extends uvm_sequence_item;
     end
 
     // Ascertain the size of the in-memory buffer
-    memory_range = total_transfer_size;
+    memory_range = total_data_size;
     if (handshake && !auto_inc_buffer) begin
       memory_range = chunk_data_size;  // All chunks overlap each other
     end
@@ -574,7 +574,7 @@ class dma_seq_item extends uvm_sequence_item;
     // Multi-chunk transfers will fault the transfer at the point of starting non-initial chunks
     // if the `chunk_data_size` values does not ensure that they do not have appropriately-aligned
     // addresses, so we expect an error at some point even if not immediately.
-    if (chunk_data_size < total_transfer_size && (!handshake || auto_inc_buffer)) begin
+    if (chunk_data_size < total_data_size && (!handshake || auto_inc_buffer)) begin
       if (|(chunk_data_size & align_mask)) begin
         `uvm_info(`gfn,
                   " - Chunk data does not meet alignment requirements for multi-chunk transfers",
@@ -632,7 +632,7 @@ class dma_seq_item extends uvm_sequence_item;
     direction = DmaRcvData;
     mem_range_base = 0;
     mem_range_limit = 0;
-    total_transfer_size = 0;
+    total_data_size = 0;
     per_transfer_width = DmaXfer1BperTxn;
     auto_inc_buffer = 0;
     auto_inc_fifo = 0;
@@ -652,7 +652,7 @@ class dma_seq_item extends uvm_sequence_item;
     direction.rand_mode(0);
     mem_range_base.rand_mode(0);
     mem_range_limit.rand_mode(0);
-    total_transfer_size.rand_mode(0);
+    total_data_size.rand_mode(0);
     per_transfer_width.rand_mode(0);
     auto_inc_buffer.rand_mode(0);
     auto_inc_fifo.rand_mode(0);
@@ -682,8 +682,8 @@ class dma_seq_item extends uvm_sequence_item;
 
   // Simply utility function that returns the actual size of a chunk starting at the given offset
   function bit [31:0] chunk_size(bit [31:0] offset);
-    if (offset < total_transfer_size) begin
-      bit [31:0] bytes_left = total_transfer_size - offset;
+    if (offset < total_data_size) begin
+      bit [31:0] bytes_left = total_data_size - offset;
       return (chunk_data_size < bytes_left) ? chunk_data_size : bytes_left;
     end else begin
       return 32'b0;
