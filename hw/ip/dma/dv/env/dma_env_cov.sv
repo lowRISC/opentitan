@@ -2,133 +2,221 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// DMA Configuration Coverage
+`ifdef DMA_ENV_COV_32B_ADDR_BINS
+  `dv_fatal("Did not expect DMA_ENV_COV_32B_ADDR_BINS to be defined already!")
+`else
+  `define DMA_ENV_COV_32B_ADDR_BINS \
+    bins zero = {'0}; \
+    bins less_than_4_KiB = {[1:4095]}; \
+    bins between_4_and_64_KiB = {[4096:64*1024-1]}; \
+    bins between_64_KiB_and_1_GiB = {[64*1024:'h3fff_ffff]}; \
+    bins between_1_and_4_GiB = {['h4000_0000:'hffff_ffff]};
+`endif
+
+`ifdef DMA_ENV_COV_64B_ADDR_BINS
+  `dv_fatal("Did not expect DMA_ENV_COV_64B_ADDR_BINS to be defined already!")
+`else
+  `define DMA_ENV_COV_64B_ADDR_BINS \
+    `DMA_ENV_COV_32B_ADDR_BINS \
+    bins above_4_GiB = {['h1_0000_0000:$]};
+`endif
+
+`ifdef DMA_ENV_COV_SIZE_BINS \
+  `dv_fatal("Did not expect DMA_ENV_COV_SIZE_BINS to be defined already!")
+`else
+  `define DMA_ENV_COV_SIZE_BINS \
+    bins one_byte = {1}; \
+    bins two_byte = {2}; \
+    bins three_byte = {3}; \
+    bins four_byte = {4}; \
+    bins between_5_and_15_byte = {[5:15]}; \
+    bins between_16_and_127_byte = {[16:127]}; \
+    bins between_128_and_1023_byte = {[128:1023]}; \
+    bins kibi_byte = {[1024:1024*1024-1]}; \
+    bins mebi_byte = {[1024*1024:1024*1024*1024-1]}; \
+    bins gibi_byte = {[1024*1024*1024:$]};
+`endif
+
+`ifdef DMA_ENV_COV_INTERRUPT_BINS
+  `dv_fatal("Did not expect DMA_ENV_COV_INTERRUPT_BINS to be defined already!")
+`else
+  `define DMA_ENV_COV_INTERRUPT_BINS \
+    bins none_enabled = {0}; \
+    bins one_enabled[] = {[0:$]} with ($onehot(item)); \
+    bins two_enabled[] = {[0:$]} with ($countones(item) == 2); \
+    bins all_enabled = {'1};
+`endif
+
 covergroup dma_config_cg with function sample(dma_seq_item dma_config,
-                                              bit abort,
-                                              bit write_to_dma_mem_register,
-                                              bit tl_src_err,
-                                              bit tl_dst_err);
+                                              bit initial_transfer);
   option.per_instance = 1;
   option.name = "dma_config_cg";
-  option.auto_bin_max = 8;
-  // Source start address coverpoint
-  cp_src_addr: coverpoint dma_config.src_addr;
-  // Destination start address coverpoint
-  cp_dst_addr: coverpoint dma_config.dst_addr;
-  // Source address space ID
-  cp_src_asid: coverpoint dma_config.src_asid;
-  // Destination address space ID
-  cp_dst_asid: coverpoint dma_config.dst_asid;
-  // Total transfer size for operation
-  cp_total_data_size: coverpoint dma_config.total_data_size {
-    bins one_byte = {1};
-    bins two_byte = {2};
-    bins three_byte = {3};
-    bins four_byte = {4};
-    bins between_5_and_15_byte = {[5:15]};
-    bins between_16_and_127_byte = {[16:127]};
-    bins between_128_and_1023_byte = {[128:1023]};
-    bins kibi_byte = {[1024:1024*1024-1]};
-    bins mebi_byte = {[1024*1024:1024*1024*1024-1]};
-    bins gibi_byte = {[1024*1024*1024:$]};
+
+  cp_src_addr: coverpoint dma_config.src_addr {
+    `DMA_ENV_COV_64B_ADDR_BINS
   }
-  // Width of each transfer
+
+  cp_src_addr_alignment: coverpoint shortint'(dma_config.src_addr % 8) {
+    bins offset[] = {[0:7]};
+  }
+
+  cp_dst_addr: coverpoint dma_config.dst_addr {
+    `DMA_ENV_COV_64B_ADDR_BINS
+  }
+
+  cp_dst_addr_alignment: coverpoint shortint'(dma_config.dst_addr % 8) {
+    bins offset[] = {[0:7]};
+  }
+
+  cp_src_asid: coverpoint dma_config.src_asid;
+
+  cp_dst_asid: coverpoint dma_config.dst_asid;
+
+  cp_total_data_size: coverpoint dma_config.total_data_size {
+    `DMA_ENV_COV_SIZE_BINS
+  }
+
+  cp_total_data_size_alignment: coverpoint shortint'(dma_config.total_data_size % 8) {
+    bins offset[] = {[0:7]};
+  }
+
+  cp_chunk_data_size: coverpoint dma_config.chunk_data_size {
+    `DMA_ENV_COV_SIZE_BINS
+  }
+
   cp_transfer_width: coverpoint dma_config.per_transfer_width;
-  // Cross of transfer width and total transfer size
-  cp_transfer_width_x_transfer_size: cross cp_transfer_width, cp_total_data_size;
-  // Opcode
+
   cp_opcode: coverpoint dma_config.opcode;
-  // DMA enabled memory range base coverpoint
-  cp_dma_mem_base: coverpoint dma_config.mem_range_base;
-  // DMA enabled memory range limit coverpoint
-  cp_dma_mem_range_limit: coverpoint dma_config.mem_range_limit;
-  // Destination address limit coverpoint
-  cp_dst_addr_limit: coverpoint dma_config.dst_addr_limit;
-  // Destination address almost limit coverpoint
-  cp_dst_addr_almost_limit: coverpoint dma_config.dst_addr_almost_limit;
-  // handshake mode enable
-  cp_handshake_mode: coverpoint dma_config.handshake;
-  // data direction
-  cp_data_direction: coverpoint dma_config.direction{
+
+  cp_mem_range_base: coverpoint dma_config.mem_range_base {
+    `DMA_ENV_COV_32B_ADDR_BINS
+  }
+
+  cp_mem_range_limit: coverpoint dma_config.mem_range_limit {
+    `DMA_ENV_COV_32B_ADDR_BINS
+  }
+
+  cp_dst_addr_limit: coverpoint dma_config.dst_addr_limit {
+    `DMA_ENV_COV_64B_ADDR_BINS
+  }
+
+  cp_dst_addr_limit_exceeded: coverpoint (
+      dma_config.dst_addr + dma_config.total_data_size >= dma_config.dst_addr_limit
+  );
+
+  cp_dst_addr_almost_limit: coverpoint dma_config.dst_addr_almost_limit {
+    `DMA_ENV_COV_64B_ADDR_BINS
+  }
+
+  cp_dst_addr_almost_limit_exceeded: coverpoint (
+      dma_config.dst_addr + dma_config.total_data_size >= dma_config.dst_addr_almost_limit
+  );
+
+  cp_handshake: coverpoint dma_config.handshake;
+
+  cp_data_direction: coverpoint dma_config.direction {
     bins read_from_fifo = {DmaRcvData};
     bins write_to_fifo = {DmaSendData};
   }
+
   cp_fifo_auto_inc: coverpoint dma_config.auto_inc_fifo;
+
   cp_mem_buffer_auto_inc: coverpoint dma_config.auto_inc_buffer;
-  // Handshake mode FIFO enable coverpoint
-  cp_handshake_fifo_mode: cross cp_data_direction, cp_fifo_auto_inc, cp_mem_buffer_auto_inc{
-    bins read_src_inc_addr = binsof(cp_data_direction.read_from_fifo) &&
-                             (binsof(cp_fifo_auto_inc) intersect {1});
-    bins read_src_fixed_addr = binsof(cp_data_direction.read_from_fifo) &&
-                               (binsof(cp_fifo_auto_inc) intersect {0});
-    bins write_src_inc_addr = binsof(cp_data_direction.write_to_fifo) &&
-                              (binsof(cp_mem_buffer_auto_inc) intersect {1});
-    bins write_src_fixed_addr = binsof(cp_data_direction.write_to_fifo) &&
-                                (binsof(cp_mem_buffer_auto_inc) intersect {0});
-  }
-  // DMA enabled memory range REGWEN
-  cp_range_regwen: coverpoint dma_config.range_regwen{
-    bins unlocked = {MuBi4True};
-    bins locked = {MuBi4False};
-// TODO: this faults with vcs
-//  bins reserved = {[0:$]} with (!(item inside {MuBi4True, MuBi4False}));
-  }
-  // handhshake interrupt enable
+
   cp_handshake_intr: coverpoint dma_config.handshake_intr_en;
-  // Abort via write to CONTROL
-  cp_abort: coverpoint abort;
-  // Cross OP code, source_address_space_id, destination_space_id and handshake mode
-  cp_op_code_x_asid_x_handshake: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode;
-  cp_total_data_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
-  cp_transfer_width_x_dst_asid_x_dma_op: cross cp_transfer_width, cp_dst_asid, cp_opcode;
-  cp_src_addr_x_src_asid_x_dma_op: cross cp_src_addr, cp_src_asid, cp_opcode;
-  cp_dst_addr_x_dst_asid_x_dma_op: cross cp_dst_addr, cp_dst_asid, cp_opcode;
-  cp_dma_mem_base_x_dma_mem_limit_x_dma_op: cross cp_dma_mem_base, cp_dma_mem_range_limit,
-                                                  cp_opcode;
-  cp_range_regwen_x_write_to_dma_mem_region_x_dma_op: cross cp_range_regwen,
-                                                            write_to_dma_mem_register, cp_opcode;
-  // Coverpoint for TL error on source interface
-  cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err);
 
-  // Coverpoint for TL error on destination interface
-  cp_dst_tl_err: coverpoint dma_config.dst_asid iff (tl_dst_err);
+  cp_initial_transfer: coverpoint initial_transfer;
 
-  cp_src_asid_x_tl_src_err_x_dma_op: cross cp_src_asid, cp_src_tl_err, cp_opcode;
+  cr_src_addr_X_src_asid: cross
+      cp_src_addr,
+      cp_src_asid;
 
-  cp_dst_asid_x_tl_dst_err_x_dma_op: cross cp_dst_asid, cp_dst_tl_err, cp_opcode;
+  cr_dst_addr_X_dst_asid: cross
+      cp_dst_addr,
+      cp_dst_asid;
 
-  // Cross Destination address, memory buffer limit (if memory_buffer_auto_increment is set)
-  cp_dst_addr_x_dst_addr_limit: cross cp_dst_addr,
-                                      cp_dst_addr_limit
-                                      iff (dma_config.auto_inc_buffer);
+  cr_opcode_X_src_asid_X_dst_asid_X_handshake_X_data_direction: cross
+      cp_opcode,
+      cp_src_asid,
+      cp_dst_asid,
+      cp_handshake,
+      cp_data_direction;
 
-  // Cross Destination address, memory buffer threshold (if memory_buffer_auto_increment is set)
-  cp_dst_addr_x_dst_addr_almost_limit: cross cp_dst_addr,
-                                             cp_dst_addr_almost_limit
-                                             iff (dma_config.auto_inc_buffer);
+  cr_opcode_X_chunk_data_size_X_src_asid_X_dst_asid_X_data_direction: cross
+      cp_opcode,
+      cp_chunk_data_size,
+      cp_src_asid,
+      cp_dst_asid,
+      cp_data_direction;
 
-  cp_fifo_enable: cross cp_fifo_auto_inc, cp_mem_buffer_auto_inc, cp_data_direction;
+  cr_opcode_X_total_data_size_X_transfer_width_X_data_direction: cross
+      cp_opcode,
+      cp_total_data_size,
+      cp_transfer_width,
+      cp_data_direction;
 
-  cp_fifo_enable_x_auto_inc: cross cp_fifo_enable,
-                                   cp_mem_buffer_auto_inc iff(dma_config.handshake);
+  cr_opcode_X_handshake_X_chunk_data_size_X_transfer_width_X_data_direction: cross
+      cp_opcode,
+      cp_handshake,
+      cp_chunk_data_size,
+      cp_transfer_width,
+      cp_data_direction;
 
-  cp_data_direction_x_asid: cross cp_src_asid,
-                                  cp_dst_asid, cp_handshake_fifo_mode iff(dma_config.handshake);
+  cr_opcode_X_handshake_X_mem_buffer_auto_inc_X_fifo_auto_inc_X_data_direction: cross
+      cp_opcode,
+      cp_handshake,
+      cp_mem_buffer_auto_inc,
+      cp_fifo_auto_inc,
+      cp_data_direction;
 
-  cp_data_direction_x_src_asid_x_fifo_auto_incr: cross cp_handshake_fifo_mode,
-                                                       cp_src_asid iff (dma_config.handshake);
+  cr_opcode_X_handshake_X_data_direction_X_initial_transfer: cross
+      cp_opcode,
+      cp_handshake,
+      cp_data_direction,
+      cp_initial_transfer;
 
-  // Cross data_direction, destination_address_space_id and memory_buffer_auto_increment_enable
-  cp_data_direction_x_dst_asid_x_mem_buf_auto_incr: cross cp_handshake_fifo_mode,
-                                                          cp_dst_asid iff (dma_config.handshake);
+  cr_src_addr_X_dst_addr_X_mem_range_base_X_mem_range_limit_X_data_direction: cross
+      cp_src_addr,
+      cp_dst_addr,
+      cp_mem_range_base,
+      cp_mem_range_limit,
+      cp_data_direction;
+
+  cr_src_addr_alignment_X_dst_addr_alignment_X_total_data_size_alignment_X_transfer_width: cross
+      cp_src_addr_alignment,
+      cp_dst_addr_alignment,
+      cp_total_data_size_alignment,
+      cp_transfer_width;
+
+  cr_mem_buffer_auto_inc_X_data_direction_X_address_limits_exceeded: cross
+      cp_mem_buffer_auto_inc,
+      cp_data_direction,
+      cp_dst_addr_limit_exceeded,
+      cp_dst_addr_almost_limit_exceeded;
+
 endgroup
 
-// DMA Status Coverage
+covergroup dma_tlul_error_cg with function sample(dma_seq_item dma_config,
+                                                  asid_encoding_e tl_err_asid);
+  option.per_instance = 1;
+  option.name = "dma_tlul_error_cg";
+
+  cp_tl_err_asid: coverpoint tl_err_asid;
+
+  cr_tl_err_asid_X_src_asid_X_dst_asid_X_direction: cross
+      cp_tl_err_asid,
+      dma_config.src_asid,
+      dma_config.dst_asid,
+      dma_config.direction;
+
+endgroup
+
 covergroup dma_status_cg with function sample(
   bit busy,
   bit done,
   bit aborted,
-  bit error
+  bit error,
+  bit sha2_digest_valid
 );
   option.per_instance = 1;
   option.name = "dma_status_cg";
@@ -136,6 +224,7 @@ covergroup dma_status_cg with function sample(
   cp_status_done: coverpoint done;
   cp_status_aborted: coverpoint aborted;
   cp_status_error: coverpoint error;
+  cp_sha2_digest_valid: coverpoint sha2_digest_valid;
 endgroup
 
 covergroup dma_error_code_cg with function sample(
@@ -143,21 +232,89 @@ covergroup dma_error_code_cg with function sample(
 );
   option.per_instance = 1;
   option.name = "dma_error_code_cg";
-  cp_status_errcode: coverpoint error_code;
+
+  cp_status_errcode: coverpoint error_code {
+    bins error_code[] = {[0:$]};
+  }
+endgroup
+
+covergroup dma_interrupt_cg with function sample(
+  bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_interrupt_enable,
+  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_src,
+  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_bus,
+  bit [dma_reg_pkg::NumIntClearSources-1:0][2:0] int_source_addr_offset,
+  bit [dma_reg_pkg::NumIntClearSources-1:0][31:0] int_source_wr_val
+);
+  option.per_instance = 1;
+  option.name = "dma_interrupt_cg";
+
+  cp_handshake_interrupt_enable: coverpoint handshake_interrupt_enable {
+    `DMA_ENV_COV_INTERRUPT_BINS
+  }
+
+  cp_clear_int_src: coverpoint clear_int_src {
+    `DMA_ENV_COV_INTERRUPT_BINS
+  }
+
+  cp_clear_int_bus: coverpoint clear_int_bus {
+    `DMA_ENV_COV_INTERRUPT_BINS
+  }
+
+  cp_int_source_addr_offset: coverpoint int_source_addr_offset {
+    bins all_zero = {0};
+    bins first_1_others_0 = {3'b001};
+    bins first_2_others_0 = {3'b010};
+    bins first_3_others_0 = {3'b011};
+    bins first_4_others_0 = {3'b100};
+    bins first_5_others_0 = {3'b101};
+    bins first_6_others_0 = {3'b110};
+    bins first_7_others_0 = {3'b111};
+    bins second_1_others_0 = {6'b001000};
+    bins second_2_others_0 = {6'b010000};
+    bins second_3_others_0 = {6'b011000};
+    bins second_4_others_0 = {6'b100000};
+    bins second_5_others_0 = {6'b101000};
+    bins second_6_others_0 = {6'b110000};
+    bins second_7_others_0 = {6'b111000};
+    bins first_1_second_1_others_0 = {6'b001001};
+    bins first_2_second_1_others_0 = {6'b001010};
+    bins first_3_second_1_others_0 = {6'b001011};
+    bins first_1_second_2_others_0 = {6'b010001};
+    bins first_1_second_3_others_0 = {6'b011001};
+    // TODO: There are other bins that would be relevant (but the autogenerated ones aren't).
+    // Is there a way to programatically generate more enumerations like the above?
+  }
+
+  cp_int_source_wr_val: coverpoint int_source_wr_val {
+    bins all_zero = {0};
+    bins first_all_ones_others_zero = {32'hffff_ffff};
+    bins second_all_ones_others_zero = {64'hffff_ffff_0000_0000};
+    // TODO: There are other bins that bins that would be relevant but enumerating them is
+    // infeasible, and `with` bins expressions such as the following
+    //     bins first_non_zero = {[0:$]} with (item & 32'hffff_ffff != 0);
+    //     bins second_non_zero = {[0:$]} with ((item >> 32) & 32'hffff_ffff != 0);
+    // increase the runtime so significantly that even simple tests take a prohibitively long time
+    // to complete.  What is another way to specify more of the interesting bins?
+  }
+
 endgroup
 
 class dma_env_cov extends cip_base_env_cov #(.CFG_T(dma_env_cfg));
   `uvm_component_utils(dma_env_cov)
 
   dma_config_cg config_cg;
+  dma_tlul_error_cg tlul_error_cg;
   dma_status_cg status_cg;
   dma_error_code_cg error_code_cg;
+  dma_interrupt_cg interrupt_cg;
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
     config_cg = new();
+    tlul_error_cg = new();
     status_cg = new();
     error_code_cg = new();
+    interrupt_cg = new();
   endfunction: new
 
 endclass
