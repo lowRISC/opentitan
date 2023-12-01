@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-/*
- * Declarations for the manifest fields populdated by the linker script.
+/**
+ * Declarations for the manifest fields populated by the linker script.
  */
 extern char _manifest_code_start[];
 extern char _manifest_code_end[];
