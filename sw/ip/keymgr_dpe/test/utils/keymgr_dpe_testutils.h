@@ -5,65 +5,11 @@
 #ifndef OPENTITAN_SW_IP_KEYMGR_DPE_TEST_UTILS_KEYMGR_DPE_TESTUTILS_H_
 #define OPENTITAN_SW_IP_KEYMGR_DPE_TEST_UTILS_KEYMGR_DPE_TESTUTILS_H_
 
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/keymgr_dpe/dif/dif_keymgr_dpe.h"
 #include "sw/lib/sw/device/base/status.h"
 
 /**
- * Struct to hold the creator or owner secrets for the key manager. In the spec,
- * these are also known as `creator_div_secret` and `owner_div_secret`
- * respectively. Both these values are stored in the flash memory, therefore
- * these structs are useful to set and write these two secrets with
- * `keymgr_dpe_testutils_flash_init` function provided below.
- */
-typedef struct keymgr_dpe_testutils_secret {
-  uint32_t value[8];
-} keymgr_dpe_testutils_secret_t;
-
-/**
- * Key manager Creator Secret (a.k.a. `creator_div_secret`) stored in info flash
- * page.
- */
-static const keymgr_dpe_testutils_secret_t kCreatorSecret = {
-    .value = {0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56, 0xb4fb0fdf,
-              0x1ca1567b, 0x13a0e876, 0xa6521d8f}};
-
-/**
- * Key manager Owner Secret (a.k.a. `owner_div_secret`) stored in info flash
- * page.
- */
-static const keymgr_dpe_testutils_secret_t kOwnerSecret = {.value = {
-                                                               0xa6521d8f,
-                                                               0x13a0e876,
-                                                               0x1ca1567b,
-                                                               0xb4fb0fdf,
-                                                               0x9f89bc56,
-                                                               0x4bd127c7,
-                                                               0x322288d8,
-                                                               0x4e919d54,
-                                                           }};
-
-/**
- * Programs flash with secrets so that a keymgr_dpe slot can be advanced from
- * UDS stage to the next stage (a.k.a. CreatorRootKey in the old keymgr
- * terminology).
- *
- * This is normally a subfunction of `keymgr_dpe_testutils_startup`, but some
- * tests use the function separately as well.
- *
- * @param flash[out] An unitialized flash_ctrl handle.
- * @param creator_secret The creator secret to be programmed to flash.
- * @param owner_secret The owner secret to be programmed to flash.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-status_t keymgr_dpe_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
-    const keymgr_dpe_testutils_secret_t *creator_secret,
-    const keymgr_dpe_testutils_secret_t *owner_secret);
-
-/**
- * Programs flash, restarts and initializes keymgr_dpe with UDS (a.k.a. the OTP
+ * Locks OTP, restarts and initializes keymgr_dpe with UDS (a.k.a. the OTP
  * root key).
  *
  * This procedure essentially gets the keymgr_dpe into the stage where it

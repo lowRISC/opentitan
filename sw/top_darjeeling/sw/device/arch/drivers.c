@@ -6,6 +6,7 @@
 #include "sw/ip/edn/driver/edn.h"
 #include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/keymgr/driver/keymgr.h"
+#include "sw/ip/keymgr_dpe/driver/keymgr_dpe.h"
 #include "sw/ip/kmac/driver/kmac.h"
 #include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
 #include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
@@ -34,6 +35,8 @@ const uint32_t kFlashCtrlMemBaseAddr[] = {
     TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR};
 
 const uint32_t kKeymgrBaseAddr[] = {TOP_DARJEELING_KEYMGR_BASE_ADDR};
+
+const uint32_t kKeymgrDpeBaseAddr[] = {TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR};
 
 const uint32_t kKmacBaseAddr[] = {TOP_DARJEELING_KMAC_BASE_ADDR};
 
