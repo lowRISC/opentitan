@@ -207,7 +207,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     bit [63:0] next_addr = addr + dma_config.txn_bytes();
 
     // Are we expecting another access?
-    if (num_bytes < dma_config.total_transfer_size) begin
+    if (num_bytes < dma_config.total_data_size) begin
       if (!dma_config.chunk_data_size || (num_bytes % dma_config.chunk_data_size)) begin
         // Still within this chunk; do we advance per bus transaction?
         if (fifo_access && !dma_config.auto_inc_fifo) begin
@@ -247,7 +247,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // The range of memory addresses that should be touched by the DMA controller depends upon
     // whether the memory_buffer_inc is set in hardware handshake mode
-    memory_range = dma_config.total_transfer_size;
+    memory_range = dma_config.total_data_size;
     if (dma_config.handshake && !dma_config.auto_inc_buffer) begin
       // All chunks within the transfer overlap each other in memory
       memory_range = dma_config.chunk_data_size;
@@ -319,10 +319,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
         // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
         //       register, so we can rely upon all non-final chunks being of the same size
-        `DV_CHECK(num_bytes_transferred < dma_config.total_transfer_size,
+        `DV_CHECK(num_bytes_transferred < dma_config.total_data_size,
                   "Write transaction when too many bytes transferred already");
 
-        transfer_bytes_left = dma_config.total_transfer_size - num_bytes_transferred;
+        transfer_bytes_left = dma_config.total_data_size - num_bytes_transferred;
         // Bytes remaining until the end of the current chunk
         remaining_bytes = dma_config.chunk_data_size
                              - (num_bytes_transferred % dma_config.chunk_data_size);
@@ -404,8 +404,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
 
     // Track byte-counting within the transfer since it determines the prediction of completion
-    `uvm_info(`gfn, $sformatf("num_bytes_transferred 0x%x total_transfer_size 0x%x",
-                              num_bytes_transferred, dma_config.total_transfer_size), UVM_HIGH);
+    `uvm_info(`gfn, $sformatf("num_bytes_transferred 0x%x total_data_size 0x%x",
+                              num_bytes_transferred, dma_config.total_data_size), UVM_HIGH);
   endtask
 
   // Process items on Data channel
@@ -873,9 +873,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   dma_config.mem_range_lock.name()), UVM_HIGH)
       end
       "total_data_size": begin
-        dma_config.total_transfer_size = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got total_transfer_size = %0x B",
-                                  dma_config.total_transfer_size), UVM_HIGH)
+        dma_config.total_data_size = item.a_data;
+        `uvm_info(`gfn, $sformatf("Got total_data_size = %0x B",
+                                  dma_config.total_data_size), UVM_HIGH)
       end
       "chunk_data_size": begin
         dma_config.chunk_data_size = item.a_data;
@@ -1020,7 +1020,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           num_bytes_checked = 0;
           fifo_intr_cleared = 0;
           // Expectation of bytes transferred before the first 'Done' signal
-          exp_bytes_transferred = dma_config.handshake ? dma_config.total_transfer_size
+          exp_bytes_transferred = dma_config.handshake ? dma_config.total_data_size
                                                        : dma_config.chunk_size(0);
         end else if (!dma_config.handshake && get_field_val(ral.control.go, item.a_data)) begin
           // Nudging a multi-chunk memory-to-memory transfer to proceed.
@@ -1125,7 +1125,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Check results after each chunk of the transfer (memory-to-memory) or after the complete
         // transfer (handshaking mode).
         if (dma_config.is_valid_config && done) begin
-          if (num_bytes_transferred >= dma_config.total_transfer_size) begin
+          if (num_bytes_transferred >= dma_config.total_data_size) begin
             // SHA digest (expecting zeros if unused)
             // When using inline hashing, sha2_digest_valid must be raised at the end
             if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
