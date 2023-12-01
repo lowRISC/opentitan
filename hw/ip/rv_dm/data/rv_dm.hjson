@@ -37,6 +37,20 @@
       desc:    "Number of hardware threads in the system."
       local:   "true"
     },
+    { name:    "SecVolatileRawUnlockEn",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''
+        Disable (0) or enable (1) volatile RAW UNLOCK capability.
+        If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+
+        IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+        to 0 in production tapeouts since this weakens the security posture of the RAW
+        UNLOCK mechanism.
+      '''
+      local:   "false",
+      expose:  "true"
+    },
   ]
   interrupt_list: [
   ],
@@ -93,16 +107,49 @@
     },
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "pinmux_hw_debug_en"
+      name:    "lc_escalate_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
+      package: "lc_ctrl_pkg",
       desc:    '''
-               Multibit life cycle hardware debug enable signal coming from pinmux.
-               This is a latched version of the lc_hw_debug_en signal and is only used to
-               gate the JTAG / TAP side of the RV_DM. It is used to keep a debug session live
-               while the rest of the system undergoes an NDM reset.
-               '''
+               Escalation enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic.
+               ''',}
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_check_byp_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Check bypass enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+               whenever the life cycle controller performs a life cycle transition. Its main use is
+               to skip any background checks inside the life cycle partition of the OTP controller while
+               a life cycle transition is in progress.
+               ''',}
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en",
+      act:     "rcv",
+      package: "",
+      desc:    '''
+               This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+               ''',
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en_override",
+      act:     "rcv",
+      desc:    '''
+               This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+               The signal must stay at 1 until reset.
+               Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+               Otherwise this signal is unused.
+               ''',
+      default: "1'b0"
     },
     // TBD: should we connect this to the clock manager?
     { struct:  "logic"

@@ -53,11 +53,12 @@ module tb;
     .rst_ni               (rst_n),
     .next_dm_addr_i       ('0),
 
-    // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
-    // will be tested at the top-level. for the purposes of this TB we connect
-    // both signals to the same life cycle signal.
+    // the strapping behavior of lc_hw_debug_en_i will be tested at the top-level.
     .lc_hw_debug_en_i     (rv_dm_if.lc_hw_debug_en),
-    .pinmux_hw_debug_en_i (rv_dm_if.lc_hw_debug_en),
+    .lc_check_byp_en_i    (rv_dm_if.lc_check_byp_en),
+    .lc_escalate_en_i     (rv_dm_if.lc_escalate_en),
+    .strap_en_i           (rv_dm_if.strap_en      ),
+    .strap_en_override_i  (rv_dm_if.strap_en_override),
     .scanmode_i           (rv_dm_if.scanmode      ),
     .ndmreset_req_o       (rv_dm_if.ndmreset_req  ),
     .dmactive_o           (rv_dm_if.dmactive      ),

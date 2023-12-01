@@ -1589,8 +1589,6 @@ module chip_darjeeling_asic #(
 
     // Pinmux strap
     .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),
-    // TODO: move the pinmux-side gating into RV_DM
-    .rv_pinmux_hw_debug_en_i      ( lc_ctrl_pkg::On            ),
 
     // Multiplexed I/O
     .mio_in_i                     ( mio_in_coreside            ),

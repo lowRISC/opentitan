@@ -48,6 +48,7 @@ module top_darjeeling #(
   // parameters for sram_ctrl_ret_aon
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for rv_dm
+  parameter bit SecRvDmVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -210,7 +211,6 @@ module top_darjeeling #(
   output tlul_pkg::tl_d2h_t       rv_dm_dmi_d2h_o,
   input  rv_dm_pkg::next_dm_addr_t       rv_dm_next_dm_addr_i,
   output logic       pwrmgr_strap_en_o,
-  input  lc_ctrl_pkg::lc_tx_t       rv_pinmux_hw_debug_en_i,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output pinmux_pkg::dft_strap_test_req_t       dft_strap_test_o,
@@ -1656,7 +1656,8 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
   rv_dm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:53])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:53]),
+    .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn)
   ) u_rv_dm (
       // [53]: fatal_fault
       .alert_tx_o  ( alert_tx[53:53] ),
@@ -1667,7 +1668,10 @@ module top_darjeeling #(
       .dmi_tl_h2d_i(rv_dm_dmi_h2d_i),
       .dmi_tl_d2h_o(rv_dm_dmi_d2h_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .pinmux_hw_debug_en_i(rv_pinmux_hw_debug_en_i),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
+      .strap_en_i(pwrmgr_aon_strap),
+      .strap_en_override_i(lc_ctrl_strap_en_override),
       .unavailable_i(1'b0),
       .ndmreset_req_o(rv_dm_ndmreset_req),
       .dmactive_o(),
