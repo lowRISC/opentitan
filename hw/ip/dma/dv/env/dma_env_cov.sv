@@ -42,10 +42,10 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_dma_mem_base: coverpoint dma_config.mem_range_base;
   // DMA enabled memory range limit coverpoint
   cp_dma_mem_range_limit: coverpoint dma_config.mem_range_limit;
-  // Memory buffer limit coverpoint
-  cp_dma_mem_buffer_limit: coverpoint dma_config.mem_buffer_limit;
-  // Memory buffer almost limit coverpoint
-  cp_dma_mem_buffer_almost_limit: coverpoint dma_config.mem_buffer_almost_limit;
+  // Destination address limit coverpoint
+  cp_dst_addr_limit: coverpoint dma_config.dst_addr_limit;
+  // Destination address almost limit coverpoint
+  cp_dst_addr_almost_limit: coverpoint dma_config.dst_addr_almost_limit;
   // handshake mode enable
   cp_handshake_mode: coverpoint dma_config.handshake;
   // data direction
@@ -98,14 +98,14 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_dst_asid_x_tl_dst_err_x_dma_op: cross cp_dst_asid, cp_dst_tl_err, cp_opcode;
 
   // Cross Destination address, memory buffer limit (if memory_buffer_auto_increment is set)
-  cp_dst_addr_x_mem_buffer_limit: cross cp_dst_addr,
-                                  cp_dma_mem_buffer_limit
-                                  iff (dma_config.auto_inc_buffer);
+  cp_dst_addr_x_dst_addr_limit: cross cp_dst_addr,
+                                      cp_dst_addr_limit
+                                      iff (dma_config.auto_inc_buffer);
 
   // Cross Destination address, memory buffer threshold (if memory_buffer_auto_increment is set)
-  cp_dst_addr_x_mem_buffer_threshold: cross cp_dst_addr,
-                                            cp_dma_mem_buffer_almost_limit
-                                            iff (dma_config.auto_inc_buffer);
+  cp_dst_addr_x_dst_addr_almost_limit: cross cp_dst_addr,
+                                             cp_dst_addr_almost_limit
+                                             iff (dma_config.auto_inc_buffer);
 
   cp_fifo_enable: cross cp_fifo_auto_inc, cp_mem_buffer_auto_inc, cp_data_direction;
 
