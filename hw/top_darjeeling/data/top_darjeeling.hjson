@@ -561,6 +561,12 @@
       base_addrs: {
         mem:  {hart: "0x00040000"},
         regs: {hart: "0x21200000"},
+      },
+      param_decl: {
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
+        // PRODUCTION DEVICES.
+        SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
       }
     },
     { name: "rv_plic",
@@ -1039,7 +1045,8 @@
       'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
       'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
       'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en',
-                                   'gpio.strap_en'],
+                                   'gpio.strap_en',
+                                   'rv_dm.strap_en'],
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
                                    'aon_timer_aon.sleep_mode'],
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
@@ -1098,7 +1105,8 @@
       'lc_ctrl.lc_keymgr_div'  : ['keymgr_dpe.lc_keymgr_div'],
 
       // Strap enable override signal, only used when SecVolatileRawUnlockEn = 1.
-      'lc_ctrl.strap_en_override'  : ['pinmux_aon.strap_en_override'],
+      'lc_ctrl.strap_en_override'  : ['pinmux_aon.strap_en_override',
+                                      'rv_dm.strap_en_override'],
 
       // LC function control signal broadcast
       'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
@@ -1123,10 +1131,12 @@
                                       'sram_ctrl_ret_aon.lc_escalate_en',
                                       'sram_ctrl_mbox.lc_escalate_en',
                                       'aon_timer_aon.lc_escalate_en',
-                                      'pinmux_aon.lc_escalate_en'],
+                                      'pinmux_aon.lc_escalate_en',
+                                      'rv_dm.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
-                                      'pinmux_aon.lc_check_byp_en'],
+                                      'pinmux_aon.lc_check_byp_en',
+                                      'rv_dm.lc_check_byp_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
 
@@ -1261,7 +1271,6 @@
         'rv_dm.dmi_tl_d2h'                : 'rv_dm_dmi_d2h',
         'rv_dm.next_dm_addr'              : 'rv_dm_next_dm_addr',
         'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
-        'rv_dm.pinmux_hw_debug_en'        : 'rv_pinmux_hw_debug_en',
         'peri.tl_ast'                     : 'ast_tl',
         'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',

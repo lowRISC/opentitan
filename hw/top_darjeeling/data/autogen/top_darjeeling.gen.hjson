@@ -4222,6 +4222,10 @@
           hart: 0x21200000
         }
       }
+      param_decl:
+      {
+        SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -4230,8 +4234,26 @@
       [
         "0"
       ]
-      param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: SecVolatileRawUnlockEn
+          desc:
+            '''
+            Disable (0) or enable (1) volatile RAW UNLOCK capability.
+            If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+
+            IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+            to 0 in production tapeouts since this weakens the security posture of the RAW
+            UNLOCK mechanism.
+            '''
+          type: bit
+          default: top_pkg::SecVolatileRawUnlockEn
+          expose: "true"
+          name_top: SecRvDmVolatileRawUnlockEn
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -4301,13 +4323,11 @@
           index: -1
         }
         {
-          name: pinmux_hw_debug_en
+          name: lc_escalate_en
           desc:
             '''
-            Multibit life cycle hardware debug enable signal coming from pinmux.
-            This is a latched version of the lc_hw_debug_en signal and is only used to
-            gate the JTAG / TAP side of the RV_DM. It is used to keep a debug session live
-            while the rest of the system undergoes an NDM reset.
+            Escalation enable signal coming from life cycle controller, used for invalidating
+            the latched lc_hw_debug_en state inside the strap sampling logic.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -4316,9 +4336,59 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: rv_dm
-          external: true
-          top_signame: rv_pinmux_hw_debug_en
-          conn_type: false
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_check_byp_en
+          desc:
+            '''
+            Check bypass enable signal coming from life cycle controller, used for invalidating
+            the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+            whenever the life cycle controller performs a life cycle transition. Its main use is
+            to skip any background checks inside the life cycle partition of the OTP controller while
+            a life cycle transition is in progress.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          top_signame: lc_ctrl_lc_check_byp_en
+          index: -1
+        }
+        {
+          name: strap_en
+          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: rv_dm
+          package: ""
+          top_signame: pwrmgr_aon_strap
+          index: -1
+        }
+        {
+          name: strap_en_override
+          desc:
+            '''
+            This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+            The signal must stay at 1 until reset.
+            Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+            Otherwise this signal is unused.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: rv_dm
+          package: ""
+          top_signame: lc_ctrl_strap_en_override
           index: -1
         }
         {
@@ -8968,6 +9038,7 @@
       [
         pinmux_aon.strap_en
         gpio.strap_en
+        rv_dm.strap_en
       ]
       pwrmgr_aon.low_power:
       [
@@ -9084,6 +9155,7 @@
       lc_ctrl.strap_en_override:
       [
         pinmux_aon.strap_en_override
+        rv_dm.strap_en_override
       ]
       lc_ctrl.lc_dft_en:
       [
@@ -9121,11 +9193,13 @@
         sram_ctrl_mbox.lc_escalate_en
         aon_timer_aon.lc_escalate_en
         pinmux_aon.lc_escalate_en
+        rv_dm.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
         otp_ctrl.lc_check_byp_en
         pinmux_aon.lc_check_byp_en
+        rv_dm.lc_check_byp_en
       ]
       lc_ctrl.lc_clk_byp_req:
       [
@@ -9578,7 +9652,6 @@
       rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
       rv_dm.next_dm_addr: rv_dm_next_dm_addr
       pwrmgr_aon.strap: pwrmgr_strap_en
-      rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
       pinmux_aon.dft_hold_tap_sel: dft_hold_tap_sel
@@ -19689,13 +19762,11 @@
         index: -1
       }
       {
-        name: pinmux_hw_debug_en
+        name: lc_escalate_en
         desc:
           '''
-          Multibit life cycle hardware debug enable signal coming from pinmux.
-          This is a latched version of the lc_hw_debug_en signal and is only used to
-          gate the JTAG / TAP side of the RV_DM. It is used to keep a debug session live
-          while the rest of the system undergoes an NDM reset.
+          Escalation enable signal coming from life cycle controller, used for invalidating
+          the latched lc_hw_debug_en state inside the strap sampling logic.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -19704,9 +19775,59 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: rv_dm
-        external: true
-        top_signame: rv_pinmux_hw_debug_en
-        conn_type: false
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_check_byp_en
+        desc:
+          '''
+          Check bypass enable signal coming from life cycle controller, used for invalidating
+          the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+          whenever the life cycle controller performs a life cycle transition. Its main use is
+          to skip any background checks inside the life cycle partition of the OTP controller while
+          a life cycle transition is in progress.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        top_signame: lc_ctrl_lc_check_byp_en
+        index: -1
+      }
+      {
+        name: strap_en
+        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: rv_dm
+        package: ""
+        top_signame: pwrmgr_aon_strap
+        index: -1
+      }
+      {
+        name: strap_en_override
+        desc:
+          '''
+          This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+          The signal must stay at 1 until reset.
+          Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+          Otherwise this signal is unused.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: rv_dm
+        package: ""
+        top_signame: lc_ctrl_strap_en_override
         index: -1
       }
       {
@@ -24042,18 +24163,6 @@
         conn_type: true
         index: -1
         netname: pwrmgr_aon_strap
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: rv_pinmux_hw_debug_en_i
-        width: 1
-        type: uni
-        default: lc_ctrl_pkg::Off
-        direction: in
-        conn_type: false
-        index: -1
-        netname: rv_pinmux_hw_debug_en
       }
       {
         package: tlul_pkg

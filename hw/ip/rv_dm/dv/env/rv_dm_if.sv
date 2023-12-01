@@ -8,6 +8,10 @@ interface rv_dm_if(input logic clk, input logic rst_n);
 
   // DUT inputs.
   lc_ctrl_pkg::lc_tx_t    lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t    lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t    lc_escalate_en;
+  logic                   strap_en;
+  logic                   strap_en_override;
   prim_mubi_pkg::mubi4_t  scanmode;
   logic                   scan_rst_n;
   logic [NUM_HARTS-1:0]   unavailable;

@@ -15,7 +15,8 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit                   SecVolatileRawUnlockEn = 0
 ) (
   input  logic                clk_i,       // clock
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
@@ -24,9 +25,11 @@ module rv_dm
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
-  // HW Debug lifecycle enable signal (latched version from pinmux, only used for DMI gating)
-  input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  input                       strap_en_i,
+  input                       strap_en_override_i,
   output logic                ndmreset_req_o,  // non-debug module reset
   output logic                dmactive_o,  // debug module is active
   output logic [NrHarts-1:0]  debug_req_o, // async debug request
@@ -91,8 +94,8 @@ module rv_dm
   tlul_pkg::tl_h2d_t mem_tl_win_h2d;
   tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
-  logic regs_intg_error, rom_intg_error, dmi_intg_error;
-  logic sba_gate_intg_error, rom_gate_intg_error, dmi_gate_intg_error;
+  logic regs_intg_error, rom_intg_error, dmi_intg_error, dbg_intg_error;
+  logic sba_gate_intg_error, rom_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
     .clk_i,
@@ -113,8 +116,8 @@ module rv_dm
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error |
-                     sba_gate_intg_error | rom_gate_intg_error | dmi_gate_intg_error;
+  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error | dbg_intg_error |
+                     sba_gate_intg_error | rom_gate_intg_error;
 
   assign alert_test = {
     regs_reg2hw.alert_test.q &
@@ -183,32 +186,12 @@ module rv_dm
     .lc_en_o(lc_hw_debug_en)
   );
 
-  lc_ctrl_pkg::lc_tx_t [PmEnLastPos-1:0] pinmux_hw_debug_en;
-  prim_lc_sync #(
-    .NumCopies(int'(PmEnLastPos))
-  ) u_pm_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(pinmux_hw_debug_en_i),
-    .lc_en_o(pinmux_hw_debug_en)
-  );
-
-  dm::dmi_req_t  dmi_req;
-  dm::dmi_resp_t dmi_rsp;
-  logic dmi_req_valid, dmi_req_ready;
-  logic dmi_rsp_valid, dmi_rsp_ready;
-  logic dmi_rst_n;
-
   logic reset_req_en;
   logic ndmreset_req;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
   assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[LcEnResetReq]);
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
-
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  logic dmi_en;
-  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiTlulAdapter]);
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
@@ -280,6 +263,11 @@ module rv_dm
   //////////////////////////////////////
   // Debug Memory Port (TL-UL Device) //
   //////////////////////////////////////
+  logic dmi_rst_n;
+  dm::dmi_req_t dmi_req;
+  logic dmi_req_valid, dmi_req_ready;
+  dm::dmi_resp_t dmi_rsp;
+  logic dmi_rsp_valid, dmi_rsp_ready;
 
   logic                         device_req;
   logic                         device_we;
@@ -302,47 +290,41 @@ module rv_dm
   end
   assign debug_req_o = debug_req & debug_req_en;
 
-  // Bound-in DPI module replaces the TAP
+  // Bound-in DPI module replaces the TAP and TL-UL DMI
 `ifndef DMIDirectTAP
-  tlul_pkg::tl_h2d_t dmi_tl_h2d_gated;
-  tlul_pkg::tl_d2h_t dmi_tl_d2h_gated;
-  tlul_lc_gate #(
-    // If the DMI side is gated, the spec requires the DM to return a valid all-zero response.
-    .ReturnBlankResp(1)
-  ) u_tlul_lc_gate_dmi (
-    .clk_i,
-    .rst_ni,
-    .tl_h2d_i      (dmi_tl_h2d_i),
-    .tl_d2h_o      (dmi_tl_d2h_o),
-    .tl_h2d_o      (dmi_tl_h2d_gated),
-    .tl_d2h_i      (dmi_tl_d2h_gated),
-    // The DMI side should not be flushed upon NDM-reset since we keep the
-    // debugger side of the connection stable during an NDM-reset request.
-    .flush_req_i   (1'b0),
-    .flush_ack_o   (),
-    .resp_pending_o(),
-    .lc_en_i       (pinmux_hw_debug_en[PmEnDmiTlulLcGate]),
-    .err_o         (dmi_gate_intg_error)
-  );
+  assign dbg_intg_error = 1'b0;
 
-  tlul_adapter_dmi u_tlul_adapter_dmi (
+  rv_dm_dmi_gate #(
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
+  ) u_rv_dm_dmi_gate (
     .clk_i,
     .rst_ni,
-    .tl_h2d_i        (dmi_tl_h2d_gated),
-    .tl_d2h_o        (dmi_tl_d2h_gated),
-    .intg_error_o    (dmi_intg_error),
-    .dmi_req_valid_o (dmi_req_valid),
-    .dmi_req_ready_i (dmi_req_ready & dmi_en),
-    .dmi_req_o       (dmi_req),
-    .dmi_resp_valid_i(dmi_rsp_valid & dmi_en),
-    .dmi_resp_ready_o(dmi_rsp_ready),
-    .dmi_resp_i      (dmi_rsp)
+    .strap_en_override_i,
+    .strap_en_i,
+    .lc_hw_debug_en_i,
+    .lc_check_byp_en_i,
+    .lc_escalate_en_i,
+    .dbg_tl_h2d_win_i(               dmi_tl_h2d_i),
+    .dbg_tl_d2h_win_o(               dmi_tl_d2h_o),
+    .dmi_req_valid_o(                dmi_req_valid),
+    .dmi_req_ready_i(                dmi_req_ready),
+    .dmi_req_o(                      dmi_req),
+    .dmi_rsp_valid_i(                dmi_rsp_valid),
+    .dmi_rsp_ready_o(                dmi_rsp_ready),
+    .dmi_rsp_i(                      dmi_rsp),
+
+    // Integrity error
+    .intg_error_o(                   dmi_intg_error)
   );
 
   // This only clears the DMI FIFO inside the dm_csrs implementation.
   // Since the JTAG DTM used in this system can always drain this FIFO,
   // no additional reset request should be needed in order to clear it.
   assign dmi_rst_n = rst_ni;
+`else
+  assign dbg_intg_error = 1'b0;
+  assign dmi_intg_error = 1'b0;
+  assign dbg_tl_d_o = tlul_pkg::TL_D2H_DEFAULT;
 `endif
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
@@ -400,7 +382,6 @@ module rv_dm
   ///////////////////////////
   // Debug Module Instance //
   ///////////////////////////
-
   dm_top #(
     .NrHarts        (NrHarts),
     .BusWidth       (BusWidth),
@@ -439,11 +420,11 @@ module rv_dm
     .master_r_other_err_i  (host_r_other_err      ),
     .master_r_rdata_i      (host_r_rdata          ),
     .dmi_rst_ni            (dmi_rst_n             ),
-    .dmi_req_valid_i       (dmi_req_valid & dmi_en),
+    .dmi_req_valid_i       (dmi_req_valid         ),
     .dmi_req_ready_o       (dmi_req_ready         ),
     .dmi_req_i             (dmi_req               ),
     .dmi_resp_valid_o      (dmi_rsp_valid         ),
-    .dmi_resp_ready_i      (dmi_rsp_ready & dmi_en),
+    .dmi_resp_ready_i      (dmi_rsp_ready         ),
     .dmi_resp_o            (dmi_rsp               )
   );
 
@@ -475,9 +456,9 @@ module rv_dm
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
     u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DmiTlLcGateFsm_A,
-    u_tlul_lc_gate_dmi.u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
+    u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
 endmodule

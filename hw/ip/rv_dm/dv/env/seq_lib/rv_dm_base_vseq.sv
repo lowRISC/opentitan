@@ -46,12 +46,23 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.scanmode <= scanmode;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(unavailable)
     cfg.rv_dm_vif.unavailable <= unavailable;
+
+    cfg.rv_dm_vif.lc_check_byp_en <= lc_ctrl_pkg::Off;
+    cfg.rv_dm_vif.lc_escalate_en <= lc_ctrl_pkg::Off;
+    cfg.rv_dm_vif.strap_en <= 1'b0;
+    cfg.rv_dm_vif.strap_en_override <= 1'b0;
     super.pre_start();
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
+
+    // Perform strap sampling of lc_hw_debug_en
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 5));
+    cfg.rv_dm_vif.strap_en <= 1'b1;
+    cfg.clk_rst_vif.wait_clks($urandom_range(5, 15));
+    cfg.rv_dm_vif.strap_en <= 1'b0;
 
     // "Activate" the DM to facilitate ease of testing.
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));

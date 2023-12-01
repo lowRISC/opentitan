@@ -25,7 +25,7 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
     super.body();
 
     `uvm_info(`gfn, "Waiting for HW debug to be enabled", UVM_MEDIUM)
-    `DV_WAIT(cfg.chip_vif.pinmux_lc_hw_debug_en)
+    `DV_WAIT(cfg.chip_vif.rv_dm_lc_hw_debug_en)
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
 
     `uvm_info(`gfn, "Activating the debug module", UVM_MEDIUM)
@@ -38,14 +38,14 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
     pause_jtag_dmi_ral_csr_rw_seq = 1;
 
     `uvm_info(`gfn, "Waiting for escalation reset to complete", UVM_MEDIUM)
-    `DV_WAIT(!cfg.chip_vif.pinmux_lc_hw_debug_en)
+    `DV_WAIT(!cfg.chip_vif.rv_dm_lc_hw_debug_en)
     // The JTAG CSR access sequence must have stopped by now, or else we will have issues.
     `DV_CHECK_FATAL(!jtag_dmi_ral_csr_rw_seq_busy)
 
     fork
       // The escalation reset will reset the debug module. The JTAG agent needs to also be reset.
       cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-      `DV_WAIT(cfg.chip_vif.pinmux_lc_hw_debug_en)
+      `DV_WAIT(cfg.chip_vif.rv_dm_lc_hw_debug_en)
     join
 
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
