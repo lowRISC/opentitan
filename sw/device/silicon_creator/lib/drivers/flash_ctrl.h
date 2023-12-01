@@ -226,10 +226,61 @@ typedef struct flash_ctrl_status {
  * This function checks the various status bits as described in
  * `flash_ctrl_status_t`.
  *
- * @param flash_ctrl flash controller device to check the status bits for.
- * @param[out] status_out The current status of the flash controller.
+ * @param[out] status The current status of the flash controller.
  */
 void flash_ctrl_status_get(flash_ctrl_status_t *status);
+
+/**
+ * Error code bits.
+ */
+typedef struct flash_ctrl_error_code {
+  /**
+   * Flash macro error occured.
+   */
+  bool macro_err;
+  /**
+   * Shadow register update error.
+   */
+  bool update_err;
+  /**
+   * Flash program type is unavailable.
+   */
+  bool prog_type_err;
+  /**
+   * Flash program window resolution error. Start and end of programming region
+   * are in different windows.
+   */
+  bool prog_win_err;
+  /**
+   * Flash programming error, could be an integrity error. Read the
+   * STD_FAULT_STATUS register.
+   */
+  bool prog_err;
+  /**
+   * Flash read error, could be an integrity error. Read the STD_FAULT_STATUS
+   * register.
+   */
+  bool rd_err;
+  /**
+   * Flash access permission error. Read the ERR_ADDR register for the faulting
+   * address.
+   */
+  bool mp_err;
+  /**
+   * Software has supplied an undefined flash operation.
+   */
+  bool op_err;
+} flash_ctrl_error_code_t;
+
+/**
+ * Query the error code register on the flash controller.
+ *
+ * This function checks the various error code bits as described in
+ * `flash_ctrl_error_code_t`.
+ *
+ * @param[out] error_code The current error code of the flash controller.
+ */
+void flash_ctrl_error_code_get(flash_ctrl_error_code_t *error_code);
 
 /**
  * Reads data from the data partition.

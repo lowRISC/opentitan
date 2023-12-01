@@ -217,6 +217,60 @@ TEST_F(StatusCheckTest, AllSetStatus) {
   EXPECT_EQ(status.rd_full, true);
 }
 
+class ErrorCodeCheckTest : public FlashCtrlTest {};
+
+TEST_F(ErrorCodeCheckTest, DefaultErrorCodes) {
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_ERR_CODE_REG_OFFSET,
+                    {
+                        {FLASH_CTRL_ERR_CODE_MACRO_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_PROG_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, false},
+                        {FLASH_CTRL_ERR_CODE_OP_ERR_BIT, false},
+                    });
+
+  flash_ctrl_error_code_t error_code;
+  flash_ctrl_error_code_get(&error_code);
+
+  EXPECT_EQ(error_code.macro_err, false);
+  EXPECT_EQ(error_code.update_err, false);
+  EXPECT_EQ(error_code.prog_type_err, false);
+  EXPECT_EQ(error_code.prog_win_err, false);
+  EXPECT_EQ(error_code.prog_err, false);
+  EXPECT_EQ(error_code.rd_err, false);
+  EXPECT_EQ(error_code.mp_err, false);
+  EXPECT_EQ(error_code.op_err, false);
+}
+
+TEST_F(ErrorCodeCheckTest, AllSetErrorCodes) {
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_ERR_CODE_REG_OFFSET,
+                    {
+                        {FLASH_CTRL_ERR_CODE_MACRO_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_PROG_TYPE_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_PROG_WIN_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_PROG_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_RD_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, true},
+                        {FLASH_CTRL_ERR_CODE_OP_ERR_BIT, true},
+                    });
+
+  flash_ctrl_error_code_t error_code;
+  flash_ctrl_error_code_get(&error_code);
+
+  EXPECT_EQ(error_code.macro_err, true);
+  EXPECT_EQ(error_code.update_err, true);
+  EXPECT_EQ(error_code.prog_type_err, true);
+  EXPECT_EQ(error_code.prog_win_err, true);
+  EXPECT_EQ(error_code.prog_err, true);
+  EXPECT_EQ(error_code.rd_err, true);
+  EXPECT_EQ(error_code.mp_err, true);
+  EXPECT_EQ(error_code.op_err, true);
+}
+
 class TransferTest : public FlashCtrlTest {
  protected:
   const std::vector<uint32_t> words_ = {0x12345678, 0x90ABCDEF, 0x0F1E2D3C,
