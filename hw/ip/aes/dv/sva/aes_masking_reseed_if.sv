@@ -12,40 +12,45 @@ interface aes_masking_reseed_if
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter int unsigned  EntropyWidth = edn_pkg::ENDPOINT_BUS_WIDTH,
-  parameter int unsigned  Width        = WidthPRDMasking, // Must be divisble by ChunkSize and 8
-  parameter int unsigned  ChunkSize    = ChunkSizePRDMasking, // Width of the LFSR primitives
-  localparam int unsigned NumChunks    = Width/ChunkSize      // derived parameter
+  parameter int unsigned EntropyWidth = edn_pkg::ENDPOINT_BUS_WIDTH,
+  parameter int unsigned StateWidth   = prim_trivium_pkg::BiviumStateWidth
 ) (
   input logic clk_i,
   input logic rst_ni,
 
-  // Entropy request signal
+  // Entropy request/ack signals
   input logic entropy_masking_req,
+  input logic entropy_masking_ack,
 
-  // Entropy input and LFSR state signals
+  // Entropy input and PRNG state signals
   input logic [EntropyWidth-1:0] entropy_i,
-  input logic [ChunkSize-1:0]    lfsr_q_0,
-  input logic [ChunkSize-1:0]    lfsr_q_1,
-  input logic [ChunkSize-1:0]    lfsr_q_2,
-  input logic [ChunkSize-1:0]    lfsr_q_3,
-  input logic [ChunkSize-1:0]    lfsr_q_4,
+  input logic [StateWidth-1:0]   state_q,
 
   // Control signals
-  input prs_rate_e            reseed_rate,
-  input logic                 block_ctr_expr,
-  input aes_ctrl_e            ctrl_state,
-  input aes_ctrl_e            ctrl_state_next,
-  input logic                 alert_fatal,
-  input logic [NumChunks-1:0] seed_en
+  input logic      block_ctr_expr,
+  input aes_ctrl_e ctrl_state,
+  input aes_ctrl_e ctrl_state_next,
+  input logic      alert_fatal
 );
 
-  // Make sure the LFSRs of the masking PRNG are set to the correct values obtained from EDN.
-  `ASSERT(MaskingPrngState0MatchesEdnInput_A, seed_en[0] |-> ##1 entropy_i == lfsr_q_0)
-  `ASSERT(MaskingPrngState1MatchesEdnInput_A, seed_en[1] |-> ##1 entropy_i == lfsr_q_1)
-  `ASSERT(MaskingPrngState2MatchesEdnInput_A, seed_en[2] |-> ##1 entropy_i == lfsr_q_2)
-  `ASSERT(MaskingPrngState3MatchesEdnInput_A, seed_en[3] |-> ##1 entropy_i == lfsr_q_3)
-  `ASSERT(MaskingPrngState4MatchesEdnInput_A, seed_en[4] |-> ##1 entropy_i == lfsr_q_4)
+  localparam int unsigned LastStatePartFractional = StateWidth % EntropyWidth != 0 ? 1 : 0;
+  localparam int unsigned NumStateParts = StateWidth / EntropyWidth + LastStatePartFractional;
+  localparam int unsigned NumBitsLastPart = StateWidth - (NumStateParts - 1) * EntropyWidth;
+  localparam int unsigned LastStatePart = NumStateParts - 1;
+
+  logic [NumStateParts-1:0] state_part_matches_input;
+  always_comb begin
+    state_part_matches_input = '0;
+    for (int unsigned i = 0; i < LastStatePart; i++) begin
+      state_part_matches_input[i] = state_q[i * EntropyWidth +: EntropyWidth] == entropy_i;
+    end
+    state_part_matches_input[LastStatePart] =
+        state_q[StateWidth - 1 -: NumBitsLastPart] == entropy_i[NumBitsLastPart-1:0];
+  end
+
+  // Make sure the entropy input obtained from EDN actually ends up in one part of the PRNG state.
+  `ASSERT(MaskingPrngStatePartMatchesEdnInput_A, entropy_masking_req && entropy_masking_ack
+      |-> ##1 |state_part_matches_input)
 
   // Make sure the masking PRNG is reseeded when a new block is started while the block counter
   // has expired unless a fatal alert is triggered.

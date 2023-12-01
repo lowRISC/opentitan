@@ -32,8 +32,6 @@ parameter int unsigned WidthPRDData     = 16*WidthPRDSBox; // 16 S-Boxes for the
 parameter int unsigned WidthPRDKey      = 4*WidthPRDSBox;  // 4 S-Boxes for the key expand
 parameter int unsigned WidthPRDMasking  = WidthPRDData + WidthPRDKey;
 
-parameter int unsigned ChunkSizePRDMasking = WidthPRDMasking/5;
-
 // Clearing PRNG default LFSR seed and permutation
 // These LFSR parameters have been generated with
 // $ util/design/gen-lfsr-seed.py --width 64 --seed 31468618 --prefix "Clearing"
@@ -51,21 +49,27 @@ parameter clearing_lfsr_perm_t RndCnstClearingSharePermDefault = {
   256'h9736b95ac3f3b5205caf8dc536aad73605d393c8dd94476e830e97891d4828d0
 };
 
-// Masking PRNG default LFSR seed and permutation
-// We use a single seed that is split down into chunks internally.
+// Masking PRNG default state seed and output permutation
+// The output width is 160 bits (WidthPRDMasking = WidthPRDSBox * (16 + 4)).
 // These LFSR parameters have been generated with
 // $ util/design/gen-lfsr-seed.py --width 160 --seed 31468618 --prefix "Masking"
 parameter int MaskingLfsrWidth = 160; // = WidthPRDMasking = WidthPRDSBox * (16 + 4)
-typedef logic [MaskingLfsrWidth-1:0] masking_lfsr_seed_t;
 typedef logic [MaskingLfsrWidth-1:0][$clog2(MaskingLfsrWidth)-1:0] masking_lfsr_perm_t;
-parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault =
-  160'hc132b5723c5a4cf4743b3c7c32d580f74f1713a;
 parameter masking_lfsr_perm_t RndCnstMaskingLfsrPermDefault = {
   256'h17261943423e4c5c03872194050c7e5f8497081d96666d406f4b606473303469,
   256'h8e7c721c8832471f59919e0b128f067b25622768462e554d8970815d490d7f44,
   256'h048c867d907a239b20220f6c79071a852d76485452189f14091b1e744e396737,
   256'h4f785b772b352f6550613c58130a8b104a3f28019c9a380233956b00563a512c,
   256'h808d419d63982a16995e0e3b57826a36718a9329452492533d83115a75316e15
+};
+// The state width is 177 bits (Bivium) but the primitive expects a 288-bit seed (Trivium).
+// These LFSR parameters have been generated with
+// $ util/design/gen-lfsr-seed.py --width 288 --seed 31468618 --prefix "Masking"
+parameter int MaskingPrngStateWidth = 288;
+typedef logic [MaskingPrngStateWidth-1:0] masking_lfsr_seed_t;
+parameter masking_lfsr_seed_t RndCnstMaskingLfsrSeedDefault = {
+  32'h758a4420,
+  256'h31e1c461_6ea343ec_153282a3_0c132b57_23c5a4cf_4743b3c7_c32d580f_74f1713a
 };
 
 typedef enum integer {

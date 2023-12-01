@@ -287,9 +287,9 @@ Invalid input values, i.e., values with multiple bits set and value 3'b000 are m
 
 | Value   | Name   | Description                                                                                                                                                                                                             |
 |:--------|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x1     | PER_1  | 3'b001: Reseed the masking PRNG once per block. Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001). This results in a max entropy consumption rate of ~286 Mbit/s. |
-| 0x2     | PER_64 | 3'b010: Reseed the masking PRNG approximately once per every 64 blocks. This results in a max entropy consumption rate of ~4.5 Mbit/s.                                                                                  |
-| 0x4     | PER_8K | 3'b100: Reseed the masking PRNG approximately once per every 8192 blocks. This results in an max entropy consumption rate of ~0.035 Mbit/s.                                                                             |
+| 0x1     | PER_1  | 3'b001: Reseed the masking PRNG once per block. Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001). This results in a max entropy consumption rate of ~343 Mbit/s. |
+| 0x2     | PER_64 | 3'b010: Reseed the masking PRNG approximately once per every 64 blocks. This results in a max entropy consumption rate of ~5.4 Mbit/s.                                                                                  |
+| 0x4     | PER_8K | 3'b100: Reseed the masking PRNG approximately once per every 8192 blocks. This results in a max entropy consumption rate of ~0.042 Mbit/s.                                                                              |
 
 Other values are reserved.
 
