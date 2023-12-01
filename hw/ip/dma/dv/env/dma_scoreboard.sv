@@ -391,13 +391,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
     end
 
-    // Update the expected value of memory buffer limit interrupt for this address
+    // Update the expected value of destination address limit interrupt for this address
     if ((dma_config.handshake & dma_config.auto_inc_buffer) &&
-        (item.a_addr >= dma_config.mem_buffer_limit ||
-         item.a_addr >= dma_config.mem_buffer_almost_limit)) begin
+        (item.a_addr >= dma_config.dst_addr_limit ||
+         item.a_addr >= dma_config.dst_addr_almost_limit)) begin
       `uvm_info(`gfn, $sformatf("Memory address:%0x crosses almost limit: 0x%0x limit: 0x%0x",
-                                item.a_addr, dma_config.mem_buffer_almost_limit,
-                                dma_config.mem_buffer_limit), UVM_HIGH)
+                                item.a_addr, dma_config.dst_addr_almost_limit,
+                                dma_config.dst_addr_limit), UVM_HIGH)
 
       // Interrupt is expected only if enabled.
       predict_interrupts(MemLimitToIntrLatency, 1 << DMA_MEM_LIMIT, intr_enable);
@@ -889,19 +889,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   dma_config.per_transfer_width.name()), UVM_HIGH)
       end
       "destination_address_limit_lo": begin
-        dma_config.mem_buffer_limit[31:0] =
+        dma_config.dst_addr_limit[31:0] =
           `gmv(ral.destination_address_limit_lo.address_limit_lo);
       end
       "destination_address_limit_hi": begin
-        dma_config.mem_buffer_limit[63:32] =
+        dma_config.dst_addr_limit[63:32] =
           `gmv(ral.destination_address_limit_hi.address_limit_hi);
       end
       "destination_address_almost_limit_lo": begin
-        dma_config.mem_buffer_almost_limit[31:0] =
+        dma_config.dst_addr_almost_limit[31:0] =
           `gmv(ral.destination_address_almost_limit_lo.address_limit_lo);
       end
       "destination_address_almost_limit_hi": begin
-        dma_config.mem_buffer_almost_limit[63:32] =
+        dma_config.dst_addr_almost_limit[63:32] =
           `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
       end
       "clear_int_bus": begin
