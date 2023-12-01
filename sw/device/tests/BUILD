@@ -7481,3 +7481,25 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "keymgr_dpe_key_derivation_test",
+    srcs = ["keymgr_dpe_key_derivation_test.c"],
+    exec_env = {
+        "//hw/top_darjeeling:sim_dv": None,
+    },
+    deps = [
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top:kmac_c_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
