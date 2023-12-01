@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::io::{self, Read};
+use std::rc::Rc;
+use std::time::Duration;
+
 use anyhow::Result;
 use clap::Args;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
-use std::time::Duration;
 use thiserror::Error;
 
 use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
@@ -108,6 +110,12 @@ pub trait Uart {
     /// Get the same single `NonblockingHelp` object as from top level `Transport.nonblocking_help()`.
     fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
         Ok(Rc::new(NoNonblockingHelp))
+    }
+}
+
+impl Read for &dyn Uart {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        Uart::read(&**self, buf).map_err(io::Error::other)
     }
 }
 
