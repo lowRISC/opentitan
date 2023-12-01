@@ -39,7 +39,7 @@ class dma_generic_vseq extends dma_base_vseq;
       randomize_item(dma_config);
     end
     // Has the DMA-enabled memory configuration now been locked?
-    if (dma_config.mem_range_lock != MuBi4True) begin
+    if (dma_config.range_regwen != MuBi4True) begin
       // Suppress further attempts at randomization because otherwise the TB will form incorrect
       // predictions.
       set_memory_range_randomization(dma_config, 0);
