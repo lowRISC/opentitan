@@ -1,0 +1,51 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv_verilator:prim_trivium_tb"
+description: "Trivium/Bivium Stream Cipher Verilator TB"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:trivium
+    files:
+      - rtl/prim_trivium_tb.sv
+    file_type: systemVerilogSource
+
+  files_dv_verilator:
+    depend:
+      - lowrisc:dv_verilator:simutil_verilator
+
+    files:
+      - cpp/prim_trivium_tb.cc
+    file_type: cppSource
+
+targets:
+  default:
+    default_tool: verilator
+    filesets:
+      - files_rtl
+      - files_dv_verilator
+    toplevel: prim_trivium_tb
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+# Disabling tracing reduces compile times by multiple times, but doesn't have a
+# huge influence on runtime performance. (Based on early observations.)
+          - '--trace'
+          - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
+          - '--trace-structs'
+          - '--trace-params'
+          - '--trace-max-array 1024'
+# compiler flags
+#
+# -O
+#   Optimization levels have a large impact on the runtime performance of the
+#   simulation model. -O2 and -O3 are pretty similar, -Os is slower than -O2/-O3
+          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=prim_trivium_tb -g -O0"'
+          - '-LDFLAGS "-pthread -lutil -lelf"'
+          - "-Wall"
+          # XXX: Cleanup all warnings and remove this option
+          # (or make it more fine-grained at least)
+          - "-Wno-fatal"
