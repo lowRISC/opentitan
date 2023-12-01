@@ -521,6 +521,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item;
     bit [1:0]   cmd_arb_idx;
     string      cmd_arb_idx_q_path = "tb.dut.u_csrng_core.cmd_arb_idx_q";
+    bit [SW_APP-1:0] previous_fips;
+    // Flags indicating that fips transitions can be recorded for coverage.
+    bit [SW_APP-1:0] initial_fips_received = '0;
 
     `DV_CHECK_FATAL(uvm_hdl_check_path(cmd_arb_idx_q_path))
     forever begin
@@ -547,6 +550,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           `uvm_fatal(`gfn, $sformatf("Invalid APP: %0d", cmd_arb_idx))
         end
       endcase
+      cov_vif.cg_csrng_es_sample(es_item.d_data[CSRNG_BUS_WIDTH],
+                                 previous_fips[cmd_arb_idx],
+                                 cmd_arb_idx,
+                                 initial_fips_received[cmd_arb_idx]);
+      initial_fips_received[cmd_arb_idx] = 1'b1;
+      previous_fips[cmd_arb_idx] = es_item.d_data[CSRNG_BUS_WIDTH];
      end
   endtask
 

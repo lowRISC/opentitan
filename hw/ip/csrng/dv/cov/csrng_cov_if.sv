@@ -507,6 +507,37 @@ interface csrng_cov_if (
     compliance_transition_app_cross: cross cp_compliance_transition, cp_app;
   endgroup
 
+  // This covergroup tracks the fips bit coming from the entropy source.
+  covergroup csrng_es_sample_cg with function sample(bit fips,
+                                                     bit[1:0] fips_transition,
+                                                     uint app,
+                                                     bit record_transition);
+    option.per_instance  = 1;
+    option.name          = "csrng_es_sample_cg";
+
+    // Coverpoint for indicating the FIPS/CC compliance of the entropy.
+    cp_fips: coverpoint fips {
+      bins fips_compliant = { 1'b1 };
+      bins fips_non_compliant = { 1'b0 };
+    }
+
+    cp_app: coverpoint app {
+      bins software = { SW_APP };
+      bins hardware = { [0:SW_APP-1] };
+      ignore_bins invalid_app = { [SW_APP+1:$] };
+    }
+
+    // Coverpoint for all of the possible transitions of the fips bit.
+    cp_fips_transition: coverpoint fips_transition iff (record_transition) {
+      bins false_to_false = {2'b00};
+      bins false_to_true = {2'b01};
+      bins true_to_false = {2'b10};
+      bins true_to_true = {2'b11};
+    }
+
+    fips_transition_app_cross: cross cp_fips_transition, cp_app;
+  endgroup
+
   `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
@@ -517,6 +548,7 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_otp_en_sw_app_read_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_genbits_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_state_db_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_es_sample_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
@@ -595,6 +627,13 @@ interface csrng_cov_if (
                                                    bit compliance_previous,
                                                    uint app);
     csrng_state_db_cg_inst.sample(compliance, {compliance_previous, compliance}, app);
+  endfunction
+
+  function automatic void cg_csrng_es_sample(bit fips,
+                                             bit fips_previous,
+                                             uint app,
+                                             bit record_transition);
+    csrng_es_sample_cg_inst.sample(fips, {fips_previous, fips}, app, record_transition);
   endfunction
 
 endinterface : csrng_cov_if
