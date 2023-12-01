@@ -115,8 +115,8 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
 
     // Advance to Initialized state.
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe, kDifKeymgrDpeStateReset));
-    TRY(keymgr_dpe_testutils_advance_state(
-        keymgr_dpe, &(dif_keymgr_dpe_advance_params_t){.slot_dst_sel = 1}));
+    TRY(dif_keymgr_dpe_initialize(keymgr_dpe, /*slot_dst_sel=*/1));
+    TRY(keymgr_dpe_testutils_wait_for_operation_done(keymgr_dpe));
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe,
                                          kDifKeymgrDpeStateAvailable));
     LOG_INFO("UDS is latched.");
