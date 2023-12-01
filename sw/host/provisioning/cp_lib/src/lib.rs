@@ -26,32 +26,23 @@ mod lc_raw_unlock_token;
 pub struct ManufCpProvisioningDataInput {
     // TODO(#19456): construct device ID from building blocks
     /// Device ID to provision.
-    #[arg(
-        long,
-        default_value = "0xCAFEBABE_11112222_33334444_55556666_77778888_9999AAAA_BBBBCCCC_DEADBEEF"
-    )]
+    #[arg(long)]
     pub device_id: String,
 
     /// Manufacturing State information to provision.
-    #[arg(
-        long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-    )]
+    #[arg(long)]
     pub manuf_state: String,
 
     /// Wafer Authentication Secret to provision.
-    #[arg(
-        long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-    )]
+    #[arg(long)]
     pub wafer_auth_secret: String,
 
     /// TestUnlock token to provision.
-    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
+    #[arg(long)]
     pub test_unlock_token: String,
 
     /// TestExit token to provision.
-    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
+    #[arg(long)]
     pub test_exit_token: String,
 }
 
