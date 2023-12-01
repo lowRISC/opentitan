@@ -13,7 +13,6 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     void'($value$plusargs("rom_prod_mode=%0d", rom_prod_mode));
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
 
@@ -62,7 +61,6 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
 
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
     apply_reset();
     reset_jtag_tap();

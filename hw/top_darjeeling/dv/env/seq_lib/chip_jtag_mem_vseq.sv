@@ -13,7 +13,6 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    cfg.select_jtag = JtagTapRvDm;
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     void'($value$plusargs("skip_por_n_during_first_pwrup=%0b", skip_por_n_during_first_pwrup));
     // If we want to skip POR_N,

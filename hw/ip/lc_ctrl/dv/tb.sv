@@ -141,8 +141,8 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .dmi_tl_h2d_i(dmi_tl_h2d),
-    .dmi_tl_d2h_o(dmi_tl_d2h),
+    .dmi_tl_i(dmi_tl_h2d),
+    .dmi_tl_o(dmi_tl_d2h),
 
     .esc_scrap_state0_tx_i(esc_scrap_state0_if.esc_tx),
     .esc_scrap_state0_rx_o(esc_scrap_state0_if.esc_rx),

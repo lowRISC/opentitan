@@ -581,8 +581,8 @@ module chip_darjeeling_verilator (
 
     // DMI into rv_dm
     // TODO: instantiate TAP at this level and connect these ports
-    .rv_dm_dmi_h2d_i              ( tlul_pkg::TL_H2D_DEFAULT   ),
-    .rv_dm_dmi_d2h_o              (                            ),
+    .dbg_tl_req_i                 ( tlul_pkg::TL_H2D_DEFAULT   ),
+    .dbg_tl_rsp_o                 (                            ),
 
     // ingress / egress ports and soc proxy signals
     .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d ),

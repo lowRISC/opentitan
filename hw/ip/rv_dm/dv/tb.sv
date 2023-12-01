@@ -27,8 +27,8 @@ module tb;
   rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
 
   // Used for JTAG DTM connections via TL-UL.
-  tlul_pkg::tl_h2d_t dmi_tl_h2d;
-  tlul_pkg::tl_d2h_t dmi_tl_d2h;
+  tlul_pkg::tl_h2d_t dbg_tl_h2d;
+  tlul_pkg::tl_d2h_t dbg_tl_d2h;
 
   `DV_ALERT_IF_CONNECT()
 
@@ -43,8 +43,8 @@ module tb;
     .jtag_o      ({jtag_if.tdo, jtag_tdo_oe}),
     .scan_rst_ni (rv_dm_if.scan_rst_n),
     .scanmode_i  (rv_dm_if.scanmode),
-    .tl_h2d_o    (dmi_tl_h2d),
-    .tl_d2h_i    (dmi_tl_d2h)
+    .tl_h2d_o    (dbg_tl_h2d),
+    .tl_d2h_i    (dbg_tl_d2h)
   );
 
   // dut
@@ -74,8 +74,8 @@ module tb;
     .sba_tl_h_o           (sba_tl_if.h2d),
     .sba_tl_h_i           (sba_tl_if.d2h),
 
-    .dmi_tl_h2d_i         (dmi_tl_h2d),
-    .dmi_tl_d2h_o         (dmi_tl_d2h),
+    .dbg_tl_d_i           (dbg_tl_h2d),
+    .dbg_tl_d_o           (dbg_tl_d2h),
 
     .alert_rx_i           (alert_rx),
     .alert_tx_o           (alert_tx)

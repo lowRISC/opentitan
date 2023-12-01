@@ -6,11 +6,6 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_rom_e2e_jtag_inject_vseq)
   `uvm_object_new
 
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
-    super.pre_start();
-  endtask
-
   virtual task body();
     string elf_file = {cfg.sw_images[SwTypeDebug], ".elf"};
     logic [BUS_DW-1:0] value_q[$];

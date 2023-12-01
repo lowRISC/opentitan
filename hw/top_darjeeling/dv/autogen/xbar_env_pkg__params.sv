@@ -190,8 +190,14 @@ tl_device_t xbar_devices[$] = '{
     '{"mbx_pcie1__soc", '{
         '{32'h01460200, 32'h0146021f}
     }},
+    '{"rv_dm__dbg", '{
+        '{32'h00000000, 32'h000001ff}
+    }},
     '{"mbx_jtag__soc", '{
         '{32'h00001000, 32'h0000101f}
+    }},
+    '{"lc_ctrl__dmi", '{
+        '{32'h00020000, 32'h00020fff}
     }}};
 
   // List of Xbar hosts

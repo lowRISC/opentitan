@@ -34,6 +34,7 @@
              "sec_cm_prim_sparse_fsm_flop_bind",
              "{top_chip}_error_injection_ifs_bind",
              "{top_chip}_bind",
+             "xbar_dbg_bind",
              "xbar_main_bind",
              "xbar_peri_bind"]
 
@@ -1530,37 +1531,11 @@
       run_opts: ["+use_jtag_dmi=1"]
     }
     {
-      name: chip_tap_straps_dev
-      uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+use_otp_image=OtpTypeLcStDev"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_tap_straps_testunlock0
-      uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+use_otp_image=OtpTypeLcStTestUnlocked0"]
-    }
-    {
-      name: chip_tap_straps_rma
-      uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["strap_tests_mode"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_tap_straps_prod
-      uvm_test_seq: chip_tap_straps_vseq
-      en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+use_otp_image=OtpTypeLcStProd"]
-      run_timeout_mins: 120
-    }
-    {
       name: chip_rv_dm_lc_disabled
       build_mode: "cover_reg_top"
       uvm_test_seq: "chip_rv_dm_lc_disabled_vseq"
       en_run_modes: ["stub_cpu_mode"]
-      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0", "+use_jtag_dmi=1"]
+      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0", "+en_scb_mem_chk=0", "+use_jtag_dmi=1"]
     }
     {
       name: chip_sw_rv_core_ibex_address_translation
@@ -1727,19 +1702,18 @@
     {
       name: xcelium_ci_0
       tests: ["chip_plic_all_irqs",
+              "chip_rv_dm_lc_disabled",
               "chip_sw_kmac_app_rom",
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",
               "chip_sw_clkmgr_jitter",
               "chip_sw_rom_ctrl_integrity_check",
-              "chip_tap_straps_dev",
-              "chip_tap_straps_prod",
-              "chip_tap_straps_rma",
               "chip_sw_aes_entropy",
               "chip_sw_kmac_idle",
               "chip_sw_kmac_mode_cshake",
               "chip_sw_kmac_mode_kmac",
               "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_lc_ctrl_rand_to_scrap"
               "chip_sw_sleep_pin_mio_dio_val",
               "chip_sw_power_virus",
               // TODO: uncomment when these run with Xcelium.

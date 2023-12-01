@@ -1283,6 +1283,10 @@
         {
           hart: 0x30140000
         }
+        dmi:
+        {
+          soc_dbg: 0x00020000
+        }
       }
       param_decl:
       {
@@ -1388,36 +1392,6 @@
       ]
       inter_signal_list:
       [
-        {
-          name: dmi_tl_h2d
-          desc: TL-UL-based DMI request input port
-          struct: tl_h2d
-          package: tlul_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: lc_ctrl
-          default: ""
-          external: true
-          top_signame: lc_ctrl_dmi_h2d
-          conn_type: false
-          index: -1
-        }
-        {
-          name: dmi_tl_d2h
-          desc: TL-UL-based DMI response output port
-          struct: tl_d2h
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: lc_ctrl
-          default: ""
-          external: true
-          top_signame: lc_ctrl_dmi_d2h
-          conn_type: false
-          index: -1
-        }
         {
           name: esc_scrap_state0_tx
           struct: esc_tx
@@ -1830,6 +1804,19 @@
           default: ""
           end_idx: -1
           top_signame: lc_ctrl_regs_tl
+          index: -1
+        }
+        {
+          name: dmi_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: lc_ctrl_dmi_tl
           index: -1
         }
       ]
@@ -2270,8 +2257,6 @@
           top_type: broadcast
           top_signame: pwrmgr_aon_strap
           index: -1
-          external: true
-          conn_type: true
         }
         {
           name: low_power
@@ -4221,6 +4206,10 @@
         {
           hart: 0x21200000
         }
+        dbg:
+        {
+          soc_dbg: 0x00000000
+        }
       }
       param_decl:
       {
@@ -4272,36 +4261,6 @@
           inst_name: rv_dm
           external: true
           top_signame: rv_dm_next_dm_addr
-          conn_type: false
-          index: -1
-        }
-        {
-          name: dmi_tl_h2d
-          desc: TLUL-based DMI request input port
-          struct: tl_h2d
-          package: tlul_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rv_dm
-          default: ""
-          external: true
-          top_signame: rv_dm_dmi_h2d
-          conn_type: false
-          index: -1
-        }
-        {
-          name: dmi_tl_d2h
-          desc: TLUL-based DMI response output port
-          struct: tl_d2h
-          package: tlul_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: rv_dm
-          default: ""
-          external: true
-          top_signame: rv_dm_dmi_d2h
           conn_type: false
           index: -1
         }
@@ -4486,6 +4445,19 @@
           default: ""
           end_idx: -1
           top_signame: rv_dm_mem_tl_d
+          index: -1
+        }
+        {
+          name: dbg_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: rv_dm
+          default: ""
+          end_idx: -1
+          top_signame: rv_dm_dbg_tl_d
           index: -1
         }
       ]
@@ -9563,9 +9535,17 @@
       [
         mbx.tl_mbx_pcie1__soc
       ]
+      rv_dm.dbg_tl_d:
+      [
+        dbg.tl_rv_dm__dbg
+      ]
       mbx_jtag.soc_tl_d:
       [
         dbg.tl_mbx_jtag__soc
+      ]
+      lc_ctrl.dmi_tl:
+      [
+        dbg.tl_lc_ctrl__dmi
       ]
     }
     top:
@@ -9645,13 +9625,8 @@
       mbx_pcie1.doe_intr_en: mbx_pcie1_doe_intr_en
       mbx_pcie1.doe_intr_support: mbx_pcie1_doe_intr_support
       mbx_pcie1.doe_async_msg_support: mbx_pcie1_doe_async_msg_support
-      dbg.tl_dbg: mbx_jtag_dmi
-      lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
-      lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
-      rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
-      rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
+      dbg.tl_dbg: dbg_tl
       rv_dm.next_dm_addr: rv_dm_next_dm_addr
-      pwrmgr_aon.strap: pwrmgr_strap_en
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
       pinmux_aon.dft_hold_tap_sel: dft_hold_tap_sel
@@ -12492,6 +12467,7 @@
       clock_srcs:
       {
         clk_dbg_i: main
+        clk_peri_i: io_div4
       }
       clock_group: infra
       reset: rst_dbg_ni
@@ -12502,10 +12478,16 @@
           name: lc
           domain: "0"
         }
+        rst_peri_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
       }
       clock_connections:
       {
         clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
+        clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
       domain:
       [
@@ -12515,7 +12497,9 @@
       {
         dbg:
         [
+          rv_dm.dbg
           mbx_jtag.soc
+          lc_ctrl.dmi
         ]
       }
       nodes:
@@ -12534,9 +12518,29 @@
           rsp_fifo_pass: true
         }
         {
+          name: rv_dm.dbg
+          type: device
+          clock: clk_dbg_i
+          reset: rst_dbg_ni
+          pipeline: false
+          inst_type: rv_dm
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_dbg: 0x0
+              }
+              size_byte: 0x200
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
           name: mbx_jtag.soc
           type: device
-          addr_space: soc_dbg
           clock: clk_dbg_i
           reset: rst_dbg_ni
           pipeline: false
@@ -12549,6 +12553,27 @@
                 soc_dbg: 0x1000
               }
               size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: lc_ctrl.dmi
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: lc_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_dbg: 0x20000
+              }
+              size_byte: 0x1000
             }
           ]
           xbar: false
@@ -12574,8 +12599,20 @@
           inst_name: dbg
           default: ""
           external: true
-          top_signame: mbx_jtag_dmi
+          top_signame: dbg_tl
           conn_type: false
+          index: -1
+        }
+        {
+          name: tl_rv_dm__dbg
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dbg
+          default: ""
+          top_signame: rv_dm_dbg_tl_d
           index: -1
         }
         {
@@ -12588,6 +12625,18 @@
           inst_name: dbg
           default: ""
           top_signame: mbx_jtag_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_lc_ctrl__dmi
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dbg
+          default: ""
+          top_signame: lc_ctrl_dmi_tl
           index: -1
         }
       ]
@@ -12611,13 +12660,58 @@
         idx: 0
       }
       {
+        name: JTAG_TCK
+        type: InputStd
+        bank: VIO
+        connection: manual
+        desc: JTAG TCK signal
+        port_type: inout
+        idx: 1
+      }
+      {
+        name: JTAG_TMS
+        type: InputStd
+        bank: VIO
+        connection: manual
+        desc: JTAG TMS signal
+        port_type: inout
+        idx: 2
+      }
+      {
+        name: JTAG_TDI
+        type: InputStd
+        bank: VIO
+        connection: manual
+        desc: JTAG TDI signal
+        port_type: inout
+        idx: 3
+      }
+      {
+        name: JTAG_TDO
+        type: BidirStd
+        bank: VIO
+        connection: manual
+        desc: JTAG TDO signal
+        port_type: inout
+        idx: 4
+      }
+      {
+        name: JTAG_TRST_N
+        type: InputStd
+        bank: VIO
+        connection: manual
+        desc: JTAG TRST_N signal
+        port_type: inout
+        idx: 5
+      }
+      {
         name: OTP_EXT_VOLT
         type: AnalogIn1
         bank: VIO
         connection: manual
         desc: OTP external voltage input
         port_type: inout
-        idx: 1
+        idx: 6
       }
       {
         name: SPI_HOST_D0
@@ -12626,7 +12720,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 2
+        idx: 7
       }
       {
         name: SPI_HOST_D1
@@ -12635,7 +12729,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 3
+        idx: 8
       }
       {
         name: SPI_HOST_D2
@@ -12644,7 +12738,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 4
+        idx: 9
       }
       {
         name: SPI_HOST_D3
@@ -12653,7 +12747,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 5
+        idx: 10
       }
       {
         name: SPI_HOST_CLK
@@ -12662,7 +12756,7 @@
         connection: direct
         desc: SPI host clock
         port_type: inout
-        idx: 6
+        idx: 11
       }
       {
         name: SPI_HOST_CS_L
@@ -12671,7 +12765,7 @@
         connection: direct
         desc: SPI host chip select
         port_type: inout
-        idx: 7
+        idx: 12
       }
       {
         name: SPI_DEV_D0
@@ -12680,7 +12774,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 8
+        idx: 13
       }
       {
         name: SPI_DEV_D1
@@ -12689,7 +12783,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 9
+        idx: 14
       }
       {
         name: SPI_DEV_D2
@@ -12698,7 +12792,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 10
+        idx: 15
       }
       {
         name: SPI_DEV_D3
@@ -12707,7 +12801,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 11
+        idx: 16
       }
       {
         name: SPI_DEV_CLK
@@ -12716,7 +12810,7 @@
         connection: direct
         desc: SPI device clock
         port_type: inout
-        idx: 12
+        idx: 17
       }
       {
         name: SPI_DEV_CS_L
@@ -12725,7 +12819,7 @@
         connection: direct
         desc: SPI device chip select
         port_type: inout
-        idx: 13
+        idx: 18
       }
       {
         name: SPI_DEV_TPM_CS_L
@@ -12734,7 +12828,7 @@
         connection: direct
         desc: SPI device TPM chip select
         port_type: inout
-        idx: 14
+        idx: 19
       }
       {
         name: UART_RX
@@ -12743,7 +12837,7 @@
         connection: direct
         desc: UART receive
         port_type: inout
-        idx: 15
+        idx: 20
       }
       {
         name: UART_TX
@@ -12752,7 +12846,7 @@
         connection: direct
         desc: UART transmit
         port_type: inout
-        idx: 16
+        idx: 21
       }
       {
         name: I2C_SCL
@@ -12761,7 +12855,7 @@
         connection: direct
         desc: I2C clock
         port_type: inout
-        idx: 17
+        idx: 22
       }
       {
         name: I2C_SDA
@@ -12770,7 +12864,7 @@
         connection: direct
         desc: I2C data
         port_type: inout
-        idx: 18
+        idx: 23
       }
       {
         name: GPIO0
@@ -12779,7 +12873,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 19
+        idx: 24
       }
       {
         name: GPIO1
@@ -12788,7 +12882,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 20
+        idx: 25
       }
       {
         name: GPIO2
@@ -12797,7 +12891,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 21
+        idx: 26
       }
       {
         name: GPIO3
@@ -12806,7 +12900,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 22
+        idx: 27
       }
       {
         name: GPIO4
@@ -12815,7 +12909,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 23
+        idx: 28
       }
       {
         name: GPIO5
@@ -12824,7 +12918,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 24
+        idx: 29
       }
       {
         name: GPIO6
@@ -12833,7 +12927,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 25
+        idx: 30
       }
       {
         name: GPIO7
@@ -12842,7 +12936,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 26
+        idx: 31
       }
       {
         name: GPIO8
@@ -12851,7 +12945,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 27
+        idx: 32
       }
       {
         name: GPIO9
@@ -12860,7 +12954,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 28
+        idx: 33
       }
       {
         name: GPIO10
@@ -12869,7 +12963,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 29
+        idx: 34
       }
       {
         name: GPIO11
@@ -12878,7 +12972,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 30
+        idx: 35
       }
       {
         name: GPIO12
@@ -12887,7 +12981,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 31
+        idx: 36
       }
       {
         name: GPIO13
@@ -12896,7 +12990,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 32
+        idx: 37
       }
       {
         name: GPIO14
@@ -12905,7 +12999,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 33
+        idx: 38
       }
       {
         name: GPIO15
@@ -12914,7 +13008,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 34
+        idx: 39
       }
       {
         name: GPIO16
@@ -12923,7 +13017,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 35
+        idx: 40
       }
       {
         name: GPIO17
@@ -12932,7 +13026,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 36
+        idx: 41
       }
       {
         name: GPIO18
@@ -12941,7 +13035,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 37
+        idx: 42
       }
       {
         name: GPIO19
@@ -12950,7 +13044,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 38
+        idx: 43
       }
       {
         name: GPIO20
@@ -12959,7 +13053,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 39
+        idx: 44
       }
       {
         name: GPIO21
@@ -12968,7 +13062,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 40
+        idx: 45
       }
       {
         name: GPIO22
@@ -12977,7 +13071,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 41
+        idx: 46
       }
       {
         name: GPIO23
@@ -12986,7 +13080,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 42
+        idx: 47
       }
       {
         name: GPIO24
@@ -12995,7 +13089,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 43
+        idx: 48
       }
       {
         name: GPIO25
@@ -13004,7 +13098,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 44
+        idx: 49
       }
       {
         name: GPIO26
@@ -13013,7 +13107,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 45
+        idx: 50
       }
       {
         name: GPIO27
@@ -13022,7 +13116,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 46
+        idx: 51
       }
       {
         name: GPIO28
@@ -13031,7 +13125,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 47
+        idx: 52
       }
       {
         name: GPIO29
@@ -13040,7 +13134,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 48
+        idx: 53
       }
       {
         name: GPIO30
@@ -13049,7 +13143,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 49
+        idx: 54
       }
       {
         name: GPIO31
@@ -13058,7 +13152,7 @@
         connection: direct
         desc: GPIO pad
         port_type: inout
-        idx: 50
+        idx: 55
       }
       {
         name: SOC_GPI0
@@ -13067,7 +13161,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 51
+        idx: 56
       }
       {
         name: SOC_GPI1
@@ -13076,7 +13170,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 52
+        idx: 57
       }
       {
         name: SOC_GPI2
@@ -13085,7 +13179,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 53
+        idx: 58
       }
       {
         name: SOC_GPI3
@@ -13094,7 +13188,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 54
+        idx: 59
       }
       {
         name: SOC_GPI4
@@ -13103,7 +13197,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 55
+        idx: 60
       }
       {
         name: SOC_GPI5
@@ -13112,7 +13206,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 56
+        idx: 61
       }
       {
         name: SOC_GPI6
@@ -13121,7 +13215,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 57
+        idx: 62
       }
       {
         name: SOC_GPI7
@@ -13130,7 +13224,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 58
+        idx: 63
       }
       {
         name: SOC_GPI8
@@ -13139,7 +13233,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 59
+        idx: 64
       }
       {
         name: SOC_GPI9
@@ -13148,7 +13242,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 60
+        idx: 65
       }
       {
         name: SOC_GPI10
@@ -13157,7 +13251,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 61
+        idx: 66
       }
       {
         name: SOC_GPI11
@@ -13166,7 +13260,7 @@
         connection: direct
         desc: SoC general purpose input
         port_type: inout
-        idx: 62
+        idx: 67
       }
       {
         name: SOC_GPO0
@@ -13175,7 +13269,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 63
+        idx: 68
       }
       {
         name: SOC_GPO1
@@ -13184,7 +13278,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 64
+        idx: 69
       }
       {
         name: SOC_GPO2
@@ -13193,7 +13287,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 65
+        idx: 70
       }
       {
         name: SOC_GPO3
@@ -13202,7 +13296,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 66
+        idx: 71
       }
       {
         name: SOC_GPO4
@@ -13211,7 +13305,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 67
+        idx: 72
       }
       {
         name: SOC_GPO5
@@ -13220,7 +13314,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 68
+        idx: 73
       }
       {
         name: SOC_GPO6
@@ -13229,7 +13323,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 69
+        idx: 74
       }
       {
         name: SOC_GPO7
@@ -13238,7 +13332,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 70
+        idx: 75
       }
       {
         name: SOC_GPO8
@@ -13247,7 +13341,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 71
+        idx: 76
       }
       {
         name: SOC_GPO9
@@ -13256,7 +13350,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 72
+        idx: 77
       }
       {
         name: SOC_GPO10
@@ -13265,7 +13359,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 73
+        idx: 78
       }
       {
         name: SOC_GPO11
@@ -13274,7 +13368,7 @@
         connection: direct
         desc: SoC general purpose output
         port_type: inout
-        idx: 74
+        idx: 79
       }
       {
         name: MIO0
@@ -14961,7 +15055,7 @@
         inouts: 42
         inputs: 16
         outputs: 15
-        pads: 75
+        pads: 80
       }
       muxed:
       {
@@ -17738,36 +17832,6 @@
         index: -1
       }
       {
-        name: dmi_tl_h2d
-        desc: TL-UL-based DMI request input port
-        struct: tl_h2d
-        package: tlul_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: lc_ctrl
-        default: ""
-        external: true
-        top_signame: lc_ctrl_dmi_h2d
-        conn_type: false
-        index: -1
-      }
-      {
-        name: dmi_tl_d2h
-        desc: TL-UL-based DMI response output port
-        struct: tl_d2h
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: lc_ctrl
-        default: ""
-        external: true
-        top_signame: lc_ctrl_dmi_d2h
-        conn_type: false
-        index: -1
-      }
-      {
         name: esc_scrap_state0_tx
         struct: esc_tx
         package: prim_esc_pkg
@@ -18182,6 +18246,19 @@
         index: -1
       }
       {
+        name: dmi_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: lc_ctrl_dmi_tl
+        index: -1
+      }
+      {
         name: crashdump
         struct: alert_crashdump
         package: alert_pkg
@@ -18452,8 +18529,6 @@
         top_type: broadcast
         top_signame: pwrmgr_aon_strap
         index: -1
-        external: true
-        conn_type: true
       }
       {
         name: low_power
@@ -19715,36 +19790,6 @@
         index: -1
       }
       {
-        name: dmi_tl_h2d
-        desc: TLUL-based DMI request input port
-        struct: tl_h2d
-        package: tlul_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rv_dm
-        default: ""
-        external: true
-        top_signame: rv_dm_dmi_h2d
-        conn_type: false
-        index: -1
-      }
-      {
-        name: dmi_tl_d2h
-        desc: TLUL-based DMI response output port
-        struct: tl_d2h
-        package: tlul_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: rv_dm
-        default: ""
-        external: true
-        top_signame: rv_dm_dmi_d2h
-        conn_type: false
-        index: -1
-      }
-      {
         name: lc_hw_debug_en
         desc:
           '''
@@ -19925,6 +19970,19 @@
         default: ""
         end_idx: -1
         top_signame: rv_dm_mem_tl_d
+        index: -1
+      }
+      {
+        name: dbg_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: rv_dm
+        default: ""
+        end_idx: -1
+        top_signame: rv_dm_dbg_tl_d
         index: -1
       }
       {
@@ -23175,8 +23233,20 @@
         inst_name: dbg
         default: ""
         external: true
-        top_signame: mbx_jtag_dmi
+        top_signame: dbg_tl
         conn_type: false
+        index: -1
+      }
+      {
+        name: tl_rv_dm__dbg
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dbg
+        default: ""
+        top_signame: rv_dm_dbg_tl_d
         index: -1
       }
       {
@@ -23189,6 +23259,18 @@
         inst_name: dbg
         default: ""
         top_signame: mbx_jtag_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_lc_ctrl__dmi
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dbg
+        default: ""
+        top_signame: lc_ctrl_dmi_tl
         index: -1
       }
       {
@@ -24071,74 +24153,26 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: mbx_jtag_dmi_req_i
+        signame: dbg_tl_req_i
         width: 1
         type: req_rsp
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: mbx_jtag_dmi_h2d
+        netname: dbg_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: mbx_jtag_dmi_rsp_o
+        signame: dbg_tl_rsp_o
         width: 1
         type: req_rsp
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: mbx_jtag_dmi_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: lc_ctrl_dmi_h2d_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: lc_ctrl_dmi_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: lc_ctrl_dmi_d2h_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: lc_ctrl_dmi_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: rv_dm_dmi_h2d_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: rv_dm_dmi_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: rv_dm_dmi_d2h_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: rv_dm_dmi_d2h
+        netname: dbg_tl_d2h
       }
       {
         package: rv_dm_pkg
@@ -24151,18 +24185,6 @@
         conn_type: false
         index: -1
         netname: rv_dm_next_dm_addr
-      }
-      {
-        package: ""
-        struct: logic
-        signame: pwrmgr_strap_en_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: true
-        index: -1
-        netname: pwrmgr_aon_strap
       }
       {
         package: tlul_pkg
@@ -26971,6 +26993,28 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: rv_dm_dbg_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: rv_dm_dbg_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: mbx_jtag_soc_tl_d_req
         width: 1
         type: req_rsp
@@ -26983,6 +27027,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: mbx_jtag_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: lc_ctrl_dmi_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: lc_ctrl_dmi_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

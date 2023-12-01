@@ -16,7 +16,6 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
   bit jtag_dmi_ral_csr_rw_seq_busy;
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     super.pre_start();
     max_outstanding_accesses = 1;
   endtask

@@ -49,10 +49,6 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
 
     // Now program ROM_EXEC_EN for next power cycle.
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
-
-    // Add delay before drive jtag after strap switch.
-    cfg.clk_rst_vif.wait_clks(5);
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
@@ -64,7 +60,6 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     reset_jtag_tap();
 
     // Prepare LC JTAG interface
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     cfg.clk_rst_vif.wait_clks(10);
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
 

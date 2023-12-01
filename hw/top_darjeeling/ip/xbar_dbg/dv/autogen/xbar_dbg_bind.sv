@@ -14,11 +14,23 @@ module xbar_dbg_bind;
   );
 
   // Device interfaces
+  bind xbar_dbg tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_dm__dbg (
+    .clk_i  (clk_dbg_i),
+    .rst_ni (rst_dbg_ni),
+    .h2d    (tl_rv_dm__dbg_o),
+    .d2h    (tl_rv_dm__dbg_i)
+  );
   bind xbar_dbg tlul_assert #(.EndpointType("Host")) tlul_assert_device_mbx_jtag__soc (
     .clk_i  (clk_dbg_i),
     .rst_ni (rst_dbg_ni),
     .h2d    (tl_mbx_jtag__soc_o),
     .d2h    (tl_mbx_jtag__soc_i)
+  );
+  bind xbar_dbg tlul_assert #(.EndpointType("Host")) tlul_assert_device_lc_ctrl__dmi (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_lc_ctrl__dmi_o),
+    .d2h    (tl_lc_ctrl__dmi_i)
   );
 `endif
 endmodule

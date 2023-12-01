@@ -39,6 +39,7 @@ filesets:
       - lowrisc:top_darjeeling:xbar_main
       - lowrisc:top_darjeeling:xbar_mbx
       - lowrisc:top_darjeeling:xbar_peri
+      - lowrisc:top_darjeeling:xbar_dbg
       - lowrisc:ip:rstmgr
       - lowrisc:ip:pwrmgr
       - lowrisc:ip:aon_timer

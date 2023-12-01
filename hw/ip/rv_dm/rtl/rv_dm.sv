@@ -53,8 +53,8 @@ module rv_dm
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   // TL-UL-based DMI
-  input  tlul_pkg::tl_h2d_t dmi_tl_h2d_i,
-  output tlul_pkg::tl_d2h_t dmi_tl_d2h_o
+  input  tlul_pkg::tl_h2d_t dbg_tl_d_i,
+  output tlul_pkg::tl_d2h_t dbg_tl_d_o
 );
 
   ///////////////////////////
@@ -292,7 +292,18 @@ module rv_dm
 
   // Bound-in DPI module replaces the TAP and TL-UL DMI
 `ifndef DMIDirectTAP
-  assign dbg_intg_error = 1'b0;
+  tlul_pkg::tl_h2d_t dbg_tl_h2d_win;
+  tlul_pkg::tl_d2h_t dbg_tl_d2h_win;
+  rv_dm_dbg_reg_top u_rv_dm_dbg_reg_top (
+    .clk_i,
+    .rst_ni,
+    .tl_i      (dbg_tl_d_i),
+    .tl_o      (dbg_tl_d_o),
+    .tl_win_o  (dbg_tl_h2d_win),
+    .tl_win_i  (dbg_tl_d2h_win),
+    .intg_err_o(dbg_intg_error),
+    .devmode_i (1'b1)
+  );
 
   rv_dm_dmi_gate #(
     .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
@@ -304,8 +315,8 @@ module rv_dm
     .lc_hw_debug_en_i,
     .lc_check_byp_en_i,
     .lc_escalate_en_i,
-    .dbg_tl_h2d_win_i(               dmi_tl_h2d_i),
-    .dbg_tl_d2h_win_o(               dmi_tl_d2h_o),
+    .dbg_tl_h2d_win_i(               dbg_tl_h2d_win),
+    .dbg_tl_d2h_win_o(               dbg_tl_d2h_win),
     .dmi_req_valid_o(                dmi_req_valid),
     .dmi_req_ready_i(                dmi_req_ready),
     .dmi_req_o(                      dmi_req),
@@ -441,8 +452,8 @@ module rv_dm
   `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
   `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
 
-  `ASSERT_KNOWN(TlDmiDValidKnown_A, dmi_tl_d2h_o.d_valid)
-  `ASSERT_KNOWN(TlDmiAReadyKnown_A, dmi_tl_d2h_o.a_ready)
+  `ASSERT_KNOWN(TlDbgDValidKnown_A, dbg_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlDbgAReadyKnown_A, dbg_tl_d_o.a_ready)
 
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)

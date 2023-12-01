@@ -7,11 +7,6 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
-    super.pre_start();
-  endtask
-
   virtual task body();
     bit [TL_DW-1:0] status_val;
 
@@ -26,7 +21,8 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
     void'(cfg.chip_vif.signal_probe_otp_ctrl_lc_err_o(SignalProbeForce, 1));
 
     // poll for state to transition to post transition state
-    jtag_csr_spinwait(ral.lc_ctrl_regs.lc_state.get_offset(),
+    jtag_csr_spinwait(
+      cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.lc_state.get_offset()),
       p_sequencer.jtag_sequencer_h,
       {DecLcStateNumRep{DecLcStEscalate}},
       cfg.sw_test_timeout_ns);
@@ -38,7 +34,8 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
     void'(cfg.chip_vif.signal_probe_otp_ctrl_lc_err_o(SignalProbeRelease));
 
     // check to ensure that we see an otp error
-    jtag_read_csr(ral.lc_ctrl_regs.status.get_offset(),
+    jtag_read_csr(
+      cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.status.get_offset()),
       p_sequencer.jtag_sequencer_h,
       status_val);
 

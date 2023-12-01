@@ -58,21 +58,7 @@ set all_muxed_ports "${mio_muxed_ports}"
 
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
-create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports MIO4]
-create_generated_clock -name lc_jtag_tck -source [get_ports MIO4] -divide_by 1 [get_pins u_pinmux_strap_sampling_dummy/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
-create_generated_clock -name rv_jtag_tck -source [get_ports MIO4] -divide_by 1 [get_pins u_pinmux_strap_sampling_dummy/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
-
-set lc_jtag_tck_inv_pin  \
-  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
-    [get_nets -segments -of_objects \
-      [get_pins u_pinmux_strap_sampling_dummy/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
-set rv_jtag_tck_inv_pin  \
-  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
-    [get_nets -segments -of_objects \
-      [get_pins u_pinmux_strap_sampling_dummy/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
-
-set_clock_sense -negative ${lc_jtag_tck_inv_pin}
-set_clock_sense -negative ${rv_jtag_tck_inv_pin}
+create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports JTAG_TCK]
 
 # Assign input and output delays.
 # Note that incidental combinatorial paths through the pinmux do not get removed
@@ -88,10 +74,10 @@ set_clock_sense -negative ${rv_jtag_tck_inv_pin}
 #                 -to [get_ports] ${max_delay_value}
 # ${max_delay_value} =
 #     ${max_input_delay} + ${max_output_delay} + ${max_port_to_port_delay}
-set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports MIO8]
-set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports MIO8]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {MIO5 MIO7}]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 15.0 [get_ports {MIO5 MIO7}]
+set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports JTAG_TDO]
+set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports JTAG_TDO]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {JTAG_TMS JTAG_TDI}]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 15.0 [get_ports {JTAG_TMS JTAG_TDI}]
 
 ## SPI clocks
 set spi_dev_period 100.0

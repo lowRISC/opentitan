@@ -80,6 +80,7 @@
                import_cfgs: ["{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson"]
                rel_path: "{proj_root}/hw/ip/rstmgr/dv/"
              },
+             "{proj_root}/hw/{top_chip}/ip/xbar_dbg/dv/autogen/xbar_dbg_sim_cfg.hjson",
              "{proj_root}/hw/{top_chip}/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/{top_chip}/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // Top level.

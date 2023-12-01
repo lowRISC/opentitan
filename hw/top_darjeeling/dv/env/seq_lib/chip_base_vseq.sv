@@ -13,6 +13,7 @@ class chip_base_vseq #(
   `uvm_object_utils(chip_base_vseq)
 
   jtag_dmi_reg_block jtag_dmi_ral;
+  chip_soc_dbg_reg_block chip_soc_dbg_ral;
 
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
@@ -32,6 +33,7 @@ class chip_base_vseq #(
   virtual function void set_handles();
     super.set_handles();
     jtag_dmi_ral = cfg.jtag_dmi_ral;
+    chip_soc_dbg_ral = cfg.chip_soc_dbg_ral;
   endfunction // set_handles
 
   task post_start();

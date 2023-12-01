@@ -11,6 +11,11 @@ package scan_role_pkg;
 
   parameter scan_role_e DioPadPorNScanRole            = NoScan;
   parameter scan_role_e DioPadOtpExtVoltScanRole      = NoScan;
+  parameter scan_role_e DioPadJtagTckScanRole         = NoScan;
+  parameter scan_role_e DioPadJtagTmsScanRole         = NoScan;
+  parameter scan_role_e DioPadJtagTdiScanRole         = NoScan;
+  parameter scan_role_e DioPadJtagTdoScanRole         = NoScan;
+  parameter scan_role_e DioPadJtagTrstNScanRole       = NoScan;
   parameter scan_role_e DioPadSpiHostD0ScanRole       = NoScan;
   parameter scan_role_e DioPadSpiHostD1ScanRole       = NoScan;
   parameter scan_role_e DioPadSpiHostD2ScanRole       = NoScan;

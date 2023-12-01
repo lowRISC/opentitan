@@ -68,6 +68,7 @@ py_binary(
         "//util/reggen:gen_rust",
         "//util/reggen:gen_sec_cm_testplan",
         "//util/reggen:gen_selfdoc",
+        "//util/reggen:gen_tock",
         "//util/reggen:ip_block",
         "//util/reggen:version",
         requirement("tabulate"),
