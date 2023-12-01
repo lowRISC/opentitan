@@ -439,7 +439,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                      bit [CSRNG_BUS_WIDTH-1:0] additional_input,
                                      bit fips);
 
-    bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
+    bit [CSRNG_BUS_WIDTH-1:0] seed_material;
+    bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Instantiate of app %0d", app), UVM_MEDIUM)
     seed_material  = entropy_input ^ additional_input;
@@ -449,6 +450,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     cfg.reseed_counter[app] = 1'b1;
     cfg.compliance[app]     = fips;
     cfg.status[app]         = 1'b1;
+    cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
 
   function void ctr_drbg_reseed(uint app,
@@ -457,12 +459,14 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                 bit fips);
 
     bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
+    bit compliance_previous = cfg.compliance[app];
 
     `uvm_info(`gfn, $sformatf("Reseed of app %0d", app), UVM_MEDIUM)
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b1;
     cfg.compliance[app]     = fips;
+    cov_vif.cg_csrng_state_db_sample(cfg.compliance[app], compliance_previous, app);
   endfunction
 
   function void ctr_drbg_uninstantiate(uint app);
