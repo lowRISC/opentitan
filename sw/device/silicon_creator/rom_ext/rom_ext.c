@@ -10,6 +10,8 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/silicon_creator/lib/attestation.h"
+#include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -32,6 +34,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/bootstrap.h"
@@ -42,6 +45,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 #include "sram_ctrl_regs.h"
+
+// Declaration for the ROM_EXT manifest start address, populated by the linker
+extern char _rom_ext_start_address[];
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
@@ -163,31 +169,85 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
+  attestation_public_key_t curr_attestation_pubkey = {.x = {0}, .y = {0}};
+
   // Initialize the entropy complex for key manager operations.
   // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
   // assertion here since its definition is not an integer constant expression.
   HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
-  // ROM sets the SW binding values but does not initialize the key manager.
-  // Advance key manager state twice to transition to the creator root key
-  // state.
+
+  // Load OTBN attestation keygen program.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
+
+  // ROM sets the SW binding values for the first key stage (CreatorRootKey) but
+  // does not initialize the key manager. Advance key manager state twice to
+  // transition to the creator root key state.
   keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateInit));
   keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
-  // Set binding and max version for BL0.
+
+  // Generate UDS attestation keys.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kUdsAttestationKeySeed, kUdsKeymgrDiversifier, &curr_attestation_pubkey));
+  // TODO(#19588): check UDS public key matches that in UDS cert.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
+
+  // Advance keymgr to OwnerIntermediate stage (root of Sealing_0 and CDI_0).
   keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&manifest->binding_value, &boot_measurements.bl0);
-  keymgr_owner_int_max_ver_set(manifest->max_key_version);
+  // We set the sealing binding value to all 0s, as sealing keys are not
+  // currently used at the ROM_EXT stage. For the attestation binding value, we
+  // use the ROM_EXT measurement preloaded in `static_critical` section by ROM.
+  keymgr_binding_value_t zero_binding_value = {.data = {0}};
+  keymgr_sw_binding_set(
+      /*binding_value_sealing=*/&zero_binding_value,
+      /*binding_value_attestation=*/&boot_measurements.rom_ext);
+  const manifest_t *rom_ext_manifest =
+      (const manifest_t *)_rom_ext_start_address;
+  keymgr_owner_int_max_ver_set(rom_ext_manifest->max_key_version);
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                            kKeymgrSecMmioOwnerIntMaxVerSet);
-  // Transition to the owner intermediate key state.
   keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(
       keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+
+  // Generate CDI_0 attestation keys.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier,
+      &curr_attestation_pubkey));
+  // TODO(#19588): check ROM_EXT measurement / CDI_0 public key matches that in
+  // CDI_0 cert. If not, update the cert and endorse it.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier));
+
+  // Advance keymgr to Owner stage (root of Sealing_1 and CDI_1).
   keymgr_sw_binding_unlock_wait();
-  sec_mmio_check_values(rnd_uint32());
-  sec_mmio_check_counters(1);
+  keymgr_sw_binding_set(/*binding_value_sealing=*/&manifest->binding_value,
+                        /*binding_value_attestation=*/&boot_measurements.bl0);
+  keymgr_owner_max_ver_set(manifest->max_key_version);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                           kKeymgrSecMmioOwnerMaxVerSet);
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateOwnerKey));
+
+  // Generate CDI_1 attestation keys.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier,
+      &curr_attestation_pubkey));
+  // TODO(#19588): check ROM_EXT measurement / CDI_1 public key matches that in
+  // CDI_1 cert. If not, update the cert and endorse it.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier));
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+  // Crank the keymgr and validate attestation certificates.
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_keygen(manifest));
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.

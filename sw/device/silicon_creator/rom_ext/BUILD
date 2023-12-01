@@ -206,11 +206,14 @@ cc_library(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -228,6 +231,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/otbn/crypto:boot",
     ],
 )
 
