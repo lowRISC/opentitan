@@ -45,7 +45,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [31:0] mem_range_limit;
   rand bit [31:0] total_data_size;
   rand bit [31:0] chunk_data_size;
-  rand mubi4_t mem_range_lock;
+  rand mubi4_t range_regwen;
   rand opcode_e opcode;
   rand dma_transfer_width_e per_transfer_width;
   rand asid_encoding_e src_asid;
@@ -90,7 +90,7 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(mem_range_valid, UVM_DEFAULT)
     `uvm_field_int(mem_range_base, UVM_DEFAULT)
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
-    `uvm_field_enum(mubi4_t, mem_range_lock, UVM_DEFAULT)
+    `uvm_field_enum(mubi4_t, range_regwen, UVM_DEFAULT)
     `uvm_field_int(total_data_size, UVM_DEFAULT)
     `uvm_field_int(chunk_data_size, UVM_DEFAULT)
     `uvm_field_enum(dma_transfer_width_e, per_transfer_width, UVM_DEFAULT)
@@ -304,14 +304,14 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  constraint mem_range_lock_c {
+  constraint range_regwen_c {
     // For valid DMA configurations, the memory range registers _may_ be locked but this is not
     // obligatory. Having the separate 'RANGE_VALID' bit affords the opportunity for FW at
     // different stages within the boot process to employ different address ranges.
     if (!valid_dma_config) {
       // We need to keep this True to prevent subsequent randomization failures; the REGWEN can
       // only be restored to True (permitting changes) by an IP block reset.
-      mem_range_lock == MuBi4True;
+      range_regwen == MuBi4True;
     }
   }
 
@@ -337,8 +337,8 @@ class dma_seq_item extends uvm_sequence_item;
   function void lock_memory_range();
     mem_range_base.rand_mode(0);
     mem_range_limit.rand_mode(0);
-    mem_range_lock.rand_mode(0);
-    mem_range_lock_c.constraint_mode(0);
+    range_regwen.rand_mode(0);
+    range_regwen_c.constraint_mode(0);
     `uvm_info(`gfn, $sformatf("Disable randomisation of mem_range_base and mem_range_limit"),
               UVM_HIGH)
   endfunction
@@ -639,7 +639,7 @@ class dma_seq_item extends uvm_sequence_item;
     handshake = 0;
     // reset non random variables
     valid_dma_config = 0;
-    mem_range_lock = MuBi4True;
+    range_regwen = MuBi4True;
   endfunction
 
   // Disable randomization of all variables
@@ -657,7 +657,7 @@ class dma_seq_item extends uvm_sequence_item;
     auto_inc_buffer.rand_mode(0);
     auto_inc_fifo.rand_mode(0);
     handshake.rand_mode(0);
-    mem_range_lock.rand_mode(0);
+    range_regwen.rand_mode(0);
   endfunction
 
   // Return if Read FIFO mode enabled (no auto increment of source address)
