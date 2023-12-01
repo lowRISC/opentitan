@@ -516,6 +516,7 @@ cc_library(
     deps = [
         ":attestation",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
