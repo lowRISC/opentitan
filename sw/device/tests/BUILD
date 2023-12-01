@@ -1081,6 +1081,28 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "keymgr_dpe_key_derivation_test",
+    srcs = ["keymgr_dpe_key_derivation_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:keymgr_dpe",
+        "//sw/top_darjeeling/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_dpe_testutils",
+    ],
+)
+
+opentitan_functest(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
     verilator = verilator_params(
