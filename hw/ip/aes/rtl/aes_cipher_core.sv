@@ -306,7 +306,6 @@ module aes_cipher_core import aes_pkg::*;
     // - the PRD required by the key expand module (has 4 S-Boxes internally).
     aes_prng_masking #(
       .Width                ( WidthPRDMasking        ),
-      .ChunkSize            ( ChunkSizePRDMasking    ),
       .EntropyWidth         ( EntropyWidth           ),
       .SecAllowForcingMasks ( SecAllowForcingMasks   ),
       .SecSkipPRNGReseeding ( SecSkipPRNGReseeding   ),

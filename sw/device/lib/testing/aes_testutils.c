@@ -49,14 +49,11 @@ enum {
   kEdnSeedMaterialLen = 12,
 };
 
-// CSRNG needs to constantly output these bits to EDN. The AES masking PRNG
-// consists of five 32-bit LFSRs each followed by a linear permutation and a
-// non-linear layer and ultimately a secret permutation spanning all five
-// LFSRs. Only if the non-linear layers of all five LFSRs output an all-zero
-// vector, the PRNG output is zero as well.
-//
+// CSRNG needs to constantly output these bits to EDN. If reseeded to an all-
+// zero value the AES masking PRNG will output an all-zero vector. It will
+// further keep this value if the CTRL_AUX_SHADOWED.FORCE_MASKS bit is set.
 const uint32_t kAesMaskingPrngZeroOutputSeed[kCsrngBlockLen] = {
-    0xff00ffff, 0xff00ffff, 0xff00ffff, 0xff00ffff};
+    0x00000000, 0x000000000, 0x00000000, 0x00000000};
 
 // Seed material for instantiate command. The CTR_DRBG construction
 // implemented by CSRNG produces
@@ -64,36 +61,36 @@ const uint32_t kAesMaskingPrngZeroOutputSeed[kCsrngBlockLen] = {
 // key = 00 01 02 03 04 05 06 07 - 08 09 0a 0b 0c 0d 0e 0f
 //       10 11 12 13 14 15 16 17 - 18 19 1a 1b 1c 1d 1e 1f
 //
-//   V = 8d 97 b4 1b c2 0a cb bb - 81 06 d3 91 85 46 67 f8
+//   V = 6d 9f 08 eb 2a 2e 27 7a - b4 89 84 cf f1 ab 9a 09
 //
 // from this seed material upon instantiate. The key is arbitrarily chosen.
 // Encrypting V using this key then gives the required
 // kAesMaskingPrngZeroOutputSeed above.
 const uint32_t kEdnSeedMaterialInstantiate[kEdnSeedMaterialLen] = {
-    0xf0405279, 0x50a4261f, 0xf5ace1cf, 0xfff7b7d1, 0xa6ee8307, 0x1f57dfc8,
+    0x84adaf86, 0x652b7141, 0x1d880d0e, 0x1fff0b21, 0xa6ee8307, 0x1f57dfc8,
     0x59757d79, 0xdeb6522e, 0xc8c67d84, 0xa16abefa, 0xc34030be, 0x530e88f8};
 
 // V and key after instantiate.
-const uint32_t kCsrngVInstantiate[kCsrngBlockLen] = {0x854667f7, 0x8106d391,
-                                                     0xc20acbbb, 0x8d97b41b};
+const uint32_t kCsrngVInstantiate[kCsrngBlockLen] = {0xf1ab9a08, 0xb48984cf,
+                                                     0x2a2e277a, 0x6d9f08eb};
 const uint32_t kCsrngKeyInstantiate[kCsrngKeyLen] = {
     0x1c1d1e1f, 0x18191a1b, 0x14151617, 0x10111213,
     0x0c0d0e0f, 0x08090a0b, 0x04050607, 0x00010203};
 
 // V and key after generate.
-const uint32_t kCsrngVGenerate[kCsrngBlockLen] = {0x1569e491, 0xe854f642,
-                                                  0xe931a570, 0x60939074};
+const uint32_t kCsrngVGenerate[kCsrngBlockLen] = {0x654600bd, 0xf0c32787,
+                                                  0x3eb52114, 0x8a1e0dce};
 const uint32_t kCsrngKeyGenerate[kCsrngKeyLen] = {
-    0xfdab6b68, 0x31920240, 0x32a48b64, 0xda4189d7,
-    0xf49b7a55, 0x3d86fe43, 0xf4eaeab1, 0x8fae023a};
+    0xff6589b5, 0x4bb8e5f9, 0x62847098, 0x1e9f9cd1,
+    0x3c005fbd, 0x9a1b6e70, 0xe30eb080, 0x71dea927};
 
 // Seed material for reseed command. After one generate, this seed material
 // will bring the key and V of CSRNG back to the state after instantiate.
 // I.e., one can again run one generate to produce the seed required for AES
 // (see kAesMaskingPrngZeroOutputSeed).
 const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
-    0x5f6fb665, 0x21ca8e3f, 0x5ba3dba1, 0x2c10a9ec, 0x03b8cd4b, 0x8264aaea,
-    0x371e6305, 0x8fb186e1, 0xf622bc3e, 0x98e5d247, 0x73040c38, 0x6596739e};
+    0x96994362, 0x7ef8f0b9, 0x5b5332dc, 0xd0df9b12, 0x96dfbaa9, 0xac0b5af7,
+    0xec2504be, 0xb00fb68c, 0xf37e0a7f, 0x88172eec, 0x4e4b5f58, 0xfec120c0};
 
 status_t aes_testutils_masking_prng_zero_output_seed(void) {
   const dif_csrng_t csrng = {

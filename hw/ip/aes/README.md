@@ -33,7 +33,7 @@ The AES unit supports the following features:
 - Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
 - First-order masking of the cipher core using domain-oriented masking (DOM) to deter side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening](./doc/theory_of_operation.md#side-channel-analysis))
 - Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
-- Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs) with configurable reseeding rate resulting in max entropy consumption rates ranging from 286 Mbit/s to 0.035 Mbit/s (at 100 MHz).
+- Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs) with configurable reseeding rate resulting in max entropy consumption rates ranging from 343 Mbit/s to 0.042 Mbit/s (at 100 MHz).
 - Countermeasures for deterring fault injection (FI) on the control path (for more details see [Security Hardening](./doc/theory_of_operation.md#fault-injection))
 - Register-based data and control interface
 - System key-manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.

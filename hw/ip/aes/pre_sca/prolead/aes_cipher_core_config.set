@@ -90,7 +90,7 @@ no_of_initial_inputs
 
 % number of clock cycles to initiate the run (start of encryption)
 no_of_initial_clock_cycles
-11
+12
 
 %1 - First clock cycle with inactive reset.
             key_clear_i         1'b0
@@ -272,7 +272,27 @@ no_of_initial_clock_cycles
             prng_reseed_i       1'b1
 [2:0]       key_len_i           3'b001
 
-%10 - Start encryption in parallel with a reseed of the internal masking PRNG.
+%10 - Wait for initial reseed of the masking PRNG to finish.
+            key_clear_i         1'b0
+            data_out_clear_i    1'b0
+            alert_fatal_i       1'b0
+            force_masks_i       1'b0
+            entropy_ack_i       1'b1
+[2:0]       out_ready_i         3'b011
+            cfg_valid_i         1'b1
+[1:0]       op_i                2'b01
+[127:0]     state_init_i        group_in0[127:0]
+[255:128]   state_init_i        group_in1[127:0]
+[127:0]     prd_clearing_i      group_in0[255:128]
+[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni              1'b1
+[2:0]       in_valid_i          3'b100
+[2:0]       crypt_i             3'b100
+[2:0]       dec_key_gen_i       3'b100
+            prng_reseed_i       1'b1
+[2:0]       key_len_i           3'b001
+
+%11 - Start encryption.
             key_clear_i         1'b0
             data_out_clear_i    1'b0
             alert_fatal_i       1'b0
@@ -292,7 +312,7 @@ no_of_initial_clock_cycles
             prng_reseed_i       1'b1
 [2:0]       key_len_i           3'b001
 
-%11 - De-assert in_valid_i. The DUT is already busy performing the encryption.
+%12 - De-assert in_valid_i. The DUT is already busy performing the encryption.
 % De-asserting in_valid_i helps to avoid restarting the encryption after finishing in case the
 % simulation isn't stopped.
             key_clear_i         1'b0
@@ -319,7 +339,7 @@ no_of_initial_clock_cycles
 % Note: end_wait_cycles > 0 doesn't seem to work with signal values, otherwise we could use
 % something like [2:0] out_valid_o 3'b011
 end_condition
-ClockCycles 66
+ClockCycles 67
 
 % number of clock cycles to wait after the end_condition
 end_wait_cycles
@@ -327,7 +347,7 @@ end_wait_cycles
 
 % maximum number of clock cycles per run before checking the end_condition
 max_clock_cycle
-66
+67
 
 no_of_outputs
 0
@@ -336,7 +356,7 @@ no_of_outputs
 no_of_test_clock_cycles
 1
 
-9-66  % The encryption starts at %10 and takes 56 clock cycles.
+10-67  % The encryption starts at %11 and takes 56 clock cycles.
 
 % max number of entries in the report file with maximum leakage
 % 0 : do not generate the report file

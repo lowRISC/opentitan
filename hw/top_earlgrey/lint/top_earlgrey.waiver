@@ -59,3 +59,5 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv} -msg {'spi_device' is used
       -comment {This is acceptable, since these are used in different hierarchies.}
 waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv} -msg {'M' is used as a parameter here, and as a reg at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
+waive -rules SAME_NAME_TYPE -location {prim_trivium.sv} -msg {'state_update' is used as a reg here, and as a function at} \
+      -comment {This is acceptable, since these are used in different hierarchies.}

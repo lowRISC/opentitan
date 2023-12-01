@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lfsr
       - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:trivium
       - lowrisc:prim:util
       - lowrisc:ip:tlul
       - lowrisc:ip:lc_ctrl_pkg

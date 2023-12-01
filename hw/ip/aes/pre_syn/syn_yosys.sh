@@ -64,6 +64,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_lc_sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sync_reqack_data.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sync_reqack.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_trivium.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_packer_fifo.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_lfsr.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_flop_2sync.sv
