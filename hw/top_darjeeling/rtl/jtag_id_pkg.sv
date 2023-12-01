@@ -27,4 +27,11 @@ package jtag_id_pkg;
     1'b1                   // (fixed)
   };
 
+  localparam logic [31:0] LC_DM_COMBINED_JTAG_IDCODE = {
+    JTAG_VERSION,          // Version
+    16'h3,                 // Part Number
+    JEDEC_MANUFACTURER_ID, // Manufacturer ID
+    1'b1                   // (fixed)
+  };
+
 endpackage : jtag_id_pkg

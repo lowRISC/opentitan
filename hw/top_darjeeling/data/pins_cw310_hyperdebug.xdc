@@ -81,11 +81,16 @@ set_property -dict { PACKAGE_PIN B19 IOSTANDARD LVCMOS33 }  [get_ports { IOC12 }
 
 
 ## IOR bank
-set_property -dict { PACKAGE_PIN  E20  IOSTANDARD LVCMOS33 } [get_ports { IOR0  }]; # J4.24 USERIOA-24, JTAG TMS
-set_property -dict { PACKAGE_PIN  C18  IOSTANDARD LVCMOS33 } [get_ports { IOR1  }]; # J4.26 USERIOA-26, JTAG TDO
-set_property -dict { PACKAGE_PIN  D20  IOSTANDARD LVCMOS33 } [get_ports { IOR2  }]; # J4.28 USERIOA-28, JTAG TDI
-set_property -dict { PACKAGE_PIN  F20  IOSTANDARD LVCMOS33 } [get_ports { IOR3  }]; # J4.21 USERIOA-21, JTAG TCK
-set_property -dict { PACKAGE_PIN  D19  IOSTANDARD LVCMOS33 } [get_ports { IOR4  }]; # J4.23 USERIOA-23, JTAG TRSTn
+set_property -dict { PACKAGE_PIN  N16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TMS    }]; # N16:USR_DBG_TMS           JTAG
+set_property -dict { PACKAGE_PIN  P16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TDO    }]; # P16:USR_DBG_TDO           JTAG
+set_property -dict { PACKAGE_PIN  R16  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TDI    }]; # R16:USR_DBG_TDI           JTAG
+set_property -dict { PACKAGE_PIN  N18  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TCK    }]; # N18:USR_DBG_TCK           JTAG
+set_property -dict { PACKAGE_PIN  U19  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TRST_N }]; # U19:USR_DBG_TDAT1(nTRST)  JTAG
+set_property -dict { PACKAGE_PIN  E20  IOSTANDARD LVCMOS33 } [get_ports { IOR0  }]; # J4.24 USERIOA-24
+set_property -dict { PACKAGE_PIN  C18  IOSTANDARD LVCMOS33 } [get_ports { IOR1  }]; # J4.26 USERIOA-26
+set_property -dict { PACKAGE_PIN  D20  IOSTANDARD LVCMOS33 } [get_ports { IOR2  }]; # J4.28 USERIOA-28
+set_property -dict { PACKAGE_PIN  F20  IOSTANDARD LVCMOS33 } [get_ports { IOR3  }]; # J4.21 USERIOA-21
+set_property -dict { PACKAGE_PIN  D19  IOSTANDARD LVCMOS33 } [get_ports { IOR4  }]; # J4.23 USERIOA-23
 set_property -dict { PACKAGE_PIN  C19  IOSTANDARD LVCMOS33 } [get_ports { IOR5  }]; # J4.25 USERIOA-25
 set_property -dict { PACKAGE_PIN  K17  IOSTANDARD LVCMOS33 } [get_ports { IOR6  }]; # J4.27 USERIOA-27
 set_property -dict { PACKAGE_PIN  K18  IOSTANDARD LVCMOS33 } [get_ports { IOR7  }]; # J4.29 USERIOA-29

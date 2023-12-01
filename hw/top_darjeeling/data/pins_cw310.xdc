@@ -85,12 +85,16 @@ set_property -dict { PACKAGE_PIN P24  IOSTANDARD LVCMOS33                   } [g
 #############
 ## IOR bank #
 #############
-set_property -dict { PACKAGE_PIN N16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { MIO5  }]; # N16:USR_DBG_TMS           JTAG
-set_property -dict { PACKAGE_PIN P16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { MIO8  }]; # P16:USR_DBG_TDO           JTAG
-set_property -dict { PACKAGE_PIN R16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { MIO7  }]; # R16:USR_DBG_TDI           JTAG
-set_property -dict { PACKAGE_PIN N18         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { MIO4  }]; # N18:USR_DBG_TCK           JTAG
-set_property -dict { PACKAGE_PIN U19         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { MIO6  }]; # U19:USR_DBG_TDAT1(nTRST)  JTAG
-
+set_property -dict { PACKAGE_PIN N16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TMS    }]; # N16:USR_DBG_TMS           JTAG
+set_property -dict { PACKAGE_PIN P16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TDO    }]; # P16:USR_DBG_TDO           JTAG
+set_property -dict { PACKAGE_PIN R16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TDI    }]; # R16:USR_DBG_TDI           JTAG
+set_property -dict { PACKAGE_PIN N18         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TCK    }]; # N18:USR_DBG_TCK           JTAG
+set_property -dict { PACKAGE_PIN U19         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { JTAG_TRST_N }]; # U19:USR_DBG_TDAT1(nTRST)  JTAG
+set_property -dict { PACKAGE_PIN V9          IOSTANDARD LVCMOS18                 } [get_ports { MIO5  }]; #  V9:USRDIP4               Darjeeling:GPIO
+set_property -dict { PACKAGE_PIN W8          IOSTANDARD LVCMOS18                 } [get_ports { MIO8  }]; #  W8:USRDIP5               Darjeeling:GPIO
+set_property -dict { PACKAGE_PIN W10         IOSTANDARD LVCMOS18                 } [get_ports { MIO7  }]; # W10:USRDIP6               Darjeeling:GPIO
+set_property -dict { PACKAGE_PIN V11         IOSTANDARD LVCMOS18                 } [get_ports { MIO4  }]; # V11:USRDIP7               Darjeeling:GPIO
+set_property -dict { PACKAGE_PIN Y11         IOSTANDARD LVCMOS18                 } [get_ports { MIO6  }]; # Y11:USR_SW0               Darjeeling:GPIO
 set_property -dict { PACKAGE_PIN W9          IOSTANDARD LVCMOS18                 } [get_ports { GPIO21  }]; #  W9:USRDIP3             Darjeeling:GPIO
 set_property -dict { PACKAGE_PIN M26 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { GPIO25  }]; # M26:USRLED0             Darjeeling:GPIO
 set_property -dict { PACKAGE_PIN M25 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { GPIO26  }]; # M25:USRLED1             Darjeeling:GPIO

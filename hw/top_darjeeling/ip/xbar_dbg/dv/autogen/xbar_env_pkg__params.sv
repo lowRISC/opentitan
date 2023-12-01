@@ -7,12 +7,20 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
+    '{"rv_dm__dbg", '{
+        '{32'h00000000, 32'h000001ff}
+    }},
     '{"mbx_jtag__soc", '{
         '{32'h00001000, 32'h0000101f}
+    }},
+    '{"lc_ctrl__dmi", '{
+        '{32'h00020000, 32'h00020fff}
 }}};
 
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"dbg", 0, '{
-        "mbx_jtag__soc"}}
+        "rv_dm__dbg",
+        "mbx_jtag__soc",
+        "lc_ctrl__dmi"}}
 };

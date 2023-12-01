@@ -4,9 +4,9 @@
 { name: "dbg",
   type: "xbar",
   clock_primary: "clk_dbg_i", // Main clock, used in sockets
-  other_clock_list: [], // Secondary clocks used by specific nodes
+  other_clock_list: [ "clk_peri_i" ], // Secondary clocks used by specific nodes
   reset_primary: "rst_dbg_ni", // Main reset, used in sockets
-  other_reset_list: [], // Secondary resets used by specific nodes
+  other_reset_list: [ "rst_peri_ni" ], // Secondary resets used by specific nodes
 
   nodes: [
     { name:       "dbg",
@@ -17,18 +17,31 @@
       xbar:       "true",
       pipeline:   false,
     },
+    { name:      "rv_dm.dbg",
+      type:      "device",
+      clock:     "clk_dbg_i",
+      reset:     "rst_dbg_ni",
+      pipeline:  false,
+    },
     { name:       "mbx_jtag.soc",
       type:       "device",
-      addr_space: "soc_dbg",
       clock:      "clk_dbg_i",
       reset:      "rst_dbg_ni",
       pipeline:   false,
     },
+    { name:      "lc_ctrl.dmi",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    }
   ],
 
   connections: {
     dbg: [
+      "rv_dm.dbg",
       "mbx_jtag.soc",
+      "lc_ctrl.dmi"
     ],
   },
 }

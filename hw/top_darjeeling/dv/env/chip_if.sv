@@ -31,10 +31,8 @@ interface chip_if;
   // TODO: In Xcelium, the bind is not exposing the internal hierarchies to chip_if.
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
-  `define STRAP_HIER        tb.dut.u_pinmux_strap_sampling_dummy
   `define TOP_HIER          tb.dut.top_darjeeling
 `else
-  `define STRAP_HIER        u_pinmux_strap_sampling_dummy
   `define TOP_HIER          top_darjeeling
 `endif
 `define AES_HIER            `TOP_HIER.u_aes
@@ -229,95 +227,6 @@ interface chip_if;
     __enable_spi_device[inst_num] = enable;
   endfunction : enable_spi_device
 
-
-  // Functional (muxed) interface: DFT straps.
-  pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(
-    .pins(mios[top_darjeeling_pkg::MioPadMio3:top_darjeeling_pkg::MioPadMio2])
-  );
-
-  // Functional (muxed) interface: TAP straps.
-  pins_if #(.Width(2), .PullStrength("Weak")) tap_straps_if(
-    .pins({mios[top_darjeeling_pkg::MioPadMio1], mios[top_darjeeling_pkg::MioPadMio0]})
-  );
-
-  // Weakly pulldown TAP & DFT strap pins in DFT-enabled LC states.
-  //
-  // The TAP strap sampling logic continuously samples the strap values in DFT-enabled LC
-  // state to allow fast-switching back and forth between LC and RV_DM TAPs. The TAP strap pins are
-  // muxed IOs which are unconnected to any interface by default, leaving them in an undriven state.
-  // The test may put the chip in such an LC state for various reasons. Such tests may not even
-  // set the TAP strap pins or exercise the JTAG interface. The side-effect of this is, when the
-  // continuous strap sampling logic samples an undriven value, it results in X-propagation. To
-  // avoid that, it is necessary to weakly pull down the strap pins. The DFT strap pins have a
-  // same issue, except that it is sampled only once during power up.
-  //
-  // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
-`ifdef GATE_LEVEL
-  wire pinmux_lc_dft_en = (`STRAP_HIER.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0] == lc_ctrl_pkg::On);
-`else
-  wire pinmux_lc_dft_en = (`STRAP_HIER.lc_dft_en[0] == lc_ctrl_pkg::On);
-`endif
-  wire pinmux_lc_hw_debug_en =(`STRAP_HIER.pinmux_hw_debug_en_o == lc_ctrl_pkg::On);
-
-`ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en = `STRAP_HIER.strap_en_q_reg.Q;
-`else
-  wire pwrmgr_fast_pwr_state_strap_en = `STRAP_HIER.strap_en_q;
-`endif
-  initial begin
-    fork
-      forever @(pwrmgr_fast_pwr_state_strap_en or pinmux_lc_dft_en) begin
-        // TAP straps are continuously sampled in active power.
-        if (pinmux_lc_dft_en || pwrmgr_fast_pwr_state_strap_en) begin
-          tap_straps_if.pins_pd = '1;
-        end else begin
-          tap_straps_if.pins_pd = '0;
-        end
-        // DFT straps are sampled only once, during a specific pwrmgr FSM state.
-        if (pinmux_lc_dft_en && pwrmgr_fast_pwr_state_strap_en) begin
-          dft_straps_if.pins_pd = '1;
-        end else begin
-          dft_straps_if.pins_pd = '0;
-        end
-      end
-    join_none
-  end
-
-  // Set JTAG TAP straps during the next powerup.
-  //
-  // The function waits for the pwrmgr fast FSM state to reach the strap sampling state and sets the
-  // JTAG TAP strap pins to the desired values. This function must be called after asserting POR
-  // or just before a new low power entry. The strap pins are set the moment pwrmgr FSM reaches the
-  // strap sampling state. The strap interface is disconnected from the chip IOs immediately once
-  // the pwrmgr advances to the next state, so that the chip IOs are freed up for other uses.
-  //
-  // In DFT-enabled LC state, the TAP straps are continuously sampled to allow switching back and
-  // forth between RV_DM and LC TAPs. For this usecase, the test sequence can set the TAP straps
-  // directly using the tap_straps_if interface.
-  //
-  // This method is non-blocking - it immediately returns back to the caller after spawning a
-  // thread. Care must be taken to ensure the calling thread is not killed unless desired.
-  function automatic void set_tap_straps_on_powerup(chip_jtag_tap_e tap_strap);
-    fork begin
-      wait (pwrmgr_fast_pwr_state_strap_en);
-      tap_straps_if.drive(tap_strap);
-      wait (!pwrmgr_fast_pwr_state_strap_en);
-      tap_straps_if.drive_en('0);
-    end join_none
-  endfunction
-
-  // Set DFT straps during the next powerup.
-  //
-  // Similar in behavior to set_tap_straps_on_next_powerup(), but used for setting the DFT straps.
-  function automatic void set_dft_straps_on_powerup(bit [1:0] dft_strap);
-    fork begin
-      wait (pwrmgr_fast_pwr_state_strap_en);
-      dft_straps_if.drive(dft_strap);
-      wait (!pwrmgr_fast_pwr_state_strap_en);
-      dft_straps_if.drive_en('0);
-    end join_none
-  endfunction
-
   // Functional (muxed) interface: SW straps.
   pins_if #(.Width(3), .PullStrength("Weak")) sw_straps_if(
     .pins(dios[top_darjeeling_pkg::DioPadGpio24:top_darjeeling_pkg::DioPadGpio22])
@@ -349,29 +258,41 @@ interface chip_if;
            dios[top_darjeeling_pkg::DioPadGpio1],  dios[top_darjeeling_pkg::DioPadGpio0]})
   );
 
-  // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
-
-  // To connect the JTAG interface to chip IOs, just set the TAP strap to the desired value.
-  //
-  // Whether the desired JTAG TAP will actually selected or not depends on the LC state and the
-  // window of time when the TAP straps are set. It is upto the test sequence to orchestrate it
-  // correctly. Disconnect the TAP strap interface to free up the muxed IOs.
-  wire __enable_jtag = |tap_straps_if.pins_oe;
+  // Functional (dedicated) interface: JTAG (valid during debug enabled LC state only).
+  // JTAG has dedicated pads for darjeeling, so leave it always enabled.
+  wire __enable_jtag = 1'b1;
   jtag_if jtag_if();
 
-  assign mios[top_darjeeling_pkg::MioPadMio4] = __enable_jtag ? jtag_if.tck : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadMio5] = __enable_jtag ? jtag_if.tms : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadMio6] = __enable_jtag ? jtag_if.trst_n : 1'bz;
-  assign mios[top_darjeeling_pkg::MioPadMio7] = __enable_jtag ? jtag_if.tdi : 1'bz;
-  assign jtag_if.tdo = __enable_jtag ? mios[top_darjeeling_pkg::MioPadMio8] : 1'bz;
+  wire dmi_clk = `CLKMGR_HIER.clocks_o.clk_main_infra;
+  wire dmi_rst_n = `RSTMGR_HIER.resets_o.rst_lc_n[0];
+  clk_rst_if dmi_clk_rst_if(.clk(dmi_clk), .rst_n(dmi_rst_n));
+  tl_if dmi_tl_if(.clk(dmi_clk), .rst_n(dmi_rst_n));
+
+  function automatic void configure_jtag_dmi(bit use_jtag_dmi);
+`ifndef GATE_LEVEL
+    if (use_jtag_dmi) begin
+      force dmi_tl_if.h2d = `TOP_HIER.dbg_tl_req_i;
+      force dmi_tl_if.d2h = `TOP_HIER.dbg_tl_rsp_o;
+    end else begin
+      force `TOP_HIER.dbg_tl_req_i = dmi_tl_if.h2d;
+      force dmi_tl_if.d2h = `TOP_HIER.dbg_tl_rsp_o;
+    end
+`endif
+  endfunction
+
+  assign dios[top_darjeeling_pkg::DioPadJtagTms] = __enable_jtag ? jtag_if.tms : 1'bz;
+  assign jtag_if.tdo = __enable_jtag ? dios[top_darjeeling_pkg::DioPadJtagTdo] : 1'bz;
+  assign dios[top_darjeeling_pkg::DioPadJtagTdi] = __enable_jtag ? jtag_if.tdi : 1'bz;
+  assign dios[top_darjeeling_pkg::DioPadJtagTck] = __enable_jtag ? jtag_if.tck : 1'bz;
+  assign dios[top_darjeeling_pkg::DioPadJtagTrstN] = __enable_jtag ? jtag_if.trst_n : 1'bz;
 
   function automatic void set_tdo_pull(bit value);
     if (value) begin
-      mios_if.pins_pd[top_darjeeling_pkg::MioPadMio8] = 0;
-      mios_if.pins_pu[top_darjeeling_pkg::MioPadMio8] = 1;
+      dios_if.pins_pd[top_darjeeling_pkg::DioPadJtagTdo] = 0;
+      dios_if.pins_pu[top_darjeeling_pkg::DioPadJtagTdo] = 1;
     end else begin
-      mios_if.pins_pu[top_darjeeling_pkg::MioPadMio8] = 0;
-      mios_if.pins_pd[top_darjeeling_pkg::MioPadMio8] = 1;
+      dios_if.pins_pd[top_darjeeling_pkg::DioPadJtagTdo] = 1;
+      dios_if.pins_pu[top_darjeeling_pkg::DioPadJtagTdo] = 0;
     end
   endfunction
 
@@ -656,7 +577,7 @@ interface chip_if;
   assign probed_cpu_pc.pc_id = `CPU_CORE_HIER.u_ibex_core.pc_id;
   assign probed_cpu_pc.pc_wb = `CPU_CORE_HIER.u_ibex_core.pc_wb;
 `endif
-  // Stub CPU envorinment.
+  // Stub CPU environment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
   // as well. If enabled, the following things happen:
@@ -719,6 +640,8 @@ interface chip_if;
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_chip_reg_block*", "vif", cpu_d_tl_if);
 
+    uvm_config_db#(virtual tl_if)::set(
+        null, "*.env.m_tl_agent_chip_soc_dbg_reg_block*", "vif", dmi_tl_if);
     // foreach (alert_if[i]) begin
     //   uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
     //       LIST_OF_ALERTS[i]), "vif", alert_if[i]);
@@ -737,8 +660,6 @@ interface chip_if;
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
     otp_ext_volt_if.disconnect();
-    dft_straps_if.disconnect();
-    tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
     pinmux_wkup_if.disconnect();

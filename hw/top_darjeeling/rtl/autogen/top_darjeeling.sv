@@ -203,14 +203,9 @@ module top_darjeeling #(
   output logic       mbx_pcie1_doe_intr_en_o,
   output logic       mbx_pcie1_doe_intr_support_o,
   output logic       mbx_pcie1_doe_async_msg_support_o,
-  input  tlul_pkg::tl_h2d_t       mbx_jtag_dmi_req_i,
-  output tlul_pkg::tl_d2h_t       mbx_jtag_dmi_rsp_o,
-  input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
-  output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
-  input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
-  output tlul_pkg::tl_d2h_t       rv_dm_dmi_d2h_o,
+  input  tlul_pkg::tl_h2d_t       dbg_tl_req_i,
+  output tlul_pkg::tl_d2h_t       dbg_tl_rsp_o,
   input  rv_dm_pkg::next_dm_addr_t       rv_dm_next_dm_addr_i,
-  output logic       pwrmgr_strap_en_o,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output pinmux_pkg::dft_strap_test_req_t       dft_strap_test_o,
@@ -678,8 +673,12 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx_pcie0_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_pcie1_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_pcie1_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       rv_dm_dbg_tl_d_req;
+  tlul_pkg::tl_d2h_t       rv_dm_dbg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_tl_req;
+  tlul_pkg::tl_d2h_t       lc_ctrl_dmi_tl_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -702,7 +701,6 @@ module top_darjeeling #(
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
-  assign pwrmgr_strap_en_o = pwrmgr_aon_strap;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -1178,8 +1176,6 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[12:10] ),
 
       // Inter-module signals
-      .dmi_tl_h2d_i(lc_ctrl_dmi_h2d_i),
-      .dmi_tl_d2h_o(lc_ctrl_dmi_d2h_o),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),
@@ -1217,6 +1213,8 @@ module top_darjeeling #(
       .strap_en_override_o(lc_ctrl_strap_en_override),
       .regs_tl_i(lc_ctrl_regs_tl_req),
       .regs_tl_o(lc_ctrl_regs_tl_rsp),
+      .dmi_tl_i(lc_ctrl_dmi_tl_req),
+      .dmi_tl_o(lc_ctrl_dmi_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
@@ -1665,8 +1663,6 @@ module top_darjeeling #(
 
       // Inter-module signals
       .next_dm_addr_i(rv_dm_next_dm_addr_i),
-      .dmi_tl_h2d_i(rv_dm_dmi_h2d_i),
-      .dmi_tl_d2h_o(rv_dm_dmi_d2h_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
@@ -1682,6 +1678,8 @@ module top_darjeeling #(
       .regs_tl_d_o(rv_dm_regs_tl_d_rsp),
       .mem_tl_d_i(rv_dm_mem_tl_d_req),
       .mem_tl_d_o(rv_dm_mem_tl_d_rsp),
+      .dbg_tl_d_i(rv_dm_dbg_tl_d_req),
+      .dbg_tl_d_o(rv_dm_dbg_tl_d_rsp),
       .scanmode_i,
 
       // Clock and reset connections
@@ -2932,15 +2930,25 @@ module top_darjeeling #(
   );
   xbar_dbg u_xbar_dbg (
     .clk_dbg_i (clkmgr_aon_clocks.clk_main_infra),
+    .clk_peri_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .rst_dbg_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .rst_peri_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
 
     // port: tl_dbg
-    .tl_dbg_i(mbx_jtag_dmi_req_i),
-    .tl_dbg_o(mbx_jtag_dmi_rsp_o),
+    .tl_dbg_i(dbg_tl_req_i),
+    .tl_dbg_o(dbg_tl_rsp_o),
+
+    // port: tl_rv_dm__dbg
+    .tl_rv_dm__dbg_o(rv_dm_dbg_tl_d_req),
+    .tl_rv_dm__dbg_i(rv_dm_dbg_tl_d_rsp),
 
     // port: tl_mbx_jtag__soc
     .tl_mbx_jtag__soc_o(mbx_jtag_soc_tl_d_req),
     .tl_mbx_jtag__soc_i(mbx_jtag_soc_tl_d_rsp),
+
+    // port: tl_lc_ctrl__dmi
+    .tl_lc_ctrl__dmi_o(lc_ctrl_dmi_tl_req),
+    .tl_lc_ctrl__dmi_i(lc_ctrl_dmi_tl_rsp),
 
 
     .scanmode_i

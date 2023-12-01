@@ -15,7 +15,6 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     super.pre_start();
     max_outstanding_accesses = 1;
   endtask

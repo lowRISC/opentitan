@@ -107,6 +107,11 @@ module tb;
 `endif
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadPorN]),
+    .JTAG_TCK(dut.chip_if.dios[top_darjeeling_pkg::DioPadJtagTck]),
+    .JTAG_TMS(dut.chip_if.dios[top_darjeeling_pkg::DioPadJtagTms]),
+    .JTAG_TDI(dut.chip_if.dios[top_darjeeling_pkg::DioPadJtagTdi]),
+    .JTAG_TDO(dut.chip_if.dios[top_darjeeling_pkg::DioPadJtagTdo]),
+    .JTAG_TRST_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadJtagTrstN]),
     .OTP_EXT_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadOtpExtVolt]),
     .SPI_HOST_D0(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD0]),
     .SPI_HOST_D1(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD1]),
@@ -283,6 +288,10 @@ module tb;
     // AST io clk blocker interface.
     uvm_config_db#(virtual ast_ext_clk_if)::set(
         null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
+
+    // DMI clk_rst_vif
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "clk_rst_vif_chip_soc_dbg_reg_block", dut.chip_if.dmi_clk_rst_if);
 
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.

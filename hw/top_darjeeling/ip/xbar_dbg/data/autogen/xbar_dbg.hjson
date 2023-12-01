@@ -21,7 +21,19 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_rv_dm__dbg"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_mbx_jtag__soc"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_lc_ctrl__dmi"
       act:    "req"
       package: "tlul_pkg"
     }

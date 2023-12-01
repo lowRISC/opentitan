@@ -362,29 +362,6 @@
       stage: V2
       tests: ["chip_sw_sleep_pin_retention"]
     }
-    {
-      name: chip_sw_tap_strap_sampling
-      desc: '''Verify tap accesses in different LC states.
-
-            Verify pinmux can select the life_cycle, RISC-V, and DFT taps after reset.
-            Verify that in TEST_UNLOCKED* and RMA states, pinmux can switch between the three TAPs
-            without issuing reset.
-            Verify in PROD state, only the LC tap can be selected.
-            Verify in DEV state, only the LC tap and RISC-V taps can be selected.
-            Verify DFT test mode straps are sampled and output to AST via
-            top_darjeeling.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
-            Verify top_darjeeling.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
-            and RMA, regardless of the value on DFT SW straps.
-            Verify loss of DFT functionality when DFT straps are deasserted on the next POR cycle.
-
-            Note: these tests require the ROM init stage to complete. So a test ROM image is loaded,
-            but the software does not test anything. The CPU boots and runs to completion while the
-            host (SV testbench) performs these stimulus / checks.
-            '''
-      stage: V2
-      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
-              "chip_tap_straps_testunlock0"]
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // System Peripherals                                                               //
@@ -533,18 +510,6 @@
             '''
       stage: V3
       tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
-    }
-    {
-      name: chip_sw_rv_dm_jtag_tap_sel
-      desc: '''Verify ability to select all available TAPs.
-
-            - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
-              RV_DM and DFT.
-            - Verify the TAP is selected correctly.
-            - X-ref'ed with chip_sw_tap_strap_sampling.
-            '''
-      stage: V2
-      tests: ["chip_tap_straps_rma"]
     }
     {
       name: chip_rv_dm_lc_disabled
@@ -1470,7 +1435,7 @@
             correctness.
             '''
       stage: V2
-      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
+      tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
       name: chip_sw_lc_ctrl_otp_hw_cfg
@@ -1566,9 +1531,6 @@
       stage: V2
       tests: [
         "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
-        "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
         "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr

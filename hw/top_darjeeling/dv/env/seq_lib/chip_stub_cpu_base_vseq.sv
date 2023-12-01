@@ -19,11 +19,6 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     // monitor in block-level
     foreach (cfg.m_uart_agent_cfgs[i]) cfg.m_uart_agent_cfgs[i].en_tx_monitor = 0;
 
-    // Select/Deselect JTAG interface.
-    if (cfg.jtag_riscv_map != null || cfg.use_jtag_dmi == 1) begin
-      `DV_GET_ENUM_PLUSARG(chip_common_pkg::chip_jtag_tap_e, cfg.select_jtag, select_jtag)
-      cfg.chip_vif.tap_straps_if.drive(cfg.select_jtag);
-    end
     enable_asserts_in_hw_reset_rand_wr = 0;
     super.pre_start();
   endtask

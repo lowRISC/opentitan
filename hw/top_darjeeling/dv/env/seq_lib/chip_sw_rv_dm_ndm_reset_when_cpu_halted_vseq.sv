@@ -7,11 +7,6 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq)
   `uvm_object_new
 
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
-    super.pre_start();
-  endtask
-
   virtual task body();
     bit rebooted;
     bit ready;

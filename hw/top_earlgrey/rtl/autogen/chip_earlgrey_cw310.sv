@@ -1077,8 +1077,6 @@ module chip_earlgrey_cw310 #(
     .mio_attr_o                   ( mio_attr                   ),
     .dio_attr_o                   ( dio_attr                   ),
 
-
-
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
     .spi_ram_2p_cfg_i( '0 ),

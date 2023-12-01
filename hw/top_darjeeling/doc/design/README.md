@@ -460,80 +460,85 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | ID   | Name             | Bank   | Type      | Connection Type   | Description                |
 |:-----|:-----------------|:-------|:----------|:------------------|:---------------------------|
 | 0    | POR_N            | VIO    | InputStd  | manual            | System reset               |
-| 1    | OTP_EXT_VOLT     | VIO    | AnalogIn1 | manual            | OTP external voltage input |
-| 2    | SPI_HOST_D0      | VIO    | BidirStd  | direct            | SPI host data              |
-| 3    | SPI_HOST_D1      | VIO    | BidirStd  | direct            | SPI host data              |
-| 4    | SPI_HOST_D2      | VIO    | BidirStd  | direct            | SPI host data              |
-| 5    | SPI_HOST_D3      | VIO    | BidirStd  | direct            | SPI host data              |
-| 6    | SPI_HOST_CLK     | VIO    | BidirStd  | direct            | SPI host clock             |
-| 7    | SPI_HOST_CS_L    | VIO    | BidirStd  | direct            | SPI host chip select       |
-| 8    | SPI_DEV_D0       | VIO    | BidirStd  | direct            | SPI device data            |
-| 9    | SPI_DEV_D1       | VIO    | BidirStd  | direct            | SPI device data            |
-| 10   | SPI_DEV_D2       | VIO    | BidirStd  | direct            | SPI device data            |
-| 11   | SPI_DEV_D3       | VIO    | BidirStd  | direct            | SPI device data            |
-| 12   | SPI_DEV_CLK      | VIO    | InputStd  | direct            | SPI device clock           |
-| 13   | SPI_DEV_CS_L     | VIO    | InputStd  | direct            | SPI device chip select     |
-| 14   | SPI_DEV_TPM_CS_L | VIO    | InputStd  | direct            | SPI device TPM chip select |
-| 15   | UART_RX          | VIO    | InputStd  | direct            | UART receive               |
-| 16   | UART_TX          | VIO    | BidirStd  | direct            | UART transmit              |
-| 17   | I2C_SCL          | VIO    | BidirStd  | direct            | I2C clock                  |
-| 18   | I2C_SDA          | VIO    | BidirStd  | direct            | I2C data                   |
-| 19   | GPIO0            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 20   | GPIO1            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 21   | GPIO2            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 22   | GPIO3            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 23   | GPIO4            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 24   | GPIO5            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 25   | GPIO6            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 26   | GPIO7            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 27   | GPIO8            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 28   | GPIO9            | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 29   | GPIO10           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 30   | GPIO11           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 31   | GPIO12           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 32   | GPIO13           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 33   | GPIO14           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 34   | GPIO15           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 35   | GPIO16           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 36   | GPIO17           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 37   | GPIO18           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 38   | GPIO19           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 39   | GPIO20           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 40   | GPIO21           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 41   | GPIO22           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 42   | GPIO23           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 43   | GPIO24           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 44   | GPIO25           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 45   | GPIO26           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 46   | GPIO27           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 47   | GPIO28           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 48   | GPIO29           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 49   | GPIO30           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 50   | GPIO31           | VIO    | BidirStd  | direct            | GPIO pad                   |
-| 51   | SOC_GPI0         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 52   | SOC_GPI1         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 53   | SOC_GPI2         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 54   | SOC_GPI3         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 55   | SOC_GPI4         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 56   | SOC_GPI5         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 57   | SOC_GPI6         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 58   | SOC_GPI7         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 59   | SOC_GPI8         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 60   | SOC_GPI9         | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 61   | SOC_GPI10        | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 62   | SOC_GPI11        | VIO    | InputStd  | direct            | SoC general purpose input  |
-| 63   | SOC_GPO0         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 64   | SOC_GPO1         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 65   | SOC_GPO2         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 66   | SOC_GPO3         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 67   | SOC_GPO4         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 68   | SOC_GPO5         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 69   | SOC_GPO6         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 70   | SOC_GPO7         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 71   | SOC_GPO8         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 72   | SOC_GPO9         | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 73   | SOC_GPO10        | VIO    | BidirStd  | direct            | SoC general purpose output |
-| 74   | SOC_GPO11        | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 1    | JTAG_TCK         | VIO    | InputStd  | manual            | JTAG TCK signal            |
+| 2    | JTAG_TMS         | VIO    | InputStd  | manual            | JTAG TMS signal            |
+| 3    | JTAG_TDI         | VIO    | InputStd  | manual            | JTAG TDI signal            |
+| 4    | JTAG_TDO         | VIO    | BidirStd  | manual            | JTAG TDO signal            |
+| 5    | JTAG_TRST_N      | VIO    | InputStd  | manual            | JTAG TRST_N signal         |
+| 6    | OTP_EXT_VOLT     | VIO    | AnalogIn1 | manual            | OTP external voltage input |
+| 7    | SPI_HOST_D0      | VIO    | BidirStd  | direct            | SPI host data              |
+| 8    | SPI_HOST_D1      | VIO    | BidirStd  | direct            | SPI host data              |
+| 9    | SPI_HOST_D2      | VIO    | BidirStd  | direct            | SPI host data              |
+| 10   | SPI_HOST_D3      | VIO    | BidirStd  | direct            | SPI host data              |
+| 11   | SPI_HOST_CLK     | VIO    | BidirStd  | direct            | SPI host clock             |
+| 12   | SPI_HOST_CS_L    | VIO    | BidirStd  | direct            | SPI host chip select       |
+| 13   | SPI_DEV_D0       | VIO    | BidirStd  | direct            | SPI device data            |
+| 14   | SPI_DEV_D1       | VIO    | BidirStd  | direct            | SPI device data            |
+| 15   | SPI_DEV_D2       | VIO    | BidirStd  | direct            | SPI device data            |
+| 16   | SPI_DEV_D3       | VIO    | BidirStd  | direct            | SPI device data            |
+| 17   | SPI_DEV_CLK      | VIO    | InputStd  | direct            | SPI device clock           |
+| 18   | SPI_DEV_CS_L     | VIO    | InputStd  | direct            | SPI device chip select     |
+| 19   | SPI_DEV_TPM_CS_L | VIO    | InputStd  | direct            | SPI device TPM chip select |
+| 20   | UART_RX          | VIO    | InputStd  | direct            | UART receive               |
+| 21   | UART_TX          | VIO    | BidirStd  | direct            | UART transmit              |
+| 22   | I2C_SCL          | VIO    | BidirStd  | direct            | I2C clock                  |
+| 23   | I2C_SDA          | VIO    | BidirStd  | direct            | I2C data                   |
+| 24   | GPIO0            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 25   | GPIO1            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 26   | GPIO2            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 27   | GPIO3            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 28   | GPIO4            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 29   | GPIO5            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 30   | GPIO6            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 31   | GPIO7            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 32   | GPIO8            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 33   | GPIO9            | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 34   | GPIO10           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 35   | GPIO11           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 36   | GPIO12           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 37   | GPIO13           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 38   | GPIO14           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 39   | GPIO15           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 40   | GPIO16           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 41   | GPIO17           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 42   | GPIO18           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 43   | GPIO19           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 44   | GPIO20           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 45   | GPIO21           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 46   | GPIO22           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 47   | GPIO23           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 48   | GPIO24           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 49   | GPIO25           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 50   | GPIO26           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 51   | GPIO27           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 52   | GPIO28           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 53   | GPIO29           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 54   | GPIO30           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 55   | GPIO31           | VIO    | BidirStd  | direct            | GPIO pad                   |
+| 56   | SOC_GPI0         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 57   | SOC_GPI1         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 58   | SOC_GPI2         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 59   | SOC_GPI3         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 60   | SOC_GPI4         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 61   | SOC_GPI5         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 62   | SOC_GPI6         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 63   | SOC_GPI7         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 64   | SOC_GPI8         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 65   | SOC_GPI9         | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 66   | SOC_GPI10        | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 67   | SOC_GPI11        | VIO    | InputStd  | direct            | SoC general purpose input  |
+| 68   | SOC_GPO0         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 69   | SOC_GPO1         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 70   | SOC_GPO2         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 71   | SOC_GPO3         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 72   | SOC_GPO4         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 73   | SOC_GPO5         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 74   | SOC_GPO6         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 75   | SOC_GPO7         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 76   | SOC_GPO8         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 77   | SOC_GPO9         | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 78   | SOC_GPO10        | VIO    | BidirStd  | direct            | SoC general purpose output |
+| 79   | SOC_GPO11        | VIO    | BidirStd  | direct            | SoC general purpose output |
 | 0    | MIO0             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
 | 1    | MIO1             | VIO    | BidirStd  | muxed             | Muxed IO pad               |
 | 2    | MIO2             | VIO    | BidirStd  | muxed             | Muxed IO pad               |

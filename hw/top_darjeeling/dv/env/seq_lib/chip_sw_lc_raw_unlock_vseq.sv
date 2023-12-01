@@ -13,7 +13,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     void'($value$plusargs("rom_prod_mode=%0d", rom_prod_mode));
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
 
@@ -77,14 +76,13 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     // external clock is disconnected.
     claim_transition_interface();
     jtag_riscv_agent_pkg::jtag_write_csr(
-                                         ral.lc_ctrl_regs.transition_ctrl.get_offset(),
-                                         p_sequencer.jtag_sequencer_h,
-                                         1);
+      cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.transition_ctrl.get_offset()),
+      p_sequencer.jtag_sequencer_h,
+      1);
     // Add some delay until clock bypass is turned on.
     cfg.chip_vif.ext_clk_if.wait_clks(10);
 
-    // Switch tap to rvdm
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
+    // Switch to rvdm
     reset_jtag_tap();
 
     if (rom_prod_mode) begin
@@ -112,7 +110,6 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
       jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset, 32'h1d4);
     end
 
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     apply_reset();
     reset_jtag_tap();
 

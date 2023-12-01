@@ -11,6 +11,7 @@
   clock_srcs:
   {
     clk_dbg_i: main
+    clk_peri_i: io_div4
   }
   clock_group: infra
   reset: rst_dbg_ni
@@ -21,10 +22,16 @@
       name: lc
       domain: "0"
     }
+    rst_peri_ni:
+    {
+      name: lc_io_div4
+      domain: "0"
+    }
   }
   clock_connections:
   {
     clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
+    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
   }
   domain:
   [
@@ -34,7 +41,9 @@
   {
     dbg:
     [
+      rv_dm.dbg
       mbx_jtag.soc
+      lc_ctrl.dmi
     ]
   }
   nodes:
@@ -53,9 +62,29 @@
       rsp_fifo_pass: true
     }
     {
+      name: rv_dm.dbg
+      type: device
+      clock: clk_dbg_i
+      reset: rst_dbg_ni
+      pipeline: false
+      inst_type: rv_dm
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_dbg: 0x0
+          }
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
       name: mbx_jtag.soc
       type: device
-      addr_space: soc_dbg
       clock: clk_dbg_i
       reset: rst_dbg_ni
       pipeline: false
@@ -68,6 +97,27 @@
             soc_dbg: 0x1000
           }
           size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: lc_ctrl.dmi
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: lc_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_dbg: 0x20000
+          }
+          size_byte: 0x1000
         }
       ]
       xbar: false

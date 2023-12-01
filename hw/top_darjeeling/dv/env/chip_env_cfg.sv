@@ -23,9 +23,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Indicates which clock source to use for chip simulations.
   chip_clock_source_e   chip_clock_source;
 
-  // Indicates which JTAG to mux on the pads, if any
-  chip_jtag_tap_e       select_jtag = JtagTapNone;
-
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
@@ -102,6 +99,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Design uses 5 bits for IR.
   parameter uint JTAG_IR_LEN = 5;
 
+  // Chip-level DMI register model
+  rand chip_soc_dbg_reg_block chip_soc_dbg_ral;
+
   // The JTAG RV debugger model.
   jtag_rv_debugger debugger;
 
@@ -133,6 +133,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+    dv_base_reg_block soc_dbg_base_reg_block;
     has_devmode = 0;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
     is_chip = 1;
@@ -144,8 +145,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // User can read `loc_alert_cause` to check ping timeout.
     en_scb_ping_chk = 0;
 
+    ral_model_names.push_back("chip_soc_dbg_reg_block");
     super.initialize(csr_base_addr);
-    `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
+    soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];
+    `downcast(chip_soc_dbg_ral, soc_dbg_base_reg_block);
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
     // TODO: use a parameter (or some better way)?
@@ -211,7 +215,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ctn_tiles, 16)
     `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
 
-    // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
       jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
       // Fix the reset values of these fields based on our design.
@@ -469,4 +472,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     return 0;
   endfunction
 
+  virtual function uvm_reg_addr_t get_lc_ctrl_dmi_addr(input uvm_reg_addr_t offset);
+    uvm_mem dbg = chip_soc_dbg_ral.lc_ctrl_dmi.dmi;
+    return dbg.get_address(offset / dbg.get_n_bytes());
+  endfunction
 endclass

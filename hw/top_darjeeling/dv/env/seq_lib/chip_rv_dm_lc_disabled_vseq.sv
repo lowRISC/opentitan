@@ -37,8 +37,6 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   endfunction
 
   virtual task pre_start();
-    // Select RV_DM TAP via the TAP straps.
-    cfg.select_jtag = JtagTapRvDm;
     super.pre_start();
     max_outstanding_accesses = 1;
   endtask
@@ -53,6 +51,7 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    bit gated;
     super.dut_init(reset_kind);
     `uvm_info(`gfn, $sformatf("DUT Init with lc_state %0s", lc_state.name), UVM_LOW)
 
@@ -62,11 +61,19 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     // the strap sampling pulse is released a few cycles after the ROM check completes.
     cfg.clk_rst_vif.wait_clks(100);
 
+    gated = !allow_rv_dm_access();
     `uvm_info(`gfn, "Attempt to activate RV_DM via JTAG.", UVM_MEDIUM)
     // RV_DM needs to be activated for the registers to work properly.
     // We always attempt to write this via the JTAG - even in states where the RV_DM is locked
     // so that incorrect gating behavior is not masked by the RV_DM being disabled.
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+    if (gated) begin
+      uvm_reg_data_t dmcontrol;
+      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(0));
+      csr_rd(.ptr(jtag_dmi_ral.dmcontrol), .value(dmcontrol), .blocking(1));
+      `DV_CHECK_EQ(dmcontrol, 0, "Writes to dmcontrol must be gated in this LC state");
+    end else begin
+      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+    end
     cfg.clk_rst_vif.wait_clks(5);
   endtask
 

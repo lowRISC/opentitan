@@ -11,6 +11,7 @@ package chip_env_pkg;
   import ast_pkg::AstRegsNum, ast_pkg::AstLastRegOffset;
   import bus_params_pkg::*;
   import chip_ral_pkg::*;
+  import chip_soc_dbg_ral_pkg::*;
   import chip_common_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;

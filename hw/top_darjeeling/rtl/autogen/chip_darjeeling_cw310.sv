@@ -21,6 +21,11 @@ module chip_darjeeling_cw310 #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
+  inout JTAG_TCK, // Manual Pad
+  inout JTAG_TMS, // Manual Pad
+  inout JTAG_TDI, // Manual Pad
+  inout JTAG_TDO, // Manual Pad
+  inout JTAG_TRST_N, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
@@ -252,7 +257,7 @@ module chip_darjeeling_cw310 #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [78-1:0] dio_in_raw;
+  logic [83-1:0] dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -264,12 +269,22 @@ module chip_darjeeling_cw310 #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
+  logic manual_in_jtag_tck, manual_out_jtag_tck, manual_oe_jtag_tck;
+  logic manual_in_jtag_tms, manual_out_jtag_tms, manual_oe_jtag_tms;
+  logic manual_in_jtag_tdi, manual_out_jtag_tdi, manual_oe_jtag_tdi;
+  logic manual_in_jtag_tdo, manual_out_jtag_tdo, manual_oe_jtag_tdo;
+  logic manual_in_jtag_trst_n, manual_out_jtag_trst_n, manual_oe_jtag_trst_n;
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
   logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
   logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
   logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
 
   pad_attr_t manual_attr_por_n;
+  pad_attr_t manual_attr_jtag_tck;
+  pad_attr_t manual_attr_jtag_tms;
+  pad_attr_t manual_attr_jtag_tdi;
+  pad_attr_t manual_attr_jtag_tdo;
+  pad_attr_t manual_attr_jtag_trst_n;
   pad_attr_t manual_attr_io_clk;
   pad_attr_t manual_attr_por_button_n;
   pad_attr_t manual_attr_io_clkout;
@@ -280,7 +295,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [86:0] unused_sig;
+  logic [91:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -292,7 +307,7 @@ module chip_darjeeling_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(78),
+    .NDioPads(83),
     .NMioPads(12),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
@@ -372,6 +387,11 @@ module chip_darjeeling_cw310 #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      InputStd, // JTAG_TRST_N
+      BidirStd, // JTAG_TDO
+      InputStd, // JTAG_TDI
+      InputStd, // JTAG_TMS
+      InputStd, // JTAG_TCK
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -472,6 +492,11 @@ module chip_darjeeling_cw310 #(
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      JTAG_TRST_N,
+      JTAG_TDO,
+      JTAG_TDI,
+      JTAG_TMS,
+      JTAG_TCK,
       POR_N
     }),
 
@@ -569,6 +594,11 @@ module chip_darjeeling_cw310 #(
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        manual_in_jtag_trst_n,
+        manual_in_jtag_tdo,
+        manual_in_jtag_tdi,
+        manual_in_jtag_tms,
+        manual_in_jtag_tck,
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -649,6 +679,11 @@ module chip_darjeeling_cw310 #(
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        manual_out_jtag_trst_n,
+        manual_out_jtag_tdo,
+        manual_out_jtag_tdi,
+        manual_out_jtag_tms,
+        manual_out_jtag_tck,
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -729,6 +764,11 @@ module chip_darjeeling_cw310 #(
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        manual_oe_jtag_trst_n,
+        manual_oe_jtag_tdo,
+        manual_oe_jtag_tdi,
+        manual_oe_jtag_tms,
+        manual_oe_jtag_tck,
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -809,6 +849,11 @@ module chip_darjeeling_cw310 #(
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        manual_attr_jtag_trst_n,
+        manual_attr_jtag_tdo,
+        manual_attr_jtag_tdi,
+        manual_attr_jtag_tms,
+        manual_attr_jtag_tck,
         manual_attr_por_n
       }),
 
@@ -1117,103 +1162,55 @@ module chip_darjeeling_cw310 #(
   // TAP Instance //
   //////////////////
 
-  // TODO: replace this with a unified TAP
-  tlul_pkg::tl_h2d_t lc_ctrl_dmi_h2d;
-  tlul_pkg::tl_d2h_t lc_ctrl_dmi_d2h;
-  tlul_pkg::tl_h2d_t rv_dm_dmi_h2d;
-  tlul_pkg::tl_d2h_t rv_dm_dmi_d2h;
-  jtag_pkg::jtag_req_t lc_jtag_req;
-  jtag_pkg::jtag_rsp_t lc_jtag_rsp;
-  jtag_pkg::jtag_req_t rv_jtag_req;
-  jtag_pkg::jtag_rsp_t rv_jtag_rsp;
+  tlul_pkg::tl_h2d_t dmi_h2d;
+  tlul_pkg::tl_d2h_t dmi_d2h;
+  jtag_pkg::jtag_req_t jtag_req;
+  jtag_pkg::jtag_rsp_t jtag_rsp;
+
+  assign jtag_req.tck    = manual_in_jtag_tck;
+  assign jtag_req.tms    = manual_in_jtag_tms;
+  assign jtag_req.trst_n = manual_in_jtag_trst_n;
+  assign jtag_req.tdi    = manual_in_jtag_tdi;
+
+  assign manual_out_jtag_tck     = '0;
+  assign manual_out_jtag_tms     = '0;
+  assign manual_out_jtag_trst_n  = '0;
+  assign manual_out_jtag_tdi     = '0;
+  assign manual_oe_jtag_tck      = '0;
+  assign manual_oe_jtag_tms      = '0;
+  assign manual_oe_jtag_trst_n   = '0;
+  assign manual_oe_jtag_tdi      = '0;
+  assign manual_attr_jtag_tck    = '0;
+  assign manual_attr_jtag_tms    = '0;
+  assign manual_attr_jtag_trst_n = '0;
+  assign manual_attr_jtag_tdi    = '0;
+
+  assign manual_out_jtag_tdo     = jtag_rsp.tdo;
+  assign manual_oe_jtag_tdo      = jtag_rsp.tdo_oe;
+  assign manual_attr_jtag_tdo    = '0;
+
+  logic unused_manual_jtag_sigs;
+  assign unused_manual_jtag_sigs = ^{
+    manual_in_jtag_tdo
+  };
+
   tlul_jtag_dtm #(
-    .IdcodeValue(jtag_id_pkg::LC_CTRL_JTAG_IDCODE),
+    .IdcodeValue(jtag_id_pkg::LC_DM_COMBINED_JTAG_IDCODE),
     // Notes:
     // - one RV_DM instance uses 9bits
-    // - our crossbar tooling expects individual IPs to be spaced appart by 12bits at the moment
+    // - our crossbar tooling expects individual IPs to be spaced apart by 12bits at the moment
     // - the DMI address shifted through jtag is a word address and hence 2bits smaller than this
     // - setting this to 18bits effectively gives us 2^6 = 64 addressable 12bit ranges
     .NumDmiByteAbits(18)
-  ) u_tlul_jtag_dtm_lc (
-    .clk_i      (clkmgr_aon_clocks.clk_io_div4_secure),
-    .rst_ni     (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    .jtag_i     (lc_jtag_req),
-    .jtag_o     (lc_jtag_rsp),
-    .scan_rst_ni(scan_rst_n),
-    .scanmode_i (scanmode),
-    .tl_h2d_o   (lc_ctrl_dmi_h2d),
-    .tl_d2h_i   (lc_ctrl_dmi_d2h)
-  );
-  tlul_jtag_dtm #(
-    .IdcodeValue(jtag_id_pkg::RV_DM_JTAG_IDCODE)
-  ) u_tlul_jtag_dtm_rv (
+  ) u_tlul_jtag_dtm (
     .clk_i      (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .jtag_i     (rv_jtag_req),
-    .jtag_o     (rv_jtag_rsp),
+    .jtag_i     (jtag_req),
+    .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
     .scanmode_i (scanmode),
-    .tl_h2d_o   (rv_dm_dmi_h2d),
-    .tl_d2h_i   (rv_dm_dmi_d2h)
-  );
-
-  // TODO: remove this once unified TAP is available.
-  // Until we have a full test harness for the FPGA, we should
-  // probably map the JTAG signals to dedicated locations so that
-  // no such strap sampling hack is needed.
-  // Important things to note:
-  // - the unified TAP clock and reset should be the same as the RV_DM so that it does not get
-  //   reset during NDM reset.
-  // - the pwrmgr_strap_en signal can be removed.
-  // - the lc_gating for the RV_DM on the pinmux side should move into rv_dm.
-  pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_coreside;
-  pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_coreside;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_coreside;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_coreside;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_coreside;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_coreside;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_coreside;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_coreside;
-  logic pwrmgr_strap_en;
-  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
-  pinmux_strap_sampling #(
-    .TargetCfg(PinmuxTargetCfg)
-  ) u_pinmux_strap_sampling_dummy (
-    .clk_i               (clkmgr_aon_clocks.clk_io_div4_powerup),
-    // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
-    // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
-    // it retains some of the TAP selection state during an active debug session where NDM reset is
-    // triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
-    // whenever pwrmgr_strap_en_i is asserted. Note that this does not affect the DFT TAP
-    // selection, since we always consume the live lc_dft_en_i signal.
-    .rst_ni              (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .scanmode_i          (scanmode),
-    .out_padring_o       ({dio_out,  mio_out} ),
-    .oe_padring_o        ({dio_oe ,  mio_oe } ),
-    .in_padring_i        ({dio_in ,  mio_in } ),
-    .attr_padring_o      ({dio_attr, mio_attr}),
-    .out_core_i          ({dio_out_coreside,  mio_out_coreside} ),
-    .oe_core_i           ({dio_oe_coreside,   mio_oe_coreside}  ),
-    .in_core_o           ({dio_in_coreside,   mio_in_coreside}  ),
-    .attr_core_i         ({dio_attr_coreside, mio_attr_coreside}),
-    // This signal can be removed from the top
-    .strap_en_i          (pwrmgr_strap_en),
-    .lc_dft_en_i         (lc_dft_en),
-    .lc_hw_debug_en_i    (lc_hw_debug_en),
-    // Disable extra controls that are needed in the NDM reset case.
-    // This will be handled differently for integrated since we're going to move the
-    // gating into RV_DM.
-    .lc_check_byp_en_i   (lc_ctrl_pkg::Off),
-    .lc_escalate_en_i    (lc_ctrl_pkg::Off),
-    .pinmux_hw_debug_en_o(),
-    .dft_strap_test_o    (),
-    .dft_hold_tap_sel_i  (1'b0),
-    .lc_jtag_o           (lc_jtag_req),
-    .lc_jtag_i           (lc_jtag_rsp),
-    .rv_jtag_o           (rv_jtag_req),
-    .rv_jtag_i           (rv_jtag_rsp),
-    .dft_jtag_o          (),
-    .dft_jtag_i          (jtag_pkg::JTAG_RSP_DEFAULT)
+    .tl_h2d_o   (dmi_h2d),
+    .tl_d2h_i   (dmi_d2h)
   );
 
   ////////////////////////////////////////////
@@ -1424,34 +1421,24 @@ module chip_darjeeling_cw310 #(
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
-    // DMI into lc_ctrl
-    .lc_ctrl_dmi_h2d_i            ( lc_ctrl_dmi_h2d            ),
-    .lc_ctrl_dmi_d2h_o            ( lc_ctrl_dmi_d2h            ),
-
-    // DMI into RV_DM
-    .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),
-    .rv_dm_dmi_d2h_o              ( rv_dm_dmi_d2h              ),
+    // DMI TL-UL
+    .dbg_tl_req_i                 ( dmi_h2d                    ),
+    .dbg_tl_rsp_o                 ( dmi_d2h                    ),
     // Quasi-static word address for next_dm register value.
     .rv_dm_next_dm_addr_i         ( '0                         ),
-
-    // Pinmux strap
-    .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),
-
     // Multiplexed I/O
-    .mio_in_i                     ( mio_in_coreside            ),
-    .mio_out_o                    ( mio_out_coreside           ),
-    .mio_oe_o                     ( mio_oe_coreside            ),
+    .mio_in_i                     ( mio_in                     ),
+    .mio_out_o                    ( mio_out                    ),
+    .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
-    .dio_in_i                     ( dio_in_coreside            ),
-    .dio_out_o                    ( dio_out_coreside           ),
-    .dio_oe_o                     ( dio_oe_coreside            ),
+    .dio_in_i                     ( dio_in                     ),
+    .dio_out_o                    ( dio_out                    ),
+    .dio_oe_o                     ( dio_oe                     ),
 
     // Pad attributes
-    .mio_attr_o                   ( mio_attr_coreside          ),
-    .dio_attr_o                   ( dio_attr_coreside          ),
-
-
+    .mio_attr_o                   ( mio_attr                   ),
+    .dio_attr_o                   ( dio_attr                   ),
 
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),

@@ -14,7 +14,6 @@ class chip_sw_lc_base_vseq extends chip_sw_base_vseq;
   lc_ctrl_state_pkg::dec_lc_state_e init_lc_state = DecLcStInvalid;
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, init_lc_state, src_dec_state)
     `uvm_info(`gfn, $sformatf("Init lc state is %0s", init_lc_state.name), UVM_MEDIUM)
     super.pre_start();

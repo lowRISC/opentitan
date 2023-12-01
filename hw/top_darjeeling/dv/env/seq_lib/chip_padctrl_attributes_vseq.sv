@@ -227,7 +227,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     cfg.chip_vif.chip_padctrl_attributes_test_sva_disable = 1;
 
     // Remove default pulls on these interfaces.
-    cfg.chip_vif.tap_straps_if.disconnect();
     cfg.chip_vif.mios_if.disconnect();
 
     foreach (DioPadType[i]) begin

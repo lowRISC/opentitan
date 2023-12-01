@@ -18,11 +18,6 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
   bit [7:0] otp_exit_token[TokenWidthByte];
   bit [7:0] otp_unlock_token[TokenWidthByte];
 
-  virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
-    super.pre_start();
-  endtask
-
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset();
     // Wait for `rom_ctrl` to complete the ROM check. This will give the dut

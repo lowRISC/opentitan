@@ -109,7 +109,9 @@ tl_if mbx5__soc_tl_if(clk_main, rst_n);
 tl_if mbx6__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie1__soc_tl_if(clk_main, rst_n);
+tl_if rv_dm__dbg_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
+tl_if lc_ctrl__dmi_tl_if(clk_io_div4, rst_n);
 
 initial begin
   wait (xbar_mode !== 1'bx);
@@ -131,6 +133,7 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
     force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_dbg.clk_dbg_i = clk_main;
+    force tb.dut.top_darjeeling.u_xbar_dbg.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
@@ -139,6 +142,7 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_mbx.rst_mbx_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_dbg.rst_dbg_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_dbg.rst_peri_ni = rst_n;
 
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
@@ -216,7 +220,9 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(mbx6__soc, mbx6, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__soc, mbx_pcie0, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie1__soc, mbx_pcie1, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__dbg, rv_dm, dbg_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__dmi, lc_ctrl, dmi_tl)
 `endif
 
     // And this can consume time, so they go at the end of this block.

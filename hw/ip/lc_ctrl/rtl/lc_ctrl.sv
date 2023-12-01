@@ -35,8 +35,8 @@ module lc_ctrl
   input  tlul_pkg::tl_h2d_t                          regs_tl_i,
   output tlul_pkg::tl_d2h_t                          regs_tl_o,
   // TL-UL-based DMI
-  input  tlul_pkg::tl_h2d_t                          dmi_tl_h2d_i,
-  output tlul_pkg::tl_d2h_t                          dmi_tl_d2h_o,
+  input  tlul_pkg::tl_h2d_t                          dmi_tl_i,
+  output tlul_pkg::tl_d2h_t                          dmi_tl_o,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
@@ -153,8 +153,8 @@ module lc_ctrl
   lc_ctrl_regs_reg_top u_reg_dmi (
     .clk_i,
     .rst_ni,
-    .tl_i      ( dmi_tl_h2d_i                ),
-    .tl_o      ( dmi_tl_d2h_o                ),
+    .tl_i      ( dmi_tl_i                    ),
+    .tl_o      ( dmi_tl_o                    ),
     .reg2hw    ( dmi_reg2hw                  ),
     .hw2reg    ( dmi_hw2reg                  ),
     // SEC_CM: BUS.INTEGRITY
@@ -660,6 +660,7 @@ module lc_ctrl
   ////////////////
 
   `ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
+  `ASSERT_KNOWN(DmiTlOKnown,            dmi_tl_o                   )
   `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
   `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
   `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
@@ -704,5 +705,5 @@ module lc_ctrl
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[2])
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(DmiRegWeOnehotCheck_A, u_reg_dmi, alert_tx_o[2], 0)
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(DmiWeOnehotCheck_A, u_reg_dmi, alert_tx_o[2], 0)
 endmodule : lc_ctrl

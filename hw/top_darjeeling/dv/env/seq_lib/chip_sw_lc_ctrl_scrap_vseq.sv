@@ -102,8 +102,9 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
 
     // read the LC state from the LC controller and
     // check LC state is indeed in SCRAP
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
-                                        p_sequencer.jtag_sequencer_h, state);
+    jtag_riscv_agent_pkg::jtag_read_csr(
+      cfg.get_lc_ctrl_dmi_addr(ral.lc_ctrl_regs.lc_state.get_offset()),
+      p_sequencer.jtag_sequencer_h, state);
     `DV_CHECK_EQ(state, {DecLcStateNumRep{DecLcStScrap}})
   endtask : body
 

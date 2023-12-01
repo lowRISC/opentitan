@@ -7,14 +7,19 @@
 xbar_dbg dut();
 
 `DRIVE_CLK(clk_dbg_i)
+`DRIVE_CLK(clk_peri_i)
 
 initial force dut.clk_dbg_i = clk_dbg_i;
+initial force dut.clk_peri_i = clk_peri_i;
 
 // TODO, all resets tie together
 initial force dut.rst_dbg_ni = rst_n;
+initial force dut.rst_peri_ni = rst_n;
 
 // Host TileLink interface connections
 `CONNECT_TL_HOST_IF(dbg, dut, clk_dbg_i, rst_n)
 
 // Device TileLink interface connections
+`CONNECT_TL_DEVICE_IF(rv_dm__dbg, dut, clk_dbg_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx_jtag__soc, dut, clk_dbg_i, rst_n)
+`CONNECT_TL_DEVICE_IF(lc_ctrl__dmi, dut, clk_peri_i, rst_n)
