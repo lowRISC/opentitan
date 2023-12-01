@@ -255,8 +255,8 @@
       clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
-      base_addr: {
-        hart: "0x30140000",
+      base_addrs: {
+        regs: {hart: "0x30140000"},
       },
       param_decl: {
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE

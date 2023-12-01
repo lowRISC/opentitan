@@ -83,8 +83,8 @@ status_t test_chip_specific_startup(ujson_t *uj) {
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
       &otp_ctrl));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
-                       &lc));
+  TRY(dif_lc_ctrl_init(
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR), &lc));
   TRY(dif_clkmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 

@@ -28,7 +28,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
   mmio_region_t rom_ctrl0_reg =
       mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR);

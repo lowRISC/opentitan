@@ -112,19 +112,19 @@ pub const TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR: usize = 0x30138000;
 /// address between #TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR and
 /// `TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES: usize = 0x20;
-/// Peripheral base address for lc_ctrl in top darjeeling.
+/// Peripheral base address for regs device on lc_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_LC_CTRL_BASE_ADDR: usize = 0x30140000;
+pub const TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR: usize = 0x30140000;
 
-/// Peripheral size for lc_ctrl in top darjeeling.
+/// Peripheral size for regs device on lc_ctrl in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_LC_CTRL_BASE_ADDR and
-/// `TOP_DARJEELING_LC_CTRL_BASE_ADDR + TOP_DARJEELING_LC_CTRL_SIZE_BYTES`.
-pub const TOP_DARJEELING_LC_CTRL_SIZE_BYTES: usize = 0x100;
+/// address between #TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR and
+/// `TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR + TOP_DARJEELING_LC_CTRL_REGS_SIZE_BYTES`.
+pub const TOP_DARJEELING_LC_CTRL_REGS_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for alert_handler in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

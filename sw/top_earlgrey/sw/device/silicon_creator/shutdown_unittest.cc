@@ -523,7 +523,7 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
       LC_CTRL_LC_STATE_STATE_VALUE_RMA,
   };
   for (const auto state : kManufacturingStates) {
-    EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
+    EXPECT_ABS_READ32(kLcCtrlRegsBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
                       static_cast<uint32_t>(state));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactNone);
   }
@@ -537,7 +537,7 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
       LC_CTRL_LC_STATE_STATE_VALUE_PROD_END,
   };
   for (const auto state : kProductionStates) {
-    EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
+    EXPECT_ABS_READ32(kLcCtrlRegsBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
                       static_cast<uint32_t>(state));
     EXPECT_ABS_READ32(
         kOtpCtrlCoreBaseAddr[0] + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
@@ -550,7 +550,7 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
 TEST_F(ShutdownTest, RedactPolicyInvalid) {
   // Invalid states should result in the highest redaction level regardless of
   // the redaction level set by OTP.
-  EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(kLcCtrlRegsBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET, 0);
   EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
 }
 

@@ -12,15 +12,15 @@
 CHECKSUM: "617078566 378857456"
 INSTANCE: tb.dut.u_reg_dmi.u_reg_if.u_err
 ANNOTATION: "VC_COV_UNR"
-Condition 1 "4001409645" "(tl_i.a_address[1] ? ((~|(tl_i.a_mask & 4'b0011))) : ((~|(tl_i.a_mask & 4'b1100)))) 1 -1" (1 "0")
+Condition 1 "4001409645" "(regs_tl_i.a_address[1] ? ((~|(tl_i.a_mask & 4'b0011))) : ((~|(tl_i.a_mask & 4'b1100)))) 1 -1" (1 "0")
 ANNOTATION: "VC_COV_UNR"
-Condition 1 "4001409645" "(tl_i.a_address[1] ? ((~|(tl_i.a_mask & 4'b0011))) : ((~|(tl_i.a_mask & 4'b1100)))) 1 -1" (2 "1")
+Condition 1 "4001409645" "(regs_tl_i.a_address[1] ? ((~|(tl_i.a_mask & 4'b0011))) : ((~|(tl_i.a_mask & 4'b1100)))) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
-Condition 2 "1185432721" "(tl_i.a_address[1] ? ((&tl_i.a_mask[3:2])) : ((&tl_i.a_mask[1:0]))) 1 -1" (1 "0")
+Condition 2 "1185432721" "(regs_tl_i.a_address[1] ? ((&tl_i.a_mask[3:2])) : ((&tl_i.a_mask[1:0]))) 1 -1" (1 "0")
 ANNOTATION: "VC_COV_UNR"
-Condition 2 "1185432721" "(tl_i.a_address[1] ? ((&tl_i.a_mask[3:2])) : ((&tl_i.a_mask[1:0]))) 1 -1" (2 "1")
+Condition 2 "1185432721" "(regs_tl_i.a_address[1] ? ((&tl_i.a_mask[3:2])) : ((&tl_i.a_mask[1:0]))) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
-Condition 4 "1121214040" "(tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
+Condition 4 "1121214040" "(regs_tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
 Condition 6 "3976953572" "(( ~ (opcode_allowed & a_config_allowed) ) | instr_wr_err | instr_type_err) 1 -1" (2 "001")
 ANNOTATION: "VC_COV_UNR"
@@ -28,11 +28,11 @@ Condition 6 "3976953572" "(( ~ (opcode_allowed & a_config_allowed) ) | instr_wr_
 ANNOTATION: "VC_COV_UNR"
 Condition 8 "528033188" "(opcode_allowed & a_config_allowed) 1 -1" (1 "01")
 ANNOTATION: "VC_COV_UNR"
-Condition 9 "3958044303" "((tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData) | (tl_i.a_opcode == Get)) 1 -1" (1 "000")
+Condition 9 "3958044303" "((regs_tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData) | (tl_i.a_opcode == Get)) 1 -1" (1 "000")
 ANNOTATION: "VC_COV_UNR"
-Condition 9 "3958044303" "((tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData) | (tl_i.a_opcode == Get)) 1 -1" (3 "010")
+Condition 9 "3958044303" "((regs_tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData) | (tl_i.a_opcode == Get)) 1 -1" (3 "010")
 ANNOTATION: "VC_COV_UNR"
-Condition 11 "1706048676" "(tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
+Condition 11 "1706048676" "(regs_tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
 Condition 13 "1204832585" "(addr_sz_chk & mask_chk & (op_get | op_partial | fulldata_chk)) 1 -1" (1 "011")
 ANNOTATION: "VC_COV_UNR"
@@ -366,13 +366,13 @@ Condition 3 "2201410814" "(error_i || err_internal || wr_req) 1 -1" (3 "010")
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "1341755016" "(error_i || err_internal) 1 -1" (2 "01")
 ANNOTATION: "VC_COV_UNR"
-Condition 5 "1269322100" "(tl_i.a_valid & tl_o.a_ready) 1 -1" (2 "10")
+Condition 5 "1269322100" "(regs_tl_i.a_valid & tl_o.a_ready) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
-Condition 6 "4083204917" "(tl_o.d_valid & tl_i.d_ready) 1 -1" (2 "10")
+Condition 6 "4083204917" "(tl_o.d_valid & regs_tl_i.d_ready) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"
-Condition 8 "1682263346" "((tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData)) 1 -1" (2 "01")
+Condition 8 "1682263346" "((regs_tl_i.a_opcode == PutFullData) | (tl_i.a_opcode == PutPartialData)) 1 -1" (2 "01")
 ANNOTATION: "VC_COV_UNR"
-Condition 10 "4130993843" "(tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
+Condition 10 "4130993843" "(regs_tl_i.a_opcode == PutPartialData) 1 -1" (2 "1")
 ANNOTATION: "VC_COV_UNR"
 Condition 13 "3021397127" "(wr_req & ((~err_internal))) 1 -1" (2 "10")
 ANNOTATION: "VC_COV_UNR"

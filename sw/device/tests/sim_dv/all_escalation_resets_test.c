@@ -618,7 +618,7 @@ static void init_peripherals(void) {
       mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),

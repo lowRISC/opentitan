@@ -214,7 +214,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
   // Here is how the CreatorRootKey data are found
   // SoftwareBinding: program fixed value to keymgr CSRs in the C test
-  // HardwareRevisionSecret: backdoor read CSRs at ral.lc_ctrl.device_id
+  // HardwareRevisionSecret: backdoor read CSRs at ral.lc_ctrl_regs.device_id
   // HealthMeasurement: HW random constant - RndCnstLcCtrlLcKeymgrDivTestDevRma
   // RomDigest:  backdoor read CSRs at ral.rom_ctrl0_regs.digest
   // DiversificationKey: program fixed value to flash in the C test
@@ -225,7 +225,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
     for (int i = 0; i < keymgr_pkg::DevIdWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata;
-      csr_peek(ral.lc_ctrl.device_id[i], rdata);
+      csr_peek(ral.lc_ctrl_regs.device_id[i], rdata);
       creator_data.DeviceIdentifier[TL_DW * i +: TL_DW] = rdata;
     end
     `uvm_info(`gfn, $sformatf("DeviceIdentifier 0x%0h", creator_data.DeviceIdentifier),
