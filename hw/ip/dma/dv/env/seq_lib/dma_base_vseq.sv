@@ -87,10 +87,10 @@ class dma_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Set up randomized source data for the transfer
-  function void randomize_src_data(bit [31:0] total_transfer_size);
+  function void randomize_src_data(bit [31:0] total_data_size);
     bit [31:0] offset;
-    cfg.src_data = new[total_transfer_size];
-    for (offset = 32'b0; offset < total_transfer_size; offset++) begin
+    cfg.src_data = new[total_data_size];
+    for (offset = 32'b0; offset < total_data_size; offset++) begin
       cfg.src_data[offset] = $urandom_range(0, 255);
       `uvm_info(`gfn, $sformatf("%0x: %0x", offset, cfg.src_data[offset]), UVM_DEBUG)
     end
@@ -156,7 +156,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   function void supply_data(ref dma_seq_item dma_config, bit [31:0] offset, bit [31:0] size);
     `uvm_info(`gfn, $sformatf("Supplying bytes [0x%0x,0x%0x) of 0x%0x-byte transfer",
-                    offset, offset + size, dma_config.total_transfer_size), UVM_MEDIUM)
+                    offset, offset + size, dma_config.total_data_size), UVM_MEDIUM)
 
     // Configure Source model
     if (dma_config.get_read_fifo_en()) begin
@@ -208,7 +208,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Returns the byte offset of the next chunk to be transferred, if any.
   function bit [31:0] configure_mem_model(ref dma_seq_item dma_config, input bit [31:0] offset);
     // Decide how many bytes of data to supply in this chunk
-    bit [31:0] chunk_size = dma_config.total_transfer_size - offset;
+    bit [31:0] chunk_size = dma_config.total_data_size - offset;
     if (chunk_size > dma_config.chunk_data_size) begin
       chunk_size = dma_config.chunk_data_size;
     end
@@ -241,7 +241,7 @@ class dma_base_vseq extends cip_base_vseq #(
       // into a single large FIFO and the scoreboard will check it all at the end of the transfer.
       bit [31:0] max_size = chunk_size;
       if (dma_config.handshake && dma_config.direction == DmaSendData) begin
-        max_size = dma_config.total_transfer_size;
+        max_size = dma_config.total_data_size;
       end
 
       // Enable write FIFO mode in models
@@ -353,10 +353,10 @@ class dma_base_vseq extends cip_base_vseq #(
     set_destination_address_range(dma_config.mem_buffer_almost_limit,
                                   dma_config.mem_buffer_limit);
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
-    set_total_size(dma_config.total_transfer_size);
+    set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
     set_transfer_width(dma_config.per_transfer_width);
-    randomize_src_data(dma_config.total_transfer_size);
+    randomize_src_data(dma_config.total_data_size);
     void'(configure_mem_model(dma_config, 32'd0));
     set_handshake_int_regs(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,

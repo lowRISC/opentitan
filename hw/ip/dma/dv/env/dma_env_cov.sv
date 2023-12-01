@@ -20,7 +20,7 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   // Destination address space ID
   cp_dst_asid: coverpoint dma_config.dst_asid;
   // Total transfer size for operation
-  cp_transfer_size: coverpoint dma_config.total_transfer_size {
+  cp_total_data_size: coverpoint dma_config.total_data_size {
     bins one_byte = {1};
     bins two_byte = {2};
     bins three_byte = {3};
@@ -35,7 +35,7 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   // Width of each transfer
   cp_transfer_width: coverpoint dma_config.per_transfer_width;
   // Cross of transfer width and total transfer size
-  cp_transfer_width_x_transfer_size: cross cp_transfer_width, cp_transfer_size;
+  cp_transfer_width_x_transfer_size: cross cp_transfer_width, cp_total_data_size;
   // Opcode
   cp_opcode: coverpoint dma_config.opcode;
   // DMA enabled memory range base coverpoint
@@ -79,7 +79,7 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_abort: coverpoint abort;
   // Cross OP code, source_address_space_id, destination_space_id and handshake mode
   cp_op_code_x_asid_x_handshake: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode;
-  cp_transfer_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
+  cp_total_data_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
   cp_transfer_width_x_dst_asid_x_dma_op: cross cp_transfer_width, cp_dst_asid, cp_opcode;
   cp_src_addr_x_src_asid_x_dma_op: cross cp_src_addr, cp_src_asid, cp_opcode;
   cp_dst_addr_x_dst_asid_x_dma_op: cross cp_dst_addr, cp_dst_asid, cp_opcode;
