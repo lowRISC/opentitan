@@ -156,6 +156,32 @@ static bool is_ready(const dif_keymgr_dpe_t *keymgr_dpe) {
   return bitfield_bit32_read(reg_cfg_regwen, KEYMGR_DPE_CFG_REGWEN_EN_BIT);
 }
 
+dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
+                                       uint32_t slot_dst_sel) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!is_ready(keymgr_dpe)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg_control = bitfield_field32_write(
+      KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
+      KEYMGR_DPE_CONTROL_SHADOWED_SLOT_DST_SEL_FIELD, slot_dst_sel);
+  reg_control = bitfield_field32_write(
+      reg_control, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
+                               reg_control);
+
+  mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_START_REG_OFFSET,
+                      1 << KEYMGR_DPE_START_EN_BIT);
+
+  return kDifOk;
+}
+
 dif_result_t dif_keymgr_dpe_advance_state(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {
