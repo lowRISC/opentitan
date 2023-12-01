@@ -14,6 +14,7 @@ pub mod lc_transition;
 pub mod load_bitstream;
 pub mod load_sram_program;
 pub mod mem;
+pub mod object;
 pub mod otp_ctrl;
 // The "english breakfast" variant of the chip doesn't have the same
 // set of IO and pinmux constants as the "earlgrey" chip.

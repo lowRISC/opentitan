@@ -131,6 +131,7 @@ rust_library(
         "src/test_utils/load_sram_program.rs",
         "src/test_utils/mem.rs",
         "src/test_utils/mod.rs",
+        "src/test_utils/object.rs",
         "src/test_utils/otp_ctrl.rs",
         "src/test_utils/poll.rs",
         "src/test_utils/rpc.rs",
