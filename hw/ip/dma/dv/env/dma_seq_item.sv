@@ -38,8 +38,8 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit handshake;
   rand bit [63:0] src_addr;
   rand bit [63:0] dst_addr;
-  rand bit [63:0] mem_buffer_almost_limit;
-  rand bit [63:0] mem_buffer_limit;
+  rand bit [63:0] dst_addr_almost_limit;
+  rand bit [63:0] dst_addr_limit;
   rand bit        mem_range_valid;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
@@ -98,8 +98,8 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(auto_inc_fifo, UVM_DEFAULT)
     `uvm_field_int(handshake, UVM_DEFAULT)
     `uvm_field_int(is_valid_config, UVM_DEFAULT)
-    `uvm_field_int(mem_buffer_almost_limit, UVM_DEFAULT)
-    `uvm_field_int(mem_buffer_limit, UVM_DEFAULT)
+    `uvm_field_int(dst_addr_almost_limit, UVM_DEFAULT)
+    `uvm_field_int(dst_addr_limit, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
     `uvm_field_int(clear_int_src, UVM_DEFAULT)
     `uvm_field_int(clear_int_bus, UVM_DEFAULT)
@@ -278,28 +278,28 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  constraint mem_buffer_limit_c {
+  constraint dst_addr_limit_c {
     // Set solver order to make sure mem buffer limit is randomized correctly in case
     // valid_dma_config is set
-    solve mem_buffer_almost_limit before mem_buffer_limit;
+    solve dst_addr_almost_limit before dst_addr_limit;
     // For valid dma config, mem buffer limit must be greater than destination address
     // in order to detect passing the limit
     if (valid_dma_config) {
        if (handshake && direction == DmaRcvData) {
-          mem_buffer_limit > mem_buffer_almost_limit;
+          dst_addr_limit > dst_addr_almost_limit;
        }
     }
   }
 
-  constraint mem_buffer_almost_limit_c {
+  constraint dst_addr_almost_limit_c {
     // Set solver order to make sure mem buffer almost limit is randomized correctly
     // in case valid_dma_config is set
-    solve dst_addr before mem_buffer_almost_limit;
+    solve dst_addr before dst_addr_almost_limit;
     // For valid dma config, mem buffer almost limit must not be
     // less than destination address
     if (valid_dma_config) {
        if (handshake && direction == DmaRcvData) {
-          mem_buffer_almost_limit > dst_addr;
+          dst_addr_almost_limit > dst_addr;
        }
     }
   }
@@ -388,8 +388,8 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\tmem_range_valid         : %0d",    mem_range_valid),
         $sformatf("\n\tmem_range_base          : 0x%08x", mem_range_base),
         $sformatf("\n\tmem_range_limit         : 0x%08x", mem_range_limit),
-        $sformatf("\n\tmem_buffer_almost_limit : 0x%16x", mem_buffer_almost_limit),
-        $sformatf("\n\tmem_buffer_limit        : 0x%16x", mem_buffer_limit),
+        $sformatf("\n\tdst_addr_almost_limit   : 0x%16x", dst_addr_almost_limit),
+        $sformatf("\n\tdst_addr_limit          : 0x%16x", dst_addr_limit),
         $sformatf("\n\tclear_int_src           : 0x%8x",  clear_int_src),
         $sformatf("\n\tclear_int_bus           : 0x%8x",  clear_int_bus),
         $sformatf("\n\thandshake_intr_en       : 0x%08x", handshake_intr_en),
