@@ -43,7 +43,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   dif_otp_ctrl_config_t config = {

@@ -77,7 +77,7 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     // external clock is disconnected.
     claim_transition_interface();
     jtag_riscv_agent_pkg::jtag_write_csr(
-                                         ral.lc_ctrl.transition_ctrl.get_offset(),
+                                         ral.lc_ctrl_regs.transition_ctrl.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          1);
     // Add some delay until clock bypass is turned on.

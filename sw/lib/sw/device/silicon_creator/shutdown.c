@@ -310,7 +310,7 @@ shutdown_error_redact_t shutdown_redact_policy(void) {
   // Note that we cannot use the lifecycle or OTP libraries since an error
   // may trigger a call to `shutdown_finalize`.
   uint32_t raw_state = bitfield_field32_read(
-      abs_mmio_read32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
+      abs_mmio_read32(kLcCtrlRegsBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
   return shutdown_redact_policy_inline(raw_state);
 }
@@ -367,7 +367,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uint32_t raw_state = bitfield_field32_read(
-      abs_mmio_read32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
+      abs_mmio_read32(kLcCtrlRegsBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
 
   // Call the inline variant of `shutdown_redact_policy` because we want to

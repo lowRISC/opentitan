@@ -37,7 +37,7 @@ const uint32_t kKeymgrBaseAddr[] = {TOP_DARJEELING_KEYMGR_BASE_ADDR};
 
 const uint32_t kKmacBaseAddr[] = {TOP_DARJEELING_KMAC_BASE_ADDR};
 
-const uint32_t kLcCtrlBaseAddr[] = {TOP_DARJEELING_LC_CTRL_BASE_ADDR};
+const uint32_t kLcCtrlRegsBaseAddr[] = {TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR};
 
 const uint32_t kOtpCtrlCoreBaseAddr[] = {
     TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR};

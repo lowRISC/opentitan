@@ -11,6 +11,7 @@ autogen_hjson_header(
     srcs = [
         "lc_ctrl.hjson",
     ],
+    interface = "regs",
 )
 
 filegroup(

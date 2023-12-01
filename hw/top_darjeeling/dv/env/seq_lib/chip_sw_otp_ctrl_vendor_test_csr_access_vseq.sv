@@ -50,15 +50,15 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     wait_lc_ready(.allow_err(1));
 
     // Claim the mux interface via JTAG.
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
                                          prim_mubi_pkg::MuBi8True);
 
     // Write random value to the otp_vendor_test_ctrl register.
-    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.otp_vendor_test_ctrl.get_offset(),
+    jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.otp_vendor_test_ctrl.get_offset(),
                                          p_sequencer.jtag_sequencer_h, w_data);
 
-    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.otp_vendor_test_status.get_offset(),
+    jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.otp_vendor_test_status.get_offset(),
                                         p_sequencer.jtag_sequencer_h, otp_vendor_test_status);
 
     check_otp_vendor_test_status();

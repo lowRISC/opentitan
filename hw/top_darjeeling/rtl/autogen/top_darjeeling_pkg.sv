@@ -82,14 +82,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES = 32'h20;
 
   /**
-   * Peripheral base address for lc_ctrl in top darjeeling.
+   * Peripheral base address for regs device on lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_LC_CTRL_BASE_ADDR = 32'h30140000;
+  parameter int unsigned TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR = 32'h30140000;
 
   /**
-   * Peripheral size in bytes for lc_ctrl in top darjeeling.
+   * Peripheral size in bytes for regs device on lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_LC_CTRL_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_LC_CTRL_REGS_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for alert_handler in top darjeeling.

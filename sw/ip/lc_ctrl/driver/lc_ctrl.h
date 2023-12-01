@@ -34,7 +34,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-extern const uint32_t kLcCtrlBaseAddr[1];
+extern const uint32_t kLcCtrlRegsBaseAddr[1];
 
 #ifdef __cplusplus
 }  // extern "C"

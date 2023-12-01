@@ -221,7 +221,7 @@ class chip_base_vseq #(
       end
     join
 
-    csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(1), .backdoor(1),
+    csr_spinwait(.ptr(ral.lc_ctrl_regs.status.ready), .exp_data(1), .backdoor(1),
                  .spinwait_delay_ns(1000));
     `uvm_info(`gfn, "lc_ctrl has been initialized", UVM_HIGH)
   endtask
