@@ -132,17 +132,17 @@ bool test_main(void) {
       uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
       CHECK_STATUS_OK(manuf_flash_info_field_read(
           &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-          uds_attestation_key_seed, kAttestationSeedBytes));
+          uds_attestation_key_seed, kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
                                            kAttestationSeedWords));
       CHECK_STATUS_OK(manuf_flash_info_field_read(
           &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-          cdi_0_attestation_key_seed, kAttestationSeedBytes));
+          cdi_0_attestation_key_seed, kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
                                            kAttestationSeedWords));
       CHECK_STATUS_OK(manuf_flash_info_field_read(
           &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-          cdi_1_attestation_key_seed, kAttestationSeedBytes));
+          cdi_1_attestation_key_seed, kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
                                            kAttestationSeedWords));
 
