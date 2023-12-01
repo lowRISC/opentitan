@@ -470,6 +470,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
       dst_queue.delete(queue_idx);
     end
 
+    if (cfg.en_cov && (src_tl_error_detected || dst_tl_error_detected)) begin
+      cov.tlul_error_cg.sample(.dma_config(dma_config),
+                               .tl_err_asid(if_name_to_asid(if_name)));
+    end
+
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
     // error whilst error-free 'clear interrupt' writes are occurring.
     if (item.d_error) begin
@@ -1007,14 +1012,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                              (!dma_config.is_valid_config << DMA_ERROR) & intr_enable);
           // Expect digest to be cleared even for rejected configurations
           exp_digest = '{default:0};
-          if (cfg.en_cov) begin
-            // Sample dma configuration
-            cov.config_cg.sample(.dma_config (dma_config),
-                                 .abort (abort_via_reg_write),
-                                 .write_to_dma_mem_register(1'b0),
-                                 .tl_src_err (1'b0),
-                                 .tl_dst_err (1'b0));
-          end
           // Clear status variables
           num_bytes_read = 0;
           num_bytes_transferred = 0;
@@ -1036,6 +1033,23 @@ class dma_scoreboard extends cip_base_scoreboard #(
           end
           // In memory-to-memory mode, DV/FW is advancing to the next chunk
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
+        end
+        if (cfg.en_cov && go) begin
+          logic [dma_reg_pkg::NumIntClearSources-1:0][2:0] int_source_addr_offset;
+          logic [dma_reg_pkg::NumIntClearSources-1:0][31:0] int_source_wr_val;
+          for (int unsigned i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
+            int_source_addr_offset[i] = dma_config.int_src_addr[i] % 8;
+            int_source_wr_val[i] = dma_config.int_src_wr_val[i];
+          end
+          cov.config_cg.sample(.dma_config(dma_config),
+                               .initial_transfer(initial_transfer));
+          cov.interrupt_cg.sample(
+            .handshake_interrupt_enable(dma_config.handshake_intr_en),
+            .clear_int_src(dma_config.clear_int_src),
+            .clear_int_bus(dma_config.clear_int_bus),
+            .int_source_addr_offset(int_source_addr_offset),
+            .int_source_wr_val(int_source_wr_val)
+          );
         end
       end
       "handshake_interrupt_enable": begin
@@ -1108,7 +1122,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
           cov.status_cg.sample(.busy (busy),
                                .done (done),
                                .aborted (aborted),
-                               .error (error));
+                               .error (error),
+                               .sha2_digest_valid (sha2_digest_valid));
         end
         // Check results after each chunk of the transfer (memory-to-memory) or after the complete
         // transfer (handshaking mode).
@@ -1253,6 +1268,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
       default: begin
         // When not using inline hashing mode
         exp_digest = '{default:0};
+      end
+    endcase
+  endfunction
+
+  function dma_pkg::asid_encoding_e if_name_to_asid(string if_name);
+    case (if_name)
+      "host": return dma_pkg::OtInternalAddr;
+      "ctn":  return dma_pkg::SocControlAddr;
+      "sys":  return dma_pkg::SocSystemAddr;
+      default: begin
+        `dv_error("Unknown interface name: %0s", if_name)
       end
     endcase
   endfunction
