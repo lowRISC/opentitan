@@ -66,8 +66,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
     bins write_src_fixed_addr = binsof(cp_data_direction.write_to_fifo) &&
                                 (binsof(cp_mem_buffer_auto_inc) intersect {0});
   }
-  // DMA enabled memory region register lock
-  cp_range_lock: coverpoint dma_config.mem_range_lock{
+  // DMA enabled memory range REGWEN
+  cp_range_regwen: coverpoint dma_config.range_regwen{
     bins unlocked = {MuBi4True};
     bins locked = {MuBi4False};
 // TODO: this faults with vcs
@@ -85,8 +85,8 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_dst_addr_x_dst_asid_x_dma_op: cross cp_dst_addr, cp_dst_asid, cp_opcode;
   cp_dma_mem_base_x_dma_mem_limit_x_dma_op: cross cp_dma_mem_base, cp_dma_mem_range_limit,
                                                   cp_opcode;
-  cp_range_lock_x_write_to_dma_mem_region_x_dma_op: cross cp_range_lock,
-                                                          write_to_dma_mem_register, cp_opcode;
+  cp_range_regwen_x_write_to_dma_mem_region_x_dma_op: cross cp_range_regwen,
+                                                            write_to_dma_mem_register, cp_opcode;
   // Coverpoint for TL error on source interface
   cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err);
 

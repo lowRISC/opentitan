@@ -362,7 +362,7 @@ class dma_base_vseq extends cip_base_vseq #(
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_valid,
-                                 dma_config.mem_range_lock);
+                                 dma_config.range_regwen);
   endtask : run_common_config
 
   // Task: Enable/Disable Interrupt(s)
