@@ -8,6 +8,11 @@ load(
     "RSA_ONLY_KEY_STRUCTS",
 )
 load(
+    "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic:provisioning_inputs.bzl",
+    "CP_PROVISIONING_INPUTS",
+    "FT_PROVISIONING_INPUTS",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
     "opentitan_binary",
@@ -108,7 +113,7 @@ opentitan_test(
         tags = ["manuf"],
         test_cmd = """
             --elf={sram_cp_provision}
-        """,
+        """ + CP_PROVISIONING_INPUTS,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
     exec_env = {
@@ -139,7 +144,7 @@ opentitan_test(
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
-        """,
+        """ + CP_PROVISIONING_INPUTS,
         test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
     ),
     exec_env = {
@@ -178,6 +183,30 @@ opentitan_binary(
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
+opentitan_binary(
+    name = "ft_personalize_1",
+    testonly = True,
+    srcs = ["ft_personalize_1.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    rsa_key = rsa_key_for_lc_state(
+        RSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.PROD,
+    ),
+    deps = [
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
 
@@ -243,10 +272,10 @@ opentitan_binary(
 
 opentitan_test(
     name = "ft_provision",
-    srcs = ["ft_personalize_1.c"],
     cw310 = cw310_jtag_params(
         binaries = {
             ":sram_ft_individualize": "sram_ft_individualize",
+            ":ft_personalize_1": "ft_personalize_1",
             ":ft_personalize_2": "ft_personalize_2",
             ":ft_personalize_3": "ft_personalize_3",
         },
@@ -258,12 +287,10 @@ opentitan_test(
         ],
         test_cmd = """
             --elf={sram_ft_individualize}
-            --bootstrap={firmware}
+            --bootstrap={ft_personalize_1}
             --second-bootstrap={ft_personalize_2}
             --third-bootstrap={ft_personalize_3}
-            --target-mission-mode-lc-state="prod"
-            --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
-        """,
+        """ + FT_PROVISIONING_INPUTS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
     exec_env = {
@@ -273,14 +300,4 @@ opentitan_test(
         RSA_ONLY_KEY_STRUCTS,
         CONST.LCV.PROD,
     ),
-    deps = [
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
-        "//sw/device/silicon_creator/manuf/lib:personalize",
-    ],
 )
