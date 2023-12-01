@@ -350,8 +350,8 @@ class dma_base_vseq extends cip_base_vseq #(
     abort_pending = 1'b0;
     set_source_address(dma_config.src_addr);
     set_destination_address(dma_config.dst_addr);
-    set_destination_address_range(dma_config.mem_buffer_almost_limit,
-                                  dma_config.mem_buffer_limit);
+    set_destination_address_range(dma_config.dst_addr_almost_limit,
+                                  dma_config.dst_addr_limit);
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
