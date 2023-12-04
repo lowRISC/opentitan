@@ -6,42 +6,35 @@
   // These are only set on the command line
   // These are different from the build modes in the sense that these collection of
   // options are appended to actual build_modes
-  build_modes: [
-    {
-      name: gui
+  build_modes: {
+    gui: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_gui"]
     }
-    {
-      name: waves
+    waves: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_waves"]
     }
-    {
-      name: waves_off
+    waves_off: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_waves_off"]
     }
-    {
-      name: cov
+    cov: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_cov"]
       // This plusarg is retrieved in `hw/dv/sv/dv_lib/dv_base_test.sv`. If not set, the coverage
       // collection components are not created.
       run_opts: ["+en_cov=1"]
     }
-    {
-      name: profile
+    profile: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_profile"]
     }
-    {
-      name: xprop
+    xprop: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_xprop"]
     }
-    {
-      name: loopdetect
+    loopdetect: {
       is_sim_mode: 1
       en_build_modes: ["{tool}_loopdetect"]
     }
@@ -61,12 +54,11 @@
     // deterministically reproduce failures. The `--build-seed` switch is expected to be passed
     // when running the nightly regressions. The `seed` value set by dvsim is a 32-bit unsigned
     // integer (unless specified on the command-line).
-    {
-      name: build_seed
+    build_seed: {
       is_sim_mode: 1
       build_opts: ["+define+BUILD_SEED={seed}"]
     }
-  ]
+  }
 
   run_modes: [
     {

@@ -155,23 +155,20 @@
   build_opts: ["+define+TOP_LEVEL_DV"]
 
   // Add build modes.
-  build_modes: [
-    {
-      name: en_ibex_tracer
+  build_modes: {
+    en_ibex_tracer: {
       build_opts: ["+define+RVFI=1"]
     }
     // Build mode that configures a testbench in a manner suitable for pad
     // testing. For example, the testbench may need to have different agents
     // or interfaces connected to the pads for marked tests.
-    {
-      name: pad_ctrl_test_mode
+    pad_ctrl_test_mode: {
       build_opts: ["+define+PADTEST"]
       is_sim_mode: 1
     }
     // Sim mode that enables build randomization. See the `build_seed` mode
     // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
-    {
-      name: build_seed
+    build_seed: {
       pre_build_cmds: [
         // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
         // check.
@@ -194,8 +191,7 @@
     // Build mode that disables rom integrity checks, so use it only for
     // test development.
     // DO NOT USE FOR NIGHTLY
-    {
-      name: fast_sim_build_dev
+    fast_sim_build_dev: {
       build_opts: ["+define+DISABLE_ROM_INTEGRITY_CHECK"]
       is_sim_mode: 1
     }
@@ -203,8 +199,7 @@
     // mode on top of disabling rom integrity checks. It is the fastest way
     // to run a test.
     // DO NOT USE FOR NIGHTLY
-    {
-      name: fast_sim_dev
+    fast_sim_dev: {
       en_build_modes: ["fast_sim_build_dev"]
       run_opts: ["+accelerate_cold_power_up_time=3",
                  "+accelerate_regulators_power_up_time=2"]
@@ -212,12 +207,11 @@
     }
     // TODO: VCS does not support MDAs in constfiles. Most RTL ports in OpenTitan are structs, so
     // this method currently does not work for our needs. Revisit later.
-    // {
-    //   name: vcs_cov
+    // vcs_cov: {
     //   build_opts: ["-cm_constfile {top_dv_path}/cov/constfile.txt"]
     //   is_sim_mode: 1
     // }
-  ]
+  }
 
   // Add options needed to compile against otbn_memutil, otbn_tracer,
   // memutil_dpi_scrambled, and AES C model

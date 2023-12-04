@@ -5,7 +5,7 @@
 from copy import deepcopy
 import logging as log
 import sys
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from utils import VERBOSE
 
@@ -17,13 +17,11 @@ class Mode:
     or a regression.
     """
 
-    def __init__(self, type_name: str, mdict):
+    def __init__(self, type_name: str, name: str, mdict):
+        self.name = name
+
         keys = mdict.keys()
         attrs = self.__dict__.keys()
-
-        if 'name' not in keys:
-            log.error("Key \"name\" missing in mode %s", mdict)
-            sys.exit(1)
 
         if not hasattr(self, "type"):
             log.fatal("Key \"type\" is missing or invalid")
@@ -133,6 +131,20 @@ class Mode:
         Return a dictionary that maps mode name to mode object.
         '''
 
+        # mdicts might be a list of dictionaries that each describe a mode (the
+        # older format). Or it might be a dictionary, keyed by the name of each
+        # mode. If it's the list format, convert it to a dictionary, assuming
+        # that every entry has a name.
+        if isinstance(mdicts, list):
+            as_dict = {}
+            for mdict in mdicts:
+                mname = mdict.get("name")
+                if mname is None:
+                    log.error("Mode with no name: {!r}".format(mdict))
+                    sys.exit(1)
+                as_dict[mname] = mdict
+            mdicts = as_dict
+
         def merge_sub_modes(mode, parent, objs):
             # Check if there are modes available to merge
             sub_modes = mode.get_sub_modes()
@@ -174,10 +186,10 @@ class Mode:
 
         # Process list of raw dicts that represent the modes
         # Pass 1: Create unique set of modes by merging modes with the same name
-        for mdict in mdicts:
+        for mname, mdict in mdicts.items():
             # Create a new item
             new_mode_merged = False
-            new_mode = ModeType(mdict)
+            new_mode = ModeType(mname, mdict)
             for mode in modes_objs:
                 # Merge new one with existing if available
                 if mode.name == new_mode.name:
@@ -207,11 +219,18 @@ class Mode:
         return None
 
 
-def find_mode(mode_name: str, modes: List[Mode]) -> Optional[Mode]:
+def find_mode(mode_name: str,
+              modes: Union[List[Mode], Dict[str, Mode]]) -> Optional[Mode]:
     '''Search through a list of modes and return the one with the given name.
 
     Return None if nothing was found.
     '''
+    # Handle the case when modes is a dictionary, keyed by mode name. This
+    # is easier, but we keep the "list form" below to ease the transition
+    # between the two representations.
+    if isinstance(modes, dict):
+        return modes.get(mode_name)
+
     for mode in modes:
         if mode_name == mode.name:
             return mode
@@ -244,7 +263,7 @@ class BuildMode(Mode):
     # Maintain a list of build_modes str
     item_names = []
 
-    def __init__(self, bdict):
+    def __init__(self, name: str, bdict):
         self.name = ""
         self.type = "build"
         self.is_sim_mode = 0
@@ -259,12 +278,12 @@ class BuildMode(Mode):
         self.sw_images = []
         self.sw_build_opts = []
 
-        super().__init__("build mode", bdict)
+        super().__init__("build mode", name, bdict)
         self.en_build_modes = list(set(self.en_build_modes))
 
     @staticmethod
     def get_default_mode():
-        return BuildMode({"name": "default"})
+        return BuildMode("default", {})
 
 
 class RunMode(Mode):
@@ -273,7 +292,7 @@ class RunMode(Mode):
     # Maintain a list of run_modes str
     item_names = []
 
-    def __init__(self, rdict):
+    def __init__(self, name: str, rdict):
         self.name = ""
         self.type = "run"
         self.reseed = None
@@ -290,7 +309,7 @@ class RunMode(Mode):
         self.sw_build_device = ""
         self.sw_build_opts = []
 
-        super().__init__("run mode", rdict)
+        super().__init__("run mode", name, rdict)
         self.en_run_modes = list(set(self.en_run_modes))
 
     @staticmethod
@@ -339,9 +358,14 @@ class Test(RunMode):
         tests_objs = []
         # Pass 1: Create unique set of tests by merging tests with the same name
         for tdict in tdicts:
+            tname = tdict.get('name')
+            if tname is None:
+                log.error("Test dictionary {} has no name".format(tdict))
+                sys.exit(1)
+
             # Create a new item
             new_test_merged = False
-            new_test = Test(tdict)
+            new_test = Test(tname, tdict)
             for test in tests_objs:
                 # Merge new one with existing if available
                 if test.name == new_test.name:
@@ -355,7 +379,7 @@ class Test(RunMode):
                 Test.item_names.append(new_test.name)
 
         # Pass 2: Process dependencies
-        build_modes = getattr(sim_cfg, "build_modes", [])
+        build_modes = getattr(sim_cfg, "build_modes", {})
         run_modes = getattr(sim_cfg, "run_modes", [])
 
         attrs = Test.defaults
@@ -436,6 +460,11 @@ class Regression(Mode):
     item_names = []
 
     def __init__(self, regdict):
+        regname = regdict.get('name')
+        if regname is None:
+            log.error("Regression dictionary {} has no name".format(regdict))
+            sys.exit(1)
+
         self.name = ""
         self.type = ""
 
@@ -459,7 +488,7 @@ class Regression(Mode):
         self.post_run_cmds = []
         self.build_opts = []
         self.run_opts = []
-        super().__init__("regression", regdict)
+        super().__init__("regression", regname, regdict)
 
     @staticmethod
     def create_regressions(regdicts, sim_cfg, tests):
@@ -496,7 +525,7 @@ class Regression(Mode):
                 Regression.item_names.append(new_regression.name)
 
         # Pass 2: Process dependencies
-        build_modes = getattr(sim_cfg, "build_modes", [])
+        build_modes = getattr(sim_cfg, "build_modes", {})
         run_modes = getattr(sim_cfg, "run_modes", [])
 
         for regression_obj in regression_objs:

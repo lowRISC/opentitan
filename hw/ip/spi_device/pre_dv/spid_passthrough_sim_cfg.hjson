@@ -10,8 +10,7 @@
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
   reseed: 1
 
-  build_modes: [
-  ]
+  build_modes: {}
 
   tests: [
     {

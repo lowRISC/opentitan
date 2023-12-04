@@ -29,26 +29,22 @@
   // Add PRIM_LSFR specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cov_excl.el"]
 
-  build_modes: [
-    {
-      name: prim_lfsr_dw_8_gal
+  build_modes: {
+    prim_lfsr_dw_8_gal: {
       build_opts: ["+define+MAX_LFSR_DW=8"]
     }
-    {
-      name: prim_lfsr_dw_8_fib
+    prim_lfsr_dw_8_fib: {
       build_opts: ["+define+MAX_LFSR_DW=8",
                    "+define+LFSR_FIB_TYPE"]
     }
-    {
-      name: prim_lfsr_dw_24_gal
+    prim_lfsr_dw_24_gal: {
       build_opts: ["+define+MAX_LFSR_DW=24"]
     }
-    {
-      name: prim_lfsr_dw_24_fib
+    prim_lfsr_dw_24_fib: {
       build_opts: ["+define+MAX_LFSR_DW=24",
                    "+define+LFSR_FIB_TYPE"]
     }
-  ]
+  }
 
   // Since none of the tests use the "default" build mode, we need to indicate which build is the
   // main build mode.

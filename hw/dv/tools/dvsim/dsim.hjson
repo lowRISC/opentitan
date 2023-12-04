@@ -96,15 +96,13 @@
   // waveform
   probe_file: "dsim.probe"
 
-  build_modes: [
-    {
-      name: dsim_gui
+  build_modes: {
+    dsim_gui: {
       is_sim_mode: 1
       build_opts: []
       run_opts: []
     }
-    {
-      name: dsim_waves
+    dsim_waves: {
       is_sim_mode: 1
       build_opts: ["+acc+b"]
       run_opts:   ["-waves waves.{waves}",
@@ -113,16 +111,14 @@
                    // Dump unpacked structs and arrays.
                    "-dump-agg"]
     }
-    {
-      name: dsim_waves_off
+    dsim_waves_off: {
       is_sim_mode: 1
       build_opts: []
     }
     // TODO: support coverage mode
     // Note: no specific build or run options are required for dsim to produce functional
     // coverage. Code coverage support is evolving.
-    {
-      name: dsim_cov
+    dsim_cov: {
       is_sim_mode: 1
       build_opts: [// Enable the required cov metrics
                    ]
@@ -130,21 +126,18 @@
                    ]
     }
     // TODO: support xprop mode
-    {
-      name: dsim_xprop
+    dsim_xprop: {
       is_sim_mode: 1
     }
-    {
-      name: dsim_profile
+    dsim_profile: {
       is_sim_mode: 1
       run_opts:   ["-profile"]
     }
-    {
+    dsim_loopdetect: {
       // TODO: Add build and run options to enable zero delay loop detection.
-      name: dsim_loopdetect
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
-  ]
+  }
 }

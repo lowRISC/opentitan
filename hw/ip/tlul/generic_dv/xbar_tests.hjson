@@ -4,11 +4,9 @@
 {
   // Run with a named build mode, and enable a named run mode. This allows an external testbench to
   // override this build / run mode to apply additional common settings for all of these tests.
-  build_modes: [
-    {
-      name: xbar_build_mode
-    }
-  ]
+  build_modes: {
+    xbar_build_mode: {}
+  }
   run_modes: [
     {
       name: xbar_run_mode

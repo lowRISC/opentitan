@@ -53,7 +53,7 @@ class OneShotCfg(FlowCfg):
         self.dut = ""
         self.fusesoc_core = ""
         self.ral_spec = ""
-        self.build_modes = []
+        self.build_modes = {}
         self.run_modes = []
         self.regressions = []
         self.max_msg_count = -1
@@ -117,12 +117,12 @@ class OneShotCfg(FlowCfg):
     def _create_objects(self):
         # Create build and run modes objects
         build_modes = Mode.create_modes(BuildMode,
-                                        getattr(self, "build_modes")).values()
+                                        getattr(self, "build_modes"))
         setattr(self, "build_modes", build_modes)
 
         # All defined build modes are being built, h
         # ence extend all with the global opts.
-        for build_mode in build_modes:
+        for build_mode in build_modes.values():
             build_mode.build_opts.extend(self.build_opts)
 
     def _print_list(self):
@@ -146,7 +146,7 @@ class OneShotCfg(FlowCfg):
         '''Create deploy objects from build modes
         '''
         builds = []
-        for build in self.build_modes:
+        for build in self.build_modes.values():
             item = CompileOneShot(build, self)
             builds.append(item)
 

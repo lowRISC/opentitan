@@ -263,28 +263,24 @@
   build_fail_patterns: ["^Error-.*$"]
   run_fail_patterns:   ["^Error-.*$"] // Null pointer error
 
-  build_modes: [
-    {
-      name: vcs_gui
+  build_modes: {
+    vcs_gui: {
       is_sim_mode: 1
       build_opts: ["-debug_access+all+reverse"]
       run_opts: ["-gui", "-l {run_dir}/simv.log"]
     }
-    {
-      name: vcs_waves
+    vcs_waves: {
       is_sim_mode: 1
       build_opts: [// Enable generating Verdi Knowledge Database
                    "-kdb",
                    "-debug_access"]
     }
-    {
-      name: vcs_waves_off
+    vcs_waves_off: {
       is_sim_mode: 1
       build_opts: [// disable dumping assertion failures to improve runtime performance
                    "-assert novpi+dbgopt"]
     }
-    {
-      name: vcs_cov
+    vcs_cov: {
       is_sim_mode: 1
       build_opts: [// Enable the required cov metrics
                    "-cm {cov_metrics}",
@@ -325,24 +321,21 @@
                    // Provide a name to the coverage collected for this test
                    "-cm_name {cov_db_test_dir_name}"]
     }
-    {
-      name: vcs_xprop
+    vcs_xprop: {
       is_sim_mode: 1
       build_opts: ["-xprop={vcs_xprop_cfg_file}",
                    // Enable xmerge mode specific performance optimization
                    "-xprop=mmsopt"]
     }
-    {
-      name: vcs_profile
+    vcs_profile: {
       is_sim_mode: 1
       build_opts: ["-simprofile"]
       run_opts:   ["-simprofile {profile}"]
     }
-    {
-      name: vcs_loopdetect
+    vcs_loopdetect: {
       is_sim_mode: 1
       build_opts: ["+vcs+loopreport", "+vcs+loopdetect"]
       run_opts:   ["+vcs+loopreport", "+vcs+loopdetect"]
     }
-  ]
+  }
 }

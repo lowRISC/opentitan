@@ -100,17 +100,15 @@
   cov_db_dir: ""
   cov_db_test_dir: ""
 
-  build_modes: [
+  build_modes: {
     // TODO: Verilator will likely never have GUI. Find a better way to support
     // --gui when the tool itself doesn't support it.
-    {
-      name: verilator_gui
+    verilator_gui: {
       is_sim_mode: 1
       build_opts: []
       run_opts: []
     }
-    {
-      name: verilator_waves
+    verilator_waves: {
       is_sim_mode: 1
       // build_opts: ["--trace",
       //              "--trace-fst"
@@ -121,25 +119,21 @@
       run_opts: ["--trace"]
     }
     // TODO: These need to be fine-tuned.
-    {
-      name: verilator_cov
+    verilator_cov: {
       is_sim_mode: 1
       // build_opts: ["--coverage"]
     }
-    {
-      name: verilator_xprop
+    verilator_xprop: {
       is_sim_mode: 1
     }
-    {
-      name: verilator_profile
+    verilator_profile: {
       is_sim_mode: 1
       // build_opts: ["--prof-cfuncs",
       //              "--prof-threads",
       //             ]
     }
-    {
-      name: verilator_loopdetect
+    verilator_loopdetect: {
       is_sim_mode: 1
     }
-  ]
+  }
 }

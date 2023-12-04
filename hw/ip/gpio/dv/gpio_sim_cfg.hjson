@@ -56,12 +56,11 @@
   // is run in the default build mode without the CDC prims. The en_cdc_prims
   // build mode is used to run some additional smoke checks to ensure
   // that the input paths through the CDC prims are connected correctly.
-  build_modes: [
-    {
-      name: en_cdc_prims
+  build_modes: {
+    en_cdc_prims: {
       build_opts: ["+define+GPIO_ASYNC_ON"]
     }
-  ]
+  }
 
   en_cdc_prims_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
   en_cdc_prims_xcelium_cov_cfg_file: "{default_xcelium_cov_cfg_file}"

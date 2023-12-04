@@ -159,12 +159,12 @@ class SynCfg(OneShotCfg):
         results_str += "### Synthesis Tool: " + self.tool.upper() + "\n\n"
 
         # TODO: extend this to support multiple build modes
-        for mode in self.build_modes:
+        for mode_name in self.build_modes.keys():
 
             # results_str += "## Build Mode: " + mode.name + "\n\n"
 
             result_data = Path(
-                subst_wildcards(self.build_dir, {"build_mode": mode.name}) +
+                subst_wildcards(self.build_dir, {"build_mode": mode_name}) +
                 '/results.hjson')
             log.info("looking for result data file at %s", result_data)
 
@@ -209,7 +209,7 @@ class SynCfg(OneShotCfg):
                     ("compile_errors", " E "),
                 ]
 
-                msgs = [mode.name]
+                msgs = [mode_name]
                 for key, sev in msg_list:
                     if self.result["messages"][key] is None:
                         msgs.append("--")
@@ -386,7 +386,7 @@ class SynCfg(OneShotCfg):
                     self.errors_seen += num_msgs if fail else 0
 
             if msgs_seen > 0:
-                fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode.name + "'`\n"
+                fail_msgs += "\n### Errors and Warnings for Build Mode `'" + mode_name + "'`\n"
                 for hdr, key, _ in hdr_key_pairs:
                     msgs = self.result['messages'].get(key)
                     fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)

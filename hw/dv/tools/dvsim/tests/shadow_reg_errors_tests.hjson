@@ -4,11 +4,9 @@
 
 // this hjson should be imported by all IPs containing shadowed CSRs
 {
-  build_modes: [
-    {
-      name: cover_reg_top
-    }
-  ]
+  build_modes: {
+    cover_reg_top: {}
+  }
 
   run_modes: [
     {

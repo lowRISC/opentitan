@@ -8,15 +8,13 @@
   crypto_prince_ref_core: "lowrisc:dv:crypto_prince_ref:0.1"
   crypto_prince_ref_src_dir: "{eval_cmd} echo \"{crypto_prince_ref_core}\" | tr ':' '_'"
 
-  build_modes: [
-    {
-      name: vcs_crypto_dpi_prince_build_opts
+  build_modes: {
+    vcs_crypto_dpi_prince_build_opts: {
       build_opts: ["-CFLAGS -I{build_dir}/src/{crypto_prince_ref_src_dir}"]
     }
 
-    {
-      name: xcelium_crypto_dpi_prince_build_opts
+    xcelium_crypto_dpi_prince_build_opts: {
       build_opts: ["-I{build_dir}/src/{crypto_prince_ref_src_dir}"]
     }
-  ]
+  }
 }

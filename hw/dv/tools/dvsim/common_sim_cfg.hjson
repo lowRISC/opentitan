@@ -88,9 +88,8 @@
   // To define a build mode that overrides these flags, add something
   // like the following to the IP block's configuration:
   //
-  //   build_modes: [
-  //     {
-  //       name: foo
+  //   build_modes: {
+  //     foo: {
   //       build_opts: ["+define+bx",
   //                    "+define+by",
   //                    "+define+bz"]
@@ -98,11 +97,11 @@
   //                  "+ry=2",
   //                  "+rz=3"]
   //     }
-  //   ]
+  //   }
   //
   // To use a build mode for a specific test, set the 'build_mode' key.
   //
-  build_modes: []
+  build_modes: {}
 
   // Regressions are tests that can be grouped together and run in one shot
   // By default, two regressions are made available - "all" and "nightly". Both

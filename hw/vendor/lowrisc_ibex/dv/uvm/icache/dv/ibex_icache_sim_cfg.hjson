@@ -29,12 +29,11 @@
 
   sim_tops: ["ibex_icache_fcov_bind"]
 
-  build_modes: [
-    {
-      name: default
+  build_modes: {
+    default: {
       en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
     }
-  ]
+  }
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

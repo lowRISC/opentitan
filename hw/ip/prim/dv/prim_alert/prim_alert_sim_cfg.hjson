@@ -29,20 +29,17 @@
   // Enable cdc instrumentation
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
-  build_modes: [
-    {
-      name: sync_alert
+  build_modes: {
+    sync_alert: {
       build_opts: ["+define+IS_SYNC"]
     }
-    {
-      name: fatal_alert
+    fatal_alert: {
       build_opts: ["+define+IS_FATAL"]
     }
-    {
-      name: sync_fatal_alert
+    sync_fatal_alert: {
       build_opts: ["+define+IS_FATAL", "+define+IS_SYNC"]
     }
-  ]
+  }
 
   // List of test specifications.
   tests: [

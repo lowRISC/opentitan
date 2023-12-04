@@ -10,20 +10,17 @@
   otbn_memutil_core: "lowrisc:dv:otbn_memutil:0"
   otbn_memutil_src_dir: "{eval_cmd} echo \"{otbn_memutil_core}\" | tr ':' '_'"
 
-  build_modes: [
-    {
-      name: vcs_otbn_memutil_build_opts
+  build_modes: {
+    vcs_otbn_memutil_build_opts: {
       build_opts: ["-CFLAGS -I{build_dir}/src/{otbn_memutil_src_dir}"]
     }
 
-    {
-      name: xcelium_otbn_memutil_build_opts
+    xcelium_otbn_memutil_build_opts: {
       build_opts: ["-I{build_dir}/src/{otbn_memutil_src_dir}"]
     }
 
-    {
-      name: dsim_otbn_memutil_build_opts
+    dsim_otbn_memutil_build_opts: {
       build_opts: ["-c-opts -I{build_dir}/src/{otbn_memutil_src_dir}"]
     }
-  ]
+  }
 }

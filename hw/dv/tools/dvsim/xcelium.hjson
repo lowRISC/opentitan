@@ -195,25 +195,21 @@
   build_fail_patterns: ["\\*E.*$"]
   run_fail_patterns:   ["\\*E.*$"] // Null pointer error
 
-  build_modes: [
-    {
-      name: xcelium_gui
+  build_modes: {
+    xcelium_gui: {
       is_sim_mode: 1
       build_opts: ["-createdebugdb", "-access +c"]
       run_opts: ["-gui"]
     }
-    {
-      name: xcelium_waves
+    xcelium_waves: {
       is_sim_mode: 1
       build_opts: ["-access +c"]
     }
-    {
-      name: xcelium_waves_off
+    xcelium_waves_off: {
       is_sim_mode: 1
       build_opts: []
     }
-    {
-      name: xcelium_cov
+    xcelium_cov: {
       is_sim_mode: 1
       build_opts: [// Enable the required cov metrics.
                    "-coverage {cov_metrics}",
@@ -236,23 +232,20 @@
                    "-covoverwrite"]
     }
     // TODO support profile for xcelium
-    {
-      name: xcelium_profile
+    xcelium_profile: {
       is_sim_mode: 1
       build_opts: ["-perfstat"]
       run_opts:   ["-perfstat", "-perflog perfstat.log"]
     }
-    {
-      name: xcelium_xprop
+    xcelium_xprop: {
       is_sim_mode: 1
       build_opts: ["-xprop F -xverbose"]
     }
-    {
+    xcelium_loopdetect: {
       // TODO: Add build and run options to enable zero delay loop detection.
-      name: xcelium_loopdetect
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
-  ]
+  }
 }

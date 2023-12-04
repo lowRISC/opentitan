@@ -10,12 +10,11 @@
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
   reseed: 1
 
-  build_modes: [
-    {
-      name: spid_status_locality_1
+  build_modes: {
+    spid_status_locality_1: {
       build_opts: []
     }
-  ]
+  }
 
   tests: [
     {

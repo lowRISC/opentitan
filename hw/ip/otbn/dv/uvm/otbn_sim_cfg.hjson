@@ -75,12 +75,11 @@ name:
 
   // The default build mode, used for the tests explicitly listed below does not
   // require any pre-build steps.
-  build_modes: [
-    {
-      name: default
+  build_modes: {
+    default: {
       pre_build_cmds: []
     }
-  ]
+  }
 
   // The value to pass to the --size parameter for gen-binaries.py. This
   // controls the number of instructions that are run before ECALL or error.

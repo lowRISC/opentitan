@@ -7,18 +7,15 @@
   // otbn_tracer.
   otbn_tracer_inc_dir: "{build_dir}/src/lowrisc_ip_otbn_tracer_0/cpp"
 
-  build_modes: [
-    {
-      name: vcs_otbn_tracer_build_opts
+  build_modes: {
+    vcs_otbn_tracer_build_opts: {
       build_opts: ["-CFLAGS -I{otbn_tracer_inc_dir}"]
     }
-    {
-      name: xcelium_otbn_tracer_build_opts
+    xcelium_otbn_tracer_build_opts: {
       build_opts: ["-I{otbn_tracer_inc_dir}"]
     }
-    {
-      name: dsim_otbn_tracer_build_opts
+    dsim_otbn_tracer_build_opts: {
       build_opts: ["-c-opts -I{otbn_tracer_inc_dir}"]
     }
-  ]
+  }
 }

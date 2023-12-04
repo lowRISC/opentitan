@@ -114,7 +114,7 @@ class SimCfg(FlowCfg):
         self.testplan = ""
         self.fusesoc_core = ""
         self.ral_spec = ""
-        self.build_modes = []
+        self.build_modes = {}
         self.run_modes = []
         self.regressions = []
         self.supported_wave_formats = None
@@ -242,7 +242,7 @@ class SimCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        self.build_modes = Mode.create_modes(BuildMode, self.build_modes).values()
+        self.build_modes = Mode.create_modes(BuildMode, self.build_modes)
         self.run_modes = Mode.create_modes(RunMode, self.run_modes).values()
 
         # Walk through build modes enabled on the CLI and append the opts

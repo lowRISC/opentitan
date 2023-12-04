@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_modes: [
-    {
-      name: cover_reg_top
-    }
-  ]
+  build_modes: {
+    cover_reg_top: {}
+  }
 
   run_modes: [
     {

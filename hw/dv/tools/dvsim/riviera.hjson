@@ -62,47 +62,40 @@
   build_fail_patterns: ["\\*E.*$"]
   run_fail_patterns:   ["\\*E.*$"] // Null pointer error
 
-  build_modes: [
-    {
-      name: riviera_gui
+  build_modes: {
+    riviera_gui: {
       is_sim_mode: 1
       build_opts: []
       run_opts: []
     }
-    {
-      name: riviera_waves
+    riviera_waves: {
       is_sim_mode: 1
     }
-    {
-      name: riviera_waves_off
+    riviera_waves_off: {
       is_sim_mode: 1
       build_opts: []
     }
     // TODO support coverage for riviera
-    {
-      name: riviera_cov
+    riviera_cov: {
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
     // TODO support profiling for riviera
-    {
-      name: riviera_profile
+    riviera_profile: {
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
-    {
-      name: riviera_xprop
+    riviera_xprop: {
       is_sim_mode: 1
       build_opts: []
     }
     // TODO: Add build and run options to enable zero delay loop detection.
-    {
-      name: riviera_loopdetect
+    riviera_loopdetect: {
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
     }
-  ]
+  }
 }

@@ -129,9 +129,9 @@ class LintCfg(OneShotCfg):
         # message buckets.
         self.result = []
         self.result_summary = MsgBuckets(self.message_buckets)
-        for mode in self.build_modes:
+        for mode_name in self.build_modes.keys():
             result_path = Path(
-                subst_wildcards(self.build_dir, {'build_mode': mode.name}) +
+                subst_wildcards(self.build_dir, {'build_mode': mode_name}) +
                 '/results.hjson')
             log.info('[results:hjson]: [%s]: [%s]', self.name, result_path)
             # TODO(#9079): replace this with native log parser
@@ -149,11 +149,11 @@ class LintCfg(OneShotCfg):
         fail_msgs = ''
         self.errors_seen = 0
         keys = self.result_summary.get_keys(self.report_severities)
-        for mode, res in zip(self.build_modes, self.result):
-            row = [mode.name] + res.get_counts_md(keys)
+        for mode_name, res in zip(self.build_modes.keys(), self.result):
+            row = [mode_name] + res.get_counts_md(keys)
             table.append(row)
             self.errors_seen += res.has_signatures(self.fail_severities)
-            fail_msgs += f"\n### Messages for Build Mode `'{mode.name}'`\n"
+            fail_msgs += f"\n### Messages for Build Mode `'{mode_name}'`\n"
             fail_msgs += res.print_signatures_md(self.report_severities,
                                                  self.max_msg_count)
 
