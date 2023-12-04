@@ -596,9 +596,9 @@ jobs:
     demands: BOARD -equals cw310
   timeoutInMinutes: 45
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_earlgrey_cw310_hyperdebug
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_earlgrey_cw310_hyperdebug', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -606,12 +606,13 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
+        - chip_earlgrey_cw310_hyperdebug
         - sw_build
   - bash: |
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 cw310_sival,-manuf,-hyper310 || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh hyper310 cw310_sival || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
@@ -702,7 +703,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh cw310 manuf,-cw310_sival || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 

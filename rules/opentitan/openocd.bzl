@@ -15,8 +15,11 @@ OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS = [
 OPENTITANTOOL_OPENOCD_TEST_CMD = """
     --openocd="$(rootpath //third_party/openocd:openocd_bin)"
     --openocd-adapter-config="$(rootpath //third_party/openocd:jtag_olimex_cfg)"
-    --clear-bitstream
-    --bitstream={bitstream}
+"""
+
+OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD = """
+    --openocd="$(rootpath //third_party/openocd:openocd_bin)"
+    --openocd-adapter-config="$(rootpath //third_party/openocd:jtag_cmsis_dap_adapter_cfg)"
 """
 
 OPENTITANTOOL_OPENOCD_CMSIS_SI_TEST_CMD = """

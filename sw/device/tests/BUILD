@@ -34,6 +34,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -1332,7 +1333,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = hyper310_jtag_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
         tags = [
             "broken",
@@ -3068,7 +3069,7 @@ _RV_DM_JTAG_LC_STATES = get_lc_items(
     opentitan_test(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = hyper310_jtag_params(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -3099,7 +3100,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = hyper310_jtag_params(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -3187,7 +3188,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_lc_disabled_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = hyper310_jtag_params(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -3485,11 +3486,20 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": "hyper310",
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
+    hyper310 = hyper310_jtag_params(
+        binaries = {
+            ":rv_core_ibex_epmp_test": "sram_program",
+        },
+        otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
+        tags = ["manual"],
+        test_cmd = "--elf={sram_program}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+    ),
     silicon = silicon_jtag_params(
         test_cmd = "--elf={firmware}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",

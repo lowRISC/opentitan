@@ -9,8 +9,6 @@ load(
 )
 load(
     "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "cw310_params",
     "opentitan_functest",
 )

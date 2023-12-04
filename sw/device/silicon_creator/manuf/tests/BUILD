@@ -155,7 +155,7 @@ opentitan_test(
             "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
             "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
         ],
-        visibility = ["//visibility:private"],
+        visibility = ["//visibility:public"],
     )
     for i in range(0, 8)
 ]

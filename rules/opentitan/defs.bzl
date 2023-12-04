@@ -20,6 +20,7 @@ load(
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
+    _hyper310_jtag_params = "hyper310_jtag_params",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
@@ -57,6 +58,7 @@ fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
 cw310_jtag_params = _cw310_jtag_params
+hyper310_jtag_params = _hyper310_jtag_params
 
 silicon = _silicon
 silicon_params = _silicon_params
