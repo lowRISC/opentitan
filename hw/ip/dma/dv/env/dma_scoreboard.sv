@@ -98,20 +98,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
     return -1;
   endfunction : int_addr_lookup
 
-  // Check if address is valid.
-  // If it's a valid 'clear interrupt' address, return the positive index of the interrupt;
-  // otherwise return -1.
+  // Check if the address matches our expectations and is valid for the current configuration.
   // This method is common for both source and destination address.
-  function int int_source_from_addr(bit [63:0] addr,        // Observed address.
-                                    bit [63:0] exp_addr,    // Expectation.
-                                    bit        restricted,  // DMA-enabled range applies.
-                                    bit        fixed_addr,  // Fixed address (FIFO w/out auto-inc).
-                                    // Expected address range for this accesses of this type.
-                                    bit [63:0] range_start,
-                                    bit [31:0] range_len,
-                                    // Configuration for this transfer.
-                                    ref dma_seq_item dma_config,
-                                    input string check_type);  // Type of access.
+  function void check_addr(bit [63:0]       addr,        // Observed address.
+                           bit [63:0]       exp_addr,    // Expectation.
+                           bit              restricted,  // DMA-enabled range applies.
+                           bit              fixed_addr,  // Fixed address (FIFO w/out auto-inc).
+                           // Expected address range for this accesses of this type.
+                           bit [63:0]       range_start,
+                           bit [31:0]       range_len,
+                           // Configuration for this transfer.
+                           ref dma_seq_item dma_config,
+                           input string     check_type);  // Type of access.
     // End of valid address range; dependent upon the chunk/transfer size and auto-inc setting.
     bit [63:0] range_end = range_start + range_len;
     int idx;
@@ -124,10 +122,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                         dma_config.mem_range_base, dma_config.mem_range_limit), UVM_DEBUG)
 
     `DV_CHECK(addr[1:0] == 0, $sformatf("Address is not 4 Byte aligned"))
-
-    // Is this address a 'Clear Interrupt' operation?
-    idx = int_addr_lookup(addr);
-    if (idx >= 0) return idx;
 
     // Is this end of the transfer a fixed address?
     // (FIFO end of a transfer in hardware handshaking mode, without address auto-incrementing.)
@@ -156,9 +150,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK(addr[63:2] == exp_addr[63:2],
               $sformatf("%s access 0x%0x does not match expectation 0x%0x", check_type,
                         addr, exp_addr))
-
-    // Valid address, but not an interrupt-clearing address.
-    return -1;
   endfunction
 
   // On-the-fly checking of write data against the pre-randomized source data
@@ -259,17 +250,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK(a_opcode inside {Get},
                $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
 
-      // Check if the transaction address is an interrupt-clearing address or lies within the
-      // source address range.
-      int_source = int_source_from_addr(item.a_addr,
-                                        exp_src_addr,
-                                        restricted,
-                                        dma_config.get_read_fifo_en(),
-                                        dma_config.src_addr,
-                                        memory_range,
-                                        dma_config,
-                                        "Source");
+      // Is this address a 'Clear Interrupt' operation?
+      int_source = int_addr_lookup(item.a_addr);
       `DV_CHECK_EQ(int_source, -1, "Unexpected Read access to Clear Interrupt address")
+
+      // Validate the read address for this source access.
+      check_addr(item.a_addr, exp_src_addr, restricted, dma_config.get_read_fifo_en(),
+                 dma_config.src_addr, memory_range, dma_config, "Source");
 
       // Push addr item to source queue
       src_queue.push_back(item);
@@ -291,16 +278,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
       bit restricted = dma_config.mem_range_valid && (dma_config.dst_asid == OtInternalAddr &&
                                                       dma_config.src_asid != OtInternalAddr);
 
-      // Check if the transaction address is an interrupt-clearing address or lies within the
-      // destination address range.
-      int_source = int_source_from_addr(item.a_addr,
-                                        exp_dst_addr,
-                                        restricted,
-                                        dma_config.get_write_fifo_en(),
-                                        dma_config.dst_addr,
-                                        memory_range,
-                                        dma_config,
-                                        "Destination");
+      // Is this address a 'Clear Interrupt' operation?
+      int_source = int_addr_lookup(item.a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
@@ -312,6 +291,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
         uint num_bytes_this_txn;
         uint transfer_bytes_left;
         uint remaining_bytes;
+
+        // Validate the write address for this destination access.
+        check_addr(item.a_addr, exp_dst_addr, restricted, dma_config.get_write_fifo_en(),
+                   dma_config.dst_addr, memory_range, dma_config, "Destination");
 
         // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
         //       register, so we can rely upon all non-final chunks being of the same size
