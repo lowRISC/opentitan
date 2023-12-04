@@ -117,7 +117,7 @@ class OneShotCfg(FlowCfg):
     def _create_objects(self):
         # Create build and run modes objects
         build_modes = Mode.create_modes(BuildMode,
-                                        getattr(self, "build_modes"))
+                                        getattr(self, "build_modes")).values()
         setattr(self, "build_modes", build_modes)
 
         # All defined build modes are being built, h

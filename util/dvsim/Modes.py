@@ -130,7 +130,7 @@ class Mode:
         '''
         Create modes of type ModeType from a given list of raw dicts
         Process dependencies.
-        Return a list of modes objects.
+        Return a dictionary that maps mode name to mode object.
         '''
 
         def merge_sub_modes(mode, parent, objs):
@@ -194,8 +194,13 @@ class Mode:
         for mode in modes_objs:
             merge_sub_modes(mode, None, modes_objs)
 
+        # Convert the list of modes into a dictionary keyed by name
+        as_dict = {}
+        for mode in modes_objs:
+            as_dict[mode.name] = mode
+
         # Return the list of objects
-        return modes_objs
+        return as_dict
 
     @staticmethod
     def get_default_mode(ModeType):
