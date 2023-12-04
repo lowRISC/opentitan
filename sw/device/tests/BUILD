@@ -1249,10 +1249,10 @@ test_suite(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
         cw310 = new_cw310_params(
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         dv = new_dv_params(
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -1332,7 +1332,7 @@ opentitan_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
     cw310 = cw310_jtag_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
         tags = [
             "broken",
             "lc_dev",
@@ -2916,7 +2916,7 @@ opentitan_test(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
     cw310 = new_cw310_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bitstream="{bitstream}"
             --bootstrap="{firmware}"

@@ -35,14 +35,14 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_unlocked0_manuf_initialized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_initialized",
         tags = ["manuf"],
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_a0_sku_generic",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
@@ -84,7 +84,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        ":individualize_sw_cfg_earlgrey_a0_sku_generic",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
