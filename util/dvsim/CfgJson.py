@@ -130,6 +130,19 @@ def set_target_attribute(path, target, key, dict_val):
         target[key] += dict_val
         return
 
+    if isinstance(old_val, dict):
+        if not isinstance(dict_val, dict):
+            raise RuntimeError('{!r}: Conflicting types for key {!r}: was '
+                               '{!r}, a dictionary, but loaded value is {!r}, '
+                               'of type {}.'
+                               .format(path, key, old_val, dict_val,
+                                       type(dict_val).__name__))
+
+        # Dictionaries are merged by "shallow merge": at a given key, use the
+        # value from the dict_val dictionary by preference.
+        target[key] = {**target[key], **dict_val}
+        return
+
     # The other types we support are "scalar" types.
     scalar_types = [(str, [""]), (int, [0, -1]), (bool, [False])]
     defaults = None
