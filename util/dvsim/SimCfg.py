@@ -19,7 +19,7 @@ from typing import Optional
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
-from Modes import BuildModes, Modes, Regressions, RunModes, Tests
+from Modes import BuildModes, Modes, Regressions, RunModes, Tests, find_mode
 from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
@@ -247,7 +247,7 @@ class SimCfg(FlowCfg):
 
         # Walk through build modes enabled on the CLI and append the opts
         for en_build_mode in self.en_build_modes:
-            build_mode_obj = Modes.find_mode(en_build_mode, self.build_modes)
+            build_mode_obj = find_mode(en_build_mode, self.build_modes)
             if build_mode_obj is not None:
                 self.pre_build_cmds.extend(build_mode_obj.pre_build_cmds)
                 self.post_build_cmds.extend(build_mode_obj.post_build_cmds)
@@ -265,7 +265,7 @@ class SimCfg(FlowCfg):
 
         # Walk through run modes enabled on the CLI and append the opts
         for en_run_mode in self.en_run_modes:
-            run_mode_obj = Modes.find_mode(en_run_mode, self.run_modes)
+            run_mode_obj = find_mode(en_run_mode, self.run_modes)
             if run_mode_obj is not None:
                 self.pre_run_cmds.extend(run_mode_obj.pre_run_cmds)
                 self.post_run_cmds.extend(run_mode_obj.post_run_cmds)
@@ -476,7 +476,7 @@ class SimCfg(FlowCfg):
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
             if test.build_mode.name != build_map[test.build_mode].name:
-                test.build_mode = Modes.find_mode(
+                test.build_mode = find_mode(
                     build_map[test.build_mode].name, self.build_modes)
 
         self.runs = ([]
