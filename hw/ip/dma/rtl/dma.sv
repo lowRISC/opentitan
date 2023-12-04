@@ -1197,8 +1197,9 @@ module dma
     hw2reg.control.go.de = clear_go || cfg_abort_en;
     hw2reg.control.go.d  = 1'b0;
 
-    // Unlock the register set when we are in the idle state
-    hw2reg.cfg_regwen.d = prim_mubi_pkg::mubi4_bool_to_mubi(ctrl_state_q == DmaIdle);
+    // Unlock the register set when not being busy. IDLE is not the right indicator,
+    // since multi-chunked transfers roundtrip via IDLE.
+    hw2reg.cfg_regwen.d = prim_mubi_pkg::mubi4_bool_to_mubi(~reg2hw.status.busy.q);
 
     // If we are in hardware handshake mode with auto-increment increment the corresponding address
     // when finishing a DMA operation when transitioning from a data move state to the idle state
