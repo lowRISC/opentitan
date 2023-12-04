@@ -8,17 +8,17 @@ load(
     "RSA_ONLY_KEY_STRUCTS",
 )
 load(
-    "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/generic:provisioning_inputs.bzl",
-    "CP_PROVISIONING_INPUTS",
-    "FT_PROVISIONING_INPUTS",
-)
-load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
     "silicon_jtag_params",
+)
+load(
+    "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:provisioning_inputs.bzl",
+    "CP_PROVISIONING_INPUTS",
+    "FT_PROVISIONING_INPUTS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -179,7 +179,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/manuf/lib:individualize",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -204,7 +204,7 @@ opentitan_binary(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_generic",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
@@ -290,7 +290,7 @@ opentitan_test(
     cw310 = cw310_jtag_params(
         binaries = _FT_PROVISIONING_BINARIES,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_test_locked0_manuf_initialized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
         tags = [
             "lc_test_locked0",
             "manuf",

@@ -169,10 +169,10 @@ cc_library(
 # As more SKUs are created with different OTP software configuration partitions,
 # libraries can be added accordingly.
 cc_library(
-    name = "individualize_sw_cfg_earlgrey_a0_sku_generic",
+    name = "individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
     deps = [
         ":individualize_sw_cfg",
-        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/generic:otp_sw_cfg",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_sw_cfg",
     ],
 )
 
@@ -194,7 +194,7 @@ opentitan_test(
     },
     deps = [
         ":flash_info_fields",
-        ":individualize_sw_cfg_earlgrey_a0_sku_generic",
+        ":individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
@@ -243,7 +243,7 @@ opentitan_test(
     srcs = ["personalize_functest.c"],
     cw310 = cw310_jtag_params(
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_dev_manuf_individualized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",

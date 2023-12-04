@@ -16,7 +16,7 @@
 ## Manufacturing Stages
 
 The following section describes the EarlGrey manufacturing stages with respect
-to the state of OTP. See `//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival/BUILD`
+to the state of OTP. See `//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup/BUILD`
 for more details.
 
 ### `MANUF_EMPTY`
