@@ -146,11 +146,9 @@ class OneShotCfg(FlowCfg):
         '''Create deploy objects from build modes
         '''
         builds = []
-        build_map = {}
         for build in self.build_modes:
             item = CompileOneShot(build, self)
             builds.append(item)
-            build_map[build] = item
 
         self.builds = builds
         self.deploy = builds
