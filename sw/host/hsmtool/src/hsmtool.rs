@@ -27,6 +27,9 @@ struct Args {
     #[arg(short, long)]
     color: Option<bool>,
 
+    #[arg(short, long, help = "Do not print command results")]
+    quiet: bool,
+
     /// Filename of HSM profiles.  Relative to $XDG_CONFIG_HOME/hsmtool.
     #[arg(long, default_value = "profiles.json")]
     profiles: PathBuf,
@@ -91,5 +94,5 @@ fn main() -> Result<()> {
     };
 
     let result = args.command.run(&(), &hsm, session.as_ref());
-    print_result(args.format, args.color, result)
+    print_result(args.format, args.color, args.quiet, result)
 }

@@ -118,11 +118,15 @@ pub enum Format {
 pub fn print_result(
     format: Format,
     color: Option<bool>,
+    quiet: bool,
     result: Result<Box<dyn Annotate>>,
 ) -> Result<()> {
     let (doc, result) = match result {
         Ok(value) => {
             let doc = serde_annotate::serialize(value.as_ref())?;
+            if quiet {
+                return Ok(());
+            }
             (doc, Ok(()))
         }
         Err(e) => {
