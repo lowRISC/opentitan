@@ -963,15 +963,16 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.int_src_wr_val[index] = item.a_data;
       end
       "control": begin
-        // Is this the very start of a DMA transfer, rather than each individual chunk?
-        // Note: Abort overrides Go
-        bit start_transfer = get_field_val(ral.control.go, item.a_data) &
-                             get_field_val(ral.control.initial_transfer, item.a_data) &
-                            !get_field_val(ral.control.abort, item.a_data);
-        `uvm_info(`gfn, $sformatf("CONTROL register written as 0x%0x", item.a_data), UVM_MEDIUM);
+        bit go, initial_transfer, start_transfer;
         // Update the 'Aborted' prediction in response to setting the CONTROL.abort bit
         // Note: this is a Write Only field so we cannot use the mirrored value
         abort_via_reg_write = get_field_val(ral.control.abort, item.a_data);
+        // Abort overrides Go.
+        go = get_field_val(ral.control.go, item.a_data) & ~abort_via_reg_write;
+        initial_transfer = get_field_val(ral.control.initial_transfer, item.a_data);
+        // Is this the very start of a DMA transfer, rather than each individual chunk?
+        start_transfer = go & initial_transfer;
+        `uvm_info(`gfn, $sformatf("CONTROL register written as 0x%0x", item.a_data), UVM_MEDIUM);
         if (abort_via_reg_write) begin
           `uvm_info(`gfn, "Aborting operation", UVM_LOW)
         end
@@ -1022,7 +1023,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // Expectation of bytes transferred before the first 'Done' signal
           exp_bytes_transferred = dma_config.handshake ? dma_config.total_data_size
                                                        : dma_config.chunk_size(0);
-        end else if (!dma_config.handshake && get_field_val(ral.control.go, item.a_data)) begin
+        end else if (!dma_config.handshake && go) begin
           // Nudging a multi-chunk memory-to-memory transfer to proceed.
           operation_in_progress = 1'b1;
           if (dma_config.direction == DmaSendData && !dma_config.auto_inc_buffer) begin
