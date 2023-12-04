@@ -1065,27 +1065,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "status": begin
         bit busy, done, aborted, error, sha2_digest_valid;
-        bit [DmaErrLast-1:0] error_code;
         bit exp_aborted = abort_via_reg_write;
-        bit bus_error;
 
         do_read_check = 1'b0;
         busy = get_field_val(ral.status.busy, item.d_data);
         done = get_field_val(ral.status.done, item.d_data);
         aborted = get_field_val(ral.status.aborted, item.d_data);
         error = get_field_val(ral.status.error, item.d_data);
-        error_code[DmaSourceAddrErr] = get_field_val(ral.error_code.src_address_error, item.d_data);
-        error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
-        error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
-        error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
-        error_code[DmaBusErr]        = get_field_val(ral.error_code.bus_error, item.d_data);
-        error_code[DmaBaseLimitErr]  = get_field_val(ral.error_code.base_limit_error, item.d_data);
-        error_code[DmaRangeValidErr] = get_field_val(ral.error_code.range_valid_error, item.d_data);
-        error_code[DmaAsidErr]       = get_field_val(ral.error_code.asid_error, item.d_data);
         sha2_digest_valid = get_field_val(ral.status.sha2_digest_valid, item.d_data);
-
-        // Bus errors are distinct from configuration errors.
-        bus_error = error_code[DmaBusErr];
 
         if (done || aborted || error) begin
           string reasons;
@@ -1111,6 +1098,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // However, the transfer may just have completed successfully even if we did request an
         // Abort and it may even have terminated in response to a TL-UL error for some sequences.
         if (abort_via_reg_write) begin
+          bit bus_error = src_tl_error_detected | dst_tl_error_detected;
           `DV_CHECK_EQ(|{aborted, bus_error, done}, 1'b1, "Transfer neither Aborted nor completed.")
         end else begin
           `DV_CHECK_EQ(aborted, 1'b0, "STATUS.aborted bit set when not expected")
@@ -1121,7 +1109,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                .done (done),
                                .aborted (aborted),
                                .error (error));
-          cov.error_code_cg.sample(.error_code (error_code));
         end
         // Check results after each chunk of the transfer (memory-to-memory) or after the complete
         // transfer (handshaking mode).
@@ -1162,6 +1149,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
               num_bytes_checked += check_bytes;
             end
           end
+        end
+      end
+      "error_code": begin
+        bit [DmaErrLast-1:0] error_code;
+        do_read_check = 1'b0;
+        error_code[DmaSourceAddrErr] = get_field_val(ral.error_code.src_address_error, item.d_data);
+        error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
+        error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
+        error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
+        error_code[DmaBusErr]        = get_field_val(ral.error_code.bus_error, item.d_data);
+        error_code[DmaBaseLimitErr]  = get_field_val(ral.error_code.base_limit_error, item.d_data);
+        error_code[DmaRangeValidErr] = get_field_val(ral.error_code.range_valid_error, item.d_data);
+        error_code[DmaAsidErr]       = get_field_val(ral.error_code.asid_error, item.d_data);
+        if (cfg.en_cov) begin
+          cov.error_code_cg.sample(.error_code (error_code));
         end
       end
       // Register read check for lock register
