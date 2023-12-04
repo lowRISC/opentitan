@@ -16,3 +16,10 @@ def hsm_repos():
         ],
         patch_args = ["-p1"],
     )
+    http_archive(
+        name = "sc_hsm",
+        build_file = Label("//third_party/hsm:BUILD.sc_hsm.bazel"),
+        url = "https://github.com/CardContact/sc-hsm-embedded/archive/refs/tags/V2.12.tar.gz",
+        strip_prefix = "sc-hsm-embedded-2.12",
+        sha256 = "707fca9df630708e0e59a7d4a8a7a016c56c83a585957f0fd9f806c0762f1944",
+    )

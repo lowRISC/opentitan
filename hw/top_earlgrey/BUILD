@@ -92,8 +92,14 @@ fpga_cw310(
     base = ":fpga_cw310_test_rom",
     exec_env = "fpga_cw310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    rom = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        "//conditions:default": "//sw/device/silicon_creator/rom:rom_with_real_keys",
+    }),
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
+    }),
 )
 
 fpga_cw310(
