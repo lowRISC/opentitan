@@ -22,22 +22,19 @@ pub struct ManufFtProvisioningDataInput {
     /// Device ID to provision.
     ///
     /// Must match the device ID provisioned in to flash during CP, if one was provisioned then.
-    #[arg(
-        long,
-        default_value = "0xCAFEBABE_11112222_33334444_55556666_77778888_9999AAAA_BBBBCCCC_DEADBEEF"
-    )]
+    #[arg(long)]
     pub device_id: String,
 
     /// TestUnlock token.
-    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
+    #[arg(long)]
     pub test_unlock_token: String,
 
     /// TestExit token.
-    #[arg(long, default_value = "0x11111111_11111111_11111111_11111111")]
+    #[arg(long)]
     pub test_exit_token: String,
 
     /// LC state to transition to from TEST_UNLOCKED*.
-    #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "prod")]
+    #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
     target_mission_mode_lc_state: DifLcCtrlState,
 
     /// Host (HSM) generated ECC (P256) private key DER file.
@@ -45,24 +42,15 @@ pub struct ManufFtProvisioningDataInput {
     host_ecc_sk: PathBuf,
 
     /// Measurement of the ROM_EXT image to be loaded onto the device.
-    #[arg(
-        long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-    )]
+    #[arg(long)]
     pub rom_ext_measurement: String,
 
     /// Measurement of the Ownership Manifest to be loaded onto the device.
-    #[arg(
-        long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-    )]
+    #[arg(long)]
     pub owner_manifest_measurement: String,
 
     /// Measurement of the Owner image to be loaded onto the device.
-    #[arg(
-        long,
-        default_value = "0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-    )]
+    #[arg(long)]
     pub owner_measurement: String,
 }
 
