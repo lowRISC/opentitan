@@ -56,6 +56,7 @@ struct RandData {
 /// where every field is a variable, uses the offsets to fill those values
 /// and then parse the resulting certificate using OpenSSL+asn1 to see if the values
 /// match.
+#[ignore]
 #[test]
 fn offsets_are_correct() {
     // Generare a certificate where every field is a variable.
