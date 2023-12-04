@@ -5,6 +5,7 @@
 from copy import deepcopy
 import logging as log
 import sys
+from typing import List, Optional
 
 from utils import VERBOSE
 
@@ -196,33 +197,34 @@ class Modes():
     def get_default_mode(ModeType):
         return None
 
-    @staticmethod
-    def find_mode(mode_name, modes):
-        '''
-        Given a mode_name in string, go through list of modes and return the mode with
-        the string that matches. Thrown an error and return None if nothing was found.
-        '''
-        for mode in modes:
-            if mode_name == mode.name:
-                return mode
-        return None
 
-    @staticmethod
-    def find_and_merge_modes(mode, mode_names, modes, merge_modes=True):
-        '''
-        '''
-        found_mode_objs = []
-        for mode_name in mode_names:
-            sub_mode = Modes.find_mode(mode_name, modes)
-            if sub_mode is not None:
-                found_mode_objs.append(sub_mode)
-                if merge_modes is True:
-                    mode.merge_mode(sub_mode)
-            else:
-                log.error("Mode \"%s\" enabled within mode \"%s\" not found!",
-                          mode_name, mode.name)
-                sys.exit(1)
-        return found_mode_objs
+def find_mode(mode_name: str, modes: List[Modes]) -> Optional[Modes]:
+    '''Search through a list of modes and return the one with the given name.
+
+    Return None if nothing was found.
+    '''
+    for mode in modes:
+        if mode_name == mode.name:
+            return mode
+    return None
+
+
+def find_and_merge_modes(mode: Modes,
+                         mode_names: List[str],
+                         modes: List[Modes],
+                         merge_modes: bool = True):
+    found_mode_objs = []
+    for mode_name in mode_names:
+        sub_mode = find_mode(mode_name, modes)
+        if sub_mode is not None:
+            found_mode_objs.append(sub_mode)
+            if merge_modes is True:
+                mode.merge_mode(sub_mode)
+        else:
+            log.error("Mode \"%s\" enabled within mode \"%s\" not found!",
+                      mode_name, mode.name)
+            sys.exit(1)
+    return found_mode_objs
 
 
 class BuildModes(Modes):
@@ -354,7 +356,7 @@ class Tests(RunModes):
             # Unpack run_modes first
             en_run_modes = get_pruned_en_run_modes(test_obj.en_run_modes,
                                                    sim_cfg.en_run_modes)
-            Modes.find_and_merge_modes(test_obj, en_run_modes, run_modes)
+            find_and_merge_modes(test_obj, en_run_modes, run_modes)
 
             # Find and set the missing attributes from sim_cfg
             # If not found in sim_cfg either, then throw a warning
@@ -376,10 +378,10 @@ class Tests(RunModes):
                         setattr(test_obj, attr, deepcopy(global_val))
 
             # Unpack the build mode for this test
-            build_mode_objs = Modes.find_and_merge_modes(test_obj,
-                                                         [test_obj.build_mode],
-                                                         build_modes,
-                                                         merge_modes=False)
+            build_mode_objs = find_and_merge_modes(test_obj,
+                                                   [test_obj.build_mode],
+                                                   build_modes,
+                                                   merge_modes=False)
             test_obj.build_mode = build_mode_objs[0]
 
             # Error if set build mode is actually a sim mode
@@ -492,7 +494,7 @@ class Regressions(Modes):
 
         for regression_obj in regressions_objs:
             # Unpack the sim modes
-            found_sim_mode_objs = Modes.find_and_merge_modes(
+            found_sim_mode_objs = find_and_merge_modes(
                 regression_obj, regression_obj.en_sim_modes, build_modes,
                 False)
 
@@ -533,7 +535,7 @@ class Regressions(Modes):
             # Unpack the run_modes
             # TODO: If there are other params other than run_opts throw an
             # error and exit
-            found_run_mode_objs = Modes.find_and_merge_modes(
+            found_run_mode_objs = find_and_merge_modes(
                 regression_obj, regression_obj.en_run_modes, run_modes, False)
 
             # Only merge the pre_run_cmds, post_run_cmds & run_opts from the
@@ -561,7 +563,7 @@ class Regressions(Modes):
                 tests_objs = set()
                 regression_obj.test_names = regression_obj.tests
                 for test in regression_obj.tests:
-                    test_obj = Modes.find_mode(test, sim_cfg.tests)
+                    test_obj = find_mode(test, sim_cfg.tests)
                     if test_obj is None:
                         log.error(
                             "Test \"%s\" added to regression \"%s\" not found!",
