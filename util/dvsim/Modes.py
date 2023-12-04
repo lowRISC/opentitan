@@ -4,7 +4,6 @@
 
 from copy import deepcopy
 import logging as log
-import pprint
 import sys
 
 from utils import VERBOSE
@@ -15,27 +14,6 @@ class Modes():
     Abstraction for specifying collection of options called as 'modes'. This is
     the base class which is extended for run_modes, build_modes, tests and regressions.
     """
-
-    def self_str(self):
-        '''
-        This is used to construct the string representation of the entire class object.
-        '''
-        tname = ""
-        if self.type != "":
-            tname = self.type + "_"
-        if self.mname != "":
-            tname += self.mname
-        if log.getLogger().isEnabledFor(VERBOSE):
-            return "\n<---" + tname + ":\n" + pprint.pformat(self.__dict__) + \
-                   "\n--->\n"
-        else:
-            return tname + ":" + self.name
-
-    def __str__(self):
-        return self.self_str()
-
-    def __repr__(self):
-        return self.self_str()
 
     def __init__(self, mdict):
         keys = mdict.keys()
@@ -466,8 +444,6 @@ class Regressions(Modes):
 
     # Maintain a list of tests str
     item_names = []
-
-    # TODO: define __repr__ and __str__ to print list of tests if VERBOSE
 
     def __init__(self, regdict):
         self.name = ""
