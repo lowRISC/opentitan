@@ -10,6 +10,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
+    "hyper310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -287,7 +288,7 @@ _FT_PROVISIONING_CMD_ARGS = """
 
 opentitan_test(
     name = "ft_provision",
-    cw310 = cw310_jtag_params(
+    cw310 = hyper310_jtag_params(
         binaries = _FT_PROVISIONING_BINARIES,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",

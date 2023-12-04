@@ -27,6 +27,8 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:openocd.bzl",
+    "OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
     "OPENTITANTOOL_OPENOCD_TEST_CMD",
 )
@@ -297,7 +299,66 @@ def cw310_jtag_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        test_cmd = OPENTITANTOOL_OPENOCD_TEST_CMD + test_cmd,
+        test_cmd = """
+            --clear-bitstream
+            --bitstream={bitstream}
+        """ + OPENTITANTOOL_OPENOCD_TEST_CMD + test_cmd,
         data = OPENTITANTOOL_OPENOCD_DATA_DEPS + data,
+        param = kwargs,
+    )
+
+def hyper310_jtag_params(
+        tags = [],
+        timeout = "short",
+        local = True,
+        test_harness = None,
+        binaries = {},
+        rom = None,
+        rom_ext = None,
+        otp = None,
+        bitstream = None,
+        test_cmd = "",
+        data = [],
+        **kwargs):
+    """A macro to create Hyper310 parameters for OpenTitan JTAG tests.
+
+    This creates version of the Hyper310 parameter structure pre-initialized
+    with OpenOCD dependencies and test_cmd parameters.
+
+    Args:
+      tags: The test tags to apply to the test rule.
+      timeout: The timeout to apply to the test rule.
+      local: Whether to set the `local` flag on this test.
+      test_harness: Use an alternative test harness for this test.
+      binaries: Dict of binary labels to substitution parameter names.
+      rom: Use an alternate ROM for this test.
+      rom_ext: Use an alternate ROM_EXT for this test.
+      otp: Use an alternate OTP configuration for this test.
+      bitstream: Use an alternate bitstream for this test.
+      test_cmd: Use an alternate test_cmd for this test.
+      data: Additional files needed by this test.
+      kwargs: Additional key-value pairs to override in the test `param` dict.
+    Returns:
+      struct of test parameters.
+    """
+    if bitstream and (rom or otp):
+        fail("Cannot use rom or otp with bitstream.")
+    if not bitstream:
+        bitstream = "@//hw/bitstream/universal:splice"
+    return struct(
+        tags = ["hyper310", "exclusive"] + tags,
+        timeout = timeout,
+        local = local,
+        test_harness = test_harness,
+        binaries = binaries,
+        rom = rom,
+        rom_ext = rom_ext,
+        otp = otp,
+        bitstream = bitstream,
+        test_cmd = """
+            --clear-bitstream
+            --bitstream={bitstream}
+        """ + OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD + test_cmd,
+        data = OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS + data,
         param = kwargs,
     )

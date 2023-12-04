@@ -115,6 +115,37 @@ fpga_cw310(
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
 )
 
+fpga_cw310(
+    name = "fpga_hyper310_rom_with_fake_keys",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+    ],
+    base = ":fpga_cw310",
+    base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
+    exec_env = "fpga_hyper310_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    test_cmd = """
+        --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
 # FPGA configuration used to emulate silicon targets. This rule can be used by
 # targets that require executing at the `rom_ext` stage level in flash, as well
 # as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
@@ -123,7 +154,7 @@ fpga_cw310(
 fpga_cw310(
     name = "fpga_cw310_sival",
     testonly = True,
-    base = ":fpga_cw310_rom_with_fake_keys",
+    base = ":fpga_hyper310_rom_with_fake_keys",
     exec_env = "fpga_cw310_sival",
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
 
