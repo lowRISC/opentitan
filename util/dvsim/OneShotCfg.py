@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from Deploy import CompileOneShot
 from FlowCfg import FlowCfg
-from Modes import BuildMode, Mode
+from modes import BuildMode, Mode
 from utils import rm_path
 
 
