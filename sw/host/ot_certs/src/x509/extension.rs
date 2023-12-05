@@ -102,6 +102,13 @@ impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
     pub fn new_write(v: U) -> Self {
         Asn1ReadableOrWritable::Write(v, PhantomData)
     }
+
+    pub fn unwrap_read(&self) -> &T {
+        match self {
+            Asn1ReadableOrWritable::Read(v, _) => v,
+            Asn1ReadableOrWritable::Write(_, _) => panic!("unwrap_read called on a Write value"),
+        }
+    }
 }
 
 impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
@@ -231,15 +238,26 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for template::Flags {
     }
 }
 
+const DICE_TCB_EXT_OID: &str = "2.23.133.5.4.1";
+
 pub fn dice_tcb_info_extension(dice_tcb_info: &DiceTcbInfo) -> Result<X509Extension> {
     let der = asn1::write_single(dice_tcb_info)?;
     let octet_string = Asn1OctetString::new_from_bytes(&der)?;
     // Unfortunately, the rust binding does not seem to allow creating a Asn1Object
     // from a Nid so we have to manually create it from the OID string.
-    let oid = Asn1Object::from_str("2.23.133.5.4.1")?;
+    let oid = Asn1Object::from_str(DICE_TCB_EXT_OID)?;
     // From DICE specification:
     // The DiceTcbInfo extension SHOULD be marked critical.
     Ok(X509Extension::new_from_der(&oid, true, &octet_string)?)
+}
+
+pub fn extract_dice_tcb_info_extension(x509: &X509) -> Result<DiceTcbInfo> {
+    let dice_oid =
+        Asn1Object::from_str(DICE_TCB_EXT_OID).expect("cannot create object ID from string");
+    let dice_tcb_ext = x509_get_ext_by_obj(x509, &dice_oid)
+        .expect("cannot extract DICE TCB extension from the certificate");
+    let dice_tcb_der = dice_tcb_ext.as_slice();
+    Ok(asn1::parse_single::<DiceTcbInfo>(dice_tcb_der)?)
 }
 
 // Extract the signature from an already built and signature
