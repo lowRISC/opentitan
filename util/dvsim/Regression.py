@@ -25,7 +25,6 @@ class Regression(Mode):
             sys.exit(1)
 
         self.name = ""
-        self.type = ""
 
         # The `tests` member is typically a list, but it defaults to None.
         # There are 3 possible cases after all the HJson files are parsed, when

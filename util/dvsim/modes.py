@@ -20,10 +20,6 @@ class Mode:
         keys = mdict.keys()
         attrs = self.__dict__.keys()
 
-        if not hasattr(self, "type"):
-            log.fatal("Key \"type\" is missing or invalid")
-            sys.exit(1)
-
         for key in keys:
             if key not in attrs:
                 log.error(f"Key {key} in {mdict} is invalid. Supported "
@@ -31,11 +27,13 @@ class Mode:
                 sys.exit(1)
             setattr(self, key, mdict[key])
 
-    def get_sub_modes(self):
-        return getattr(self, "en_" + self.type + "_modes", [])
+    def get_sub_modes(self) -> List[str]:
+        # Default behaviour is not to have sub-modes
+        return []
 
-    def set_sub_modes(self, sub_modes):
-        setattr(self, "en_" + self.type + "_modes", sub_modes)
+    def set_sub_modes(self, sub_modes: List[str]) -> None:
+        # Default behaviour is not to have sub-modes
+        return None
 
     def merge_mode(self, mode: 'Mode') -> None:
         '''Update this object by merging it with mode.'''
@@ -262,7 +260,6 @@ class BuildMode(Mode):
 
     def __init__(self, name: str, bdict):
         self.name = ""
-        self.type = "build"
         self.is_sim_mode = 0
         self.pre_build_cmds = []
         self.post_build_cmds = []
@@ -278,6 +275,12 @@ class BuildMode(Mode):
         super().__init__("build mode", name, bdict)
         self.en_build_modes = list(set(self.en_build_modes))
 
+    def get_sub_modes(self) -> List[str]:
+        return self.en_build_modes
+
+    def set_sub_modes(self, sub_modes: List[str]) -> None:
+        self.en_build_modes = sub_modes
+
     @staticmethod
     def get_default_mode():
         return BuildMode("default", {})
@@ -291,7 +294,6 @@ class RunMode(Mode):
 
     def __init__(self, name: str, rdict):
         self.name = ""
-        self.type = "run"
         self.reseed = None
         self.pre_run_cmds = []
         self.post_run_cmds = []
@@ -308,6 +310,12 @@ class RunMode(Mode):
 
         super().__init__("run mode", name, rdict)
         self.en_run_modes = list(set(self.en_run_modes))
+
+    def get_sub_modes(self) -> List[str]:
+        return self.en_run_modes
+
+    def set_sub_modes(self, sub_modes: List[str]) -> None:
+        self.en_run_modes = sub_modes
 
     @staticmethod
     def get_default_mode():
