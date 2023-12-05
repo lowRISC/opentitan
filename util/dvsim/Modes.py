@@ -15,7 +15,7 @@ class Modes():
     the base class which is extended for run_modes, build_modes, tests and regressions.
     """
 
-    def __init__(self, mdict):
+    def __init__(self, type_name: str, mdict):
         keys = mdict.keys()
         attrs = self.__dict__.keys()
 
@@ -27,13 +27,10 @@ class Modes():
             log.fatal("Key \"type\" is missing or invalid")
             sys.exit(1)
 
-        if not hasattr(self, "mname"):
-            self.mname = ""
-
         for key in keys:
             if key not in attrs:
                 log.error(f"Key {key} in {mdict} is invalid. Supported "
-                          f"attributes in {self.mname} are {attrs}")
+                          f"attributes for a {type_name} are {attrs}")
                 sys.exit(1)
             setattr(self, key, mdict[key])
 
@@ -60,8 +57,8 @@ class Modes():
         for attr, self_attr_val in self.__dict__.items():
             mode_attr_val = getattr(mode, attr, None)
 
-            # If sub-mode, skip the name fields - they could differ.
-            if is_sub_mode and attr in ['name', 'mname']:
+            # If sub-mode, skip the name: it could differ.
+            if is_sub_mode and attr == 'name':
                 continue
 
             # If mode's value is None, then nothing to do here.
@@ -238,8 +235,6 @@ class BuildModes(Modes):
     def __init__(self, bdict):
         self.name = ""
         self.type = "build"
-        if not hasattr(self, "mname"):
-            self.mname = "mode"
         self.is_sim_mode = 0
         self.pre_build_cmds = []
         self.post_build_cmds = []
@@ -252,7 +247,7 @@ class BuildModes(Modes):
         self.sw_images = []
         self.sw_build_opts = []
 
-        super().__init__(bdict)
+        super().__init__("build mode", bdict)
         self.en_build_modes = list(set(self.en_build_modes))
 
     @staticmethod
@@ -271,8 +266,6 @@ class RunModes(Modes):
     def __init__(self, rdict):
         self.name = ""
         self.type = "run"
-        if not hasattr(self, "mname"):
-            self.mname = "mode"
         self.reseed = None
         self.pre_run_cmds = []
         self.post_run_cmds = []
@@ -287,7 +280,7 @@ class RunModes(Modes):
         self.sw_build_device = ""
         self.sw_build_opts = []
 
-        super().__init__(rdict)
+        super().__init__("run mode", rdict)
         self.en_run_modes = list(set(self.en_run_modes))
 
     @staticmethod
@@ -316,11 +309,6 @@ class Tests(RunModes):
         "run_timeout_mins": None,
         "run_timeout_multiplier": None
     }
-
-    def __init__(self, tdict):
-        if not hasattr(self, "mname"):
-            self.mname = "test"
-        super().__init__(tdict)
 
     @staticmethod
     def create_tests(tdicts, sim_cfg):
@@ -440,8 +428,6 @@ class Regressions(Modes):
     def __init__(self, regdict):
         self.name = ""
         self.type = ""
-        if not hasattr(self, "mname"):
-            self.mname = "regression"
 
         # The `tests` member is typically a list, but it defaults to None.
         # There are 3 possible cases after all the HJson files are parsed, when
@@ -463,7 +449,7 @@ class Regressions(Modes):
         self.post_run_cmds = []
         self.build_opts = []
         self.run_opts = []
-        super().__init__(regdict)
+        super().__init__("regression", regdict)
 
     @staticmethod
     def create_regressions(regdicts, sim_cfg, tests):
