@@ -36,6 +36,7 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "e2e_bootstrap_entry_{}".format(lc_state),
         cw310 = cw310_params(
+            timeout = "moderate",
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},
             otp = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
