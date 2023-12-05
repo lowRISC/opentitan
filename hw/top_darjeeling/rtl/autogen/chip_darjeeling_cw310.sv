@@ -1447,7 +1447,7 @@ module chip_darjeeling_cw310 #(
 
      // DFT signals
     .ast_lc_dft_en_o      ( lc_dft_en                  ),
-    .ast_lc_hw_debug_en_o ( lc_hw_debug_en             ),
+    .ast_lc_hw_debug_en_o (                            ),
     // DFT signals
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),

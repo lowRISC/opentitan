@@ -1619,6 +1619,7 @@ module chip_darjeeling_asic #(
 
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),
+    .ast_lc_hw_debug_en_o              (                            ),
     .dft_strap_test_o                  ( dft_strap_test             ),
     .dft_hold_tap_sel_i                ( '0                         ),
     .scan_rst_ni                       ( scan_rst_n                 ),

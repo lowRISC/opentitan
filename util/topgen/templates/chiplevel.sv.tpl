@@ -1370,6 +1370,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),
+% if top["name"] in ["darjeeling"]:
+    .ast_lc_hw_debug_en_o              (                            ),
+% endif
     .dft_strap_test_o                  ( dft_strap_test             ),
     .dft_hold_tap_sel_i                ( '0                         ),
     .scan_rst_ni                       ( scan_rst_n                 ),
@@ -1592,7 +1595,7 @@ module chip_${top["name"]}_${target["name"]} #(
      // DFT signals
     .ast_lc_dft_en_o      ( lc_dft_en                  ),
 % if top["name"] in ["darjeeling"]:
-    .ast_lc_hw_debug_en_o ( lc_hw_debug_en             ),
+    .ast_lc_hw_debug_en_o (                            ),
 % endif
     // DFT signals
     .dft_hold_tap_sel_i ( '0               ),
