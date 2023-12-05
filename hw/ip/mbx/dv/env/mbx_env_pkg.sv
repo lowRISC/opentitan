@@ -9,6 +9,7 @@ package mbx_env_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
   import dv_base_reg_pkg::*;
+  import prim_mubi_pkg::*;
   import mbx_core_ral_pkg::*;
   import mbx_soc_ral_pkg::*;
   import mbx_mem_ral_pkg::*;
@@ -29,7 +30,14 @@ package mbx_env_pkg;
   parameter int unsigned MBX_DV_DW_SIZE_BYTES = 4;
   parameter int unsigned MBX_DV_MAX_DW = 1024;
 
-  // types
+  // Addresses used by the mailbox DUT.
+  typedef bit [top_pkg::TL_AW-1:0] mbx_addr_t;
+  // Mailbox specification is in terms of 32-bit DWORDs.
+  typedef bit [31:0] mbx_dword_t;
+
+  `include "mbx_seq_item.sv"
+
+
   typedef int unsigned uint_t;
   typedef enum bit {
     READ = 0,
