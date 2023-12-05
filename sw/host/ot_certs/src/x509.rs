@@ -2,31 +2,45 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use num_bigint_dig::BigUint;
+use std::collections::HashMap;
 
-use openssl::asn1::{Asn1Integer, Asn1Time};
-use openssl::bn::{BigNum, BigNumContext};
-use openssl::ec::{EcGroup, EcKey};
+use openssl::asn1::{Asn1Integer, Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef, Asn1Time};
+use openssl::bn::{BigNum, BigNumContext, BigNumRef};
+use openssl::ec::{EcGroup, EcGroupRef, EcKey};
 use openssl::ecdsa::EcdsaSig;
 use openssl::hash::MessageDigest;
 use openssl::nid::Nid;
 use openssl::pkey::PKey;
 use openssl::pkey::{Private, Public};
 use openssl::x509::extension as openssl_ext;
-use openssl::x509::{X509NameBuilder, X509};
+use openssl::x509::{X509NameBuilder, X509NameRef, X509};
 
 use crate::offsets::{CertificateWithVariables, OffsetGenerator};
-use crate::template;
+use crate::template::{
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, HashAlgorithm, Signature,
+    SubjectPublicKeyInfo, Value,
+};
 
 mod extension;
 #[cfg(test)]
 mod tests;
 
 // Convert a template curve name to an openssl one.
-fn ecgroup_from_curve(curve: &template::EcCurve) -> EcGroup {
+fn ecgroup_from_curve(curve: &EcCurve) -> EcGroup {
     match curve {
-        template::EcCurve::Prime256v1 => EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).unwrap(),
+        EcCurve::Prime256v1 => EcGroup::from_curve_name(Nid::X9_62_PRIME256V1).unwrap(),
+    }
+}
+
+fn curve_from_ecgroup(group: &EcGroupRef) -> Result<EcCurve> {
+    let Some(name) = group.curve_name() else {
+        bail!("only curves with standard names are supported")
+    };
+    match name {
+        Nid::X9_62_PRIME256V1 => Ok(EcCurve::Prime256v1),
+        _ => bail!("curve {:?} is not supported", name),
     }
 }
 
@@ -38,7 +52,7 @@ struct KeyPairHash {
 
 impl KeyPairHash {
     // Generate new random ecdsa private/pub key pair.
-    fn new_ecdsa_with_hash(curve: &template::EcCurve, hash: MessageDigest) -> Result<KeyPairHash> {
+    fn new_ecdsa_with_hash(curve: &EcCurve, hash: MessageDigest) -> Result<KeyPairHash> {
         let group = ecgroup_from_curve(curve);
         let key = EcKey::<Private>::generate(&group)?;
         let key_pair = PKey::try_from(key)?;
@@ -52,10 +66,10 @@ fn bignum_from_bigint(bigint: &BigUint) -> BigNum {
 }
 
 // Generate a key pair that is compatible the signature algorithm requested.
-fn generate_signature_keypair(alg: &template::Signature) -> Result<KeyPairHash> {
+fn generate_signature_keypair(alg: &Signature) -> Result<KeyPairHash> {
     match alg {
-        template::Signature::EcdsaWithSha256 { .. } => Ok(KeyPairHash::new_ecdsa_with_hash(
-            &template::EcCurve::Prime256v1,
+        Signature::EcdsaWithSha256 { .. } => Ok(KeyPairHash::new_ecdsa_with_hash(
+            &EcCurve::Prime256v1,
             MessageDigest::sha256(),
         )?),
     }
@@ -69,7 +83,7 @@ fn get_ec_pubkey(
     // The template can either specify both x and y as literal, or as variable but we don't support a mix for both.
     let group = ecgroup_from_curve(&pubkey_info.curve);
     match (&pubkey_info.public_key.x, &pubkey_info.public_key.y) {
-        (template::Value::Literal(x), template::Value::Literal(y)) => {
+        (Value::Literal(x), Value::Literal(y)) => {
             let key = EcKey::<Public>::from_public_key_affine_coordinates(
                 &group,
                 &bignum_from_bigint(x),
@@ -78,7 +92,7 @@ fn get_ec_pubkey(
             .context("could not create a public key from provided curve and x,y coordinates")?;
             Ok(PKey::try_from(key)?)
         }
-        (template::Value::Variable(var_x), template::Value::Variable(var_y)) => {
+        (Value::Variable(var_x), Value::Variable(var_y)) => {
             // We cannot use random x and y since they need to be on the curve. Generate a random one and
             // register it with the generator.
             let privkey = EcKey::<Private>::generate(&group)?;
@@ -109,17 +123,15 @@ fn get_ec_pubkey(
 // the algorithm requested.
 fn get_or_register_pubkey(
     generator: &mut OffsetGenerator,
-    pubkey_info: &template::SubjectPublicKeyInfo,
+    pubkey_info: &SubjectPublicKeyInfo,
 ) -> Result<PKey<Public>> {
     match pubkey_info {
-        template::SubjectPublicKeyInfo::EcPublicKey(ec_pubkey) => {
-            get_ec_pubkey(generator, ec_pubkey)
-        }
+        SubjectPublicKeyInfo::EcPublicKey(ec_pubkey) => get_ec_pubkey(generator, ec_pubkey),
     }
 }
 
 // Convert attribute types to openssl name IDs.
-impl template::AttributeType {
+impl AttributeType {
     fn nid(&self) -> Nid {
         match self {
             Self::Country => Nid::COUNTRYNAME,
@@ -132,16 +144,32 @@ impl template::AttributeType {
     }
 }
 
+impl TryFrom<Nid> for AttributeType {
+    type Error = anyhow::Error;
+
+    fn try_from(nid: Nid) -> Result<AttributeType, Self::Error> {
+        Ok(match nid {
+            Nid::COUNTRYNAME => AttributeType::Country,
+            Nid::ORGANIZATIONNAME => AttributeType::Organization,
+            Nid::ORGANIZATIONALUNITNAME => AttributeType::OrganizationalUnit,
+            Nid::STATEORPROVINCENAME => AttributeType::State,
+            Nid::COMMONNAME => AttributeType::CommonName,
+            Nid::SERIALNUMBER => AttributeType::SerialNumber,
+            _ => bail!("unrecognized OID {:?}", nid),
+        })
+    }
+}
+
 // Extract the signature from an already built and signature
 // certificate, and then register the signature variables with
 // the generator.
-fn extract_signature(
+fn extract_and_register_signature(
     generator: &mut OffsetGenerator,
-    signature: &template::Signature,
+    signature: &Signature,
     sigder: &[u8],
 ) -> Result<()> {
     match signature {
-        template::Signature::EcdsaWithSha256 { value } => {
+        Signature::EcdsaWithSha256 { value } => {
             let ecdsa_sig = EcdsaSig::from_der(sigder)
                 .context("cannot extract ECDSA signature from certificate")?;
             // The ASN1 representation of r and s are as big-endian integers which is what is returned by to_vec.
@@ -150,9 +178,7 @@ fn extract_signature(
             // If the template does not specify a value then add hidden variables to clear them.
             if let Some(value) = value {
                 // We only support variables and not literals.
-                let (template::Value::Variable(var_r), template::Value::Variable(var_s)) =
-                    (&value.r, &value.s)
-                else {
+                let (Value::Variable(var_r), Value::Variable(var_s)) = (&value.r, &value.s) else {
                     bail!("The generator only supports ecdsa signature templates where 'r' and 's' are variables, not a literals");
                 };
                 generator.register_variable::<BigUint>(var_r, r)?;
@@ -205,7 +231,7 @@ pub fn generate_certificate(
                 key
             )
         })?;
-        if *key == template::AttributeType::Country && value.len() > 2 {
+        if *key == AttributeType::Country && value.len() > 2 {
             bail!("The country name must fit on two characters");
         }
         issuer_name_builder.append_entry_by_nid(key.nid(), &value)?;
@@ -222,7 +248,7 @@ pub fn generate_certificate(
                 key
             )
         })?;
-        if *key == template::AttributeType::Country && value.len() > 2 {
+        if *key == AttributeType::Country && value.len() > 2 {
             bail!("The country name must fit on two characters");
         }
         subject_builder.append_entry_by_nid(key.nid(), &value)?;
@@ -390,7 +416,7 @@ pub fn generate_certificate(
     // the signature is a bit string that itself contains a DER-encoded
     // algorithm-specific structure.
     let signature = x509.signature();
-    extract_signature(
+    extract_and_register_signature(
         &mut generator,
         &tmpl.certificate.signature,
         signature.as_slice(),
@@ -398,4 +424,158 @@ pub fn generate_certificate(
 
     let der = x509.to_der()?;
     generator.generate(tmpl.name.clone(), der, clear_fields)
+}
+
+fn asn1int_to_bn(field: &str, bn: &Asn1IntegerRef) -> Result<Value<BigUint>> {
+    Ok(Value::literal(BigUint::from_bytes_be(
+        &bn.to_bn()
+            .with_context(|| format!("could not extract {} from certificate", field))?
+            .to_vec(),
+    )))
+}
+
+fn asn1bignum_to_bn(bn: &BigNumRef) -> Value<BigUint> {
+    Value::literal(BigUint::from_bytes_be(&bn.to_vec()))
+}
+
+fn asn1bigint_to_bn(bn: &asn1::BigInt) -> Value<BigUint> {
+    Value::literal(BigUint::from_bytes_be(bn.as_bytes()))
+}
+
+fn asn1str_to_str(field: &str, s: &Asn1StringRef) -> Result<Value<String>> {
+    Ok(Value::literal(
+        s.as_utf8()
+            .with_context(|| format!("could not extract {} from certificate", field))?
+            .to_string(),
+    ))
+}
+
+fn asn1utf8_to_str(s: &asn1::Utf8String) -> Value<String> {
+    Value::literal(s.as_str().to_string())
+}
+
+fn asn1octets_to_vec(s: &Asn1OctetStringRef) -> Value<Vec<u8>> {
+    Value::literal(s.as_slice().to_vec())
+}
+
+fn asn1name_to_hashmap(
+    field: &str,
+    name: &X509NameRef,
+) -> Result<HashMap<AttributeType, Value<String>>> {
+    let mut res = HashMap::<AttributeType, Value<String>>::new();
+    for entry in name.entries() {
+        let attr = AttributeType::try_from(entry.object().nid())?;
+        if res
+            .insert(attr, asn1str_to_str(field, entry.data())?)
+            .is_some()
+        {
+            bail!("bad")
+        }
+    }
+    Ok(res)
+}
+
+fn extract_ec_pubkey(eckey: &EcKey<Public>) -> Result<EcPublicKeyInfo> {
+    let mut ctx = BigNumContext::new().unwrap();
+    let mut x = BigNum::new().unwrap();
+    let mut y = BigNum::new().unwrap();
+    eckey
+        .public_key()
+        .affine_coordinates(eckey.group(), &mut x, &mut y, &mut ctx)
+        .unwrap();
+    Ok(template::EcPublicKeyInfo {
+        curve: curve_from_ecgroup(eckey.group())?,
+        public_key: template::EcPublicKey {
+            x: asn1bignum_to_bn(&x),
+            y: asn1bignum_to_bn(&y),
+        },
+    })
+}
+
+fn extract_pub_key(pubkey: &PKey<Public>) -> Result<SubjectPublicKeyInfo> {
+    match pubkey.id() {
+        openssl::pkey::Id::EC => Ok(SubjectPublicKeyInfo::EcPublicKey(extract_ec_pubkey(
+            &pubkey.ec_key().unwrap(),
+        )?)),
+        id => bail!("key type {:?} not supported by the parser", id),
+    }
+}
+
+fn extract_ecdsa_signature(x509: &X509) -> Result<EcdsaSignature> {
+    let ecdsa_sig = EcdsaSig::from_der(x509.signature().as_slice())
+        .context("cannot extract ECDSA signature from certificate")?;
+    Ok(EcdsaSignature {
+        r: asn1bignum_to_bn(ecdsa_sig.r()),
+        s: asn1bignum_to_bn(ecdsa_sig.s()),
+    })
+}
+
+fn extract_signature(x509: &X509) -> Result<Signature> {
+    match x509.signature_algorithm().object().nid() {
+        Nid::ECDSA_WITH_SHA256 => Ok(Signature::EcdsaWithSha256 {
+            value: Some(extract_ecdsa_signature(x509)?),
+        }),
+        alg => bail!("unsupported signature algorithm {:?}", alg),
+    }
+}
+
+/// Parse a X509 certificate
+pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
+    let x509 = X509::from_der(cert).expect("could not parse certificate with openssl");
+    let dice_tcb_info = extension::extract_dice_tcb_info_extension(&x509)
+        .expect("could not parse DICE TCB extension");
+
+    let fw_ids = dice_tcb_info.fwids.map(|fwids| {
+        fwids
+            .unwrap_read()
+            .clone()
+            .map(|fwid| template::FirmwareId {
+                hash_algorithm: HashAlgorithm::Sha256,
+                digest: Value::literal(fwid.digest.to_vec()),
+            })
+            .collect::<Vec<_>>()
+    });
+
+    // Vendor info is not supported.
+    ensure!(
+        dice_tcb_info.index.is_none(),
+        "the parser does not support DICE index"
+    );
+    ensure!(
+        dice_tcb_info.vendor_info.is_none(),
+        "the parser does not support DICE vendor info"
+    );
+    ensure!(
+        dice_tcb_info.tcb_type.is_none(),
+        "the parser does not support DICE type"
+    );
+
+    let subject_public_key_info = extract_pub_key(
+        &x509
+            .public_key()
+            .expect("the X509 does not have a valid public key!"),
+    )?;
+
+    Ok(template::Certificate {
+        serial_number: asn1int_to_bn("serial number", x509.serial_number())?,
+        issuer: asn1name_to_hashmap("issuer", x509.issuer_name())?,
+        subject: asn1name_to_hashmap("subject", x509.subject_name())?,
+        subject_public_key_info,
+        authority_key_identifier: asn1octets_to_vec(
+            x509.authority_key_id()
+                .context("the certificate has not authority key id")?,
+        ),
+        subject_key_identifier: asn1octets_to_vec(
+            x509.subject_key_id()
+                .context("the certificate has not subject key id")?,
+        ),
+        model: dice_tcb_info.model.as_ref().map(asn1utf8_to_str),
+        vendor: dice_tcb_info.vendor.as_ref().map(asn1utf8_to_str),
+        version: dice_tcb_info.version.as_ref().map(asn1utf8_to_str),
+        svn: dice_tcb_info.svn.as_ref().map(asn1bigint_to_bn),
+        layer: dice_tcb_info.layer.as_ref().map(asn1bigint_to_bn),
+        fw_ids,
+        flags: dice_tcb_info.flags,
+        signature: extract_signature(&x509)?,
+    })
 }
