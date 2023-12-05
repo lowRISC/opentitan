@@ -64,7 +64,7 @@ const uint32_t kAesMaskingPrngZeroOutputSeed[kCsrngBlockLen] = {
 // key = 00 01 02 03 04 05 06 07 - 08 09 0a 0b 0c 0d 0e 0f
 //       10 11 12 13 14 15 16 17 - 18 19 1a 1b 1c 1d 1e 1f
 //
-//   V = 8d 97 b4 1b c2 0a cb bb - 81 06 d3 91 85 46 67 f8
+//   V = 8d 97 b4 1b c2 0a cb bb - 81 06 d3 91 85 46 67 f7
 //
 // from this seed material upon instantiate. The key is arbitrarily chosen.
 // Encrypting V using this key then gives the required
@@ -105,7 +105,7 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
   TRY(dif_edn_stop(&edn0));
   TRY(dif_csrng_stop(&csrng));
 
-  // Re-eanble CSRNG
+  // Re-enable CSRNG
   TRY(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 and configure it to produce the seed that if loaded into AES
