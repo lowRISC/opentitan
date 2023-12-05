@@ -300,6 +300,11 @@ impl AttributeMap {
         let info = session.get_attribute_info(object, all)?;
         let mut atypes = Vec::new();
         for (&a, i) in all.iter().zip(info.iter()) {
+            // Skip the AllowedMechanism as cloud-kms returns a list of
+            // mechanisms that aren't understood by cryptoki's MechanismType.
+            if a == cryptoki::object::AttributeType::AllowedMechanisms {
+                continue;
+            }
             if matches!(i, AttributeInfo::Available(_)) {
                 atypes.push(a);
             }
