@@ -1,0 +1,30 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "mbx"
+  import_testplans: [
+    hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson
+    hw/dv/tools/dvsim/testplans/csr_testplan.hjson
+    hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson
+    hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson
+    hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson
+    mbx_sec_cm_testplan.hjson
+  ]
+  testpoints: [
+    { name: mbx_smoke
+      desc: '''
+            Smoke test
+            '''
+      stage: V1
+      tests: ["mbx_smoke"]
+    }
+    { name: mbx_stress
+      desc: '''
+            Stress test
+            '''
+      stage: V3
+      tests: ["mbx_stress_all"]
+    }
+  ]
+}
