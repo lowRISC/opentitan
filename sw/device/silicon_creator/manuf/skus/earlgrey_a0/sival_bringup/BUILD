@@ -267,7 +267,9 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/otbn/crypto:boot",
     ],
 )

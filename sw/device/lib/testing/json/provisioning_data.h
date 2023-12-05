@@ -27,7 +27,7 @@ UJSON_SERDE_STRUCT(EccP256PublicKey, \
 // clang-format on
 
 /**
- * Data imported during device personalization.
+ * Data imported during device RMA token personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_IN(field, string) \
@@ -38,7 +38,7 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
 // clang-format on
 
 /**
- * Data imported during device certificate personalization.
+ * Data imported during device (attestation) certificate personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_CERT_PERSO_DATA_IN(field, string) \
@@ -79,7 +79,7 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
 // clang-format on
 
 /**
- * Data exported during device personalization.
+ * Data exported during device RMA token personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT(field, string) \
@@ -87,6 +87,22 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
 UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
                    manuf_rma_token_perso_data_out_t, \
                    STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT);
+// clang-format on
+
+/**
+ * Data exported during device (attestation) certificate personalization.
+ *
+ * TODO(#19455): replace the certificate fields with actual X.509 certificates
+ * instead of just the public keys.
+ */
+// clang-format off
+#define STRUCT_MANUF_CERT_PERSO_DATA_OUT(field, string) \
+    field(uds_certificate, ecc_p256_public_key_t) \
+    field(cdi_0_certificate, ecc_p256_public_key_t) \
+    field(cdi_1_certificate, ecc_p256_public_key_t)
+UJSON_SERDE_STRUCT(ManufCertPersoDataOut, \
+                   manuf_cert_perso_data_out_t, \
+                   STRUCT_MANUF_CERT_PERSO_DATA_OUT);
 // clang-format on
 
 /**
