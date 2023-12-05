@@ -77,6 +77,11 @@
       name: mbx_stress
       uvm_test_seq: mbx_stress_vseq
     }
+    {
+      name: mbx_stress_zero_delays
+      uvm_test_seq: mbx_stress_vseq
+      run_opts: ["+zero_delays=1"]
+    }
   ]
 
   // List of regressions.
@@ -87,7 +92,8 @@
     }
     {
       name: stress
-      tests : ["mbx_stress"
+      tests : ["mbx_stress",
+               "mbx_stress_zero_delays"
 //              "mbx_sw_access",
 //              "mbx_sw_smoke",
 //              "mbx_sw_alert_test"

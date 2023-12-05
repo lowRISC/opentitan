@@ -68,6 +68,21 @@ class mbx_base_vseq extends cip_base_vseq #(
     do_panic(panicked);
   endtask
 
+  // Decide upon the access delays for this transaction.
+  virtual function bit choose_access_delays(output int min_acc_delay, output int max_acc_delay);
+    min_acc_delay = 0;
+    max_acc_delay = 0;
+    // Do not modify them by default.
+    return 1'b0;
+  endfunction
+
+  virtual function bit choose_response_delays(output int min_rsp_delay, output int max_rsp_delay);
+    min_rsp_delay = 0;
+    max_rsp_delay = 0;
+    // Do not modify them by default.
+    return 1'b0;
+  endfunction
+
   function new(string name = "");
     super.new();
     mbx_config = mbx_seq_item::type_id::create("mbx_config");
@@ -84,6 +99,43 @@ class mbx_base_vseq extends cip_base_vseq #(
   virtual task delay(int num = 1);
     cfg.clk_rst_vif.wait_clks(num);
   endtask : delay
+
+  // Set the minimum and maximum grant delays of the mailbox SRAM
+  // TODO: this function was introduced to guarantee the desired values during bring up;
+  // it may no longer be required.
+  function void set_access_delays(int min, int max);
+    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_min = min;
+    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].a_ready_delay_max = max;
+
+    cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_min = min;
+    cfg.m_tl_agent_cfgs[RAL_T::type_name].a_valid_delay_max = max;
+
+    cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_min = min;
+    cfg.m_tl_agent_cfgs[mbx_soc_ral_name].a_valid_delay_max = max;
+  endfunction
+
+  // Set the minimum and maximum response delays of the mailbox SRAM
+  // TODO: this function was introduced to guarantee the desired values during bring up;
+  // it may no longer be required.
+  function void set_response_delays(int min, int max);
+    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].use_seq_item_d_valid_delay = 1'b0;
+    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_min = min;
+    cfg.m_tl_agent_cfgs[mbx_mem_ral_name].d_valid_delay_max = max;
+
+    cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_min = min;
+    cfg.m_tl_agent_cfgs[RAL_T::type_name].d_ready_delay_max = max;
+
+    cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_min = min;
+    cfg.m_tl_agent_cfgs[mbx_soc_ral_name].d_ready_delay_max = max;
+
+    seq_h.min_rsp_delay = min;
+    seq_h.max_rsp_delay = max;
+  endfunction
+
+  // Enable/disable errors on TL-UL buses with the given percentage probability/word
+  function void enable_bus_errors(int pct);
+    seq_h.d_error_pct = pct;
+  endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
@@ -296,6 +348,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       for (int unsigned txn = 0; txn < num_txns; txn++) begin
         bit [top_pkg::TL_DW-1:0] rd_data;
         bit [top_pkg::TL_DW-1:0] wr_data;
+        int error_pct = $urandom_range(0, 200);
         bit intr_driven = $urandom & 1;
         bit check_request = 1'b0;
         bit send_response = 1'b0;
@@ -312,8 +365,12 @@ class mbx_base_vseq extends cip_base_vseq #(
         bit obs_ready;
         bit obs_error;
         bit obs_busy;
+        int min_rsp_delay;
+        int max_rsp_delay;
+        int min_acc_delay;
+        int max_acc_delay;
         // TODO: whether to perform RDATA write accesses as blocking operations.
-        bit rdata_wr_blocking = 1'b1;
+        bit rdata_wr_blocking = 1'b0;
 
         // TODO: perhaps we should change read_mem/write_mem to avoid issues.
         // The mailbox operates only on DWORD quantities.
@@ -337,6 +394,24 @@ class mbx_base_vseq extends cip_base_vseq #(
                        (1 << MbxCoreReady) |
                        (1 << MbxCoreAbort), intr_driven);
         `uvm_info(`gfn, $sformatf("Using interrupts? %s", intr_driven ? "Y" : "N"), UVM_MEDIUM)
+
+        // Generate TL-UL bus errors during the operation.
+        // TODO: this trips up the base scoreboard at present
+        // enable_bus_errors((error_pct >= 100) ? 0 : error_pct);
+
+        // Let the derived sequence vary the timing as appropriate; because of the back-pressuring
+        // signals in DUT, there's a sequence that specifically sets 'zero_delays' to exercise
+        // low latency bus responses.
+        if (!cfg.zero_delays && choose_access_delays(min_acc_delay, max_acc_delay)) begin
+          set_access_delays(min_acc_delay, max_acc_delay);
+          `uvm_info(`gfn, $sformatf("Setting access delays [%d,%d]",
+                                    min_acc_delay, max_acc_delay), UVM_MEDIUM)
+        end
+        if (!cfg.zero_delays && choose_response_delays(min_rsp_delay, max_rsp_delay)) begin
+          set_response_delays(min_rsp_delay, max_rsp_delay);
+          `uvm_info(`gfn, $sformatf("Setting response delays [%d,%d]",
+                                    min_rsp_delay, max_rsp_delay), UVM_MEDIUM)
+        end
 
         // ----------------------------------------------------------------------------------------
         // Request from SoC to RoT
