@@ -47,9 +47,6 @@ class mbx_scoreboard extends cip_base_scoreboard #(
     // `DV_CHECK_CASE_EQ(exp_mbx_core_irq, cfg.intr_vif.pins, "Default state of interrupt pin is 0")
     forever begin
       @(cfg.intr_vif.pins);
-       //Adjusting the clk delay before running the check
-       //TLUL Write completion is taking 5-6 cyles
-       cfg.clk_rst_vif.wait_n_clks(12);
       `uvm_info(`gfn, $sformatf("Change in interrupt pin('b%b)", cfg.intr_vif.pins), UVM_LOW)
       `DV_CHECK_CASE_EQ(exp_mbx_core_irq, cfg.intr_vif.pins[MbxCoreReady],
                         "Exp. interrupt doesn't match actual")
@@ -85,7 +82,7 @@ class mbx_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     `downcast(m_mbx_soc_ral, cfg.ral_models[cfg.mbx_soc_ral_name])
-    // TODO: Renable interrupt checking once scoreboard is fully functional
+    // TODO: Re-enable interrupt checking once scoreboard is fully functional
     //fork
     //  monitor_core_interrupt();
     //  monitor_exp_core_interrupts();
@@ -111,8 +108,10 @@ class mbx_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_NE_FATAL(csr, null)
       end
       else begin
-    //    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-return;
+        // TODO: this does not yet cope with the fact that WDATA and RDATA accesses do not produce
+        // a hit in the above test, since they are not CSRs
+        // `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+        return;
       end
 
       // if incoming access is a write to a valid csr, then make updates right away
@@ -189,7 +188,7 @@ return;
       end
     end
 
-// TODO: AML
+// TODO: The scoreboard needs updating and completing.
 return;
 
     // process the csr req
@@ -260,7 +259,7 @@ return;
       "outbound_read_ptr" : begin
         if(addr_phase_write) begin
           m_obmbx_ptr_q[0] = item.a_data;
-     m_obmbx_ptr = item.a_data;
+          m_obmbx_ptr = item.a_data;
         end
         if(addr_phase_read) begin
           void'(ral.outbound_read_ptr.predict(
