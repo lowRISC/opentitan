@@ -100,7 +100,7 @@
                  // Large delays can cause this test to time out for large crossbar configurations.
                  // Thus reduce the number of runs (called `num_trans` in `dv_base_vseq`) to prevent
                  // timeouts.
-                 "+max_num_trans=10",
+                 "+max_num_trans=9",
                 ]
     }
 
@@ -119,7 +119,7 @@
                  // Slow responses can cause this test to time out for large crossbar
                  // configurations. Thus reduce the number of runs (called `num_trans` in
                  // `dv_base_vseq`) to prevent timeouts.
-                 "+max_num_trans=10",
+                 "+max_num_trans=9",
                 ]
     }
 
@@ -146,7 +146,7 @@
                  // Slow responses can cause this test to time out for large crossbar
                  // configurations. Thus reduce the number of runs (called `num_trans` in
                  // `dv_base_vseq`) to prevent timeouts.
-                 "+max_num_trans=10",
+                 "+max_num_trans=5",
                 ]
     }
 
