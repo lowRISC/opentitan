@@ -11,14 +11,55 @@ class mbx_stress_vseq extends mbx_base_vseq;
   constraint num_iters_c { num_iters inside {[5:10]}; }
   constraint num_txns_c { num_txns inside {[2:20]}; }
 
+  // Whether to produce these stimuli to stress the DUT.
+  bit aborts_en = 1'b1;  // Aborts from the SoC side.
+  bit errors_en = 1'b1;  // Errors from the Core side.
+  bit panics_en = 1'b1;  // FW-initiated reset/Abort clear from the Core side.
 
+  // TODO: decide how often errors and aborts should be generated; sequences shall probably want
+  // to override the behavior, but we shall also want some kind of sensible default. Perhaps
+  // randomize the number of clock cycles until we raise an abort, rather than treating each clock
+  // cycle as an independent event?
 
+  // Raise an Abort request from the SoC side?
+  virtual task do_abort(ref bit aborted);
+    if (aborts_en && !($urandom() % 1024)) begin
+      `uvm_info(`gfn, "Setting ABORT condition", UVM_LOW)
+      mbx_abort();
+      aborted = 1'b1;
+    end
+  endtask
+
+  // Raise an Error from the Core side?
+  virtual task do_error(ref bit errored);
+    if (errors_en && !($urandom() % 1024)) begin
+      `uvm_info(`gfn, "Setting ERROR condition", UVM_LOW)
+      ral.control.error.set(1'b1);
+      csr_update(ral.control);
+      errored = 1'b1;
+    end
+  endtask
+
+  // Raise a FW-initiated Reset from the Core side?
+  virtual task do_panic(ref bit panicked);
+    if (panics_en && !($urandom() % 1024)) begin
+      `uvm_info(`gfn, "Setting FW RESET/ABORT ACK condition", UVM_LOW)
+      ral.control.abort.set(1'b1);
+      csr_update(ral.control);
+      panicked = 1'b1;
+    end
+  endtask
   function new(string name = "mbx_stress_vseq");
     super.new(name);
   endfunction : new
 
   virtual task body();
     `uvm_info(get_full_name(), "body -- stress test -- Start", UVM_DEBUG)
+
+    // Decide which stimuli to present to the DUT.
+    aborts_en = ($urandom_range(0,100) > 75);
+    errors_en = ($urandom_range(0,100) > 75);
+    panics_en = ($urandom_range(0,100) > 75);
 
     super.body();
     `uvm_info(get_full_name(), "body -- stress test -- End", UVM_DEBUG)
