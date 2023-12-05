@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
-use num_bigint_dig::BigUint;
-use std::marker::PhantomData;
 
 use foreign_types::{ForeignType, ForeignTypeRef};
-use openssl::asn1::{Asn1Object, Asn1OctetString, Asn1OctetStringRef};
-use openssl::x509::{X509Extension, X509};
+use openssl::asn1::{Asn1Object, Asn1OctetStringRef};
+use openssl::x509::X509;
 
 use crate::template;
 
@@ -35,101 +33,6 @@ pub fn x509_get_ext_by_obj<'a>(x509: &'a X509, obj: &Asn1Object) -> Result<&'a A
     };
     // The returned pointer is an internal value which must not be freed up.
     Ok(data)
-}
-
-// Convert attribute types to openssl name IDs.
-pub fn subject_key_id_extension(keyid: &[u8]) -> Result<X509Extension> {
-    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1
-    // id-ce   OBJECT IDENTIFIER ::=  { joint-iso-ccitt(2) ds(5) 29 }
-    //
-    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.2
-    // id-ce-subjectKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 14 }
-    // SubjectKeyIdentifier ::= KeyIdentifier
-    //
-    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
-    // KeyIdentifier ::= OCTET STRING
-    let der = asn1::write(|w| w.write_element(&keyid))?;
-    let octet_string = Asn1OctetString::new_from_bytes(&der)?;
-    // Unfortunately, the rust binding does not seem to allow creating a Asn1Object
-    // from a Nid so we have to manually create it from the OID string.
-    let oid = Asn1Object::from_str("2.5.29.14")?;
-    Ok(X509Extension::new_from_der(&oid, false, &octet_string)?)
-}
-
-pub fn auth_key_id_extension(keyid: &[u8]) -> Result<X509Extension> {
-    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1
-    // id-ce   OBJECT IDENTIFIER ::=  { joint-iso-ccitt(2) ds(5) 29 }
-    //
-    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
-    // id-ce-authorityKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 35 }
-    //
-    // AuthorityKeyIdentifier ::= SEQUENCE {
-    // keyIdentifier             [0] KeyIdentifier           OPTIONAL,
-    // authorityCertIssuer       [1] GeneralNames            OPTIONAL,
-    // authorityCertSerialNumber [2] CertificateSerialNumber OPTIONAL  }
-    //
-    // KeyIdentifier ::= OCTET STRING
-    //
-    // Note: this is part of the implicit tagged modules:
-    // https://datatracker.ietf.org/doc/html/rfc5280#appendix-A.2
-    #[derive(asn1::Asn1Write)]
-    struct AuthorityKeyIdentifier<'a> {
-        #[implicit(0)]
-        keyid: Option<&'a [u8]>,
-    }
-
-    let der = asn1::write_single(&AuthorityKeyIdentifier { keyid: Some(keyid) })?;
-    let octet_string = Asn1OctetString::new_from_bytes(&der)?;
-    // Unfortunately, the rust binding does not seem to allow creating a Asn1Object
-    // from a Nid so we have to manually create it from the OID string.
-    let oid = Asn1Object::from_str("2.5.29.35")?;
-    Ok(X509Extension::new_from_der(&oid, false, &octet_string)?)
-}
-
-// Helper for the asn1 crate that does not support both reading and writing
-// ASN1 sequence out of the box.
-#[derive(Hash, PartialEq, Eq, Clone)]
-pub enum Asn1ReadableOrWritable<'a, T, U> {
-    Read(T, PhantomData<&'a ()>),
-    Write(U, PhantomData<&'a ()>),
-}
-
-impl<'a, T, U> Asn1ReadableOrWritable<'a, T, U> {
-    pub fn new_read(v: T) -> Self {
-        Asn1ReadableOrWritable::Read(v, PhantomData)
-    }
-
-    pub fn new_write(v: U) -> Self {
-        Asn1ReadableOrWritable::Write(v, PhantomData)
-    }
-
-    pub fn unwrap_read(&self) -> &T {
-        match self {
-            Asn1ReadableOrWritable::Read(v, _) => v,
-            Asn1ReadableOrWritable::Write(_, _) => panic!("unwrap_read called on a Write value"),
-        }
-    }
-}
-
-impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
-    for Asn1ReadableOrWritable<'a, T, U>
-{
-    const TAG: asn1::Tag = T::TAG;
-    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
-        Ok(Self::new_read(T::parse_data(data)?))
-    }
-}
-
-impl<'a, T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1Writable
-    for Asn1ReadableOrWritable<'a, T, U>
-{
-    const TAG: asn1::Tag = U::TAG;
-    fn write_data(&self, w: &mut asn1::WriteBuf) -> asn1::WriteResult {
-        match self {
-            Asn1ReadableOrWritable::Read(v, _) => T::write_data(v, w),
-            Asn1ReadableOrWritable::Write(v, _) => U::write_data(v, w),
-        }
-    }
 }
 
 // From the DICE specification:
@@ -182,13 +85,7 @@ pub struct DiceTcbInfo<'a> {
     #[implicit(5)]
     pub index: Option<asn1::BigInt<'a>>,
     #[implicit(6)]
-    pub fwids: Option<
-        Asn1ReadableOrWritable<
-            'a,
-            asn1::SequenceOf<'a, Fwid<'a>>,
-            asn1::SequenceOfWriter<'a, Fwid<'a>>,
-        >,
-    >,
+    pub fwids: Option<asn1::SequenceOf<'a, Fwid<'a>>>,
     #[implicit(7)]
     pub flags: Option<template::Flags>,
     #[implicit(8)]
@@ -240,17 +137,6 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for template::Flags {
 
 const DICE_TCB_EXT_OID: &str = "2.23.133.5.4.1";
 
-pub fn dice_tcb_info_extension(dice_tcb_info: &DiceTcbInfo) -> Result<X509Extension> {
-    let der = asn1::write_single(dice_tcb_info)?;
-    let octet_string = Asn1OctetString::new_from_bytes(&der)?;
-    // Unfortunately, the rust binding does not seem to allow creating a Asn1Object
-    // from a Nid so we have to manually create it from the OID string.
-    let oid = Asn1Object::from_str(DICE_TCB_EXT_OID)?;
-    // From DICE specification:
-    // The DiceTcbInfo extension SHOULD be marked critical.
-    Ok(X509Extension::new_from_der(&oid, true, &octet_string)?)
-}
-
 pub fn extract_dice_tcb_info_extension(x509: &X509) -> Result<DiceTcbInfo> {
     let dice_oid =
         Asn1Object::from_str(DICE_TCB_EXT_OID).expect("cannot create object ID from string");
@@ -277,35 +163,5 @@ impl template::HashAlgorithm {
         match self {
             Self::Sha256 => 20,
         }
-    }
-}
-
-// Annoyingly, asn1 only has BigInt and not a owned version.
-pub struct Asn1OwnedBigInt {
-    data: Vec<u8>,
-}
-
-impl Asn1OwnedBigInt {
-    pub fn from_biguint(biguint: &BigUint) -> Self {
-        // There is a small annoyance here: the asn1 library expects the integer to be minimal
-        // and also that if the top most significant bit is set, to prepend a zero byte to avoid
-        // ambiguity in the DER encoding.
-        let mut data = biguint.to_bytes_le();
-        // Remove the MSB until it is not zero. Make sure to never remove all zeros: a valid
-        // ASN1 integer must contain at least one byte.
-        while data.len() >= 2 && *data.last().unwrap() == 0 {
-            data.pop();
-        }
-        // If the MSB has its its most significant bit set, add a 0 byte.
-        if data.last().unwrap().leading_zeros() == 0 {
-            data.push(0);
-        }
-        // The ASN1 representation is in big endian so reverse the data.
-        data.reverse();
-        Asn1OwnedBigInt { data }
-    }
-
-    pub fn to_asn1_bigint(&self) -> asn1::BigInt {
-        asn1::BigInt::new(&self.data).expect("asn1::BigInt should never fail in from_biguint")
     }
 }

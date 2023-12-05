@@ -56,19 +56,7 @@ impl CommandDispatch for GenTplCommand {
             template::Template::from_hjson_str(&template_content).with_context(|| {
                 format!("Failed to parse template file {}", self.template.display())
             })?;
-        // NOTE for now do not clear the fields as this prevents openssl from parsing
-        // the certificate which is useful for debugging.
-        let x509 = x509::generate_certificate(&template, false)?;
-        // Warn about unused variables.
-        for var in &x509.variables {
-            if var.offsets.is_empty() {
-                log::warn!("Variable '{}' is not used by the certificate", var.name);
-            }
-        }
-        let output_x509 = self.output_dir.join(format!("{}.pem", &template.name));
-        /* Generate pem certificate for debugging and inspection */
-        fs::write(output_x509, &x509.cert)?;
-        Ok(Some(Box::new(x509)))
+        Ok(Some(Box::new(template)))
     }
 }
 
