@@ -46,8 +46,14 @@
         "chip_sw_pwrmgr_wdog_reset",
       ]
       bazel: [
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival_rom",
         "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom",
-        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
       ]
     }
@@ -100,20 +106,23 @@
             This test already runs in CW310.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: SV2
       lc_states: [
         "TEST_UNLOCKED",
         "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "RSTMGR.CPU_INFO.CAPTURE",
         "RSTMGR.CPU_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_cpu_info"]
-      bazel: ["//sw/device/tests:rstmgr_cpu_info_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_sival",
+        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_sw_req_reset
@@ -140,7 +149,11 @@
       features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
       bazel: [
-        "//sw/device/tests:rstmgr_sw_req_test_cw310_test_rom",
+        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_sival",
+        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
       ]
     }
@@ -173,7 +186,12 @@
         "RSTMGR.ALERT_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_alert_info"]
-      bazel: ["//sw/device/tests:rstmgr_alert_info_test_cw310_test_rom"]
+      bazel: [
+# TODO(lowrisc/opentitan#20589): Enable these _sival tests when the bug is fixed
+#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival",
+#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_sw_rst
@@ -217,7 +235,11 @@
         "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
       ]
       tests: ["chip_sw_rstmgr_sw_rst"]
-      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_sival",
+        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_escalation_reset
@@ -247,7 +269,11 @@
         "RSTMGR.ALERT_INFO.CAPTURE",
       ]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables
@@ -271,7 +297,11 @@
       ]
       features: ["RSTMGR.ALERT_HANDLER.RESET_STATUS"]
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
-      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_sival",
+        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_test_rom",
+      ]
     }
   ]
 }
