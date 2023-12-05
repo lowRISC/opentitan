@@ -35,6 +35,11 @@ rust_library(
         "@crate_index//:serde",
         "@crate_index//:serde_with",
         "@crate_index//:strum",
+        # We need those because they are not re-exported by openssl
+        # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021
+        # is merged.
+        "@crate_index//:openssl-sys",
+        "@crate_index//:foreign-types",
     ],
 )
 
@@ -46,11 +51,6 @@ rust_test(
     ],
     deps = [
         "@crate_index//:base64ct",
-        # We need those because they are not re-exported by openssl
-        # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021
-        # is merged.
-        "@crate_index//:openssl-sys",
-        "@crate_index//:foreign-types",
     ],
 )
 
