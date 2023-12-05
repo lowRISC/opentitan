@@ -22,8 +22,8 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertPersoDataIn, ManufFtIndividualizeData, ManufRmaTokenPersoDataIn,
-    ManufRmaTokenPersoDataOut,
+    EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufFtIndividualizeData,
+    ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -163,10 +163,18 @@ pub fn run_ft_personalize(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
+    // -------------------------------------------------------------------------
+    // FT Personalize 1                                                        |
+    // -------------------------------------------------------------------------
+
     // Bootstrap first personalization binary into flash and wait for test status pass over the UART.
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+
+    // -------------------------------------------------------------------------
+    // FT Personalize 2                                                        |
+    // -------------------------------------------------------------------------
 
     // Bootstrap second personalization binary into flash.
     uart.clear_rx_buffer()?;
@@ -205,13 +213,16 @@ pub fn run_ft_personalize(
     // Send RMA token wrapping ECC keys into the device over the console.
     rma_token_wrapping_keys.send(&*uart)?;
 
-    // Wait until device exports provisioning data, including the wrapped RMA unlock token and
-    // device certificates.
+    // Wait until device exports the wrapped RMA unlock token.
     let _ = UartConsole::wait_for(&*uart, r"Exporting FT provisioning data ...", timeout)?;
-    let out_data = ManufRmaTokenPersoDataOut::recv(&*uart, timeout, false)?;
+    let rma_token_out_data = ManufRmaTokenPersoDataOut::recv(&*uart, timeout, false)?;
     // TODO(#19455): write the wrapped RMA unlock token to a file.
-    log::info!("{:x?}", out_data);
+    log::info!("{:x?}", rma_token_out_data);
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+
+    // -------------------------------------------------------------------------
+    // FT Personalize 3                                                        |
+    // -------------------------------------------------------------------------
 
     // Bootstrap third personalization binary into flash.
     uart.clear_rx_buffer()?;
@@ -223,6 +234,12 @@ pub fn run_ft_personalize(
 
     // Send attestation TCB measurements for generating certificates.
     attestation_tcb_measurements.send(&*uart)?;
+
+    // Wait until device exports the attestation certificates.
+    let _ = UartConsole::wait_for(&*uart, r"Exporting attestation certificates ...", timeout)?;
+    let attestation_cert_out_data = ManufCertPersoDataOut::recv(&*uart, timeout, false)?;
+    // TODO(#19455): write the attestation certificates to files.
+    log::info!("{:x?}", attestation_cert_out_data);
 
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
