@@ -8,7 +8,9 @@ package(default_visibility = ["//visibility:public"])
 
 rust_binary(
     name = "cp",
+    testonly = True,
     srcs = ["src/main.rs"],
+    data = ["//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_cp_provision"],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",

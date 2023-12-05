@@ -8,7 +8,14 @@ package(default_visibility = ["//visibility:public"])
 
 rust_binary(
     name = "ft",
+    testonly = True,
     srcs = ["src/main.rs"],
+    data = [
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_1",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_2",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_3",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_ft_individualize_all",
+    ],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ft_lib",
