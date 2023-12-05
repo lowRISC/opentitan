@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use base64ct::{Base64, Encoding};
 use num_bigint_dig::BigUint;
 use std::collections::HashMap;
 
-use foreign_types::{ForeignType, ForeignTypeRef};
 use openssl::asn1::{Asn1IntegerRef, Asn1Object, Asn1OctetStringRef, Asn1StringRef, Asn1Time};
 use openssl::ec::EcKey;
 use openssl::pkey::Public;
@@ -18,31 +17,6 @@ use crate::template::*;
 use crate::types::Type;
 use crate::x509::extension::*;
 use crate::x509::*;
-
-// Unfortunately, the rust openssl binding does not have an API to extract arbitrary extension but it exports
-// the low level function from the C library to do that.
-fn x509_get_ext_by_obj<'a>(x509: &'a X509, obj: &Asn1Object) -> Result<&'a Asn1OctetStringRef> {
-    // SAFETY: the rust openssl binding guarantees that x509 and obj are valid objects.
-    let index = unsafe { openssl_sys::X509_get_ext_by_OBJ(x509.as_ptr(), obj.as_ptr(), -1) };
-    if index == -1 {
-        bail!("cannot find object in certificate")
-    }
-    // SAFETY: the rust openssl binding guarantees that x509 is a valid object
-    // and index is a valid integer since X509_get_ext_by_OBJ returns either an index
-    // or -1.
-    let data = unsafe {
-        let ext = openssl_sys::X509_get_ext(x509.as_ptr(), index);
-        // From the documentation of X509_get_ext:
-        // The returned extension is an internal pointer which must not be freed
-        // up by the application.
-        let data = openssl_sys::X509_EXTENSION_get_data(ext);
-        // From the documentation of X509_EXTENSION_get_data:
-        // The returned pointer is an internal value which must not be freed up.
-        Asn1OctetStringRef::from_ptr(data)
-    };
-    // The returned pointer is an internal value which must not be freed up.
-    Ok(data)
-}
 
 #[derive(Debug)]
 struct RandData {
