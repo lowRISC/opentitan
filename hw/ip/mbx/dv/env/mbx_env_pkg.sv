@@ -27,7 +27,7 @@ package mbx_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault", "recov_fault"};
 
   parameter int unsigned MBX_DV_DW_SIZE_BYTES = 4;
-  parameter int unsigned MBX_DV_MAX_DW = 1023;
+  parameter int unsigned MBX_DV_MAX_DW = 1024;
 
   // types
   typedef int unsigned uint_t;
