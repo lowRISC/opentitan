@@ -47,7 +47,7 @@
     },
 
     certificate: {
-        serial_number: { var: "creator_pub_key_id", convert: "little-endian" },
+        serial_number: { var: "creator_pub_key_id", convert: "big-endian" },
         issuer: {
             country: "UK",
             common_name: "lowRISC CIC",

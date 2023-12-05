@@ -93,7 +93,7 @@ pub fn convert_type(
     convert: &Option<Conversion>,
 ) -> Result<VariableType> {
     let no_conv = vec![None];
-    let endian_conv = vec![Some(Conversion::LittleEndian), Some(Conversion::BigEndian)];
+    let endian_conv = vec![Some(Conversion::BigEndian)];
     match (source, target) {
         (_, VariableType::ByteArray { .. }) => {
             // A conversion to a byte array is always possible and does not change

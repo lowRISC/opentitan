@@ -267,9 +267,7 @@ pub enum Conversion {
     /// and there is no "0x" prefix. Example:
     /// [42, 53] -> "2a35".
     LowercaseHex,
-    /// Little endian: convert between a byte array and integer in little endian.
-    LittleEndian,
-    /// Little endian: convert between a byte array and integer in little endian.
+    /// Big endian: convert between a byte array and integer in big-endian format.
     BigEndian,
 }
 
@@ -446,7 +444,7 @@ mod tests {
               },
 
               certificate: {
-                serial_number: { var: "owner_pub_key_id", convert: "little-endian" },
+                serial_number: { var: "owner_pub_key_id", convert: "big-endian" },
                 issuer: {
                   serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" },
                 },
@@ -533,7 +531,7 @@ mod tests {
 
         // Certificate template values.
         let certificate = Certificate {
-            serial_number: Value::convert("owner_pub_key_id", Conversion::LittleEndian),
+            serial_number: Value::convert("owner_pub_key_id", Conversion::BigEndian),
             issuer: HashMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("signing_pub_key_id", Conversion::LowercaseHex),

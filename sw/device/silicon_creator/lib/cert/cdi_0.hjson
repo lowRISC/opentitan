@@ -56,7 +56,7 @@
     },
 
     certificate: {
-        serial_number: { var: "owner_intermediate_pub_key_id", convert: "little-endian" },
+        serial_number: { var: "owner_intermediate_pub_key_id", convert: "big-endian" },
         issuer: {
             serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex" },
         },
