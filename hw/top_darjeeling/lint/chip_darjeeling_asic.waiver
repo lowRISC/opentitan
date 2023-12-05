@@ -31,7 +31,7 @@ waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
       -comment "The SPI CSB acts as a clock in some cases."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
-      -msg {'mio_in[4]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -msg {'manual_in_jtag_tck' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
       -comment "This is due to the JTAG TCK clock."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
@@ -136,7 +136,7 @@ waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'mio_in
 waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_powerup' is driven by a multiplexer here} \
       -comment "Divided clocks have multiplexers at their roots to enable scan controllability."
 
-waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in_coreside[42]' reaches a multiplexer here, used as a clock 'clk_src_i'} \
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in[42]' reaches a multiplexer here, used as a clock 'clk_src_i'} \
       -comment "This is the SPI device clock input."
 
 waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
