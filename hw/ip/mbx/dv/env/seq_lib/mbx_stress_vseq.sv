@@ -49,6 +49,20 @@ class mbx_stress_vseq extends mbx_base_vseq;
       panicked = 1'b1;
     end
   endtask
+
+  // Decide upon the access delays for this transaction.
+  virtual function bit choose_access_delays(output int min_acc_delay, output int max_acc_delay);
+    min_acc_delay = $urandom_range(0, 5);
+    max_acc_delay = $urandom_range(min_acc_delay, 20);
+    return 1'b1;
+  endfunction
+
+  virtual function bit choose_response_delays(output int min_rsp_delay, output int max_rsp_delay);
+    min_rsp_delay = $urandom_range(0, 5);
+    max_rsp_delay = $urandom_range(min_rsp_delay, 20);
+    return 1'b1;
+  endfunction
+
   function new(string name = "mbx_stress_vseq");
     super.new(name);
   endfunction : new
