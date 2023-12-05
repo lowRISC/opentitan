@@ -48,6 +48,7 @@ enum module_ {
   kModuleBootLog =         MODULE_CODE('B', 'L'),
   kModuleRomExt =          MODULE_CODE('R', 'E'),
   kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
+  kModuleAsn1 =            MODULE_CODE('A', '1'),
   // clang-format on
 };
 
@@ -157,6 +158,10 @@ enum module_ {
   X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
   \
   X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal)), \
+  \
+  X(kErrorAsn1Internal,               ERROR_(1, kModuleAsn1, kInternal)), \
+  X(kErrorAsn1InvalidArgument,        ERROR_(2, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1BufferExhausted,        ERROR_(3, kModuleAsn1, kResourceExhausted)), \
   /* This comment prevent clang from trying to format the macro. */
 
 // clang-format on
