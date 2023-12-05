@@ -19,7 +19,7 @@
       lc_states: [
         "RAW",
         "TEST_LOCKED",
-        "TEST_UNLOCKED",
+        "TEST_UNLOCKED1",
       ]
       features: ["PWRMGR.RESET.POR_REQUEST"]
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
@@ -49,11 +49,8 @@
       stage: V2
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
@@ -69,7 +66,11 @@
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_wake_ups_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
@@ -102,11 +103,8 @@
       stage: V2
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.LOW_POWER.DISABLE_POWER",
@@ -114,7 +112,11 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_deep_sleep_por_reset"]
-      bazel: ["//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_por_reset
@@ -129,18 +131,19 @@
       stage: V2
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.POR_REQUEST",
       ]
-      tests: ["chip_sw_pwrmgr_normal_sleep_por_reset"]
-      bazel: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom"]
+      tests: ["chip_sw_pwrmgr_sleep_por_reset"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -191,6 +194,8 @@
         "chip_sw_pwrmgr_deep_sleep_all_reset_reqs",
       ]
       bazel: [
+        "//sw/device/tests:aon_timer_wdog_bite_reset_test_fpga_cw310_sival",
+        "//sw/device/tests:aon_timer_wdog_bite_reset_test_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:aon_timer_wdog_bite_reset_test_fpga_cw310_test_rom",
         "//sw/device/tests:pwrmgr_deep_sleep_all_reset_reqs_test_fpga_cw310_test_rom",
       ]
@@ -234,18 +239,21 @@
       stage: V2
       si_stage: SV2
       lc_states: [
-        "TEST_UNLOCKED",
+        "TEST_UNLOCKED1",
         "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_wdog_reset"]
-      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_aon_power_glitch_reset
@@ -354,11 +362,8 @@
       stage: V2
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
@@ -419,12 +424,16 @@
       stage: V2
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
+        "PROD",
+        "PROD_END",
       ]
       features: ["PWRMGR.LOW_POWER.ENTRY"]
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
-      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_usb_clk_disabled_when_active
@@ -439,12 +448,16 @@
       stage: V3
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
+        "PROD",
+        "PROD_END",
       ]
       features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
-      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_all_resets
@@ -460,11 +473,10 @@
       stage: V3
       si_stage: SV3
       lc_states: [
-        "TEST_UNLOCKED",
+        "TEST_UNLOCKED1",
         "DEV",
         "PROD",
         "PROD_END",
-        "RMA",
       ]
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
@@ -476,7 +488,11 @@
         "PWRMGR.RESET.POR_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_all_reset_reqs"]
-      bazel: ["//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom"]
+      bazel: [
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival",
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival_rom_ext",
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom",
+      ]
     }
     {
       name: chip_sw_pwrmgr_escalation_reset
@@ -490,9 +506,9 @@
             alert_handler to immediately trip escalation reset.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: None
       lc_states: [
-        "TEST_UNLOCKED",
+        "TEST_UNLOCKED1",
         "DEV",
       ]
       features: ["PWRMGR.RESET.ESCALATION_REQUEST"]
