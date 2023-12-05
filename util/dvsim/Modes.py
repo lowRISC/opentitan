@@ -60,8 +60,8 @@ class Mode:
         for attr, self_attr_val in self.__dict__.items():
             mode_attr_val = getattr(mode, attr, None)
 
-            # If sub-mode, skip the name: it could differ.
-            if is_sub_mode and attr == 'name':
+            # Skip the name: it could differ.
+            if attr == 'name':
                 continue
 
             # If mode's value is None, then nothing to do here.
@@ -83,12 +83,15 @@ class Mode:
                 self_attr_val.extend(mode_attr_val)
                 continue
 
-            # If the current val is default, replace with new.
+            # If the current val is default, replace with the one from mode.
+            # Note that this code handles the case when the attribute does not
+            # have a scalar type. In that case, default_val will be None and
+            # the if test will fail because we have already checked that
+            # self_attr_val is not None.
             scalar_types = {str: "", int: -1}
             default_val = scalar_types.get(type(self_attr_val))
 
-            if type(self_attr_val) in scalar_types.keys(
-            ) and self_attr_val == default_val:
+            if self_attr_val == default_val:
                 setattr(self, attr, mode_attr_val)
                 continue
 
