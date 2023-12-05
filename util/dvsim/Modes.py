@@ -10,10 +10,11 @@ from typing import List, Optional
 from utils import VERBOSE
 
 
-class Modes():
-    """
-    Abstraction for specifying collection of options called as 'modes'. This is
-    the base class which is extended for run_modes, build_modes, tests and regressions.
+class Mode:
+    """A collection of options that represents a single mode.
+
+    This might be a run mode (options for an EDA tool?), a build mode, a test
+    or a regression.
     """
 
     def __init__(self, type_name: str, mdict):
@@ -198,7 +199,7 @@ class Modes():
         return None
 
 
-def find_mode(mode_name: str, modes: List[Modes]) -> Optional[Modes]:
+def find_mode(mode_name: str, modes: List[Mode]) -> Optional[Mode]:
     '''Search through a list of modes and return the one with the given name.
 
     Return None if nothing was found.
@@ -209,9 +210,9 @@ def find_mode(mode_name: str, modes: List[Modes]) -> Optional[Modes]:
     return None
 
 
-def find_and_merge_modes(mode: Modes,
+def find_and_merge_modes(mode: Mode,
                          mode_names: List[str],
-                         modes: List[Modes],
+                         modes: List[Mode],
                          merge_modes: bool = True):
     found_mode_objs = []
     for mode_name in mode_names:
@@ -227,7 +228,7 @@ def find_and_merge_modes(mode: Modes,
     return found_mode_objs
 
 
-class BuildModes(Modes):
+class BuildMode(Mode):
     """
     Build modes.
     """
@@ -255,13 +256,11 @@ class BuildModes(Modes):
 
     @staticmethod
     def get_default_mode():
-        return BuildModes({"name": "default"})
+        return BuildMode({"name": "default"})
 
 
-class RunModes(Modes):
-    """
-    Run modes.
-    """
+class RunMode(Mode):
+    """A collection of options for running a test."""
 
     # Maintain a list of run_modes str
     item_names = []
@@ -291,9 +290,9 @@ class RunModes(Modes):
         return None
 
 
-class Tests(RunModes):
+class Test(RunMode):
     """
-    Abstraction for tests. The RunModes abstraction can be reused here with a few
+    Abstraction for a test. The RunMode abstraction can be reused here with a few
     modifications.
     """
 
@@ -316,7 +315,7 @@ class Tests(RunModes):
     @staticmethod
     def create_tests(tdicts, sim_cfg):
         '''
-        Create Tests from a given list of raw dicts.
+        Create Test objects from a given list of raw dicts.
         TODO: enhance the raw dict to include file scoped defaults.
         Process enabled run modes and the set build mode.
         Return a list of test objects.
@@ -334,7 +333,7 @@ class Tests(RunModes):
         for tdict in tdicts:
             # Create a new item
             new_test_merged = False
-            new_test = Tests(tdict)
+            new_test = Test(tdict)
             for test in tests_objs:
                 # Merge new one with existing if available
                 if test.name == new_test.name:
@@ -345,13 +344,13 @@ class Tests(RunModes):
             # Add the new test to the list if not already appended
             if not new_test_merged:
                 tests_objs.append(new_test)
-                Tests.item_names.append(new_test.name)
+                Test.item_names.append(new_test.name)
 
         # Pass 2: Process dependencies
         build_modes = getattr(sim_cfg, "build_modes", [])
         run_modes = getattr(sim_cfg, "run_modes", [])
 
-        attrs = Tests.defaults
+        attrs = Test.defaults
         for test_obj in tests_objs:
             # Unpack run_modes first
             en_run_modes = get_pruned_en_run_modes(test_obj.en_run_modes,
@@ -420,7 +419,7 @@ class Tests(RunModes):
             test.sw_build_opts.extend(global_sw_build_opts)
 
 
-class Regressions(Modes):
+class Regression(Mode):
     """
     Abstraction for test sets / regression sets.
     """
@@ -461,22 +460,22 @@ class Regressions(Modes):
         Return a list of test set objects.
         '''
 
-        regressions_objs = []
+        regression_objs = []
         # Pass 1: Create unique set of test sets by merging test sets with the same name
         for regdict in regdicts:
             # Create a new item
             new_regression_merged = False
-            new_regression = Regressions(regdict)
+            new_regression = Regression(regdict)
 
             # Check for name conflicts with tests before merging
-            if new_regression.name in Tests.item_names:
+            if new_regression.name in Test.item_names:
                 log.error(
                     "Test names and regression names are required to be unique. "
                     "The regression \"%s\" bears the same name with an existing test. ",
                     new_regression.name)
                 sys.exit(1)
 
-            for regression in regressions_objs:
+            for regression in regression_objs:
                 # Merge new one with existing if available
                 if regression.name == new_regression.name:
                     regression.merge_mode(new_regression)
@@ -485,14 +484,14 @@ class Regressions(Modes):
 
             # Add the new test to the list if not already appended
             if not new_regression_merged:
-                regressions_objs.append(new_regression)
-                Regressions.item_names.append(new_regression.name)
+                regression_objs.append(new_regression)
+                Regression.item_names.append(new_regression.name)
 
         # Pass 2: Process dependencies
         build_modes = getattr(sim_cfg, "build_modes", [])
         run_modes = getattr(sim_cfg, "run_modes", [])
 
-        for regression_obj in regressions_objs:
+        for regression_obj in regression_objs:
             # Unpack the sim modes
             found_sim_mode_objs = find_and_merge_modes(
                 regression_obj, regression_obj.en_sim_modes, build_modes,
@@ -557,7 +556,7 @@ class Regressions(Modes):
                         "Unpacking all tests in scope for regression \"%s\"",
                         regression_obj.name)
                 regression_obj.tests = sim_cfg.tests
-                regression_obj.test_names = Tests.item_names
+                regression_obj.test_names = Test.item_names
 
             else:
                 tests_objs = set()
@@ -573,7 +572,7 @@ class Regressions(Modes):
                 regression_obj.tests = list(tests_objs)
 
         # Return the list of tests
-        return regressions_objs
+        return regression_objs
 
     def merge_regression_opts(self):
         processed_build_modes = []
