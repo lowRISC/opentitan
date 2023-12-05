@@ -73,7 +73,10 @@
       name: mbx_smoke
       uvm_test_seq: mbx_smoke_vseq
     }
-
+    {
+      name: mbx_stress
+      uvm_test_seq: mbx_stress_vseq
+    }
   ]
 
   // List of regressions.
@@ -82,12 +85,13 @@
       name: smoke
       tests: ["mbx_smoke"]
     }
-//    {
-//      name: stress
-//      tests : [ "mbx_sw_access",
+    {
+      name: stress
+      tests : ["mbx_stress"
+//              "mbx_sw_access",
 //              "mbx_sw_smoke",
 //              "mbx_sw_alert_test"
-//      ]
-//    }
+      ]
+    }
   ]
 }

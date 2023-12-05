@@ -7,3 +7,4 @@
 `include "mbx_base_vseq.sv"
 `include "mbx_common_vseq.sv"
 `include "mbx_smoke_vseq.sv"
+`include "mbx_stress_vseq.sv"
