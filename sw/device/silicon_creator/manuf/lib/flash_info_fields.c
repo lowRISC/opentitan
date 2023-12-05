@@ -89,6 +89,27 @@ const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed = {
     .byte_offset = (2 * kAttestationSeedBytes),
 };
 
+const flash_info_field_t kFlashInfoFieldUdsCertificate = {
+    .partition = 0,
+    .bank = 1,
+    .page = 6,
+    .byte_offset = 0,
+};
+
+const flash_info_field_t kFlashInfoFieldCdi0Certificate = {
+    .partition = 0,
+    .bank = 1,
+    .page = 8,
+    .byte_offset = 0,
+};
+
+const flash_info_field_t kFlashInfoFieldCdi1Certificate = {
+    .partition = 0,
+    .bank = 1,
+    .page = 9,
+    .byte_offset = 0,
+};
+
 status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
                                      flash_info_field_t field,
                                      uint32_t *data_out, size_t num_words) {
