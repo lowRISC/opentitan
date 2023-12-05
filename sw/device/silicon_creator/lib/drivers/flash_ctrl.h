@@ -83,16 +83,16 @@ typedef enum flash_ctrl_partition {
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,          1, 0) \
-  X(kFlashCtrlInfoPageBootData1,          1, 1) \
-  X(kFlashCtrlInfoPageOwnerSlot0,         1, 2) \
-  X(kFlashCtrlInfoPageOwnerSlot1,         1, 3) \
-  X(kFlashCtrlInfoPageBank1Type0Page4,    1, 4) \
-  X(kFlashCtrlInfoPageBank1Type0Page5,    1, 5) \
-  X(kFlashCtrlInfoPageCreatorCertificate, 1, 6) \
-  X(kFlashCtrlInfoPageBootServices,       1, 7) \
-  X(kFlashCtrlInfoPageOwnerCerificate0,   1, 8) \
-  X(kFlashCtrlInfoPageOwnerCerificate1,   1, 9) \
+  X(kFlashCtrlInfoPageBootData0,       1, 0) \
+  X(kFlashCtrlInfoPageBootData1,       1, 1) \
+  X(kFlashCtrlInfoPageOwnerSlot0,      1, 2) \
+  X(kFlashCtrlInfoPageOwnerSlot1,      1, 3) \
+  X(kFlashCtrlInfoPageBank1Type0Page4, 1, 4) \
+  X(kFlashCtrlInfoPageBank1Type0Page5, 1, 5) \
+  X(kFlashCtrlInfoPageUdsCertificate,  1, 6) \
+  X(kFlashCtrlInfoPageBootServices,    1, 7) \
+  X(kFlashCtrlInfoPageCdi0Certificate, 1, 8) \
+  X(kFlashCtrlInfoPageCdi1Certificate, 1, 9) \
 // clang-format on
 
 /**
