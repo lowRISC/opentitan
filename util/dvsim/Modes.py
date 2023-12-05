@@ -38,10 +38,7 @@ class Modes():
             setattr(self, key, mdict[key])
 
     def get_sub_modes(self):
-        sub_modes = []
-        if hasattr(self, "en_" + self.type + "_modes"):
-            sub_modes = getattr(self, "en_" + self.type + "_modes")
-        return sub_modes
+        return getattr(self, "en_" + self.type + "_modes", [])
 
     def set_sub_modes(self, sub_modes):
         setattr(self, "en_" + self.type + "_modes", sub_modes)
@@ -360,13 +357,8 @@ class Tests(RunModes):
                 Tests.item_names.append(new_test.name)
 
         # Pass 2: Process dependencies
-        build_modes = []
-        if hasattr(sim_cfg, "build_modes"):
-            build_modes = getattr(sim_cfg, "build_modes")
-
-        run_modes = []
-        if hasattr(sim_cfg, "run_modes"):
-            run_modes = getattr(sim_cfg, "run_modes")
+        build_modes = getattr(sim_cfg, "build_modes", [])
+        run_modes = getattr(sim_cfg, "run_modes", [])
 
         attrs = Tests.defaults
         for test_obj in tests_objs:
@@ -508,13 +500,8 @@ class Regressions(Modes):
                 Regressions.item_names.append(new_regression.name)
 
         # Pass 2: Process dependencies
-        build_modes = []
-        if hasattr(sim_cfg, "build_modes"):
-            build_modes = getattr(sim_cfg, "build_modes")
-
-        run_modes = []
-        if hasattr(sim_cfg, "run_modes"):
-            run_modes = getattr(sim_cfg, "run_modes")
+        build_modes = getattr(sim_cfg, "build_modes", [])
+        run_modes = getattr(sim_cfg, "run_modes", [])
 
         for regression_obj in regressions_objs:
             # Unpack the sim modes
