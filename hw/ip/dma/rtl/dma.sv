@@ -40,7 +40,7 @@ module dma
   output dma_pkg::sys_req_t                         sys_o
 );
   import prim_mubi_pkg::*;
-  import hmac_multimode_pkg::*;
+  import prim_sha2_pkg::*;
 
   dma_reg2hw_t reg2hw;
   dma_hw2reg_t hw2reg;
@@ -439,22 +439,22 @@ module dma
   end
 
   // SHA2 engine for inline hashing operations
-  sha2_multimode32 u_sha2 (
-    .clk_i            ( clk_i                 ),
-    .rst_ni           ( rst_ni                ),
-    .wipe_secret      ( 1'b0                  ),
-    .wipe_v           ( 32'b0                 ),
-    .fifo_rvalid      ( sha2_valid            ),
-    .fifo_rdata       ( sha2_data             ),
-    .word_buffer_ready( sha2_ready            ),
-    .sha_en           ( 1'b1                  ),
-    .hash_start       ( sha2_hash_start       ),
-    .digest_mode      ( sha2_mode             ),
-    .hash_process     ( sha2_hash_process     ),
-    .hash_done        ( sha2_hash_done        ),
-    .message_length   ( sha2_message_len_bits ),
-    .digest           ( sha2_digest           ),
-    .idle             (                       )
+  prim_sha2_32 #(.MultimodeEn(1)) u_sha2 (
+    .clk_i              ( clk_i                 ),
+    .rst_ni             ( rst_ni                ),
+    .wipe_secret_i      ( 1'b0                  ),
+    .wipe_v_i           ( 32'b0                 ),
+    .fifo_rvalid_i      ( sha2_valid            ),
+    .fifo_rdata_i       ( sha2_data             ),
+    .fifo_rready_o      ( sha2_ready            ),
+    .sha_en_i           ( 1'b1                  ),
+    .hash_start_i       ( sha2_hash_start       ),
+    .digest_mode_i      ( sha2_mode             ),
+    .hash_process_i     ( sha2_hash_process     ),
+    .hash_done_o        ( sha2_hash_done        ),
+    .message_length_i   ( sha2_message_len_bits ),
+    .digest_o           ( sha2_digest           ),
+    .idle_o             (                       )
   );
 
   // Fiddle ASIDs out for better readability during the rest of the code
