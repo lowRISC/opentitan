@@ -19,7 +19,7 @@ from typing import Optional
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
-from Modes import BuildModes, Modes, Regressions, RunModes, Tests, find_mode
+from Modes import BuildMode, Mode, Regression, RunMode, Test, find_mode
 from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
@@ -242,8 +242,8 @@ class SimCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        self.build_modes = Modes.create_modes(BuildModes, self.build_modes)
-        self.run_modes = Modes.create_modes(RunModes, self.run_modes)
+        self.build_modes = Mode.create_modes(BuildMode, self.build_modes)
+        self.run_modes = Mode.create_modes(RunMode, self.run_modes)
 
         # Walk through build modes enabled on the CLI and append the opts
         for en_build_mode in self.en_build_modes:
@@ -279,7 +279,7 @@ class SimCfg(FlowCfg):
                 sys.exit(1)
 
         # Create tests from given list of items
-        self.tests = Tests.create_tests(self.tests, self)
+        self.tests = Test.create_tests(self.tests, self)
 
         # Regressions
         # Parse testplan if provided.
@@ -293,7 +293,7 @@ class SimCfg(FlowCfg):
             self.testplan = Testplan(None, name=self.name)
 
         # Create regressions
-        self.regressions = Regressions.create_regressions(
+        self.regressions = Regression.create_regressions(
             self.regressions, self, self.tests)
 
     def _print_list(self):
@@ -311,7 +311,7 @@ class SimCfg(FlowCfg):
                 if isinstance(item, str):
                     mode_name = item
                 else:
-                    assert isinstance(item, Modes)
+                    assert isinstance(item, Mode)
                     mode_name = item.name
 
                 log.info(mode_name)
@@ -369,11 +369,11 @@ class SimCfg(FlowCfg):
                         f"tests in {self.flow_cfg_file}.")
 
         # Merge the global build and run opts
-        Tests.merge_global_opts(self.run_list, self.pre_build_cmds,
-                                self.post_build_cmds, self.build_opts,
-                                self.pre_run_cmds, self.post_run_cmds,
-                                self.run_opts, self.sw_images,
-                                self.sw_build_opts)
+        Test.merge_global_opts(self.run_list, self.pre_build_cmds,
+                               self.post_build_cmds, self.build_opts,
+                               self.pre_run_cmds, self.post_run_cmds,
+                               self.run_opts, self.sw_images,
+                               self.sw_build_opts)
 
         # Process reseed override and create the build_list
         build_list_names = []

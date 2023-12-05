@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from Deploy import CompileOneShot
 from FlowCfg import FlowCfg
-from Modes import BuildModes, Modes
+from Modes import BuildMode, Mode
 from utils import rm_path
 
 
@@ -116,8 +116,8 @@ class OneShotCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        build_modes = Modes.create_modes(BuildModes,
-                                         getattr(self, "build_modes"))
+        build_modes = Mode.create_modes(BuildMode,
+                                        getattr(self, "build_modes"))
         setattr(self, "build_modes", build_modes)
 
         # All defined build modes are being built, h
