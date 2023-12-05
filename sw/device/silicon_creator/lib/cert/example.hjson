@@ -1,0 +1,55 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "example",
+
+    variables: {
+        // variable to please the generator
+        var_to_appease_generator: {
+            type: "integer",
+            size: 4
+        }
+    },
+
+    certificate: {
+        serial_number: "0xc32a9847abefc5074ad",
+        issuer: {
+            country: "UK",
+            common_name: "lowRISC",
+        },
+        subject: {
+            serial_number: "5498694878674878747894768746897849",
+        },
+        subject_public_key_info: {
+            algorithm: "ec-public-key",
+            curve: "prime256v1",
+            public_key: {
+                // This example was chosen so that the 'x' needs to be padded in the final certificate
+                x: "0x006d13d8dca1d8211298d41abd8f7ac38c07333c78e652b44c5b425fce61184a",
+                y: "0x0a0636f5073209440adb17dd8b102bc1154dc95394abfaeecd89852e1d622be1",
+            },
+        },
+        authority_key_identifier: "94589abcd87444",
+        subject_key_identifier: "04897afec876db",
+        vendor: "lowRISC",
+        model: "OpenTitan",
+        svn: "0",
+        layer: "42",
+        fw_ids: [
+            { hash_algorithm: "sha256", digest: "465644d935385783658357583758c593583b6537" },
+            { hash_algorithm: "sha256", digest: "009e9809f85978327592857a093f539078626589" },
+        ],
+        flags: {
+            not_configured: false,
+            not_secure: false,
+            recovery: false,
+            debug: false,
+        }
+        signature: {
+            algorithm: "ecdsa-with-sha256",
+            // The value field is optional: if not present, the signature will be cleared.
+            // Otherwise, we can reference the various fields of the signature.
+        }
+    }
+}

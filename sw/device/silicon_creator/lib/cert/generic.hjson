@@ -1,0 +1,117 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "generic",
+
+    variables: {
+        serial_number: {
+            type: "integer",
+            size: 32,
+        },
+        subject_serial_number: {
+            type: "string",
+            size: 40,
+        },
+        issuer_c: {
+            type: "string",
+            size: 2,
+        },
+        issuer_cn: {
+            type: "string",
+            size: 20,
+        },
+        vendor: {
+            type: "string",
+            size: 15,
+        },
+        model: {
+            type: "string",
+            size: 20,
+        },
+        layer: {
+            type: "integer",
+            size: 4,
+        },
+        pub_key_ec_x: {
+            type: "integer",
+            size: 32,
+        },
+        pub_key_ec_y: {
+            type: "integer",
+            size: 32,
+        },
+        pub_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        auth_key_id: {
+            type: "byte-array",
+            size: 20,
+        },
+        hash_1: {
+            type: "byte-array",
+            size: 20,
+        },
+        hash_2: {
+            type: "byte-array",
+            size: 20,
+        },
+        security_version: {
+            type: "integer",
+            size: 4,
+        }
+        cert_signature_r: {
+            type: "integer",
+            size: 32,
+        },
+        cert_signature_s: {
+            type: "integer",
+            size: 32,
+        },
+    },
+
+    certificate: {
+        serial_number: { var: "serial_number" },
+        issuer: {
+            country: { var: "issuer_c" },
+            common_name: { var: "issuer_cn" },
+        },
+        subject: {
+            serial_number: { var: "subject_serial_number" },
+        },
+        subject_public_key_info: {
+            algorithm: "ec-public-key",
+            curve: "prime256v1",
+            public_key: {
+                x: { var: "pub_key_ec_x" },
+                y: { var: "pub_key_ec_y" },
+            },
+        },
+        authority_key_identifier: { var: "auth_key_id" },
+        subject_key_identifier: { var: "pub_key_id" },
+        vendor: { var: "vendor" },
+        model: { var: "model" },
+        svn: { var: "security_version" },
+        layer: { var: "layer" },
+        fw_ids: [
+            { hash_algorithm: "sha256", digest: { var: "hash_1" } },
+            { hash_algorithm: "sha256", digest: { var: "hash_2" } },
+        ],
+        flags: {
+            not_configured: false,
+            not_secure: false,
+            recovery: false,
+            debug: false,
+        }
+        signature: {
+            algorithm: "ecdsa-with-sha256",
+            // The value field is optional: if not present, the signature will be cleared.
+            // Otherwise, we can reference the various fields of the signature.
+            value: {
+                r: { var: "cert_signature_r" },
+                s: { var: "cert_signature_s" }
+            }
+        }
+    }
+}
