@@ -16,6 +16,7 @@ filesets:
       - mbx_env_cfg.sv: {is_include_file: true}
       - mbx_env_cov.sv: {is_include_file: true}
       - mbx_virtual_sequencer.sv: {is_include_file: true}
+      - mbx_seq_item.sv: {is_include_file: true}
       - mbx_scoreboard.sv: {is_include_file: true}
       - mbx_env.sv: {is_include_file: true}
       - seq_lib/mbx_tl_reg_seq.sv: {is_include_file: true}
