@@ -10,13 +10,10 @@ rust_library(
     name = "ot_certs",
     srcs = [
         "src/lib.rs",
-        "src/offsets.rs",
         "src/template/hjson.rs",
         "src/template/mod.rs",
-        "src/types.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
-        "src/x509/tests.rs",
     ],
     proc_macro_deps = [
         "@crate_index//:indoc",
