@@ -40,17 +40,18 @@ class Modes():
     def set_sub_modes(self, sub_modes):
         setattr(self, "en_" + self.type + "_modes", sub_modes)
 
-    def merge_mode(self, mode):
-        '''
-        Merge a new mode with self.
-        Merge sub mode specified with 'en_*_modes with self.
-        '''
+    def merge_mode(self, mode: 'Mode') -> None:
+        '''Update this object by merging it with mode.'''
 
         sub_modes = self.get_sub_modes()
         is_sub_mode = mode.name in sub_modes
 
-        if not mode.name == self.name and not is_sub_mode:
-            return False
+        # If the mode to be merged in is not known as a sub-mode of this mode
+        # then something has gone wrong. Generate an error.
+        if mode.name != self.name and not is_sub_mode:
+            log.error(f"Cannot merge mode {self.name} with {mode.name}: "
+                      f"it is not a sub-mode and they are not equal.")
+            sys.exit(1)
 
         # Merge attributes in self with attributes in mode arg, since they are
         # the same mode but set in separate files, or a sub-mode.
