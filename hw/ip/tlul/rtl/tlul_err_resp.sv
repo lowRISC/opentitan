@@ -70,6 +70,6 @@ module tlul_err_resp #(
 
   // Waive unused bits of tl_h_i
   logic unused_tl_h;
-  assign unused_tl_h = ^tl_h_i;
+  assign unused_tl_h = ^{tl_h_i, err_instr_type};
 
 endmodule
