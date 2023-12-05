@@ -63,6 +63,23 @@ cc_library(
 )
 
 cc_library(
+    name = "kmac_sca",
+    srcs = ["kmac_sca.c"],
+    hdrs = ["kmac_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:kmac_sca_commands",
+    ],
+)
+
+cc_library(
     name = "prng_sca",
     srcs = ["prng_sca.c"],
     hdrs = ["prng_sca.h"],
@@ -103,6 +120,7 @@ opentitan_binary(
         ":aes",
         ":aes_sca",
         ":ibex_fi",
+        ":kmac_sca",
         ":prng_sca",
         ":trigger_sca",
         "//sw/device/lib/base:status",
