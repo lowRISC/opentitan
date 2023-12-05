@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+
 class usb20_monitor extends dv_base_monitor #(
   .ITEM_T (usb20_item),
   .CFG_T  (usb20_agent_cfg),
@@ -13,6 +14,7 @@ class usb20_monitor extends dv_base_monitor #(
    bit token_packet[];
    bit data_packet[];
    bit handshake_packet[];
+   bit sof_packet[];
    bit sync_pattern[];
    bit decoded_packet[];
    bit monitored_decoded_packet[];
@@ -24,22 +26,23 @@ class usb20_monitor extends dv_base_monitor #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
       usb20_monitor_analysis_port = new("usb20_monitor_analysis_port", this);
-      if (!uvm_config_db#(virtual usb20_block_if)::get(this, "*.env.m_usb20_agent*", "bif",cfg.bif))
-      begin
+      if (!uvm_config_db#(virtual usb20_block_if)::get(this, "*.env.m_usb20_agent*", "bif",
+      cfg.bif)) begin
         `uvm_fatal(`gfn, "failed to get usb20_block_if handle from uvm_config_db")
       end
   endfunction
 
   task run_phase(uvm_phase phase);
     forever begin
+      collect_sof_packet(phase);
       collect_trans(phase);
-      //collect_data_packet(phase);
-      //collect_handshake_packet(phase);
+      collect_data_packet(phase);
+      collect_handshake_packet(phase);
     end
   endtask
 
-  //MONITOR TOKEN_PACKET
-  virtual protected task collect_trans(uvm_phase phase);
+ //MONITOR SOF_PACKET
+  virtual protected task collect_sof_packet(uvm_phase phase);
     //while driving the packet before vbus gets active the reset toggle 2,3 times so below wait
     //conditions waits for the those reset and than it detected the vbus
     wait(cfg.bif.rst_ni);
@@ -54,8 +57,39 @@ class usb20_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("\n Idle State_usb_p Monitored = %b Idle State_usb_n Monitored = %b" ,
     cfg.bif.usb_p, cfg.bif.usb_n), UVM_LOW)
     wait(~cfg.bif.usb_p);
+    while(1)begin
+      @(posedge cfg.bif.usb_clk)begin
+        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0)begin
+          seo = 1;
+          for(int i = 0; i <2; i = i + 1)
+          begin
+            sof_packet = new[sof_packet.size()+1](sof_packet);
+            sof_packet[sof_packet.size()-1] = cfg.vif.usb_p;
+          end
+        break;
+        end
+        else
+        begin
+          sof_packet = new[sof_packet.size()+1](sof_packet);
+          sof_packet[sof_packet.size()-1] = cfg.vif.usb_p;
+        end
+      end
+    end
+    `uvm_info(`gfn, $sformatf("Complete Monitored Sof_Packet = %p ", sof_packet), UVM_LOW)
+    bit_destuffing(sof_packet);
+    `uvm_info(`gfn, $sformatf("Monitored Destuffed Sof_Packet: %p", sof_packet), UVM_LOW)
+    nrzi_decoder(sof_packet, monitored_decoded_packet);
+    `uvm_info(`gfn, $sformatf("Monitored NRZI Decoder Sof_Packet =%p", monitored_decoded_packet),
+    UVM_LOW)
+  endtask
+
+  //MONITOR TOKEN_PACKET
+  virtual protected task collect_trans(uvm_phase phase);
+    wait(cfg.bif.usb_p & ~cfg.bif.usb_n);
+    `uvm_info(`gfn, $sformatf("\n After EOP Idle State Monitored"), UVM_LOW)
+    wait(~cfg.bif.usb_p);
     while (1)begin
-      @(posedge cfg.bif.usb_clk) begin
+      @(posedge cfg.bif.usb_clk)begin
         if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0)
         begin
           seo = 1'b1;
@@ -87,8 +121,8 @@ class usb20_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("\n After EOP Idle State Monitored"), UVM_LOW)
     wait(~cfg.bif.usb_p);
     while(1)begin
-      @(posedge cfg.bif.usb_clk) begin
-        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0) begin
+      @(posedge cfg.bif.usb_clk)begin
+        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0)begin
           seo = 1;
           for(int i = 0; i <2; i = i + 1)
           begin
@@ -117,9 +151,9 @@ class usb20_monitor extends dv_base_monitor #(
     wait(cfg.bif.usb_p & ~cfg.bif.usb_n);
     `uvm_info(`gfn, $sformatf("\n After EOP Idle State Monitored"), UVM_LOW)
     wait(~cfg.bif.usb_p);
-    while(1) begin
-      @(posedge cfg.bif.usb_clk) begin
-        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0) begin
+    while(1)begin
+      @(posedge cfg.bif.usb_clk)begin
+        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0)begin
           seo = 1;
           for(int i = 0; i <2; i = i + 1)
           begin
@@ -141,8 +175,9 @@ class usb20_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("Monitored Destuffed Handshake_Packet: %p", handshake_packet),
     UVM_LOW)
     nrzi_decoder(handshake_packet, monitored_decoded_packet);
-    `uvm_info(`gfn, $sformatf("Monitored NRZI Decoder Handshake_Packet =%p",monitored_decoded_packet
-    ),UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Monitored NRZI Decoder Handshake_Packet =%p",
+    monitored_decoded_packet),
+    UVM_LOW)
   endtask
 
   //NRZI DECODER
@@ -170,7 +205,7 @@ class usb20_monitor extends dv_base_monitor #(
       if (packet[i] == 1'b1) begin
         consecutive_ones_count = consecutive_ones_count +1;
         if (consecutive_ones_count == 6) begin
-          packet = new[packet.size() - 1](packet);
+          packet = new [packet.size() - 1] (packet);
           i++;
           for (int j = i ; j < packet.size(); j++) begin
             packet[j] = packet[j + 1];
@@ -192,8 +227,8 @@ class usb20_monitor extends dv_base_monitor #(
     wait(cfg.bif.rst_ni);
     wait(cfg.bif.usb_p & ~cfg.bif.usb_n);
     forever begin
-      @(posedge cfg.bif.usb_clk) begin
-        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0) begin
+      @(posedge cfg.bif.usb_clk)begin
+        if(cfg.bif.usb_p == 1'b0 & cfg.bif.usb_n == 1'b0)begin
           eop_cnt++;
           if (eop_cnt == 3'b110) begin
             ok_to_end = 1;
