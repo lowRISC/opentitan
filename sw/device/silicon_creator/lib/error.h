@@ -156,7 +156,9 @@ enum module_ {
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
   \
-  X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal))
+  X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal)), \
+  /* This comment prevent clang from trying to format the macro. */
+
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
@@ -164,9 +166,7 @@ enum module_ {
 /**
  * Unified set of errors for ROM and ROM_EXT.
  */
-typedef enum rom_error {
-  DEFINE_ERRORS(ERROR_ENUM_INIT),
-} rom_error_t;
+typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
 
 /**
  * Evaluate an expression and return if the result is an error.

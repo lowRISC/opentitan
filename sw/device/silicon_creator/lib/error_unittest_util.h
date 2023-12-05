@@ -18,8 +18,7 @@ const inline std::map<std::string, uint32_t> &GetErrorMap() {
 #define ERROR_MAP_INIT(name, value) \
   { STRINGIFY(name), value }
   static std::map<std::string, uint32_t> errors = {
-      DEFINE_ERRORS(ERROR_MAP_INIT),
-  };
+      DEFINE_ERRORS(ERROR_MAP_INIT)};
   return errors;
 #undef ERROR_MAP_INIT
 #undef STRINGIFY
@@ -30,8 +29,7 @@ const inline std::map<uint32_t, std::string> &GetErrorToStringMap() {
 #define ERROR_MAP_INIT(name, value) \
   { value, STRINGIFY(name) }
   static std::map<uint32_t, std::string> errors = {
-      DEFINE_ERRORS(ERROR_MAP_INIT),
-  };
+      DEFINE_ERRORS(ERROR_MAP_INIT)};
   return errors;
 #undef ERROR_MAP_INIT
 #undef STRINGIFY
