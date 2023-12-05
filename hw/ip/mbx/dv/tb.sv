@@ -72,12 +72,14 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(
       null, "*.env.m_tl_agent_mbx_soc_reg_block*", "vif",
       i_tl_scxb_mbx_core_if);
-    uvm_config_db#(virtual tl_if)::set(
-      null, "*.env.m_tl_agent_mbxuarch_reg_block*", "vif",
-      i_tl_agxb_mbx_core_if);
-    uvm_config_db#(virtual tl_if)::set(
-      null, "*.env.m_tl_agent_mbx_reg_block*", "vif",
-      i_tl_scxb_mbx_core_if);
+
+//    uvm_config_db#(virtual tl_if)::set(
+//      null, "*.env.m_tl_agent_mbxuarch_reg_block*", "vif",
+//      i_tl_agxb_mbx_core_if);
+//    uvm_config_db#(virtual tl_if)::set(
+//      null, "*.env.m_tl_agent_mbx_reg_block*", "vif",
+//      i_tl_scxb_mbx_core_if);
+
     uvm_config_db#(virtual tl_if)::set(
       null, "*.env.m_tl_agent_mbx_mem_reg_block*", "vif",
       i_tl_mbx_agxb_device_if);
