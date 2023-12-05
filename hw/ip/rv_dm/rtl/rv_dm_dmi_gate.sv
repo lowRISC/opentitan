@@ -179,7 +179,6 @@ module rv_dm_dmi_gate
   typedef enum logic [1:0] {
     StEnDmiTlulAdapter,
     StEnDmiTlulLcGate,
-    StEnDmiTlulZeroResponder,
     StEnDmiTlulLast
   } strap_hw_debug_en_e;
 
