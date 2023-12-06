@@ -20,6 +20,7 @@ load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+    "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
 )
 
@@ -207,10 +208,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.PROD,
-    ),
+    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -232,10 +230,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.PROD,
-    ),
+    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -263,10 +258,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.PROD,
-    ),
+    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/crypto/drivers:entropy",
