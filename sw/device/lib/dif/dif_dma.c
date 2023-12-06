@@ -11,13 +11,12 @@
 #include "sw/device/lib/base/mmio.h"
 
 static_assert(kDifDmaOpentitanInternalBus ==
-                  DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_VALUE_OT_ADDR,
+                  DMA_ADDR_SPACE_ID_DST_ASID_VALUE_OT_ADDR,
               "Address Space ID mismatches with value defined in HW");
 static_assert(kDifDmaSoCControlRegisterBus ==
-                  DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_VALUE_SOC_ADDR,
+                  DMA_ADDR_SPACE_ID_DST_ASID_VALUE_SOC_ADDR,
               "Address Space ID mismatches with value defined in HW");
-static_assert(kDifDmaSoCSystemBus ==
-                  DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_VALUE_SYS_ADDR_,
+static_assert(kDifDmaSoCSystemBus == DMA_ADDR_SPACE_ID_DST_ASID_VALUE_SYS_ADDR_,
               "Address Space ID mismatches with value defined in HW");
 
 dif_result_t dif_dma_configure(const dif_dma_t *dma,
@@ -26,23 +25,23 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_LO_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_SRC_ADDR_LO_REG_OFFSET,
                       transaction.source.address & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_HI_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_SRC_ADDR_HI_REG_OFFSET,
                       transaction.source.address >> (sizeof(uint32_t) * 8));
 
-  mmio_region_write32(dma->base_addr, DMA_DESTINATION_ADDRESS_LO_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LO_REG_OFFSET,
                       transaction.destination.address & UINT32_MAX);
   mmio_region_write32(
-      dma->base_addr, DMA_DESTINATION_ADDRESS_HI_REG_OFFSET,
+      dma->base_addr, DMA_DST_ADDR_HI_REG_OFFSET,
       transaction.destination.address >> (sizeof(uint32_t) * 8));
 
   uint32_t reg = 0;
-  reg = bitfield_field32_write(reg, DMA_ADDRESS_SPACE_ID_SOURCE_ASID_FIELD,
+  reg = bitfield_field32_write(reg, DMA_ADDR_SPACE_ID_SRC_ASID_FIELD,
                                transaction.source.asid);
-  reg = bitfield_field32_write(reg, DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_FIELD,
+  reg = bitfield_field32_write(reg, DMA_ADDR_SPACE_ID_DST_ASID_FIELD,
                                transaction.destination.asid);
-  mmio_region_write32(dma->base_addr, DMA_ADDRESS_SPACE_ID_REG_OFFSET, reg);
+  mmio_region_write32(dma->base_addr, DMA_ADDR_SPACE_ID_REG_OFFSET, reg);
 
   mmio_region_write32(dma->base_addr, DMA_CHUNK_DATA_SIZE_REG_OFFSET,
                       transaction.chunk_size);
@@ -183,18 +182,14 @@ dif_result_t dif_dma_irq_thresholds_set(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  mmio_region_write32(dma->base_addr,
-                      DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET,
                       almost_limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr,
-                      DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET,
                       almost_limit >> (sizeof(uint32_t) * 8));
 
-  mmio_region_write32(dma->base_addr,
-                      DMA_DESTINATION_ADDRESS_LIMIT_LO_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET,
                       limit & UINT32_MAX);
-  mmio_region_write32(dma->base_addr,
-                      DMA_DESTINATION_ADDRESS_LIMIT_HI_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET,
                       limit >> (sizeof(uint32_t) * 8));
 
   return kDifOk;
@@ -207,16 +202,14 @@ dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
-  uint64_t val_lo = mmio_region_read32(
-      dma->base_addr, DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_REG_OFFSET);
-  uint64_t val_hi = mmio_region_read32(
-      dma->base_addr, DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_REG_OFFSET);
+  uint64_t val_lo = mmio_region_read32(dma->base_addr,
+                                       DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET);
+  uint64_t val_hi = mmio_region_read32(dma->base_addr,
+                                       DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET);
   *almost_limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
 
-  val_lo = mmio_region_read32(dma->base_addr,
-                              DMA_DESTINATION_ADDRESS_LIMIT_LO_REG_OFFSET);
-  val_hi = mmio_region_read32(dma->base_addr,
-                              DMA_DESTINATION_ADDRESS_LIMIT_HI_REG_OFFSET);
+  val_lo = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_LO_REG_OFFSET);
+  val_hi = mmio_region_read32(dma->base_addr, DMA_DST_ADDR_LIMIT_HI_REG_OFFSET);
   *limit = val_lo | (val_hi << (sizeof(uint32_t) * 8));
 
   return kDifOk;
@@ -309,7 +302,7 @@ dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma,
   if (dma == NULL) {
     return kDifBadArg;
   }
-  mmio_region_write32(dma->base_addr, DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_HANDSHAKE_INTR_ENABLE_REG_OFFSET,
                       enable_state);
   return kDifOk;
 }
@@ -319,7 +312,7 @@ dif_result_t dif_dma_handshake_clear_irq(const dif_dma_t *dma,
   if (dma == NULL) {
     return kDifBadArg;
   }
-  mmio_region_write32(dma->base_addr, DMA_CLEAR_INT_SRC_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_CLEAR_INTR_SRC_REG_OFFSET,
                       clear_state);
 
   return kDifOk;
@@ -330,31 +323,31 @@ dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
   if (dma == NULL) {
     return kDifBadArg;
   }
-  mmio_region_write32(dma->base_addr, DMA_CLEAR_INT_BUS_REG_OFFSET,
+  mmio_region_write32(dma->base_addr, DMA_CLEAR_INTR_BUS_REG_OFFSET,
                       clear_irq_bus);
 
   return kDifOk;
 }
 
-dif_result_t dif_dma_int_src_addr(const dif_dma_t *dma, dif_dma_int_idx_t idx,
-                                  uint32_t int_src_addr) {
+dif_result_t dif_dma_intr_src_addr(const dif_dma_t *dma, dif_dma_intr_idx_t idx,
+                                   uint32_t intr_src_addr) {
   if (dma == NULL) {
     return kDifBadArg;
   }
   mmio_region_write32(dma->base_addr,
-                      DMA_INT_SOURCE_ADDR_0_REG_OFFSET + (ptrdiff_t)idx,
-                      int_src_addr);
+                      DMA_INTR_SRC_ADDR_0_REG_OFFSET + (ptrdiff_t)idx,
+                      intr_src_addr);
   return kDifOk;
 }
 
-dif_result_t dif_dma_int_write_value(const dif_dma_t *dma,
-                                     dif_dma_int_idx_t idx,
-                                     uint32_t int_src_value) {
+dif_result_t dif_dma_intr_write_value(const dif_dma_t *dma,
+                                      dif_dma_intr_idx_t idx,
+                                      uint32_t intr_src_value) {
   if (dma == NULL) {
     return kDifBadArg;
   }
   mmio_region_write32(dma->base_addr,
-                      DMA_INT_SOURCE_WR_VAL_0_REG_OFFSET + (ptrdiff_t)idx,
-                      int_src_value);
+                      DMA_INTR_SRC_WR_VAL_0_REG_OFFSET + (ptrdiff_t)idx,
+                      intr_src_value);
   return kDifOk;
 }
