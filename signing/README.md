@@ -31,6 +31,46 @@ the keyset by telling bazel that you want to use a NitroKey:
 $ bazel build --//signing:token=//signing/tokens:nitrokey //label-of-target
 ```
 
+## Configuration for silicon\_owner SiVAL signing
+
+The production SiVAL ROM\_EXT respects an RSA signing key held in Google's
+cloud-kms service.
+
+You need an hsmtool profile that maps to the cloud-kms token.  Add an entry
+to your profiles confiuration file:
+```
+# $HOME/.config/hsmtool/profiles.json.
+{
+  "earlgrey_z0_sival": {
+    "token": "ot-earlgrey-z0-sival",
+    "user": "user"
+  }
+}
+```
+
+In order to sign with the cloud-kms key, you need to authenticate to Google
+cloud using your opentitan.org account.
+```
+# Install the Google cloud CLI if you don't already have it.
+sudo apt install -y google-cloud-cli
+
+# Log into GCP using your opentitan.org credentials
+gcloud auth login
+
+# Set the active project
+gcloud config set project otkms-407107
+
+# Application default authentication
+gcloud auth application-default login
+
+```
+
+Once authenticated to Google cloud, you can build and sign SiVAL tests
+by requesting the `cloud_kms` token:
+```
+$ bazel build --//signing:token=//signing/tokens:cloud_kms //label-of-target
+```
+
 ## Demo of offline signing
 
 This demonstration of the offline signing flow does not use an HSM.

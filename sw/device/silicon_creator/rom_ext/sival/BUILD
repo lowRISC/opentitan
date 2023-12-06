@@ -33,6 +33,7 @@ manifest({
 opentitan_binary(
     name = "rom_ext_fake_prod_signed_slot_a",
     exec_env = [
+        "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -52,6 +53,7 @@ opentitan_binary(
 opentitan_binary(
     name = "rom_ext_fake_prod_signed_slot_b",
     exec_env = [
+        "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -71,6 +73,7 @@ opentitan_binary(
 opentitan_binary(
     name = "rom_ext_real_prod_signed_slot_a",
     exec_env = [
+        "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
@@ -86,6 +89,7 @@ opentitan_binary(
 opentitan_binary(
     name = "rom_ext_real_prod_signed_slot_b",
     exec_env = [
+        "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",

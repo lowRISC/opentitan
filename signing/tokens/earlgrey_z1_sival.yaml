@@ -1,0 +1,9 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+tokens:
+  - key_ring: "projects/otkms-407107/locations/us-west1/keyRings/ot-earlgrey-z0-sival"
+    label: "ot-earlgrey-z0-sival"
+log_directory: "/tmp"

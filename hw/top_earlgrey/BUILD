@@ -255,7 +255,6 @@ fpga_cw340(
 # This exec_env targets running software at the ROM_EXT stage on silicon.
 silicon(
     name = "silicon_creator",
-    testonly = True,
     args = [
         "--rcfile=",
         "--logging=info",
@@ -272,6 +271,42 @@ silicon(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    test_cmd = """
+        --exec="transport init"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+silicon(
+    name = "silicon_owner_sival_rom_ext",
+    testonly = True,
+    args = [
+        "--rcfile=",
+        "--logging=info",
+        "--interface={interface}",
+    ],
+    design = "earlgrey",
+    exec_env = "silicon_owner_sival_rom_ext",
+    lib = "//sw/device/lib/arch:silicon",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    rom_ext = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
+        # TODO: set this to the prod signed SiVAL rom_ext binary.
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
+    }),
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/keys/real:keyset": "earlgrey_z0_sival_1"},
+    }),
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
