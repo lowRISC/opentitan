@@ -109,7 +109,8 @@ impl DifLcCtrlToken {
     }
 }
 
-#[derive(IntoPrimitive, Clone, Debug)]
+#[derive(IntoPrimitive, Clone, Debug, strum::EnumString)]
+#[strum(serialize_all = "snake_case")]
 #[repr(u32)]
 pub enum LcCtrlReg {
     AlertTest = bindgen::dif::LC_CTRL_ALERT_TEST_REG_OFFSET,
