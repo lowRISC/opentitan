@@ -32,8 +32,10 @@ typedef struct __attribute__((packed))
 } titanssl_mbox_t;
 
 
+#define TITANSSL_TEST_L3
 #define TITANSSL_TEST_SRC_SIZE  1500
 #define TITANSSL_TEST_DST_SIZE  32
+
 #define TITANSSL_PAGE_SIZE      4096
 #define TITANSSL_MBOX_BASE      0x10404000
 #define TITANSSL_BATCH_SRC_BASE 0x80700000
@@ -41,8 +43,15 @@ typedef struct __attribute__((packed))
 #define TITANSSL_DATA_SRC_BASE  0x80720000
 #define TITANSSL_DATA_DST_BASE  0x80740000
 
+#define TITANSSL_L1_DATA_SRC_BASE 0xe0002000
+#define TITANSSL_L1_DATA_DST_BASE 0xe0004000
+
 
 #if TITANSSL_TEST_SRC_SIZE == 65536
+#if defined(TITANSSL_TEST_L1)
+#error "Cannot test TITANSSL_TEST_SRC_SIZE == 65536 in L1 benchmarks"
+#endif
+
 #pragma message("TITANSSL_TEST_SRC_SIZE is 65536")
 
 static const dif_hmac_digest_t kExpectedShaDigest = {
@@ -86,8 +95,8 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
 };
 
 
+#if defined(TITANSSL_TEST_L3)
 static titanssl_mbox_t* const titanssl_mbox = (titanssl_mbox_t*)TITANSSL_MBOX_BASE;
-static dif_hmac_digest_t *titanssl_digest = 0x0;
 
 
 void initialize_memory()
@@ -134,7 +143,8 @@ void initialize_memory()
     }
 }
 
-void titanssl_sha256()
+
+void titanssl_benchmark_sha256()
 {
 	dif_hmac_t hmac;
 	dif_result_t res;
@@ -204,10 +214,101 @@ void titanssl_sha256()
     } while(res != kDifOk);
 }
 
-void check_digest()
-{
-    titanssl_batch_t* const dst = titanssl_mbox->dst;
+#elif defined(TITANSSL_TEST_L1)
+static titanssl_batch_t titanssl_data_src;
+static titanssl_batch_t titanssl_data_dst;
 
+
+void initialize_memory()
+{
+    titanssl_data_src.n = TITANSSL_TEST_SRC_SIZE;
+    titanssl_data_src.data = (uint8_t*)TITANSSL_L1_DATA_SRC_BASE;
+    for (size_t i=0; i<TITANSSL_TEST_SRC_SIZE; i++)
+    {
+        titanssl_data_src.data[i] = 0x0;
+    }
+    titanssl_data_dst.n = TITANSSL_TEST_DST_SIZE;
+    titanssl_data_dst.data = (uint8_t*)TITANSSL_L1_DATA_DST_BASE;
+    for (size_t i=0; i<TITANSSL_TEST_DST_SIZE; i++)
+    {
+        titanssl_data_dst.data[i] = 0x0;
+    }
+}
+
+
+void titanssl_benchmark_sha256()
+{
+	dif_hmac_t hmac;
+	dif_result_t res;
+    uint32_t val;
+
+    titanssl_batch_t* const src = &titanssl_data_src;
+    titanssl_batch_t* const dst = &titanssl_data_dst;
+
+	// Initialize HMAC IP in SHA256 mode
+	res = dif_hmac_init(
+		mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
+		&hmac
+	);
+   	res = dif_hmac_mode_sha256_start(
+		&hmac,
+		kHmacTransactionConfig
+	);
+
+	// Compute SHA256
+    const uint8_t *kData = titanssl_data_src.data;
+    const uint32_t kDataSize = titanssl_data_src.n;
+    const uint8_t *dp = kData;
+
+    while (dp - kData < kDataSize)
+    {
+        uint32_t sent_bytes;
+
+        res = dif_hmac_fifo_push(
+            &hmac,
+            dp,
+            kDataSize - (dp - kData),
+            &sent_bytes
+        );
+        dp += sent_bytes;
+
+        if (res == kDifIpFifoFull)
+        {
+            uint32_t fifo_depth;
+
+            do
+            {
+                res = dif_hmac_fifo_count_entries(
+                    &hmac,
+                    &fifo_depth
+                );
+            } while (fifo_depth != 0);
+        }
+    }
+    res = dif_hmac_process(&hmac);
+    while (!mmio_region_get_bit32(
+        hmac.base_addr,
+        HMAC_INTR_STATE_REG_OFFSET,
+        HMAC_INTR_STATE_HMAC_DONE_BIT
+    ));
+
+    // Finalize SHA256
+    do
+    {
+        res = dif_hmac_finish(
+            &hmac,
+            (dif_hmac_digest_t*)(dst->data)
+        );
+    } while(res != kDifOk);
+}
+
+#else
+#error "Either TITANSSL_TEST_L3 or TITANSSL_TEST_L1 should be defined"
+#endif
+
+
+void check_digest(titanssl_batch_t* const dst)
+{
 	for (int i=0; i<8; i++)
 	{
 		printf(
@@ -218,6 +319,7 @@ void check_digest()
         uart_wait_tx_done();
 	}
 }
+
 
 int main(int argc, char **argv)
 {
@@ -233,9 +335,15 @@ int main(int argc, char **argv)
         (test_freq/baud_rate)>>4
     );
 
+#if defined TITANSSL_TEST_L3
     initialize_memory();
-    titanssl_sha256();
-    check_digest();
+    titanssl_benchmark_sha256();
+    check_digest(titanssl_mbox->dst);
+#elif defined TITANSSL_TEST_L1
+    initialize_memory();
+    titanssl_benchmark_sha256();
+    check_digest(&titanssl_data_dst);
+#endif
 
 	return 0;
 }
