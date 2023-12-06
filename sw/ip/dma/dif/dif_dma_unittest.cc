@@ -37,22 +37,20 @@ class ConfigureTest
 TEST_P(ConfigureTest, Success) {
   dif_dma_transaction_t transaction = GetParam();
   EXPECT_WRITE32(
-      DMA_SOURCE_ADDRESS_LO_REG_OFFSET,
+      DMA_SRC_ADDR_LO_REG_OFFSET,
       transaction.source.address & std::numeric_limits<uint32_t>::max());
-  EXPECT_WRITE32(DMA_SOURCE_ADDRESS_HI_REG_OFFSET,
-                 transaction.source.address >> 32);
+  EXPECT_WRITE32(DMA_SRC_ADDR_HI_REG_OFFSET, transaction.source.address >> 32);
   EXPECT_WRITE32(
-      DMA_DESTINATION_ADDRESS_LO_REG_OFFSET,
+      DMA_DST_ADDR_LO_REG_OFFSET,
       transaction.destination.address & std::numeric_limits<uint32_t>::max());
-  EXPECT_WRITE32(DMA_DESTINATION_ADDRESS_HI_REG_OFFSET,
+  EXPECT_WRITE32(DMA_DST_ADDR_HI_REG_OFFSET,
                  transaction.destination.address >> 32);
 
   EXPECT_WRITE32(
-      DMA_ADDRESS_SPACE_ID_REG_OFFSET,
+      DMA_ADDR_SPACE_ID_REG_OFFSET,
       {
-          {DMA_ADDRESS_SPACE_ID_SOURCE_ASID_OFFSET, transaction.source.asid},
-          {DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_OFFSET,
-           transaction.destination.asid},
+          {DMA_ADDR_SPACE_ID_SRC_ASID_OFFSET, transaction.source.asid},
+          {DMA_ADDR_SPACE_ID_DST_ASID_OFFSET, transaction.destination.asid},
       });
 
   EXPECT_WRITE32(DMA_CHUNK_DATA_SIZE_REG_OFFSET, transaction.chunk_size);
@@ -303,22 +301,20 @@ TEST_F(MemoryRangeLockTest, GetBadArg) {
 class IrqThresholdsTest : public DmaTestInitialized {};
 
 TEST_F(IrqThresholdsTest, SetSuccess) {
-  EXPECT_WRITE32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_REG_OFFSET,
-                 0x9000F000);
-  EXPECT_WRITE32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_REG_OFFSET,
-                 0x80001000);
-  EXPECT_WRITE32(DMA_DESTINATION_ADDRESS_LIMIT_LO_REG_OFFSET, 0xE0005000);
-  EXPECT_WRITE32(DMA_DESTINATION_ADDRESS_LIMIT_HI_REG_OFFSET, 0xF0001000);
+  EXPECT_WRITE32(DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
+  EXPECT_WRITE32(DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
+  EXPECT_WRITE32(DMA_DST_ADDR_LIMIT_LO_REG_OFFSET, 0xE0005000);
+  EXPECT_WRITE32(DMA_DST_ADDR_LIMIT_HI_REG_OFFSET, 0xF0001000);
 
   EXPECT_DIF_OK(dif_dma_irq_thresholds_set(&dma_, 0x800010009000F000,
                                            0xF0001000E0005000));
 }
 
 TEST_F(IrqThresholdsTest, GetSuccess) {
-  EXPECT_READ32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
-  EXPECT_READ32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
-  EXPECT_READ32(DMA_DESTINATION_ADDRESS_LIMIT_LO_REG_OFFSET, 0xE0005000);
-  EXPECT_READ32(DMA_DESTINATION_ADDRESS_LIMIT_HI_REG_OFFSET, 0xF0001000);
+  EXPECT_READ32(DMA_DST_ADDR_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
+  EXPECT_READ32(DMA_DST_ADDR_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
+  EXPECT_READ32(DMA_DST_ADDR_LIMIT_LO_REG_OFFSET, 0xE0005000);
+  EXPECT_READ32(DMA_DST_ADDR_LIMIT_HI_REG_OFFSET, 0xF0001000);
 
   uint64_t almost = 0;
   uint64_t limit = 0;
@@ -434,8 +430,8 @@ TEST_P(ErrorTest, GetSuccess) {
 INSTANTIATE_TEST_SUITE_P(
     ErrorTest, ErrorTest,
     testing::ValuesIn(std::vector<error_code_reg_t>{{
-        {1 << DMA_ERROR_CODE_SRC_ADDRESS_ERROR_BIT, kDifDmaErrorSourceAddress},
-        {1 << DMA_ERROR_CODE_DST_ADDRESS_ERROR_BIT,
+        {1 << DMA_ERROR_CODE_SRC_ADDR_ERROR_BIT, kDifDmaErrorSourceAddress},
+        {1 << DMA_ERROR_CODE_DST_ADDR_ERROR_BIT,
          kDifDmaErrorDestinationAddress},
         {1 << DMA_ERROR_CODE_OPCODE_ERROR_BIT, kDifDmaErrorOpcode},
         {1 << DMA_ERROR_CODE_SIZE_ERROR_BIT, kDifDmaErrorSize},
@@ -534,7 +530,7 @@ TEST_F(GetDigestTest, BadArg) {
 class HandshakeEnableIrqTest : public DmaTestInitialized {};
 
 TEST_F(HandshakeEnableIrqTest, Success) {
-  EXPECT_WRITE32(DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET, 0x3);
+  EXPECT_WRITE32(DMA_HANDSHAKE_INTR_ENABLE_REG_OFFSET, 0x3);
 
   EXPECT_DIF_OK(dif_dma_handshake_irq_enable(&dma_, 0x3));
 }
@@ -547,7 +543,7 @@ TEST_F(HandshakeEnableIrqTest, BadArg) {
 class HandshakeClearIrqTest : public DmaTestInitialized {};
 
 TEST_F(HandshakeClearIrqTest, Success) {
-  EXPECT_WRITE32(DMA_CLEAR_INT_SRC_REG_OFFSET, 0x3);
+  EXPECT_WRITE32(DMA_CLEAR_INTR_SRC_REG_OFFSET, 0x3);
 
   EXPECT_DIF_OK(dif_dma_handshake_clear_irq(&dma_, 0x3));
 }
@@ -560,7 +556,7 @@ TEST_F(HandshakeClearIrqTest, BadArg) {
 class HandshakeClearBusTest : public DmaTestInitialized {};
 
 TEST_F(HandshakeClearBusTest, Success) {
-  EXPECT_WRITE32(DMA_CLEAR_INT_BUS_REG_OFFSET, 0x2);
+  EXPECT_WRITE32(DMA_CLEAR_INTR_BUS_REG_OFFSET, 0x2);
 
   EXPECT_DIF_OK(dif_dma_handshake_clear_irq_bus(&dma_, 0x2));
 }
@@ -571,7 +567,7 @@ TEST_F(HandshakeClearBusTest, BadArg) {
 
 typedef struct dma_clear_irq_reg {
   uint32_t reg;
-  dif_dma_int_idx_t idx;
+  dif_dma_intr_idx_t idx;
 } dma_clear_irq_reg_t;
 
 class HandshakeClearAddressTest
@@ -583,28 +579,28 @@ TEST_P(HandshakeClearAddressTest, GetSuccess) {
 
   EXPECT_WRITE32(clear_irq_reg.reg, 0x123456);
 
-  EXPECT_DIF_OK(dif_dma_int_src_addr(&dma_, clear_irq_reg.idx, 0x123456));
+  EXPECT_DIF_OK(dif_dma_intr_src_addr(&dma_, clear_irq_reg.idx, 0x123456));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     HandshakeClearAddressTest, HandshakeClearAddressTest,
     testing::ValuesIn(std::vector<dma_clear_irq_reg_t>{{
-        {DMA_INT_SOURCE_ADDR_0_REG_OFFSET, kDifDmaIntClearIdx0},
-        {DMA_INT_SOURCE_ADDR_1_REG_OFFSET, kDifDmaIntClearIdx1},
-        {DMA_INT_SOURCE_ADDR_2_REG_OFFSET, kDifDmaIntClearIdx2},
-        {DMA_INT_SOURCE_ADDR_3_REG_OFFSET, kDifDmaIntClearIdx3},
-        {DMA_INT_SOURCE_ADDR_4_REG_OFFSET, kDifDmaIntClearIdx4},
-        {DMA_INT_SOURCE_ADDR_5_REG_OFFSET, kDifDmaIntClearIdx5},
-        {DMA_INT_SOURCE_ADDR_6_REG_OFFSET, kDifDmaIntClearIdx6},
-        {DMA_INT_SOURCE_ADDR_7_REG_OFFSET, kDifDmaIntClearIdx7},
-        {DMA_INT_SOURCE_ADDR_8_REG_OFFSET, kDifDmaIntClearIdx8},
-        {DMA_INT_SOURCE_ADDR_9_REG_OFFSET, kDifDmaIntClearIdx9},
-        {DMA_INT_SOURCE_ADDR_10_REG_OFFSET, kDifDmaIntClearIdx10},
+        {DMA_INTR_SRC_ADDR_0_REG_OFFSET, kDifDmaIntrClearIdx0},
+        {DMA_INTR_SRC_ADDR_1_REG_OFFSET, kDifDmaIntrClearIdx1},
+        {DMA_INTR_SRC_ADDR_2_REG_OFFSET, kDifDmaIntrClearIdx2},
+        {DMA_INTR_SRC_ADDR_3_REG_OFFSET, kDifDmaIntrClearIdx3},
+        {DMA_INTR_SRC_ADDR_4_REG_OFFSET, kDifDmaIntrClearIdx4},
+        {DMA_INTR_SRC_ADDR_5_REG_OFFSET, kDifDmaIntrClearIdx5},
+        {DMA_INTR_SRC_ADDR_6_REG_OFFSET, kDifDmaIntrClearIdx6},
+        {DMA_INTR_SRC_ADDR_7_REG_OFFSET, kDifDmaIntrClearIdx7},
+        {DMA_INTR_SRC_ADDR_8_REG_OFFSET, kDifDmaIntrClearIdx8},
+        {DMA_INTR_SRC_ADDR_9_REG_OFFSET, kDifDmaIntrClearIdx9},
+        {DMA_INTR_SRC_ADDR_10_REG_OFFSET, kDifDmaIntrClearIdx10},
     }}));
 
 TEST_F(HandshakeClearAddressTest, BadArg) {
   EXPECT_DIF_BADARG(
-      dif_dma_int_src_addr(nullptr, kDifDmaIntClearIdx0, 0x12345));
+      dif_dma_intr_src_addr(nullptr, kDifDmaIntrClearIdx0, 0x12345));
 }
 
 class HandshakeClearValueTest
@@ -616,28 +612,28 @@ TEST_P(HandshakeClearValueTest, GetSuccess) {
 
   EXPECT_WRITE32(clear_irq_reg.reg, 0x123456);
 
-  EXPECT_DIF_OK(dif_dma_int_write_value(&dma_, clear_irq_reg.idx, 0x123456));
+  EXPECT_DIF_OK(dif_dma_intr_write_value(&dma_, clear_irq_reg.idx, 0x123456));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     HandshakeClearValueTest, HandshakeClearValueTest,
     testing::ValuesIn(std::vector<dma_clear_irq_reg_t>{{
-        {DMA_INT_SOURCE_WR_VAL_0_REG_OFFSET, kDifDmaIntClearIdx0},
-        {DMA_INT_SOURCE_WR_VAL_1_REG_OFFSET, kDifDmaIntClearIdx1},
-        {DMA_INT_SOURCE_WR_VAL_2_REG_OFFSET, kDifDmaIntClearIdx2},
-        {DMA_INT_SOURCE_WR_VAL_3_REG_OFFSET, kDifDmaIntClearIdx3},
-        {DMA_INT_SOURCE_WR_VAL_4_REG_OFFSET, kDifDmaIntClearIdx4},
-        {DMA_INT_SOURCE_WR_VAL_5_REG_OFFSET, kDifDmaIntClearIdx5},
-        {DMA_INT_SOURCE_WR_VAL_6_REG_OFFSET, kDifDmaIntClearIdx6},
-        {DMA_INT_SOURCE_WR_VAL_7_REG_OFFSET, kDifDmaIntClearIdx7},
-        {DMA_INT_SOURCE_WR_VAL_8_REG_OFFSET, kDifDmaIntClearIdx8},
-        {DMA_INT_SOURCE_WR_VAL_9_REG_OFFSET, kDifDmaIntClearIdx9},
-        {DMA_INT_SOURCE_WR_VAL_10_REG_OFFSET, kDifDmaIntClearIdx10},
+        {DMA_INTR_SRC_WR_VAL_0_REG_OFFSET, kDifDmaIntrClearIdx0},
+        {DMA_INTR_SRC_WR_VAL_1_REG_OFFSET, kDifDmaIntrClearIdx1},
+        {DMA_INTR_SRC_WR_VAL_2_REG_OFFSET, kDifDmaIntrClearIdx2},
+        {DMA_INTR_SRC_WR_VAL_3_REG_OFFSET, kDifDmaIntrClearIdx3},
+        {DMA_INTR_SRC_WR_VAL_4_REG_OFFSET, kDifDmaIntrClearIdx4},
+        {DMA_INTR_SRC_WR_VAL_5_REG_OFFSET, kDifDmaIntrClearIdx5},
+        {DMA_INTR_SRC_WR_VAL_6_REG_OFFSET, kDifDmaIntrClearIdx6},
+        {DMA_INTR_SRC_WR_VAL_7_REG_OFFSET, kDifDmaIntrClearIdx7},
+        {DMA_INTR_SRC_WR_VAL_8_REG_OFFSET, kDifDmaIntrClearIdx8},
+        {DMA_INTR_SRC_WR_VAL_9_REG_OFFSET, kDifDmaIntrClearIdx9},
+        {DMA_INTR_SRC_WR_VAL_10_REG_OFFSET, kDifDmaIntrClearIdx10},
     }}));
 
 TEST_F(HandshakeClearValueTest, BadArg) {
   EXPECT_DIF_BADARG(
-      dif_dma_int_write_value(nullptr, kDifDmaIntClearIdx0, 0x4567));
+      dif_dma_intr_write_value(nullptr, kDifDmaIntrClearIdx0, 0x4567));
 }
 
 }  // namespace dif_dma_test
