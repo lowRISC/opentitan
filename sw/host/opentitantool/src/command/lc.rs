@@ -92,6 +92,50 @@ impl CommandDispatch for LcStateRead {
     }
 }
 
+#[derive(serde::Serialize)]
+pub struct LcRegReadResult {
+    pub value: String,
+}
+
+#[derive(Debug, Args)]
+/// Reads the device life cycle state over JTAG.
+pub struct LcRegRead {
+    /// Reset duration when switching the LC TAP straps.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
+    pub reset_delay: Duration,
+
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+
+    #[arg(value_enum)]
+    pub reg: LcCtrlReg,
+}
+
+impl CommandDispatch for LcRegRead {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Set the TAP straps for the lifecycle controller.
+        transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+
+        // Spawn an OpenOCD process and connect to the LC JTAG TAP.
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
+
+        // Read the CSR
+        let value = jtag.read_lc_ctrl_reg(&self.reg)?;
+
+        jtag.disconnect()?;
+        Ok(Some(Box::new(LcRegReadResult {
+            value: format!("{:#x}", value),
+        })))
+    }
+}
+
 #[derive(Debug, Args)]
 /// Initiates a device transition from Raw to TestUnlocked0.
 pub struct RawUnlock {
@@ -316,6 +360,7 @@ impl CommandDispatch for VolatileRawUnlock {
 /// Commands for performing various device life cycle operations.
 pub enum LcCommand {
     Read(LcStateRead),
+    RegRead(LcRegRead),
     RawUnlock(RawUnlock),
     Status(Status),
     TransitionCount(TransitionCount),
