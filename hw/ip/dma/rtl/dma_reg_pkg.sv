@@ -63,11 +63,11 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_source_address_lo_reg_t;
+  } dma_reg2hw_src_address_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_source_address_hi_reg_t;
+  } dma_reg2hw_src_address_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -80,7 +80,7 @@ package dma_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } source_asid;
+    } src_asid;
     struct packed {
       logic [3:0]  q;
     } destination_asid;
@@ -191,11 +191,11 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_intr_source_addr_mreg_t;
+  } dma_reg2hw_intr_src_addr_mreg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_intr_source_wr_val_mreg_t;
+  } dma_reg2hw_intr_src_wr_val_mreg_t;
 
   typedef struct packed {
     struct packed {
@@ -215,12 +215,12 @@ package dma_reg_pkg;
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_source_address_lo_reg_t;
+  } dma_hw2reg_src_address_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_source_address_hi_reg_t;
+  } dma_hw2reg_src_address_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -320,8 +320,8 @@ package dma_reg_pkg;
     dma_reg2hw_intr_enable_reg_t intr_enable; // [1166:1164]
     dma_reg2hw_intr_test_reg_t intr_test; // [1163:1158]
     dma_reg2hw_alert_test_reg_t alert_test; // [1157:1156]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1155:1124]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1123:1092]
+    dma_reg2hw_src_address_lo_reg_t src_address_lo; // [1155:1124]
+    dma_reg2hw_src_address_hi_reg_t src_address_hi; // [1123:1092]
     dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1091:1060]
     dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1059:1028]
     dma_reg2hw_address_space_id_reg_t address_space_id; // [1027:1020]
@@ -343,15 +343,15 @@ package dma_reg_pkg;
     dma_reg2hw_handshake_intr_enable_reg_t handshake_intr_enable; // [736:726]
     dma_reg2hw_clear_intr_src_reg_t clear_intr_src; // [725:715]
     dma_reg2hw_clear_intr_bus_reg_t clear_intr_bus; // [714:704]
-    dma_reg2hw_intr_source_addr_mreg_t [10:0] intr_source_addr; // [703:352]
-    dma_reg2hw_intr_source_wr_val_mreg_t [10:0] intr_source_wr_val; // [351:0]
+    dma_reg2hw_intr_src_addr_mreg_t [10:0] intr_src_addr; // [703:352]
+    dma_reg2hw_intr_src_wr_val_mreg_t [10:0] intr_src_wr_val; // [351:0]
   } dma_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
     dma_hw2reg_intr_state_reg_t intr_state; // [701:696]
-    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [695:663]
-    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [662:630]
+    dma_hw2reg_src_address_lo_reg_t src_address_lo; // [695:663]
+    dma_hw2reg_src_address_hi_reg_t src_address_hi; // [662:630]
     dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [629:597]
     dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [596:564]
     dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [563:560]
@@ -366,8 +366,8 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_INTR_ENABLE_OFFSET = 9'h 4;
   parameter logic [BlockAw-1:0] DMA_INTR_TEST_OFFSET = 9'h 8;
   parameter logic [BlockAw-1:0] DMA_ALERT_TEST_OFFSET = 9'h c;
-  parameter logic [BlockAw-1:0] DMA_SOURCE_ADDRESS_LO_OFFSET = 9'h 10;
-  parameter logic [BlockAw-1:0] DMA_SOURCE_ADDRESS_HI_OFFSET = 9'h 14;
+  parameter logic [BlockAw-1:0] DMA_SRC_ADDRESS_LO_OFFSET = 9'h 10;
+  parameter logic [BlockAw-1:0] DMA_SRC_ADDRESS_HI_OFFSET = 9'h 14;
   parameter logic [BlockAw-1:0] DMA_DESTINATION_ADDRESS_LO_OFFSET = 9'h 18;
   parameter logic [BlockAw-1:0] DMA_DESTINATION_ADDRESS_HI_OFFSET = 9'h 1c;
   parameter logic [BlockAw-1:0] DMA_ADDRESS_SPACE_ID_OFFSET = 9'h 20;
@@ -405,28 +405,28 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_HANDSHAKE_INTR_ENABLE_OFFSET = 9'h a0;
   parameter logic [BlockAw-1:0] DMA_CLEAR_INTR_SRC_OFFSET = 9'h a4;
   parameter logic [BlockAw-1:0] DMA_CLEAR_INTR_BUS_OFFSET = 9'h a8;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_0_OFFSET = 9'h ac;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_1_OFFSET = 9'h b0;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_2_OFFSET = 9'h b4;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_3_OFFSET = 9'h b8;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_4_OFFSET = 9'h bc;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_5_OFFSET = 9'h c0;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_6_OFFSET = 9'h c4;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_7_OFFSET = 9'h c8;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_8_OFFSET = 9'h cc;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_9_OFFSET = 9'h d0;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_ADDR_10_OFFSET = 9'h d4;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_0_OFFSET = 9'h 12c;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_1_OFFSET = 9'h 130;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_2_OFFSET = 9'h 134;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_3_OFFSET = 9'h 138;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_4_OFFSET = 9'h 13c;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_5_OFFSET = 9'h 140;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_6_OFFSET = 9'h 144;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_7_OFFSET = 9'h 148;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_8_OFFSET = 9'h 14c;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_9_OFFSET = 9'h 150;
-  parameter logic [BlockAw-1:0] DMA_INTR_SOURCE_WR_VAL_10_OFFSET = 9'h 154;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_0_OFFSET = 9'h ac;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_1_OFFSET = 9'h b0;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_2_OFFSET = 9'h b4;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_3_OFFSET = 9'h b8;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_4_OFFSET = 9'h bc;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_5_OFFSET = 9'h c0;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_6_OFFSET = 9'h c4;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_7_OFFSET = 9'h c8;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_8_OFFSET = 9'h cc;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_9_OFFSET = 9'h d0;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_ADDR_10_OFFSET = 9'h d4;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_0_OFFSET = 9'h 12c;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_1_OFFSET = 9'h 130;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_2_OFFSET = 9'h 134;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_3_OFFSET = 9'h 138;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_4_OFFSET = 9'h 13c;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_5_OFFSET = 9'h 140;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_6_OFFSET = 9'h 144;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_7_OFFSET = 9'h 148;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_8_OFFSET = 9'h 14c;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_9_OFFSET = 9'h 150;
+  parameter logic [BlockAw-1:0] DMA_INTR_SRC_WR_VAL_10_OFFSET = 9'h 154;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] DMA_INTR_TEST_RESVAL = 3'h 0;
@@ -444,8 +444,8 @@ package dma_reg_pkg;
     DMA_INTR_ENABLE,
     DMA_INTR_TEST,
     DMA_ALERT_TEST,
-    DMA_SOURCE_ADDRESS_LO,
-    DMA_SOURCE_ADDRESS_HI,
+    DMA_SRC_ADDRESS_LO,
+    DMA_SRC_ADDRESS_HI,
     DMA_DESTINATION_ADDRESS_LO,
     DMA_DESTINATION_ADDRESS_HI,
     DMA_ADDRESS_SPACE_ID,
@@ -483,28 +483,28 @@ package dma_reg_pkg;
     DMA_HANDSHAKE_INTR_ENABLE,
     DMA_CLEAR_INTR_SRC,
     DMA_CLEAR_INTR_BUS,
-    DMA_INTR_SOURCE_ADDR_0,
-    DMA_INTR_SOURCE_ADDR_1,
-    DMA_INTR_SOURCE_ADDR_2,
-    DMA_INTR_SOURCE_ADDR_3,
-    DMA_INTR_SOURCE_ADDR_4,
-    DMA_INTR_SOURCE_ADDR_5,
-    DMA_INTR_SOURCE_ADDR_6,
-    DMA_INTR_SOURCE_ADDR_7,
-    DMA_INTR_SOURCE_ADDR_8,
-    DMA_INTR_SOURCE_ADDR_9,
-    DMA_INTR_SOURCE_ADDR_10,
-    DMA_INTR_SOURCE_WR_VAL_0,
-    DMA_INTR_SOURCE_WR_VAL_1,
-    DMA_INTR_SOURCE_WR_VAL_2,
-    DMA_INTR_SOURCE_WR_VAL_3,
-    DMA_INTR_SOURCE_WR_VAL_4,
-    DMA_INTR_SOURCE_WR_VAL_5,
-    DMA_INTR_SOURCE_WR_VAL_6,
-    DMA_INTR_SOURCE_WR_VAL_7,
-    DMA_INTR_SOURCE_WR_VAL_8,
-    DMA_INTR_SOURCE_WR_VAL_9,
-    DMA_INTR_SOURCE_WR_VAL_10
+    DMA_INTR_SRC_ADDR_0,
+    DMA_INTR_SRC_ADDR_1,
+    DMA_INTR_SRC_ADDR_2,
+    DMA_INTR_SRC_ADDR_3,
+    DMA_INTR_SRC_ADDR_4,
+    DMA_INTR_SRC_ADDR_5,
+    DMA_INTR_SRC_ADDR_6,
+    DMA_INTR_SRC_ADDR_7,
+    DMA_INTR_SRC_ADDR_8,
+    DMA_INTR_SRC_ADDR_9,
+    DMA_INTR_SRC_ADDR_10,
+    DMA_INTR_SRC_WR_VAL_0,
+    DMA_INTR_SRC_WR_VAL_1,
+    DMA_INTR_SRC_WR_VAL_2,
+    DMA_INTR_SRC_WR_VAL_3,
+    DMA_INTR_SRC_WR_VAL_4,
+    DMA_INTR_SRC_WR_VAL_5,
+    DMA_INTR_SRC_WR_VAL_6,
+    DMA_INTR_SRC_WR_VAL_7,
+    DMA_INTR_SRC_WR_VAL_8,
+    DMA_INTR_SRC_WR_VAL_9,
+    DMA_INTR_SRC_WR_VAL_10
   } dma_id_e;
 
   // Register width information to check illegal writes
@@ -513,8 +513,8 @@ package dma_reg_pkg;
     4'b 0001, // index[ 1] DMA_INTR_ENABLE
     4'b 0001, // index[ 2] DMA_INTR_TEST
     4'b 0001, // index[ 3] DMA_ALERT_TEST
-    4'b 1111, // index[ 4] DMA_SOURCE_ADDRESS_LO
-    4'b 1111, // index[ 5] DMA_SOURCE_ADDRESS_HI
+    4'b 1111, // index[ 4] DMA_SRC_ADDRESS_LO
+    4'b 1111, // index[ 5] DMA_SRC_ADDRESS_HI
     4'b 1111, // index[ 6] DMA_DESTINATION_ADDRESS_LO
     4'b 1111, // index[ 7] DMA_DESTINATION_ADDRESS_HI
     4'b 0001, // index[ 8] DMA_ADDRESS_SPACE_ID
@@ -552,28 +552,28 @@ package dma_reg_pkg;
     4'b 0011, // index[40] DMA_HANDSHAKE_INTR_ENABLE
     4'b 0011, // index[41] DMA_CLEAR_INTR_SRC
     4'b 0011, // index[42] DMA_CLEAR_INTR_BUS
-    4'b 1111, // index[43] DMA_INTR_SOURCE_ADDR_0
-    4'b 1111, // index[44] DMA_INTR_SOURCE_ADDR_1
-    4'b 1111, // index[45] DMA_INTR_SOURCE_ADDR_2
-    4'b 1111, // index[46] DMA_INTR_SOURCE_ADDR_3
-    4'b 1111, // index[47] DMA_INTR_SOURCE_ADDR_4
-    4'b 1111, // index[48] DMA_INTR_SOURCE_ADDR_5
-    4'b 1111, // index[49] DMA_INTR_SOURCE_ADDR_6
-    4'b 1111, // index[50] DMA_INTR_SOURCE_ADDR_7
-    4'b 1111, // index[51] DMA_INTR_SOURCE_ADDR_8
-    4'b 1111, // index[52] DMA_INTR_SOURCE_ADDR_9
-    4'b 1111, // index[53] DMA_INTR_SOURCE_ADDR_10
-    4'b 1111, // index[54] DMA_INTR_SOURCE_WR_VAL_0
-    4'b 1111, // index[55] DMA_INTR_SOURCE_WR_VAL_1
-    4'b 1111, // index[56] DMA_INTR_SOURCE_WR_VAL_2
-    4'b 1111, // index[57] DMA_INTR_SOURCE_WR_VAL_3
-    4'b 1111, // index[58] DMA_INTR_SOURCE_WR_VAL_4
-    4'b 1111, // index[59] DMA_INTR_SOURCE_WR_VAL_5
-    4'b 1111, // index[60] DMA_INTR_SOURCE_WR_VAL_6
-    4'b 1111, // index[61] DMA_INTR_SOURCE_WR_VAL_7
-    4'b 1111, // index[62] DMA_INTR_SOURCE_WR_VAL_8
-    4'b 1111, // index[63] DMA_INTR_SOURCE_WR_VAL_9
-    4'b 1111  // index[64] DMA_INTR_SOURCE_WR_VAL_10
+    4'b 1111, // index[43] DMA_INTR_SRC_ADDR_0
+    4'b 1111, // index[44] DMA_INTR_SRC_ADDR_1
+    4'b 1111, // index[45] DMA_INTR_SRC_ADDR_2
+    4'b 1111, // index[46] DMA_INTR_SRC_ADDR_3
+    4'b 1111, // index[47] DMA_INTR_SRC_ADDR_4
+    4'b 1111, // index[48] DMA_INTR_SRC_ADDR_5
+    4'b 1111, // index[49] DMA_INTR_SRC_ADDR_6
+    4'b 1111, // index[50] DMA_INTR_SRC_ADDR_7
+    4'b 1111, // index[51] DMA_INTR_SRC_ADDR_8
+    4'b 1111, // index[52] DMA_INTR_SRC_ADDR_9
+    4'b 1111, // index[53] DMA_INTR_SRC_ADDR_10
+    4'b 1111, // index[54] DMA_INTR_SRC_WR_VAL_0
+    4'b 1111, // index[55] DMA_INTR_SRC_WR_VAL_1
+    4'b 1111, // index[56] DMA_INTR_SRC_WR_VAL_2
+    4'b 1111, // index[57] DMA_INTR_SRC_WR_VAL_3
+    4'b 1111, // index[58] DMA_INTR_SRC_WR_VAL_4
+    4'b 1111, // index[59] DMA_INTR_SRC_WR_VAL_5
+    4'b 1111, // index[60] DMA_INTR_SRC_WR_VAL_6
+    4'b 1111, // index[61] DMA_INTR_SRC_WR_VAL_7
+    4'b 1111, // index[62] DMA_INTR_SRC_WR_VAL_8
+    4'b 1111, // index[63] DMA_INTR_SRC_WR_VAL_9
+    4'b 1111  // index[64] DMA_INTR_SRC_WR_VAL_10
   };
 
 endpackage

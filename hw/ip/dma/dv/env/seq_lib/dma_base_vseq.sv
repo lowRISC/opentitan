@@ -264,11 +264,11 @@ class dma_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Task: Write to Source Address CSR
-  task set_source_address(bit [63:0] source_address);
-    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", source_address), UVM_HIGH)
-    csr_wr(ral.source_address_lo, source_address[31:0]);
-    csr_wr(ral.source_address_hi, source_address[63:32]);
-  endtask : set_source_address
+  task set_src_address(bit [63:0] src_address);
+    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", src_address), UVM_HIGH)
+    csr_wr(ral.src_address_lo, src_address[31:0]);
+    csr_wr(ral.src_address_hi, src_address[63:32]);
+  endtask : set_src_address
 
   // Task: Write to Destination Address CSR
   task set_destination_address(bit [63:0] destination_address);
@@ -303,7 +303,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Write to Source and Destination Address Space ID (ASID)
   task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
-    ral.address_space_id.source_asid.set(int'(src_asid));
+    ral.address_space_id.src_asid.set(int'(src_asid));
     ral.address_space_id.destination_asid.set(int'(dst_asid));
     csr_update(.csr(ral.address_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
@@ -335,8 +335,8 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.clear_intr_src, dma_config.clear_intr_src);
     csr_wr(ral.clear_intr_bus, dma_config.clear_intr_bus);
     foreach (dma_config.intr_src_addr[i]) begin
-      csr_wr(ral.intr_source_addr[i], dma_config.intr_src_addr[i]);
-      csr_wr(ral.intr_source_wr_val[i], dma_config.intr_src_wr_val[i]);
+      csr_wr(ral.intr_src_addr[i], dma_config.intr_src_addr[i]);
+      csr_wr(ral.intr_src_wr_val[i], dma_config.intr_src_wr_val[i]);
     end
     ral.handshake_intr_enable.set(dma_config.handshake_intr_en);
     csr_update(ral.handshake_intr_enable);
@@ -348,7 +348,7 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
     // Not yet requested an Abort during this transaction.
     abort_pending = 1'b0;
-    set_source_address(dma_config.src_addr);
+    set_src_address(dma_config.src_addr);
     set_destination_address(dma_config.dst_addr);
     set_destination_address_range(dma_config.dst_addr_almost_limit,
                                   dma_config.dst_addr_limit);

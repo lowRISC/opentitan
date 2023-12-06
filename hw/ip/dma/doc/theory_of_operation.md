@@ -117,7 +117,7 @@ hardware handshake DMA operation.
 
 **Receiving data from LSIO**
 
--   [*Source address*](../data/dma.hjson#source_address_lo): address of the low speed IO
+-   [*Source address*](../data/dma.hjson#src_address_lo): address of the low speed IO
     receive FIFO read out register.
 -   [*Destination address*](../data/dma.hjson#destination_address_lo): address to the memory
     buffer where received data is placed.
@@ -181,7 +181,7 @@ hardware handshake DMA operation.
 
 **Sending data to LSIO**
 
--   [*Source address*](../data/dma.hjson#source_address_lo): Pointer to the head of the
+-   [*Source address*](../data/dma.hjson#src_address_lo): Pointer to the head of the
     memory buffer.
 -   [*Destination address*](../data/dma.hjson#destination_address_lo): pointer to the FIFO
     register.
@@ -219,7 +219,7 @@ hardware handshake DMA operation.
     -   Data buffer Auto-increment Enable: If set to 1, data shall be
         read from consecutive buffer spaces, each equivalent to 'total
         size' worth of data. To prepare for the next data buffer
-        segment [*Source address*](../data/dma.hjson#source_address_lo) register is
+        segment [*Source address*](../data/dma.hjson#src_address_lo) register is
         incremented by '[*Total Size*](../data/dma.hjson#total-data-size)' once the
         equivalent amount of data is written to the FIFO. If auto
         increment feature is not set, then the same memory buffer

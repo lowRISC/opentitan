@@ -119,7 +119,7 @@
   ]
   regwidth: "32"
   registers: [
-    { name: "SOURCE_ADDRESS_LO"
+    { name: "SRC_ADDRESS_LO"
       desc: '''
             Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is read from this location in a copy operation.
@@ -131,7 +131,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "source_address_lo"
+          name: "src_address_lo"
           resval: 0x0
           desc: '''Lower 32 bits of the source address.
                 Must be aligned to the transfer width.
@@ -139,7 +139,7 @@
         }
       ]
     }
-    { name: "SOURCE_ADDRESS_HI"
+    { name: "SRC_ADDRESS_HI"
       desc: '''Upper 32 bits of the source address.
             Must be aligned to the transfer width.
             Source and destination address must have the same alignment.
@@ -149,7 +149,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "source_address_hi"
+          name: "src_address_hi"
           resval: 0x0
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
@@ -208,7 +208,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "3:0"
-          name: "source_asid"
+          name: "src_asid"
           resval: 0x7
           desc: "Target address space that the source address pointer refers to."
           enum: [
@@ -746,7 +746,7 @@
       desc: '''
             Valid bits for which interrupt sources need clearing.
             When HANDSHAKE_INTR_ENABLE is non-zero and corresponding lsio_trigger becomes set,
-            DMA issues writes with address from INTR_SOURCE_ADDR and write value from INTR_SOURCE_WR_VAL corresponding to each
+            DMA issues writes with address from INTR_SRC_ADDR and write value from INTR_SRC_WR_VAL corresponding to each
             bit set in this register.
             '''
       swaccess: "rw"
@@ -777,7 +777,7 @@
       ]
     }
     { multireg: {
-        name: "INTR_SOURCE_ADDR"
+        name: "INTR_SRC_ADDR"
         desc: "Destination address for interrupt source clearing write."
         count: "NumIntClearSources"
         cname: "ADDR"
@@ -795,7 +795,7 @@
     }
     { skipto: "0x12C" }
     { multireg: {
-        name: "INTR_SOURCE_WR_VAL"
+        name: "INTR_SRC_WR_VAL"
         desc: "Write value for interrupt clearing write."
         count: "NumIntClearSources"
         cname: "WRVAL"
