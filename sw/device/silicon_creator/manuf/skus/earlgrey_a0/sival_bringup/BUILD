@@ -17,8 +17,9 @@ load(
     "silicon_jtag_params",
 )
 load(
-    "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:provisioning_inputs.bzl",
+    "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
     "CP_PROVISIONING_INPUTS",
+    "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
     "FT_PROVISIONING_INPUTS",
 )
 
@@ -150,38 +151,50 @@ opentitan_test(
     },
 )
 
-opentitan_binary(
-    name = "sram_ft_individualize",
+[
+    opentitan_binary(
+        name = "sram_ft_individualize_{}".format(otp_sw_cfgs),
+        testonly = True,
+        srcs = ["sram_ft_individualize.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+        kind = "ram",
+        linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+        deps = [
+            ":flash_info_permissions",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing:pinmux_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_console",
+            "//sw/device/lib/testing/test_framework:ottf_test_config",
+            "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/lib/testing/test_framework:ujson_ottf",
+            "//sw/device/silicon_creator/manuf/lib:individualize",
+            "//sw/device/silicon_creator/manuf/lib:sram_start",
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_{}".format(otp_sw_cfgs),
+        ],
+    )
+    for otp_sw_cfgs in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
+]
+
+filegroup(
+    name = "sram_ft_individualize_all",
     testonly = True,
-    srcs = ["sram_ft_individualize.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
-    kind = "ram",
-    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
-    deps = [
-        ":flash_info_permissions",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_console",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/lib:individualize",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
-        "//sw/device/silicon_creator/manuf/lib:sram_start",
+    srcs = [
+        ":sram_ft_individualize_sival",
+        ":sram_ft_individualize_sival_bringup",
     ],
 )
 
@@ -275,7 +288,7 @@ opentitan_binary(
 )
 
 _FT_PROVISIONING_BINARIES = {
-    ":sram_ft_individualize": "sram_ft_individualize",
+    ":sram_ft_individualize_sival_bringup": "sram_ft_individualize",
     ":ft_personalize_1": "ft_personalize_1",
     ":ft_personalize_2": "ft_personalize_2",
     ":ft_personalize_3": "ft_personalize_3",
