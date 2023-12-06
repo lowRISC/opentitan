@@ -25,3 +25,8 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --owner-manifest-measurement="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
   --owner-measurement="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
 """
+
+FT_PERSONALIZE_SIGNING_KEYS = select({
+    "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
+})
