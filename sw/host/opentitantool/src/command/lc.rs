@@ -98,7 +98,7 @@ pub struct LcRegReadResult {
 }
 
 #[derive(Debug, Args)]
-/// Reads the device life cycle state over JTAG.
+/// Reads a life cycle controller register over JTAG.
 pub struct LcRegRead {
     /// Reset duration when switching the LC TAP straps.
     #[arg(long, value_parser = parse_duration, default_value = "100ms")]
@@ -132,6 +132,57 @@ impl CommandDispatch for LcRegRead {
         jtag.disconnect()?;
         Ok(Some(Box::new(LcRegReadResult {
             value: format!("{:#x}", value),
+        })))
+    }
+}
+
+#[derive(Debug, Args)]
+/// Reads the 256bit device ID over JTAG.
+pub struct LcDeviceIdRead {
+    /// Reset duration when switching the LC TAP straps.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
+    pub reset_delay: Duration,
+
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+}
+
+impl CommandDispatch for LcDeviceIdRead {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Set the TAP straps for the lifecycle controller and reset.
+        transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        transport.reset_target(self.reset_delay, true)?;
+
+        // Spawn an OpenOCD process and connect to the LC JTAG TAP.
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
+
+        // Read and concatenate device ID registers.
+        let offsets = [
+            LcCtrlReg::DeviceId7,
+            LcCtrlReg::DeviceId6,
+            LcCtrlReg::DeviceId5,
+            LcCtrlReg::DeviceId4,
+            LcCtrlReg::DeviceId3,
+            LcCtrlReg::DeviceId2,
+            LcCtrlReg::DeviceId1,
+            LcCtrlReg::DeviceId0,
+        ];
+
+        let mut value = vec![String::from("0x")];
+        for off in offsets {
+            value.push(format!("{:08x}", jtag.read_lc_ctrl_reg(&off)?));
+        }
+
+        jtag.disconnect()?;
+        Ok(Some(Box::new(LcRegReadResult {
+            value: value.join(""),
         })))
     }
 }
@@ -361,6 +412,7 @@ impl CommandDispatch for VolatileRawUnlock {
 pub enum LcCommand {
     Read(LcStateRead),
     RegRead(LcRegRead),
+    DeviceIdRead(LcDeviceIdRead),
     RawUnlock(RawUnlock),
     Status(Status),
     TransitionCount(TransitionCount),
