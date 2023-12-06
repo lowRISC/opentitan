@@ -48,7 +48,7 @@ cc_test(
 keyset(
     name = "keyset",
     keys = {
-        "earlgrey_z0_sival_1.der": "eargrey_z0_sival_1",
+        "earlgrey_z0_sival_1.der": "earlgrey_z0_sival_1",
     },
     profile = "earlgrey_z0_sival",
     tool = "//signing:token",
