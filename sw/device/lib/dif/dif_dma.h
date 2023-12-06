@@ -398,44 +398,44 @@ dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
  * Address index for every interrupt. Used to configure the write address and
  * write value for the interrupt clearing mechanism.
  */
-typedef enum dif_dma_int_idx {
-  kDifDmaIntClearIdx0 = 0x0,
-  kDifDmaIntClearIdx1 = 0x4,
-  kDifDmaIntClearIdx2 = 0x8,
-  kDifDmaIntClearIdx3 = 0xC,
-  kDifDmaIntClearIdx4 = 0x10,
-  kDifDmaIntClearIdx5 = 0x14,
-  kDifDmaIntClearIdx6 = 0x18,
-  kDifDmaIntClearIdx7 = 0x1C,
-  kDifDmaIntClearIdx8 = 0x20,
-  kDifDmaIntClearIdx9 = 0x24,
-  kDifDmaIntClearIdx10 = 0x28,
-} dif_dma_int_idx_t;
+typedef enum dif_dma_intr_idx {
+  kDifDmaIntrClearIdx0 = 0x0,
+  kDifDmaIntrClearIdx1 = 0x4,
+  kDifDmaIntrClearIdx2 = 0x8,
+  kDifDmaIntrClearIdx3 = 0xC,
+  kDifDmaIntrClearIdx4 = 0x10,
+  kDifDmaIntrClearIdx5 = 0x14,
+  kDifDmaIntrClearIdx6 = 0x18,
+  kDifDmaIntrClearIdx7 = 0x1C,
+  kDifDmaIntrClearIdx8 = 0x20,
+  kDifDmaIntrClearIdx9 = 0x24,
+  kDifDmaIntrClearIdx10 = 0x28,
+} dif_dma_intr_idx_t;
 
 /**
  * Set the write address for the interrupt clearing mechanism.
  *
  * @param dma A DMA Controller handle.
  * @param idx Index of the selected interrupt.
- * @param int_src_addr Address to write the interrupt clearing value to.
+ * @param intr_src_addr Address to write the interrupt clearing value to.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_int_src_addr(const dif_dma_t *dma, dif_dma_int_idx_t idx,
-                                  uint32_t int_src_addr);
+dif_result_t dif_dma_intr_src_addr(const dif_dma_t *dma, dif_dma_intr_idx_t idx,
+                                   uint32_t intr_src_addr);
 
 /**
  * Set the write value for the interrupt clearing mechanism.
  *
  * @param dma A DMA Controller handle.
  * @param idx Index of the selected interrupt.
- * @param int_src_value Value to write the interrupt clearing value to.
+ * @param intr_src_value Value to write the interrupt clearing value to.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_int_write_value(const dif_dma_t *dma,
-                                     dif_dma_int_idx_t idx,
-                                     uint32_t int_src_value);
+dif_result_t dif_dma_intr_write_value(const dif_dma_t *dma,
+                                      dif_dma_intr_idx_t idx,
+                                      uint32_t intr_src_value);
 
 #ifdef __cplusplus
 }  // extern "C"
