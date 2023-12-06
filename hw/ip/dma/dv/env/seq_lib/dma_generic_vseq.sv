@@ -260,12 +260,16 @@ class dma_generic_vseq extends dma_base_vseq;
           end
         join
 
+        // Notification that the transaction is ending, indicating the completion status
+        //
+        // Note: perform this before collecting other results, and the SHA digest in particular,
+        //       because doing so can take many hundreds of clock cycles and parallel processes
+        //       could otherwise time out after - for example - generating an abort stimulus.
+        ending_txn(j, num_txns, dma_config, status);
+
         if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
           read_sha2_digest(dma_config.opcode, digest);
         end
-
-        // Notification that the transaction is ending, indicating the completion status
-        ending_txn(j, num_txns, dma_config, status);
 
         `uvm_info(`gfn, $sformatf("Transaction completed with status 0x%0x", int'(status)),
                   UVM_MEDIUM)
