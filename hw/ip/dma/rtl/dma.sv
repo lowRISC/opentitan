@@ -71,7 +71,7 @@ module dma
 
   logic                       capture_return_data;
   logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d, dma_rsp_data;
-  logic [SYS_ADDR_WIDTH-1:0]  new_source_addr, new_destination_addr;
+  logic [SYS_ADDR_WIDTH-1:0]  new_src_addr, new_destination_addr;
 
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
@@ -460,7 +460,7 @@ module dma
 
   // Fiddle ASIDs out for better readability during the rest of the code
   logic [ASID_WIDTH-1:0] src_asid, dst_asid;
-  assign src_asid = reg2hw.address_space_id.source_asid.q;
+  assign src_asid = reg2hw.address_space_id.src_asid.q;
   assign dst_asid = reg2hw.address_space_id.destination_asid.q;
 
   // Note: bus signals shall be asserted only when configured and active, to ensure
@@ -475,10 +475,10 @@ module dma
     // TLUL 4B aligned
     dma_host_tlul_req_addr  = dma_host_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                              (dma_host_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                        (dma_host_clear_intr ? reg2hw.intr_source_addr[clear_index_q].q : 'b0));
+                        (dma_host_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
     dma_host_tlul_req_we    = dma_host_write | dma_host_clear_intr;
     dma_host_tlul_req_wdata = dma_host_write ? read_return_data_q :
-                        (dma_host_clear_intr ? reg2hw.intr_source_wr_val[clear_index_q].q : 'b0);
+                        (dma_host_clear_intr ? reg2hw.intr_src_wr_val[clear_index_q].q : 'b0);
     dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q :
                              (dma_host_read  ? req_src_be_q
                                              : {top_pkg::TL_DBW{dma_host_clear_intr}});
@@ -493,10 +493,10 @@ module dma
     // TLUL 4B aligned
     dma_ctn_tlul_req_addr  = dma_ctn_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                             (dma_ctn_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                       (dma_ctn_clear_intr ? reg2hw.intr_source_addr[clear_index_q].q : 'b0));
+                       (dma_ctn_clear_intr ? reg2hw.intr_src_addr[clear_index_q].q : 'b0));
     dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_intr;
     dma_ctn_tlul_req_wdata = dma_ctn_write ? read_return_data_q :
-                       (dma_ctn_clear_intr ? reg2hw.intr_source_wr_val[clear_index_q].q : 'b0);
+                       (dma_ctn_clear_intr ? reg2hw.intr_src_wr_val[clear_index_q].q : 'b0);
     dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q :
                             (dma_ctn_read  ? req_src_be_q : {top_pkg::TL_DBW{dma_ctn_clear_intr}});
   end
@@ -748,7 +748,7 @@ module dma
                 !control_q.cfg_memory_buffer_auto_increment_en) ||
                (!control_q.cfg_data_direction &&
                (chunk_byte_q == '0 || !control_q.cfg_fifo_auto_increment_en))))) begin
-            src_addr_d = {reg2hw.source_address_hi.q, reg2hw.source_address_lo.q};
+            src_addr_d = {reg2hw.src_address_hi.q, reg2hw.src_address_lo.q};
           end else begin
             // Advance from the previous transaction within this chunk
             src_addr_d = src_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
@@ -836,8 +836,8 @@ module dma
 
           // In 4-byte transfers, source and destination address must be 4-byte aligned
           if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
-            (|reg2hw.source_address_lo.q[1:0])) begin
-            next_error[DmaSourceAddrErr] = 1'b1;
+            (|reg2hw.src_address_lo.q[1:0])) begin
+            next_error[DmaSrcAddrErr] = 1'b1;
           end
           if (reg2hw.transfer_width.q == DmaXfer4BperTxn &&
             (|reg2hw.destination_address_lo.q[1:0])) begin
@@ -845,8 +845,8 @@ module dma
           end
 
           // In 2-byte transfers, source and destination address must be 2-byte aligned
-          if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.source_address_lo.q[0]) begin
-            next_error[DmaSourceAddrErr] = 1'b1;
+          if (reg2hw.transfer_width.q == DmaXfer2BperTxn && reg2hw.src_address_lo.q[0]) begin
+            next_error[DmaSrcAddrErr] = 1'b1;
           end
           if (reg2hw.transfer_width.q == DmaXfer2BperTxn &&
               reg2hw.destination_address_lo.q[0]) begin
@@ -871,19 +871,19 @@ module dma
           // DMA enabled memory region.
           if ((dst_asid inside {SocControlAddr, SocSystemAddr}) && (src_asid == OtInternalAddr) &&
                 // Out-of-bound check
-                ((reg2hw.source_address_lo.q > control_q.enabled_memory_range_limit) ||
-                (reg2hw.source_address_lo.q < control_q.enabled_memory_range_base)   ||
-                ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
+                ((reg2hw.src_address_lo.q > control_q.enabled_memory_range_limit) ||
+                (reg2hw.src_address_lo.q < control_q.enabled_memory_range_base)   ||
+                ((SYS_ADDR_WIDTH'(reg2hw.src_address_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
                   SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
-            next_error[DmaSourceAddrErr] = 1'b1;
+            next_error[DmaSrcAddrErr] = 1'b1;
           end
 
           // If the source ASID is the SOC control port or the OT internal port, we are accessing a
           // 32-bit address space. Thus the upper bits of the source address must be zero
           if ((src_asid inside {SocControlAddr, OtInternalAddr}) &&
-              (|reg2hw.source_address_hi.q)) begin
-            next_error[DmaSourceAddrErr] = 1'b1;
+              (|reg2hw.src_address_hi.q)) begin
+            next_error[DmaSrcAddrErr] = 1'b1;
           end
 
           // If the destination ASID is the SOC control por or the OT internal port we are accessing
@@ -1088,7 +1088,7 @@ module dma
   logic send_limit_interrupt;
 
   logic data_move_state, data_move_state_valid;
-  logic update_destination_addr_reg, update_source_addr_reg;
+  logic update_destination_addr_reg, update_src_addr_reg;
 
   assign test_done_interrupt  = reg2hw.intr_test.dma_done.q  && reg2hw.intr_test.dma_done.qe;
   assign test_error_interrupt = reg2hw.intr_test.dma_error.q && reg2hw.intr_test.dma_error.qe;
@@ -1176,10 +1176,10 @@ module dma
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
      SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q));
 
-  assign new_source_addr = control_q.cfg_data_direction ?
-    ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
+  assign new_src_addr = control_q.cfg_data_direction ?
+    ({reg2hw.src_address_hi.q, reg2hw.src_address_lo.q} +
       SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) :
-    ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
+    ({reg2hw.src_address_hi.q, reg2hw.src_address_lo.q} +
       SYS_ADDR_WIDTH'(transfer_width_q));
 
   // Calculate the number of bytes remaining until the end of the current chunk.
@@ -1206,11 +1206,11 @@ module dma
     // If we are in hardware handshake mode with auto-increment increment the corresponding address
     // when finishing a DMA operation when transitioning from a data move state to the idle state
     update_destination_addr_reg = 1'b0;
-    update_source_addr_reg      = 1'b0;
+    update_src_addr_reg         = 1'b0;
     if (control_q.cfg_handshake_en && control_q.cfg_memory_buffer_auto_increment_en &&
         data_move_state && (ctrl_state_d == DmaIdle)) begin
       if (control_q.cfg_data_direction) begin
-        update_source_addr_reg = 1'b1;
+        update_src_addr_reg = 1'b1;
       end else begin
         update_destination_addr_reg = 1'b1;
       end
@@ -1228,11 +1228,11 @@ module dma
     hw2reg.destination_address_lo.de = update_destination_addr_reg;
     hw2reg.destination_address_lo.d  = new_destination_addr[31:0];
 
-    hw2reg.source_address_hi.de = update_source_addr_reg;
-    hw2reg.source_address_hi.d  = new_source_addr[63:32];
+    hw2reg.src_address_hi.de = update_src_addr_reg;
+    hw2reg.src_address_hi.d  = new_src_addr[63:32];
 
-    hw2reg.source_address_lo.de = update_source_addr_reg;
-    hw2reg.source_address_lo.d  = new_source_addr[31:0];
+    hw2reg.src_address_lo.de = update_src_addr_reg;
+    hw2reg.src_address_lo.d  = new_src_addr[31:0];
 
     // Assert busy write enable on
     // - transitions from IDLE out
@@ -1309,7 +1309,7 @@ module dma
     hw2reg.error_code.range_valid_error.de = (ctrl_state_d == DmaError) | clear_status;
     hw2reg.error_code.asid_error.de        = (ctrl_state_d == DmaError) | clear_status;
 
-    hw2reg.error_code.src_address_error.d  = clear_status? '0 : next_error[DmaSourceAddrErr];
+    hw2reg.error_code.src_address_error.d  = clear_status? '0 : next_error[DmaSrcAddrErr];
     hw2reg.error_code.dst_address_error.d  = clear_status? '0 : next_error[DmaDestAddrErr];
     hw2reg.error_code.opcode_error.d       = clear_status? '0 : next_error[DmaOpcodeErr];
     hw2reg.error_code.size_error.d         = clear_status? '0 : next_error[DmaSizeErr];
