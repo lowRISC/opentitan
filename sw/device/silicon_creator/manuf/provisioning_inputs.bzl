@@ -2,6 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS = [
+    "sival_bringup",
+    "sival",
+]
+
 _DEVICE_ID_AND_TEST_TOKENS = """
   --device-id="0x11111111_22222222_33333333_44444444_55555555_66666666_77777777_88888888"
   --test-unlock-token="0x11111111_11111111_11111111_11111111"

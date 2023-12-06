@@ -10,6 +10,10 @@ load(
     "hyper310_jtag_params",
     "opentitan_test",
 )
+load(
+    "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
+    "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -167,14 +171,17 @@ cc_library(
 )
 
 # As more SKUs are created with different OTP software configuration partitions,
-# libraries can be added accordingly.
-cc_library(
-    name = "individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
-    deps = [
-        ":individualize_sw_cfg",
-        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_sw_cfg",
-    ],
-)
+# libraries can be added to INDIVIDUALIZE_OTP_SW_CFGS accordingly.
+[
+    cc_library(
+        name = "individualize_sw_cfg_earlgrey_a0_sku_{}".format(otp_sw_cfg),
+        deps = [
+            ":individualize_sw_cfg",
+            "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/{}:otp_sw_cfg".format(otp_sw_cfg),
+        ],
+    )
+    for otp_sw_cfg in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
+]
 
 opentitan_test(
     name = "individualize_sw_cfg_functest",
