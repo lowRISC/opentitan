@@ -33,7 +33,7 @@ fn check_lc_state_is_raw(jtag: &mut dyn Jtag) -> Result<()> {
 }
 
 /// Parses an unlock token string.
-fn parse_unlock_token_str(token: &str) -> Result<[u32; 4]> {
+fn parse_token_str(token: &str) -> Result<[u32; 4]> {
     let hex_str_no_sep = token.replace('_', "");
     let hex_str_prefix = "0x";
     let sanitized_hex_str = if token.starts_with(hex_str_prefix) {
@@ -219,7 +219,7 @@ impl CommandDispatch for RawUnlock {
             .connect(JtagTap::LcTap)?;
 
         check_lc_state_is_raw(&mut *jtag)?;
-        let token_words = parse_unlock_token_str(self.token.as_str())?;
+        let token_words = parse_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -227,6 +227,67 @@ impl CommandDispatch for RawUnlock {
             transport,
             jtag,
             DifLcCtrlState::TestUnlocked0,
+            Some(token_words),
+            /*use_external_clk=*/ true,
+            self.reset_delay,
+            /*reset_tap_straps=*/ Some(JtagTap::LcTap),
+        )?;
+
+        jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
+
+        // Read and decode the LC state.
+        let lc_state =
+            DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+
+        jtag.disconnect()?;
+        Ok(Some(Box::new(LcStateReadResult { lc_state })))
+    }
+}
+
+#[derive(Debug, Args)]
+/// Initiates a device transition from Raw to TestUnlocked0.
+pub struct Transition {
+    /// The target life cycle state
+    #[arg(value_enum, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "test_unlocked0")]
+    pub target_lc_state: DifLcCtrlState,
+
+    /// The token needed for this transition as a hexstring.
+    #[arg(long, default_value = "0x00000000000000000000000000000000")]
+    pub token: String,
+
+    /// Reset duration when switching the LC TAP straps.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
+    pub reset_delay: Duration,
+
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+}
+
+impl CommandDispatch for Transition {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Set the TAP straps for the lifecycle controller and reset.
+        transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        transport.reset_target(self.reset_delay, true)?;
+
+        // Spawn an OpenOCD process and connect to the LC JTAG TAP.
+        let mut jtag = self
+            .jtag_params
+            .create(transport)?
+            .connect(JtagTap::LcTap)?;
+
+        let token_words = parse_token_str(self.token.as_str())?;
+
+        trigger_lc_transition(
+            transport,
+            jtag,
+            self.target_lc_state,
             Some(token_words),
             /*use_external_clk=*/ true,
             self.reset_delay,
@@ -379,7 +440,7 @@ impl CommandDispatch for VolatileRawUnlock {
             .connect(JtagTap::LcTap)?;
 
         check_lc_state_is_raw(&mut *jtag)?;
-        let token_words = parse_unlock_token_str(self.token.as_str())?;
+        let token_words = parse_token_str(self.token.as_str())?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -414,6 +475,7 @@ pub enum LcCommand {
     RegRead(LcRegRead),
     DeviceIdRead(LcDeviceIdRead),
     RawUnlock(RawUnlock),
+    Transition(Transition),
     Status(Status),
     TransitionCount(TransitionCount),
     VolatileRawUnlock(VolatileRawUnlock),
