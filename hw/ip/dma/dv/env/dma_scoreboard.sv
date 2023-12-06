@@ -781,7 +781,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // Return the index that a register name refers to e.g. "intr_source_addr_1" yields 1
+  // Return the index that a register name refers to e.g. "intr_src_addr_1" yields 1
   function uint get_index_from_reg_name(string reg_name);
     int str_len = reg_name.len();
     // Note: this extracts the final two characters which are either '_y' or 'xy',
@@ -820,14 +820,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Test bits are fire-and-forget; they are not retained anywhere.
         predict_interrupts(CSRtoIntrLatency, item.a_data, `gmv(ral.intr_enable));
       end
-      "source_address_lo": begin
+      "src_address_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got source_address_lo = %0x",
+        `uvm_info(`gfn, $sformatf("Got src_address_lo = %0x",
                                   dma_config.src_addr[31:0]), UVM_HIGH)
       end
-      "source_address_hi": begin
+      "src_address_hi": begin
         dma_config.src_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got source_address_hi = %0x",
+        `uvm_info(`gfn, $sformatf("Got src_address_hi = %0x",
                                   dma_config.src_addr[63:32]), UVM_HIGH)
       end
       "destination_address_lo": begin
@@ -842,7 +842,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "address_space_id": begin
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.src_asid = asid_encoding_e'(`gmv(ral.address_space_id.source_asid));
+        dma_config.src_asid = asid_encoding_e'(`gmv(ral.address_space_id.src_asid));
         `uvm_info(`gfn, $sformatf("Got source address space id : %s",
                                   dma_config.src_asid.name()), UVM_HIGH)
         // Get mirrored field value and cast to associated enum in dma_config
@@ -935,33 +935,33 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
       end
-      "intr_source_addr_0",
-      "intr_source_addr_1",
-      "intr_source_addr_2",
-      "intr_source_addr_3",
-      "intr_source_addr_4",
-      "intr_source_addr_5",
-      "intr_source_addr_6",
-      "intr_source_addr_7",
-      "intr_source_addr_8",
-      "intr_source_addr_9",
-      "intr_source_addr_10": begin
+      "intr_src_addr_0",
+      "intr_src_addr_1",
+      "intr_src_addr_2",
+      "intr_src_addr_3",
+      "intr_src_addr_4",
+      "intr_src_addr_5",
+      "intr_src_addr_6",
+      "intr_src_addr_7",
+      "intr_src_addr_8",
+      "intr_src_addr_9",
+      "intr_src_addr_10": begin
         int index;
         `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
         index = get_index_from_reg_name(csr.get_name());
         dma_config.intr_src_addr[index] = item.a_data;
       end
-      "intr_source_wr_val_0",
-      "intr_source_wr_val_1",
-      "intr_source_wr_val_2",
-      "intr_source_wr_val_3",
-      "intr_source_wr_val_4",
-      "intr_source_wr_val_5",
-      "intr_source_wr_val_6",
-      "intr_source_wr_val_7",
-      "intr_source_wr_val_8",
-      "intr_source_wr_val_9",
-      "intr_source_wr_val_10": begin
+      "intr_src_wr_val_0",
+      "intr_src_wr_val_1",
+      "intr_src_wr_val_2",
+      "intr_src_wr_val_3",
+      "intr_src_wr_val_4",
+      "intr_src_wr_val_5",
+      "intr_src_wr_val_6",
+      "intr_src_wr_val_7",
+      "intr_src_wr_val_8",
+      "intr_src_wr_val_9",
+      "intr_src_wr_val_10": begin
         int index;
         `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
         index = get_index_from_reg_name(csr.get_name());
@@ -1169,7 +1169,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       "error_code": begin
         bit [DmaErrLast-1:0] error_code;
         do_read_check = 1'b0;
-        error_code[DmaSourceAddrErr] = get_field_val(ral.error_code.src_address_error, item.d_data);
+        error_code[DmaSrcAddrErr]    = get_field_val(ral.error_code.src_address_error, item.d_data);
         error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
         error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
         error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
