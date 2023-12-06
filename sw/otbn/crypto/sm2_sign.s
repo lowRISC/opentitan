@@ -10,10 +10,11 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
-.globl p256_sign
-
+.globl sm2_sign
+/*首先计算一个随机的非零掩码标量alpha，并使用它来计算签名的s部分。
+*具体来说，s = ((k * alpha)^-1 * (r * (d * alpha) + alpha * msg)) mod n，其中k是一个提供的秘密随机数，r是曲线点k*G的仿射x坐标，G是曲线的基点，
+*n是基点G的阶数,将私钥和秘密随机数分为两个共享部分，以提供额外的冗余度，以防止侧信道攻击。*/
 .text
-// P-256 ECDSA 签名生成，返回签名对 r, s
  /**
  * P-256 ECDSA signature generation
  *
@@ -67,7 +68,7 @@
  * clobbered registers: x2, x3, x16 to x23, w0 to w26
  * clobbered flag groups: FG0
  */
-p256_sign:
+sm2_sign:
 
   /* init all-zero register */
   bn.xor    w31, w31, w31
@@ -106,6 +107,12 @@ p256_sign:
      R = (x_a, y_a) = (w11, w12) */
   jal       x1, proj_to_affine
 
+  /* Load message from dmem:
+       w24 = msg <= dmem[msg] */
+  la        x18, msg
+  li        x2, 24
+  bn.lid    x2, 0(x18)
+
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
   li        x2, 29
@@ -115,6 +122,15 @@ p256_sign:
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
+
+  /* w24 = r <= (e + x1) mod n <= (w24 + w11) mod n */
+  bn.addm   w24, w24, w11
+
+  /* Store r of signature in dmem.
+       dmem[r] <= r = w24 */
+  la        x19, r
+  li        x2, 24
+  bn.sid    x2, 0(x19)
 
   /* re-load first share of secret scalar k from dmem: w0,w1 = dmem[k0] */
   la        x16, k0
@@ -137,25 +153,10 @@ p256_sign:
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
        w4 <= w4 + 1 = alpha */
-  bn.addi  w4, w4, 1
-
-  /* w0 <= ([w0,w1] * w4) mod n = (k0 * alpha) mod n */
-  bn.mov    w24, w0
-  bn.mov    w25, w1
-  bn.mov    w26, w4
-  jal       x1, mod_mul_320x128
-  bn.mov    w0, w19
-
-  /* w19 <= ([w2,w3] * w26) mod n = (k1 * alpha) mod n */
-  bn.mov    w24, w2
-  bn.mov    w25, w3
-  jal       x1, mod_mul_320x128
-
-  /* w0 <= (w0+w19) mod n = (k * alpha) mod n */
-  bn.addm   w0, w0, w19
-
-  /* w1 <= w0^-1 mod n = (k * alpha)^-1 mod n */
-  jal       x1, mod_inv
+  bn.addi   w4, w4, 1
+  
+  /*r+k*/
+  bn.addm  w24, w24, w4
 
   /* Load first share of secret key d from dmem.
        w2,w3 = dmem[d0] */
@@ -173,72 +174,44 @@ p256_sign:
   li        x2, 6
   bn.lid    x2, 0(x16)
 
-  /* w0 <= ([w2,w3] * w4) mod n = (d0 * alpha) mod n */
+  /* w0 <= ([w2,w3] * w4) mod n = (d0 * 1) mod n */
   bn.mov    w24, w2
   bn.mov    w25, w3
-  bn.mov    w26, w4
+
+  /* 设置 w7 = 1*/
+  bn.xor    w7, w7, w7
+  bn.addi   w7, w7, 1
+  bn.mov    w26, w7
   jal       x1, mod_mul_320x128
   bn.mov    w0, w19
 
-  /* w19 <= ([w5,w6] * w4) mod n = (d1 * alpha) mod n */
+  /* w19 <= ([w5,w6] * w4) mod n = (d1 * 1) mod n */
   bn.mov    w24, w5
   bn.mov    w25, w6
-  bn.mov    w26, w4
   jal       x1, mod_mul_320x128
 
-  /* w0 <= (w0+w19) mod n = (d * alpha) mod n */
+  /* w0 <= (w0+w19) mod n = (d) mod n */
   bn.addm   w0, w0, w19
 
-  /* Compare to 0.
-     FG0.Z <= (w0 =? w31) = ((d * alpha) mod n =? 0) */
-  bn.cmp    w0, w31
-
-  /* Trigger a fault if FG0.Z is set, aborting the computation.
-
-     Since alpha is nonzero mod n, (d * alpha) mod n = 0 means d is zero mod n,
-     which violates ECDSA private key requirements. This could technically be
-     triggered by an unlucky key manager seed, but the probability is so low (~1/n)
-     that it more likely indicates a fault attack. */
-  jal       x1, trigger_fault_if_fg0_z
-
-  /* w24 = r <= w11  mod n */
-  bn.addm   w24, w11, w31
-
-  /* Store r of signature in dmem.
-       dmem[r] <= r = w24 */
-  la        x19, r
-  li        x2, 24
-  bn.sid    x2, 0(x19)
-
-  /* w19 <= (w24 * w0) mod n = (r * d * alpha) mod n */
+  /* w19 <= (w24 * w0) mod n = (r * d) mod n */
   bn.mov    w25, w0
   jal       x1, mod_mul_256x256
+  
+  /* w0 <= (w0+1) mod n = (d+1) mod n */
+  bn.addi   w0, w0, 1
 
-  /* w0 <= (w1 * w19) mod n = ((k * alpha)^-1 * (r * d * alpha)) mod n
-                            = (k^-1 * r * d) mod n */
-  bn.mov    w24, w1
+  /* w0 <= w0^-1 mod n = (d + 1)^-1 mod n */
+  jal       x1, mod_inv
+  bn.mov    w0, w1
+
+  /* w19 = (w4 - w19) mod n = (alpha - r*d) mod n */
+  bn.subm   w19, w4, w19
+
+  /* w0 <= (w0 * w19) mod n = (d + 1)^-1 * (alpha - r*d) mod n = s*/
+  bn.mov    w24, w0
   bn.mov    w25, w19
   jal       x1, mod_mul_256x256
   bn.mov    w0, w19
-
-  /* Load message from dmem:
-       w24 = msg <= dmem[msg] */
-  la        x18, msg
-  li        x2, 24
-  bn.lid    x2, 0(x18)
-
-  /* w19 = (w24 * w4) mod n = <= (msg * alpha)  mod n */
-  bn.mov    w25, w4
-  jal       x1, mod_mul_256x256
-
-  /* w19 = (w1 * w19) mod n = ((k * alpha)^-1 * (msg * alpha)) mod n
-                            = (k^-1 * msg) mod n */
-  bn.mov    w24, w1
-  bn.mov    w25, w19
-  jal       x1, mod_mul_256x256
-
-  /* w0 = (w0 + w19) mod n = (k^-1*r*d + k^-1*msg) mod n = s */
-  bn.addm   w0, w0, w19
 
   /* Store s of signature in dmem.
        dmem[s] <= s = w0 */

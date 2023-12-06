@@ -233,6 +233,24 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "sm2_p256_functest",
+    srcs = ["sm2_p256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:sm2",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,

@@ -644,13 +644,6 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
       HARDENED_TRY(
           internal_ecdsa_p256_verify_finalize(signature, verification_result));
       return OTCRYPTO_OK;
-    case kEccCurveTypeNistP384:
-      OT_FALLTHROUGH_INTENDED;
-    case kEccCurveTypeBrainpoolP256R1:
-      OT_FALLTHROUGH_INTENDED;
-    case kEccCurveTypeCustom:
-      // TODO: Implement support for other curves.
-      return OTCRYPTO_NOT_IMPLEMENTED;
     default:
       return OTCRYPTO_BAD_ARGS;
   }

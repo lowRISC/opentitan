@@ -429,3 +429,30 @@ otbn_binary(
         ":x25519",
     ],
 )
+
+otbn_binary(
+    name = "sm2_ecdsa",
+    srcs = [
+        "sm2_ecdsa.s",
+    ],
+    deps = [
+        ":p256_base",
+        ":p256_isoncurve",
+        ":sm2_sign",
+        ":sm2_verify",
+    ],
+)
+
+otbn_library(
+    name = "sm2_sign",
+    srcs = [
+        "sm2_sign.s",
+    ],
+)
+
+otbn_library(
+    name = "sm2_verify",
+    srcs = [
+        "sm2_verify.s",
+    ],
+)

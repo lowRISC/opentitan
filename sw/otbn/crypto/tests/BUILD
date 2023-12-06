@@ -268,6 +268,29 @@ otbn_consttime_test(
 #   ],
 #   subroutine = "p256_sign",
 # )
+otbn_sim_test(
+    name = "sm2_sign_test",
+    srcs = [
+        "sm2_sign_test.s",
+    ],
+    exp = "sm2_sign_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:sm2_sign",
+    ],
+)
+
+otbn_sim_test(
+    name = "sm2_verify_test",
+    srcs = [
+        "sm2_verify_test.s",
+    ],
+    exp = "sm2_verify_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:sm2_verify",
+    ],
+)
 
 otbn_sim_test(
     name = "p256_ecdsa_sign_test",

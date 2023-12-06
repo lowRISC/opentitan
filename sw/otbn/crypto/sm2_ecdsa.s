@@ -96,7 +96,7 @@ ecdsa_sign:
   jal      x1, p256_generate_k
 
   /* Generate the signature. */
-  jal      x1, p256_sign
+  jal      x1, sm2_sign
 
   ecall
 
@@ -115,7 +115,7 @@ ecdsa_verify:
   jal      x1, check_public_key_valid
 
   /* Verify the signature (compute x_r). */
-  jal      x1, p256_verify
+  jal      x1, sm2_verify
 
   ecall
 
@@ -154,7 +154,7 @@ sideload_ecdsa_sign:
   jal   x1, secret_key_from_seed
 
   /* Tail-call signature-generation routine. */
-  jal      x0, ecdsa_sign
+  jal      x0, sm2_sign
 
 /**
  * Generate a secret key from a keymgr-derived seed.

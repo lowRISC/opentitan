@@ -58,6 +58,21 @@ cc_library(
 )
 
 cc_library(
+    name = "sm2",
+    srcs = ["sm2.c"],
+    hdrs = ["//sw/device/lib/crypto/include:sm2.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":keyblob",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl/sm2:sm2_p256",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = [

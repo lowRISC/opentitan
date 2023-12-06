@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_ECC_sm2_COMMON_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_ECC_sm2_COMMON_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SM2_P256_COMMON_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SM2_P256_COMMON_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,41 +19,41 @@ enum {
   /**
    * Length of a P-256 curve point coordinate in bits (modulo p).
    */
-  ksm2CoordBits = 256,
+  kP256CoordBits = 256,
   /**
    * Length of a P-256 curve point coordinate in bytes.
    */
-  ksm2CoordBytes = ksm2CoordBits / 8,
+  kP256CoordBytes = kP256CoordBits / 8,
   /**
    * Length of a P-256 curve point coordinate in words.
    */
-  ksm2CoordWords = ksm2CoordBytes / sizeof(uint32_t),
+  kP256CoordWords = kP256CoordBytes / sizeof(uint32_t),
   /**
    * Length of an element in the P-256 scalar field (modulo the curve order n).
    */
-  ksm2ScalarBits = 256,
+  kP256ScalarBits = 256,
   /**
    * Length of a secret scalar share in bytes.
    */
-  ksm2ScalarBytes = ksm2ScalarBits / 8,
+  kP256ScalarBytes = kP256ScalarBits / 8,
   /**
    * Length of secret scalar share in words.
    */
-  ksm2ScalarWords = ksm2ScalarBytes / sizeof(uint32_t),
+  kP256ScalarWords = kP256ScalarBytes / sizeof(uint32_t),
   /**
    * Length of a masked secret scalar share.
    *
    * This implementation uses extra redundant bits for side-channel protection.
    */
-  ksm2MaskedScalarShareBits = ksm2ScalarBits + 64,
+  kP256MaskedScalarShareBits = kP256ScalarBits + 64,
   /**
    * Length of a masked secret scalar share in bytes.
    */
-  ksm2MaskedScalarShareBytes = ksm2MaskedScalarShareBits / 8,
+  kP256MaskedScalarShareBytes = kP256MaskedScalarShareBits / 8,
   /**
    * Length of masked secret scalar share in words.
    */
-  ksm2MaskedScalarShareWords = ksm2MaskedScalarShareBytes / sizeof(uint32_t),
+  kP256MaskedScalarShareWords = kP256MaskedScalarShareBytes / sizeof(uint32_t),
 };
 
 /**
@@ -64,30 +64,30 @@ enum {
  * + d1) mod n. Mathematically, d0 and d1 could also be reduced modulo n, but
  * the extra bits provide side-channel protection.
  */
-typedef struct sm2_masked_scalar {
+typedef struct p256_masked_scalar {
   /**
    * First share of the secret scalar.
    */
-  uint32_t share0[ksm2MaskedScalarShareWords];
+  uint32_t share0[kP256MaskedScalarShareWords];
   /**
    * Second share of the secret scalar.
    */
-  uint32_t share1[ksm2MaskedScalarShareWords];
-} sm2_masked_scalar_t;
+  uint32_t share1[kP256MaskedScalarShareWords];
+} p256_masked_scalar_t;
 
 /**
  * A type that holds a P-256 curve point.
  */
-typedef struct sm2_point {
+typedef struct p256_point {
   /**
    * Affine x-coordinate.
    */
-  uint32_t x[ksm2CoordWords];
+  uint32_t x[kP256CoordWords];
   /**
    * Affine y-coordinate.
    */
-  uint32_t y[ksm2CoordWords];
-} sm2_point_t;
+  uint32_t y[kP256CoordWords];
+} p256_point_t;
 
 /**
  * Write a masked P-256 scalar to OTBN's data memory.
@@ -101,7 +101,7 @@ typedef struct sm2_point {
  * @param share1_addr DMEM address of the second share.
  * @return Result of the operation.
  */
-status_t sm2_masked_scalar_write(const sm2_masked_scalar_t *src,
+status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
                                   const otbn_addr_t share0_addr,
                                   const otbn_addr_t share1_addr);
 
@@ -109,4 +109,4 @@ status_t sm2_masked_scalar_write(const sm2_masked_scalar_t *src,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_ECC_sm2_COMMON_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_ECC_P256_COMMON_H_

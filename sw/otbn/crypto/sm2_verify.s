@@ -10,16 +10,16 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
-.globl p256_verify
+.globl sm2_verify
 
 .text
-//P-256 ECDSA 签名验证
+/*P-256 ECDSA 签名验证*/
  /**
  * P-256 ECDSA signature verification
  *
  * returns the affine x-coordinate of
  *         (x1, y1) = u1*G + u2*Q
- *         with u1 = z*s^-1 mod n  and  u2 = r*s^-1 mod n
+ *         with u1 = s mod n  and  u2 = r+s mod n
  *         with G being the curve's base point,
  *              z being the message
  *              r, s being the signature
@@ -42,7 +42,7 @@
  * clobbered registers: x2, x3, x13, x14, x17 to x24, w0 to w25
  * clobbered flag groups: FG0
  */
-p256_verify:
+sm2_verify:
 
   /* init all-zero register */
   bn.xor    w31, w31, w31
@@ -53,11 +53,6 @@ p256_verify:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load r of signature from dmem: w24 = r = dmem[r] */
-  la        x19, r
-  li        x2, 11
-  bn.lid    x2, 0(x19)
-
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
   li        x2, 29
@@ -67,25 +62,6 @@ p256_verify:
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
-
-  /* load s of signature from dmem: w0 = s = dmem[s] */
-  la        x20, s
-  bn.lid    x0, 0(x20)
-
-  /* goto 'fail' if w0 == w31 <=> s == 0 */
-  bn.cmp    w0, w31
-  csrrs     x2, 0x7c0, x0
-  andi      x2, x2, 8
-  bne       x2, x0, fail
-
-  /* goto 'fail' if w0 >= w29 <=> s >= n */
-  bn.cmp    w0, w29
-  csrrs     x2, 0x7c0, x0
-  andi      x2, x2, 1
-  beq       x2, x0, fail
-
-  /* w1 = s^-1  mod n */
-  jal       x1, mod_inv_var
 
   /* load r of signature from dmem: w24 = r = dmem[r] */
   la        x19, r
@@ -104,22 +80,38 @@ p256_verify:
   andi      x2, x2, 1
   beq       x2, x0, fail
 
-  /* w25 = s^-1 = w1 */
-  bn.mov    w25, w1
+  /* load s of signature from dmem: w0 = s = dmem[s] */
+  la        x20, s
+  bn.lid    x0, 0(x20)
 
-  /* u2 = w0 = w19 <= w24*w25 = r*s^-1 mod n */
-  jal       x1, mod_mul_256x256
-  bn.mov    w0, w19
+  /* goto 'fail' if w0 == w31 <=> s == 0 */
+  bn.cmp    w0, w31
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  bne       x2, x0, fail
+
+  /* goto 'fail' if w0 >= w29 <=> s >= n */
+  bn.cmp    w0, w29
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 1
+  beq       x2, x0, fail
+
+  /* u1 = w1 = s mod n */
+  bn.mov    w1, w0
+
+  /* u2 = w0 = (r + s) mod n */
+  bn.addm    w0, w24, w0
+
+  /* goto 'fail' if w25 == w31 <=> r + s == 0 */
+  bn.cmp    w25, w31
+  csrrs     x2, 0x7c0, x0
+  andi      x2, x2, 8
+  bne       x2, x0, fail
 
   /* load message, w24 = msg = dmem[msg] */
   la        x18, msg
   li        x2, 24
   bn.lid    x2, 0(x18)
-
-  /* u1 = w1 = w19 <= w24*w25 = w24*w1 = msg*s^-1 mod n */
-  bn.mov    w25, w1
-  jal       x1, mod_mul_256x256
-  bn.mov    w1, w19
 
   /* setup modulus p and Barrett constant */
   li        x2, 29
@@ -160,7 +152,7 @@ p256_verify:
   bn.mov    w4, w12
   bn.mov    w5, w13
 
-  /* w2 = u_2 & u_0 = w0 & w1*/
+  /* w2 = u_2 & u_1 = w0 & w1*/
   bn.and    w2, w0, w1
 
   /* init double and add algorithm with (0, 1, 0) */
@@ -236,6 +228,14 @@ p256_verify:
   bn.mov    w25, w11
   jal       x1, mod_mul_256x256
 
+  /* reload message, w25 = msg = dmem[msg] */
+  la        x18, msg
+  li        x2, 25
+  bn.lid    x2, 0(x18)
+
+  /* x1' = (msg + x1) mod n */
+  bn.addm   w24, w24, w25
+
   /* final reduction: w24 = x1 <= x1 mod n */
   la        x3, p256_n
   bn.lid    x0, 0(x3)
@@ -249,7 +249,6 @@ p256_verify:
   bn.sid    x2, 0(x17)
 
   ret
-
 
 /**
  * Variable time modular multiplicative inverse computation
@@ -385,7 +384,6 @@ mod_inv_var:
   bn.addm   w1, w2, w31
 
   ret
-
 .section .bss
 
 /* message digest */
