@@ -6,6 +6,7 @@ use anyhow::{Context, Result};
 
 pub mod builder;
 pub mod der;
+pub mod dice_tcb;
 pub mod x509;
 
 /// An ASN1 tag.

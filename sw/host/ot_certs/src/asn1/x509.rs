@@ -8,6 +8,7 @@ use num_traits::FromPrimitive;
 use std::collections::HashMap;
 
 use crate::asn1::builder::{concat_suffix, Builder};
+use crate::asn1::dice_tcb::DiceTcbInfo;
 use crate::asn1::{Oid, Tag};
 use crate::template::{
     AttributeType, Certificate, EcCurve, EcPublicKeyInfo, EcdsaSignature, HashAlgorithm, Signature,
@@ -132,7 +133,35 @@ impl X509 {
             Self::push_name(builder, Some("issuer".into()), &cert.issuer)?;
             Self::push_validity(builder)?;
             Self::push_name(builder, Some("subject".into()), &cert.subject)?;
-            Self::push_public_key_info(builder, &cert.subject_public_key_info)
+            Self::push_public_key_info(builder, &cert.subject_public_key_info)?;
+            builder.push_tag(
+                Some("tbs_extensions_tag".into()),
+                &Tag::Context {
+                    constructed: true,
+                    value: 3,
+                },
+                |builder| {
+                    builder.push_seq(Some("tbs_extensions".into()), |builder| {
+                        Self::push_basic_constraints_ext(builder)?;
+                        Self::push_key_usage_ext(builder)?;
+                        Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
+                        Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
+                        let dice_tcb = DiceTcbInfo {
+                            vendor: &cert.vendor,
+                            model: &cert.model,
+                            version: &cert.version,
+                            svn: &cert.svn,
+                            layer: &cert.layer,
+                            index: &None,
+                            fwids: &cert.fw_ids,
+                            flags: &cert.flags,
+                            vendor_info: &None,
+                            tcb_type: &None,
+                        };
+                        dice_tcb.push_extension(builder)
+                    })
+                },
+            )
         })
     }
 
@@ -174,6 +203,121 @@ impl X509 {
                 })?;
             }
             Ok(())
+        })
+    }
+
+    pub fn push_basic_constraints_ext<B: Builder>(builder: &mut B) -> Result<()> {
+        // https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.9
+        // BasicConstraints ::= SEQUENCE {
+        //   cA                      BOOLEAN DEFAULT FALSE,
+        //   pathLenConstraint       INTEGER (0..MAX) OPTIONAL }
+        //
+        // From the Open Profile for DICE specification:
+        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
+        // The standard extensions are fixed by the specification.
+        Self::push_extension(builder, &Oid::BasicConstraints, true, |builder| {
+            builder.push_seq(Some("basic_constraints".into()), |builder| {
+                builder.push_boolean(true)
+            })
+        })
+    }
+
+    pub fn push_key_usage_ext<B: Builder>(builder: &mut B) -> Result<()> {
+        // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3
+        // KeyUsage ::= BIT STRING {
+        //    digitalSignature        (0),
+        //    nonRepudiation          (1), -- recent editions of X.509 have
+        //                         -- renamed this bit to contentCommitment
+        //    keyEncipherment         (2),
+        //    dataEncipherment        (3),
+        //    keyAgreement            (4),
+        //    keyCertSign             (5),
+        //    cRLSign                 (6),
+        //    encipherOnly            (7),
+        //    decipherOnly            (8) }
+        //
+        // From the Open Profile for DICE specification:
+        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
+        // The standard extensions are fixed by the specification.
+        Self::push_extension(builder, &Oid::KeyUsage, true, |builder| {
+            builder.push_bitstring(
+                Some("key_usage".into()),
+                &Tag::BitString,
+                &[
+                    /* digitalSignature */ false, /* nonRepudiation */ false,
+                    /* keyEncipherment */ false, /* dataEncipherment */ false,
+                    /* keyAgreement */ false, /* keyCertSign */ true,
+                    /* cRLSign */ false, /* encipherOnly */ false,
+                    /* decipherOnly */ false,
+                ],
+            )
+        })
+    }
+
+    pub fn push_auth_key_id_ext<B: Builder>(
+        builder: &mut B,
+        auth_key_id: &Value<Vec<u8>>,
+    ) -> Result<()> {
+        // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
+        // AuthorityKeyIdentifier ::= SEQUENCE {
+        //   keyIdentifier             [0] KeyIdentifier           OPTIONAL,
+        //   authorityCertIssuer       [1] GeneralNames            OPTIONAL,
+        //   authorityCertSerialNumber [2] CertificateSerialNumber OPTIONAL  }
+        //
+        // KeyIdentifier ::= OCTET STRING
+        //
+        // Note: this is part of the implicit tagged modules:
+        // https://datatracker.ietf.org/doc/html/rfc5280#appendix-A.2
+        Self::push_extension(builder, &Oid::AuthorityKeyIdentifier, false, |builder| {
+            builder.push_seq(Some("auth_key_id".into()), |builder| {
+                builder.push_tag(
+                    Some("key_id".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 0,
+                    },
+                    |builder| {
+                        builder.push_octet_string(Some("auth_key_id".into()), |builder| {
+                            builder.push_byte_array(Some("authority_key_id".into()), auth_key_id)
+                        })
+                    },
+                )
+            })
+        })
+    }
+
+    pub fn push_subject_key_id_ext<B: Builder>(
+        builder: &mut B,
+        auth_key_id: &Value<Vec<u8>>,
+    ) -> Result<()> {
+        // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.2
+        // KeyIdentifier ::= OCTET STRING
+        Self::push_extension(builder, &Oid::SubjectKeyIdentifier, false, |builder| {
+            builder.push_octet_string(Some("subject_key_id".into()), |builder| {
+                builder.push_byte_array(Some("subject_key_id".into()), auth_key_id)
+            })
+        })
+    }
+
+    pub fn push_extension<B: Builder>(
+        builder: &mut B,
+        oid: &Oid,
+        critical: bool,
+        gen: impl FnOnce(&mut B) -> Result<()>,
+    ) -> Result<()> {
+        // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1:
+        // Extension  ::=  SEQUENCE  {
+        //         extnID      OBJECT IDENTIFIER,
+        //         critical    BOOLEAN DEFAULT FALSE,
+        //         extnValue   OCTET STRING
+        //                     -- contains the DER encoding of an ASN.1 value
+        //                     -- corresponding to the extension type identified
+        //                     -- by extnID
+        //         }
+        builder.push_seq(concat_suffix(&Some(oid.to_string()), "ext"), |builder| {
+            builder.push_oid(oid)?;
+            builder.push_boolean(critical)?;
+            builder.push_octet_string(concat_suffix(&Some(oid.to_string()), "ext_value"), gen)
         })
     }
 
