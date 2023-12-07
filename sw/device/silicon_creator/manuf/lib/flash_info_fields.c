@@ -122,3 +122,22 @@ status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
                                 /*delay=*/0));
   return OK_STATUS();
 }
+
+status_t manuf_flash_info_field_write(dif_flash_ctrl_state_t *flash_state,
+                                      flash_info_field_t field,
+                                      uint32_t *data_in, size_t num_words,
+                                      bool erase_page_before_write) {
+  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+  uint32_t byte_address =
+      (field.page * device_info.bytes_per_page) + field.byte_offset;
+  if (erase_page_before_write) {
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        flash_state, byte_address, field.partition, data_in,
+        kDifFlashCtrlPartitionTypeInfo, num_words));
+  } else {
+    TRY(flash_ctrl_testutils_write(flash_state, byte_address, field.partition,
+                                   data_in, kDifFlashCtrlPartitionTypeInfo,
+                                   num_words));
+  }
+  return OK_STATUS();
+}

@@ -68,7 +68,26 @@ extern const flash_info_field_t kFlashInfoFieldCdi1Certificate;
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
-                                     flash_info_field_t field, uint32_t *buf,
-                                     size_t len);
+                                     flash_info_field_t field,
+                                     uint32_t *data_out, size_t num_words);
+
+/**
+ * Write info flash page field.
+ *
+ * Assumes the page containing the field has already been configured for
+ * write/erase access.
+ *
+ * @param flash_state Flash controller instance.
+ * @param field Flash info field information.
+ * @param data_in Input buffer.
+ * @param num_words Number of words to read from flash and write to `data_out`.
+ * @param erase_page_before_write Whether to erase the page before writing it.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_flash_info_field_write(dif_flash_ctrl_state_t *flash_state,
+                                      flash_info_field_t field,
+                                      uint32_t *data_in, size_t num_words,
+                                      bool erase_page_before_write);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_FLASH_INFO_FIELDS_H_
