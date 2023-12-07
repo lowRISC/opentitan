@@ -46,16 +46,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit abort_via_reg_write;
 
   // Interrupt enable state
-  bit intr_enable_done;
-  bit intr_enable_error;
-  bit intr_enable_mem_limit;
+  bit [NUM_MAX_INTERRUPTS-1:0] intr_enable;
 
-  // bit to indicate if dma_memory_buffer_limit interrupt is reached
-  bit exp_buffer_limit_intr;
-  // Bit to indicate if dma_error interrupt is asserted
-  bit exp_dma_err_intr;
-  // bit to indicate if dma_done interrupt is asserted
-  bit exp_dma_done_intr;
+  // Prediction of the state of an interrupt signal from the DUT.
+  typedef struct packed {
+    // Maximum delay in clock cycles from the moment of prediction.
+    uint delay;
+    // Expected new state of the interrupt signal.
+    bit intr_expected;
+  } dma_intr_pred_t;
+
+  // Temporally-ordered queue of expected interrupt states, for each interrupt
+  dma_intr_pred_t exp_intr_queue[NUM_MAX_INTERRUPTS][$];
+
   // True if in hardware handshake mode and the FIFO interrupt has been cleared
   bit fifo_intr_cleared;
   // Variable to indicate number of writes expected to clear FIFO interrupts
@@ -64,6 +67,24 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // since ref argument can not be used in fork-join_none
   bit[31:0] clear_int_src;
   bit [TL_DW-1:0] exp_digest[16];
+
+  // Allow up to this number of clock cycles from CSR modification until interrupt signal change.
+  localparam uint CSRtoIntrLatency = 2;
+  // Maximum latency from bus error occurring to interrupt signal change reporting it.
+  localparam uint BusErrorToIntrLatency = 4;
+  // Maximum latency from detecting a memory limit crossing to interrupt signal change reporting it.
+  // Must accommodate the write response latency.
+  localparam uint MemLimitToIntrLatency = 128;
+  // Maximum delay (in clock cycles) from the final bus write of a DMA transfer until the Done
+  // interrupt signal shall occur.
+  // Note: DUT may suffer delays in final write response appearing and then the completion of the
+  //       SHA digest.
+  localparam uint WriteToDoneLatency = 1024;
+  // Maximum delay from setting 'Go' bit until an invalid configuration raises an Error interrupt;
+  // this can depend upon the number of interrupt sources because the DUT performs 'clear interrupt'
+  // writes before validating the configuration.
+  // Note: this is a conservative figure, but we could perhaps consult the TL agent configuration.
+  localparam uint GoToCfgErrLatency = dma_reg_pkg::NumIntClearSources * 40;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -371,24 +392,20 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
 
     // Update the expected value of memory buffer limit interrupt for this address
-    exp_buffer_limit_intr = (dma_config.handshake & dma_config.auto_inc_buffer) &&
-                            (item.a_addr >= dma_config.mem_buffer_limit ||
-                             item.a_addr >= dma_config.mem_buffer_almost_limit);
-    if (exp_buffer_limit_intr) begin
+    if ((dma_config.handshake & dma_config.auto_inc_buffer) &&
+        (item.a_addr >= dma_config.mem_buffer_limit ||
+         item.a_addr >= dma_config.mem_buffer_almost_limit)) begin
       `uvm_info(`gfn, $sformatf("Memory address:%0x crosses almost limit: 0x%0x limit: 0x%0x",
                                 item.a_addr, dma_config.mem_buffer_almost_limit,
                                 dma_config.mem_buffer_limit), UVM_HIGH)
 
       // Interrupt is expected only if enabled.
-      exp_buffer_limit_intr = intr_enable_mem_limit;
+      predict_interrupts(MemLimitToIntrLatency, 1 << DMA_MEM_LIMIT, intr_enable);
     end
 
     // Track byte-counting within the transfer since it determines the prediction of completion
     `uvm_info(`gfn, $sformatf("num_bytes_transferred 0x%x total_transfer_size 0x%x",
                               num_bytes_transferred, dma_config.total_transfer_size), UVM_HIGH);
-
-    // Update expected value of dma_done interrupt
-    exp_dma_done_intr = (num_bytes_transferred >= exp_bytes_transferred) & intr_enable_done;
   endtask
 
   // Process items on Data channel
@@ -455,7 +472,20 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
     // error whilst error-free 'clear interrupt' writes are occurring.
-    exp_dma_err_intr = exp_dma_err_intr | (item.d_error & intr_enable_error);
+    if (item.d_error) begin
+      `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
+      predict_interrupts(BusErrorToIntrLatency, 1 << DMA_ERROR, intr_enable);
+    end else if (got_dest_item) begin
+      // Is this the final destination write?
+      //
+      // Note: we must perform this on the data channel (write response) because an error may occur
+      //       on the very final write transaction, in which case DONE should not be seen.
+      if (num_bytes_transferred >= exp_bytes_transferred) begin
+        // Whether a 'DONE' interrupt is expected depends upon whether it is enabled.
+        `uvm_info(`gfn, "Final write completed", UVM_MEDIUM)
+        predict_interrupts(WriteToDoneLatency, 1 << DMA_DONE, intr_enable);
+      end
+    end
   endtask
 
   // Method to process requests on TL interfaces
@@ -530,42 +560,110 @@ class dma_scoreboard extends cip_base_scoreboard #(
     src_tl_error_detected = 0;
     dst_tl_error_detected = 0;
     abort_via_reg_write = 0;
-    exp_buffer_limit_intr = 0;
-    exp_dma_done_intr = 0;
-    exp_dma_err_intr = 0;
     fifo_intr_cleared = 0;
+    intr_enable = 0;
   endfunction
 
   // Method to check if DMA interrupt is expected
   task monitor_and_check_dma_interrupts(ref dma_seq_item dma_config);
-    fork
-      // DMA memory buffer limit interrupt check
-      forever begin
-        @(posedge cfg.intr_vif.pins[DMA_MEM_LIMIT]);
-        if (!cfg.en_scb) continue;
-        if (!cfg.under_reset) begin
-          `DV_CHECK_EQ(exp_buffer_limit_intr, 1,
-                       "Unexpected assertion of dma_memory_buffer_limit interrupt")
+    bit   [NUM_MAX_INTERRUPTS-1:0] valid_intr = (1 << cfg.num_interrupts) - 1;
+    logic [NUM_MAX_INTERRUPTS-1:0] prev_intr = cfg.intr_vif.sample() & valid_intr;
+    forever begin
+      // Current state of interrupt lines.
+      logic [NUM_MAX_INTERRUPTS-1:0] curr_intr = cfg.intr_vif.sample() & valid_intr;
+
+      // We check the interrupt signals against expectations _one cycle after_ sampling them,
+      // because writes to the INTR_TEST register have an immediate effect upon the interrupt lines,
+      // but `process_reg_write` is not invoked to update the prediction until the end of the write
+      // cycle.
+      //
+      // We're counting cycles in general, monitoring the interrupt signals for unanticipated
+      // changes; we must also ensure that simulation time advance during reset.
+      cfg.clk_rst_vif.wait_clks(1);
+
+      // Do not consume simulation time whilst the semaphore is locked; predictions are posted
+      // by the function `predict_interrupts` above.
+      if (cfg.under_reset) begin
+        // Interrupts shall be deasserted by DUT reset, and any predictions no longer apply.
+        `uvm_info(`gfn, "Clearing interrupt predictions", UVM_MEDIUM)
+        for (uint i = 0; i < NUM_MAX_INTERRUPTS; i++) exp_intr_queue[i].delete();
+        prev_intr = 'b0;
+      end else if (cfg.en_scb) begin
+        bit [NUM_MAX_INTERRUPTS-1:0] exp_intr;
+        string rsn;
+        // Does each interrupt signal match against its expectation?
+        for (uint i = 0; i < NUM_MAX_INTERRUPTS; i++) begin
+          exp_intr[i] = intr_state_expected(i, curr_intr[i], prev_intr[i]);
+          if (curr_intr[i] !== exp_intr[i]) begin
+            // Collect a list of the mismatched interrupts
+            unique case (i)
+              DMA_DONE:      rsn = {rsn, "Done "};
+              DMA_ERROR:     rsn = {rsn, "Error "};
+              DMA_MEM_LIMIT: rsn = {rsn, "Mem limit"};
+              default:       rsn = {rsn, "Unknown intr"};
+            endcase
+          end
         end
+        // Check and report any mismatches against expectations, listing those that mismatch.
+        `DV_CHECK_EQ(curr_intr, exp_intr,
+                     $sformatf("Unexpected state of interrupt signals (Mismatched: %s)", rsn))
+        // Retain their new state.
+        prev_intr = curr_intr;
       end
-      // DMA Error interrupt check
-      forever begin
-        @(posedge cfg.intr_vif.pins[DMA_ERROR]);
-        if (!cfg.en_scb) continue;
-        if (!cfg.under_reset) begin
-          `DV_CHECK_EQ(exp_dma_err_intr, 1, "Unexpected assertion of dma_error interrupt")
-        end
-      end
-      // DMA done interrupt check
-      forever begin
-        @(posedge cfg.intr_vif.pins[DMA_DONE]);
-        if (!cfg.en_scb) continue;
-        if (!cfg.under_reset) begin
-          `DV_CHECK_EQ(exp_dma_done_intr, 1, "Unexpected assertion of dma_done interrupt")
-        end
-      end
-    join_none
+    end
   endtask
+
+  // Determine the expected state of the given interrupt signal, based upon any outstanding
+  // predictions.
+  function bit intr_state_expected(uint intr, logic curr_intr, logic prev_intr);
+    bit changed = (curr_intr !== prev_intr);
+    // If we have no current predictions, we anticipate no change.
+    bit exp_intr = prev_intr;
+    bit elapsed = 1'b0;
+
+    if (exp_intr_queue[intr].size() > 0) begin
+      // What state should the interrupt signal have when the predicted event occurs?
+      dma_intr_pred_t pred = exp_intr_queue[intr][0];
+      `uvm_info(`gfn, $sformatf("pred_intr %d : %x %x", intr, pred.delay, pred.intr_expected),
+                UVM_HIGH)
+      // This prediction is retired and must have been met when:
+      //      (i) the interrupt signal has the expected state,
+      //     (ii) a change in the signal is observed,
+      // or (iii) the maximum latency has been reached.
+      elapsed = (pred.delay == 0);
+      if (elapsed || changed || curr_intr === pred.intr_expected) begin
+        exp_intr = pred.intr_expected;
+        exp_intr_queue[intr].pop_front();
+      end else begin
+        // Just update the lifetime of the prediction.
+        exp_intr_queue[intr][0].delay--;
+      end
+    end
+    if (elapsed | changed) begin
+      `uvm_info(`gfn, $sformatf("Intr %d: 0x%x exp 0x%0x (prev 0x%x) changed %d elapsed %d",
+                                intr, curr_intr, exp_intr, prev_intr, changed, elapsed), UVM_HIGH)
+    end
+    return exp_intr;
+  endfunction
+
+  // Form a prediction about the state of the indicated interrupt signals after at most the
+  // specified number of clock signals.
+  // Note: this explicitly does NOT mean that they must CHANGE to achieve that state; only that
+  //       they must be in that state by then.
+  function void predict_interrupts(uint max_delay, bit [31:0] intr_affected, bit [31:0] exp_state);
+    `uvm_info(`gfn, $sformatf("Predicting interrupt [0,%0x) -> intr_affected 0x%x == 0x%0x",
+                              max_delay, intr_affected, exp_state), UVM_MEDIUM)
+
+    for (uint i = 0; i < NUM_MAX_INTERRUPTS && |intr_affected; i++) begin
+      if (intr_affected[i]) begin
+        dma_intr_pred_t predict;
+        predict.delay = max_delay;
+        predict.intr_expected = exp_state[i];
+        exp_intr_queue[i].push_back(predict);
+        intr_affected[i] = 0;
+      end
+    end
+  endfunction
 
   // Task to monitor LSIO trigger and update scoreboard internal variables
   task monitor_lsio_trigger();
@@ -691,15 +789,31 @@ class dma_scoreboard extends cip_base_scoreboard #(
   function void process_reg_write(tl_seq_item item, uvm_reg csr);
     `uvm_info(`gfn, $sformatf("Got reg_write to %s with addr : %0x and data : %0x ",
                               csr.get_name(), item.a_addr, item.a_data), UVM_HIGH)
+
     // incoming access is a write to a valid csr, so make updates right away
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
     case (csr.get_name())
       "intr_enable": begin
         `uvm_info(`gfn, $sformatf("Got intr_enable = %0x", item.a_data), UVM_HIGH)
-        intr_enable_done      = item.a_data[DMA_DONE];
-        intr_enable_error     = item.a_data[DMA_ERROR];
-        intr_enable_mem_limit = item.a_data[DMA_MEM_LIMIT];
+        intr_enable = item.a_data;
+
+        // Should raise/lower any interrupt signals for which the INTR_STATE bit is set; check all
+        // that may be changed according to the new enable bits.
+        predict_interrupts(CSRtoIntrLatency, `gmv(ral.intr_state), item.a_data);
+      end
+      "intr_state": begin
+        // Writing 1 to an INTR_STATE bit clears the corresponding asserted interrupt.
+        predict_interrupts(CSRtoIntrLatency, item.a_data & `gmv(ral.intr_enable), 0);
+      end
+      "intr_test": begin
+        `uvm_info(`gfn, $sformatf("intr_test write 0x%x with enables 0x%0x",
+                                  item.a_data, intr_enable), UVM_HIGH)
+
+        // Should raise all tested interrupts that are enabled at the time of the test;
+        // the intr_state bit and the interrupt line then remain high until cleared.
+        // Test bits are fire-and-forget; they are not retained anywhere.
+        predict_interrupts(CSRtoIntrLatency, item.a_data, `gmv(ral.intr_enable));
       end
       "source_address_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
@@ -887,7 +1001,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
           dma_config.is_valid_config = dma_config.check_config("scoreboard starting transfer");
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
-          exp_dma_err_intr = !dma_config.is_valid_config & intr_enable_error;
+          // Are we expecting an Error interrupt from an invalid configuration?
+          predict_interrupts(GoToCfgErrLatency, 1 << DMA_ERROR,
+                             (!dma_config.is_valid_config << DMA_ERROR) & intr_enable);
           // Expect digest to be cleared even for rejected configurations
           exp_digest = '{default:0};
           if (cfg.en_cov) begin
