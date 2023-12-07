@@ -70,7 +70,7 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, "Received C side acknowledgement", UVM_LOW)
 
-    spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+    spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
     cfg.use_spi_load_bootstrap = 1'b0;
 
     // After bootstrap, we need to write the expected values again,
