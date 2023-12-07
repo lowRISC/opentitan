@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
@@ -2495,13 +2499,11 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "sram_ctrl_sleep_sram_ret_contents_test",
-    srcs = ["sram_ctrl_sleep_sram_ret_contents_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = new_verilator_params(
-        timeout = "long",
-    ),
+cc_library(
+    name = "sram_ctrl_sleep_sram_ret_contents_impl",
+    srcs = ["sram_ctrl_sleep_sram_ret_contents_impl.c"],
+    hdrs = ["sram_ctrl_sleep_sram_ret_contents_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -2509,6 +2511,7 @@ opentitan_test(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -2517,8 +2520,45 @@ opentitan_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
+    srcs = ["sram_ctrl_sleep_sram_ret_contents_no_scramble_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        },
+    ),
+    verilator = new_verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_impl",
+    ],
+)
+
+opentitan_test(
+    name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
+    srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        },
+    ),
+    verilator = new_verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_impl",
     ],
 )
 
