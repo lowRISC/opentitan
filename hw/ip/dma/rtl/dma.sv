@@ -79,7 +79,7 @@ module dma
 
   logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
   logic                               clear_index_en, int_clear_tlul_rsp_valid;
-  logic                               int_clear_tlul_gnt;
+  logic                               int_clear_tlul_gnt, int_clear_tlul_rsp_error;
 
   logic [DmaErrLast-1:0] next_error;
 
@@ -609,6 +609,8 @@ module dma
                                                                       dma_ctn_tlul_gnt;
     int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
                                                                       dma_ctn_tlul_rsp_valid;
+    int_clear_tlul_rsp_error = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_err :
+                                                                      dma_ctn_tlul_rsp_err;
     dma_state_error = 1'b0;
 
     sha2_hash_start      = 1'b0;
@@ -688,9 +690,11 @@ module dma
             // Need to wait for this to not overrun TLUL adapter
             // The response might come immediately
             if (int_clear_tlul_rsp_valid) begin
-              // Proceed if we handled all
-              if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
-                ctrl_state_d = DmaAddrSetup;
+              if (int_clear_tlul_rsp_error) begin
+                next_error[DmaBusErr] = 1'b1;
+                ctrl_state_d = DmaError;
+              end else if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
+                ctrl_state_d = DmaAddrSetup;  // Proceed now we've handled all
               end
             end
           end else begin
@@ -708,7 +712,10 @@ module dma
           // Writes also get a resp valid, but no data.
           // Need to wait for this to not overrun TLUL adapter
           if (int_clear_tlul_rsp_valid) begin
-            if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
+            if (int_clear_tlul_rsp_error) begin
+              next_error[DmaBusErr] = 1'b1;
+              ctrl_state_d = DmaError;
+            end else if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
               clear_index_en = 1'b1;
               clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
               ctrl_state_d   = DmaClearIntrSrc;
