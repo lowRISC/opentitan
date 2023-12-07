@@ -12,6 +12,7 @@ rust_library(
         "src/asn1/builder.rs",
         "src/asn1/der.rs",
         "src/asn1/mod.rs",
+        "src/asn1/x509.rs",
         "src/lib.rs",
         "src/template/hjson.rs",
         "src/template/mod.rs",
