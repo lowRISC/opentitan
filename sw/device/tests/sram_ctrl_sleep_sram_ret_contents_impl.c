@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -34,8 +33,6 @@ enum {
 
   kTestBufferSizeWords = 16,
 };
-
-OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t rv_plic;
 static dif_aon_timer_t aon_timer;
@@ -61,11 +58,6 @@ typedef struct {
   bool is_equal;
 } check_config_t;
 
-// this is preserved across resets. Flash default value is all 1s,
-// can be written to 0 without an erase, so name this `non` scramble.
-// flash doesn't support byte write, hence define it to a 32 bit int.
-OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t ret_non_scrambled;)
-
 static void retention_sram_check(check_config_t config) {
   if (config.do_write) {
     sram_ctrl_testutils_write(
@@ -82,6 +74,8 @@ static void retention_sram_check(check_config_t config) {
   } else {
     CHECK_ARRAYS_NE(tmp_buffer, kTestData, kTestBufferSizeWords);
   }
+  LOG_INFO("retention ram check with write=%d and is_equal=%d succeeded",
+           config.do_write, config.is_equal);
 }
 
 /**
@@ -169,9 +163,7 @@ void set_up_reset_request(void) {
   CHECK(false, "Should have a reset to CPU and ret_sram before this line");
 }
 
-bool test_main(void) {
-  dif_sram_ctrl_t ret_sram;
-
+bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -182,8 +174,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(addr, &rstmgr));
   addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(addr, &aon_timer));
-  addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_sram_ctrl_init(addr, &ret_sram));
   addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(addr, &rv_plic));
 
@@ -194,16 +184,24 @@ bool test_main(void) {
 
   if (rstmgr_reset_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("POR reset");
+    LOG_INFO("Start to test retention sram %sscrambled",
+             scramble ? "" : "not ");
 
+    if (scramble) {
+      dif_sram_ctrl_t ret_sram;
+      addr =
+          mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+      CHECK_DIF_OK(dif_sram_ctrl_init(addr, &ret_sram));
+      LOG_INFO("Wiping ret_sram...");
+      CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
+      LOG_INFO("Scrambling ret_sram...");
+      CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
+    }
     test_ret_sram_in_normal_sleep();
 
     enter_deep_sleep();
   } else if (rstmgr_reset_info & kDifRstmgrResetInfoLowPowerExit) {
-    // This branch will be entered twice.
-    // In the first time, ret_non_scrambled is True. In the 2nd time, it's
-    // false.
-    LOG_INFO("wake up from deep sleep with ret_non_scrambled: %x",
-             ret_non_scrambled);
+    LOG_INFO("Wake up from deep sleep");
 
     CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
               &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true);
@@ -212,53 +210,13 @@ bool test_main(void) {
 
     set_up_reset_request();
   } else if (rstmgr_reset_info & kDifRstmgrResetInfoWatchdog) {
-    // This branch will be entered twice.
-    // In the first time, ret_non_scrambled is True. In the 2nd time, it's
-    // false.
-    LOG_INFO("watchdog reset with ret_non_scrambled: %x", ret_non_scrambled);
-    if (ret_non_scrambled) {
-      // reset due to a reset request, no scrambling -> data preserved
-      retention_sram_check(
-          (check_config_t){.do_write = false, .is_equal = true});
-
-      LOG_INFO("Start to test ret_sram with scramble enabled");
-
-      dif_flash_ctrl_state_t flash_ctrl_state;
-      CHECK_DIF_OK(dif_flash_ctrl_init_state(
-          &flash_ctrl_state,
-          mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-      CHECK_STATUS_OK(
-          flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                     /*rd_en=*/true,
-                                                     /*prog_en=*/true,
-                                                     /*erase_en=*/true,
-                                                     /*scramble_en=*/false,
-                                                     /*ecc_en=*/false,
-                                                     /*he_en=*/false));
-      // write ret_non_scrambled to 0
-      const uint32_t new_data = 0;
-      CHECK_STATUS_OK(flash_ctrl_testutils_write(
-          &flash_ctrl_state,
-          (uint32_t)&ret_non_scrambled - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-          /*partition_id=*/0, &new_data, kDifFlashCtrlPartitionTypeData,
-          /*word_count=*/1));
-      // wipe data otherwise, the data may still be read after reset, since it's
-      // written with the default key/nounce.
-      LOG_INFO("Wiping ret_sram...");
-      CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
-      LOG_INFO("Scrambling ret_sram...");
-      CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
-
-      test_ret_sram_in_normal_sleep();
-
-      enter_deep_sleep();
-    } else {
-      // reset due to a reset request, with scrambling -> data NOT preserved
-      retention_sram_check(
-          (check_config_t){.do_write = false, .is_equal = false});
-    }
+    LOG_INFO("watchdog reset");
+    // reset due to a reset request, if scramble data is not preserved.
+    retention_sram_check(
+        (check_config_t){.do_write = false, .is_equal = !scramble});
   } else {
     LOG_FATAL("Unexepected reset type detected.");
+    return false;
   }
 
   return true;
