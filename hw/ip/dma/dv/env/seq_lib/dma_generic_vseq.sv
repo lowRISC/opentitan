@@ -147,8 +147,8 @@ class dma_generic_vseq extends dma_base_vseq;
 
         // Set the Interrupt Enables appropriately for this transfer; DONE and ERROR - which
         // terminate the test - must be enabled if this transfer is to be interrupt-driven.
-        // They may optionally be exercised when using polling. The MEMORY_BUFFER_LIMIT interrupt is
-        // always optional.
+        // They may optionally be exercised when using polling. The MEM_LIMIT interrupt is always
+        // optional.
         intr_enables = $urandom;
         if (intr_driven) begin
           intr_enables[DMA_DONE]  = 1'b1;
