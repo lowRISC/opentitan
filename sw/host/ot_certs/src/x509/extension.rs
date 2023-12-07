@@ -145,23 +145,3 @@ pub fn extract_dice_tcb_info_extension(x509: &X509) -> Result<DiceTcbInfo> {
     let dice_tcb_der = dice_tcb_ext.as_slice();
     Ok(asn1::parse_single::<DiceTcbInfo>(dice_tcb_der)?)
 }
-
-// Extract the signature from an already built and signature
-// certificate, and then register the signature variables with
-// the generator.
-impl template::HashAlgorithm {
-    // Return the OID of the hash algorithm.
-    pub fn oid(&self) -> asn1::ObjectIdentifier {
-        match self {
-            // From https://www.rfc-editor.org/rfc/rfc3560.html#appendix-A
-            Self::Sha256 => asn1::ObjectIdentifier::from_string("2.16.840.1.101.3.4.2.1").unwrap(),
-        }
-    }
-
-    // Return the size of the digest.
-    pub fn digest_size(&self) -> usize {
-        match self {
-            Self::Sha256 => 20,
-        }
-    }
-}

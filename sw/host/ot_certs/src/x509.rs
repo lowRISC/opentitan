@@ -15,6 +15,9 @@ use openssl::pkey::PKey;
 use openssl::pkey::Public;
 use openssl::x509::{X509NameRef, X509};
 
+use crate::asn1::der;
+use crate::asn1::x509;
+
 use crate::template::{
     self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, HashAlgorithm, Signature,
     SubjectPublicKeyInfo, Value,
@@ -139,6 +142,21 @@ fn extract_signature(x509: &X509) -> Result<Signature> {
         }),
         alg => bail!("unsupported signature algorithm {:?}", alg),
     }
+}
+
+/// Generate a X509 certificate from a template that specifies all variables.
+/// If the template does not specify the values of the signature, a signature
+/// with "zero" values will be generate.
+pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
+    // Generate TBS.
+    let tbs =
+        der::Der::generate(|builder| x509::X509::push_tbs_certificate(builder, &tmpl.certificate))?;
+    let tbs = Value::Literal(tbs);
+    // Generate certificate.
+    let cert = der::Der::generate(|builder| {
+        x509::X509::push_certificate(builder, &tbs, &tmpl.certificate.signature)
+    })?;
+    Ok(cert)
 }
 
 /// Parse a X509 certificate

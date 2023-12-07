@@ -6,6 +6,7 @@ use anyhow::{Context, Result};
 
 pub mod builder;
 pub mod der;
+pub mod x509;
 
 /// An ASN1 tag.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -31,6 +32,27 @@ pub enum Tag {
 /// An ASN1 object identifier.
 #[derive(Debug, Clone, PartialEq, Eq, strum::Display)]
 pub enum Oid {
+    // X509 extensions.
+    AuthorityKeyIdentifier,
+    BasicConstraints,
+    DiceTcbInfo,
+    KeyUsage,
+    SubjectKeyIdentifier,
+    // Name attributes.
+    CommonName,
+    Country,
+    Organization,
+    OrganizationalUnit,
+    SerialNumber,
+    State,
+    // Signature algorithms.
+    EcdsaWithSha256,
+    // Public key type.
+    EcPublicKey,
+    // Elliptic curve names.
+    Prime256v1,
+    // Hash algorithms.
+    Sha256,
     // Custom oid.
     Custom(String),
 }
@@ -39,6 +61,64 @@ impl Oid {
     /// Return the standard notation of the OID as string.
     pub fn oid(&self) -> &str {
         match self {
+            // From https://datatracker.ietf.org/doc/html/rfc5280
+            // id-ce   OBJECT IDENTIFIER ::=  { joint-iso-ccitt(2) ds(5) 29 }
+            //
+            // id-ce-basicConstraints OBJECT IDENTIFIER ::=  { id-ce 19 }
+            Oid::BasicConstraints => "2.5.29.19",
+            // id-ce-keyUsage OBJECT IDENTIFIER ::=  { id-ce 15 }
+            Oid::KeyUsage => "2.5.29.15",
+            // id-ce-authorityKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 35 }
+            Oid::AuthorityKeyIdentifier => "2.5.29.35",
+            // id-ce-subjectKeyIdentifier OBJECT IDENTIFIER ::=  { id-ce 14 }
+            Oid::SubjectKeyIdentifier => "2.5.29.14",
+
+            // https://trustedcomputinggroup.org/wp-content/uploads/TCG_DICE_Attestation_Architecture_r22_02dec2020.pdf
+            // tcg OBJECT IDENTIFIER ::= {2 23 133}
+            // tcg-dice OBJECT IDENTIFIER ::= { tcg platformClass(5) 4 }
+            // tcg-dice-TcbInfo OBJECT IDENTIFIER ::= {tcg-dice 1}
+            Oid::DiceTcbInfo => "2.23.133.5.4.1",
+
+            // From https://www.itu.int/rec/T-REC-X.501/en
+            // ID ::= OBJECT IDENTIFIER
+            // ds ID ::= {joint-iso-itu-t ds(5)}
+            // attributeType ID ::= {ds 4}
+            // id-at ID ::= attributeType
+            //
+            // From https://www.itu.int/rec/T-REC-X.520
+            // id-at-commonName OBJECT IDENTIFIER ::= {id-at 3}
+            Oid::CommonName => "2.5.4.3",
+            // id-at-serialNumber OBJECT IDENTIFIER ::= {id-at 5}
+            Oid::SerialNumber => "2.5.4.5",
+            // id-at-countryName OBJECT IDENTIFIER ::= {id-at 6}
+            Oid::Country => "2.5.4.6",
+            // id-at-stateOrProvinceName OBJECT IDENTIFIER ::= {id-at 8}
+            Oid::State => "2.5.4.8",
+            // id-at-organizationName OBJECT IDENTIFIER ::= {id-at 10}
+            Oid::Organization => "2.5.4.10",
+            // id-at-organizationalUnitName OBJECT IDENTIFIER ::= {id-at 11}
+            Oid::OrganizationalUnit => "2.5.4.11",
+
+            // From https://datatracker.ietf.org/doc/html/rfc5758#section-3.2
+            // ecdsa-with-SHA256 OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840)
+            //      ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 2 }
+            Oid::EcdsaWithSha256 => "1.2.840.10045.4.3.2",
+
+            // From https://datatracker.ietf.org/doc/html/rfc3279
+            // ansi-X9-62  OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840) 10045 }
+            // id-publicKeyType OBJECT IDENTIFIER  ::= { ansi-X9-62 keyType(2) }
+            // id-ecPublicKey OBJECT IDENTIFIER ::= { id-publicKeyType 1 }
+            Oid::EcPublicKey => "1.2.840.10045.2.1",
+            // ellipticCurve OBJECT IDENTIFIER ::= { ansi-X9-62 curves(3) }
+            // primeCurve OBJECT IDENTIFIER ::= { ellipticCurve prime(1) }
+            // prime256v1  OBJECT IDENTIFIER  ::=  { primeCurve  7 }
+            Oid::Prime256v1 => "1.2.840.10045.3.1.7",
+
+            // From https://datatracker.ietf.org/doc/html/rfc5758#section-2
+            // id-sha256  OBJECT IDENTIFIER  ::=  { joint-iso-itu-t(2) country(16) us(840)
+            //      organization(1) gov(101) csor(3) nistalgorithm(4) hashalgs(2) 1 }
+            Oid::Sha256 => "2.16.840.1.101.3.4.2.1",
+
             Oid::Custom(oid) => oid,
         }
     }
