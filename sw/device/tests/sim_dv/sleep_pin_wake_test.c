@@ -51,7 +51,7 @@ OT_SECTION(".non_volatile_scratch") uint32_t wakeup_detector_idx;
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
   top_earlgrey_plic_peripheral_t peripheral;
 

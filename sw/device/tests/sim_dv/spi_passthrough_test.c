@@ -339,7 +339,7 @@ void spi_device_isr(void) {
  *
  * Runs in interrupt context.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kPlicTarget, &plic_irq_id));

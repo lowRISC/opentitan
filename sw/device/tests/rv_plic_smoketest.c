@@ -67,7 +67,7 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Claim the IRQ by reading the Ibex specific CC register.
   dif_rv_plic_irq_id_t interrupt_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic0, kPlicTarget, &interrupt_id));

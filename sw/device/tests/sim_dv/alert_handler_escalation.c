@@ -81,7 +81,7 @@ static const dif_alert_handler_class_config_t kConfigProfiles[] = {{
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_nmi_handler(void) {
+void ottf_external_nmi_handler(uint32_t *exc_info) {
   // DO NOT REMOVE, DV sync message
   LOG_INFO("You are experiencing an NMI");
 

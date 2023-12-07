@@ -48,6 +48,7 @@ SECTIONS {
   } > ram_main
 
   .vectors : ALIGN (256){
+    _text_start = .;
     KEEP(*(.vectors))
     . = ALIGN(4);
   } > ram_main
@@ -57,6 +58,7 @@ SECTIONS {
     KEEP(*(.text))
     KEEP(*(.text.*))
     . = ALIGN(4);
+    _text_end = .;
   } > ram_main
 
   .rodata : ALIGN(4) {

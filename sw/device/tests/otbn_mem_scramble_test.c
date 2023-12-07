@@ -81,7 +81,9 @@ static volatile bool has_irq_fired;
 /**
  * This overrides the default OTTF load integrity handler.
  */
-void ottf_load_integrity_error_handler(void) { has_irq_fired = true; }
+void ottf_load_integrity_error_handler(uint32_t *exc_info) {
+  has_irq_fired = true;
+}
 
 /**
  * Get `num` distinct random numbers in the range [0, `max`] from

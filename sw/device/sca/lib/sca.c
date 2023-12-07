@@ -190,7 +190,7 @@ static void sca_init_edn(void) {
  *
  * Disables the counter and clears pending interrupts.
  */
-void ottf_timer_isr(void) {
+void ottf_timer_isr(uint32_t *exc_info) {
   // Return values of below functions are ignored to improve capture
   // performance.
   OT_DISCARD(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,

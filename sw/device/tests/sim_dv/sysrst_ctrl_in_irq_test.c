@@ -156,7 +156,7 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
   peripheral = (top_earlgrey_plic_peripheral_t)

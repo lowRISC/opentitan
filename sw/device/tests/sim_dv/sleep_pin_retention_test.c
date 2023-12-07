@@ -48,7 +48,7 @@ enum { kNumGpioPads = 8 };
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
   top_earlgrey_plic_peripheral_t peripheral;
 

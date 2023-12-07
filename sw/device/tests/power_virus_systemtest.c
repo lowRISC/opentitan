@@ -274,7 +274,7 @@ static void log_entropy_src_alert_failures(void) {
 /**
  * External (OTTF) ISR override.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(

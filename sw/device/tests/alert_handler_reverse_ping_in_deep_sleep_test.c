@@ -191,7 +191,7 @@ static void chip_sw_reset(void) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) { interrupt_serviced = true; }
+void ottf_external_isr(uint32_t *exc_info) { interrupt_serviced = true; }
 
 bool test_main(void) {
   init_peripherals();

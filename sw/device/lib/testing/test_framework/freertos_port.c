@@ -41,7 +41,7 @@ static const uint64_t kTimerDeadline =
     100;  // Counter must reach 100 for an IRQ to be triggered.
 
 // Override the timer ISR to support preemptive context switching.
-void ottf_timer_isr(void) {
+void ottf_timer_isr(uint32_t *exc_info) {
   LOG_INFO("Handling timer IQR ...");
   dif_rv_timer_irq_enable_snapshot_t irq_enable_snapshot;
   CHECK_DIF_OK(

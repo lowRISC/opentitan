@@ -115,6 +115,6 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode);
  * Handles all peripheral interrupts expected for these tests. It expects
  * no barks from aon_timer, and phase 0 interrupts from the alert handler.
  */
-void ottf_external_isr(void);
+void ottf_external_isr(uint32_t *exc_info);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_RESETS_LIB_H_

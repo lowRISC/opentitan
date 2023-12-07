@@ -66,7 +66,7 @@ static volatile bool fired_irqs[SPI_DEVICE_NUM_IRQS];
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

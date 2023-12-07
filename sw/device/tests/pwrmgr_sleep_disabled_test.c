@@ -38,7 +38,7 @@ bool is_pwrmgr_irq_pending(void) {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 

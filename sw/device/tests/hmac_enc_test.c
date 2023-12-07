@@ -40,7 +40,7 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   isr_testutils_hmac_isr(plic_ctx, hmac_ctx, &peripheral_serviced,
                          &irq_serviced);
 }

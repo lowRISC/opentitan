@@ -21,7 +21,9 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static volatile bool access_exception_seen;
 
-void ottf_load_store_fault_handler(void) { access_exception_seen = true; }
+void ottf_load_store_fault_handler(uint32_t *exc_info) {
+  access_exception_seen = true;
+}
 
 status_t execute_test(bool debug_func) {
   mmio_region_t region =

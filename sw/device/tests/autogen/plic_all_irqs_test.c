@@ -323,7 +323,7 @@ static volatile dif_usbdev_irq_t usbdev_irq_serviced;
  * 4. Clears the IRQ at the peripheral.
  * 5. Completes the IRQ service at PLIC.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 

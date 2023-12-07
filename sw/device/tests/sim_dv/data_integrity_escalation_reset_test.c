@@ -222,7 +222,7 @@ static void rv_core_ibex_fault_checker(bool enable) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t irq_id;
 
   LOG_INFO("At regular external ISR");
@@ -284,7 +284,7 @@ void ottf_external_isr(void) {
  *
  * Handles load integrity error exceptions on Ibex.
  */
-void ottf_load_integrity_error_handler(void) {
+void ottf_load_integrity_error_handler(uint32_t *exc_info) {
   LOG_INFO("At load integrity error handler");
 
   CHECK(kFaultTarget != kFaultTargetMainSramInstr,
@@ -313,7 +313,7 @@ void ottf_load_integrity_error_handler(void) {
  *
  * Handles instruction access faults on Ibex.
  */
-void ottf_instr_access_fault_handler(void) {
+void ottf_instr_access_fault_handler(uint32_t *exc_info) {
   LOG_INFO("At instr access fault handler");
 
   CHECK(kFaultTargetMainSramInstr == 2, "Expected fault target 2, got %d",
@@ -338,7 +338,7 @@ void ottf_instr_access_fault_handler(void) {
  *
  * Handles NMI interrupts on Ibex for either escalation or watchdog.
  */
-void ottf_external_nmi_handler(void) {
+void ottf_external_nmi_handler(uint32_t *exc_info) {
   dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   LOG_INFO("At NMI handler");
 

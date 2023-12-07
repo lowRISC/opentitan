@@ -86,7 +86,7 @@ static status_t external_isr(void) {
   return OK_STATUS();
 }
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   status_t tmp = external_isr();
   if (status_ok(isr_result)) {
     isr_result = tmp;

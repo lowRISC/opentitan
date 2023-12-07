@@ -23,7 +23,8 @@ extern dif_rv_plic_t ottf_plic;
  * @param reason A string describing the fault reason.
  * @param mcause The value of the mcause register for this fault.
  */
-void ottf_generic_fault_print(const char *reason, uint32_t mcause);
+void ottf_generic_fault_print(uint32_t *exc_info, const char *reason,
+                              uint32_t mcause);
 
 /**
  * OTTF exception handler.
@@ -33,7 +34,7 @@ void ottf_generic_fault_print(const char *reason, uint32_t mcause);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_exception_handler(void);
+void ottf_exception_handler(uint32_t *exc_info);
 
 /**
  * OTTF instruction misaligned fault handler.
@@ -44,7 +45,7 @@ void ottf_exception_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_instr_misaligned_fault_handler(void);
+void ottf_instr_misaligned_fault_handler(uint32_t *exc_info);
 
 /**
  * OTTF instruction access fault handler.
@@ -55,7 +56,7 @@ void ottf_instr_misaligned_fault_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_instr_access_fault_handler(void);
+void ottf_instr_access_fault_handler(uint32_t *exc_info);
 
 /**
  * OTTF illegal instruction fault handler.
@@ -66,7 +67,7 @@ void ottf_instr_access_fault_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_illegal_instr_fault_handler(void);
+void ottf_illegal_instr_fault_handler(uint32_t *exc_info);
 
 /**
  * OTTF breakpoint handler.
@@ -77,7 +78,7 @@ void ottf_illegal_instr_fault_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_breakpoint_handler(void);
+void ottf_breakpoint_handler(uint32_t *exc_info);
 
 /**
  * OTTF load/store fault handler.
@@ -88,7 +89,7 @@ void ottf_breakpoint_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_load_store_fault_handler(void);
+void ottf_load_store_fault_handler(uint32_t *exc_info);
 
 /**
  * OTTF machine-mode environment call handler.
@@ -99,7 +100,7 @@ void ottf_load_store_fault_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_machine_ecall_handler(void);
+void ottf_machine_ecall_handler(uint32_t *exc_info);
 
 /**
  * OTTF user-mode environment call handler.
@@ -110,7 +111,7 @@ void ottf_machine_ecall_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_user_ecall_handler(void);
+void ottf_user_ecall_handler(uint32_t *exc_info);
 
 /**
  * OTTF software IRQ handler.
@@ -118,7 +119,7 @@ void ottf_user_ecall_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_software_isr(void);
+void ottf_software_isr(uint32_t *exc_info);
 
 /**
  * OTTF timer IRQ handler.
@@ -126,7 +127,7 @@ void ottf_software_isr(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_timer_isr(void);
+void ottf_timer_isr(uint32_t *exc_info);
 
 /**
  * OTTF external IRQ handler.
@@ -134,7 +135,7 @@ void ottf_timer_isr(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_external_isr(void);
+void ottf_external_isr(uint32_t *exc_info);
 
 /**
  * OTTF external NMI internal IRQ handler.
@@ -142,7 +143,7 @@ void ottf_external_isr(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_external_nmi_handler(void);
+void ottf_external_nmi_handler(uint32_t *exc_info);
 
 /**
  * OTTF load integrity internal IRQ handler.
@@ -150,7 +151,7 @@ void ottf_external_nmi_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_load_integrity_error_handler(void);
+void ottf_load_integrity_error_handler(uint32_t *exc_info);
 
 /**
  * OTTF internal IRQ handler.
@@ -158,6 +159,6 @@ void ottf_load_integrity_error_handler(void);
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
  * overridden at link-time by providing an additional non-weak definition.
  */
-void ottf_internal_isr(void);
+void ottf_internal_isr(uint32_t *exc_info);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_

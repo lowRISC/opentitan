@@ -111,7 +111,7 @@ static volatile bool fired_irqs[FLASH_CTRL_NUM_IRQS];
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral_serviced;
   dif_flash_ctrl_irq_t irq_serviced;
   isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, &peripheral_serviced,

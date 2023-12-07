@@ -75,7 +75,7 @@ static inline bool was_in_machine_mode(void) {
   return ((mstatus >> kMppOffset) & 0x3) == 0x3;
 }
 
-void ottf_exception_handler(void) {
+void ottf_exception_handler(uint32_t *exc_info) {
   uint32_t mtval = ibex_mtval_read();
   ibex_exc_t mcause = ibex_mcause_read();
   bool m_mode_exception = was_in_machine_mode();

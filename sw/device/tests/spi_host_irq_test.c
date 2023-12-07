@@ -80,7 +80,7 @@ static status_t external_isr(void) {
   return OK_STATUS();
 }
 
-void ottf_external_isr(void) { test_result = external_isr(); }
+void ottf_external_isr(uint32_t *exc_info) { test_result = external_isr(); }
 
 static status_t check_irq_eq(uint32_t irq) {
   irq_global_ctrl(false);

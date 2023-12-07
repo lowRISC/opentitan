@@ -45,7 +45,9 @@ static volatile bool pmp_load_exception;
 __attribute__((aligned(PMP_LOAD_RANGE_SIZE)))  //
 static volatile char pmp_load_test_data[PMP_LOAD_RANGE_BUFFER_SIZE];
 
-void ottf_load_store_fault_handler(void) { pmp_load_exception = true; }
+void ottf_load_store_fault_handler(uint32_t *exc_info) {
+  pmp_load_exception = true;
+}
 
 static void pmp_configure_load_tor(void) {
   uintptr_t load_range_start =
