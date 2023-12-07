@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
+#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -127,9 +128,9 @@ static void test_event(uint32_t idx, dif_toggle_t fatal) {
 
 enum {
   // Counter for event index.
-  kCounterEventIdx,
+  kCounterEventIdx = 0,
   // Counter for number of events tested.
-  kCounterNumTests,
+  kCounterNumTests = 0,
   // Max number of events to test per run.
   kNumTestsMax = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS >> 1,
 };
@@ -169,6 +170,16 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
       &alert_handler, kTopEarlgreyAlertIdSensorCtrlAonFatalAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
+
+  // Check if there was a HW reset caused by expected cases.
+  dif_rstmgr_reset_info_bitfield_t rst_info;
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
+
+  if (rst_info == kDifRstmgrResetInfoPor) {
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterEventIdx));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterNumTests));
+  }
 
   // Make sure we do not try to test more than half of all available events
   // in a single test.  Testing too many would just make the run time too
