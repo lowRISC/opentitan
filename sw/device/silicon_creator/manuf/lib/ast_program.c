@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
@@ -18,6 +19,7 @@
 // source unit.
 #define ast_write(addr, data) abs_mmio_write32(addr, data)
 static dif_flash_ctrl_state_t flash_state;
+static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 #else
 // If we're running a unit test, we want to supply an AST writing function
@@ -25,11 +27,20 @@ static dif_uart_t uart0;
 // the written values and examine/modify the flash.
 extern void ast_write(uint32_t addr, uint32_t data);
 dif_flash_ctrl_state_t flash_state;
+dif_pinmux_t pinmux;
 dif_uart_t uart0;
 #endif
 
 static status_t setup_uart(bool enable) {
   if (enable) {
+    TRY(dif_pinmux_init(
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+    TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInUart0Rx,
+                                kTopEarlgreyPinmuxInselIoc3));
+    TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc3,
+                                 kTopEarlgreyPinmuxOutselConstantHighZ));
+    TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc4,
+                                 kTopEarlgreyPinmuxOutselUart0Tx));
     TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
                       &uart0));
     TRY(dif_uart_configure(&uart0,
@@ -107,6 +118,7 @@ status_t ast_program_config(bool verbose) {
     for (size_t i = 0; i < ast_data[0]; ++i) {
       uint32_t addr = ast_data[1 + i * 2];
       uint32_t data = ast_data[2 + i * 2];
+      LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);
       ast_write(addr, data);
     }
   } else {
