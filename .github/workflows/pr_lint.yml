@@ -6,32 +6,18 @@
 #
 # See https://github.com/chipsalliance/verible-linter-action.
 
-name: pr-lint-review
+name: pr-lint
 
-# Triggers when there is any activity on a pull request, e.g. opened, updated.
-#
-# The action runs in the context of the _base_ of the pull request, but later we
-# checkout the repository at the pull request's HEAD to run linting.
 on:
-  pull_request_target:
+  pull_request:
 
 jobs:
   verible-lint:
     runs-on: ubuntu-latest
-    # Grant only write permissions for setting checks and adding review comments
-    # to pull requests.
-    permissions:
-      checks: write
-      contents: read
-      pull-requests: write
     env:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Because `pull_request_target` runs at the PR's base, we need to
-          # checkout the head of the PR before running the lint.
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: Prepare Verible config
         run: |
           echo "Concatenating Verible waivers"
@@ -45,10 +31,10 @@ jobs:
           cat "verible_waiver"
           echo "::endgroup::"
       - name: Run Verible linter action
-        uses: chipsalliance/verible-linter-action@v2
+        uses: chipsalliance/verible-linter-action@v2.0
         with:
-          verible_version: "v0.0-3430-g060bde0f"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          verible_version: "v0.0-3430-g060bde0f"
           reviewdog_reporter: 'github-pr-check'
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
