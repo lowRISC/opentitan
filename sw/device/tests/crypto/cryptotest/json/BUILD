@@ -47,6 +47,13 @@ cc_library(
 )
 
 cc_library(
+    name = "sha3_sca_commands",
+    srcs = ["sha3_sca_commands.c"],
+    hdrs = ["sha3_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "trigger_sca_commands",
     srcs = ["trigger_sca_commands.c"],
     hdrs = ["trigger_sca_commands.h"],
