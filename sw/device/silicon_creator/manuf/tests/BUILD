@@ -217,6 +217,35 @@ cc_library(
     ],
 )
 
+opentitan_test(
+    name = "manuf_load_ast_calibration_into_flash",
+    srcs = ["sram_load_ast_calibration_into_flash.c"],
+    exec_env = {
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    silicon = silicon_jtag_params(
+        interface = "hyper310",
+        test_cmd = "--elf={firmware}",
+        test_harness = "//sw/host/tests/manuf/manuf_sram_program_load",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
 # We are using a bitstream with ROM execution disabled so the contents of flash
 # does not matter but opentitan_functest() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
