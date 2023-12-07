@@ -33,8 +33,8 @@ class chip_sw_sysrst_ctrl_inputs_vseq extends chip_sw_base_vseq;
     bit [7:0] test_expected[1];
     test_phase[0] = phase;
     test_expected[0] = expected;
-    sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
-    sw_symbol_backdoor_overwrite("kTestExpected", test_expected);
+    sw_symbol_backdoor_overwrite("kTestPhaseDV", test_phase);
+    sw_symbol_backdoor_overwrite("kTestExpectedDV", test_expected);
   endfunction
 
   virtual task body();
