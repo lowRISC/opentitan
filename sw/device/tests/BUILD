@@ -119,6 +119,39 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "aes_idle_sram_test",
+    srcs = ["aes_idle_test.c"],
+    silicon = silicon_jtag_params(
+        tags = ["manual"],
+        test_cmd = "--elf={firmware}",
+        test_harness = "//sw/host/tests/manuf/manuf_sram_program_load:manuf_sram_program_load",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    kind = "ram",
+    linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:ast_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:ottf_console",
+        "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
 alias(
     name = "aes_smoketest_entropy_testutils",
     actual = select({

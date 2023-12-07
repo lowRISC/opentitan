@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/ast_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
@@ -69,6 +70,8 @@ static void sram_ret_neg_test(void) {
 }
 
 bool test_main(void) {
+  ast_testutils_init();
+
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));

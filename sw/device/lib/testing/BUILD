@@ -42,6 +42,17 @@ cc_library(
 )
 
 cc_library(
+    name = "ast_testutils",
+    srcs = ["ast_testutils.c"],
+    hdrs = ["ast_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+    ],
+)
+
+cc_library(
     name = "aes_testutils",
     srcs = ["aes_testutils.c"],
     hdrs = ["aes_testutils.h"],

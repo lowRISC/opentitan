@@ -174,8 +174,8 @@ sram_start:
   sw t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Configure the AST
-  li a0, 1
-  call ast_program_config
+  // li a0, 1
+  // call ast_program_config
   // Jump into the C program entry point.
   call sram_main
 

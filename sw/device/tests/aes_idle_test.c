@@ -7,11 +7,15 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/testing/ast_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -27,9 +31,17 @@ static const uint8_t kKeyShare1[] = {
 };
 
 OTTF_DEFINE_TEST_CONFIG();
+
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kAesClock =
     kTopEarlgreyHintableClocksMainAes;
+static dif_pinmux_t pinmux;
+
+
+static void peripheral_handles_init(void) {
+  CHECK_DIF_OK(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+                      &pinmux));
+}
 
 static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
                                       dif_clkmgr_hintable_clock_t clock) {
@@ -136,7 +148,14 @@ status_t execute_test(dif_aes_t *aes) {
   return OK_STATUS();
 }
 
-bool test_main(void) {
+bool sram_start(void) {
+  ast_testutils_init();
+  peripheral_handles_init();
+  pinmux_testutils_init(&pinmux);
+  ottf_console_init();
+
+  LOG_INFO("PASS.");
+
   dif_aes_t aes;
   CHECK_STATUS_OK(initialize_clkmgr());
 
