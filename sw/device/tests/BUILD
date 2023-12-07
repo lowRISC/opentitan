@@ -3761,7 +3761,18 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_inputs_test",
     srcs = ["sysrst_ctrl_inputs_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -3770,6 +3781,7 @@ opentitan_test(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
 
