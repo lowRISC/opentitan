@@ -76,6 +76,9 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
     // Initialize cip_base_env_cfg
     super.initialize(csr_base_addr);
 
+    // Interrupt count
+    num_interrupts = ral.intr_state.get_n_used_bits();
+
     // TL Agent Configuration objects - Non RAL
     `uvm_create_obj(tl_agent_cfg, tl_agent_dma_host_cfg)
     tl_agent_dma_host_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;

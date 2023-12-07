@@ -35,7 +35,7 @@ package dma_env_pkg;
   // Index of interrupt in intf_vif
   parameter uint DMA_DONE = 0;
   parameter uint DMA_ERROR = 1;
-  parameter uint DMA_MEMORY_BUFFER_LIMIT_INTR = 2;
+  parameter uint DMA_MEM_LIMIT = 2;
 
   // Completion status bits (DV-internal)
   typedef enum {

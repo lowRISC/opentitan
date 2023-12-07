@@ -377,7 +377,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     if (exp_buffer_limit_intr) begin
       `uvm_info(`gfn, $sformatf("Memory address:%0x crosses almost limit: 0x%0x limit: 0x%0x",
                                 item.a_addr, dma_config.mem_buffer_almost_limit,
-                                dma_config.mem_buffer_limit), UVM_LOW)  // UVM_HIGH)
+                                dma_config.mem_buffer_limit), UVM_HIGH)
 
       // Interrupt is expected only if enabled.
       exp_buffer_limit_intr = intr_enable_mem_limit;
@@ -541,7 +541,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     fork
       // DMA memory buffer limit interrupt check
       forever begin
-        @(posedge cfg.intr_vif.pins[DMA_MEMORY_BUFFER_LIMIT_INTR]);
+        @(posedge cfg.intr_vif.pins[DMA_MEM_LIMIT]);
         if (!cfg.en_scb) continue;
         if (!cfg.under_reset) begin
           `DV_CHECK_EQ(exp_buffer_limit_intr, 1,
@@ -699,7 +699,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got intr_enable = %0x", item.a_data), UVM_HIGH)
         intr_enable_done      = item.a_data[DMA_DONE];
         intr_enable_error     = item.a_data[DMA_ERROR];
-        intr_enable_mem_limit = item.a_data[DMA_MEMORY_BUFFER_LIMIT_INTR];
+        intr_enable_mem_limit = item.a_data[DMA_MEM_LIMIT];
       end
       "source_address_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
@@ -927,7 +927,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
                   $sformatf("Got handshake_intr_en = 0x%x", dma_config.handshake_intr_en), UVM_HIGH)
       end
       // TODO: we shall surely need to handle `status` register writes at some point
-      "intr_enable": /* Nothing to be done presently */;
       default: begin
         // This message may indicate a failure to update the configuration in the scoreboard
         // so that it matches the configuration programmed into the DUT
@@ -1107,7 +1106,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // The access is to a valid CSR, now process it.
     // writes -> update local variable and fifo at A-channel access
-    // reads  -> update predication at address phase and compare at D-channel access
+    // reads  -> update prediction at address phase and compare at D-channel access
     if (write && channel == AddrChannel) begin
       process_reg_write(item, csr);
     end  // addr_phase_write
