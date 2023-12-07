@@ -58,7 +58,7 @@ static dif_rv_plic_t plic;
 static volatile bool interrupt_expected = false;
 static volatile bool interrupt_serviced = false;
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 

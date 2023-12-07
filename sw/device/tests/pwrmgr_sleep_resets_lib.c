@@ -285,7 +285,7 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
   CHECK(false, "Failed to reset!");
 }
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
   uint32_t irq = 0;

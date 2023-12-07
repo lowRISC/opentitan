@@ -61,7 +61,7 @@ static uint32_t i2c_irq_fmt_threshold_id;
 static uint32_t i2c_base_addr;
 static top_earlgrey_plic_irq_id_t plic_irqs[9];
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 

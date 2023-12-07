@@ -94,7 +94,7 @@ static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
   }
 }
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 

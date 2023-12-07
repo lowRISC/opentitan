@@ -129,7 +129,7 @@ static void alert_handler_config(void) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral_serviced;
   dif_alert_handler_irq_t irq_serviced;
   isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,

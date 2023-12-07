@@ -45,7 +45,7 @@ static void test_handler(void) {
 }
 
 // Override default OTTF timer ISR.
-void ottf_timer_isr(void) {
+void ottf_timer_isr(uint32_t *exc_info) {
   LOG_INFO("Entering handler_irq_timer()");
   test_handler();
   LOG_INFO("Exiting handler_irq_timer()");

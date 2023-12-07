@@ -74,7 +74,7 @@ volatile static bool double_fault;
 /**
  * Overrides the default OTTF exception handler.
  */
-void ottf_exception_handler(void) {
+void ottf_exception_handler(uint32_t *exc_info) {
   if (double_fault) {
     OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddr);
     mmio_region_write32(mmio_region_from_addr(kIllegalAddr2), 0, 0);

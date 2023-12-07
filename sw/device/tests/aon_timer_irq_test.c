@@ -162,7 +162,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Calc the elapsed time since the activation of the IRQ.
   irq_tick = tick_count_get();
 

@@ -310,7 +310,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
       entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
 }
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Claim the IRQ at the PLIC.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

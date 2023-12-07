@@ -493,7 +493,7 @@ void set_edn_auto_mode(void) {
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
 }
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 

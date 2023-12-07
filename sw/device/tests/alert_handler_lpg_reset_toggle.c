@@ -354,7 +354,7 @@ enum {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // We don't expect any interrupt to be fired.
   // If an interrupt is fired, the test will be ended.
   CHECK(false, "Unexpected external interrupt triggered.");

@@ -47,7 +47,7 @@ rand_testutils_rng_t rand_testutils_rng_ctx;
 
 // The OTTF overrides the default machine ecall exception handler to implement
 // FreeRTOS context switching, required for supporting cooperative scheduling.
-void ottf_machine_ecall_handler(void) {
+void ottf_machine_ecall_handler(uint32_t *exc_info) {
   if (pxCurrentTCB != NULL) {
     // If the pointer to the current TCB is not NULL, we are operating in
     // concurrency mode. In this case, our default behavior is to assume a

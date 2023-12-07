@@ -54,7 +54,7 @@ enum {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   isr_testutils_aon_timer_isr(plic_ctx, aon_timer_ctx, &peripheral_serviced,
                               &irq_serviced);
 }

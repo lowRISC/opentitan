@@ -107,7 +107,7 @@ static bool otp_ifetch_enabled(void) {
  * stack by the OTTF exception handler entry subroutine, which means that the
  * return address can be loaded from there. See comments below for more details.
  */
-void ottf_exception_handler(void) {
+void ottf_exception_handler(uint32_t *exc_info) {
   // The frame address is the address of the stack location that holds the
   // `mepc`, since the OTTF exception handler entry code saves the `mepc` to
   // the top of the stack before transferring control flow to the exception

@@ -203,7 +203,7 @@ void update_uart_base_addr_and_irq_id(void) {
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

@@ -82,12 +82,12 @@ static void retention_sram_check(check_config_t config) {
  * Override internal interrupt handler to handle the ECC errors when reading the
  * scrambled memory.
  */
-void ottf_internal_isr(void) {}
+void ottf_internal_isr(uint32_t *exc_info) {}
 
 /**
  * Override external interrupt handler to handle the normal sleep IRQ.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_pwrmgr_irq_t irq_id;
   top_earlgrey_plic_peripheral_t peripheral;
 

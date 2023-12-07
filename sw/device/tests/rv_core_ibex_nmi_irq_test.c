@@ -232,7 +232,7 @@ static void alert_handler_nmi_test(void) {
  * It calls the `expected_isr_handler` function pointer that is previously set
  * by the test to handler the specific peripheral IRQ.
  */
-void ottf_external_nmi_handler(void) {
+void ottf_external_nmi_handler(uint32_t *exc_info) {
   nmi_fired = true;
 
   expected_isr_handler();
@@ -247,7 +247,7 @@ void ottf_external_nmi_handler(void) {
  * OTTF external IRQ handler
  * This functions overrides the OTTF weak definition.
  */
-void ottf_external_isr(void) { ext_irq_fired = true; }
+void ottf_external_isr(uint32_t *exc_info) { ext_irq_fired = true; }
 
 /**
  * Initialized all peripherals used in this test.

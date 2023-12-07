@@ -81,7 +81,7 @@ static volatile bool exception_observed = false;
 // in `ottf_exception_handler()`.
 extern const char kSecMmioNegTestReturn[];
 
-void ottf_exception_handler(void) {
+void ottf_exception_handler(uint32_t *exc_info) {
   CHECK(exception_expected == true);
   CHECK(exception_observed == false);
   exception_expected = false;

@@ -41,7 +41,7 @@ static sensor_ctrl_isr_ctx_t sensor_ctrl_isr_ctx = {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_sensor_ctrl_irq_t irq_id;
   top_earlgrey_plic_peripheral_t peripheral;
 

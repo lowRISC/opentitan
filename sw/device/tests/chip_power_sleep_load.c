@@ -64,12 +64,12 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // ISRs
 
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   LOG_INFO("got external IRQ");
   ext_irq_fired = true;
 }
 
-void ottf_external_nmi_handler(void) {
+void ottf_external_nmi_handler(uint32_t *exc_info) {
   nmi_fired = true;
 
   expected_isr_handler();

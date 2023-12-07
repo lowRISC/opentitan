@@ -301,7 +301,7 @@ static void execute_retention_sram_test(void) {
  * Override internal IRQ interrupt service routine to count
  * the number of integrity exceptions.
  */
-void ottf_internal_isr(void) {
+void ottf_internal_isr(uint32_t *exc_info) {
   LOG_INFO("%s - %d", __func__, reference_frame->ecc_error_counter);
   reference_frame->ecc_error_counter++;
 }

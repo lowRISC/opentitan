@@ -121,6 +121,7 @@ handler_exception:
   jal save_current_sp_to_tcb
 
   // Jump to the exception handler.
+  mv a0, sp
   jal ottf_exception_handler
 
   // Return from ISR.
@@ -181,6 +182,7 @@ handler_irq_software:
   jal save_current_sp_to_tcb
 
   // Jump to the software ISR.
+  mv a0, sp
   jal ottf_software_isr
 
   // Return from ISR.
@@ -241,6 +243,7 @@ handler_irq_timer:
   jal save_current_sp_to_tcb
 
   // Jump to timer ISR.
+  mv a0, sp
   jal ottf_timer_isr
 
   // Return from ISR.
@@ -301,6 +304,7 @@ handler_irq_external:
   jal save_current_sp_to_tcb
 
   // Jump to external ISR.
+  mv a0, sp
   jal ottf_external_isr
 
   // Return from ISR.
@@ -361,6 +365,7 @@ handler_irq_internal:
   jal save_current_sp_to_tcb
 
   // Jump to the internal ISR.
+  mv a0, sp
   jal ottf_internal_isr
 
   // Return from ISR.

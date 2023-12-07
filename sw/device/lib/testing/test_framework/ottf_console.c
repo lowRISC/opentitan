@@ -194,7 +194,7 @@ static status_t manage_flow_control(const dif_uart_t *uart,
   return OK_STATUS((int32_t)flow_control_state);
 }
 
-bool ottf_console_flow_control_isr(void) {
+bool ottf_console_flow_control_isr(uint32_t *exc_info) {
   dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
   flow_control_irqs += 1;
   bool rx;

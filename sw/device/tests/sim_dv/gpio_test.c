@@ -164,7 +164,7 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
  *
  * This function overrides the default OTTF external ISR.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(

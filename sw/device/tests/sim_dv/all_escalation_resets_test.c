@@ -460,7 +460,7 @@ static void rv_core_ibex_fault_checker(bool enable, const char *ip_inst,
  * is correctly blocked.
  *
  */
-void ottf_load_store_fault_handler(void) {
+void ottf_load_store_fault_handler(uint32_t *exc_info) {
   LOG_INFO("At load access error handler");
 
   uint32_t mtval = ibex_mtval_read();
@@ -499,7 +499,7 @@ static void sram_ctrl_ret_fault_checker(bool enable, const char *ip_inst,
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t irq_id;
 
   // There may be multiple interrupts due to the alert firing, so this keeps an
@@ -563,7 +563,7 @@ void ottf_external_isr(void) {
  *
  * Handles NMI interrupts on Ibex for either escalation or watchdog.
  */
-void ottf_external_nmi_handler(void) {
+void ottf_external_nmi_handler(uint32_t *exc_info) {
   dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   // Increment the nmi interrupt count.
   uint32_t nmi_count = 0;

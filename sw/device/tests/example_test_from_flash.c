@@ -50,13 +50,13 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
  * full OTTF, as it used to implement FreeRTOS context switching. See its
  * implementation in `sw/device/lib/testing/test_framework/ottf_main.c`.
  */
-// void ottf_exception_handler(void) {}
-// void ottf_instr_misaligned_fault_handler(void) {}
-// void ottf_instr_access_fault_handler(void) {}
-// void ottf_illegal_instr_fault_handler(void) {}
-// void ottf_breakpoint_handler(void) {}
-// void ottf_load_store_fault_handler(void) {}
-// void ottf_user_ecall_handler(void) {}
+// void ottf_exception_handler(uint32_t *exc_info) {}
+// void ottf_instr_misaligned_fault_handler(uint32_t *exc_info) {}
+// void ottf_instr_access_fault_handler(uint32_t *exc_info) {}
+// void ottf_illegal_instr_fault_handler(uint32_t *exc_info) {}
+// void ottf_breakpoint_handler(uint32_t *exc_info) {}
+// void ottf_load_store_fault_handler(uint32_t *exc_info) {}
+// void ottf_user_ecall_handler(uint32_t *exc_info) {}
 
 /**
  * Override any of the default OTTF ISRs (by uncommenting and implementing them)
@@ -66,9 +66,9 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
  * See `sw/device/lib/testing/test_framework/ottf_isrs.c` for implementation
  * details of the default OTTF ISRs.
  */
-// void ottf_software_isr(void) {}
-// void ottf_timer_isr(void) {}
-// void ottf_external_isr(void) {}
+// void ottf_software_isr(uint32_t *exc_info) {}
+// void ottf_timer_isr(uint32_t *exc_info) {}
+// void ottf_external_isr(uint32_t *exc_info) {}
 
 /**
  * Save data that will need to persist across resets by placing it in the

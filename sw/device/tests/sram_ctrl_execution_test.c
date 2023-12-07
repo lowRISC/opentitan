@@ -42,7 +42,7 @@ static void sram_function_test(void) {
 // in `ottf_exception_handler()`.
 extern const char kSramRetNegTestReturn[];
 
-void ottf_exception_handler(void) {
+void ottf_exception_handler(uint32_t *exc_info) {
   // The frame address is the address of the stack location that holds the
   // `mepc`, since the OTTF exception handler entry code saves the `mepc` to
   // the top of the stack before transferring control flow to the exception

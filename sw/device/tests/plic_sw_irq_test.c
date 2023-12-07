@@ -49,7 +49,7 @@ static void plic_configure_irqs(dif_rv_plic_t *plic) {
  * MSIP triggers this. Inside the routine, it reads all Interrupt Pending bits
  * and confirms only MSIP occurs.
  */
-void ottf_external_isr(void) {
+void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t interrupt_id;
 
   ++external_intr_triggered;
@@ -66,7 +66,7 @@ void ottf_external_isr(void) {
  *
  * Only SW ISR should occur in this test.
  */
-void ottf_software_isr(void) {
+void ottf_software_isr(uint32_t *exc_info) {
   LOG_INFO("SOFTWARE ISR entered");
   ++software_intr_triggered;
 
