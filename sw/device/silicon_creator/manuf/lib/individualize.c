@@ -94,9 +94,6 @@ status_t manuf_individualize_device_hw_cfg(
     return OK_STATUS();
   }
 
-  // Configure byte-sized hardware enable knobs.
-  TRY(hw_cfg_enable_knobs_set(otp_ctrl));
-
   // Configure flash info page permissions in case we started from a cold boot.
   // Note: device_id and manuf_state are on the same flash info page.
   TRY(flash_ctrl_testutils_info_region_setup_properties(
@@ -140,8 +137,12 @@ status_t manuf_individualize_device_hw_cfg(
                                      kHwCfgManufStateOffset, manuf_state,
                                      kHwCfgManufStateSizeIn32BitWords));
 
+  // Configure byte-sized hardware enable knobs.
+  TRY(hw_cfg_enable_knobs_set(otp_ctrl));
+
   TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                         /*digest=*/0));
+
   return OK_STATUS();
 }
 
