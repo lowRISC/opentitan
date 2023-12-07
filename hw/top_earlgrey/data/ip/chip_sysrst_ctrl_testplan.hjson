@@ -80,6 +80,7 @@
         si_stage:SV3
         lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
         tests: ["chip_sw_sysrst_ctrl_ulp_z3_wakeup"]
+        bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_wake_ups"]
     }
   ]
 }
