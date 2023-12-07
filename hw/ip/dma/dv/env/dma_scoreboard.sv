@@ -136,14 +136,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK(addr >= aligned_start_addr && addr < range_end,
                 $sformatf("0x%0x not in %s addr range [0x%0x,0x%0x)", addr, check_type,
                           aligned_start_addr, range_end))
+    end
 
-      // Check that this address lies within the DMA-enabled memory range, where applicable.
-      if (restricted) begin
-        `DV_CHECK(addr >= dma_config.mem_range_base && addr < dma_config.mem_range_limit,
-                  $sformatf("%s addr 0x%0x does not lie within the DMA-enabled range [0x%0x,0x%0x)",
-                            check_type, addr, dma_config.mem_range_base,
-                            dma_config.mem_range_limit))
-      end
+    // Check that this address lies within the DMA-enabled memory range, where applicable.
+    if (restricted) begin
+      `DV_CHECK(addr >= dma_config.mem_range_base && addr < dma_config.mem_range_limit,
+                $sformatf("%s addr 0x%0x does not lie within the DMA-enabled range [0x%0x,0x%0x)",
+                          check_type, addr, dma_config.mem_range_base,
+                          dma_config.mem_range_limit))
     end
 
     // Is this request to the address we expected?
