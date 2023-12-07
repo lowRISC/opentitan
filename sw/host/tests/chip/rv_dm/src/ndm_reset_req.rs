@@ -31,6 +31,7 @@ fn test_ndm_reset_req(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Enable console and wait for the message.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     log::info!("Waiting for \"wait for ndm reset\" message");
     let _ = UartConsole::wait_for(&*uart, "wait for ndm reset", opts.timeout)?;
