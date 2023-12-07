@@ -7,7 +7,6 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -15,7 +14,6 @@
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -42,24 +40,15 @@ typedef struct peri_context {
 } peri_context_t;
 
 static dif_aon_timer_t aon_timer;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
-OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t hung_data_addr[4];)
-
 static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
                              uint32_t value) {
-  uint32_t addr =
-      (uintptr_t)&hung_data_addr[clock] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  uint32_t flash_word[2] = {value, 0};
-  CHECK_STATUS_OK(flash_ctrl_testutils_write(
-      &flash_ctrl, addr, 0, flash_word, kDifFlashCtrlPartitionTypeData, 2));
-  CHECK(hung_data_addr[clock] == value, "Unexpected mismatch on read back");
-  LOG_INFO("The expected hung address for clock %d is 0x%x at 0x%x", clock,
-           value, addr);
+  CHECK_STATUS_OK(ret_sram_testutils_scratch_write(clock, 1, &value));
+  LOG_INFO("The expected hung address for clock %d is 0x%x", clock, value);
 }
 
 static void uart0_csr_access(void) {
@@ -164,10 +153,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
@@ -184,17 +169,6 @@ bool test_main(void) {
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
-
-  // Enable raw flash access.
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
@@ -241,11 +215,10 @@ bool test_main(void) {
     LOG_INFO("PREV_EXC_ADDR  = 0x%x", cpu_dump[5]);
     LOG_INFO("PREV_EXC_PC    = 0x%x", cpu_dump[6]);
     LOG_INFO("PREV_VALID     = 0x%x", cpu_dump[7]);
-    uint64_t expected_hung_address = hung_data_addr[clock];
-    CHECK(expected_hung_address < UINT32_MAX,
-          "expected_hung_address must fit in uint32_t");
-    LOG_INFO("The expected hung address = 0x%x",
-             (uint32_t)expected_hung_address);
+    uint32_t expected_hung_address;
+    CHECK_STATUS_OK(
+        ret_sram_testutils_scratch_read(clock, 1, &expected_hung_address));
+    LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
