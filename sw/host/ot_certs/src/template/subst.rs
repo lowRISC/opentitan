@@ -221,7 +221,7 @@ impl ConvertValue<BigUint> for SubstValue {
                 // No conversion means big-endian.
                 match convert {
                     None | Some(Conversion::BigEndian) => {
-                        Ok(Value::Literal(BigUint::from_bytes_be(&bytes)))
+                        Ok(Value::Literal(BigUint::from_bytes_be(bytes)))
                     }
                     _ => bail!("substitution of an integer field with a byte-array cannot specify conversion {:?}", convert)
                 }
@@ -292,7 +292,7 @@ impl Subst for Certificate {
 impl Subst for FirmwareId {
     fn subst(&self, data: &SubstData) -> Result<FirmwareId> {
         Ok(FirmwareId {
-            hash_algorithm: self.hash_algorithm.clone(),
+            hash_algorithm: self.hash_algorithm,
             digest: self.digest.subst(data)?,
         })
     }
@@ -300,7 +300,7 @@ impl Subst for FirmwareId {
 
 impl Subst for Flags {
     fn subst(&self, _data: &SubstData) -> Result<Flags> {
-        Ok(self.clone())
+        Ok(*self)
     }
 }
 
