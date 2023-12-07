@@ -11,6 +11,7 @@ rust_library(
     srcs = [
         "src/asn1/builder.rs",
         "src/asn1/der.rs",
+        "src/asn1/dice_tcb.rs",
         "src/asn1/mod.rs",
         "src/asn1/x509.rs",
         "src/lib.rs",
