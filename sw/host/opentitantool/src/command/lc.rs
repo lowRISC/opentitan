@@ -260,7 +260,7 @@ impl CommandDispatch for RawUnlock {
 }
 
 #[derive(Debug, Args)]
-/// Initiates a device transition from Raw to TestUnlocked0.
+/// Resets the chip and initiates a transition into the specified target state.
 pub struct Transition {
     /// The target life cycle state
     #[arg(value_enum, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "test_unlocked0")]
@@ -294,6 +294,16 @@ impl CommandDispatch for Transition {
             .create(transport)?
             .connect(JtagTap::LcTap)?;
 
+        // In order to be on the safe side, we're asserting ROM bootstrap and
+        // reset the chip to prevent ROM from going into a reset loop.
+        let rom_bootstrap = transport.pin_strapping("ROM_BOOTSTRAP")?;
+        rom_bootstrap.apply()?;
+
+        // Reset the chip so that LC_CTRL is in a clean state.
+        let _ = transport.reset_target(Duration::from_millis(50), false);
+        std::thread::sleep(Duration::from_millis(50));
+
+        // Check whether this is a valid transition.
         let token = parse_token_str(self.token.as_str())?;
         check_lc_transition(&mut *jtag, self.target_lc_state, token)?;
 
@@ -317,6 +327,7 @@ impl CommandDispatch for Transition {
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
 
         jtag.disconnect()?;
+        rom_bootstrap.remove()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
