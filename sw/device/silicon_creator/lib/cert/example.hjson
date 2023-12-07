@@ -5,11 +5,6 @@
     name: "example",
 
     variables: {
-        // variable to please the generator
-        var_to_appease_generator: {
-            type: "integer",
-            size: 4
-        }
     },
 
     certificate: {
