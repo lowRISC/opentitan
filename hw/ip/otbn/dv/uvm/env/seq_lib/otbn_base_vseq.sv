@@ -347,12 +347,27 @@ class otbn_base_vseq extends cip_base_vseq #(
     // immediately, causing all sorts of confusion. It's a testbench bug if we are.
     `DV_CHECK_FATAL(!cfg.under_reset)
 
-    // Wait for OTBN to be idle. After a reset, getting an URND value from EDN and performing an
-    // initial secure wipe can take up to 500 cycles if the EDN is held in reset for much longer
-    // than OTBN, so use that as timeout.  Stop waiting on a reset.
+    // Wait for OTBN to be idle. We expect getting there to take some time: OTBN has to get two URND
+    // values from the EDN and then perform its initial secure wipe. To wait for this, wait until
+    // the EDN comes out of reset and then allow some extra time for the actual data to be
+    // transferred. Transferring each URND word will take 8 EDN words and each of those words will
+    // take at least 4 EDN clock cycles. So that gives 32 EDN clock cycles for each URND value while
+    // actually transferring data. Between those transfers, allow another 200 cycles of the main
+    // clock for the secure wipe itself.
+    //
+    // Stop waiting on a reset.
     fork : wait_for_idle_fork
       wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
-      repeat (500) @(cfg.clk_rst_vif.cbn);
+      begin
+        // Wait for both clock/reset interfaces to be out of reset.
+        wait(cfg.edn_clk_rst_vif.rst_n);
+        wait(cfg.clk_rst_vif.rst_n);
+        // Wait for each round of secure wipe (see longer note above for the logic behind the waits)
+        repeat (2) begin
+          repeat (32) @(cfg.edn_clk_rst_vif.cbn);
+          repeat (200) @(cfg.clk_rst_vif.cbn);
+        end
+      end
       wait(cfg.under_reset);
     join_any
 
