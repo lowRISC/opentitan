@@ -47,6 +47,7 @@ cc_test(
 
 keyset(
     name = "keyset",
+    build_setting_default = "",
     keys = {
         "earlgrey_z0_sival_1.der": "earlgrey_z0_sival_1",
     },

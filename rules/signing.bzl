@@ -10,7 +10,7 @@ load("//rules:host.bzl", "host_tools_transition")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
-KeySetInfo = provider(fields = ["keys", "profile", "sign", "tool"])
+KeySetInfo = provider(fields = ["keys", "selected_key", "profile", "sign", "tool"])
 
 def _label_str(label):
     return "@{}//{}:{}".format(label.workspace_name, label.package, label.name)
@@ -33,6 +33,8 @@ def key_from_dict(key, attr_name):
         fail("Invalid key nickname for ", str(key), ".  Nickname ", name, " is invalid.")
     if KeySetInfo in key:
         ksi = key[KeySetInfo]
+        if ksi.selected_key:
+            name = ksi.selected_key
         return struct(
             label = key,
             file = ksi.keys[name],
@@ -560,14 +562,18 @@ def _keyset(ctx):
             ctx.attr.profile,
         ))
 
+    selected_key = ctx.build_setting_value
+    if selected_key and selected_key not in keys:
+        fail("Key name", selected_key, "is not in ", keys.keys())
     if ctx.attr.profile == "local":
         sign = _local_sign
     else:
         sign = _hsmtool_sign
-    return [KeySetInfo(keys = keys, profile = ctx.attr.profile, sign = sign, tool = tool)]
+    return [KeySetInfo(keys = keys, selected_key = selected_key, profile = ctx.attr.profile, sign = sign, tool = tool)]
 
 keyset = rule(
     implementation = _keyset,
+    build_setting = config.string(flag = True),
     attrs = {
         "keys": attr.label_keyed_string_dict(
             allow_files = True,
