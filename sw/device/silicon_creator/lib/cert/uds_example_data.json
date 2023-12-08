@@ -1,0 +1,9 @@
+{
+    "creator_pub_key_ec_x": "0x006d13d8dca1d8211298d41abd8f7ac38c07333c78e652b44c5b425fce61184a",
+    "creator_pub_key_ec_y": "0x0a0636f5073209440adb17dd8b102bc1154dc95394abfaeecd89852e1d622be1",
+    "creator_pub_key_id": "04897afec876db9674abc7d9fa3fd69fb6a5cd3f",
+    "auth_key_key_id": [138, 57, 54, 65, 64, 74, 25, 4, 6, 13, 153, 255, 0, 1, 5, 7, 2, 1, 5, 98],
+    "otp_creator_sw_cfg_hash": [54, 60, 19, 14, 168, 195, 35, 36, 37,98, 65, 53, 45, 24, 59, 10, 18, 12, 255, 3],
+    "otp_owner_sw_cfg_hash": "465644d935385783658357583758c593583b6537",
+    "otp_hw_cfg_hash": "009e9809f85978327592857a093f539078626589"
+}
