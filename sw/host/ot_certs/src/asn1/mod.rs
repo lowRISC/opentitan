@@ -5,6 +5,7 @@
 use anyhow::{Context, Result};
 
 pub mod builder;
+pub mod codegen;
 pub mod der;
 pub mod dice_tcb;
 pub mod x509;
