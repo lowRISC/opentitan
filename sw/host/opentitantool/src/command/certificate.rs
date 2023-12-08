@@ -14,7 +14,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
-use ot_certs::x509;
+use ot_certs::{codegen, x509};
 
 fn load_template(path: &PathBuf) -> Result<Template> {
     // Load template.
@@ -36,8 +36,8 @@ fn load_subst(path: &PathBuf) -> Result<SubstData> {
 pub enum CertificateCommand {
     /// Generate a binary certificate
     Generate(GenCertCommand),
-    /// Generate a certificate template.
-    GenTemplate(GenTplCommand),
+    /// Generate code for a certificate template.
+    Codegen(CodegenCommand),
     /// Parse a certificate.
     Parse(ParseCertificate),
     /// Substitute values in a template.
@@ -52,24 +52,55 @@ pub enum CertFormat {
 
 /// Generate a certificate template.
 #[derive(Debug, Args)]
-pub struct GenTplCommand {
+pub struct CodegenCommand {
     /// Filename of the template.
+    #[arg(long)]
     template: PathBuf,
     /// Certificate format
     #[arg(long, value_enum, default_value_t = CertFormat::X509)]
     cert_format: CertFormat,
     /// Output directory path.
-    output_dir: PathBuf,
+    #[arg(long, required_unless_present_any(["output_c", "output_h"]))]
+    output_dir: Option<PathBuf>,
+    /// Output file for C source.
+    #[arg(long, required_unless_present = "output_dir")]
+    output_c: Option<PathBuf>,
+    /// Output file for H header.
+    #[arg(long, required_unless_present = "output_dir")]
+    output_h: Option<PathBuf>,
 }
 
-impl CommandDispatch for GenTplCommand {
+impl CommandDispatch for CodegenCommand {
     fn run(
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let template = load_template(&self.template)?;
-        Ok(Some(Box::new(template)))
+        // Generate C and header files.
+        let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
+            (
+                output_dir.join(format!("{}.c", &template.name)),
+                output_dir.join(format!("{}.h", &template.name)),
+            )
+        } else {
+            (
+                self.output_c
+                    .clone()
+                    .expect("--output-c must be specified when --output-dir is not used"),
+                self.output_h
+                    .clone()
+                    .expect("--output-h must be specified when --output-dir is not used"),
+            )
+        };
+        let mut output_c = File::create(output_c)?;
+        let mut output_h = File::create(output_h)?;
+
+        let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
+        writeln!(output_c, "{}", codegen.source_c)?;
+        writeln!(output_h, "{}", codegen.source_h)?;
+
+        Ok(None)
     }
 }
 
