@@ -556,7 +556,19 @@ cc_library(
 opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    cw310 = new_cw310_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
+    ),
+    exec_env = {
+        # Exclude fpga_cw310_rom_with_fake_keys because they are signed with
+        # RMA keys, while we need DEV, and the infrastructure doesn't allow
+        # changing the key for a single environment.
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
@@ -567,9 +579,21 @@ opentitan_test(
 opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
-    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    cw310 = new_cw310_params(tags = ["broken"]),
-    exec_env = EARLGREY_TEST_ENVS,
+    cw310 = new_cw310_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
+        # TODO(lowrisc/opentitan#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+        tags = ["broken"],
+    ),
+    exec_env = {
+        # Exclude fpga_cw310_rom_with_fake_keys because they are signed with
+        # RMA keys, while we need DEV, and the infrastructure doesn't allow
+        # changing the key for a single environment.
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
