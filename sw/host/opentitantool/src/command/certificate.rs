@@ -12,6 +12,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
 use ot_certs::x509;
 
@@ -23,6 +24,13 @@ fn load_template(path: &PathBuf) -> Result<Template> {
         .with_context(|| format!("Failed to parse template file {}", path.display()))
 }
 
+fn load_subst(path: &PathBuf) -> Result<SubstData> {
+    let data_content = fs::read_to_string(path)
+        .with_context(|| format!("Could not load the data file {}", path.display()))?;
+    SubstData::from_json(&data_content)
+        .with_context(|| format!("Failed to parse data file {}", path.display()))
+}
+
 /// Commands for interacting with certificates.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum CertificateCommand {
@@ -32,6 +40,8 @@ pub enum CertificateCommand {
     GenTemplate(GenTplCommand),
     /// Parse a certificate.
     Parse(ParseCertificate),
+    /// Substitute values in a template.
+    Subst(SubstCommand),
 }
 
 /// Generate a certificate template.
@@ -71,6 +81,9 @@ pub struct GenCertCommand {
     /// Certificate format
     #[arg(long, value_enum, default_value_t = CertFormat::X509)]
     cert_format: CertFormat,
+    /// Optional substitution data.
+    #[arg(long)]
+    subst: Option<PathBuf>,
     /// Output file.
     output: PathBuf,
 }
@@ -83,6 +96,18 @@ impl CommandDispatch for GenCertCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Load template.
         let template = load_template(&self.template)?;
+        // Load data.
+        let data = self.subst.as_ref().map(load_subst).transpose()?;
+        // Warn user if there is no substitution data and variables.
+        if !template.variables.is_empty() && data.is_none() {
+            bail!("the template contains variable so you must specify some substition data using --subst")
+        }
+        // Substitute
+        let template = if let Some(data) = data {
+            template.subst(&data)?
+        } else {
+            template
+        };
         // Check there are no remaining variables.
         if !template.variables.is_empty() {
             let rem_vars = template
@@ -123,5 +148,38 @@ impl CommandDispatch for ParseCertificate {
         let cert = fs::read(&self.certificate).context("could not read certificate from file")?;
         let cert = x509::parse_certificate(&cert)?;
         Ok(Some(Box::new(cert)))
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct SubstCommand {
+    /// Filename of the input hjson template.
+    template: PathBuf,
+    /// Filename to the substitution data.
+    subst: PathBuf,
+    /// Filename of the output hjson template.
+    #[arg(long)]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for SubstCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Load template.
+        let template = load_template(&self.template)?;
+        // Load data.
+        let data = load_subst(&self.subst)?;
+        // Substitute
+        let template = template.subst(&data)?;
+        // Output
+        if let Some(output) = &self.output {
+            let mut file = File::create(output)?;
+            let doc = serde_annotate::serialize(&template)?.to_hjson().to_string();
+            writeln!(file, "{}", doc)?;
+        }
+        Ok(Some(Box::new(template)))
     }
 }
