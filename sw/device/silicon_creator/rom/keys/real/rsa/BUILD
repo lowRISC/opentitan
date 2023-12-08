@@ -86,6 +86,7 @@ filegroup(
 
 keyset(
     name = "keyset",
+    build_setting_default = "",
     keys = {
         "earlgrey_a0_test_0.der": "earlgrey_a0_test_0",
         "earlgrey_a0_test_1.der": "earlgrey_a0_test_1",

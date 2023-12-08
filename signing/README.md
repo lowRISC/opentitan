@@ -25,10 +25,26 @@ might look like the following:
 }
 ```
 
+## Signing with a token
+
 Once a profile configuration is in place, you can build binaries signed by
-the keyset by telling bazel that you want to use a NitroKey:
+the keyset by telling bazel that you want to use a token.
+
+In the example below, we instruct bazel to use a NitroKey as the token
+and to sign with the key specified by the `rsa_key` attribute of the target
+(or the target's `exec_env`).
 ```
 $ bazel build --//signing:token=//signing/tokens:nitrokey //label-of-target
+```
+
+To sign with an alternate key, you can override the key label via the
+keyset in question.  For `silicon_creator` code, the keyset is
+`//sw/device/silicon_creator/rom/keys/real/rsa:keyset`.
+```
+$ bazel build \
+    --//signing:token=//signing/tokens:nitrokey \
+    --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
+    //label-of-target
 ```
 
 ## Configuration for silicon\_owner SiVAL signing
