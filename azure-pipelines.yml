@@ -283,7 +283,7 @@ jobs:
         --build_tests_only=false \
         --test_output=errors \
         --define DISABLE_VERILATOR_BUILD=true \
-        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
         --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build & test SW
   - template: ci/publish-bazel-test-results.yml
