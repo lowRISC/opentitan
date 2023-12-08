@@ -10,6 +10,7 @@ rust_library(
     name = "ot_certs",
     srcs = [
         "src/asn1/builder.rs",
+        "src/asn1/der.rs",
         "src/asn1/mod.rs",
         "src/lib.rs",
         "src/template/hjson.rs",
