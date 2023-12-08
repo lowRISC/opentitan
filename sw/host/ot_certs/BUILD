@@ -17,6 +17,7 @@ rust_library(
         "src/lib.rs",
         "src/template/hjson.rs",
         "src/template/mod.rs",
+        "src/template/subst.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
     ],
@@ -35,6 +36,7 @@ rust_library(
         "@crate_index//:openssl",
         "@crate_index//:rand",
         "@crate_index//:serde",
+        "@crate_index//:serde_json",
         "@crate_index//:serde_with",
         "@crate_index//:strum",
         # We need those because they are not re-exported by openssl
