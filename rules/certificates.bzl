@@ -12,7 +12,9 @@ def _certificate_codegen_impl(ctx):
 
     out_c = ctx.actions.declare_file("{}.c".format(basename))
     out_h = ctx.actions.declare_file("{}.h".format(basename))
-    outputs = [out_c, out_h]
+    out_writer = ctx.actions.declare_file("{}_writer.c".format(basename))
+    out_tests = ctx.actions.declare_file("{}.json".format(basename))
+    outputs = [out_c, out_h, out_writer, out_tests]
     ctx.actions.run(
         outputs = outputs,
         inputs = [
@@ -26,6 +28,8 @@ def _certificate_codegen_impl(ctx):
             "--template={}".format(ctx.file.template.path),
             "--output-c={}".format(out_c.path),
             "--output-h={}".format(out_h.path),
+            "--output-writer={}".format(out_writer.path),
+            "--output-tests={}".format(out_tests.path),
         ],
         executable = tc.tools.opentitantool,
         mnemonic = "GenCertTemplate",
@@ -35,6 +39,8 @@ def _certificate_codegen_impl(ctx):
         OutputGroupInfo(
             sources = depset([out_c]),
             headers = depset([out_h]),
+            writer = depset([out_writer]),
+            tests = depset([out_tests]),
         ),
     ]
 
@@ -72,4 +78,28 @@ def certificate_template(name, template):
         deps = [
             ":asn1",
         ],
+    )
+
+    native.filegroup(
+        name = "{}_writer".format(name),
+        srcs = [":{}".format(name)],
+        output_group = "writer",
+    )
+
+    native.cc_binary(
+        name = "{}_writer_bin".format(name),
+        srcs = [":{}_writer".format(name)],
+        local_defines = [
+            "OT_NO_RECORD_STATUS",
+        ],
+        deps = [
+            ":{}_library".format(name),
+            "//sw/device/lib/ujson",
+        ],
+    )
+
+    native.filegroup(
+        name = "{}_tests".format(name),
+        srcs = [":{}".format(name)],
+        output_group = "tests",
     )

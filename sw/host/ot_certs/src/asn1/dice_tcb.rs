@@ -151,10 +151,10 @@ impl DiceTcbInfo<'_> {
                             value: 7,
                         },
                         &[
-                            flags.not_configured,
-                            flags.not_secure,
-                            flags.recovery,
-                            flags.debug,
+                            flags.not_configured.clone(),
+                            flags.not_secure.clone(),
+                            flags.recovery.clone(),
+                            flags.debug.clone(),
                         ],
                     )?;
                 }

@@ -169,6 +169,38 @@ impl DeserializeAsHelpMsg<Vec<u8>> for HexString {
     }
 }
 
+pub struct Boolean;
+
+/// Deserialization of a `Value<bool>` from a string or a boolean.
+impl<'de> DeserializeAs<'de, bool> for Boolean {
+    fn deserialize_as<D>(deserializer: D) -> Result<bool, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        bool::deserialize(deserializer)
+    }
+}
+
+/// Serialization of a `Value<Vec<u8>>` as a string of hex digits.
+impl SerializeAs<bool> for Boolean {
+    fn serialize_as<S>(val: &bool, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_bool(*val)
+    }
+}
+
+impl DeserializeAsHelpMsg<bool> for Boolean {
+    fn help_msg() -> &'static str {
+        "a boolean (true or false)"
+    }
+
+    fn example() -> &'static str {
+        "true"
+    }
+}
+
 impl<T> DeserializeAsHelpMsg<T> for serde_with::Same
 where
     T: DeserializeAsHelpMsg<T>,

@@ -12,6 +12,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
 use ot_certs::{codegen, x509};
 

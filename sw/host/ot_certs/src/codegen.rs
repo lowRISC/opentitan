@@ -210,6 +210,9 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
                 Some(typename) => source_writer.push_str(&format!("field({var_name}, {typename})")),
                 None => source_writer.push_str(&format!("field({var_name}, uint8_t, {size})")),
             },
+            VariableType::Boolean => {
+                source_writer.push_str(&format!("field({var_name}, bool)"))
+            }
         }
     }
     source_writer.push_str("\nUJSON_SERDE_STRUCT(Values, values_t, STRUCT_VALUES);\n\n");
@@ -305,9 +308,10 @@ fn generate_value_copy(
                     "{INDENT}{INDENT}.{size_expr} = sizeof({uj_struct_name}->{ptr_expr}),\n"
                 ));
             }
-            VariableCodegenInfo::Int32 { value_expr } => source.push_str(&format!(
-                "{INDENT}{INDENT}.{value_expr} = {uj_struct_name}->{value_expr},\n"
-            )),
+            VariableCodegenInfo::Int32 { value_expr } | VariableCodegenInfo::Boolean { value_expr } =>
+                source.push_str(&format!(
+                    "{INDENT}{INDENT}.{value_expr} = {uj_struct_name}->{value_expr},\n"
+                )),
         }
     }
     source.push_str(&format!("{INDENT}}};\n"));
@@ -404,5 +408,11 @@ fn c_variable_info(
             },
             format!("{INDENT}char *{name};\n{INDENT}size_t {name}_len;\n"),
         ),
+        VariableType::Boolean => (
+            VariableCodegenInfo::Boolean {
+                value_expr: format!("{struct_expr}{name}"),
+            },
+            format!("{INDENT}bool {name};\n"),
+        )
     }
 }

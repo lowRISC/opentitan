@@ -44,6 +44,10 @@
             type: "byte-array",
             size: 20,
         },
+        /// Debug?
+        debug_flag: {
+            type: "boolean",
+        }
     },
 
     certificate: {
@@ -78,7 +82,7 @@
             not_configured: false,
             not_secure: false,
             recovery: false,
-            debug: false,
+            debug: { var: "debug_flag" },
         }
         signature: {
             algorithm: "ecdsa-with-sha256",

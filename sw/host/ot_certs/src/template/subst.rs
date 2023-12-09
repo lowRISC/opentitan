@@ -23,6 +23,7 @@ pub enum SubstValue {
     ByteArray(Vec<u8>),
     Int32(i32),
     String(String),
+    Boolean(bool),
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -66,6 +67,7 @@ impl SubstValue {
             VariableType::ByteArray { size } => self.parse_as_byte_array(size),
             VariableType::Integer { size } => self.parse_as_integer(size),
             VariableType::String { size } => self.parse_as_string(size),
+            VariableType::Boolean => self.parse_as_boolean(),
         }
     }
 
@@ -133,6 +135,7 @@ impl SubstValue {
                 );
                 Ok(self.clone())
             }
+            _ => bail!("cannot parse value {self:?} as an integer"),
         }
     }
 
@@ -147,6 +150,20 @@ impl SubstValue {
                 Ok(self.clone())
             }
             _ => bail!("cannot parse value {self:?} as a string"),
+        }
+    }
+
+    fn parse_as_boolean(&self) -> Result<SubstValue> {
+        match self {
+            SubstValue::Boolean(_) => Ok(self.clone()),
+            SubstValue::String(s) => {
+                match s.as_str() {
+                    "true" => Ok(SubstValue::Boolean(true)),
+                    "false" => Ok(SubstValue::Boolean(false)),
+                    _ => bail!("cannot parse string '{s}' as a boolean, used either 'true' or 'false'"),
+                }
+            }
+            _ => bail!("cannot parse value {self:?} as a boolean"),
         }
     }
 }
@@ -300,7 +317,7 @@ impl Subst for FirmwareId {
 
 impl Subst for Flags {
     fn subst(&self, _data: &SubstData) -> Result<Flags> {
-        Ok(*self)
+        Ok(self.clone())
     }
 }
 

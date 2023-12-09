@@ -326,12 +326,17 @@ pub enum EcCurve {
 }
 
 /// Flags that can be set for a certificate.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde_as]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Flags {
-    pub not_configured: bool,
-    pub not_secure: bool,
-    pub recovery: bool,
-    pub debug: bool,
+    #[serde_as(as = "Value<hjson::Boolean>")]
+    pub not_configured: Value<bool>,
+    #[serde_as(as = "Value<hjson::Boolean>")]
+    pub not_secure: Value<bool>,
+    #[serde_as(as = "Value<hjson::Boolean>")]
+    pub recovery: Value<bool>,
+    #[serde_as(as = "Value<hjson::Boolean>")]
+    pub debug: Value<bool>,
 }
 
 /// Firmware ID (fwid) field.
@@ -372,15 +377,8 @@ pub enum VariableType {
         /// Maximum size in bytes for this variable.
         size: usize,
     },
-}
-
-impl VariableType {
-    // Return the maximum size of the variable in bytes.
-    pub fn size(&self) -> usize {
-        match self {
-            Self::ByteArray { size } | Self::Integer { size } | Self::String { size } => *size,
-        }
-    }
+    /// Boolean variable.
+    Boolean,
 }
 
 impl Template {

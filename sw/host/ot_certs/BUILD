@@ -41,6 +41,7 @@ rust_library(
         "@crate_index//:rand",
         "@crate_index//:serde",
         "@crate_index//:serde_with",
+        "@crate_index//:serde_json",
         "@crate_index//:strum",
         # We need those because they are not re-exported by openssl
         # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021

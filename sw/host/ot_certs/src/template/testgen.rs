@@ -102,6 +102,9 @@ impl Template {
                         SubstValue::ByteArray(bytes)
                     }
                 }
+                super::VariableType::Boolean => {
+                    SubstValue::Boolean(rand::random::<bool>())
+                }
             };
             data.values.insert(var.to_string(), val);
         }
