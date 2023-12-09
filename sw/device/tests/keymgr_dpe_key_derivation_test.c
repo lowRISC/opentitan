@@ -74,5 +74,32 @@ bool test_main(void) {
       &keymgr_dpe, kDifKeymgrDpeStateAvailable));
   LOG_INFO("KeymgrDpe updated UDS slot");
 
+  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(&keymgr_dpe));
+
+  dif_keymgr_dpe_generate_params_t genparams;
+  genparams.key_dest = kDifKeymgrDpeKeyDestAes;
+  genparams.sideload_key = false;
+
+  genparams.salt[0] = 0xd;
+  genparams.salt[1] = 0xe;
+  genparams.salt[2] = 0xa;
+  genparams.salt[3] = 0xd;
+  genparams.salt[4] = 0xb;
+  genparams.salt[5] = 0xe;
+  genparams.salt[6] = 0xe;
+  genparams.salt[7] = 0xf;
+  genparams.version = 0;
+  genparams.slot_src_sel = 1;
+
+  dif_keymgr_dpe_output_t key;
+
+  CHECK_STATUS_OK(keymgr_dpe_testutils_generate(&keymgr_dpe, &genparams, &key));
+  LOG_INFO("KeymgrDpe generated key:");
+  for (size_t i = 0; i < ARRAYSIZE(key.value); i++) {
+    for (size_t j = 0; j < ARRAYSIZE(key.value[0]); j++) {
+      LOG_INFO("%x ", key.value[i][j]);
+    }
+  }
+
   return true;
 }
