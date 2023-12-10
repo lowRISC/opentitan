@@ -315,7 +315,11 @@
     { name: "CFG_REGWEN"
       desc: '''
             Indicates whether the configuration registers are locked because the DMA controller is operating.
-            The CONTROL, STATUS, and CLEAR_STATE registers remain usable.
+            In the idle state, this register is set to kMultiBitBool4True.
+            When the DMA is performing an operation, i.e., the DMA is busy, this register is set to kMultiBitBool4False.
+            During the DMA operation, the CONTROL and STATUS registers remain usable.
+            The comportable registers (the interrupt and alert configuration) are NOT locked during the DMA operation and can still be updated.
+            When the DMA reaches an interrupt or alert condition, it will perform the action according to the current register configuration.
             '''
       swaccess: "ro"
       hwaccess: "hwo"
@@ -355,7 +359,7 @@
       ]
     }
     { name: "CHUNK_DATA_SIZE"
-      desc: "Total size of the data blob involved in DMA movement."
+      desc: "Number of bytes to be transferred in response to each interrupt/firmware request."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
