@@ -73,19 +73,17 @@ sm2_sign:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load first share of secret scalar k from dmem: w0,w1 = dmem[k0] */
-  la        x16, k0
-  li        x2, 0
-  bn.lid    x2, 0(x16++)
-  li        x2, 1
-  bn.lid    x2, 0(x16)
+  /* Generate a random 127-bit number.
+       w4 <= URND()[255:129] */
+  bn.wsrr  w4, 0x2 /* URND */
+  bn.rshi  w4, w31, w4 >> 129
 
-  /* load second share of secret scalar k from dmem: w2,w3 = dmem[k1] */
-  la        x16, k1
-  li        x2, 2
-  bn.lid    x2, 0(x16++)
-  li        x2, 3
-  bn.lid    x2, 0(x16)
+  /* Add 1 to get a 128-bit nonzero scalar for masking.
+       w4 <= w4 + 1 = k */
+  bn.addi   w4, w4, 1
+
+  /* wo = k*/
+  bn.mov    w0, w4
 
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
@@ -131,29 +129,6 @@ sm2_sign:
   la        x19, r
   li        x2, 24
   bn.sid    x2, 0(x19)
-
-  /* re-load first share of secret scalar k from dmem: w0,w1 = dmem[k0] */
-  la        x16, k0
-  li        x2, 0
-  bn.lid    x2, 0(x16++)
-  li        x2, 1
-  bn.lid    x2, 0(x16)
-
-  /* re-load second share of secret scalar k from dmem: w2,w3 = dmem[k1] */
-  la        x16, k1
-  li        x2, 2
-  bn.lid    x2, 0(x16++)
-  li        x2, 3
-  bn.lid    x2, 0(x16)
-
-  /* Generate a random 127-bit number.
-       w4 <= URND()[255:129] */
-  bn.wsrr  w4, 0x2 /* URND */
-  bn.rshi  w4, w31, w4 >> 129
-
-  /* Add 1 to get a 128-bit nonzero scalar for masking.
-       w4 <= w4 + 1 = alpha */
-  bn.addi   w4, w4, 1
   
   /*r+k*/
   bn.addm  w24, w24, w4
@@ -204,10 +179,10 @@ sm2_sign:
   jal       x1, mod_inv
   bn.mov    w0, w1
 
-  /* w19 = (w4 - w19) mod n = (alpha - r*d) mod n */
+  /* w19 = (w4 - w19) mod n = (k - r*d) mod n */
   bn.subm   w19, w4, w19
 
-  /* w0 <= (w0 * w19) mod n = (d + 1)^-1 * (alpha - r*d) mod n = s*/
+  /* w0 <= (w0 * w19) mod n = (d + 1)^-1 * (k - r*d) mod n = s*/
   bn.mov    w24, w0
   bn.mov    w25, w19
   jal       x1, mod_mul_256x256

@@ -20,7 +20,7 @@ enum {
 
 // Message
 static const char kMessage[] = "test message";
-  
+
 static const ecc_curve_t kCurveP256 = {
     .curve_type = ksm2CurveTypeNistP256,
     .domain_parameter = NULL,

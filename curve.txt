@@ -1,0 +1,5 @@
+Equation: y^2 = x^3 + ax + b
+Prime modulus: p
+Base point: (x, y)
+Order: n
+Cofactor: h
