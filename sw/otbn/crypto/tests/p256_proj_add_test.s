@@ -30,6 +30,12 @@ p256_proj_add_test:
   bn.lid   x2++, 0(x3)
   la       x3, p2_z
   bn.lid   x2++, 0(x3)
+  
+  /* load domain parameter b from dmem
+     w30 <= a = dmem[p256_a] */
+  li        x2, 30
+  la        x3, p256_a
+  bn.lid    x2, 0(x3)
 
   /* load domain parameter b from dmem
      w27 <= b = dmem[p256_b] */
@@ -64,25 +70,25 @@ p256_proj_add_test:
 
 /* point 1 x-coordinate p1_x */
 p1_x:
-  .word 0xd898c296
-  .word 0xf4a13945
-  .word 0x2deb33a0
-  .word 0x77037d81
-  .word 0x63a440f2
-  .word 0xf8bce6e5
-  .word 0xe12c4247
-  .word 0x6b17d1f2
+  .word 0x00000323
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* point 1 y-coordinate p1_y */
 p1_y:
-  .word 0x37bf51f5
-  .word 0xcbb64068
-  .word 0x6b315ece
-  .word 0x2bce3357
-  .word 0x7c0f9e16
-  .word 0x8ee7eb4a
-  .word 0xfe1a7f9b
-  .word 0x4fe342e2
+  .word 0x00000626
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* point 1 z-coordinate p1_z */
 p1_z:
@@ -97,25 +103,25 @@ p1_z:
 
 /* point 2 x-coordinate p2_x */
 p2_x:
-  .word 0xbfa8c334
-  .word 0x9773b7b3
-  .word 0xf36b0689
-  .word 0x6ec0c0b2
-  .word 0xdb6c8bf3
-  .word 0x1628ce58
-  .word 0xfacdc546
-  .word 0xb5511a6a
+  .word 0x00000346
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* point 2 y-coordinate p2_y */
 p2_y:
-  .word 0x9e008c2e
-  .word 0xa8707058
-  .word 0xab9c6924
-  .word 0x7f7a11d0
-  .word 0xb53a17fa
-  .word 0x43dd09ea
-  .word 0x1f31c143
-  .word 0x42a1c697
+  .word 0x00000643
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* point 2 z-coordinate p2_z */
 p2_z:

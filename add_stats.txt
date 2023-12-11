@@ -1,0 +1,111 @@
+
+Execution time
+--------------
+OTBN executed 1256 instructions in 1339 cycles.
+The execution stalled for 83 cycles (6.6 percent).
+The execution would take 0.01 ms @ 100 MHz.
+
+
+Instruction frequencies
+-----------------------
+instruction      count
+-------------  -------
+bn.mulqacc         612
+bn.mulqacc.so      204
+bn.add              68
+bn.mov              52
+bn.rshi             51
+jal                 35
+bn.addm             35
+jalr                35
+bn.sel              34
+bn.addc             34
+bn.sub              34
+bn.subb             17
+addi                15
+lui                 10
+bn.lid              10
+bn.subm              7
+bn.wsrw              1
+bn.xor               1
+ecall                1
+
+
+Basic block statistics
+----------------------
+
+Number of instructions within a basic block
+
+  # of instr.    frequency
+-------------  -----------
+            1           18
+            3            2
+            4            5
+            5            3
+            6            4
+            7            2
+            8            2
+           18           17
+           38            1
+           47           17
+
+
+Number of instructions within an extended basic block
+
+  # of instr.    frequency
+-------------  -----------
+         1256            1
+
+Function call statistics
+------------------------
+Function 0x1f8 (proj_add)
+  is called from the following functions
+    * 1 times by function 0x0 (_imem_start)
+  from the following call sites
+    * 1 times from 0x94 (p2_y+0x14)
+  calls
+    no other function (leaf function).
+
+Function 0x178 (mod_mul_256x256)
+  is called from the following functions
+    * 17 times by function 0x98 (p2_y+0x18)
+  from the following call sites
+    * 1 times from 0x200 (k1)
+    * 1 times from 0x210 (k1+0x10)
+    * 1 times from 0x220 (k1+0x20)
+    * 1 times from 0x238 (k1+0x38)
+    * 1 times from 0x258 (msg+0x18)
+    * 1 times from 0x278 (r+0x18)
+    * 1 times from 0x290 (s+0x10)
+    * 1 times from 0x2ac (x+0xc)
+    * 1 times from 0x2c8 (y+0x8)
+    * 1 times from 0x2e0 (d0)
+    * 1 times from 0x2f0 (d0+0x10)
+    * 1 times from 0x308 (d0+0x28)
+    * 1 times from 0x31c (d0+0x3c)
+    * 1 times from 0x330 (d1+0x10)
+    * 1 times from 0x340 (d1+0x20)
+    * 1 times from 0x354 (d1+0x34)
+    * 1 times from 0x364 (x_r+0x4)
+  calls
+    no other function (leaf function).
+
+Function 0xbc (p256_reduce)
+  is called from the following functions
+    * 17 times by function 0x98 (p2_y+0x18)
+  from the following call sites
+    * 17 times from 0x1bc (p256_gy+0x1c)
+  calls
+    no other function (leaf function).
+
+
+Of a total of 35 function calls, there were
+  18 function calls to a function with only one call site (call/ret can be replaced with static jumps)
+  17 leaf function calls (no function prologue/epilogue needed)
+Overall, 0 of 35 (0.00 percent) calls need full function call semantics.
+
+
+Loop statistics
+---------------
+Loops: 0
+

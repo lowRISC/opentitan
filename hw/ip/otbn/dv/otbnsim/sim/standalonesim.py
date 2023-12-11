@@ -44,9 +44,10 @@ class StandaloneSim(OTBNSim):
 
             self.step(verbose)
             insn_count += 1
+            #记录前1000条指令的寄存器
 
-            # Dump registers on the first wipe cycle. This makes sure that we
-            # dump them before zeroing.
+            #Dump registers on the first wipe cycle. This makes sure that we
+            #dump them before zeroing.
             if dump_file is not None and self.state.wiping():
                 self.dump_regs(dump_file)
                 dump_file = None
@@ -61,3 +62,16 @@ class StandaloneSim(OTBNSim):
             tgt.write(' x{:<2} = 0x{:08x}\n'.format(idx, value))
         for idx, value in enumerate(self.state.wdrs.peek_unsigned_values()):
             tgt.write(' w{:<2} = 0x{:064x}\n'.format(idx, value))
+            
+    def print_regs(self) -> None:
+        registers = ['ERR_BITS', 'INSN_CNT', 'STOP_PC']
+        for reg in registers:
+            value = self.state.ext_regs.read(reg, False)
+            print(' {} = 0x{:08x}'.format(reg, value))
+
+        for idx, value in enumerate(self.state.gprs.peek_unsigned_values()):
+            print(' x{:<2} = 0x{:08x}'.format(idx, value))
+
+        for idx, value in enumerate(self.state.wdrs.peek_unsigned_values()):
+            print(' w{:<2} = 0x{:064x}'.format(idx, value))
+

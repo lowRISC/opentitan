@@ -367,21 +367,21 @@ proj_add:
      X1 = x_p; Y1 = y_p; Z1 = z_p; X2 = x_q; Y2 = y_q; Z2 = z_q
      X3 = x_r; Y3 = y_r; Z3 = z_r */
 
-  /* 1: w14 = t0 <= X1*X2 = w11*w8 */
-  bn.mov    w24, w11
-  bn.mov    w25, w8
+  /* 1: w14 = t0 <= X1*X2 = w8*w11 */
+  bn.mov    w24, w8
+  bn.mov    w25, w11
   jal       x1, mod_mul_256x256
   bn.mov    w14, w19
 
-  /* 2: w15 = t1 <= Y1*Y2 = w12*w9 */
-  bn.mov    w24, w12
-  bn.mov    w25, w9
+  /* 2: w15 = t1 <= Y1*Y2 = w9*w12 */
+  bn.mov    w24, w9
+  bn.mov    w25, w12
   jal       x1, mod_mul_256x256
   bn.mov    w15, w19
 
-  /* 3: w16 = t2 <= Z1*Z2 = w13*w10*/
-  bn.mov    w24, w13
-  bn.mov    w25, w10
+  /* 3: w16 = t2 <= Z1*Z2 = w10*w13*/
+  bn.mov    w24, w10
+  bn.mov    w25, w13
   jal       x1, mod_mul_256x256
   bn.mov    w16, w19
 
@@ -406,44 +406,44 @@ proj_add:
   /* 9: w18 = t4 <= X1 + Z1 = w8 + w10 */
   bn.addm   w18, w8, w10
 
-  /* 10: w20 = t5 <= X2+ Z2 = w11 + w13 */
-  bn.addm   w20, w11, w13
+  /* 10: w26 = t5 <= X2 + Z2 = w11 + w13 */
+  bn.addm   w26, w11, w13
 
-  /* 11: w18 = t4 <= t4 * t5 = w18 * w20 */
+  /* 11: w18 = t4 <= t4 * t5 = w18 * w26 */
   bn.mov    w24, w18
-  bn.mov    w25, w20
+  bn.mov    w25, w26
   jal       x1, mod_mul_256x256
   bn.mov    w18, w19
 
-  /* 12: w20 = t5 <= t0 + t2 = w14 + w16 */
-  bn.addm   w20, w14, w16
+  /* 12: w26 = t5 <= t0 + t2 = w14 + w16 */
+  bn.addm   w26, w14, w16
 
-  /* 13: w18 = t4 <= t4 - t5 = w18 - w20 */
-  bn.subm   w18, w18, w20
+  /* 13: w18 = t4 <= t4 - t5 = w18 - w26 */
+  bn.subm   w18, w18, w26
 
-  /* 14: w20 = t5 <= Y1 + Z1 = w9 + w10 */
-   bn.addm   w20, w9, w10
+  /* 14: w26 = t5 <= Y1 + Z1 = w9 + w10 */
+   bn.addm   w26, w9, w10
 
-  /* 15: w11 = X3 <= Y2 + Z2 = w11 + w13 (后面没用过X2)*/
+  /* 15: w11 = X3 <= Y2 + Z2 = w12 + w13 (后面没用过X2)*/
   bn.addm   w11, w12, w13
 
-  /* 16: w20 = t5 <= t5 * X3 = w20 * w11 */
-  bn.mov    w24, w20
+  /* 16: w26 = t5 <= t5 * X3 = w26 * w11 */
+  bn.mov    w24, w26
   bn.mov    w25, w11
   jal       x1, mod_mul_256x256
-  bn.mov    w20, w19
+  bn.mov    w26, w19
 
   /* 17: w11 = X3 <= t1 + t2 = w15 + w16 */
   bn.addm   w11, w15, w16
 
-  /* 18: w20 = t5 <= t5 - X3 = w20 - w11 */
-  bn.subm   w20, w20, w11
+  /* 18: w26 = t5 <= t5 - X3 = w26 - w11 */
+  bn.subm   w26, w26, w11
 
   /* 19: w13 = Z3 <= a * t4 =  w30 * w18 */
   bn.mov    w24, w30
   bn.mov    w25, w18
   jal       x1, mod_mul_256x256
-  mov       w13, w19 
+  bn.mov    w13, w19 
 
   /* b3: w27 = b3 = b * 3 = w27 *3 */
   bn.mov    w24, w27
@@ -459,7 +459,7 @@ proj_add:
   /* 21: w13 = Z3 <= X3 + Z3 = w11 + w13 */
   bn.addm   w13, w11, w13
 
-  /* 22: w11 = X3 <= w15 + w13 = t1 - Z3 */
+  /* 22: w11 = X3 <= t1 - Z3 = w15 - w13 */
   bn.subm   w11, w15, w13
 
   /* 23: w13 = Z3 <= t1 + Z3 = w15 + w13 */
@@ -471,7 +471,7 @@ proj_add:
   jal      x1, mod_mul_256x256
   bn.mov   w12, w19
 
-  /* 25: w15 = t1 <= t0 * t0 = w14 + w14 */
+  /* 25: w15 = t1 <= t0 + t0 = w14 + w14 */
   bn.addm   w15, w14, w14
 
   /* 26: w15 = t1 <= t1 + t0 = w15 + w14 */
@@ -483,17 +483,17 @@ proj_add:
   jal       x1, mod_mul_256x256
   bn.mov    w16, w19
 
-  /* 28: w17 = t4 <= b3 * t4 = w27 * w17 */
+  /* 28: w18 = t4 <= b3 * t4 = w27 * w18 */
   bn.mov    w24, w27
-  bn.mov    w25, w17
+  bn.mov    w25, w18
   jal       x1, mod_mul_256x256
-  bn.mov    w17, w19
+  bn.mov    w18, w19
 
   /* 29: w15 = t1 <= t1 + t2 = w15 + w16 */
   bn.addm   w15, w15, w16
 
   /* 30: w16 = t2 <= t0 - t2 = w14 - w16 */
-  bn.addm   w16, w14, w16
+  bn.subm   w16, w14, w16
 
   /* 31: w16 = t2 <= a * t2 = w30 * w16*/
   bn.mov    w24, w30
@@ -504,14 +504,17 @@ proj_add:
   /* 32: w18 = t4 <= t4 + t2 = w18 + w16 */
   bn.addm   w18, w18, w16
 
-  /* 33: w14 = t0 <= t1 * t4 = w15 + w18 */
-  bn.addm   w14, w15, w18
+  /* 33: w14 = t0 <= t1 * t4 = w15 * w18 */
+  bn.mov    w24, w15
+  bn.mov    w25, w18
+  jal       x1, mod_mul_256x256
+  bn.mov    w14, w19
 
   /* 34: w12 = Y3 <= Y3 + t0 = w12 + w14 */
-  bn.subm   w12, w12, w14
+  bn.addm   w12, w12, w14
 
-  /* 35: w14 = t0 <= t5 * t4 = w20 * w18 */
-  bn.mov    w24, w20
+  /* 35: w14 = t0 <= t5 * t4 = w26 * w18 */
+  bn.mov    w24, w26
   bn.mov    w25, w18
   jal       x1, mod_mul_256x256
   bn.mov    w14, w19
@@ -531,9 +534,9 @@ proj_add:
   jal       x1, mod_mul_256x256
   bn.mov    w14, w19
 
-  /* 39: w13 = Z3 <= t5 * Z3 = w20 * w13 */
-  bn.mov    w24, w20
-  bn.mov    w25, w31
+  /* 39: w13 = Z3 <= t5 * Z3 = w26 * w13 */
+  bn.mov    w24, w26
+  bn.mov    w25, w13
   jal       x1, mod_mul_256x256
   bn.mov    w13, w19
 
@@ -980,6 +983,7 @@ proj_double:
  * @param[in]  w1: upper 64 bits of k0, first share of scalar
  * @param[in]  w2: lower 256 bits of k1, second share of scalar
  * @param[in]  w3: upper 64 bits of k1, second share of scalar
+ * @param[in]  w30: a, curve domain parameter
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -1008,6 +1012,12 @@ scalar_mult_int:
      w28 <= u = dmem[p256_u_p] */
   li        x2, 28
   la        x3, p256_u_p
+  bn.lid    x2, 0(x3)
+
+  /* load domain parameter a from dmem
+     w30 <= a = dmem[p256_a] */
+  li        x2, 30
+  la        x3, p256_a
   bn.lid    x2, 0(x3)
 
   /* load domain parameter b from dmem
@@ -1792,28 +1802,28 @@ p256_key_from_seed:
 /* P-256 domain parameter a */
 .globl p256_a
 .balign 32
-p256_b:
-  .word 0x27d2604b
-  .word 0x3bce3c3e
-  .word 0xcc53b0f6
-  .word 0x651d06b0
-  .word 0x769886bc
-  .word 0xb3ebbd55
-  .word 0xaa3a93e7
-  .word 0x5ac635d8
+p256_a:
+  .word 0x00000003
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* P-256 domain parameter b */
 .globl p256_b
 .balign 32
 p256_b:
-  .word 0x27d2604b
-  .word 0x3bce3c3e
-  .word 0xcc53b0f6
-  .word 0x651d06b0
-  .word 0x769886bc
-  .word 0xb3ebbd55
-  .word 0xaa3a93e7
-  .word 0x5ac635d8
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /* P-256 domain parameter p (modulus) */
 .globl p256_p

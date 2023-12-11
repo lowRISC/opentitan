@@ -275,7 +275,7 @@ otbn_sim_test(
     ],
     exp = "sm2_sign_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:sm2_base",
         "//sw/otbn/crypto:sm2_sign",
     ],
 )
@@ -335,7 +335,7 @@ otbn_sim_test(
     ],
     exp = "p256_proj_add_test.exp",
     deps = [
-        "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:sm2_base",
     ],
 )
 

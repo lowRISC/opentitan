@@ -430,13 +430,20 @@ otbn_binary(
     ],
 )
 
+otbn_library(
+    name = "sm2_base",
+    srcs = [
+        "sm2_base.s",
+    ],
+)
+
 otbn_binary(
     name = "sm2_ecdsa",
     srcs = [
         "sm2_ecdsa.s",
     ],
     deps = [
-        ":p256_base",
+        ":sm2_base",
         ":p256_isoncurve",
         ":sm2_sign",
         ":sm2_verify",
@@ -456,3 +463,4 @@ otbn_library(
         "sm2_verify.s",
     ],
 )
+
