@@ -124,30 +124,6 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
   cp_mem_buffer_auto_inc: coverpoint dma_config.auto_inc_buffer;
 
   cp_handshake_intr: coverpoint dma_config.handshake_intr_en;
-<<<<<<< HEAD
-=======
-  // Abort via write to CONTROL
-  cp_abort: coverpoint abort;
-  // Cross OP code, src_address_space_id, dst_address_space_id and DMA operating mode
-  cp_op_code_x_asid_x_mode: cross cp_opcode, cp_src_asid, cp_dst_asid, cp_handshake_mode{
-    // Ignore reserved values of OP code
-    ignore_bins reserved = binsof (cp_opcode.reserved);
-  }
-  cp_transfer_size_x_src_asid_x_dma_op: cross cp_transfer_width, cp_src_asid, cp_opcode;
-  cp_transfer_width_x_dst_asid_x_dma_op: cross cp_transfer_width, cp_dst_asid, cp_opcode;
-  cp_src_addr_x_src_asid_x_dma_op: cross cp_src_addr, cp_src_asid, cp_opcode;
-  cp_dst_addr_x_dst_asid_x_dma_op: cross cp_dst_addr, cp_dst_asid, cp_opcode;
-  cp_dma_mem_base_x_dma_mem_limit_x_dma_op: cross cp_dma_mem_base, cp_dma_mem_range_limit,
-                                                  cp_opcode;
-  cp_range_lock_x_write_to_dma_mem_region_x_dma_op: cross cp_range_lock,
-                                                          write_to_dma_mem_register, cp_opcode;
-  // Coverpoint for TL error on source interface
-  cp_src_tl_err: coverpoint dma_config.src_asid iff (tl_src_err){
-    bins internal = {OtInternalAddr};
-    bins ctn = {SocControlAddr};
-    bins sys = {SocSystemAddr};
-  }
->>>>>>> 8dc715b9f8 ([hw,dma] Use dst to denote the destination)
 
   cp_initial_transfer: coverpoint initial_transfer;
 

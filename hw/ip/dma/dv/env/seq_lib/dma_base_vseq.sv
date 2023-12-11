@@ -264,18 +264,18 @@ class dma_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Task: Write to Source Address CSR
-  task set_src_address(bit [63:0] src_address);
-    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", src_address), UVM_HIGH)
-    csr_wr(ral.src_address_lo, src_address[31:0]);
-    csr_wr(ral.src_address_hi, src_address[63:32]);
-  endtask : set_src_address
+  task set_src_addr(bit [63:0] src_addr);
+    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", src_addr), UVM_HIGH)
+    csr_wr(ral.src_addr_lo, src_addr[31:0]);
+    csr_wr(ral.src_addr_hi, src_addr[63:32]);
+  endtask : set_src_addr
 
   // Task: Write to Destination Address CSR
-  task set_dst_address(bit [63:0] dst_address);
-    csr_wr(ral.dst_addr_lo, dst_address[31:0]);
-    csr_wr(ral.dst_addr_hi, dst_address[63:32]);
-    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_address), UVM_HIGH)
-  endtask : set_dst_address
+  task set_dst_addr(bit [63:0] dst_addr);
+    csr_wr(ral.dst_addr_lo, dst_addr[31:0]);
+    csr_wr(ral.dst_addr_hi, dst_addr[63:32]);
+    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_addr), UVM_HIGH)
+  endtask : set_dst_addr
 
   task set_dst_addr_range(bit[63:0] almost_limit,
                                      bit[63:0] limit);
@@ -302,13 +302,13 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask : set_dma_enabled_memory_range
 
   // Task: Write to Source and Destination Address Space ID (ASID)
-  task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
-    ral.address_space_id.src_asid.set(int'(src_asid));
-    ral.address_space_id.dst_asid.set(int'(dst_asid));
-    csr_update(.csr(ral.address_space_id));
+  task set_addr_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
+    ral.addr_space_id.src_asid.set(int'(src_asid));
+    ral.addr_space_id.dst_asid.set(int'(dst_asid));
+    csr_update(.csr(ral.addr_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
-  endtask : set_address_space_id
+  endtask : set_addr_space_id
 
   // Task: Set number of bytes to transfer
   task set_total_size(bit [31:0] total_data_size);
@@ -348,10 +348,10 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
     // Not yet requested an Abort during this transaction.
     abort_pending = 1'b0;
-    set_src_address(dma_config.src_addr);
-    set_dst_address(dma_config.dst_addr);
-    set_dst_address_range(dma_config.dst_addr_almost_limit,  dma_config.dst_addr_limit);
-    set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
+    set_src_addr(dma_config.src_addr);
+    set_dst_addr(dma_config.dst_addr);
+    set_dst_addr_range(dma_config.dst_addr_almost_limit, dma_config.dst_addr_limit);
+    set_addr_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
     set_transfer_width(dma_config.per_transfer_width);

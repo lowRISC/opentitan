@@ -63,19 +63,19 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_src_address_lo_reg_t;
+  } dma_reg2hw_src_addr_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_src_address_hi_reg_t;
+  } dma_reg2hw_src_addr_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_lo_reg_t;
+  } dma_reg2hw_dst_addr_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_hi_reg_t;
+  } dma_reg2hw_dst_addr_hi_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -84,7 +84,7 @@ package dma_reg_pkg;
     struct packed {
       logic [3:0]  q;
     } dst_asid;
-  } dma_reg2hw_address_space_id_reg_t;
+  } dma_reg2hw_addr_space_id_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -118,19 +118,19 @@ package dma_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_limit_lo_reg_t;
+  } dma_reg2hw_dst_addr_limit_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_limit_hi_reg_t;
+  } dma_reg2hw_dst_addr_limit_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_almost_limit_lo_reg_t;
+  } dma_reg2hw_dst_addr_almost_limit_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
-  } dma_reg2hw_dst_address_almost_limit_hi_reg_t;
+  } dma_reg2hw_dst_addr_almost_limit_hi_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -215,22 +215,22 @@ package dma_reg_pkg;
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_src_address_lo_reg_t;
+  } dma_hw2reg_src_addr_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_src_address_hi_reg_t;
+  } dma_hw2reg_src_addr_hi_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_dst_address_lo_reg_t;
+  } dma_hw2reg_dst_addr_lo_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } dma_hw2reg_dst_address_hi_reg_t;
+  } dma_hw2reg_dst_addr_hi_reg_t;
 
   typedef struct packed {
     logic [3:0]  d;
@@ -278,11 +278,11 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } src_address_error;
+    } src_addr_error;
     struct packed {
       logic        d;
       logic        de;
-    } dst_address_error;
+    } dst_addr_error;
     struct packed {
       logic        d;
       logic        de;
@@ -320,11 +320,11 @@ package dma_reg_pkg;
     dma_reg2hw_intr_enable_reg_t intr_enable; // [1166:1164]
     dma_reg2hw_intr_test_reg_t intr_test; // [1163:1158]
     dma_reg2hw_alert_test_reg_t alert_test; // [1157:1156]
-    dma_reg2hw_src_address_lo_reg_t src_address_lo; // [1155:1124]
-    dma_reg2hw_src_address_hi_reg_t src_address_hi; // [1123:1092]
-    dma_reg2hw_dst_address_lo_reg_t dst_address_lo; // [1091:1060]
-    dma_reg2hw_dst_address_hi_reg_t dst_address_hi; // [1059:1028]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [1027:1020]
+    dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1155:1124]
+    dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [1123:1092]
+    dma_reg2hw_dst_addr_lo_reg_t dst_addr_lo; // [1091:1060]
+    dma_reg2hw_dst_addr_hi_reg_t dst_addr_hi; // [1059:1028]
+    dma_reg2hw_addr_space_id_reg_t addr_space_id; // [1027:1020]
     dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1019:987]
     dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [986:954]
     dma_reg2hw_range_valid_reg_t range_valid; // [953:953]
@@ -332,10 +332,10 @@ package dma_reg_pkg;
     dma_reg2hw_total_data_size_reg_t total_data_size; // [948:917]
     dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [916:885]
     dma_reg2hw_transfer_width_reg_t transfer_width; // [884:883]
-    dma_reg2hw_dst_address_limit_lo_reg_t dst_address_limit_lo; // [882:851]
-    dma_reg2hw_dst_address_limit_hi_reg_t dst_address_limit_hi; // [850:819]
-    dma_reg2hw_dst_address_almost_limit_lo_reg_t dst_address_almost_limit_lo; // [818:787]
-    dma_reg2hw_dst_address_almost_limit_hi_reg_t dst_address_almost_limit_hi; // [786:755]
+    dma_reg2hw_dst_addr_limit_lo_reg_t dst_addr_limit_lo; // [882:851]
+    dma_reg2hw_dst_addr_limit_hi_reg_t dst_addr_limit_hi; // [850:819]
+    dma_reg2hw_dst_addr_almost_limit_lo_reg_t dst_addr_almost_limit_lo; // [818:787]
+    dma_reg2hw_dst_addr_almost_limit_hi_reg_t dst_addr_almost_limit_hi; // [786:755]
     dma_reg2hw_control_reg_t control; // [754:743]
     dma_reg2hw_status_reg_t status; // [742:737]
     dma_reg2hw_handshake_intr_enable_reg_t handshake_intr_enable; // [736:726]
@@ -348,10 +348,10 @@ package dma_reg_pkg;
   // HW -> register type
   typedef struct packed {
     dma_hw2reg_intr_state_reg_t intr_state; // [701:696]
-    dma_hw2reg_src_address_lo_reg_t src_address_lo; // [695:663]
-    dma_hw2reg_src_address_hi_reg_t src_address_hi; // [662:630]
-    dma_hw2reg_dst_address_lo_reg_t dst_address_lo; // [629:597]
-    dma_hw2reg_dst_address_hi_reg_t dst_address_hi; // [596:564]
+    dma_hw2reg_src_addr_lo_reg_t src_addr_lo; // [695:663]
+    dma_hw2reg_src_addr_hi_reg_t src_addr_hi; // [662:630]
+    dma_hw2reg_dst_addr_lo_reg_t dst_addr_lo; // [629:597]
+    dma_hw2reg_dst_addr_hi_reg_t dst_addr_hi; // [596:564]
     dma_hw2reg_cfg_regwen_reg_t cfg_regwen; // [563:560]
     dma_hw2reg_control_reg_t control; // [559:554]
     dma_hw2reg_status_reg_t status; // [553:544]
@@ -364,11 +364,11 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_INTR_ENABLE_OFFSET = 9'h 4;
   parameter logic [BlockAw-1:0] DMA_INTR_TEST_OFFSET = 9'h 8;
   parameter logic [BlockAw-1:0] DMA_ALERT_TEST_OFFSET = 9'h c;
-  parameter logic [BlockAw-1:0] DMA_SRC_ADDRESS_LO_OFFSET = 9'h 10;
-  parameter logic [BlockAw-1:0] DMA_SRC_ADDRESS_HI_OFFSET = 9'h 14;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_LO_OFFSET = 9'h 18;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_HI_OFFSET = 9'h 1c;
-  parameter logic [BlockAw-1:0] DMA_ADDRESS_SPACE_ID_OFFSET = 9'h 20;
+  parameter logic [BlockAw-1:0] DMA_SRC_ADDR_LO_OFFSET = 9'h 10;
+  parameter logic [BlockAw-1:0] DMA_SRC_ADDR_HI_OFFSET = 9'h 14;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_LO_OFFSET = 9'h 18;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_HI_OFFSET = 9'h 1c;
+  parameter logic [BlockAw-1:0] DMA_ADDR_SPACE_ID_OFFSET = 9'h 20;
   parameter logic [BlockAw-1:0] DMA_ENABLED_MEMORY_RANGE_BASE_OFFSET = 9'h 24;
   parameter logic [BlockAw-1:0] DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET = 9'h 28;
   parameter logic [BlockAw-1:0] DMA_RANGE_VALID_OFFSET = 9'h 2c;
@@ -377,10 +377,10 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_TOTAL_DATA_SIZE_OFFSET = 9'h 38;
   parameter logic [BlockAw-1:0] DMA_CHUNK_DATA_SIZE_OFFSET = 9'h 3c;
   parameter logic [BlockAw-1:0] DMA_TRANSFER_WIDTH_OFFSET = 9'h 40;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_LIMIT_LO_OFFSET = 9'h 44;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_LIMIT_HI_OFFSET = 9'h 48;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_ALMOST_LIMIT_LO_OFFSET = 9'h 4c;
-  parameter logic [BlockAw-1:0] DMA_DST_ADDRESS_ALMOST_LIMIT_HI_OFFSET = 9'h 50;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_LIMIT_LO_OFFSET = 9'h 44;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_LIMIT_HI_OFFSET = 9'h 48;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_ALMOST_LIMIT_LO_OFFSET = 9'h 4c;
+  parameter logic [BlockAw-1:0] DMA_DST_ADDR_ALMOST_LIMIT_HI_OFFSET = 9'h 50;
   parameter logic [BlockAw-1:0] DMA_CONTROL_OFFSET = 9'h 54;
   parameter logic [BlockAw-1:0] DMA_STATUS_OFFSET = 9'h 58;
   parameter logic [BlockAw-1:0] DMA_ERROR_CODE_OFFSET = 9'h 5c;
@@ -442,11 +442,11 @@ package dma_reg_pkg;
     DMA_INTR_ENABLE,
     DMA_INTR_TEST,
     DMA_ALERT_TEST,
-    DMA_SRC_ADDRESS_LO,
-    DMA_SRC_ADDRESS_HI,
-    DMA_DST_ADDRESS_LO,
-    DMA_DST_ADDRESS_HI,
-    DMA_ADDRESS_SPACE_ID,
+    DMA_SRC_ADDR_LO,
+    DMA_SRC_ADDR_HI,
+    DMA_DST_ADDR_LO,
+    DMA_DST_ADDR_HI,
+    DMA_ADDR_SPACE_ID,
     DMA_ENABLED_MEMORY_RANGE_BASE,
     DMA_ENABLED_MEMORY_RANGE_LIMIT,
     DMA_RANGE_VALID,
@@ -455,10 +455,10 @@ package dma_reg_pkg;
     DMA_TOTAL_DATA_SIZE,
     DMA_CHUNK_DATA_SIZE,
     DMA_TRANSFER_WIDTH,
-    DMA_DST_ADDRESS_LIMIT_LO,
-    DMA_DST_ADDRESS_LIMIT_HI,
-    DMA_DST_ADDRESS_ALMOST_LIMIT_LO,
-    DMA_DST_ADDRESS_ALMOST_LIMIT_HI,
+    DMA_DST_ADDR_LIMIT_LO,
+    DMA_DST_ADDR_LIMIT_HI,
+    DMA_DST_ADDR_ALMOST_LIMIT_LO,
+    DMA_DST_ADDR_ALMOST_LIMIT_HI,
     DMA_CONTROL,
     DMA_STATUS,
     DMA_ERROR_CODE,
@@ -511,11 +511,11 @@ package dma_reg_pkg;
     4'b 0001, // index[ 1] DMA_INTR_ENABLE
     4'b 0001, // index[ 2] DMA_INTR_TEST
     4'b 0001, // index[ 3] DMA_ALERT_TEST
-    4'b 1111, // index[ 4] DMA_SRC_ADDRESS_LO
-    4'b 1111, // index[ 5] DMA_SRC_ADDRESS_HI
-    4'b 1111, // index[ 6] DMA_DST_ADDRESS_LO
-    4'b 1111, // index[ 7] DMA_DST_ADDRESS_HI
-    4'b 0001, // index[ 8] DMA_ADDRESS_SPACE_ID
+    4'b 1111, // index[ 4] DMA_SRC_ADDR_LO
+    4'b 1111, // index[ 5] DMA_SRC_ADDR_HI
+    4'b 1111, // index[ 6] DMA_DST_ADDR_LO
+    4'b 1111, // index[ 7] DMA_DST_ADDR_HI
+    4'b 0001, // index[ 8] DMA_ADDR_SPACE_ID
     4'b 1111, // index[ 9] DMA_ENABLED_MEMORY_RANGE_BASE
     4'b 1111, // index[10] DMA_ENABLED_MEMORY_RANGE_LIMIT
     4'b 0001, // index[11] DMA_RANGE_VALID
@@ -524,10 +524,10 @@ package dma_reg_pkg;
     4'b 1111, // index[14] DMA_TOTAL_DATA_SIZE
     4'b 1111, // index[15] DMA_CHUNK_DATA_SIZE
     4'b 0001, // index[16] DMA_TRANSFER_WIDTH
-    4'b 1111, // index[17] DMA_DST_ADDRESS_LIMIT_LO
-    4'b 1111, // index[18] DMA_DST_ADDRESS_LIMIT_HI
-    4'b 1111, // index[19] DMA_DST_ADDRESS_ALMOST_LIMIT_LO
-    4'b 1111, // index[20] DMA_DST_ADDRESS_ALMOST_LIMIT_HI
+    4'b 1111, // index[17] DMA_DST_ADDR_LIMIT_LO
+    4'b 1111, // index[18] DMA_DST_ADDR_LIMIT_HI
+    4'b 1111, // index[19] DMA_DST_ADDR_ALMOST_LIMIT_LO
+    4'b 1111, // index[20] DMA_DST_ADDR_ALMOST_LIMIT_HI
     4'b 1111, // index[21] DMA_CONTROL
     4'b 0001, // index[22] DMA_STATUS
     4'b 0001, // index[23] DMA_ERROR_CODE
