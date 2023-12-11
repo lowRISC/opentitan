@@ -173,6 +173,20 @@ bazel test   --define DISABLE_VERILATOR_BUILD=true   \
     //sw/device/tests/sival:sv1_tests
 ```
 
+### Silicon example
+
+```console
+./bazelisk.sh test   --define DISABLE_VERILATOR_BUILD=true   \
+    --//signing:token=//signing/tokens:nitrokey \
+    --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
+    --test_tag_filters=silicon \
+    --test_output=streamed   \
+    --define bitstream=gcp_splice   \
+    --cache_test_results=no \
+    --local_test_jobs 1 \
+    //sw/device/tests/sival:sv2_tests
+```
+
 ## Read More
 
 *  [SiVal Developer Guide](./devguide.md)
