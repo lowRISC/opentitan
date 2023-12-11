@@ -22,15 +22,18 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static manuf_cert_perso_data_in_t in_data;
-static manuf_cert_perso_data_out_t out_data;
-
 enum {
   kAttestMeasurementSizeInBits = 256,
   kAttestMeasurementSizeInBytes = kAttestMeasurementSizeInBits / 8,
   kAttestMeasurementSizeIn32BitWords =
       kAttestMeasurementSizeInBytes / sizeof(uint32_t),
 };
+
+static manuf_cert_perso_data_in_t in_data;
+static manuf_cert_perso_data_out_t out_data;
+static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+static uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
 
 static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
     .read = kMultiBitBool4True,
@@ -45,14 +48,15 @@ static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
 };
 
 static status_t config_certificate_flash_pages(void) {
-  flash_ctrl_info_page_t cert_flash_pages[] = {
-      kFlashCtrlInfoPageUdsCertificate,
-      kFlashCtrlInfoPageCdi0Certificate,
-      kFlashCtrlInfoPageCdi1Certificate,
+  const flash_ctrl_info_page_t *kCertFlashInfoPages[] = {
+      &kFlashCtrlInfoPageUdsCertificate,
+      &kFlashCtrlInfoPageCdi0Certificate,
+      &kFlashCtrlInfoPageCdi1Certificate,
   };
-  for (size_t i = 0; i < ARRAYSIZE(cert_flash_pages); ++i) {
-    flash_ctrl_info_cfg_set(&cert_flash_pages[i], kCertificateFlashInfoCfg);
-    flash_ctrl_info_perms_set(&cert_flash_pages[i], kCertificateFlashInfoPerms);
+  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoPages); ++i) {
+    flash_ctrl_info_cfg_set(kCertFlashInfoPages[i], kCertificateFlashInfoCfg);
+    flash_ctrl_info_perms_set(kCertFlashInfoPages[i],
+                              kCertificateFlashInfoPerms);
   }
   return OK_STATUS();
 }
@@ -106,9 +110,6 @@ static status_t personalize(ujson_t *uj) {
   // Set attestation binding to ROM_EXT / Ownership Manifest measurements.
   // We set the sealing binding value to all zeros as it is unused in the
   // current personalization flow. This may be changed in the future.
-  keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-  keymgr_binding_value_t sealing_binding_value = {.data = {0}};
-  uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
   hmac_digest_t combined_measurements;
   memcpy(rom_ext_measurements, in_data.rom_ext_measurement,
          kAttestMeasurementSizeInBytes);
