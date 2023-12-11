@@ -42,7 +42,7 @@ class SimCfg(FlowCfg):
 
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
-        "build_mode", "index", "test", "seed", "uvm_test", "uvm_test_seq",
+        "build_mode", "index", "test", "seed", "svseed", "uvm_test", "uvm_test_seq",
         "cov_db_dirs", "sw_images", "sw_build_device", "sw_build_cmd",
         "sw_build_opts"
     ]
