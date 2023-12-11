@@ -42,7 +42,7 @@ opentitan_ram_binary(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/dif:aes",
         "//sw/device/silicon_creator/rom:alsaqr_print"
     ],
 )
