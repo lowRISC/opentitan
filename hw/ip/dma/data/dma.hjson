@@ -159,7 +159,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LO"
+    { name: "DST_ADDRESS_LO"
       desc: '''
             Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is written to this location in a copy operation.
@@ -172,7 +172,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "destination_address_lo"
+          name: "dst_address_lo"
           resval: 0x0
           desc: '''Lower 32 bits of the destination address.
                 Must be aligned to the transfer width.
@@ -181,7 +181,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_HI"
+    { name: "DST_ADDRESS_HI"
       desc: '''Upper 32 bits of the destination address.
             Must be aligned to the transfer width.
             Source and destination address must have the same alignment.
@@ -191,7 +191,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "destination_address_hi"
+          name: "dst_address_hi"
           resval: 0x0
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
@@ -227,7 +227,7 @@
           ]
         }
         { bits: "7:4"
-          name: "destination_asid"
+          name: "dst_asid"
           resval: 0x7
           desc: "Target address space that the destination address pointer refers to."
           enum: [
@@ -412,7 +412,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LIMIT_LO"
+    { name: "DST_ADDRESS_LIMIT_LO"
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
@@ -432,7 +432,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LIMIT_HI"
+    { name: "DST_ADDRESS_LIMIT_HI"
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
@@ -452,7 +452,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_LO"
+    { name: "DST_ADDRESS_ALMOST_LIMIT_LO"
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
@@ -472,7 +472,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_HI"
+    { name: "DST_ADDRESS_ALMOST_LIMIT_HI"
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"

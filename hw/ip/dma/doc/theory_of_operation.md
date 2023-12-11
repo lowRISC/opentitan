@@ -119,7 +119,7 @@ hardware handshake DMA operation.
 
 -   [*Source address*](../data/dma.hjson#src_address_lo): address of the low speed IO
     receive FIFO read out register.
--   [*Destination address*](../data/dma.hjson#destination_address_lo): address to the memory
+-   [*Destination address*](../data/dma.hjson#dst_address_lo): address to the memory
     buffer where received data is placed.
 -   [*Address space ID*](../data/dma.hjson#address_space_id) (ASID): (OT Internal, CTN or System)
 
@@ -134,7 +134,7 @@ hardware handshake DMA operation.
     interrupt times the FIFO read data width).
 -   [*Transfer Width*](../data/dma.hjson#transfer_width): Width of each transaction
     (equivalent to FIFO read data width).
--   [*Limit register*](../data/dma.hjson#destination_address_limit_lo): Marks the end of the buffer used
+-   [*Limit register*](../data/dma.hjson#dst_address_limit_lo): Marks the end of the buffer used
     to write 'total size' worth of data payloads if memory buffer
     auto-increment feature is used. DMAC shall set an overflow
     indication if the buffer limit is reached.
@@ -156,7 +156,7 @@ hardware handshake DMA operation.
         loaded into consecutive buffer segments in memory, where each
         segment is equivalent to 'total size' worth of data. To
         prepare for the next data buffer segment, [*Destination
-        address*](../data/dma.hjson#destination_address_lo) register is incremented by '[*Total
+        address*](../data/dma.hjson#dst_address_lo) register is incremented by '[*Total
         Size*](../data/dma.hjson#total-data-size)' once an equivalent amount of data is
         emptied from the FIFO & written to the buffer segment. If auto
         increment feature is not set, then the memory buffer gets
@@ -183,7 +183,7 @@ hardware handshake DMA operation.
 
 -   [*Source address*](../data/dma.hjson#src_address_lo): Pointer to the head of the
     memory buffer.
--   [*Destination address*](../data/dma.hjson#destination_address_lo): pointer to the FIFO
+-   [*Destination address*](../data/dma.hjson#dst_address_lo): pointer to the FIFO
     register.
 -   [*Address space ID*](../data/dma.hjson#address_space_id) (ASID): (OT Internal, CTN or System)
 
@@ -197,7 +197,7 @@ hardware handshake DMA operation.
     into the FIFO.
 -   [*Transfer Width*](../data/dma.hjson#transfer_width): Write Data width of the LSIO FIFO
     register. Each write transaction is equal to this size.
--   [*Limit register*](../data/dma.hjson#destination_address_limit_lo): Marks the end of the memory
+-   [*Limit register*](../data/dma.hjson#dst_address_limit_lo): Marks the end of the memory
     buffer used to read 'total size' worth of data segments if
     auto-increment feature is used. DMAC shall set an overflow
     indication if the buffer limit is reached.

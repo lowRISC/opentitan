@@ -271,21 +271,21 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask : set_src_address
 
   // Task: Write to Destination Address CSR
-  task set_destination_address(bit [63:0] destination_address);
-    csr_wr(ral.destination_address_lo, destination_address[31:0]);
-    csr_wr(ral.destination_address_hi, destination_address[63:32]);
-    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", destination_address), UVM_HIGH)
-  endtask : set_destination_address
+  task set_dst_address(bit [63:0] dst_address);
+    csr_wr(ral.dst_addr_lo, dst_address[31:0]);
+    csr_wr(ral.dst_addr_hi, dst_address[63:32]);
+    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_address), UVM_HIGH)
+  endtask : set_dst_address
 
-  task set_destination_address_range(bit[63:0] almost_limit,
+  task set_dst_addr_range(bit[63:0] almost_limit,
                                      bit[63:0] limit);
-    csr_wr(ral.destination_address_limit_lo, limit[31:0]);
-    csr_wr(ral.destination_address_limit_hi, limit[63:32]);
+    csr_wr(ral.dst_addr_limit_lo, limit[31:0]);
+    csr_wr(ral.dst_addr_limit_hi, limit[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Limit = 0x%016h", limit), UVM_HIGH)
-    csr_wr(ral.destination_address_almost_limit_lo, almost_limit[31:0]);
-    csr_wr(ral.destination_address_almost_limit_hi, almost_limit[63:32]);
+    csr_wr(ral.dst_addr_almost_limit_lo, almost_limit[31:0]);
+    csr_wr(ral.dst_addr_almost_limit_hi, almost_limit[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", almost_limit), UVM_HIGH)
-  endtask : set_destination_address_range
+  endtask : set_dst_addr_range
 
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
@@ -304,7 +304,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Write to Source and Destination Address Space ID (ASID)
   task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
     ral.address_space_id.src_asid.set(int'(src_asid));
-    ral.address_space_id.destination_asid.set(int'(dst_asid));
+    ral.address_space_id.dst_asid.set(int'(dst_asid));
     csr_update(.csr(ral.address_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
@@ -349,9 +349,8 @@ class dma_base_vseq extends cip_base_vseq #(
     // Not yet requested an Abort during this transaction.
     abort_pending = 1'b0;
     set_src_address(dma_config.src_addr);
-    set_destination_address(dma_config.dst_addr);
-    set_destination_address_range(dma_config.dst_addr_almost_limit,
-                                  dma_config.dst_addr_limit);
+    set_dst_address(dma_config.dst_addr);
+    set_dst_address_range(dma_config.dst_addr_almost_limit,  dma_config.dst_addr_limit);
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
