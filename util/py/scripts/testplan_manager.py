@@ -81,6 +81,15 @@ export_parser.add_argument(
     help="""Output the bazel test suite as an output""",
 )
 
+# Subparser for the 'update' command
+update_parser = subparsers.add_parser(
+    'update', help='Update the testplans based on a csv')
+update_parser.add_argument(
+    "--csv",
+    required=True,
+    help="Path of the input csv file.",
+)
+
 
 def main(args):
     if args.dir is None and args.file is None:
@@ -94,13 +103,75 @@ def main(args):
     for file in files:
         df = pd.concat([df, dataframe_from_testplan(file)])
 
-    if args.command == 'extract':
-        return extract_cmd(args, df)
+    if args.command == 'export':
+        return export_cmd(args, df)
+    elif args.command == 'update':
+        return update_cmd(args)
 
     return -1
 
 
-def extract_cmd(args, df: pd.DataFrame):
+LICENSE_HEADER = """// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+"""
+
+
+def update_cmd(args):
+    files = [f for f in glob.glob(f"{args.dir}/*.hjson")]
+
+    df = pd.read_csv(args.csv).fillna("None")
+    df.groupby("hw_ip_block").apply(
+        lambda block: update_ip_block(files, block))
+
+
+def update_ip_block(files, block_dataframe):
+    ip_name = block_dataframe.iloc[0]["hw_ip_block"]
+
+    filename = get_testplan_filename(ip_name, files)
+    if filename:
+        testplan = hjson.load(open(filename, "r"))
+        updated = block_dataframe.apply(
+            lambda row: update_testpoint(testplan, row), axis=1)
+        if any(updated):  #Update if there was a change.
+            logging.info(f"Updating {filename}.")
+            with open(filename, "w") as f:
+                f.write(LICENSE_HEADER)
+                hjson.dump(testplan, f, indent=2, for_json=True)
+
+    else:
+        logging.info(f"{ip_name} not found")
+
+
+def update_testpoint(testplan, row):
+    updated = False
+    for testpoint in testplan["testpoints"]:
+        logging.debug(
+            f"Checking {testpoint['name']} == {row['name']} --> {testpoint.get('si_stage')} == {row['si_stage']}"
+        )
+        if row["name"] == testpoint["name"] and row[
+                "si_stage"] != "None" and row["si_stage"] != testpoint.get(
+                    "si_stage"):
+            logging.debug(
+                f"Test {row['name']} should be updated from { testpoint.get('si_stage')} to {row['si_stage']}"
+            )
+            if row[field] != testpoint.get(field):
+                logging.info(
+                    f"Updating {row['name']} ->{field} to [{row[field]}]"
+                )
+                testpoint[field] = row[field]
+                updated = True
+    return updated
+
+
+def get_testplan_filename(ip_name, files):
+    for file in files:
+        if ip_name in file:
+            return file
+    return None
+
+
+def export_cmd(args, df: pd.DataFrame):
     df = sort_columns(df)
     df = insert_lc_states_columns(df)
 
@@ -139,7 +210,8 @@ test_suite(
 )
 """
 
-def extract_bazel_suite(args, df: pd.DataFrame):
+
+def export_bazel_suite(args, df: pd.DataFrame):
     import numpy as np
     from mako.template import Template
     template = Template(TEST_SUITE_TEMPLATE)
