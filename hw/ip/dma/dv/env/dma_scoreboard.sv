@@ -830,14 +830,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got src_address_hi = %0x",
                                   dma_config.src_addr[63:32]), UVM_HIGH)
       end
-      "destination_address_lo": begin
+      "dst_address_lo": begin
         dma_config.dst_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got destination_address_lo = %0x",
+        `uvm_info(`gfn, $sformatf("Got dst_address_lo = %0x",
                                   dma_config.dst_addr[31:0]), UVM_HIGH)
       end
-      "destination_address_hi": begin
+      "dst_address_hi": begin
         dma_config.dst_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got destination_address_hi = %0x",
+        `uvm_info(`gfn, $sformatf("Got dst_address_hi = %0x",
                                   dma_config.dst_addr[63:32]), UVM_HIGH)
       end
       "address_space_id": begin
@@ -846,7 +846,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got source address space id : %s",
                                   dma_config.src_asid.name()), UVM_HIGH)
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.dst_asid = asid_encoding_e'(`gmv(ral.address_space_id.destination_asid));
+        dma_config.dst_asid = asid_encoding_e'(`gmv(ral.address_space_id.dst_asid));
         `uvm_info(`gfn, $sformatf("Got destination address space id : %s",
                                   dma_config.dst_asid.name()), UVM_HIGH)
       end
@@ -893,21 +893,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got transfer_width = %s",
                                   dma_config.per_transfer_width.name()), UVM_HIGH)
       end
-      "destination_address_limit_lo": begin
+      "dst_address_limit_lo": begin
         dma_config.dst_addr_limit[31:0] =
-          `gmv(ral.destination_address_limit_lo.address_limit_lo);
+          `gmv(ral.dst_address_limit_lo.address_limit_lo);
       end
-      "destination_address_limit_hi": begin
+      "dst_address_limit_hi": begin
         dma_config.dst_addr_limit[63:32] =
-          `gmv(ral.destination_address_limit_hi.address_limit_hi);
+          `gmv(ral.dst_address_limit_hi.address_limit_hi);
       end
-      "destination_address_almost_limit_lo": begin
+      "dst_address_almost_limit_lo": begin
         dma_config.dst_addr_almost_limit[31:0] =
-          `gmv(ral.destination_address_almost_limit_lo.address_limit_lo);
+          `gmv(ral.dst_address_almost_limit_lo.address_limit_lo);
       end
-      "destination_address_almost_limit_hi": begin
+      "dst_address_almost_limit_hi": begin
         dma_config.dst_addr_almost_limit[63:32] =
-          `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
+          `gmv(ral.dst_address_almost_limit_hi.address_limit_hi);
       end
       "clear_intr_bus": begin
         dma_config.clear_intr_bus = `gmv(ral.clear_intr_bus.bus);
@@ -1170,7 +1170,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         bit [DmaErrLast-1:0] error_code;
         do_read_check = 1'b0;
         error_code[DmaSrcAddrErr]    = get_field_val(ral.error_code.src_address_error, item.d_data);
-        error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
+        error_code[DmaDstAddrErr]    = get_field_val(ral.error_code.dst_address_error, item.d_data);
         error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
         error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
         error_code[DmaBusErr]        = get_field_val(ral.error_code.bus_error, item.d_data);

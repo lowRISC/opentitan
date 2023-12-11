@@ -150,17 +150,17 @@ module dma_reg_top (
   logic src_address_hi_we;
   logic [31:0] src_address_hi_qs;
   logic [31:0] src_address_hi_wd;
-  logic destination_address_lo_we;
-  logic [31:0] destination_address_lo_qs;
-  logic [31:0] destination_address_lo_wd;
-  logic destination_address_hi_we;
-  logic [31:0] destination_address_hi_qs;
-  logic [31:0] destination_address_hi_wd;
+  logic dst_address_lo_we;
+  logic [31:0] dst_address_lo_qs;
+  logic [31:0] dst_address_lo_wd;
+  logic dst_address_hi_we;
+  logic [31:0] dst_address_hi_qs;
+  logic [31:0] dst_address_hi_wd;
   logic address_space_id_we;
   logic [3:0] address_space_id_src_asid_qs;
   logic [3:0] address_space_id_src_asid_wd;
-  logic [3:0] address_space_id_destination_asid_qs;
-  logic [3:0] address_space_id_destination_asid_wd;
+  logic [3:0] address_space_id_dst_asid_qs;
+  logic [3:0] address_space_id_dst_asid_wd;
   logic enabled_memory_range_base_we;
   logic [31:0] enabled_memory_range_base_qs;
   logic [31:0] enabled_memory_range_base_wd;
@@ -184,18 +184,18 @@ module dma_reg_top (
   logic transfer_width_we;
   logic [1:0] transfer_width_qs;
   logic [1:0] transfer_width_wd;
-  logic destination_address_limit_lo_we;
-  logic [31:0] destination_address_limit_lo_qs;
-  logic [31:0] destination_address_limit_lo_wd;
-  logic destination_address_limit_hi_we;
-  logic [31:0] destination_address_limit_hi_qs;
-  logic [31:0] destination_address_limit_hi_wd;
-  logic destination_address_almost_limit_lo_we;
-  logic [31:0] destination_address_almost_limit_lo_qs;
-  logic [31:0] destination_address_almost_limit_lo_wd;
-  logic destination_address_almost_limit_hi_we;
-  logic [31:0] destination_address_almost_limit_hi_qs;
-  logic [31:0] destination_address_almost_limit_hi_wd;
+  logic dst_address_limit_lo_we;
+  logic [31:0] dst_address_limit_lo_qs;
+  logic [31:0] dst_address_limit_lo_wd;
+  logic dst_address_limit_hi_we;
+  logic [31:0] dst_address_limit_hi_qs;
+  logic [31:0] dst_address_limit_hi_wd;
+  logic dst_address_almost_limit_lo_we;
+  logic [31:0] dst_address_almost_limit_lo_qs;
+  logic [31:0] dst_address_almost_limit_lo_wd;
+  logic dst_address_almost_limit_hi_we;
+  logic [31:0] dst_address_almost_limit_hi_qs;
+  logic [31:0] dst_address_almost_limit_hi_wd;
   logic control_we;
   logic [3:0] control_opcode_qs;
   logic [3:0] control_opcode_wd;
@@ -627,69 +627,69 @@ module dma_reg_top (
   );
 
 
-  // R[destination_address_lo]: V(False)
+  // R[dst_address_lo]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_lo_gated_we;
-  assign destination_address_lo_gated_we =
-    destination_address_lo_we &
+  logic dst_address_lo_gated_we;
+  assign dst_address_lo_gated_we =
+    dst_address_lo_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_lo (
+  ) u_dst_address_lo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_lo_gated_we),
-    .wd     (destination_address_lo_wd),
+    .we     (dst_address_lo_gated_we),
+    .wd     (dst_address_lo_wd),
 
     // from internal hardware
-    .de     (hw2reg.destination_address_lo.de),
-    .d      (hw2reg.destination_address_lo.d),
+    .de     (hw2reg.dst_address_lo.de),
+    .d      (hw2reg.dst_address_lo.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_lo.q),
+    .q      (reg2hw.dst_address_lo.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_lo_qs)
+    .qs     (dst_address_lo_qs)
   );
 
 
-  // R[destination_address_hi]: V(False)
+  // R[dst_address_hi]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_hi_gated_we;
-  assign destination_address_hi_gated_we =
-    destination_address_hi_we &
+  logic dst_address_hi_gated_we;
+  assign dst_address_hi_gated_we =
+    dst_address_hi_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_hi (
+  ) u_dst_address_hi (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_hi_gated_we),
-    .wd     (destination_address_hi_wd),
+    .we     (dst_address_hi_gated_we),
+    .wd     (dst_address_hi_wd),
 
     // from internal hardware
-    .de     (hw2reg.destination_address_hi.de),
-    .d      (hw2reg.destination_address_hi.d),
+    .de     (hw2reg.dst_address_hi.de),
+    .d      (hw2reg.dst_address_hi.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_hi.q),
+    .q      (reg2hw.dst_address_hi.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_hi_qs)
+    .qs     (dst_address_hi_qs)
   );
 
 
@@ -726,19 +726,19 @@ module dma_reg_top (
     .qs     (address_space_id_src_asid_qs)
   );
 
-  //   F[destination_asid]: 7:4
+  //   F[dst_asid]: 7:4
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h7),
     .Mubi    (1'b0)
-  ) u_address_space_id_destination_asid (
+  ) u_address_space_id_dst_asid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (address_space_id_gated_we),
-    .wd     (address_space_id_destination_asid_wd),
+    .wd     (address_space_id_dst_asid_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -746,11 +746,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.address_space_id.destination_asid.q),
+    .q      (reg2hw.address_space_id.dst_asid.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (address_space_id_destination_asid_qs)
+    .qs     (address_space_id_dst_asid_qs)
   );
 
 
@@ -1020,24 +1020,24 @@ module dma_reg_top (
   );
 
 
-  // R[destination_address_limit_lo]: V(False)
+  // R[dst_address_limit_lo]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_limit_lo_gated_we;
-  assign destination_address_limit_lo_gated_we =
-    destination_address_limit_lo_we &
+  logic dst_address_limit_lo_gated_we;
+  assign dst_address_limit_lo_gated_we =
+    dst_address_limit_lo_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_limit_lo (
+  ) u_dst_address_limit_lo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_limit_lo_gated_we),
-    .wd     (destination_address_limit_lo_wd),
+    .we     (dst_address_limit_lo_gated_we),
+    .wd     (dst_address_limit_lo_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1045,32 +1045,32 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_limit_lo.q),
+    .q      (reg2hw.dst_address_limit_lo.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_limit_lo_qs)
+    .qs     (dst_address_limit_lo_qs)
   );
 
 
-  // R[destination_address_limit_hi]: V(False)
+  // R[dst_address_limit_hi]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_limit_hi_gated_we;
-  assign destination_address_limit_hi_gated_we =
-    destination_address_limit_hi_we &
+  logic dst_address_limit_hi_gated_we;
+  assign dst_address_limit_hi_gated_we =
+    dst_address_limit_hi_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_limit_hi (
+  ) u_dst_address_limit_hi (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_limit_hi_gated_we),
-    .wd     (destination_address_limit_hi_wd),
+    .we     (dst_address_limit_hi_gated_we),
+    .wd     (dst_address_limit_hi_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1078,32 +1078,32 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_limit_hi.q),
+    .q      (reg2hw.dst_address_limit_hi.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_limit_hi_qs)
+    .qs     (dst_address_limit_hi_qs)
   );
 
 
-  // R[destination_address_almost_limit_lo]: V(False)
+  // R[dst_address_almost_limit_lo]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_almost_limit_lo_gated_we;
-  assign destination_address_almost_limit_lo_gated_we =
-    destination_address_almost_limit_lo_we &
+  logic dst_address_almost_limit_lo_gated_we;
+  assign dst_address_almost_limit_lo_gated_we =
+    dst_address_almost_limit_lo_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_almost_limit_lo (
+  ) u_dst_address_almost_limit_lo (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_almost_limit_lo_gated_we),
-    .wd     (destination_address_almost_limit_lo_wd),
+    .we     (dst_address_almost_limit_lo_gated_we),
+    .wd     (dst_address_almost_limit_lo_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1111,32 +1111,32 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_almost_limit_lo.q),
+    .q      (reg2hw.dst_address_almost_limit_lo.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_almost_limit_lo_qs)
+    .qs     (dst_address_almost_limit_lo_qs)
   );
 
 
-  // R[destination_address_almost_limit_hi]: V(False)
+  // R[dst_address_almost_limit_hi]: V(False)
   // Create REGWEN-gated WE signal
-  logic destination_address_almost_limit_hi_gated_we;
-  assign destination_address_almost_limit_hi_gated_we =
-    destination_address_almost_limit_hi_we &
+  logic dst_address_almost_limit_hi_gated_we;
+  assign dst_address_almost_limit_hi_gated_we =
+    dst_address_almost_limit_hi_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_destination_address_almost_limit_hi (
+  ) u_dst_address_almost_limit_hi (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (destination_address_almost_limit_hi_gated_we),
-    .wd     (destination_address_almost_limit_hi_wd),
+    .we     (dst_address_almost_limit_hi_gated_we),
+    .wd     (dst_address_almost_limit_hi_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1144,11 +1144,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.destination_address_almost_limit_hi.q),
+    .q      (reg2hw.dst_address_almost_limit_hi.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (destination_address_almost_limit_hi_qs)
+    .qs     (dst_address_almost_limit_hi_qs)
   );
 
 
@@ -3071,8 +3071,8 @@ module dma_reg_top (
     addr_hit[ 3] = (reg_addr == DMA_ALERT_TEST_OFFSET);
     addr_hit[ 4] = (reg_addr == DMA_SRC_ADDRESS_LO_OFFSET);
     addr_hit[ 5] = (reg_addr == DMA_SRC_ADDRESS_HI_OFFSET);
-    addr_hit[ 6] = (reg_addr == DMA_DESTINATION_ADDRESS_LO_OFFSET);
-    addr_hit[ 7] = (reg_addr == DMA_DESTINATION_ADDRESS_HI_OFFSET);
+    addr_hit[ 6] = (reg_addr == DMA_DST_ADDRESS_LO_OFFSET);
+    addr_hit[ 7] = (reg_addr == DMA_DST_ADDRESS_HI_OFFSET);
     addr_hit[ 8] = (reg_addr == DMA_ADDRESS_SPACE_ID_OFFSET);
     addr_hit[ 9] = (reg_addr == DMA_ENABLED_MEMORY_RANGE_BASE_OFFSET);
     addr_hit[10] = (reg_addr == DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET);
@@ -3082,10 +3082,10 @@ module dma_reg_top (
     addr_hit[14] = (reg_addr == DMA_TOTAL_DATA_SIZE_OFFSET);
     addr_hit[15] = (reg_addr == DMA_CHUNK_DATA_SIZE_OFFSET);
     addr_hit[16] = (reg_addr == DMA_TRANSFER_WIDTH_OFFSET);
-    addr_hit[17] = (reg_addr == DMA_DESTINATION_ADDRESS_LIMIT_LO_OFFSET);
-    addr_hit[18] = (reg_addr == DMA_DESTINATION_ADDRESS_LIMIT_HI_OFFSET);
-    addr_hit[19] = (reg_addr == DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_OFFSET);
-    addr_hit[20] = (reg_addr == DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_OFFSET);
+    addr_hit[17] = (reg_addr == DMA_DST_ADDRESS_LIMIT_LO_OFFSET);
+    addr_hit[18] = (reg_addr == DMA_DST_ADDRESS_LIMIT_HI_OFFSET);
+    addr_hit[19] = (reg_addr == DMA_DST_ADDRESS_ALMOST_LIMIT_LO_OFFSET);
+    addr_hit[20] = (reg_addr == DMA_DST_ADDRESS_ALMOST_LIMIT_HI_OFFSET);
     addr_hit[21] = (reg_addr == DMA_CONTROL_OFFSET);
     addr_hit[22] = (reg_addr == DMA_STATUS_OFFSET);
     addr_hit[23] = (reg_addr == DMA_ERROR_CODE_OFFSET);
@@ -3235,17 +3235,17 @@ module dma_reg_top (
   assign src_address_hi_we = addr_hit[5] & reg_we & !reg_error;
 
   assign src_address_hi_wd = reg_wdata[31:0];
-  assign destination_address_lo_we = addr_hit[6] & reg_we & !reg_error;
+  assign dst_address_lo_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign destination_address_lo_wd = reg_wdata[31:0];
-  assign destination_address_hi_we = addr_hit[7] & reg_we & !reg_error;
+  assign dst_address_lo_wd = reg_wdata[31:0];
+  assign dst_address_hi_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign destination_address_hi_wd = reg_wdata[31:0];
+  assign dst_address_hi_wd = reg_wdata[31:0];
   assign address_space_id_we = addr_hit[8] & reg_we & !reg_error;
 
   assign address_space_id_src_asid_wd = reg_wdata[3:0];
 
-  assign address_space_id_destination_asid_wd = reg_wdata[7:4];
+  assign address_space_id_dst_asid_wd = reg_wdata[7:4];
   assign enabled_memory_range_base_we = addr_hit[9] & reg_we & !reg_error;
 
   assign enabled_memory_range_base_wd = reg_wdata[31:0];
@@ -3268,18 +3268,18 @@ module dma_reg_top (
   assign transfer_width_we = addr_hit[16] & reg_we & !reg_error;
 
   assign transfer_width_wd = reg_wdata[1:0];
-  assign destination_address_limit_lo_we = addr_hit[17] & reg_we & !reg_error;
+  assign dst_address_limit_lo_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign destination_address_limit_lo_wd = reg_wdata[31:0];
-  assign destination_address_limit_hi_we = addr_hit[18] & reg_we & !reg_error;
+  assign dst_address_limit_lo_wd = reg_wdata[31:0];
+  assign dst_address_limit_hi_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign destination_address_limit_hi_wd = reg_wdata[31:0];
-  assign destination_address_almost_limit_lo_we = addr_hit[19] & reg_we & !reg_error;
+  assign dst_address_limit_hi_wd = reg_wdata[31:0];
+  assign dst_address_almost_limit_lo_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign destination_address_almost_limit_lo_wd = reg_wdata[31:0];
-  assign destination_address_almost_limit_hi_we = addr_hit[20] & reg_we & !reg_error;
+  assign dst_address_almost_limit_lo_wd = reg_wdata[31:0];
+  assign dst_address_almost_limit_hi_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign destination_address_almost_limit_hi_wd = reg_wdata[31:0];
+  assign dst_address_almost_limit_hi_wd = reg_wdata[31:0];
   assign control_we = addr_hit[21] & reg_we & !reg_error;
 
   assign control_opcode_wd = reg_wdata[3:0];
@@ -3389,8 +3389,8 @@ module dma_reg_top (
     reg_we_check[3] = alert_test_we;
     reg_we_check[4] = src_address_lo_gated_we;
     reg_we_check[5] = src_address_hi_gated_we;
-    reg_we_check[6] = destination_address_lo_gated_we;
-    reg_we_check[7] = destination_address_hi_gated_we;
+    reg_we_check[6] = dst_address_lo_gated_we;
+    reg_we_check[7] = dst_address_hi_gated_we;
     reg_we_check[8] = address_space_id_gated_we;
     reg_we_check[9] = enabled_memory_range_base_gated_we;
     reg_we_check[10] = enabled_memory_range_limit_gated_we;
@@ -3400,10 +3400,10 @@ module dma_reg_top (
     reg_we_check[14] = total_data_size_gated_we;
     reg_we_check[15] = chunk_data_size_gated_we;
     reg_we_check[16] = transfer_width_gated_we;
-    reg_we_check[17] = destination_address_limit_lo_gated_we;
-    reg_we_check[18] = destination_address_limit_hi_gated_we;
-    reg_we_check[19] = destination_address_almost_limit_lo_gated_we;
-    reg_we_check[20] = destination_address_almost_limit_hi_gated_we;
+    reg_we_check[17] = dst_address_limit_lo_gated_we;
+    reg_we_check[18] = dst_address_limit_hi_gated_we;
+    reg_we_check[19] = dst_address_almost_limit_lo_gated_we;
+    reg_we_check[20] = dst_address_almost_limit_hi_gated_we;
     reg_we_check[21] = control_we;
     reg_we_check[22] = status_we;
     reg_we_check[23] = 1'b0;
@@ -3485,16 +3485,16 @@ module dma_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[31:0] = destination_address_lo_qs;
+        reg_rdata_next[31:0] = dst_address_lo_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[31:0] = destination_address_hi_qs;
+        reg_rdata_next[31:0] = dst_address_hi_qs;
       end
 
       addr_hit[8]: begin
         reg_rdata_next[3:0] = address_space_id_src_asid_qs;
-        reg_rdata_next[7:4] = address_space_id_destination_asid_qs;
+        reg_rdata_next[7:4] = address_space_id_dst_asid_qs;
       end
 
       addr_hit[9]: begin
@@ -3530,19 +3530,19 @@ module dma_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = destination_address_limit_lo_qs;
+        reg_rdata_next[31:0] = dst_address_limit_lo_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = destination_address_limit_hi_qs;
+        reg_rdata_next[31:0] = dst_address_limit_hi_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = destination_address_almost_limit_lo_qs;
+        reg_rdata_next[31:0] = dst_address_almost_limit_lo_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = destination_address_almost_limit_hi_qs;
+        reg_rdata_next[31:0] = dst_address_almost_limit_hi_qs;
       end
 
       addr_hit[21]: begin
