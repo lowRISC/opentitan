@@ -19,13 +19,14 @@ import glob
 import json
 import logging
 import os
+import re
 import sys
 from enum import Enum
-from mako.template import Template
-from gh_issues_manager import GithubWrapper
 
 import hjson
 import pandas as pd
+from gh_issues_manager import GithubWrapper
+from mako.template import Template
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -43,38 +44,43 @@ parser.add_argument("--dir",
                     help="Path of a dir containing the testplan files.")
 
 # Create subparsers for each subcommand
-subparsers = parser.add_subparsers(title='subcommands', dest='command', help='subcommand help')
+subparsers = parser.add_subparsers(title='subcommands',
+                                   dest='command',
+                                   help='subcommand help')
 
-# Subparser for the 'generate' command
-generate_parser = subparsers.add_parser('generate', help='Generate command')
-
-generate_parser.add_argument(
+# Subparser for the 'export' command
+export_parser = subparsers.add_parser(
+    'export',
+    help=
+    'Export the testplan in different formats [csv, google sheet, github issues] '
+)
+export_parser.add_argument(
     "--csv",
     default="./tests.csv",
-    required=False,
     help="Path of the output csv file.",
 )
-generate_parser.add_argument(
+export_parser.add_argument(
     "--url",
-    required=False,
     help="url of a google sheet.",
 )
 export_parser.add_argument(
     "--credentials",
-    required=False,
     help="""Path to a json file with the google credentials.
           Check https://docs.gspread.org/en/latest/oauth2.html for more details.""",
 )
 export_parser.add_argument(
     "--github-token",
-    required=False,
     help="""Token""",
 )
 export_parser.add_argument(
     "--issue-template",
-    required=False,
     help="""Template""",
 )
+export_parser.add_argument(
+    "--bazel-suite",
+    help="""Output the bazel test suite as an output""",
+)
+
 
 def main(args):
     if args.dir is None and args.file is None:
@@ -93,7 +99,8 @@ def main(args):
 
     return -1
 
-def generate_cmd(args, df: pd.DataFrame):
+
+def extract_cmd(args, df: pd.DataFrame):
     df = sort_columns(df)
     df = insert_lc_states_columns(df)
 
@@ -112,10 +119,58 @@ def generate_cmd(args, df: pd.DataFrame):
     if args.github_token and args.issue_template:
         create_issues(args, df)
         output_generated = True
+    if args.bazel_suite:
+        export_bazel_suite(args, df)
+        output_generated = True
 
     if not output_generated:
         print("No output specified.")
     return 0
+
+
+TEST_SUITE_TEMPLATE = """
+test_suite(
+    name="${sival_stage}_tests",
+    tests = [
+        % for test in test_list:
+        "${test}",
+        % endfor
+    ]
+)
+"""
+
+def extract_bazel_suite(args, df: pd.DataFrame):
+    import numpy as np
+    from mako.template import Template
+    template = Template(TEST_SUITE_TEMPLATE)
+    with open(args.bazel_suite, "w") as file:
+        file.write(LICENSE_HEADER.replace("//", "#"))
+        sv_stages = ["SV1", "SV2", "SV3"]
+        for stage in sv_stages:
+            # filter by Sival stage
+            sv_tests_df = df[df["si_stage"] == stage].sort_values("bazel")
+            # Remove tests without implementation
+            sv_tests_df["bazel"].replace(" ", np.nan, inplace=True)
+            sv_tests_df["bazel"].replace("", np.nan, inplace=True)
+            sv_tests_df.dropna(subset=["bazel"], inplace=True)
+
+            # Generate a list sorted with unique items
+            sv_tests = []
+            for test in sv_tests_df["bazel"]:
+                # Remove the exec_env suffix
+                _test = re.sub(r"_fpga.*", "", test)
+                _test = re.sub(r"_cw310.*", "", _test)
+                sv_tests.extend(re.split(r"\s?,\s?", _test))
+
+            sv_tests = list(sorted(set(sv_tests)))
+
+            # Render the test suite
+            test_suite = template.render(sival_stage=stage.lower(), test_list=sv_tests)
+            # logging.debug(test_suite)
+            file.write(test_suite)
+    print(f"Generated {args.bazel_suite}.")
+    return 0
+
 
 def create_issues(args, df: pd.DataFrame):
     repo = hjson.load(open(args.issue_template, "r"))["repository"]
@@ -125,10 +180,10 @@ def create_issues(args, df: pd.DataFrame):
 
     for _, row in df.fillna("None").iterrows():
         new_issue = hjson.loads(
-                issue_template.render(ip_block=row["hw_ip_block"],
-                                    test_name=row["name"],
-                                    check_list=row["lc_states"].split(", "),
-                                    stage=row["si_stage"]))
+            issue_template.render(ip_block=row["hw_ip_block"],
+                                  test_name=row["name"],
+                                  check_list=row["lc_states"].split(", "),
+                                  stage=row["si_stage"]))
 
         if repo.issue_exist(new_issue["title"]):
             print(f"Issue already exists: {new_issue['title']}")
@@ -136,7 +191,7 @@ def create_issues(args, df: pd.DataFrame):
             if repo_issue.body != new_issue["body"]:
                 print("Updating the issue")
                 repo_issue.edit(body=new_issue["body"],
-                                    labels=new_issue["labels"])
+                                labels=new_issue["labels"])
         else:
             print(f'Create issue: {new_issue["title"]}')
             repo.create_issue(title=new_issue["title"], body=new_issue["body"],\
@@ -201,7 +256,7 @@ class GoogleSheet:
 def insert_lc_states_columns(df: pd.DataFrame) -> pd.DataFrame:
     lc_states = unique_list(df, "lc_states")
     logging.debug(f"lc_states: {lc_states}")
-    df.loc[:,lc_states] = "No"
+    df.loc[:, lc_states] = "No"
 
     def fill_lc_state_column(row):
         for state in lc_states:
