@@ -16,8 +16,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/device/silicon_creator/manuf/data/ast/calibration_values.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
+#include "ast_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -25,20 +27,6 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_pinmux_t pinmux;
 static dif_flash_ctrl_state_t flash_state;
 static dif_uart_t uart;
-
-// ---------------------------------------------------------------------------
-// Enter Calibration Values for Specific Chip Here:
-// ---------------------------------------------------------------------------
-enum {
-  kNumCalibrationWords = 8,
-};
-const uint32_t kAstCfgData[kNumCalibrationWords] = {
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-};
-uint32_t kAstCfgAddrs[kNumCalibrationWords] = {
-    0x0, 0x4, 0x8, 0xc, 0x10, 0x14, 0x18, 0x1c,
-};
-// ---------------------------------------------------------------------------
 
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
@@ -68,22 +56,14 @@ static status_t init_uart(void) {
   return OK_STATUS();
 }
 
-static void manually_init_ast(void) {
-  for (size_t i = 0; i < kNumCalibrationWords; ++i) {
-    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + kAstCfgAddrs[i],
-                     kAstCfgData[i]);
+static void manually_init_ast(uint32_t *data) {
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
+                     data[i]);
   }
 }
 
-static status_t write_ast_values_to_flash(void) {
-  // Prepase AST calibration data buffer.
-  uint32_t ast_cfgs[(kNumCalibrationWords * 2) + 1];
-  ast_cfgs[0] = kNumCalibrationWords;
-  for (size_t i = 0; i < kNumCalibrationWords; ++i) {
-    ast_cfgs[i * 2 + 1] = kAstCfgAddrs[i] + TOP_EARLGREY_AST_BASE_ADDR;
-    ast_cfgs[i * 2 + 2] = kAstCfgData[i];
-  }
-
+static status_t write_ast_values_to_flash(uint32_t *data) {
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
@@ -97,8 +77,8 @@ static status_t write_ast_values_to_flash(void) {
           .scramble_en = kMultiBitBool4False},
       /*offset=*/NULL));
   TRY(manuf_flash_info_field_write(&flash_state,
-                                   kFlashInfoFieldAstCalibrationData, ast_cfgs,
-                                   (kNumCalibrationWords * 2) + 1,
+                                   kFlashInfoFieldAstCalibrationData, data,
+                                   kFlashInfoAstCalibrationDataSizeIn32BitWords,
                                    /*erase_page_before_write=*/true));
 
   return OK_STATUS();
@@ -106,14 +86,14 @@ static status_t write_ast_values_to_flash(void) {
 
 void sram_main(void) {
   // Initialize AST, DIF handles, pinmux, and UART.
-  manually_init_ast();
+  manually_init_ast(ast_cfg_data);
   peripheral_handles_init();
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(init_uart());
   LOG_INFO("AST manually configured.");
 
   // Write AST calibration values to flash info page 0.
-  CHECK_STATUS_OK(write_ast_values_to_flash());
+  CHECK_STATUS_OK(write_ast_values_to_flash(ast_cfg_data));
   LOG_INFO("AST calibration values written to flash info page 0.");
 
   test_status_set(kTestStatusPassed);

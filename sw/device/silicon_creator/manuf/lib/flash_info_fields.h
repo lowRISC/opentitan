@@ -23,16 +23,10 @@ enum {
   /**
    * AST Calibration Data Size - Bank 0, Page 0
    *
-   * The format of data written to this field is:
-   *
-   * <# of address/data pairs><<address><data>>...<<address><data>>
-   *
-   * where each subfield (including the first length field) is a 32-bit word.
+   * Number of AST calibration words that will be stored in flash / OTP.
    */
-  kFlashInfoFieldMaxAstCalibrationDataSizeInBytes =
-      ((AST_REGAL_REG_OFFSET + 4) * 2) + 4,
-  kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords =
-      kFlashInfoFieldMaxAstCalibrationDataSizeInBytes / sizeof(uint32_t),
+  kFlashInfoAstCalibrationDataSizeIn32BitWords =
+      (AST_REGAL_REG_OFFSET + sizeof(uint32_t)) / sizeof(uint32_t),
 
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),

@@ -38,36 +38,6 @@ static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
     .rd_en = kMultiBitBool4True,
     .scramble_en = kMultiBitBool4False};
 
-enum {
-  kNumAstCfgWords = 3,
-  kAstCfgBufferSizeIn32BitWords = (kNumAstCfgWords * 2) + 1,
-
-  // AST configuration word 0 to test.
-  kAstCfgRelativeAddr0 = 0x4,
-  kAstCfgOtpAddr0 =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + kAstCfgRelativeAddr0,
-  kAstCfgAddr0 = TOP_EARLGREY_AST_BASE_ADDR + kAstCfgRelativeAddr0,
-  kAstCfgData0 = 0xcafebeef,
-
-  // AST configuration word 1 to test.
-  kAstCfgRelativeAddr1 = 0x40,
-  kAstCfgOtpAddr1 =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + kAstCfgRelativeAddr1,
-  kAstCfgAddr1 = TOP_EARLGREY_AST_BASE_ADDR + kAstCfgRelativeAddr1,
-  kAstCfgData1 = 0xdeadbeef,
-
-  // AST configuration word 2 to test.
-  kAstCfgRelativeAddr2 = 0x20,
-  kAstCfgOtpAddr2 =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + kAstCfgRelativeAddr2,
-  kAstCfgAddr2 = TOP_EARLGREY_AST_BASE_ADDR + kAstCfgRelativeAddr2,
-  kAstCfgData2 = 0x12345678,
-};
-
-static uint32_t ast_cfg_data[kAstCfgBufferSizeIn32BitWords] = {
-    kNumAstCfgWords, kAstCfgAddr0, kAstCfgData0, kAstCfgAddr1,
-    kAstCfgData1,    kAstCfgAddr2, kAstCfgData2};
-
 /**
  * Initializes all DIF handles used in this module.
  */
@@ -97,11 +67,17 @@ static status_t init_flash_info_page0(void) {
       &flash_ctrl_state, byte_address,
       kFlashInfoFieldAstCalibrationData.partition,
       kDifFlashCtrlPartitionTypeInfo));
+  // Set dummy AST values for testing.
+  uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {0};
+  for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {
+    ast_cfg_data[i] = i;
+  }
   TRY(flash_ctrl_testutils_write(
       &flash_ctrl_state,
       byte_address + kFlashInfoFieldAstCalibrationData.byte_offset,
       kFlashInfoFieldAstCalibrationData.partition, ast_cfg_data,
-      kDifFlashCtrlPartitionTypeInfo, kAstCfgBufferSizeIn32BitWords));
+      kDifFlashCtrlPartitionTypeInfo,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
   return OK_STATUS();
 }
 
@@ -112,26 +88,15 @@ static status_t check_otp_ast_cfg(void) {
   uint32_t data;
   uint32_t relative_addr;
 
-  // Check AST config value 0.
-  TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg,
-                                    kAstCfgOtpAddr0, &relative_addr));
-  TRY(otp_ctrl_testutils_dai_read32(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                    relative_addr, &data));
-  TRY_CHECK(data == kAstCfgData0);
-
-  // Check AST config value 1.
-  TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg,
-                                    kAstCfgOtpAddr1, &relative_addr));
-  TRY(otp_ctrl_testutils_dai_read32(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                    relative_addr, &data));
-  TRY_CHECK(data == kAstCfgData1);
-
-  // Check AST config value 2.
-  TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg,
-                                    kAstCfgOtpAddr2, &relative_addr));
-  TRY(otp_ctrl_testutils_dai_read32(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                    relative_addr, &data));
-  TRY_CHECK(data == kAstCfgData2);
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    TRY(dif_otp_ctrl_relative_address(
+        kDifOtpCtrlPartitionCreatorSwCfg,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + i * sizeof(uint32_t),
+        &relative_addr));
+    TRY(otp_ctrl_testutils_dai_read32(
+        &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data));
+    TRY_CHECK(data == i);
+  }
 
   return OK_STATUS();
 }

@@ -102,29 +102,24 @@ status_t ast_program_config(bool verbose) {
       .op = kDifFlashCtrlOpRead,
       .partition_type = kDifFlashCtrlPartitionTypeInfo,
       .partition_id = kFlashInfoFieldAstCalibrationData.partition,
-      .word_count = kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords};
+      .word_count = kFlashInfoAstCalibrationDataSizeIn32BitWords};
   // Read the data.
   TRY(dif_flash_ctrl_start(&flash_state, transaction));
-  uint32_t ast_data[kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords];
+  uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
   TRY(dif_flash_ctrl_read_fifo_pop(&flash_state, transaction.word_count,
                                    ast_data));
   dif_flash_ctrl_output_t output;
   TRY(dif_flash_ctrl_end(&flash_state, &output));
 
   // Program AST
-  // The form of the AST data is: <count> [<address> <data> ...]
-  if (ast_data[0] < kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords / 2) {
-    LOG_INFO("Programming %u AST words", ast_data[0]);
-    for (size_t i = 0; i < ast_data[0]; ++i) {
-      uint32_t addr = ast_data[1 + i * 2];
-      uint32_t data = ast_data[2 + i * 2];
-      LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);
-      ast_write(addr, data);
-    }
-  } else {
-    LOG_ERROR("AST data error: length %u >= %u", ast_data[0],
-              kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords / 2);
-    return UNKNOWN();
+  LOG_INFO("Programming %u AST words",
+           kFlashInfoAstCalibrationDataSizeIn32BitWords);
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    uint32_t addr = TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t);
+    uint32_t data = ast_data[i];
+    LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);
+    ast_write(addr, data);
   }
+
   return OK_STATUS();
 }
