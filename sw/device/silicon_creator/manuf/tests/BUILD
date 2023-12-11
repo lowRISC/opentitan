@@ -244,7 +244,7 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/data/ast:fake",
-        "//sw/device/silicon_creator/manuf/lib:sram_start",
+        "//sw/device/silicon_creator/manuf/lib:sram_start_no_ast_init",
     ],
 )
 
