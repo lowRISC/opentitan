@@ -69,9 +69,7 @@
                // "--x-initial unique",
                ]
 
-  run_opts: [// Set random seed.
-             // "+verilator+seed+{seed}",
-             ]
+  run_opts: []
 
   // Supported wave dumping formats (in order of preference).
   supported_wave_formats: ["fst"]
