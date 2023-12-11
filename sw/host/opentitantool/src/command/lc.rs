@@ -5,7 +5,7 @@
 use std::any::Any;
 use std::time::Duration;
 
-use anyhow::{bail, Result};
+use anyhow::{ensure, Result};
 use clap::{Args, Subcommand};
 use hex::decode;
 use humantime::parse_duration;
@@ -13,7 +13,7 @@ use serde_annotate::Annotate;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
+use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg, LcCtrlStatus};
 use opentitanlib::io::jtag::{Jtag, JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, trigger_volatile_raw_unlock};
 
@@ -22,18 +22,35 @@ pub struct LcStateReadResult {
     pub lc_state: DifLcCtrlState,
 }
 
-/// Read, decode, and check the LC state is Raw.
-fn check_lc_state_is_raw(jtag: &mut dyn Jtag) -> Result<()> {
+/// Read and decode the current life cycle state, and check whether the requested transition is valid.
+fn check_lc_transition(
+    jtag: &mut dyn Jtag,
+    target: DifLcCtrlState,
+    token: DifLcCtrlToken,
+) -> Result<()> {
     let lc_state =
         DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
-    if lc_state != DifLcCtrlState::Raw {
-        bail!("Device must be in Raw LC state. It is in: {}", lc_state);
+    let check = lc_state.check_transition(target);
+    ensure!(
+        check.valid,
+        "Invalid transition from {lc_state} to {target}."
+    );
+    if check.token {
+        ensure!(
+            !token.is_zero(),
+            "Transition from {lc_state} to {target} requires a non-zero token."
+        );
+    } else {
+        ensure!(
+            token.is_zero(),
+            "Transition from {lc_state} to {target} requires the token to be all-zeroes."
+        );
     }
     Ok(())
 }
 
 /// Parses an unlock token string.
-fn parse_token_str(token: &str) -> Result<[u32; 4]> {
+fn parse_token_str(token: &str) -> Result<DifLcCtrlToken> {
     let hex_str_no_sep = token.replace('_', "");
     let hex_str_prefix = "0x";
     let sanitized_hex_str = if token.starts_with(hex_str_prefix) {
@@ -41,19 +58,14 @@ fn parse_token_str(token: &str) -> Result<[u32; 4]> {
     } else {
         hex_str_no_sep.as_str()
     };
-    let token_bytes_vec = decode(sanitized_hex_str)?;
-    if token_bytes_vec.len() != 16 {
-        bail!(
-            "Expected a token of length 16-bytes but it was {}-bytes.",
-            token_bytes_vec.len()
-        );
-    }
-    let token_word_vec: Vec<u32> = token_bytes_vec
-        .chunks_exact(std::mem::size_of::<u32>())
-        .map(|chunk| u32::from_be_bytes(chunk.try_into().unwrap()))
-        .rev()
-        .collect();
-    Ok(token_word_vec.try_into().unwrap())
+    let mut token_bytes_vec = decode(sanitized_hex_str)?;
+    token_bytes_vec.reverse();
+    let length = token_bytes_vec.len();
+    ensure!(
+        length == 16,
+        "Expected a token of length 16-bytes but it was {length}-bytes."
+    );
+    Ok(DifLcCtrlToken::from(token_bytes_vec))
 }
 
 #[derive(Debug, Args)]
@@ -98,7 +110,7 @@ pub struct LcRegReadResult {
 }
 
 #[derive(Debug, Args)]
-/// Reads a life cycle controller register over JTAG.
+/// Reads the device life cycle state over JTAG.
 pub struct LcRegRead {
     /// Reset duration when switching the LC TAP straps.
     #[arg(long, value_parser = parse_duration, default_value = "100ms")]
@@ -218,8 +230,8 @@ impl CommandDispatch for RawUnlock {
             .create(transport)?
             .connect(JtagTap::LcTap)?;
 
-        check_lc_state_is_raw(&mut *jtag)?;
-        let token_words = parse_token_str(self.token.as_str())?;
+        let token = parse_token_str(self.token.as_str())?;
+        check_lc_transition(&mut *jtag, DifLcCtrlState::TestUnlocked0, token)?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -227,7 +239,7 @@ impl CommandDispatch for RawUnlock {
             transport,
             jtag,
             DifLcCtrlState::TestUnlocked0,
-            Some(token_words),
+            Some(token.into_register_values()),
             /*use_external_clk=*/ true,
             self.reset_delay,
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
@@ -282,13 +294,14 @@ impl CommandDispatch for Transition {
             .create(transport)?
             .connect(JtagTap::LcTap)?;
 
-        let token_words = parse_token_str(self.token.as_str())?;
+        let token = parse_token_str(self.token.as_str())?;
+        check_lc_transition(&mut *jtag, self.target_lc_state, token)?;
 
         trigger_lc_transition(
             transport,
             jtag,
             self.target_lc_state,
-            Some(token_words),
+            Some(token.into_register_values()),
             /*use_external_clk=*/ true,
             self.reset_delay,
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
@@ -439,8 +452,8 @@ impl CommandDispatch for VolatileRawUnlock {
             .create(transport)?
             .connect(JtagTap::LcTap)?;
 
-        check_lc_state_is_raw(&mut *jtag)?;
-        let token_words = parse_token_str(self.token.as_str())?;
+        let token = parse_token_str(self.token.as_str())?;
+        check_lc_transition(&mut *jtag, DifLcCtrlState::TestUnlocked0, token)?;
 
         // ROM execution is not enabled in the OTP so we can safely reconnect to
         // the LC TAP after the transition without risking the chip resetting.
@@ -448,7 +461,7 @@ impl CommandDispatch for VolatileRawUnlock {
             transport,
             jtag,
             DifLcCtrlState::TestUnlocked0,
-            Some(token_words),
+            Some(token.into_register_values()),
             /*use_external_clk=*/ true,
             /*post_transition_tap=*/ JtagTap::LcTap,
             &self.jtag_params,

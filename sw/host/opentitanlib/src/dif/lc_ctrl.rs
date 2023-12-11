@@ -38,6 +38,13 @@ with_unknown! {
     }
 }
 
+pub struct DifLcCtrlTransCheck {
+    /// Whether the transition is valid.
+    pub valid: bool,
+    /// Whether the transition requires a token.
+    pub token: bool,
+}
+
 impl DifLcCtrlState {
     pub fn from_redundant_encoding(encoding: u32) -> Result<Self> {
         let base_encoding = encoding & 0x1fu32;
@@ -83,13 +90,192 @@ impl DifLcCtrlState {
             _ => Ok(DifLcCtrlState::StateInvalid),
         }
     }
+
+    /// Checks whether a transition is valid and whether a non-zero token is
+    /// required.
+    pub fn check_transition(self, target: DifLcCtrlState) -> DifLcCtrlTransCheck {
+        match (self, target) {
+            // Transitions that require a token.
+            (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked0)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked1)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked2)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked3)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked4)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestUnlocked7, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestUnlocked7, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestUnlocked7, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked1)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked2)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked3)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked4)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked2)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked3)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked4)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::TestUnlocked3)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::TestUnlocked4)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::TestUnlocked4)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::TestUnlocked5)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::TestUnlocked6)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::TestLocked6, DifLcCtrlState::TestUnlocked7)
+            | (DifLcCtrlState::TestLocked6, DifLcCtrlState::Dev)
+            | (DifLcCtrlState::TestLocked6, DifLcCtrlState::Prod)
+            | (DifLcCtrlState::TestLocked6, DifLcCtrlState::ProdEnd)
+            | (DifLcCtrlState::Dev, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::Prod, DifLcCtrlState::Rma) => DifLcCtrlTransCheck {
+                valid: true,
+                token: true,
+            },
+            // Transitions that do not require a token.
+            (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::TestUnlocked7, DifLcCtrlState::Rma)
+            | (DifLcCtrlState::Raw, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked7, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked0, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked1, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked2, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked3, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked4, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked5, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestLocked6, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::Dev, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::Prod, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::ProdEnd, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::Rma, DifLcCtrlState::Scrap)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked0)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked1)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked2)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked3)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked4)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked0, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked1)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked2)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked3)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked4)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked1, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::TestLocked2)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::TestLocked3)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::TestLocked4)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked2, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::TestLocked3)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::TestLocked4)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked3, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::TestLocked4)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked4, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::TestLocked5)
+            | (DifLcCtrlState::TestUnlocked5, DifLcCtrlState::TestLocked6)
+            | (DifLcCtrlState::TestUnlocked6, DifLcCtrlState::TestLocked6) => DifLcCtrlTransCheck {
+                valid: true,
+                token: false,
+            },
+            // Other transitions are invalid.
+            _ => DifLcCtrlTransCheck {
+                valid: false,
+                token: false,
+            },
+        }
+    }
 }
 
+#[derive(Copy, Clone)]
 pub struct DifLcCtrlToken(bindgen::dif::dif_lc_ctrl_token);
 
 impl From<[u8; 16]> for DifLcCtrlToken {
     fn from(bytes: [u8; 16]) -> Self {
         DifLcCtrlToken(bindgen::dif::dif_lc_ctrl_token { data: bytes })
+    }
+}
+
+impl From<Vec<u8>> for DifLcCtrlToken {
+    fn from(vector: Vec<u8>) -> Self {
+        let bytes: [u8; 16] = vector.try_into().unwrap();
+        DifLcCtrlToken::from(bytes)
+    }
+}
+
+impl From<[u32; 4]> for DifLcCtrlToken {
+    fn from(words: [u32; 4]) -> Self {
+        let bytes: [u8; 16] = words
+            .iter()
+            .flat_map(|v| v.to_le_bytes())
+            .collect::<Vec<u8>>()
+            .try_into()
+            .unwrap();
+        DifLcCtrlToken::from(bytes)
     }
 }
 
@@ -106,6 +292,11 @@ impl DifLcCtrlToken {
             .zip(&mut out_words)
             .for_each(|(word, out)| *out = word);
         out_words
+    }
+
+    /// Returns true if the token is zero.
+    pub fn is_zero(self) -> bool {
+        self.0.data == [0; 16]
     }
 }
 
