@@ -118,6 +118,11 @@ impl<B: Board> Backend<B> {
         })
     }
 
+    /// Access to the lower level USB driver.
+    pub fn usb(&self) -> &UsbBackend {
+        &self.usb
+    }
+
     /// Send a control write transaction to the Chip Whisperer board.
     pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
         log::debug!("WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",

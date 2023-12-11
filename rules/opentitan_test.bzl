@@ -635,9 +635,7 @@ def opentitan_functest(
                 "//conditions:default": [],
             }
             fpga_name = _fpga_from_fpga_target(target)
-            if fpga_name == "cw310":
-                select_options["@//ci:lowrisc_fpga_cw310"] = ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"]
-            elif fpga_name == "cw340":
+            if fpga_name == "cw340":
                 # The CW340 supports different options for the UARTs: they can be wired to the SAM3x or the FTDI.
                 # The CI currently uses the FTDI.
                 select_options["@//ci:lowrisc_fpga_cw340"] = ["--uarts=/dev/ttyCW340_FTDI_2,/dev/ttyCW340_FTDI_3"]
