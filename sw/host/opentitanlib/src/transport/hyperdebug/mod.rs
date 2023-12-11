@@ -747,7 +747,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
         // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<B>::new(None, None, None, &[], None)?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
 
         // Program the FPGA bitstream.
         log::info!("Programming the FPGA bitstream.");
@@ -757,7 +757,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let board = ChipWhisperer::<B>::new(None, None, None, &[], None)?;
+        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
         let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.clear_bitstream()?;

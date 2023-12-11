@@ -55,6 +55,13 @@ pub struct BackendOpts {
     /// Configuration files.
     #[arg(long, num_args = 1)]
     pub conf: Vec<PathBuf>,
+
+    /// Path to OpenOCD JTAG adapter config file to use (usually Olimex, but could be another
+    /// adapter).  If unspecified, will use native support of the backend transport.  (Currently
+    /// only the HyperDebug transport has such native JTAG support, and for any other transport,
+    /// this argument must be specified if using JTAG.)
+    #[arg(long)]
+    pub openocd_adapter_config: Option<PathBuf>,
 }
 
 #[derive(Error, Debug)]
@@ -128,6 +135,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
             process_config_file(&mut env, conf_file)?
         }
     }
+    env.set_openocd_adapter_config(&args.openocd_adapter_config);
     env.build(backend)
 }
 

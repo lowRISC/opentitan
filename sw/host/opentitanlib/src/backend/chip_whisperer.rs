@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use std::path::PathBuf;
 
 use crate::backend::BackendOpts;
 use crate::transport::chip_whisperer::board::Board;
@@ -16,11 +15,6 @@ pub struct ChipWhispererOpts {
     /// Comma-separated list of Chip Whisperer board UARTs for non-udev environments. List the console uart first.
     #[arg(long, alias = "cw310-uarts")]
     pub uarts: Option<String>,
-
-    /// Path to OpenOCD JTAG adapter config file to use (usually Olimex, but could be another
-    /// adapter).
-    #[arg(long)]
-    pub openocd_adapter_config: Option<PathBuf>,
 }
 
 pub fn create<B: Board + 'static>(args: &BackendOpts) -> Result<Box<dyn Transport>> {
@@ -36,6 +30,5 @@ pub fn create<B: Board + 'static>(args: &BackendOpts) -> Result<Box<dyn Transpor
         args.usb_pid,
         args.usb_serial.as_deref(),
         &uarts,
-        args.opts.openocd_adapter_config.clone(),
     )?))
 }

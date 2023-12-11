@@ -66,7 +66,7 @@ impl Capabilities {
         Self { capabilities: cap }
     }
 
-    fn add(&self, extra: Capability) -> Self {
+    pub fn add(&self, extra: Capability) -> Self {
         Self {
             capabilities: self.capabilities | extra,
         }
