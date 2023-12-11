@@ -124,8 +124,6 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   const sigverify_rsa_key_t *key;
   RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), &key));
-  memset(boot_measurements.bl0.data, (int)rnd_uint32(),
-         sizeof(boot_measurements.bl0.data));
 
   hmac_sha256_init();
   // Hash usage constraints.
@@ -140,9 +138,6 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   // Verify signature
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
-  static_assert(sizeof(boot_measurements.bl0) == sizeof(act_digest),
-                "Unexpected BL0 digest size.");
-  memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
   uint32_t flash_exec = 0;
   return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
@@ -223,9 +218,10 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
       kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier));
 
   // Advance keymgr to Owner stage (root of Sealing_1 and CDI_1).
+  // TODO(ttrippel): Put the real BL0 measurement in here.
   keymgr_sw_binding_unlock_wait();
   keymgr_sw_binding_set(/*binding_value_sealing=*/&manifest->binding_value,
-                        /*binding_value_attestation=*/&boot_measurements.bl0);
+                        /*binding_value_attestation=*/&zero_binding_value);
   keymgr_owner_max_ver_set(manifest->max_key_version);
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
                            kKeymgrSecMmioOwnerMaxVerSet);
