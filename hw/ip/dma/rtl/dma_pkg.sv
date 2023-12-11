@@ -10,7 +10,7 @@ package dma_pkg;
   // Possible error bits the DMA can raise
   typedef enum logic [3:0] {
     DmaSrcAddrErr,
-    DmaDestAddrErr,
+    DmaDstAddrErr,
     DmaOpcodeErr,
     DmaSizeErr,
     DmaBusErr,
