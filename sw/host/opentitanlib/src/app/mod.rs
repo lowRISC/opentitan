@@ -22,6 +22,7 @@ use crate::transport::{
     ioexpander, Capability, ProgressIndicator, ProxyOps, Transport, TransportError,
     TransportInterfaceType,
 };
+use crate::util::openocd::OpenOcdJtagChain;
 
 use anyhow::{anyhow, bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -30,6 +31,7 @@ use std::any::Any;
 use std::cell::{Cell, RefCell};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 use std::vec::Vec;
@@ -191,6 +193,7 @@ pub struct I2cConfiguration {
 
 pub struct TransportWrapperBuilder {
     interface: String,
+    openocd_adapter_config: Option<PathBuf>,
     provides_list: Vec<(String, String)>,
     requires_list: Vec<(String, String)>,
     pin_alias_map: HashMap<String, String>,
@@ -208,6 +211,7 @@ pub struct TransportWrapperBuilder {
 // transport will have been computed from a number ConfigurationFiles.
 pub struct TransportWrapper {
     transport: Rc<dyn Transport>,
+    openocd_adapter_config: Option<PathBuf>,
     provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
     artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
@@ -226,6 +230,7 @@ impl TransportWrapperBuilder {
     pub fn new(interface: String) -> Self {
         Self {
             interface,
+            openocd_adapter_config: None,
             provides_list: Vec::new(),
             requires_list: Vec::new(),
             pin_alias_map: HashMap::new(),
@@ -583,6 +588,10 @@ impl TransportWrapperBuilder {
         &self.interface
     }
 
+    pub fn set_openocd_adapter_config(&mut self, openocd_adapter_config: &Option<PathBuf>) {
+        self.openocd_adapter_config = openocd_adapter_config.clone();
+    }
+
     pub fn build(
         self,
         transport: Box<dyn crate::transport::Transport>,
@@ -614,6 +623,7 @@ impl TransportWrapperBuilder {
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_conf_map)?;
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
+            openocd_adapter_config: self.openocd_adapter_config,
             provides_map,
             pin_map: self.pin_alias_map,
             artificial_pin_map: HashMap::new(),
@@ -659,7 +669,12 @@ impl TransportWrapper {
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
-        self.transport.capabilities()
+        let capabilities = self.transport.capabilities()?;
+        if self.openocd_adapter_config.is_some() {
+            Ok(capabilities.add(Capability::JTAG))
+        } else {
+            Ok(capabilities)
+        }
     }
 
     /// Returns a string->string map containing user-defined aspects "provided" by the testbed
@@ -681,6 +696,15 @@ impl TransportWrapper {
 
     /// Returns a [`JtagChain`] implementation.
     pub fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
+        if let Some(ref path) = self.openocd_adapter_config {
+            // Use specified external JTAG dongle, instead of the transport driver itself.
+            return Ok(Box::new(OpenOcdJtagChain::new(
+                &std::fs::read_to_string(path)?,
+                opts,
+            )?));
+        }
+        // Use JTAG functionality of the transport driver itself.  (Currently, HyperDebug is the
+        // only transport which has such support.)
         self.transport.jtag(opts)
     }
 

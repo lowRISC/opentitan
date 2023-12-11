@@ -9,11 +9,9 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::path::PathBuf;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
-use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
@@ -21,7 +19,6 @@ use crate::transport::common::uart::SerialPortUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::parse_int::ParseInt;
 use board::Board;
 
@@ -40,7 +37,6 @@ struct Inner {
 pub struct ChipWhisperer<B: Board> {
     pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
     uart_override: Vec<String>,
-    openocd_adapter_config: Option<PathBuf>,
     inner: RefCell<Inner>,
 }
 
@@ -50,14 +46,12 @@ impl<B: Board> ChipWhisperer<B> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
         uart_override: &[&str],
-        openocd_adapter_config: Option<PathBuf>,
     ) -> anyhow::Result<Self> {
         let board = ChipWhisperer {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
             )?)),
             uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
-            openocd_adapter_config,
             inner: RefCell::default(),
         };
         Ok(board)
@@ -100,11 +94,7 @@ impl<B: Board> ChipWhisperer<B> {
 impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::SPI
-                | Capability::GPIO
-                | Capability::UART
-                | Capability::UART_NONBLOCKING
-                | Capability::JTAG,
+            Capability::SPI | Capability::GPIO | Capability::UART | Capability::UART_NONBLOCKING,
         ))
     }
 
@@ -179,16 +169,6 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
-    }
-
-    fn jtag(&self, opts: &JtagParams) -> Result<Box<dyn JtagChain + '_>> {
-        Ok(Box::new(OpenOcdJtagChain::new(
-            &match self.openocd_adapter_config {
-                Some(ref path) => std::fs::read_to_string(path)?,
-                None => String::new(),
-            },
-            opts,
-        )?))
     }
 }
 
