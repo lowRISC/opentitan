@@ -120,7 +120,7 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 static status_t manuf_individualize_device_ast_cfg(
     const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
   // Copy AST configuration data out of the flash info page.
-  uint32_t ast_cfg_data[kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords];
+  uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
@@ -135,15 +135,13 @@ static status_t manuf_individualize_device_ast_cfg(
       /*offset=*/NULL));
   TRY(manuf_flash_info_field_read(
       flash_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
-      kFlashInfoFieldMaxAstCalibrationDataSizeIn32BitWords));
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
 
   // Write AST configuration data to OTP.
-  // Note: the length is the first word, after which follows <addr><data> word
-  // pairs, where each word (including the length) is 32-bits.
-  for (size_t i = 0; i < ast_cfg_data[0]; ++i) {
-    uint32_t addr = ast_cfg_data[(i * 2) + 1] - TOP_EARLGREY_AST_BASE_ADDR +
-                    OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET;
-    uint32_t data = ast_cfg_data[(i * 2) + 2];
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    uint32_t addr =
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + i * sizeof(uint32_t);
+    uint32_t data = ast_cfg_data[i];
     uint32_t relative_addr;
     // Check the range is valid.
     if (addr < kValidAstCfgOtpAddrLow || addr >= kInvalidAstCfgOtpAddrHigh) {

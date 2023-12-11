@@ -231,6 +231,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/manuf_sram_program_load",
     ),
     deps = [
+        "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -242,6 +243,7 @@ opentitan_test(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/data/ast:fake",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
