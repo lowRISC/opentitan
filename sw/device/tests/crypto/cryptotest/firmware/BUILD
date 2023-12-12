@@ -77,6 +77,21 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "trigger_sca",
+    srcs = ["trigger_sca.c"],
+    hdrs = ["trigger_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:trigger_sca_commands",
+    ],
+)
+
 opentitan_binary(
     name = "firmware",
     testonly = True,
@@ -89,6 +104,7 @@ opentitan_binary(
         ":aes_sca",
         ":ibex_fi",
         ":prng_sca",
+        ":trigger_sca",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing/test_framework:check",

@@ -716,24 +716,6 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
 }
 
 /**
- * Select trigger type command handler.
- *
- * This function only supports 1-byte trigger values.
- *
- * The uJSON data contains:
- *  - Trigger: The trigger type.
- * @param uj The received uJSON data.
- */
-status_t handle_aes_sca_select_trigger_source(ujson_t *uj) {
-  cryptotest_aes_sca_trigger_t uj_trigger;
-  TRY(ujson_deserialize_cryptotest_aes_sca_trigger_t(uj, &uj_trigger));
-
-  sca_select_trigger_type((sca_trigger_type_t)uj_trigger.trigger);
-
-  return OK_STATUS(0);
-}
-
-/**
  * Initialize AES command handler.
  *
  * This command is designed to setup the AES.
@@ -760,9 +742,6 @@ status_t handle_aes_sca(ujson_t *uj) {
   switch (cmd) {
     case kAesScaSubcommandInit:
       return handle_aes_sca_init(uj);
-      break;
-    case kAesScaSubcommandSelectTriggerSource:
-      return handle_aes_sca_select_trigger_source(uj);
       break;
     case kAesScaSubcommandKeySet:
       return handle_aes_sca_key_set(uj);

@@ -38,3 +38,10 @@ cc_library(
     hdrs = ["prng_sca_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
+
+cc_library(
+    name = "trigger_sca_commands",
+    srcs = ["trigger_sca_commands.c"],
+    hdrs = ["trigger_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)

@@ -16,12 +16,14 @@
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/prng_sca_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/trigger_sca_commands.h"
 
 // Include handlers
 #include "aes.h"
 #include "aes_sca.h"
 #include "ibex_fi.h"
 #include "prng_sca.h"
+#include "trigger_sca.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -41,6 +43,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandPrngSca:
         RESP_ERR(uj, handle_prng_sca(uj));
+        break;
+      case kCryptotestCommandTriggerSca:
+        RESP_ERR(uj, handle_trigger_sca(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);
