@@ -18,8 +18,6 @@ load(
 )
 load(
     "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "cw340_params",
@@ -3516,7 +3514,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_ndm_reset_req_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = hyper310_jtag_params(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -3576,41 +3574,16 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
     exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": "hyper310",
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
-    deps = [
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
-# covers support for cw340_params.
-opentitan_functest(
-    name = "openocd_hyperdebug_test",
-    srcs = ["example_test_from_flash.c"],
-    cw310 = cw310_params(
+    hyper310 = hyper310_jtag_params(
         bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
-        interface = "hyper310",
-        tags = ["flaky"],
-        test_cmds = [
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     ),
-    cw340 = cw340_params(
-        bitstream = "//hw/bitstream/hyperdebug:rom_with_fake_keys_otp_test_unlocked0",
-        interface = "hyper340",
-        tags = ["flaky"],
-        test_cmds = [
-            "--bitstream=\"$(rootpath {bitstream})\"",
-            "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
-    ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
