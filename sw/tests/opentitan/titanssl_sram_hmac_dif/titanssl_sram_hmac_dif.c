@@ -49,9 +49,9 @@ static titanssl_buffer_t titanssl_data_iv;
 #define TITANSSL_BENCHMARK_PAYLOAD_65536 0
 
 // Configure cryptographic operation.
-#define TITANSSL_BENCHMARK_SHA256 0
+#define TITANSSL_BENCHMARK_SHA256 1
 #define TITANSSL_BENCHMARK_HMAC   0
-#define TITANSSL_BENCHMARK_AES    1
+#define TITANSSL_BENCHMARK_AES    0
 
 /* ============================================================================
  * Benchmark automatic configuration
@@ -167,9 +167,10 @@ void titanssl_benchmark_sha256(
         titanssl_buffer_t *const key,
         titanssl_buffer_t *const iv)
 {
-	dif_hmac_t hmac;
+    dif_hmac_t hmac;
     dif_hmac_transaction_t cfg;
-	dif_result_t res;
+    dif_result_t res;
+    const uint8_t *dp;
 
 	// Initialize HMAC IP in SHA256 mode
 	res = dif_hmac_init(
@@ -183,34 +184,47 @@ void titanssl_benchmark_sha256(
 		cfg
 	);
 
-	// Compute SHA256
-    const uint8_t *kData = src->data;
-    const uint32_t kDataSize = src->n;
-    const uint8_t *dp = src->data;
-
-    while (dp - kData < kDataSize)
+    // Compute SHA256. This assumes the payload address is 4-bytes aligned.
+    dp = src->data;
+    while (dp < src->data + src->n) 
     {
-        uint32_t sent_bytes;
+        uint32_t n_bytes;
+        uint32_t n_words;
 
-        res = dif_hmac_fifo_push(
-            &hmac,
-            dp,
-            kDataSize - (dp - kData),
-            &sent_bytes
-        );
-        dp += sent_bytes;
-
-        if (res == kDifIpFifoFull)
+        // Compute how many bytes need will be pushed into the accelerator FIFO.
+        n_bytes = 16 * sizeof(uint32_t);
+        if (n_bytes > src->data + src->n - dp)
         {
-            uint32_t fifo_depth;
+            n_bytes = src->data + src->n - dp;
+        }
+        n_words = n_bytes >> 2;
+        n_bytes = n_bytes & 0x3;
 
-            do
-            {
-                res = dif_hmac_fifo_count_entries(
-                    &hmac,
-                    &fifo_depth
-                );
-            } while (fifo_depth != 0);
+        // Wait for the accelerator fifo to be empty.
+        while(!mmio_region_get_bit32(
+            hmac.base_addr,
+            HMAC_STATUS_REG_OFFSET,
+            HMAC_STATUS_FIFO_EMPTY_BIT
+        ));
+
+        // Push data into the FIFO.
+        for (size_t i=0; i<n_words; i++)
+        {
+            mmio_region_write32(
+                hmac.base_addr,
+                HMAC_MSG_FIFO_REG_OFFSET,
+                *(uint32_t*)dp
+            );
+            dp += sizeof(uint32_t);
+        }
+        for (size_t i=0; i<n_bytes; i++)
+        {
+            mmio_region_write8(
+                hmac.base_addr,
+                HMAC_MSG_FIFO_REG_OFFSET,
+                *dp
+            );
+            dp += 1;
         }
     }
     res = dif_hmac_process(&hmac);
@@ -220,7 +234,7 @@ void titanssl_benchmark_sha256(
         HMAC_INTR_STATE_HMAC_DONE_BIT
     ));
 
-    // Finalize SHA256
+    // Finalize SHA-256 computation
     do
     {
         res = dif_hmac_finish(
@@ -416,7 +430,7 @@ void titanssl_benchmark_aes(
 
     // Print the message digest, if we are in debug mode.
 #if TITANSSL_BENCHMARK_DEBUG
-	for (int i=0; i<titanssl_data_dst.n; i++)
+	for (int i=0; i<dst->n; i++)
 	{
 		printf(
             "0x%08x\r\n",
