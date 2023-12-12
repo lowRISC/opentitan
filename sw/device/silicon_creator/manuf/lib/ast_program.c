@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -66,52 +67,43 @@ status_t ast_program_init(bool verbose) {
   TRY(dif_flash_ctrl_init_state(
       &flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
 
   // Set up parameters for accessing the AST calibration data in flash info page
   // 0.
-  dif_flash_ctrl_info_region_t info_region = {
-      .bank = kFlashInfoFieldAstCalibrationData.bank,
-      .page = kFlashInfoFieldAstCalibrationData.page,
-      .partition_id = kFlashInfoFieldAstCalibrationData.partition};
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      &flash_state, kFlashInfoFieldAstCalibrationData.page,
+      kFlashInfoFieldAstCalibrationData.bank,
+      kFlashInfoFieldAstCalibrationData.partition,
+      (dif_flash_ctrl_region_properties_t){
+          .ecc_en = kMultiBitBool4True,
+          .high_endurance_en = kMultiBitBool4False,
+          .erase_en = kMultiBitBool4True,
+          .prog_en = kMultiBitBool4True,
+          .rd_en = kMultiBitBool4True,
+          .scramble_en = kMultiBitBool4False},
+      /*offset=*/NULL));
 
-  dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
-      .ecc_en = kMultiBitBool4True,
-      .high_endurance_en = kMultiBitBool4False,
-      .erase_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .rd_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4False};
-
-  TRY(dif_flash_ctrl_set_info_region_properties(&flash_state, info_region,
-                                                kFlashInfoPage0Permissions));
-  TRY(dif_flash_ctrl_set_info_region_enablement(&flash_state, info_region,
-                                                kDifToggleEnabled));
   return OK_STATUS();
 }
 
 status_t ast_program_config(bool verbose) {
   TRY(ast_program_init(verbose));
+
+  // Read AST calibration values from flash.
   LOG_INFO("Reading AST data");
-  // Prepare the read transaction.
   dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
   uint32_t byte_address =
       (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page) +
       kFlashInfoFieldAstCalibrationData.byte_offset;
-  dif_flash_ctrl_transaction_t transaction = {
-      .byte_address = byte_address,
-      .op = kDifFlashCtrlOpRead,
-      .partition_type = kDifFlashCtrlPartitionTypeInfo,
-      .partition_id = kFlashInfoFieldAstCalibrationData.partition,
-      .word_count = kFlashInfoAstCalibrationDataSizeIn32BitWords};
-  // Read the data.
-  TRY(dif_flash_ctrl_start(&flash_state, transaction));
   uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
-  TRY(dif_flash_ctrl_read_fifo_pop(&flash_state, transaction.word_count,
-                                   ast_data));
-  dif_flash_ctrl_output_t output;
-  TRY(dif_flash_ctrl_end(&flash_state, &output));
+  TRY(flash_ctrl_testutils_read(&flash_state, byte_address,
+                                kFlashInfoFieldAstCalibrationData.partition,
+                                ast_data, kDifFlashCtrlPartitionTypeInfo,
+                                kFlashInfoAstCalibrationDataSizeIn32BitWords,
+                                /*delay=*/0));
 
-  // Program AST
+  // Program AST CSRs.
   LOG_INFO("Programming %u AST words",
            kFlashInfoAstCalibrationDataSizeIn32BitWords);
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {

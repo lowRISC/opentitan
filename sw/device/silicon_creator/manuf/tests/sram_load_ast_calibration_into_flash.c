@@ -64,6 +64,7 @@ static void manually_init_ast(uint32_t *data) {
 }
 
 static status_t write_ast_values_to_flash(uint32_t *data) {
+  TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
