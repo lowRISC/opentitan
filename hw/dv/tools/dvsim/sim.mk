@@ -19,9 +19,9 @@ pre_build:
 	mkdir -p ${build_dir}
 ifneq (${pre_build_cmds},)
 	# pre_build_cmds are likely changing the in-tree sources. We hence use FLOCK
-        # utility to prevent multiple builds that may be running in parallel from
-        # stepping on each other. TODO: Enforce the list of pre_build_cmds is
-        # identical across all build modes.
+	# utility to prevent multiple builds that may be running in parallel from
+	# stepping on each other. TODO: Enforce the list of pre_build_cmds is
+	# identical across all build modes.
 	${LOCK_ROOT_DIR} "cd ${build_dir} && ${pre_build_cmds}"
 endif
 
@@ -124,6 +124,7 @@ ifneq (${sw_images},)
 				--output=label_kind | cut -f1 -d' '); \
 			if [[ $${kind} == "opentitan_test" \
 					|| $${bazel_label} == "//sw/device/lib/testing/test_rom:test_rom_sim_dv" \
+					|| $${bazel_label} == "//sw/device/silicon_creator/rom:rom_with_real_keys_sim_dv" \
 					|| $${bazel_label} == "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_dv" ]]; then \
 				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
 					$${bazel_label} \
@@ -229,18 +230,18 @@ cov_analyze:
 	${cov_analyze_cmd} ${cov_analyze_opts}
 
 .PHONY: build \
-        pre_build \
-        gen_sv_flist \
-        do_build \
-        post_build \
-        build_result \
-        run \
-        pre_run \
-        sw_build \
-        simulate \
-        post_run \
-        run_result \
-        debug_waves \
-        cov_merge \
-        cov_analyze \
-        cov_report
+	pre_build \
+	gen_sv_flist \
+	do_build \
+	post_build \
+	build_result \
+	run \
+	pre_run \
+	sw_build \
+	simulate \
+	post_run \
+	run_result \
+	debug_waves \
+	cov_merge \
+	cov_analyze \
+	cov_report
