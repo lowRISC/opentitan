@@ -334,7 +334,6 @@ cc_library(
 otp_image(
     name = "otp_img_test_unlocked0_manuf_empty",
     src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
-    visibility = ["//visibility:private"],
 )
 
 # `MANUF_INITIALIZED` configuration. This configuration will be generally used
