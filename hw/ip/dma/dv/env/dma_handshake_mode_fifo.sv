@@ -11,8 +11,7 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   `uvm_object_new
 
-  // TODO: We need a DMA DV parameter specifying the maximum address width; top_pkg::TL_AW doesn't
-  // work for the SocSystemAddr space
+  // Address type used in FIFO accesses; the number of bits is an instance-specific parameter.
   typedef logic [AddrWidth-1:0] mem_addr_t;
   // Byte enables
   typedef logic [DataWidth/8-1:0] mem_mask_t;
@@ -66,19 +65,6 @@ class dma_handshake_mode_fifo #(int AddrWidth = bus_params_pkg::BUS_AW,
     repeat(size) begin
       fifo.push_front(src_data[offset]);
       offset++;
-    end
-  endfunction
-
-  // Method to randomise data in queue, with the given size
-  function void randomise_data(mem_addr_t size);
-    `DV_CHECK(fifo_en, "Cannot randomize data when FIFO is disabled")
-
-    if (size <= max_size) begin
-      repeat(size) begin
-        fifo.push_back($urandom_range(0,255));
-      end
-    end else begin
-      `uvm_error(`gfn, $sformatf("size:%0d greater than FIFO max size %0d", size, max_size))
     end
   endfunction
 
