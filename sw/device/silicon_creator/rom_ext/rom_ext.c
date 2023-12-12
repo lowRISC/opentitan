@@ -48,6 +48,8 @@
 
 // Declaration for the ROM_EXT manifest start address, populated by the linker
 extern char _rom_ext_start_address[];
+// Declaration for the chip_info structure stored in ROM.
+extern const char _chip_info_start[];
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
@@ -68,6 +70,30 @@ static rom_error_t rom_ext_irq_error(void) {
   // interrupt causes increase).
   mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
   return kErrorRomExtInterrupt + mcause;
+}
+
+OT_WARN_UNUSED_RESULT
+static uint32_t rom_ext_current_slot(void) {
+  uint32_t pc = 0;
+  asm("auipc %[pc], 0;" : [pc] "=r"(pc));
+
+  const uint32_t kFlashSlotA = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  const uint32_t kFlashSlotB =
+      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
+  const uint32_t kFlashSlotEnd =
+      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
+  if (pc >= kFlashSlotA && pc < kFlashSlotB) {
+    // Running in Slot A.
+    return kRomExtBootSlotA;
+  } else if (pc >= kFlashSlotB && pc < kFlashSlotEnd) {
+    // Running in Slot B.
+    return kRomExtBootSlotB;
+  } else {
+    // Running elsewhere (ie: the remap window).
+    // TODO: read the remap register configuration to determine the execution
+    // slot.
+    return kBootLogUninitialized;
+  }
 }
 
 void rom_ext_check_rom_expectations(void) {
@@ -477,7 +503,8 @@ static rom_error_t rom_ext_try_boot(void) {
     }
 
     boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-    RETURN_IF_ERROR(boot_log_check(boot_log));
+    const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
+    boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBl0BootSlotA;
     } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
