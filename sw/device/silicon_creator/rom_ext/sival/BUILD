@@ -4,8 +4,8 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
-load("//rules:signing.bzl", "offline_fake_rsa_sign", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules/opentitan:defs.bzl", "opentitan_binary")
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])

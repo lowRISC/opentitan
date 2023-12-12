@@ -23,6 +23,8 @@ load(
     "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
 )
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -321,4 +323,39 @@ opentitan_test(
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
+)
+
+offline_presigning_artifacts(
+    name = "presigning",
+    testonly = True,
+    srcs = [
+        ":ft_personalize_1",
+        ":ft_personalize_2",
+        ":ft_personalize_3",
+    ],
+    manifest = "//sw/device/silicon_creator/rom_ext/sival:manifest_sival",
+    rsa_key = {
+        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "ealrgrey_a0_prod_0",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "digests",
+    testonly = True,
+    srcs = [":presigning"],
+    mode = "0644",
+    tags = ["manual"],
+)
+
+offline_signature_attach(
+    name = "signed",
+    testonly = True,
+    srcs = [
+        ":presigning",
+    ],
+    rsa_signatures = [
+        "//sw/device/silicon_creator/rom_ext/sival/signatures:rsa_signatures",
+    ],
+    tags = ["manual"],
 )
