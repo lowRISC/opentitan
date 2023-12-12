@@ -232,6 +232,9 @@ status_t ujson_deserialize_int16_t(ujson_t *uj, int16_t *value) {
 status_t ujson_deserialize_int8_t(ujson_t *uj, int8_t *value) {
   return ujson_parse_integer(uj, (void *)value, sizeof(*value));
 }
+status_t ujson_deserialize_char(ujson_t *uj, char *value) {
+  return ujson_parse_integer(uj, (void *)value, sizeof(*value));
+}
 
 static const char hex[] = "0123456789abcdef";
 
@@ -345,6 +348,10 @@ status_t ujson_serialize_uint16_t(ujson_t *uj, const uint16_t *value) {
 }
 
 status_t ujson_serialize_uint8_t(ujson_t *uj, const uint8_t *value) {
+  return ujson_serialize_integer32(uj, *value, false);
+}
+
+status_t ujson_serialize_char(ujson_t *uj, const char *value) {
   return ujson_serialize_integer32(uj, *value, false);
 }
 

@@ -76,7 +76,7 @@ enum ot_status_create_record_magic {
   OT_SCR_UNKNOWN_MOD_ID = 0xffffffff,
 };
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(OT_NO_RECORD_STATUS)
 /* Recording statuses in C++ is not really useful since that means the code
  * will not run on the target. It also creates problems with g++ because
  * some statuses are created in classes and putting symbols in sections from

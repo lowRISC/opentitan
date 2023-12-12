@@ -166,6 +166,7 @@ status_t ujson_deserialize_int64_t(ujson_t *uj, int64_t *value);
 status_t ujson_deserialize_int32_t(ujson_t *uj, int32_t *value);
 status_t ujson_deserialize_int16_t(ujson_t *uj, int16_t *value);
 status_t ujson_deserialize_int8_t(ujson_t *uj, int8_t *value);
+status_t ujson_deserialize_char(ujson_t *uj, char *value);
 
 /**
  * Deserialize a boolean.
@@ -210,6 +211,7 @@ status_t ujson_serialize_int64_t(ujson_t *uj, const int64_t *value);
 status_t ujson_serialize_int32_t(ujson_t *uj, const int32_t *value);
 status_t ujson_serialize_int16_t(ujson_t *uj, const int16_t *value);
 status_t ujson_serialize_int8_t(ujson_t *uj, const int8_t *value);
+status_t ujson_serialize_char(ujson_t *uj, const char *value);
 
 /**
  * Serialize a boolean.
