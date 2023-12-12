@@ -64,15 +64,6 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
     ROM_BOOT_FAILURE_MSG,
 )
 
-OPENTITANTOOL_OPENOCD_TEST_CMDS = [
-    "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
-    "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_olimex_cfg)\"",
-]
-OPENTITANTOOL_OPENOCD_DATA_DEPS = [
-    "//third_party/openocd:jtag_olimex_cfg",
-    "//third_party/openocd:openocd_bin",
-]
-
 # This constant holds a dictionary of slot-specific linker script dependencies
 # that determine how an `opentitan_flash_binary` is built.
 _FLASH_SLOTS = {
