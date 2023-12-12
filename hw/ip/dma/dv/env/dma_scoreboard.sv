@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: pending checks
-// - handshake interrupt check
-// - Alert checks
 class dma_scoreboard extends cip_base_scoreboard #(
   .CFG_T(dma_env_cfg),
   .RAL_T(dma_reg_block),
@@ -27,8 +24,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   // Indicates if DMA operation is in progress
   bit operation_in_progress;
-  // Indicates if current DMA operation is valid or invalid
-  bit current_operation_valid = 1;
   // Tracks the number of bytes read from the source
   uint num_bytes_read;
   // Expectation of how many bytes shall be transferred by the DMA controller before reporting Done
@@ -578,7 +573,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset();
     `uvm_info(`gfn, "Detected DMA reset", UVM_LOW)
-    current_operation_valid = 1'b0;
     dma_config.reset_config();
     src_queue.delete();
     dst_queue.delete();
@@ -682,7 +676,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   //       they must be in that state by then.
   function void predict_interrupts(uint max_delay, bit [31:0] intr_affected, bit [31:0] exp_state);
     `uvm_info(`gfn, $sformatf("Predicting interrupt [0,%0x) -> intr_affected 0x%x == 0x%0x",
-                              max_delay, intr_affected, exp_state), UVM_MEDIUM)
+                              max_delay, intr_affected, exp_state), UVM_HIGH)
 
     for (uint i = 0; i < NUM_MAX_INTERRUPTS && |intr_affected; i++) begin
       if (intr_affected[i]) begin
@@ -1081,7 +1075,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn,
                   $sformatf("Got handshake_intr_en = 0x%x", dma_config.handshake_intr_en), UVM_HIGH)
       end
-      // TODO: we shall surely need to handle `status` register writes at some point
       default: begin
         // This message may indicate a failure to update the configuration in the scoreboard
         // so that it matches the configuration programmed into the DUT

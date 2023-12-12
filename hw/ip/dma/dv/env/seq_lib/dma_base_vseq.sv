@@ -349,7 +349,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Set Byte size of each transfer (0:1B, 1:2B, 2:3B, 3:4B)
   task set_transfer_width(dma_transfer_width_e transfer_width);
     csr_wr(ral.transfer_width, transfer_width);
-    `uvm_info(`gfn, $sformatf("DMA: Transfer Byte Size = %d",
+    `uvm_info(`gfn, $sformatf("DMA: Transfer Byte Size = %s",
                               transfer_width.name()), UVM_HIGH)
   endtask : set_transfer_width
 
