@@ -3,19 +3,23 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("//rules/opentitan:openocd.bzl", "OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS")
 
 package(default_visibility = ["//visibility:public"])
 
+# Additional data dependencies on this rust binary allow the provisioning
+# orchestration scripts to invoke this binary with bazel run.
 rust_binary(
     name = "ft",
     testonly = True,
     srcs = ["src/main.rs"],
     data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_1",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_2",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_3",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_ft_individualize_all",
-    ],
+    ] + OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS,
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ft_lib",
