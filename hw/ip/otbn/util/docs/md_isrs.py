@@ -51,9 +51,9 @@ def print_isr(indent: str, isr: Isr, add_anchors: bool) -> None:
         doc_lines += ['  </tbody>', '</table>']
 
     for line in doc_lines:
-        if line:
-            line = indent + ' ' * 4 + line
-        print(line)
+        if line == '':
+            line = '<br>'
+        print(indent + ' ' * 4 + line)
 
     print(f'{indent}  </td>')
     print(f'{indent}</tr>')

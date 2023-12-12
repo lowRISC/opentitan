@@ -277,7 +277,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
         Primarily intended to be used for key generation.
-
+        <br>
         The number is sourced from the EDN via a single-entry cache.
         Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
@@ -290,7 +290,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
         A random number without guaranteed secrecy properties or specific statistical properties.
         Intended for use in masking and blinding schemes.
         Use RND for high-quality randomness.
-
+        <br>
         The number is sourced from an local PRNG.
         Reads never stall.
       </td>
@@ -354,7 +354,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
         Primarily intended to be used for key generation.
-
+        <br>
         The number is sourced from the EDN via a single-entry cache.
         Reads when the cache is empty will cause OTBN to be stalled until a new random number is fetched from the EDN.
       </td>
@@ -367,7 +367,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
         A random number without guaranteed secrecy properties or specific statistical properties.
         Intended for use in masking and blinding schemes.
         Use RND for high-quality randomness.
-
+        <br>
         The number is sourced from an local PRNG.
         Reads never stall.
       </td>
@@ -386,7 +386,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td><a name="key-s0-l">KEY_S0_L</a></td>
       <td>
         Bits [255:0] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
-
+        <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
@@ -397,7 +397,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         Bits [255:128] of this register are always zero.
         Bits [127:0] contain bits [383:256] of share 0 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
-
+        <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
@@ -407,7 +407,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td><a name="key-s1-l">KEY_S1_L</a></td>
       <td>
         Bits [255:0] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
-
+        <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
@@ -418,7 +418,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>
         Bits [255:128] of this register are always zero.
         Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
-
+        <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
       </td>
     </tr>
