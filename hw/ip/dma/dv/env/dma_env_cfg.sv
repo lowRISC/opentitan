@@ -15,8 +15,6 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
 
   // Scoreboard
   dma_scoreboard        scoreboard_h;
-  // Variable to indicate if any memory checks are in progress
-  bit mem_check_in_progress;
 
   // Waive full testing of the SoC System bus within block level DV?
   bit dma_dv_waive_system_bus;
@@ -54,9 +52,6 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
 
   // Associative array with mapping of ASID encoding to interface name; for textual output.
   string asid_names[asid_encoding_e];
-
-  // Constraints
-  //  TODO
 
   `uvm_object_utils_begin(dma_env_cfg)
     `uvm_field_object(tl_agent_dma_host_cfg, UVM_DEFAULT)
