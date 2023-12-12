@@ -58,6 +58,12 @@ pub struct CodegenCommand {
     /// Output file for H header.
     #[arg(long, required_unless_present = "output_dir")]
     output_h: Option<PathBuf>,
+    /// Output file for writer C source (optional).
+    #[arg(long)]
+    output_writer: Option<PathBuf>,
+    /// Output file for test file (optional).
+    #[arg(long)]
+    output_tests: Option<PathBuf>,
 }
 
 impl CommandDispatch for CodegenCommand {
@@ -89,6 +95,18 @@ impl CommandDispatch for CodegenCommand {
         let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
         writeln!(output_c, "{}", codegen.source_c)?;
         writeln!(output_h, "{}", codegen.source_h)?;
+
+        // Output writer.
+        if let Some(output_writer) = &self.output_writer {
+            let mut output_writer = File::create(output_writer)?;
+            writeln!(output_writer, "{}", codegen.writer)?;
+        }
+        // Generate test vectors
+        if let Some(output_tests) = &self.output_tests {
+            let tests = template.gen_tests()?;
+            let mut output_tests = File::create(output_tests)?;
+            writeln!(output_tests, "{}", tests.to_json()?)?;
+        }
 
         Ok(None)
     }
