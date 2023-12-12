@@ -69,3 +69,20 @@ rom_error_t boot_log_check(const boot_log_t *boot_log) {
 
   return kErrorBootLogInvalid;
 }
+
+void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
+                            const chip_info_t *info) {
+  rom_error_t error = boot_log_check(boot_log);
+  if (launder32(error) == kErrorOk) {
+    HARDENED_CHECK_EQ(error, kErrorOk);
+    return;
+  }
+  boot_log->identifier = kBootLogIdentifier;
+  boot_log->chip_version.scm_revision_low = info->scm_revision.scm_revision_low;
+  boot_log->chip_version.scm_revision_high =
+      info->scm_revision.scm_revision_high;
+  boot_log->bl0_slot = kBootLogUninitialized;
+  boot_log->rom_ext_slot = rom_ext_slot;
+  boot_log_digest_update(boot_log);
+  return;
+}
