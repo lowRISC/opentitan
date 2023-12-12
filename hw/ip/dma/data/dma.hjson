@@ -729,7 +729,7 @@
         ]
       }
     }
-    { name: "HANDSHAKE_INTERRUPT_ENABLE"
+    { name: "HANDSHAKE_INTR_ENABLE"
       desc: "Enable bits for incoming handshake interrupt wires."
       swaccess: "rw"
       hwaccess: "hro"
@@ -742,11 +742,11 @@
         }
       ]
     }
-    { name: "CLEAR_INT_SRC"
+    { name: "CLEAR_INTR_SRC"
       desc: '''
             Valid bits for which interrupt sources need clearing.
-            When HANDSHAKE_INTERRUPT_ENABLE is non-zero and corresponding lsio_trigger becomes set,
-            DMA issues writes with address from INT_SOURCE_ADDR and write value from INT_SOURCE_WR_VAL corresponding to each
+            When HANDSHAKE_INTR_ENABLE is non-zero and corresponding lsio_trigger becomes set,
+            DMA issues writes with address from INTR_SOURCE_ADDR and write value from INTR_SOURCE_WR_VAL corresponding to each
             bit set in this register.
             '''
       swaccess: "rw"
@@ -760,7 +760,7 @@
         }
       ]
     }
-    { name: "CLEAR_INT_BUS"
+    { name: "CLEAR_INTR_BUS"
       desc: '''Bus selection bit where the clearing command should be performed."
             0: CTN/System fabric
             1: OT-internal crossbar
@@ -777,7 +777,7 @@
       ]
     }
     { multireg: {
-        name: "INT_SOURCE_ADDR"
+        name: "INTR_SOURCE_ADDR"
         desc: "Destination address for interrupt source clearing write."
         count: "NumIntClearSources"
         cname: "ADDR"
@@ -795,7 +795,7 @@
     }
     { skipto: "0x12C" }
     { multireg: {
-        name: "INT_SOURCE_WR_VAL"
+        name: "INTR_SOURCE_WR_VAL"
         desc: "Write value for interrupt clearing write."
         count: "NumIntClearSources"
         cname: "WRVAL"
