@@ -32,6 +32,7 @@ struct Opts {
 fn sram_load_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Connect to the RISC-V TAP
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     let mut jtag = opts
         .init
         .jtag_params

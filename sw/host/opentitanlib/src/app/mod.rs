@@ -923,8 +923,11 @@ impl TransportWrapper {
     }
 
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
-        let reset_strapping = self.pin_strapping("RESET")?;
+        log::info!("Setting the DFT straps (to disabled)");
+        let dft_strapping = self.pin_strapping("PINMUX_DFT_MODE_OFF")?;
+        dft_strapping.apply()?;
         log::info!("Asserting the reset signal");
+        let reset_strapping = self.pin_strapping("RESET")?;
         reset_strapping.apply()?;
         std::thread::sleep(reset_delay);
         if clear_uart_rx {
@@ -934,6 +937,12 @@ impl TransportWrapper {
         log::info!("Deasserting the reset signal");
         reset_strapping.remove()?;
         std::thread::sleep(reset_delay);
+        log::info!("Deasserting the DFT straps");
+        dft_strapping.remove()?;
+        let dft_strap_0 = self.gpio_pin("DFT_STRAP0")?;
+        let dft_strap_1 = self.gpio_pin("DFT_STRAP1")?;
+        dft_strap_0.set_mode(PinMode::Alternate)?;
+        dft_strap_1.set_mode(PinMode::Alternate)?;
         Ok(())
     }
 }
