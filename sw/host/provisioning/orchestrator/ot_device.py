@@ -169,8 +169,9 @@ class OTDevice:
     def parse_logs(self):
         logging.info("Extracting values from logs...")
         # Extract output from logs
-        with open(f"{self.log_dir}/ft_out.log.txt", "r") as f:
-            stdout = f.read()
+        with open(f"{self.log_dir}/ft_out.log.txt", "rb") as f:
+            stdout = f.read().decode(encoding="ascii",
+                                     errors="backslashreplace")
 
         rma_msg_matches = re.findall(
             r"RESP_OK:(\{\"wrapped_rma_unlock_token\":.*) CRC:.*", stdout)
