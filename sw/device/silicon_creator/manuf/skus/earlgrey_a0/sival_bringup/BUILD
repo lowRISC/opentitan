@@ -355,7 +355,7 @@ offline_signature_attach(
         ":presigning",
     ],
     rsa_signatures = [
-        "//sw/device/silicon_creator/rom_ext/sival/signatures:rsa_signatures",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/signatures:rsa_signatures",
     ],
     tags = ["manual"],
 )
