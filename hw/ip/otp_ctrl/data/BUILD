@@ -6,7 +6,6 @@ load("//rules:autogen.bzl", "autogen_hjson_header")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
-    "STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_bytestring",

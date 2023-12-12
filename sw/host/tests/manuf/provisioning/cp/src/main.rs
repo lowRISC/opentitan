@@ -7,7 +7,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Parser;
 
-use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, ManufCpProvisioningDataInput};
+use cp_lib::{reset_and_lock, run_sram_cp_provision, ManufCpProvisioningDataInput};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
@@ -48,11 +48,6 @@ fn main() -> Result<()> {
         )?,
     };
 
-    unlock_raw(
-        &transport,
-        &opts.init.jtag_params,
-        opts.init.bootstrap.options.reset_delay,
-    )?;
     run_sram_cp_provision(
         &transport,
         &opts.init.jtag_params,
