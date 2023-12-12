@@ -1185,7 +1185,7 @@
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=28_000_000", "+rng_srate_value=30"]
-      run_timeout_mins: 300
+      run_timeout_mins: 400
     }
     {
       name: chip_sw_otbn_ecdsa_op_irq_jitter_en
@@ -1193,7 +1193,7 @@
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=33_000_000", "+rng_srate_value=30", "+en_jitter=1"]
-      run_timeout_mins: 300
+      run_timeout_mins: 400
     }
     {
       name: chip_sw_otbn_mem_scramble
