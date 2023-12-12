@@ -32,6 +32,8 @@ pub enum CertificateCommand {
     Codegen(CodegenCommand),
     /// Parse a certificate.
     Parse(ParseCertificate),
+    /// Substitute values in a template.
+    Subst(SubstCommand),
 }
 
 /// Generate a certificate template.
@@ -172,5 +174,49 @@ impl CommandDispatch for ParseCertificate {
         let cert = fs::read(&self.certificate).context("could not read certificate from file")?;
         let cert = x509::parse_certificate(&cert)?;
         Ok(Some(Box::new(cert)))
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct SubstCommand {
+    /// Filename of the input hjson template.
+    template: PathBuf,
+    /// Filename to the substitution data.
+    data: PathBuf,
+    /// Filename of the output hjson template.
+    #[arg(long)]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for SubstCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Load template.
+        let template_content = fs::read_to_string(&self.template).with_context(|| {
+            format!(
+                "Could not load the template file {}",
+                self.template.display()
+            )
+        })?;
+        let template = Template::from_hjson_str(&template_content).with_context(|| {
+            format!("Failed to parse template file {}", self.template.display())
+        })?;
+        // Load data.
+        let data_content = fs::read_to_string(&self.data)
+            .with_context(|| format!("Could not load the data file {}", self.template.display()))?;
+        let data = SubstData::from_json(&data_content)
+            .with_context(|| format!("Failed to parse data file {}", self.data.display()))?;
+        // Substitute
+        let template = template.subst(&data)?;
+        // Output
+        if let Some(output) = &self.output {
+            let mut file = File::create(output)?;
+            let doc = serde_annotate::serialize(&template)?.to_hjson().to_string();
+            writeln!(file, "{}", doc)?;
+        }
+        Ok(Some(Box::new(template)))
     }
 }
