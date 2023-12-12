@@ -49,7 +49,7 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
     cfg.m_spi_host_agent_cfg.csid = 1;
 
     // enable spi agent interface to begin
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Begin TPM Test",
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "SYNC: Begin TPM Test",
              "Timedout waiting for spi host c configuration.")
 
     for (int i = 0; i < 10; i++) begin
