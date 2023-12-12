@@ -63,9 +63,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit fifo_intr_cleared;
   // Variable to indicate number of writes expected to clear FIFO interrupts
   uint num_fifo_reg_write;
-  // Variable to store clear_int_src register intended for use in monitor_lsio_trigger task
+  // Variable to store clear_intr_src register intended for use in monitor_lsio_trigger task
   // since ref argument can not be used in fork-join_none
-  bit[31:0] clear_int_src;
+  bit[31:0] clear_intr_src;
   bit [TL_DW-1:0] exp_digest[16];
 
   // Allow up to this number of clock cycles from CSR modification until interrupt signal change.
@@ -109,15 +109,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   // Look up the given address in the list of 'Clear Interrupt' addresses, returning a positive
   // index iff found.
-  function int int_addr_lookup(bit [31:0] addr);
-    for (uint idx = 0; idx < dma_config.int_src_addr.size(); idx++) begin
-      if (dma_config.int_src_addr[idx] == addr) begin
+  function int intr_addr_lookup(bit [31:0] addr);
+    for (uint idx = 0; idx < dma_config.intr_src_addr.size(); idx++) begin
+      if (dma_config.intr_src_addr[idx] == addr) begin
         // Address matches; this address should just receive write traffic.
         return int'(idx);
       end
     end
     return -1;
-  endfunction : int_addr_lookup
+  endfunction : intr_addr_lookup
 
   // Check if the address matches our expectations and is valid for the current configuration.
   // This method is common for both source and destination address.
@@ -238,7 +238,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                     dma_config.per_transfer_width);
     tl_a_op_e a_opcode = tl_a_op_e'(item.a_opcode);
     bit [31:0] memory_range;
-    int int_source;
+    int intr_source;
 
     `uvm_info(`gfn, $sformatf("Got addr txn \n:%s", item.sprint()), UVM_DEBUG)
     // Common checks
@@ -272,8 +272,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
 
       // Is this address a 'Clear Interrupt' operation?
-      int_source = int_addr_lookup(item.a_addr);
-      `DV_CHECK_EQ(int_source, -1, "Unexpected Read access to Clear Interrupt address")
+      intr_source = intr_addr_lookup(item.a_addr);
+      `DV_CHECK_EQ(intr_source, -1, "Unexpected Read access to Clear Interrupt address")
 
       // Validate the read address for this source access.
       check_addr(item.a_addr, exp_src_addr, restricted, dma_config.get_read_fifo_en(),
@@ -300,13 +300,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                                       dma_config.src_asid != OtInternalAddr);
 
       // Is this address a 'Clear Interrupt' operation?
-      int_source = int_addr_lookup(item.a_addr);
+      intr_source = intr_addr_lookup(item.a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
 
       // Write to 'Clear Interrupt' address?
-      if (int_source < 0) begin
+      if (intr_source < 0) begin
         // Regular write traffic
         uint exp_a_mask_count_ones;
         uint num_bytes_this_txn;
@@ -345,8 +345,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                if_name, dma_config.dst_asid.name()))
 
         // Track write-side progress through this transfer
-        `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x int_source %x",
-                                  num_bytes_this_txn, int_source), UVM_HIGH);
+        `uvm_info(`gfn, $sformatf("num_bytes_this_txn %x intr_source %x",
+                                  num_bytes_this_txn, intr_source), UVM_HIGH);
 
         // On-the-fly checking of writing data
         check_write_data(if_name, item);
@@ -374,15 +374,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Write to 'Clear Interrupt' address, so check the value written and the bus to which the
         // write has been sent.
         string exp_name;
-        exp_name = dma_config.clear_int_bus[int_source] ? "host" : "ctn";
+        exp_name = dma_config.clear_intr_bus[intr_source] ? "host" : "ctn";
 
         `uvm_info(`gfn, $sformatf("Clear Interrupt write of 0x%0x to address 0x%0x",
                                   item.a_data, item.a_addr), UVM_HIGH)
         `DV_CHECK_EQ(if_name, exp_name,
                      $sformatf("%s received %s-targeted clear interrupt write", if_name, exp_name))
-        `DV_CHECK_EQ(dma_config.int_src_wr_val[int_source], item.a_data,
+        `DV_CHECK_EQ(dma_config.intr_src_wr_val[intr_source], item.a_data,
                      $sformatf("Unexpected value 0x%0x written to clear interrupt %d", item.a_data,
-                               int_source))
+                               intr_source))
         `DV_CHECK_EQ(item.a_mask, 4'hF, "Unexpected write enables to clear interrupt write")
 
         // We're expecting only full word writes.
@@ -498,17 +498,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
                       uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo,
                       uvm_tlm_analysis_fifo#(tl_seq_item) d_chan_fifo);
-    bit exp_int_clearing;
+    bit exp_intr_clearing;
     tl_channels_e dir;
     tl_seq_item   item;
     fork
       forever begin
         dir_fifo.get(dir);
         // Clear Interrupt writes are emitted even for invalid configurations.
-        exp_int_clearing = dma_config.handshake & |dma_config.clear_int_src &
-                          |dma_config.handshake_intr_en;
+        exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
+                           |dma_config.handshake_intr_en;
         // Check if transaction is expected for a valid configuration
-        `DV_CHECK_FATAL(dma_config.is_valid_config || exp_int_clearing,
+        `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
                            $sformatf("transaction observed on %s for invalid configuration",
                                      if_name))
         // Check if there is any active operation, but be aware that the Abort functionality
@@ -528,7 +528,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
             process_tl_addr_txn(if_name, item);
             // Update num_fifo_reg_write
             if (num_fifo_reg_write > 0) begin
-              `uvm_info(`gfn, $sformatf("Processed FIFO clear_int_src addr: %0x0x", item.a_addr),
+              `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
                         UVM_DEBUG)
               num_fifo_reg_write--;
             end else begin
@@ -680,11 +680,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // Wait for at least one LSIoO trigger to be active and it is eanbled
           @(posedge cfg.dma_vif.handshake_i);
           handshake_en = `gmv(ral.control.hardware_handshake_enable);
-          handshake_intr_en = `gmv(ral.handshake_interrupt_enable);
+          handshake_intr_en = `gmv(ral.handshake_intr_enable);
           // Update number of register writes expected in case at least one
           // of the enabled handshake interrupt is asserted
           if (handshake_en && (cfg.dma_vif.handshake_i & handshake_intr_en)) begin
-            num_fifo_reg_write = $countones(clear_int_src);
+            num_fifo_reg_write = $countones(clear_intr_src);
             `uvm_info(`gfn,
                       $sformatf("Handshake mode: num_fifo_reg_write:%0d", num_fifo_reg_write),
                       UVM_HIGH)
@@ -781,7 +781,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // Return the index that a register name refers to e.g. "int_source_addr_1" yields 1
+  // Return the index that a register name refers to e.g. "intr_src_addr_1" yields 1
   function uint get_index_from_reg_name(string reg_name);
     int str_len = reg_name.len();
     // Note: this extracts the final two characters which are either '_y' or 'xy',
@@ -820,33 +820,33 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Test bits are fire-and-forget; they are not retained anywhere.
         predict_interrupts(CSRtoIntrLatency, item.a_data, `gmv(ral.intr_enable));
       end
-      "source_address_lo": begin
+      "src_addr_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got source_address_lo = %0x",
+        `uvm_info(`gfn, $sformatf("Got src_addr_lo = %0x",
                                   dma_config.src_addr[31:0]), UVM_HIGH)
       end
-      "source_address_hi": begin
+      "src_addr_hi": begin
         dma_config.src_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got source_address_hi = %0x",
+        `uvm_info(`gfn, $sformatf("Got src_addr_hi = %0x",
                                   dma_config.src_addr[63:32]), UVM_HIGH)
       end
-      "destination_address_lo": begin
+      "dst_addr_lo": begin
         dma_config.dst_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got destination_address_lo = %0x",
+        `uvm_info(`gfn, $sformatf("Got dst_addr_lo = %0x",
                                   dma_config.dst_addr[31:0]), UVM_HIGH)
       end
-      "destination_address_hi": begin
+      "dst_addr_hi": begin
         dma_config.dst_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got destination_address_hi = %0x",
+        `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x",
                                   dma_config.dst_addr[63:32]), UVM_HIGH)
       end
-      "address_space_id": begin
+      "addr_space_id": begin
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.src_asid = asid_encoding_e'(`gmv(ral.address_space_id.source_asid));
+        dma_config.src_asid = asid_encoding_e'(`gmv(ral.addr_space_id.src_asid));
         `uvm_info(`gfn, $sformatf("Got source address space id : %s",
                                   dma_config.src_asid.name()), UVM_HIGH)
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.dst_asid = asid_encoding_e'(`gmv(ral.address_space_id.destination_asid));
+        dma_config.dst_asid = asid_encoding_e'(`gmv(ral.addr_space_id.dst_asid));
         `uvm_info(`gfn, $sformatf("Got destination address space id : %s",
                                   dma_config.dst_asid.name()), UVM_HIGH)
       end
@@ -893,28 +893,24 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got transfer_width = %s",
                                   dma_config.per_transfer_width.name()), UVM_HIGH)
       end
-      "destination_address_limit_lo": begin
-        dma_config.dst_addr_limit[31:0] =
-          `gmv(ral.destination_address_limit_lo.address_limit_lo);
+      "dst_addr_limit_lo": begin
+        dma_config.dst_addr_limit[31:0] = `gmv(ral.dst_addr_limit_lo.addr_limit_lo);
       end
-      "destination_address_limit_hi": begin
-        dma_config.dst_addr_limit[63:32] =
-          `gmv(ral.destination_address_limit_hi.address_limit_hi);
+      "dst_addr_limit_hi": begin
+        dma_config.dst_addr_limit[63:32] = `gmv(ral.dst_addr_limit_hi.addr_limit_hi);
       end
-      "destination_address_almost_limit_lo": begin
-        dma_config.dst_addr_almost_limit[31:0] =
-          `gmv(ral.destination_address_almost_limit_lo.address_limit_lo);
+      "dst_addr_almost_limit_lo": begin
+        dma_config.dst_addr_almost_limit[31:0] = `gmv(ral.dst_addr_almost_limit_lo.addr_limit_lo);
       end
-      "destination_address_almost_limit_hi": begin
-        dma_config.dst_addr_almost_limit[63:32] =
-          `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
+      "dst_addr_almost_limit_hi": begin
+        dma_config.dst_addr_almost_limit[63:32] = `gmv(ral.dst_addr_almost_limit_hi.addr_limit_hi);
       end
-      "clear_int_bus": begin
-        dma_config.clear_int_bus = `gmv(ral.clear_int_bus.bus);
+      "clear_intr_bus": begin
+        dma_config.clear_intr_bus = `gmv(ral.clear_intr_bus.bus);
       end
-      "clear_int_src": begin
-        dma_config.clear_int_src = `gmv(ral.clear_int_src.source);
-        clear_int_src = dma_config.clear_int_src;
+      "clear_intr_src": begin
+        dma_config.clear_intr_src = `gmv(ral.clear_intr_src.source);
+        clear_intr_src = dma_config.clear_intr_src;
       end
       "sha2_digest_0",
       "sha2_digest_1",
@@ -935,37 +931,37 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
       end
-      "int_source_addr_0",
-      "int_source_addr_1",
-      "int_source_addr_2",
-      "int_source_addr_3",
-      "int_source_addr_4",
-      "int_source_addr_5",
-      "int_source_addr_6",
-      "int_source_addr_7",
-      "int_source_addr_8",
-      "int_source_addr_9",
-      "int_source_addr_10": begin
+      "intr_src_addr_0",
+      "intr_src_addr_1",
+      "intr_src_addr_2",
+      "intr_src_addr_3",
+      "intr_src_addr_4",
+      "intr_src_addr_5",
+      "intr_src_addr_6",
+      "intr_src_addr_7",
+      "intr_src_addr_8",
+      "intr_src_addr_9",
+      "intr_src_addr_10": begin
         int index;
         `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
         index = get_index_from_reg_name(csr.get_name());
-        dma_config.int_src_addr[index] = item.a_data;
+        dma_config.intr_src_addr[index] = item.a_data;
       end
-      "int_source_wr_val_0",
-      "int_source_wr_val_1",
-      "int_source_wr_val_2",
-      "int_source_wr_val_3",
-      "int_source_wr_val_4",
-      "int_source_wr_val_5",
-      "int_source_wr_val_6",
-      "int_source_wr_val_7",
-      "int_source_wr_val_8",
-      "int_source_wr_val_9",
-      "int_source_wr_val_10": begin
+      "intr_src_wr_val_0",
+      "intr_src_wr_val_1",
+      "intr_src_wr_val_2",
+      "intr_src_wr_val_3",
+      "intr_src_wr_val_4",
+      "intr_src_wr_val_5",
+      "intr_src_wr_val_6",
+      "intr_src_wr_val_7",
+      "intr_src_wr_val_8",
+      "intr_src_wr_val_9",
+      "intr_src_wr_val_10": begin
         int index;
         `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
         index = get_index_from_reg_name(csr.get_name());
-        dma_config.int_src_wr_val[index] = item.a_data;
+        dma_config.intr_src_wr_val[index] = item.a_data;
       end
       "control": begin
         bit go, initial_transfer, start_transfer;
@@ -1035,25 +1031,25 @@ class dma_scoreboard extends cip_base_scoreboard #(
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
         if (cfg.en_cov && go) begin
-          logic [dma_reg_pkg::NumIntClearSources-1:0][2:0] int_source_addr_offset;
-          logic [dma_reg_pkg::NumIntClearSources-1:0][31:0] int_source_wr_val;
+          logic [dma_reg_pkg::NumIntClearSources-1:0][2:0] intr_source_addr_offset;
+          logic [dma_reg_pkg::NumIntClearSources-1:0][31:0] intr_source_wr_val;
           for (int unsigned i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
-            int_source_addr_offset[i] = dma_config.int_src_addr[i] % 8;
-            int_source_wr_val[i] = dma_config.int_src_wr_val[i];
+            intr_source_addr_offset[i] = dma_config.intr_src_addr[i] % 8;
+            intr_source_wr_val[i] = dma_config.intr_src_wr_val[i];
           end
           cov.config_cg.sample(.dma_config(dma_config),
                                .initial_transfer(initial_transfer));
           cov.interrupt_cg.sample(
             .handshake_interrupt_enable(dma_config.handshake_intr_en),
-            .clear_int_src(dma_config.clear_int_src),
-            .clear_int_bus(dma_config.clear_int_bus),
-            .int_source_addr_offset(int_source_addr_offset),
-            .int_source_wr_val(int_source_wr_val)
+            .clear_intr_src(dma_config.clear_intr_src),
+            .clear_intr_bus(dma_config.clear_intr_bus),
+            .intr_source_addr_offset(intr_source_addr_offset),
+            .intr_source_wr_val(intr_source_wr_val)
           );
         end
       end
-      "handshake_interrupt_enable": begin
-        dma_config.handshake_intr_en = `gmv(ral.handshake_interrupt_enable.mask);
+      "handshake_intr_enable": begin
+        dma_config.handshake_intr_en = `gmv(ral.handshake_intr_enable.mask);
         `uvm_info(`gfn,
                   $sformatf("Got handshake_intr_en = 0x%x", dma_config.handshake_intr_en), UVM_HIGH)
       end
@@ -1169,8 +1165,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
       "error_code": begin
         bit [DmaErrLast-1:0] error_code;
         do_read_check = 1'b0;
-        error_code[DmaSourceAddrErr] = get_field_val(ral.error_code.src_address_error, item.d_data);
-        error_code[DmaDestAddrErr]   = get_field_val(ral.error_code.dst_address_error, item.d_data);
+        error_code[DmaSrcAddrErr]    = get_field_val(ral.error_code.src_addr_error, item.d_data);
+        error_code[DmaDstAddrErr]    = get_field_val(ral.error_code.dst_addr_error, item.d_data);
         error_code[DmaOpcodeErr]     = get_field_val(ral.error_code.opcode_error, item.d_data);
         error_code[DmaSizeErr]       = get_field_val(ral.error_code.size_error, item.d_data);
         error_code[DmaBusErr]        = get_field_val(ral.error_code.bus_error, item.d_data);
