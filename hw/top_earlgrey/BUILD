@@ -294,7 +294,7 @@ silicon(
     exec_env = "silicon_owner_sival_rom_ext",
     lib = "//sw/device/lib/arch:silicon",
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
     param = {
         "interface": "hyper310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
