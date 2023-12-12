@@ -264,28 +264,28 @@ class dma_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Task: Write to Source Address CSR
-  task set_source_address(bit [63:0] source_address);
-    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", source_address), UVM_HIGH)
-    csr_wr(ral.source_address_lo, source_address[31:0]);
-    csr_wr(ral.source_address_hi, source_address[63:32]);
-  endtask : set_source_address
+  task set_src_addr(bit [63:0] src_addr);
+    `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", src_addr), UVM_HIGH)
+    csr_wr(ral.src_addr_lo, src_addr[31:0]);
+    csr_wr(ral.src_addr_hi, src_addr[63:32]);
+  endtask : set_src_addr
 
   // Task: Write to Destination Address CSR
-  task set_destination_address(bit [63:0] destination_address);
-    csr_wr(ral.destination_address_lo, destination_address[31:0]);
-    csr_wr(ral.destination_address_hi, destination_address[63:32]);
-    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", destination_address), UVM_HIGH)
-  endtask : set_destination_address
+  task set_dst_addr(bit [63:0] dst_addr);
+    csr_wr(ral.dst_addr_lo, dst_addr[31:0]);
+    csr_wr(ral.dst_addr_hi, dst_addr[63:32]);
+    `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_addr), UVM_HIGH)
+  endtask : set_dst_addr
 
-  task set_destination_address_range(bit[63:0] almost_limit,
+  task set_dst_addr_range(bit[63:0] almost_limit,
                                      bit[63:0] limit);
-    csr_wr(ral.destination_address_limit_lo, limit[31:0]);
-    csr_wr(ral.destination_address_limit_hi, limit[63:32]);
+    csr_wr(ral.dst_addr_limit_lo, limit[31:0]);
+    csr_wr(ral.dst_addr_limit_hi, limit[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Limit = 0x%016h", limit), UVM_HIGH)
-    csr_wr(ral.destination_address_almost_limit_lo, almost_limit[31:0]);
-    csr_wr(ral.destination_address_almost_limit_hi, almost_limit[63:32]);
+    csr_wr(ral.dst_addr_almost_limit_lo, almost_limit[31:0]);
+    csr_wr(ral.dst_addr_almost_limit_hi, almost_limit[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", almost_limit), UVM_HIGH)
-  endtask : set_destination_address_range
+  endtask : set_dst_addr_range
 
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
@@ -302,13 +302,13 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask : set_dma_enabled_memory_range
 
   // Task: Write to Source and Destination Address Space ID (ASID)
-  task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
-    ral.address_space_id.source_asid.set(int'(src_asid));
-    ral.address_space_id.destination_asid.set(int'(dst_asid));
-    csr_update(.csr(ral.address_space_id));
+  task set_addr_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
+    ral.addr_space_id.src_asid.set(int'(src_asid));
+    ral.addr_space_id.dst_asid.set(int'(dst_asid));
+    csr_update(.csr(ral.addr_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
-  endtask : set_address_space_id
+  endtask : set_addr_space_id
 
   // Task: Set number of bytes to transfer
   task set_total_size(bit [31:0] total_data_size);
@@ -330,17 +330,17 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask : set_transfer_width
 
   // Task: Set handshake interrupt register
-  task set_handshake_int_regs(ref dma_seq_item dma_config);
+  task set_handshake_intr_regs(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "Set DMA Handshake mode interrupt registers", UVM_HIGH)
-    csr_wr(ral.clear_int_src, dma_config.clear_int_src);
-    csr_wr(ral.clear_int_bus, dma_config.clear_int_bus);
-    foreach (dma_config.int_src_addr[i]) begin
-      csr_wr(ral.int_source_addr[i], dma_config.int_src_addr[i]);
-      csr_wr(ral.int_source_wr_val[i], dma_config.int_src_wr_val[i]);
+    csr_wr(ral.clear_intr_src, dma_config.clear_intr_src);
+    csr_wr(ral.clear_intr_bus, dma_config.clear_intr_bus);
+    foreach (dma_config.intr_src_addr[i]) begin
+      csr_wr(ral.intr_src_addr[i], dma_config.intr_src_addr[i]);
+      csr_wr(ral.intr_src_wr_val[i], dma_config.intr_src_wr_val[i]);
     end
-    ral.handshake_interrupt_enable.set(dma_config.handshake_intr_en);
-    csr_update(ral.handshake_interrupt_enable);
-  endtask : set_handshake_int_regs
+    ral.handshake_intr_enable.set(dma_config.handshake_intr_en);
+    csr_update(ral.handshake_intr_enable);
+  endtask : set_handshake_intr_regs
 
   // Task: Configure DMA controller to perform a transfer
   // (common to both 'memory-to-memory' and 'hardware handshaking' modes of operation)
@@ -348,17 +348,16 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
     // Not yet requested an Abort during this transaction.
     abort_pending = 1'b0;
-    set_source_address(dma_config.src_addr);
-    set_destination_address(dma_config.dst_addr);
-    set_destination_address_range(dma_config.dst_addr_almost_limit,
-                                  dma_config.dst_addr_limit);
-    set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
+    set_src_addr(dma_config.src_addr);
+    set_dst_addr(dma_config.dst_addr);
+    set_dst_addr_range(dma_config.dst_addr_almost_limit, dma_config.dst_addr_limit);
+    set_addr_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
     set_transfer_width(dma_config.per_transfer_width);
     randomize_src_data(dma_config.total_data_size);
     void'(configure_mem_model(dma_config, 32'd0));
-    set_handshake_int_regs(dma_config);
+    set_handshake_intr_regs(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_valid,
@@ -382,7 +381,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
-    csr_wr(ral.handshake_interrupt_enable, 32'd1);
+    csr_wr(ral.handshake_intr_enable, 32'd1);
   endtask : enable_handshake_interrupt
 
   // Enable/disable errors on TL-UL buses with the given percentage probability/word
@@ -453,21 +452,21 @@ class dma_base_vseq extends cip_base_vseq #(
         bit host_en = 1'b0;
         bit ctn_en = 1'b0;
         // Get FIFO interrupt register address and value
-        // Find the interrupt index with both handshake interrupt enable and clear_int_src
+        // Find the interrupt index with both handshake interrupt enable and clear_intr_src
         for (int i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
           // Instruct memory/FIFO models on the appropriate bus(es) to expect 'Clear Interrupt'
           // writes, so that they may be excluded from normal traffic.
-          if (dma_config.clear_int_src[i]) begin
+          if (dma_config.clear_intr_src[i]) begin
             `uvm_info(`gfn, $sformatf("Clear Interrupt writes expected for source %d on bus %d", i,
-                                      dma_config.clear_int_bus[i]), UVM_HIGH)
+                                      dma_config.clear_intr_bus[i]), UVM_HIGH)
             // Set FIFO interrupt clear address and values in corresponding pull sequence instance
-            case (dma_config.clear_int_bus[i])
+            case (dma_config.clear_intr_bus[i])
               0: begin
-                seq_ctn.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                seq_ctn.add_fifo_reg(dma_config.intr_src_addr[i], dma_config.intr_src_wr_val[i]);
                 ctn_en = 1'b1;
               end
               default: begin
-                seq_host.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                seq_host.add_fifo_reg(dma_config.intr_src_addr[i], dma_config.intr_src_wr_val[i]);
                 host_en = 1'b1;
               end
             endcase

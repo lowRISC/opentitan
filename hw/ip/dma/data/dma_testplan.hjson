@@ -145,7 +145,7 @@
                     such that all valid source and destination combinations are covered at least once
                   * Randomize total transfer width and transaction size
                   * Randomize DMAC.data_direction
-                  * Randomize DMAC.FIFO_address_auto_increment_enable and DMAC.memory_address_auto_increment_enable
+                  * Randomize DMAC.FIFO_addr_auto_increment_enable and DMAC.memory_addr_auto_increment_enable
                   * Program DMAC register with OP code and enable 'hardware handshake' mode
                 - Start DMA operation by setting DMAC.GO bit
               - Start DMA operation by setting DMAC.GO bit
@@ -196,7 +196,7 @@
 
               Stimulus:
               - Configure DMA for 'hardware handshake' mode
-              - Set memory_buffer_address_auto_increment
+              - Set memory_buffer_addr_auto_increment
               - Set memory_buffer_threshold and memory_buffer_limit such that
                 * Threshold is less than the limit and
                 * Threshold and limit are within the DMA memory region
@@ -261,7 +261,7 @@
         tests: ["dma_illegal_transfer"]
       }
       {
-        name: dma_illegal_address_range
+        name: dma_illegal_addr_range
         desc: '''
               Test to check DMA hardware enforced security check for illegal source or destination address
 
@@ -279,7 +279,7 @@
               - Check if DMA generates an alert
               '''
         stage: V2S
-        tests: ["dma_illegal_address_range"]
+        tests: ["dma_illegal_addr_range"]
       }
     ]
     covergroups: [

@@ -52,17 +52,17 @@ class dma_seq_item extends uvm_sequence_item;
   rand asid_encoding_e dst_asid;
   rand dma_control_data_direction_e direction;
   // Variable to indicate if interrupt needs clearing before reading from FIFO
-  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_src;
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_src;
   // Variable to indicate the bus on which each interrupt clearing address resides
   // 0 - CTN/SYS fabric
   // 1 - OT internal
-  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_bus;
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_bus;
   // Array with interrupt register addresses
   // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
-  rand bit [31:0] int_src_addr[];
+  rand bit [31:0] intr_src_addr[];
   // Array with interrupt register value to clear interrupt
   // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
-  rand bit [31:0] int_src_wr_val[];
+  rand bit [31:0] intr_src_wr_val[];
   // Initial value of SHA digest
   // size of array will be 16 to support SHA256, SHA-382 and SHA512 algorithms
   rand bit [31:0] sha2_digest[];
@@ -101,10 +101,10 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(dst_addr_almost_limit, UVM_DEFAULT)
     `uvm_field_int(dst_addr_limit, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
-    `uvm_field_int(clear_int_src, UVM_DEFAULT)
-    `uvm_field_int(clear_int_bus, UVM_DEFAULT)
-    `uvm_field_array_int(int_src_addr, UVM_DEFAULT)
-    `uvm_field_array_int(int_src_wr_val, UVM_DEFAULT)
+    `uvm_field_int(clear_intr_src, UVM_DEFAULT)
+    `uvm_field_int(clear_intr_bus, UVM_DEFAULT)
+    `uvm_field_array_int(intr_src_addr, UVM_DEFAULT)
+    `uvm_field_array_int(intr_src_wr_val, UVM_DEFAULT)
     `uvm_field_array_int(sha2_digest, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -128,13 +128,13 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   // Constrain array size to number of handshake interrupt signals
-  constraint int_src_addr_c {
-    int_src_addr.size() == dma_reg_pkg::NumIntClearSources;
+  constraint intr_src_addr_c {
+    intr_src_addr.size() == dma_reg_pkg::NumIntClearSources;
   }
 
   // Constrain array size to number of handshake interrupt signals
-  constraint int_src_wr_val_c{
-    int_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
+  constraint intr_src_wr_val_c {
+    intr_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
   }
 
   // Constrain source and destinatination address space ids for valid configurations
@@ -347,9 +347,9 @@ class dma_seq_item extends uvm_sequence_item;
 
   // We need to position the 'Clear Interrupt' addresses such that they are disjoint with each other
   // and with the source and destination buffers
-  function bit choose_int_src_addrs();
+  function bit choose_intr_src_addrs();
     `uvm_info(`gfn, "Randomizing 'clear interrupt' addresses", UVM_HIGH)
-    for (uint i = 0; i < int_src_addr.size(); i++) begin
+    for (uint i = 0; i < intr_src_addr.size(); i++) begin
       const uint max_tries = 100;
       uint tries = 0;
       // Only try so many attempts, to keep things time-bounded
@@ -365,12 +365,12 @@ class dma_seq_item extends uvm_sequence_item;
             (cand + gap < dst_addr || cand > dst_addr + total_data_size + gap)) begin
           uint j = i;
           // Check against all of the addresses so far decided
-          while (j > 0 && int_src_addr[j] != cand) begin
+          while (j > 0 && intr_src_addr[j] != cand) begin
             j--;
           end
           if (!j) begin
             // This candidate is acceptable
-            int_src_addr[i] = cand;
+            intr_src_addr[i] = cand;
             break;
           end
         end
@@ -392,8 +392,8 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\tmem_range_limit         : 0x%08x", mem_range_limit),
         $sformatf("\n\tdst_addr_almost_limit   : 0x%16x", dst_addr_almost_limit),
         $sformatf("\n\tdst_addr_limit          : 0x%16x", dst_addr_limit),
-        $sformatf("\n\tclear_int_src           : 0x%8x",  clear_int_src),
-        $sformatf("\n\tclear_int_bus           : 0x%8x",  clear_int_bus),
+        $sformatf("\n\tclear_intr_src          : 0x%8x",  clear_intr_src),
+        $sformatf("\n\tclear_intr_bus          : 0x%8x",  clear_intr_bus),
         $sformatf("\n\thandshake_intr_en       : 0x%08x", handshake_intr_en),
         $sformatf("\n\tlsio_trigger_i          : 0x%08x", lsio_trigger_i)
     };
@@ -428,7 +428,7 @@ class dma_seq_item extends uvm_sequence_item;
   function void post_randomize();
     super.post_randomize();
     // Check if randomization leads to valid configuration
-    is_valid_config = choose_int_src_addrs();
+    is_valid_config = choose_intr_src_addrs();
     if (is_valid_config) begin
       is_valid_config = check_config("post-randomization");
     end
@@ -671,7 +671,7 @@ class dma_seq_item extends uvm_sequence_item;
   // Function to indicate a register write is expected from DMA
   // to clear LSIO interrupt
   function bit get_lsio_intr_clear();
-    return (handshake_intr_en && clear_int_src);
+    return (handshake_intr_en && clear_intr_src);
   endfunction
 
   // Simply utility function that returns the actual size of a chunk starting at the given offset

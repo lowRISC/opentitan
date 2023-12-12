@@ -119,7 +119,7 @@
   ]
   regwidth: "32"
   registers: [
-    { name: "SOURCE_ADDRESS_LO"
+    { name: "SRC_ADDR_LO"
       desc: '''
             Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is read from this location in a copy operation.
@@ -131,7 +131,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "source_address_lo"
+          name: "src_addr_lo"
           resval: 0x0
           desc: '''Lower 32 bits of the source address.
                 Must be aligned to the transfer width.
@@ -139,7 +139,7 @@
         }
       ]
     }
-    { name: "SOURCE_ADDRESS_HI"
+    { name: "SRC_ADDR_HI"
       desc: '''Upper 32 bits of the source address.
             Must be aligned to the transfer width.
             Source and destination address must have the same alignment.
@@ -149,7 +149,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "source_address_hi"
+          name: "src_addr_hi"
           resval: 0x0
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
@@ -159,7 +159,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LO"
+    { name: "DST_ADDR_LO"
       desc: '''
             Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is written to this location in a copy operation.
@@ -172,7 +172,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "destination_address_lo"
+          name: "dst_addr_lo"
           resval: 0x0
           desc: '''Lower 32 bits of the destination address.
                 Must be aligned to the transfer width.
@@ -181,7 +181,7 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_HI"
+    { name: "DST_ADDR_HI"
       desc: '''Upper 32 bits of the destination address.
             Must be aligned to the transfer width.
             Source and destination address must have the same alignment.
@@ -191,7 +191,7 @@
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "destination_address_hi"
+          name: "dst_addr_hi"
           resval: 0x0
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
@@ -201,14 +201,14 @@
         }
       ]
     }
-    { name: "ADDRESS_SPACE_ID"
+    { name: "ADDR_SPACE_ID"
       desc: "Address space that source and destination pointers refer to."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "3:0"
-          name: "source_asid"
+          name: "src_asid"
           resval: 0x7
           desc: "Target address space that the source address pointer refers to."
           enum: [
@@ -227,7 +227,7 @@
           ]
         }
         { bits: "7:4"
-          name: "destination_asid"
+          name: "dst_asid"
           resval: 0x7
           desc: "Target address space that the destination address pointer refers to."
           enum: [
@@ -412,14 +412,14 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LIMIT_LO"
+    { name: "DST_ADDR_LIMIT_LO"
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "address_limit_lo"
+          name: "addr_limit_lo"
           resval: 0x0
           desc: '''
                 Limit address configuration.
@@ -432,14 +432,14 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_LIMIT_HI"
+    { name: "DST_ADDR_LIMIT_HI"
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "address_limit_hi"
+          name: "addr_limit_hi"
           resval: 0x0
           desc: '''
                 Limit address configuration.
@@ -452,14 +452,14 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_LO"
+    { name: "DST_ADDR_ALMOST_LIMIT_LO"
       desc: "Lower 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "address_limit_lo"
+          name: "addr_limit_lo"
           resval: 0x0
           desc: '''
                 Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
@@ -472,14 +472,14 @@
         }
       ]
     }
-    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_HI"
+    { name: "DST_ADDR_ALMOST_LIMIT_HI"
       desc: "Upper 32 bits of DMA memory buffer limit address."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
         { bits: "31:0"
-          name: "address_limit_hi"
+          name: "addr_limit_hi"
           resval: 0x0
           desc: '''
                 Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
@@ -666,12 +666,12 @@
       hwaccess: "hwo"
       fields: [
         { bits: "0"
-          name: "src_address_error"
+          name: "src_addr_error"
           resval: 0x0
           desc: "Source address is invalid."
         }
         { bits: "1"
-          name: "dst_address_error"
+          name: "dst_addr_error"
           resval: 0x0
           desc: "Destination address is invalid."
         }
@@ -729,7 +729,7 @@
         ]
       }
     }
-    { name: "HANDSHAKE_INTERRUPT_ENABLE"
+    { name: "HANDSHAKE_INTR_ENABLE"
       desc: "Enable bits for incoming handshake interrupt wires."
       swaccess: "rw"
       hwaccess: "hro"
@@ -742,11 +742,11 @@
         }
       ]
     }
-    { name: "CLEAR_INT_SRC"
+    { name: "CLEAR_INTR_SRC"
       desc: '''
             Valid bits for which interrupt sources need clearing.
-            When HANDSHAKE_INTERRUPT_ENABLE is non-zero and corresponding lsio_trigger becomes set,
-            DMA issues writes with address from INT_SOURCE_ADDR and write value from INT_SOURCE_WR_VAL corresponding to each
+            When HANDSHAKE_INTR_ENABLE is non-zero and corresponding lsio_trigger becomes set,
+            DMA issues writes with address from INTR_SRC_ADDR and write value from INTR_SRC_WR_VAL corresponding to each
             bit set in this register.
             '''
       swaccess: "rw"
@@ -760,7 +760,7 @@
         }
       ]
     }
-    { name: "CLEAR_INT_BUS"
+    { name: "CLEAR_INTR_BUS"
       desc: '''Bus selection bit where the clearing command should be performed."
             0: CTN/System fabric
             1: OT-internal crossbar
@@ -777,7 +777,7 @@
       ]
     }
     { multireg: {
-        name: "INT_SOURCE_ADDR"
+        name: "INTR_SRC_ADDR"
         desc: "Destination address for interrupt source clearing write."
         count: "NumIntClearSources"
         cname: "ADDR"
@@ -795,7 +795,7 @@
     }
     { skipto: "0x12C" }
     { multireg: {
-        name: "INT_SOURCE_WR_VAL"
+        name: "INTR_SRC_WR_VAL"
         desc: "Write value for interrupt clearing write."
         count: "NumIntClearSources"
         cname: "WRVAL"
