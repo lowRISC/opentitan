@@ -95,7 +95,10 @@ class OTDevice:
         logging.info("Running FT Provisioning")
 
         sram_ft_indiv_elf_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/sram_ft_individualize_{}_{}.elf"  # noqa: E501
-        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/{}"
+        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/"
+        if self.target_lc_state == "prod":
+            perso_bin_path += "binaries/"
+        perso_bin_path += "{}"
 
         if self.fpga_test:
             elf = sram_ft_indiv_elf_path.format(
