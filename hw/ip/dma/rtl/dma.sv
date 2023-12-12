@@ -46,7 +46,7 @@ module dma
   dma_hw2reg_t hw2reg;
 
   localparam int unsigned TRANSFER_BYTES_WIDTH    = $bits(reg2hw.total_data_size.q);
-  localparam int unsigned INT_CLEAR_SOURCES_WIDTH = $clog2(NumIntClearSources);
+  localparam int unsigned INTR_CLEAR_SOURCES_WIDTH = $clog2(NumIntClearSources);
   localparam int unsigned NR_SHA_DIGEST_ELEMENTS  = 16;
 
   // Flopped bus for SYS interface
@@ -65,8 +65,8 @@ module dma
   logic                       dma_host_tlul_rsp_err,      dma_ctn_tlul_rsp_err;
   logic                       dma_host_tlul_rsp_intg_err, dma_ctn_tlul_rsp_intg_err;
 
-  logic                       dma_host_write, dma_host_read, dma_host_clear_int;
-  logic                       dma_ctn_write,  dma_ctn_read,  dma_ctn_clear_int;
+  logic                       dma_host_write, dma_host_read, dma_host_clear_intr;
+  logic                       dma_ctn_write,  dma_ctn_read,  dma_ctn_clear_intr;
   logic                       dma_sys_write,  dma_sys_read;
 
   logic                       capture_return_data;
@@ -77,9 +77,9 @@ module dma
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
   logic clear_go, clear_status, clear_sha_status;
 
-  logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
-  logic                               clear_index_en, int_clear_tlul_rsp_valid;
-  logic                               int_clear_tlul_gnt, int_clear_tlul_rsp_error;
+  logic [INTR_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
+  logic                                clear_index_en, intr_clear_tlul_rsp_valid;
+  logic                                intr_clear_tlul_gnt, intr_clear_tlul_rsp_error;
 
   logic [DmaErrLast-1:0] next_error;
 
@@ -245,7 +245,7 @@ module dma
     lsio_trigger = '0;
 
     for (int i = 0; i < NumIntClearSources; i++) begin
-      lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_interrupt_enable.q[i];
+      lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_intr_enable.q[i];
     end
     handshake_interrupt = (|lsio_trigger);
   end
@@ -384,7 +384,7 @@ module dma
   );
 
   prim_generic_flop_en #(
-    .Width(INT_CLEAR_SOURCES_WIDTH)
+    .Width(INTR_CLEAR_SOURCES_WIDTH)
   ) u_clear_index (
     .clk_i ( gated_clk      ),
     .rst_ni( rst_ni         ),
@@ -471,17 +471,17 @@ module dma
     dma_host_write = (ctrl_state_q == DmaSendWrite) & (dst_asid == OtInternalAddr);
     dma_host_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == OtInternalAddr);
 
-    dma_host_tlul_req_valid = dma_host_write | dma_host_read | dma_host_clear_int;
+    dma_host_tlul_req_valid = dma_host_write | dma_host_read | dma_host_clear_intr;
     // TLUL 4B aligned
     dma_host_tlul_req_addr  = dma_host_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                              (dma_host_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                         (dma_host_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0));
-    dma_host_tlul_req_we    = dma_host_write | dma_host_clear_int;
+                        (dma_host_clear_intr ? reg2hw.intr_source_addr[clear_index_q].q : 'b0));
+    dma_host_tlul_req_we    = dma_host_write | dma_host_clear_intr;
     dma_host_tlul_req_wdata = dma_host_write ? read_return_data_q :
-                         (dma_host_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
+                        (dma_host_clear_intr ? reg2hw.intr_source_wr_val[clear_index_q].q : 'b0);
     dma_host_tlul_req_be    = dma_host_write ? req_dst_be_q :
                              (dma_host_read  ? req_src_be_q
-                                             : {top_pkg::TL_DBW{dma_host_clear_int}});
+                                             : {top_pkg::TL_DBW{dma_host_clear_intr}});
   end
 
   // Host interface to SoC CTN address space
@@ -489,16 +489,16 @@ module dma
     dma_ctn_write = (ctrl_state_q == DmaSendWrite) & (dst_asid == SocControlAddr);
     dma_ctn_read  = (ctrl_state_q == DmaSendRead)  & (src_asid == SocControlAddr);
 
-    dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_int;
+    dma_ctn_tlul_req_valid = dma_ctn_write | dma_ctn_read | dma_ctn_clear_intr;
     // TLUL 4B aligned
     dma_ctn_tlul_req_addr  = dma_ctn_write ? {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
                             (dma_ctn_read  ? {src_addr_q[top_pkg::TL_AW-1:2], 2'b0} :
-                        (dma_ctn_clear_int ? reg2hw.int_source_addr[clear_index_q].q : 'b0));
-    dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_int;
+                       (dma_ctn_clear_intr ? reg2hw.intr_source_addr[clear_index_q].q : 'b0));
+    dma_ctn_tlul_req_we    = dma_ctn_write | dma_ctn_clear_intr;
     dma_ctn_tlul_req_wdata = dma_ctn_write ? read_return_data_q :
-                        (dma_ctn_clear_int ? reg2hw.int_source_wr_val[clear_index_q].q : 'b0);
+                       (dma_ctn_clear_intr ? reg2hw.intr_source_wr_val[clear_index_q].q : 'b0);
     dma_ctn_tlul_req_be    = dma_ctn_write ? req_dst_be_q :
-                            (dma_ctn_read  ? req_src_be_q : {top_pkg::TL_DBW{dma_ctn_clear_int}});
+                            (dma_ctn_read  ? req_src_be_q : {top_pkg::TL_DBW{dma_ctn_clear_intr}});
   end
 
   // Host interface to SoC SYS address space
@@ -598,20 +598,20 @@ module dma
     req_src_be_d = '0;
     req_dst_be_d = '0;
 
-    dma_host_clear_int = 1'b0;
-    dma_ctn_clear_int = 1'b0;
+    dma_host_clear_intr = 1'b0;
+    dma_ctn_clear_intr = 1'b0;
     clear_index_d  = '0;
     clear_index_en = '0;
 
     clear_go       = 1'b0;
 
     // Mux the TLUL grant and response signals depending on the selected bus interface
-    int_clear_tlul_gnt       = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_gnt :
-                                                                      dma_ctn_tlul_gnt;
-    int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
-                                                                      dma_ctn_tlul_rsp_valid;
-    int_clear_tlul_rsp_error = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_err :
-                                                                      dma_ctn_tlul_rsp_err;
+    intr_clear_tlul_gnt       = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_gnt :
+                                                                       dma_ctn_tlul_gnt;
+    intr_clear_tlul_rsp_valid = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
+                                                                       dma_ctn_tlul_rsp_valid;
+    intr_clear_tlul_rsp_error = reg2hw.clear_intr_bus.q[clear_index_q]? dma_host_tlul_rsp_err :
+                                                                       dma_ctn_tlul_rsp_err;
     dma_state_error = 1'b0;
 
     sha2_hash_start      = 1'b0;
@@ -665,7 +665,7 @@ module dma
               ctrl_state_d = DmaAddrSetup;
             end else if (cfg_handshake_en && |lsio_trigger) begin
               // if handshake wait for interrupt
-              if (|reg2hw.clear_int_src.q) begin
+              if (|reg2hw.clear_intr_src.q) begin
                 clear_index_en = 1'b1;
                 clear_index_d  = '0;
                 ctrl_state_d   = DmaClearIntrSrc;
@@ -678,20 +678,20 @@ module dma
 
         DmaClearIntrSrc: begin
           // Clear the interrupt by writing
-          if(reg2hw.clear_int_src.q[clear_index_q]) begin
+          if(reg2hw.clear_intr_src.q[clear_index_q]) begin
             // Send 'clear interrupt' write to the appropriate bus
-            dma_host_clear_int = reg2hw.clear_int_bus.q[clear_index_q];
-            dma_ctn_clear_int = !reg2hw.clear_int_bus.q[clear_index_q];
+            dma_host_clear_intr = reg2hw.clear_intr_bus.q[clear_index_q];
+            dma_ctn_clear_intr = !reg2hw.clear_intr_bus.q[clear_index_q];
 
-            if (int_clear_tlul_gnt) begin
+            if (intr_clear_tlul_gnt) begin
               ctrl_state_d = DmaWaitIntrSrcResponse;
             end
 
             // Writes also get a resp valid, but no data.
             // Need to wait for this to not overrun TLUL adapter
             // The response might come immediately
-            if (int_clear_tlul_rsp_valid) begin
-              if (int_clear_tlul_rsp_error) begin
+            if (intr_clear_tlul_rsp_valid) begin
+              if (intr_clear_tlul_rsp_error) begin
                 next_error[DmaBusErr] = 1'b1;
                 ctrl_state_d = DmaError;
               end else if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
@@ -701,7 +701,7 @@ module dma
           end else begin
             // Do nothing if no clearing requested
             clear_index_en = 1'b1;
-            clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+            clear_index_d  = clear_index_q + INTR_CLEAR_SOURCES_WIDTH'(1'b1);
 
             if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
               ctrl_state_d = DmaAddrSetup;
@@ -712,13 +712,13 @@ module dma
         DmaWaitIntrSrcResponse: begin
           // Writes also get a resp valid, but no data.
           // Need to wait for this to not overrun TLUL adapter
-          if (int_clear_tlul_rsp_valid) begin
-            if (int_clear_tlul_rsp_error) begin
+          if (intr_clear_tlul_rsp_valid) begin
+            if (intr_clear_tlul_rsp_error) begin
               next_error[DmaBusErr] = 1'b1;
               ctrl_state_d = DmaError;
             end else if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
               clear_index_en = 1'b1;
-              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+              clear_index_d  = clear_index_q + INTR_CLEAR_SOURCES_WIDTH'(1'b1);
               ctrl_state_d   = DmaClearIntrSrc;
             end else begin
               ctrl_state_d = DmaAddrSetup;

@@ -330,17 +330,17 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask : set_transfer_width
 
   // Task: Set handshake interrupt register
-  task set_handshake_int_regs(ref dma_seq_item dma_config);
+  task set_handshake_intr_regs(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "Set DMA Handshake mode interrupt registers", UVM_HIGH)
-    csr_wr(ral.clear_int_src, dma_config.clear_int_src);
-    csr_wr(ral.clear_int_bus, dma_config.clear_int_bus);
-    foreach (dma_config.int_src_addr[i]) begin
-      csr_wr(ral.int_source_addr[i], dma_config.int_src_addr[i]);
-      csr_wr(ral.int_source_wr_val[i], dma_config.int_src_wr_val[i]);
+    csr_wr(ral.clear_intr_src, dma_config.clear_intr_src);
+    csr_wr(ral.clear_intr_bus, dma_config.clear_intr_bus);
+    foreach (dma_config.intr_src_addr[i]) begin
+      csr_wr(ral.intr_source_addr[i], dma_config.intr_src_addr[i]);
+      csr_wr(ral.intr_source_wr_val[i], dma_config.intr_src_wr_val[i]);
     end
-    ral.handshake_interrupt_enable.set(dma_config.handshake_intr_en);
-    csr_update(ral.handshake_interrupt_enable);
-  endtask : set_handshake_int_regs
+    ral.handshake_intr_enable.set(dma_config.handshake_intr_en);
+    csr_update(ral.handshake_intr_enable);
+  endtask : set_handshake_intr_regs
 
   // Task: Configure DMA controller to perform a transfer
   // (common to both 'memory-to-memory' and 'hardware handshaking' modes of operation)
@@ -358,7 +358,7 @@ class dma_base_vseq extends cip_base_vseq #(
     set_transfer_width(dma_config.per_transfer_width);
     randomize_src_data(dma_config.total_data_size);
     void'(configure_mem_model(dma_config, 32'd0));
-    set_handshake_int_regs(dma_config);
+    set_handshake_intr_regs(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_valid,
@@ -382,7 +382,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
-    csr_wr(ral.handshake_interrupt_enable, 32'd1);
+    csr_wr(ral.handshake_intr_enable, 32'd1);
   endtask : enable_handshake_interrupt
 
   // Enable/disable errors on TL-UL buses with the given percentage probability/word
@@ -453,21 +453,21 @@ class dma_base_vseq extends cip_base_vseq #(
         bit host_en = 1'b0;
         bit ctn_en = 1'b0;
         // Get FIFO interrupt register address and value
-        // Find the interrupt index with both handshake interrupt enable and clear_int_src
+        // Find the interrupt index with both handshake interrupt enable and clear_intr_src
         for (int i = 0; i < dma_reg_pkg::NumIntClearSources; i++) begin
           // Instruct memory/FIFO models on the appropriate bus(es) to expect 'Clear Interrupt'
           // writes, so that they may be excluded from normal traffic.
-          if (dma_config.clear_int_src[i]) begin
+          if (dma_config.clear_intr_src[i]) begin
             `uvm_info(`gfn, $sformatf("Clear Interrupt writes expected for source %d on bus %d", i,
-                                      dma_config.clear_int_bus[i]), UVM_HIGH)
+                                      dma_config.clear_intr_bus[i]), UVM_HIGH)
             // Set FIFO interrupt clear address and values in corresponding pull sequence instance
-            case (dma_config.clear_int_bus[i])
+            case (dma_config.clear_intr_bus[i])
               0: begin
-                seq_ctn.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                seq_ctn.add_fifo_reg(dma_config.intr_src_addr[i], dma_config.intr_src_wr_val[i]);
                 ctn_en = 1'b1;
               end
               default: begin
-                seq_host.add_fifo_reg(dma_config.int_src_addr[i], dma_config.int_src_wr_val[i]);
+                seq_host.add_fifo_reg(dma_config.intr_src_addr[i], dma_config.intr_src_wr_val[i]);
                 host_en = 1'b1;
               end
             endcase
