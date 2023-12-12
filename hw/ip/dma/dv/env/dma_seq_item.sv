@@ -164,9 +164,10 @@ class dma_seq_item extends uvm_sequence_item;
           mem_range_limit - src_addr >= total_data_size;
         }
       }
-      // For valid configurations, Address must be aligned to transfer width
+      // For valid configurations, the source address must be aligned to the transfer width.
       per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
+      // Only the SoC System bus has a full 64-bit address space.
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
     }
   }
@@ -200,9 +201,10 @@ class dma_seq_item extends uvm_sequence_item;
           (src_addr > dst_addr + total_data_size + 'h10);
         }
       }
-      // For valid configurations, Address must be aligned to transfer width but must further have
-      // the same alignment as the source.
-      dst_addr[1:0] == src_addr[1:0];
+      // For valid configurations, the destination address must be aligned to the transfer width.
+      per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
+      per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
+      // Only the SoC System bus has a full 64-bit address space.
       dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
     }
   }
@@ -529,14 +531,6 @@ class dma_seq_item extends uvm_sequence_item;
                   UVM_MEDIUM)
         valid_config = 0;
       end
-    end
-
-    // Source and destination address must have same alignment for valid DMA configuration
-    if (src_addr[1:0] != dst_addr[1:0]) begin
-      `uvm_info(`gfn,
-                $sformatf(" - Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)",
-                src_addr[1:0], dst_addr[1:0]), UVM_MEDIUM)
-      valid_config = 0;
     end
 
     // Check that the upper 32 bits of the destination and source address are zero for

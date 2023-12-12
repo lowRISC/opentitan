@@ -852,15 +852,9 @@ module dma
             next_error[DmaDestAddrErr] = 1'b1;
           end
 
-          // Source and destination must have the same alignment
-          if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
-            next_error[DmaSourceAddrErr] = 1'b1;
-            next_error[DmaDestAddrErr] = 1'b1;
-          end
           // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
           // the DMA enabled memory region.
-
           if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
               // Out-of-bound check
               ((reg2hw.destination_address_lo.q > control_q.enabled_memory_range_limit) ||
