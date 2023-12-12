@@ -349,18 +349,6 @@ class dma_seq_item extends uvm_sequence_item;
     valid_dma_config = 0;
   endfunction : new
 
-  // Function to disable randomization of memory range register and lock register.
-  // This is expected to be used to explore only valid DMA configurations since
-  // DMA memory range registers needs to be locked and can only be modified after reset.
-  function void lock_memory_range();
-    mem_range_base.rand_mode(0);
-    mem_range_limit.rand_mode(0);
-    range_regwen.rand_mode(0);
-    range_regwen_c.constraint_mode(0);
-    `uvm_info(`gfn, $sformatf("Disable randomisation of mem_range_base and mem_range_limit"),
-              UVM_HIGH)
-  endfunction
-
   // We need to position the 'Clear Interrupt' addresses such that they are disjoint with each other
   // and with the source and destination buffers
   function bit choose_intr_src_addrs();
@@ -701,12 +689,6 @@ class dma_seq_item extends uvm_sequence_item;
     return handshake && // Handshake mode enabled
            direction == DmaSendData && // Write to FIFO
            !auto_inc_fifo; // FIFO address auto increment disabled
-  endfunction
-
-  // Function to indicate a register write is expected from DMA
-  // to clear LSIO interrupt
-  function bit get_lsio_intr_clear();
-    return (handshake_intr_en && clear_intr_src);
   endfunction
 
   // Simply utility function that returns the actual size of a chunk starting at the given offset
