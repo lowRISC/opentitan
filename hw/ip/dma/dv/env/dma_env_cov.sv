@@ -240,10 +240,10 @@ endgroup
 
 covergroup dma_interrupt_cg with function sample(
   bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_interrupt_enable,
-  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_src,
-  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_int_bus,
-  bit [dma_reg_pkg::NumIntClearSources-1:0][2:0] int_source_addr_offset,
-  bit [dma_reg_pkg::NumIntClearSources-1:0][31:0] int_source_wr_val
+  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_src,
+  bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_bus,
+  bit [dma_reg_pkg::NumIntClearSources-1:0][2:0] intr_source_addr_offset,
+  bit [dma_reg_pkg::NumIntClearSources-1:0][31:0] intr_source_wr_val
 );
   option.per_instance = 1;
   option.name = "dma_interrupt_cg";
@@ -252,15 +252,15 @@ covergroup dma_interrupt_cg with function sample(
     `DMA_ENV_COV_INTERRUPT_BINS
   }
 
-  cp_clear_int_src: coverpoint clear_int_src {
+  cp_clear_intr_src: coverpoint clear_intr_src {
     `DMA_ENV_COV_INTERRUPT_BINS
   }
 
-  cp_clear_int_bus: coverpoint clear_int_bus {
+  cp_clear_intr_bus: coverpoint clear_intr_bus {
     `DMA_ENV_COV_INTERRUPT_BINS
   }
 
-  cp_int_source_addr_offset: coverpoint int_source_addr_offset {
+  cp_int_source_addr_offset: coverpoint intr_source_addr_offset {
     bins all_zero = {0};
     bins first_1_others_0 = {3'b001};
     bins first_2_others_0 = {3'b010};
@@ -285,7 +285,7 @@ covergroup dma_interrupt_cg with function sample(
     // Is there a way to programatically generate more enumerations like the above?
   }
 
-  cp_int_source_wr_val: coverpoint int_source_wr_val {
+  cp_int_source_wr_val: coverpoint intr_source_wr_val {
     bins all_zero = {0};
     bins first_all_ones_others_zero = {32'hffff_ffff};
     bins second_all_ones_others_zero = {64'hffff_ffff_0000_0000};
