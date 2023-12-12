@@ -69,7 +69,10 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind == "flash":
         # First convert to VMEM, then scramble according to flash
         # scrambling settings.
-        vmem = convert_to_vmem(
+        # When dvsim and bazel use different otp image which has different scramble option,
+        # there is a corner case where dvsim can't find vmem file.
+        # Send scr.vmem and vmem to mitigate the issue
+        vmem_base = convert_to_vmem(
             ctx,
             name = name,
             src = signed_bin if signed_bin else binary,
@@ -79,7 +82,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             ctx,
             name = name,
             suffix = "64.scr.vmem",
-            src = vmem,
+            src = vmem_base,
             otp = get_fallback(ctx, "file.otp", exec_env),
             otp_mmap = exec_env.otp_mmap,
             otp_seed = exec_env.otp_seed,
@@ -88,6 +91,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         rom = None
         default = vmem
+        vmem = vmem_base
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
