@@ -81,7 +81,7 @@ if { $lr_synth_flatten } {
   yosys "flatten"
 }
 
-yosys "clean"
+yosys "clean -purge"
 yosys "write_verilog $lr_synth_netlist_out"
 
 if { $lr_synth_timing_run } {
@@ -96,4 +96,3 @@ yosys "check"
 yosys "log ======== Yosys Stat Report ========"
 yosys "tee -o $lr_synth_out_dir/reports/area.rpt stat -liberty $lr_synth_cell_library_path"
 yosys "log ====== End Yosys Stat Report ======"
-

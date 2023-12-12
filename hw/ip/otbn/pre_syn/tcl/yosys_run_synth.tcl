@@ -64,7 +64,7 @@ if { $lr_synth_flatten } {
   yosys "flatten"
 }
 
-yosys "clean"
+yosys "clean -purge"
 yosys "write_verilog $lr_synth_netlist_out"
 
 if { $lr_synth_timing_run } {
