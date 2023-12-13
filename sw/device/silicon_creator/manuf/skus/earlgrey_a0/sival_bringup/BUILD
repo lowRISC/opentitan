@@ -115,7 +115,7 @@ _CP_PROVISIONING_CMD_ARGS = """
 
 opentitan_test(
     name = "cp_provision",
-    cw310 = cw310_jtag_params(
+    cw310 = hyper310_jtag_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
         tags = ["manuf"],
