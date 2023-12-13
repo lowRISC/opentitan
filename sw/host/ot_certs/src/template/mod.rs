@@ -39,6 +39,7 @@ use std::{collections::HashMap, marker::PhantomData};
 
 mod hjson;
 pub mod subst;
+pub mod testgen;
 
 /// Full template file, including variable declarations and certificate spec.
 #[serde_as]

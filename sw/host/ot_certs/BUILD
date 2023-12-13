@@ -17,6 +17,7 @@ rust_library(
         "src/template/hjson.rs",
         "src/template/mod.rs",
         "src/template/subst.rs",
+        "src/template/testgen.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
     ],
