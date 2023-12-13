@@ -17,6 +17,7 @@
 typedef enum uart_pinmux_platform_id {
   UartPinmuxPlatformIdHyper310 = 0,
   UartPinmuxPlatformIdDvsim,
+  UartPinmuxPlatformIdSilicon,
   UartPinmuxPlatformIdCount,
 } uart_pinmux_platform_id_t;
 

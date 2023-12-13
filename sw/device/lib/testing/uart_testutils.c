@@ -76,6 +76,28 @@ static const pinmux_testutils_mio_pin_t
                  .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
                  .insel = kTopEarlgreyPinmuxInselIoc3,
              }},
+        // Silicon.
+        [UartPinmuxPlatformIdSilicon] =
+            {// UART0.
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
+                 .insel = kTopEarlgreyPinmuxInselIoc3,
+             },
+             // UART1.
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
+                 .insel = kTopEarlgreyPinmuxInselIoc3,
+             },
+             // UART2.
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
+                 .insel = kTopEarlgreyPinmuxInselIoc3,
+             },
+             // UART3.
+             {
+                 .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
+                 .insel = kTopEarlgreyPinmuxInselIoc3,
+             }},
         // DV.
         [UartPinmuxPlatformIdDvsim] = {
             // UART0.
