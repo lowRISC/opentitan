@@ -79,6 +79,7 @@ impl LogicalI2cWrapper {
                 .underlying_target
                 .set_max_speed(speed)?;
         }
+        self.physical_wrapper.last_used_by_uid.set(Some(self.uid));
         Ok(())
     }
 }
