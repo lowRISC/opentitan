@@ -26,6 +26,11 @@ def setup_db(db_filename, log_archive_root):
     Returns:
     db_conn - a database connecion
     """
+    if not os.path.exists(db_filename):
+        logging.error(f"""No DB file found at {db_filename}.
+Download the database from the git bucket with gsutil before continuing.""")
+        exit(1)
+
     db_conn = sqlite3.connect(db_filename)
     cur = db_conn.cursor()
     cur.execute(f"""
