@@ -42,6 +42,8 @@ pub enum CertificateCommand {
     Parse(ParseCertificate),
     /// Substitute values in a template.
     Subst(SubstCommand),
+    /// Generate test values for a template.
+    Testgen(TestgenCommand),
 }
 
 /// Generate a certificate template.
@@ -181,5 +183,33 @@ impl CommandDispatch for SubstCommand {
             writeln!(file, "{}", doc)?;
         }
         Ok(Some(Box::new(template)))
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct TestgenCommand {
+    /// Filename of the input hjson template.
+    template: PathBuf,
+    /// Filename of the output json file.
+    #[arg(long)]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for TestgenCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // Load template.
+        let template = load_template(&self.template)?;
+        // Generate test
+        let data = template.random_test()?;
+        // Output
+        if let Some(output) = &self.output {
+            let mut file = File::create(output)?;
+            writeln!(file, "{}", data.to_json()?)?;
+        }
+        Ok(Some(Box::new(data)))
     }
 }
