@@ -49,7 +49,10 @@ cc_library(
 cc_library(
     name = "ibex_fi",
     srcs = ["ibex_fi.c"],
-    hdrs = ["ibex_fi.h"],
+    hdrs = [
+        "ibex_fi.h",
+        "status.h",
+    ],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
