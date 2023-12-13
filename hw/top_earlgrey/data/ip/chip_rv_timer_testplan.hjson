@@ -19,7 +19,7 @@
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
                  "RV_TIMER.COUNTER"]
       tests: ["chip_sw_rv_timer_irq"]
-      bazel: ["//sw/device/tests:rv_timer_smoketest_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rv_timer_smoketest_fpga_cw310_sival_rom_ext"]
     }
     {
       name: tick_configuration
@@ -38,7 +38,7 @@
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE"]
       tests: ["chip_sw_rv_timer_systick_test"]
-      bazel: ["//sw/device/tests:rv_timer_systick_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rv_timer_systick_test_fpga_cw310_sival_rom_ext"]
     }
     {
       name: riscv_isa_csrs
