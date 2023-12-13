@@ -8,6 +8,10 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Structure holding the state of the asn1 generator.
  *
@@ -228,5 +232,9 @@ rom_error_t asn1_push_string(asn1_state_t *state, uint8_t tag, const char *str,
  */
 rom_error_t asn1_push_hexstring(asn1_state_t *state, uint8_t tag,
                                 const uint8_t *bytes, size_t size);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_ASN1_H_
