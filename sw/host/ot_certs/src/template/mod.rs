@@ -37,6 +37,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 
 pub mod subst;
+pub mod testgen;
 
 use crate::template::subst::{ConvertValue, SubstValue};
 
