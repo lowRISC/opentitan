@@ -87,7 +87,7 @@ fn uart_tx_rx(
 
     assert_eq!(tx_data, &tx_rx_data.tx_data.as_slice()[1..]);
 
-    log::info!("Sending a chun of data larget than the FIFO...");
+    log::info!("Sending a chunk of data larger than the FIFO...");
     let too_much_data = vec![0xff; tx_rx_data.tx_data.len() + 1];
     uart.write(&too_much_data)
         .context("failed to write too much data")?;

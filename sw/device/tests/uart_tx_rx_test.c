@@ -494,8 +494,8 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
   LOG_INFO("Read and check LC state.");
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
-  CHECK(curr_state == kDifLcCtrlStateRma,
-        "LC State isn't in kDifLcCtrlStateRma!");
+  CHECK(curr_state == kDifLcCtrlStateRma || curr_state == kDifLcCtrlStateDev,
+        "LC State isn't in {kDifLcCtrlStateRma, kDifLcCtrlStateDev}!");
 
   CHECK_STATUS_OK(
       clkmgr_testutils_enable_external_clock_blocking(clkmgr, kUseLowSpeedSel));
@@ -523,6 +523,8 @@ bool test_main(void) {
     platform_id = UartPinmuxPlatformIdHyper310;
   } else if (kDeviceType == kDeviceSimDV) {
     platform_id = UartPinmuxPlatformIdDvsim;
+  } else if (kDeviceType == kDeviceSilicon) {
+    platform_id = UartPinmuxPlatformIdSilicon;
   } else {
     CHECK(false, "Unsupported platform %d", kDeviceType);
   }
@@ -551,7 +553,6 @@ bool test_main(void) {
 
   // Execute the test.
   execute_test(&uart);
-
   CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
 
   return true;
