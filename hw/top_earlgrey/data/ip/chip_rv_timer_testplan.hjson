@@ -57,7 +57,8 @@
       lc_states: ["DEV", "PROD", "RMA"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
                  "RV_TIMER.COUNTER", "RV_TIMER.RISCV_CSRS_INTEGRATION"]
-      tests: []
+      tests: ["chip_sw_rv_timer_systick_test"]
+      bazel: ["//sw/device/tests:rv_timer_systick_test_fpga_cw310_sival_rom_ext"]
     }
   ]
 }
