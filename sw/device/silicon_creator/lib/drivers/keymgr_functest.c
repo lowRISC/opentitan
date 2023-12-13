@@ -226,7 +226,9 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
-  CHECK(lifecycle_state_get() == kLcStateRma,
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  CHECK(lc_state == kLcStateRma || lc_state == kLcStateDev ||
+            lc_state == kLcStateProd || lc_state == kLcStateProdEnd,
         "The test is configured to run in RMA mode.");
 
   CHECK_DIF_OK(dif_rstmgr_init(
