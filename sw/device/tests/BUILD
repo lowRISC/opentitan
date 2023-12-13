@@ -41,6 +41,7 @@ load(
     "opentitan_test",
     "rsa_key_for_lc_state",
     "silicon_jtag_params",
+    "silicon_params",
     new_cw310_params = "cw310_params",
     new_dv_params = "dv_params",
     new_verilator_params = "verilator_params",
@@ -161,6 +162,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -215,6 +218,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     deps = [
@@ -294,6 +298,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     deps = [
@@ -372,9 +377,9 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_earlgrey:silicon_creator": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -418,6 +423,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     verilator = new_verilator_params(tags = ["broken"]),
@@ -442,6 +448,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         },
@@ -875,6 +882,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1120,7 +1129,11 @@ opentitan_test(
     srcs = ["entropy_src_csrng_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        {"//hw/top_earlgrey:silicon_creator": None},
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
     ),
     verilator = new_verilator_params(
         timeout = "long",
@@ -1583,6 +1596,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1813,6 +1828,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
@@ -1965,7 +1982,14 @@ opentitan_test(
 opentitan_test(
     name = "otbn_smoketest",
     srcs = ["otbn_smoketest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2119,8 +2143,15 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2276,8 +2307,15 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2320,7 +2358,11 @@ opentitan_test(
     srcs = ["pwrmgr_smoketest.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        {"//hw/top_earlgrey:silicon_creator": None},
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
     ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
@@ -2402,6 +2444,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2538,7 +2581,15 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_smoketest",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2777,6 +2828,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     verilator = new_verilator_params(
@@ -2796,6 +2848,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     verilator = new_verilator_params(
@@ -3073,6 +3126,7 @@ opentitan_test(
         # "//hw/top_earlgrey:fpga_cw310_sival": None,
         # "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -3120,6 +3174,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
+            "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         },
@@ -3161,7 +3216,14 @@ opentitan_test(
 opentitan_test(
     name = "rv_core_ibex_nmi_irq_test",
     srcs = ["rv_core_ibex_nmi_irq_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:alert_handler",
@@ -3195,6 +3257,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     verilator = new_verilator_params(
@@ -3256,8 +3319,8 @@ opentitan_test(
         # test program doesn't fit inside the ROM_EXT partition size (~64KB).
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:sim_dv": None,
     },
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
@@ -3819,6 +3882,8 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     silicon = silicon_jtag_params(
@@ -3934,9 +3999,20 @@ opentitan_binary(
             test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
         ),
         exec_env = {
+            # TODO: this test currently fails on FPGA.
+            # "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            # "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
+        silicon = silicon_params(
+            test_cmd = " ".join([
+                "--bootstrap=\"{firmware}\"",
+                "--firmware-elf=\"{firmware:elf}\"",
+            ]),
+            test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
+        ),
         deps = [
             "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
             "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
@@ -3972,11 +4048,20 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
     exec_env = {
+        "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
+    silicon = silicon_jtag_params(
+        binaries = {
+            ":rv_core_ibex_mem_test": "sram_program",
+        },
+        tags = ["manual"],
+        test_cmd = "--elf={sram_program}",
+        test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+    ),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
