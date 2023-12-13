@@ -217,7 +217,7 @@
       "name": "TPM",
       "bits_per_sec": 250000,
       "chip_select": "IOA7",
-      "alias_of": "QSPI"
+      "alias_of": "SPI1"
     }
   ],
   "i2c": [
