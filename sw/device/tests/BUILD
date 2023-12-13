@@ -4095,24 +4095,22 @@ opentitan_functest(
 
 # TODO(#19902): Migrate to `opentitan_test` once there is support for the
 # hyperdebug310 target.
-opentitan_functest(
+opentitan_test(
     name = "i2c_target_test",
     srcs = [
         "i2c_target_test.c",
     ],
-    cw310 = cw310_params(
-        # This test needs hyperdebug to serve as I2C host to OpenTitan's
-        # I2C target device.
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+    cw310 = new_cw310_params(
+        # otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/i2c_target",
     ),
-    targets = [
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/i2c_target",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+    },
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
