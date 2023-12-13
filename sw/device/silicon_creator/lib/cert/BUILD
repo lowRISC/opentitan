@@ -11,3 +11,12 @@ cc_library(
         "//sw/device/lib/base:status",
     ],
 )
+
+cc_test(
+    name = "asn1_unittest",
+    srcs = ["asn1_unittest.cc"],
+    deps = [
+        ":asn1",
+        "@googletest//:gtest_main",
+    ],
+)
