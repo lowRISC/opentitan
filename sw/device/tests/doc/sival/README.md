@@ -173,10 +173,14 @@ bazel test   --define DISABLE_VERILATOR_BUILD=true   \
     //sw/device/tests/sival:sv1_tests
 ```
 
-### Silicon example
+### Silicon Creator
+
+The following commands runs the `SV2` test suite on the `silicon_creator`
+execution environment. The binaries are signed with the `earlgrey_a0_dev_0`
+key using the `nitrokey` signing token configuration.
 
 ```console
-./bazelisk.sh test   --define DISABLE_VERILATOR_BUILD=true   \
+bazel test --define DISABLE_VERILATOR_BUILD=true   \
     --//signing:token=//signing/tokens:nitrokey \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
     --test_tag_filters=silicon \
