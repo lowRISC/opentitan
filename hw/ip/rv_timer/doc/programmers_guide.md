@@ -41,9 +41,10 @@ the RISC-V privileged specification.
 ```asm
 # New comparand is in a1:a0.
 li t0, -1
-sw t0, mtimecmp   # No smaller than old value.
-sw a1, mtimecmp+4 # No smaller than new value.
-sw a0, mtimecmp   # New value.
+li t1, TOP_EARLGREY_RV_TIMER_BASE_ADDR
+sw t0, RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET(t1)   # No smaller than old value.
+sw a1, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET(t1)   # No smaller than new value.
+sw a0, RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET(t1)   # New value.
 ```
 
 ## Timer behaviour close to 2^64
