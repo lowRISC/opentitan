@@ -34,7 +34,7 @@ assumes the clock is neither turned off nor changed during runtime.
 
 ## Compatibility
 
-The timer IP provides memory-mapped registers `mtime` and `mtimecmp` which can
+The timer IP provides memory-mapped registers equivalent to `mtime` and `mtimecmp` which can
 be used as the machine-mode timer registers defined in the RISC-V privileged
 spec. Additional features such as prescaler, step, and a configurable number of
 timers and harts have been added.
