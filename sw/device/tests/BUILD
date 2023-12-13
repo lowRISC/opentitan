@@ -1584,6 +1584,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
     deps = [
@@ -1600,7 +1601,10 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {"//hw/top_earlgrey:silicon_creator": None},
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1621,7 +1625,10 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {"//hw/top_earlgrey:silicon_creator": None},
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/aes/data:aes_regs",
@@ -1646,7 +1653,10 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {"//hw/top_earlgrey:silicon_creator": None},
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1672,6 +1682,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     verilator = new_verilator_params(timeout = "long"),
     deps = [
@@ -1697,6 +1708,7 @@ opentitan_test(
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     verilator = new_verilator_params(timeout = "long"),
     deps = [
