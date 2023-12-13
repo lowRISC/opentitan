@@ -41,15 +41,14 @@
       bazel: ["//sw/device/tests:rv_timer_systick_test_fpga_cw310_sival_rom_ext"]
     }
     {
-      name: riscv_isa_csrs
-      desc: '''Verify that the timer counter and compare registers can be read and written via
-            the registers `mtime` and `mtimecmp` and that `mtime` will wrap to zero when the limit
-            is reached.
+      name: counter_wrap
+      desc: '''Verify that the timer counter will wrap to zero when the limit is reached.
 
             - Enable interrupts.
-            - Set the compare register to zero by writing to `mtimecmp` CSR.
-            - Set the counter to `UINT64_MAX - 500 milliseconds` by writing to `mtime` CSR.
+            - Set the counter to `UINT64_MAX - 5 milliseconds`.
+            - Set the compare register to UINT64_MAX.
             - Enable the timer.
+            - Start a busy loop of 5 milliseconds based on the `mcycleh` CSR.
             - Verify that the counter has wrapped around by reading `mtime`.
             - Verify that the interrupt has fired.
             '''
