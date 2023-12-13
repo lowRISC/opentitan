@@ -73,6 +73,26 @@ status_t keymgr_testutils_flash_init(
   return OK_STATUS();
 }
 
+static status_t check_lock_otp_partition(void) {
+  dif_otp_ctrl_t otp;
+  TRY(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+
+  bool is_computed;
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionSecret2,
+                                      &is_computed));
+  if (is_computed) {
+    uint64_t digest;
+    TRY(dif_otp_ctrl_get_digest(&otp, kDifOtpCtrlPartitionSecret2, &digest));
+    LOG_INFO("OTP partition locked. Digest: %x-%x", ((uint32_t *)&digest)[0],
+             ((uint32_t *)&digest)[1]);
+    return OK_STATUS();
+  }
+
+  TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0));
+  return OK_STATUS();
+}
+
 status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
@@ -99,12 +119,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
 
     TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 
-    // Lock otp secret partition.
-    dif_otp_ctrl_t otp;
-    TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-    TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
-                                          0));
+    TRY(check_lock_otp_partition());
 
     // Reboot device.
     rstmgr_testutils_reason_clear();
