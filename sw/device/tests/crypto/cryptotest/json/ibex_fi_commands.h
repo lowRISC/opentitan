@@ -13,13 +13,22 @@ extern "C" {
 
 #define IBEXFI_SUBCOMMAND(_, value) \
     value(_, InitTrigger) \
-    value(_, CharUnrolledRegOpLoop)
+    value(_, CharUnrolledRegOpLoop) \
+    value(_, CharRegOpLoop) \
+    value(_, CharUnrolledMemOpLoop) \
+    value(_, CharMemOpLoop)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
 
 #define IBEXFI_LOOP_COUNTER_OUTPUT(field, string) \
     field(loop_counter, uint32_t) \
     field(err_status, uint32_t)
 UJSON_SERDE_STRUCT(IbexFiLoopCounterOutput, ibex_fi_loop_counter_t, IBEXFI_LOOP_COUNTER_OUTPUT);
+
+#define IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT(field, string) \
+    field(loop_counter1, uint32_t) \
+    field(loop_counter2, uint32_t) \
+    field(err_status, uint32_t)
+UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrored_t, IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT);
 
 // clang-format on
 
