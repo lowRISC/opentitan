@@ -21,8 +21,19 @@ test_suite(
         "//sw/device/tests:csrng_edn_concurrency_test",
         "//sw/device/tests:entropy_src_csrng_test",
         "//sw/device/tests:hmac_smoketest",
+        "//sw/device/tests:keymgr_key_derivation_test",
         "//sw/device/tests:kmac_smoketest",
-        "//sw/device/tests:power_virus_systemtest",
         "//sw/device/tests:pwrmgr_smoketest",
+    ],
+)
+
+test_suite(
+    name = "sv3_tests",
+    tests = [
+        "//sw/device/tests:keymgr_sideload_aes_test",
+        "//sw/device/tests:keymgr_sideload_kmac_test",
+        "//sw/device/tests:keymgr_sideload_otbn_simple_test",
+        "//sw/device/tests:keymgr_sideload_otbn_test",
+        "//sw/device/tests:power_virus_systemtest",
     ],
 )

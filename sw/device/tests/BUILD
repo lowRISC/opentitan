@@ -1584,7 +1584,6 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
     deps = [
