@@ -18,6 +18,7 @@ enum {
   kHart = kTopEarlgreyPlicTargetIbex0,
   kComparator = 0,
   kReferenceTimeMillis = 5,
+  kWrapTimeMillis = 5,
 };
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -56,6 +57,37 @@ static status_t test_tick(uint32_t tick_hz) {
   return OK_STATUS();
 }
 
+static status_t test_wrap(uint32_t tick_hz) {
+  LOG_INFO("%s: tick_hz = %u", __func__, tick_hz);
+
+  TRY(dif_rv_timer_irq_set_enabled(
+      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
+
+  TRY(set_tick(tick_hz));
+
+  uint64_t start_counter = UINT64_MAX - (kWrapTimeMillis * tick_hz) / 1000;
+  TRY(dif_rv_timer_counter_write(&timer, kHart, start_counter));
+  TRY(dif_rv_timer_arm(&timer, kHart, 0, UINT64_MAX));
+
+  TRY(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleEnabled));
+  busy_spin_micros(kWrapTimeMillis * 1000 * 2);
+  TRY(dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleDisabled));
+
+  uint64_t counter = UINT64_MAX;
+  TRY(dif_rv_timer_counter_read(&timer, kHart, &counter));
+  // Verify that the counter wrapped.
+  TRY_CHECK(counter < start_counter,
+            "Unexpected elapsed time, expected: %08x%08x, got: %08x%08x",
+            (uint32_t)(start_counter >> 32), (uint32_t)start_counter,
+            (uint32_t)(counter >> 32), (uint32_t)counter);
+
+  bool irq_pending = false;
+  TRY(dif_rv_timer_irq_is_pending(&timer, kDifRvTimerIrqTimerExpiredHart0Timer0,
+                                  &irq_pending));
+  TRY_CHECK(irq_pending, "Expected timer IRQ");
+  return OK_STATUS();
+}
+
 /**
  * Verify that the timer can be configured to generate a system tick.
  *  - Configure the timer to generate a tick of `T` microseconds long.
@@ -83,6 +115,8 @@ bool test_main(void) {
   for (size_t i = 0; i < ARRAYSIZE(kTickHz); ++i) {
     EXECUTE_TEST(result, test_tick, kTickHz[i]);
   }
+
+  EXECUTE_TEST(result, test_wrap, 10000);
 
   return status_ok(result);
 }
