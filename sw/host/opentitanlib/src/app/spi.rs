@@ -130,6 +130,7 @@ impl LogicalSpiWrapper {
                 .underlying_target
                 .set_pins(clock, hodi, hido, cs)?,
         }
+        self.physical_wrapper.last_used_by_uid.set(Some(self.uid));
         Ok(())
     }
 }
