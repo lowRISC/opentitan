@@ -432,7 +432,7 @@ impl Inner {
         // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
         // partial input, before executing our command.
         port.write(format!("\x03{}\n", cmd).as_bytes())
-            .context("communication error")?;
+            .context("writing to HyperDebug console")?;
 
         // Now process response from HyperDebug.  First we expect to see the echo of the command
         // we just "typed". Then zero, one or more lines of useful output, which we want to pass
@@ -458,7 +458,7 @@ impl Inner {
                                 line_end -= 1;
                             }
                             let line = std::str::from_utf8(&buf[line_start..line_end])
-                                .context("communication error")?;
+                                .context("utf8 decoding from HyperDebug console")?;
                             if seen_echo {
                                 callback(line);
                             } else if line.len() >= 2 && line[line.len() - 2..] == *"^C" {
@@ -488,7 +488,7 @@ impl Inner {
                         return Ok(());
                     }
                 }
-                Err(error) => return Err(error).context("communication error"),
+                Err(error) => return Err(error).context("reading from HyperDebug console"),
             }
         }
     }
