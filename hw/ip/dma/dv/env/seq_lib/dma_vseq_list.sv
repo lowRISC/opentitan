@@ -16,5 +16,5 @@
 `include "dma_memory_stress_vseq.sv"
 `include "dma_handshake_stress_vseq.sv"
 `include "dma_stress_all_vseq.sv"
-//`include "dma_short_transfer_vseq.sv"
+`include "dma_short_transfer_vseq.sv"
 //`include "dma_intr_vseq.sv"
