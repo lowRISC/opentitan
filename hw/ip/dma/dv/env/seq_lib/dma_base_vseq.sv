@@ -416,6 +416,37 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_host.enable_bus_errors(pct);
   endfunction
 
+  // Set the minimum and maximum grant delays on the TL-UL buses
+  // Note: the TL-UL agent shall normally produce randomized grant delays; this function is to be
+  //       used only in those sequences where there is a specific reason to control them tightly.
+  function void set_access_delays(int min, int max);
+    cfg.tl_agent_dma_host_cfg.a_ready_delay_min = min;
+    cfg.tl_agent_dma_host_cfg.a_ready_delay_max = max;
+
+    cfg.tl_agent_dma_ctn_cfg.a_ready_delay_min = min;
+    cfg.tl_agent_dma_ctn_cfg.a_ready_delay_max = max;
+
+    cfg.tl_agent_dma_sys_cfg.a_ready_delay_min = min;
+    cfg.tl_agent_dma_sys_cfg.a_ready_delay_max = max;
+  endfunction
+
+  // Set the minimum and maximum response delays of the TL-UL devices
+  // Note: the TL-UL agent shall normally produce randomized responses delays; this function is to
+  //       be used only in those sequences where there is a specific reason to control them tightly.
+  function void set_response_delays(int min, int max);
+    cfg.tl_agent_dma_host_cfg.use_seq_item_d_valid_delay = 1'b0;
+    cfg.tl_agent_dma_host_cfg.d_valid_delay_min = min;
+    cfg.tl_agent_dma_host_cfg.d_valid_delay_max = max;
+
+    cfg.tl_agent_dma_ctn_cfg.use_seq_item_d_valid_delay = 1'b0;
+    cfg.tl_agent_dma_ctn_cfg.d_valid_delay_min = min;
+    cfg.tl_agent_dma_ctn_cfg.d_valid_delay_max = max;
+
+    cfg.tl_agent_dma_sys_cfg.use_seq_item_d_valid_delay = 1'b0;
+    cfg.tl_agent_dma_sys_cfg.d_valid_delay_min = min;
+    cfg.tl_agent_dma_sys_cfg.d_valid_delay_max = max;
+  endfunction
+
   function void set_seq_fifo_read_mode(asid_encoding_e asid, bit read_fifo_en);
     case (asid)
       OtInternalAddr: begin
@@ -652,12 +683,34 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Wait for Completion
   task wait_for_completion(bit intr_driven, output status_t status);
-    int timeout = 1000000;
+    int timeout = 10000;
     status = 0;
     fork
-      // Timeout condition due to simulation hang
+      // Timeout condition due to inactivity.
+      // Note: we rely upon the build/simulation to time out in the event that the controller
+      //       somehow enters an interminable loop transferring repeatedly, rather than trying to
+      //       detect unproductive activity.
       begin
-        delay(timeout);
+        uint prev_written = 0;
+        uint prev_read = 0;
+        int elapsed = 0;
+        do begin
+          uint now_written;
+          uint now_read;
+          // Delay for a while; this process will be terminated if a parallel process detects a
+          // significant event.
+          delay(1000);
+          elapsed += 1000;
+          // There is no progress/activity indicator in the FW/DV-visible CSRs, so we rely
+          // upon monitoring the source/destination for recent activity.
+          now_written = get_bytes_written(dma_config);
+          now_read    = get_bytes_read(dma_config);
+          if (now_written != prev_written || now_read != prev_read) begin
+            prev_written = now_written;
+            prev_read = now_read;
+            elapsed = 0;
+          end
+        end while (elapsed < timeout);
         `uvm_fatal(`gfn, $sformatf("ERROR: Timeout Condition Reached at %d cycles", timeout))
       end
       // Completion detection when interrupt driven

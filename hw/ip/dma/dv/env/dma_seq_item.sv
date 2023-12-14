@@ -216,13 +216,25 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
+  // Add a constraint on the total data size to limit the test run time; this may be disabled in
+  // some sequences.
+  constraint total_data_short_c {
+    solve mem_range_limit before total_data_size;
+    if (valid_dma_config) {
+      total_data_size inside {[1:1024]};
+    } else {
+      // Longer transfers are exercised by disabling this constraint and, although we expect this
+      // configuration to be rejected, we cannot leave the size with full 32-bit randomization
+      // because we must generate an appropriate quantity of source data up front.
+      total_data_size inside {[1:'h10_0000]};
+    }
+  }
+
   constraint total_data_size_c {
     solve mem_range_limit before total_data_size;
     if (valid_dma_config) {
       total_data_size <= mem_range_limit - mem_range_base;
     }
-    // Add a soft constraint on the total transfer size to limit the test run time
-    soft total_data_size inside {[1:1024]};
   }
 
   constraint chunk_data_size_c {
