@@ -69,9 +69,15 @@ class dma_seq_item extends uvm_sequence_item;
   // Variable to control which trigger_i signals are active
   rand lsio_trigger_t handshake_intr_en;
 
-  // variable used to constrain randomization to only valid configs
+  // Variable used to constrain randomization to only valid configs.
   bit valid_dma_config;
-  // Waive full testing of the system bus within this DV environment?
+  // Variable used to constrain source address range to lie within the DMA-enabled address range
+  // (consulted iff `valid_dma_config`).
+  bit src_addr_in_range;
+  // Variable used to constrain destination address range to lie within the DMA-enabled address
+  // range (consulted iff `valid_dma_config`).
+  bit dst_addr_in_range;
+  // Waive testing of the system bus within this DV environment?
   bit dma_dv_waive_system_bus;
   // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus when full testing of
   // the System bus has been explicitly waived.
@@ -145,23 +151,42 @@ class dma_seq_item extends uvm_sequence_item;
     // valid_dma_config is set
     solve mem_range_base, mem_range_limit before src_addr;
     if (valid_dma_config) {
-      // If OT internal address space is the source, data is being exported, and the memory
-      // window is enabled, then ensure all source addresses lie within the window
-      if (mem_range_valid && src_asid == OtInternalAddr && dst_asid != OtInternalAddr) {
-        src_addr >= mem_range_base;
-        src_addr <= mem_range_limit;
-        mem_range_limit - src_addr >= chunk_data_size;
-        // If auto increment is not used on the memory end of the operation then successive chunks
-        // overlap each other, but in other cases the entire transfer must fit within the window
-        if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
-          mem_range_limit - src_addr >= total_data_size;
-        }
-      }
       // For valid configurations, the source address must be aligned to the transfer width.
       per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
       // Only the SoC System bus has a full 64-bit address space.
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
+
+      // If OT internal address space is the source, data is being exported, and the memory
+      // window is enabled, then ensure all source addresses lie within the window
+      if (mem_range_valid && src_asid == OtInternalAddr && dst_asid != OtInternalAddr) {
+        // This (normally enabled) additional constraint ensures that the source address range lies
+        // within the DMA-enabled memory range if the destination is outside of the OtInternalAddr
+        // space.
+        if (src_addr_in_range) {
+          src_addr >= mem_range_base;
+          src_addr <= mem_range_limit;
+          mem_range_limit - src_addr >= chunk_data_size;
+          // If auto increment is not used on the memory end of the operation then successive chunks
+          // overlap each other, but in other cases the entire transfer must fit within the window
+          if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
+            mem_range_limit - src_addr >= total_data_size;
+          }
+        } else {
+          // Choose a source address range that lies partially outside the DMA-enabled memory range.
+          if (auto_inc_buffer) {
+            // Choose start address to be too low or end address to be too high.
+            src_addr < mem_range_base  ||
+            src_addr > mem_range_limit ||
+            mem_range_limit - src_addr < total_data_size;
+          } else {
+            // Choose start address to be too low or end address to be too high.
+            src_addr < mem_range_base  ||
+            src_addr > mem_range_limit ||
+            mem_range_limit - src_addr < chunk_data_size;
+          }
+        }
+      }
     }
     // When full testing of the SoC System bus has been waived, testing is restricted to a 4GiB
     // address window but we can vary the address window for each transfer.
@@ -180,32 +205,50 @@ class dma_seq_item extends uvm_sequence_item;
     // destination buffer overlapping it.
     solve src_addr before dst_addr;
     if (valid_dma_config) {
-      // If OT internal address space is the destination, data is being imported, and the memory
-      // window is enabled, then ensure all destination addresses lie within the window
-      if (mem_range_valid && dst_asid == OtInternalAddr && src_asid != OtInternalAddr) {
-        dst_addr >= mem_range_base;
-        dst_addr <= mem_range_limit;
-        mem_range_limit - dst_addr >= chunk_data_size;
-        // If auto increment is not used on the memory end of the operation, then successive chunks
-        // overlap each other, but in other cases the entire transfer must fit within the window
-        if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
-          mem_range_limit - dst_addr >= total_data_size;
-        }
-        if (src_asid == OtInternalAddr) {
-          // Avoid overlap between source and destination buffers, also leaving a slight gap so
-          // that any out-of-bounds access does not hit a contiguous buffer
-          //
-          // `total_data_size` here is often larger than the valid addressable range in
-          // handshake mode, but keeps things simpler
-          (dst_addr > src_addr + total_data_size + 'h10) ||
-          (src_addr > dst_addr + total_data_size + 'h10);
-        }
-      }
       // For valid configurations, the destination address must be aligned to the transfer width.
       per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
       // Only the SoC System bus has a full 64-bit address space.
       dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
+
+      // If OT internal address space is the destination, data is being imported, and the memory
+      // window is enabled, then ensure all destination addresses lie within the window
+      if (mem_range_valid && dst_asid == OtInternalAddr && src_asid != OtInternalAddr) {
+        if (dst_addr_in_range) {
+          dst_addr >= mem_range_base;
+          dst_addr <= mem_range_limit;
+          mem_range_limit - dst_addr >= chunk_data_size;
+          // If auto increment is not used on the memory end of the operation, then successive/
+          // chunks overlap each other, but in other cases the entire transfer must fit within the
+          // window
+          if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
+            mem_range_limit - dst_addr >= total_data_size;
+          }
+          if (src_asid == OtInternalAddr) {
+            // Avoid overlap between source and destination buffers, also leaving a slight gap so
+            // that any out-of-bounds access does not hit a contiguous buffer
+            //
+            // `total_data_size` here is often larger than the valid addressable range in
+            // handshake mode, but keeps things simpler
+            (dst_addr > src_addr + total_data_size + 'h10) ||
+            (src_addr > dst_addr + total_data_size + 'h10);
+          }
+        } else {
+          // Choose a destination address range that lies partially outside the DMA-enabled memory
+          // range.
+          if (auto_inc_buffer) {
+            // Choose start address to be too low or end address to be too high.
+            dst_addr < mem_range_base  ||
+            dst_addr > mem_range_limit ||
+            mem_range_limit - dst_addr < total_data_size;
+          } else {
+            // Choose start address to be too low or end address to be too high.
+            dst_addr < mem_range_base  ||
+            dst_addr > mem_range_limit ||
+            mem_range_limit - dst_addr < chunk_data_size;
+          }
+        }
+      }
     }
     // When full testing of the SoC System bus has been waived, testing is restricted to a 4GiB
     // address window but we can vary the address window for each transfer.
@@ -380,7 +423,10 @@ class dma_seq_item extends uvm_sequence_item;
   //  Constructor: new
   function new(string name = "");
     super.new(name);
+    // Default choices for variables affecting the set of permissible configurations.
     valid_dma_config = 0;
+    src_addr_in_range = 1;
+    dst_addr_in_range = 1;
   endfunction : new
 
   // We need to position the 'Clear Interrupt' addresses such that they are disjoint with each other
