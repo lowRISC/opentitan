@@ -727,13 +727,12 @@ class otbn_base_vseq extends cip_base_vseq #(
             end
           join_any
 
-          // When we get here, we know that either the OTBN sequence finished or we timed out
-          // and it's still going. We can see whether OTBN is still going by looking at the status
-          // from the model (which is also in sync with the RTL). Because we wait on the negedge
-          // when updating cycle_counter above, we know we've got the "new version" of the status at
-          // this point.
-          if (cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
-                                                   otbn_pkg::StatusBusySecWipeInt}) begin
+          // When we get here, we know that either the OTBN sequence finished or we timed out and
+          // it's still going. We can see whether OTBN is still in the middle of a run by looking at
+          // the status from the model (which is also in sync with the RTL). Because we wait on the
+          // negedge when updating cycle_counter above, we know we've got the "new version" of the
+          // status at this point.
+          if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute) begin
             timed_out = 1'b1;
           end else begin
             timed_out = 1'b0;
