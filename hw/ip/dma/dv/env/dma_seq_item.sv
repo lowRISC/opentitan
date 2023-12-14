@@ -216,8 +216,8 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
-  // Add a constraint on the total data size to limit the test run time; this may be disabled in
-  // some sequences.
+  // Add a (normally enabled) constraint on the total data size to limit the test run time;
+  // disabled in some sequences to exercise longer transfers.
   constraint total_data_short_c {
     solve mem_range_limit before total_data_size;
     if (valid_dma_config) {
@@ -299,6 +299,17 @@ class dma_seq_item extends uvm_sequence_item;
     }
   }
 
+  // Add a (normally disabled) constraint to exercise 'memory buffer limit' values that are
+  // close to the transferred destination buffer (exercising both 1. within it and 2. outside it),
+  // because otherwise randomizing them within even a 32-bit address space has a low probability of
+  // coincidence.
+  constraint dst_addr_limit_nearby_c {
+    if (valid_dma_config) {
+      (dst_addr >= dst_addr_limit && dst_addr - dst_addr_limit < total_data_size) ||
+      (dst_addr_limit >= dst_addr && dst_addr_limit - dst_addr < 2 * total_data_size);
+    }
+  }
+
   constraint dst_addr_limit_c {
     // Set solver order to make sure mem buffer limit is randomized correctly in case
     // valid_dma_config is set
@@ -318,6 +329,17 @@ class dma_seq_item extends uvm_sequence_item;
           dst_addr_limit[31:0] <= ~total_data_size;  // == 32'hFFFF_FFFF - total_data_size.
         }
       }
+    }
+  }
+
+  // Add a (normally disabled) constraint to exercise 'memory buffer almost limit' values that are
+  // close to the transferred destination buffer (exercising both 1. within it and 2. outside it),
+  // because otherwise randomizing them within even a 32-bit address space has a low probability of
+  // coincidence.
+  constraint dst_addr_almost_limit_nearby_c {
+    if (valid_dma_config) {
+      (dst_addr >= dst_addr_almost_limit && dst_addr - dst_addr_almost_limit < total_data_size) ||
+      (dst_addr_almost_limit >= dst_addr && dst_addr_almost_limit - dst_addr < 2 * total_data_size);
     }
   }
 

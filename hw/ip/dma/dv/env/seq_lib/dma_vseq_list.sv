@@ -18,4 +18,5 @@
 `include "dma_stress_all_vseq.sv"
 `include "dma_short_transfer_vseq.sv"
 `include "dma_longer_transfer_vseq.sv"
+`include "dma_mem_limit_vseq.sv"
 //`include "dma_intr_vseq.sv"
