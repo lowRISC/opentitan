@@ -84,7 +84,7 @@ static titanssl_buffer_t titanssl_data_iv;
 #define TITANSSL_OUTPUT_SIZE 32
 #define TITANSSL_KEY_SIZE 0
 #define TITANSSL_IV_SIZE 0
-#define titanssl_benchmark titanssl_benchmark_sha256
+#define titanssl_benchmark titanssl_benchmark_hmac
 
 #elif TITANSSL_BENCHMARK_HMAC
 
@@ -134,58 +134,59 @@ void initialize_memory(
 {
     titanssl_data_src.data = src_data;
     titanssl_data_src.n = src_n;
-    for (size_t i=0; i<src_n; i++)
-    {
-        titanssl_data_src.data[i] = 0x0;
-    }
+    for (size_t i=0; i<src_n; i++) titanssl_data_src.data[i] = 0x0;
 
     titanssl_data_dst.data = dst_data;
     titanssl_data_dst.n = dst_n;
-    for (size_t i=0; i<dst_n; i++)
-    {
-        titanssl_data_dst.data[i] = 0x0;
-    }
+    for (size_t i=0; i<dst_n; i++) titanssl_data_dst.data[i] = 0x0;
 
     titanssl_data_key.data = key_data;
     titanssl_data_key.n = key_n;
-    for (size_t i=0; i<key_n; i++)
-    {
-        titanssl_data_key.data[i] = 0x0;
-    }
+    for (size_t i=0; i<key_n; i++) titanssl_data_key.data[i] = 0x0;
 
     titanssl_data_iv.data = iv_data;
     titanssl_data_iv.n = iv_n;
-    for (size_t i=0; i<iv_n; i++)
-    {
-        titanssl_data_iv.data[i] = 0x0;
-    }
+    for (size_t i=0; i<iv_n; i++) titanssl_data_iv.data[i] = 0x0;
 }
 
-void titanssl_benchmark_sha256(
+void titanssl_benchmark_hmac(
         titanssl_buffer_t *const src,
         titanssl_buffer_t *const dst,
-        __attribute__((unused)) titanssl_buffer_t *const key,
+        titanssl_buffer_t *const key,
         __attribute__((unused)) titanssl_buffer_t *const iv)
 {
     mmio_region_t hmac;
     uint32_t reg;
     const uint8_t *dp;
 
-    // Initialize HMAC IP base address
+    // Get the HMAC IP base address
     hmac = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
 
-    // Initialize HMAC IP in SHA256 mode, with digest and message in little-endian mode
-    reg = mmio_region_read32(
-        hmac,
-        HMAC_CFG_REG_OFFSET
-    );
+    // Initialize HMAC IP with digest and message in little-endian mode
+    reg = mmio_region_read32(hmac, HMAC_CFG_REG_OFFSET);
+#if TITANSSL_BENCHMARK_SHA256
     reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
     reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
     reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
     reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
     mmio_region_write32(hmac, HMAC_CFG_REG_OFFSET, reg);
+#elif TITANSSL_BENCHMARK_HMAC
+    mmio_region_write32(hmac, HMAC_KEY_0_REG_OFFSET, key->data[0]);
+    mmio_region_write32(hmac, HMAC_KEY_1_REG_OFFSET, key->data[1]);
+    mmio_region_write32(hmac, HMAC_KEY_2_REG_OFFSET, key->data[2]);
+    mmio_region_write32(hmac, HMAC_KEY_3_REG_OFFSET, key->data[3]);
+    mmio_region_write32(hmac, HMAC_KEY_4_REG_OFFSET, key->data[4]);
+    mmio_region_write32(hmac, HMAC_KEY_5_REG_OFFSET, key->data[5]);
+    mmio_region_write32(hmac, HMAC_KEY_6_REG_OFFSET, key->data[6]);
+    mmio_region_write32(hmac, HMAC_KEY_7_REG_OFFSET, key->data[7]);
+    reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
+    reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
+    reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
+    reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, true);
+    mmio_region_write32(hmac, HMAC_CFG_REG_OFFSET, reg);
+#endif
 
-    // Start SHA256 operations
+    // Start operations
     mmio_region_nonatomic_set_bit32(hmac, HMAC_CMD_REG_OFFSET, HMAC_CMD_HASH_START_BIT);
 
     // Compute SHA256, assuming the payload address is 4-bytes aligned
@@ -197,71 +198,40 @@ void titanssl_benchmark_sha256(
 
         // Compute how many bytes need will be pushed into the accelerator FIFO.
         n_bytes = 16 * sizeof(uint32_t);
-        if (n_bytes > src->data + src->n - dp)
-        {
-            n_bytes = src->data + src->n - dp;
-        }
+        if (n_bytes > src->data + src->n - dp) n_bytes = src->data + src->n - dp;
         n_words = n_bytes >> 2;
         n_bytes = n_bytes & 0x3;
 
         // Wait for the accelerator fifo to be empty.
-        while(!mmio_region_get_bit32(
-            hmac,
-            HMAC_STATUS_REG_OFFSET,
-            HMAC_STATUS_FIFO_EMPTY_BIT
-        ));
+        while(!mmio_region_get_bit32(hmac, HMAC_STATUS_REG_OFFSET, HMAC_STATUS_FIFO_EMPTY_BIT));
 
         // Push data into the FIFO.
         for (size_t i=0; i<n_words; i++)
         {
-            mmio_region_write32(
-                hmac,
-                HMAC_MSG_FIFO_REG_OFFSET,
-                *(uint32_t*)dp
-            );
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, *(uint32_t*)dp);
             dp += sizeof(uint32_t);
         }
         for (size_t i=0; i<n_bytes; i++)
         {
-            mmio_region_write8(
-                hmac,
-                HMAC_MSG_FIFO_REG_OFFSET,
-                *dp
-            );
+            mmio_region_write8(hmac, HMAC_MSG_FIFO_REG_OFFSET, *dp);
             dp += 1;
         }
     }
-    mmio_region_nonatomic_set_bit32(
-        hmac,
-        HMAC_CMD_REG_OFFSET,
-        HMAC_CMD_HASH_PROCESS_BIT
-    );
-    while (!mmio_region_get_bit32(
-        hmac,
-        HMAC_INTR_STATE_REG_OFFSET,
-        HMAC_INTR_STATE_HMAC_DONE_BIT
-    ));
+    mmio_region_nonatomic_set_bit32(hmac, HMAC_CMD_REG_OFFSET, HMAC_CMD_HASH_PROCESS_BIT);
 
     // Wait for SHA-256 completion
-    while (!mmio_region_get_bit32(
-        hmac,
-        HMAC_INTR_STATE_REG_OFFSET,
-        HMAC_INTR_STATE_HMAC_DONE_BIT
-    ));
-    mmio_region_nonatomic_set_bit32(
-        hmac,
-        HMAC_INTR_STATE_REG_OFFSET,
-        HMAC_INTR_STATE_HMAC_DONE_BIT
-    );
+    while (!mmio_region_get_bit32(hmac, HMAC_INTR_STATE_REG_OFFSET, HMAC_INTR_STATE_HMAC_DONE_BIT));
+    mmio_region_nonatomic_set_bit32(hmac, HMAC_INTR_STATE_REG_OFFSET, HMAC_INTR_STATE_HMAC_DONE_BIT);
 
     // Copy the digest
-    for (size_t i=0; i<8; i++)
-    {
-        ((uint32_t*)(dst->data))[i] = mmio_region_read32(
-            hmac,
-            HMAC_DIGEST_7_REG_OFFSET - i*sizeof(uint32_t)
-        );
-    }
+    ((uint32_t*)(dst->data))[0] = mmio_region_read32(hmac, HMAC_DIGEST_0_REG_OFFSET);
+    ((uint32_t*)(dst->data))[1] = mmio_region_read32(hmac, HMAC_DIGEST_1_REG_OFFSET);
+    ((uint32_t*)(dst->data))[2] = mmio_region_read32(hmac, HMAC_DIGEST_2_REG_OFFSET);
+    ((uint32_t*)(dst->data))[3] = mmio_region_read32(hmac, HMAC_DIGEST_3_REG_OFFSET);
+    ((uint32_t*)(dst->data))[4] = mmio_region_read32(hmac, HMAC_DIGEST_4_REG_OFFSET);
+    ((uint32_t*)(dst->data))[5] = mmio_region_read32(hmac, HMAC_DIGEST_5_REG_OFFSET);
+    ((uint32_t*)(dst->data))[6] = mmio_region_read32(hmac, HMAC_DIGEST_6_REG_OFFSET);
+    ((uint32_t*)(dst->data))[7] = mmio_region_read32(hmac, HMAC_DIGEST_7_REG_OFFSET);
 
     // Disable HMAC IP
     reg = mmio_region_read32(hmac, HMAC_CFG_REG_OFFSET);
@@ -271,94 +241,9 @@ void titanssl_benchmark_sha256(
 
     // Print the message digest, if we are in debug mode.
 #if TITANSSL_BENCHMARK_DEBUG
-	for (int i=0; i<8; i++)
+	for (int i=0; i<HMAC_PARAM_NUM_WORDS; i++)
 	{
-		printf(
-            "0x%08x\r\n",
-            ((uint32_t*)(dst->data))[i]
-        );
-        uart_wait_tx_done();
-	}
-#endif
-}
-
-void titanssl_benchmark_hmac(
-        titanssl_buffer_t *const src,
-        titanssl_buffer_t *const dst,
-        titanssl_buffer_t *const key,
-        titanssl_buffer_t *const iv)
-{
-	dif_hmac_t hmac;
-    dif_hmac_transaction_t cfg;
-	dif_result_t res;
-
-	// Initialize HMAC IP in SHA256 mode
-	res = dif_hmac_init(
-		mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR),
-		&hmac
-	);
-    cfg.digest_endianness = kDifHmacEndiannessLittle;
-    cfg.message_endianness = kDifHmacEndiannessLittle;
-   	res = dif_hmac_mode_hmac_start(
-		&hmac,
-        key->data,
-		cfg
-	);
-
-	// Compute SHA256
-    const uint8_t *kData = src->data;
-    const uint32_t kDataSize = src->n;
-    const uint8_t *dp = src->data;
-
-    while (dp - kData < kDataSize)
-    {
-        uint32_t sent_bytes;
-
-        res = dif_hmac_fifo_push(
-            &hmac,
-            dp,
-            kDataSize - (dp - kData),
-            &sent_bytes
-        );
-        dp += sent_bytes;
-
-        if (res == kDifIpFifoFull)
-        {
-            uint32_t fifo_depth;
-
-            do
-            {
-                res = dif_hmac_fifo_count_entries(
-                    &hmac,
-                    &fifo_depth
-                );
-            } while (fifo_depth != 0);
-        }
-    }
-    res = dif_hmac_process(&hmac);
-    while (!mmio_region_get_bit32(
-        hmac.base_addr,
-        HMAC_INTR_STATE_REG_OFFSET,
-        HMAC_INTR_STATE_HMAC_DONE_BIT
-    ));
-
-    // Finalize SHA256
-    do
-    {
-        res = dif_hmac_finish(
-            &hmac,
-            (dif_hmac_digest_t*)(dst->data)
-        );
-    } while(res != kDifOk);
-
-    // Print the message digest, if we are in debug mode.
-#if TITANSSL_BENCHMARK_DEBUG
-	for (int i=0; i<8; i++)
-	{
-		printf(
-            "0x%08x\r\n",
-            ((uint32_t*)(dst->data))[i]
-        );
+		printf("0x%08x\r\n", ((uint32_t*)(dst->data))[i]);
         uart_wait_tx_done();
 	}
 #endif
