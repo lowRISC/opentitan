@@ -1160,7 +1160,8 @@ module dma
   assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
   // Data was moved if we get a write valid response
-  assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite));
+  assign data_move_state_valid = (write_rsp_valid && (ctrl_state_q == DmaSendWrite ||
+                                                      ctrl_state_q == DmaWaitWriteResponse));
 
   assign data_move_state = (ctrl_state_q == DmaSendWrite)         ||
                            (ctrl_state_q == DmaWaitWriteResponse) ||
