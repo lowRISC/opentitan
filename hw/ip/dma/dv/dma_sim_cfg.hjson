@@ -87,6 +87,12 @@
       reseed: 5
     }
     {
+      name: dma_mem_limit
+      uvm_test_seq: dma_mem_limit_vseq
+      run_opts: ["+dma_dv_waive_system_bus=1"]
+      reseed: 5
+    }
+    {
       name: dma_generic_stress
       uvm_test_seq: dma_generic_stress_vseq
       run_opts: ["+dma_dv_waive_system_bus=1", "+test_timeout_ns=300_000_000_000"]
