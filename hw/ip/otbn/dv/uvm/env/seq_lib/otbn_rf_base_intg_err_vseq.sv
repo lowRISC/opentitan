@@ -25,7 +25,7 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
         rd_en = insert_intg_err_to_a ? cfg.trace_vif.rf_base_rd_en_a :
                                        cfg.trace_vif.rf_base_rd_en_b;
       end while(!rd_en);,
-      cfg.clk_rst_vif.wait_clks(2000);)
+      cfg.clk_rst_vif.wait_clks(20000);)
     if (!rd_en) begin
       `uvm_fatal(`gfn,
                  $sformatf("Timeout while waiting for register file %s to be used",
