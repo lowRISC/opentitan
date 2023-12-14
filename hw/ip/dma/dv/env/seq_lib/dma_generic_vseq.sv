@@ -124,8 +124,21 @@ class dma_generic_vseq extends dma_base_vseq;
     clear_interrupts(1 << DMA_ERROR);
   endtask
 
+  // A small number of constraints are disabled by default to allow greater variability in the
+  // configuration; they may be enabled in specific derived sequences to ensure collisions between
+  // - say - a couple of 32-bit address ranges which would ordinarily be very unlikely to
+  // coincide.
+  virtual function void set_default_constraints();
+    dma_config.dst_addr_limit_nearby_c.constraint_mode(0);
+    dma_config.dst_addr_almost_limit_nearby_c.constraint_mode(0);
+  endfunction
+
   virtual task body();
     super.body();
+
+    // The majority of constraints on the DMA configuration are enabled in all sequences, but a
+    // small number need to be disabled in normal operation.
+    set_default_constraints();
 
     for (uint i = 0; i < num_iters; i++) begin
       randomize_iter_config(dma_config);
