@@ -29,7 +29,7 @@ The connectivity verification is mainly used for exhaustively verifying system-l
 User can specify the connection ports via a CSV format file in `hw/top_earlgrey/formal/conn_csvs` folder.
 User can trigger top_earlgrey's connectivity test using `dvsim`:
 ```
-util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfgs.hjson
+util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
 ```
 
 The connectivity testplan is documented under `hw/top_earlgrey/data/chip_conn_testplan.hjson`.
