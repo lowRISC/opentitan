@@ -68,6 +68,9 @@ pub struct CodegenCommand {
     /// Output file for H header.
     #[arg(long, required_unless_present = "output_dir")]
     output_h: Option<PathBuf>,
+    /// Output file for C++ unittest.
+    #[arg(long)]
+    output_unittest: Option<PathBuf>,
 }
 
 impl CommandDispatch for CodegenCommand {
@@ -99,6 +102,11 @@ impl CommandDispatch for CodegenCommand {
         let codegen = codegen::generate_cert(&self.template.display().to_string(), &template)?;
         writeln!(output_c, "{}", codegen.source_c)?;
         writeln!(output_h, "{}", codegen.source_h)?;
+
+        if let Some(output_unittest) = &self.output_unittest {
+            let mut output_unittest = File::create(output_unittest)?;
+            writeln!(output_unittest, "{}", codegen.source_unittest)?;
+        }
 
         Ok(None)
     }
