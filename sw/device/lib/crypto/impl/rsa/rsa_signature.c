@@ -18,14 +18,6 @@
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'v')
 
 /**
- * Constant empty seed material for the entropy complex.
- */
-static const entropy_seed_material_t kEntropyEmptySeed = {
-    .len = 0,
-    .data = {0},
-};
-
-/**
  * Ensure that the digest type matches the length and is supported.
  *
  * Accepts only SHA-2 and SHA-3 family hash functions (XOFs such as SHAKE are

@@ -19,6 +19,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'e', 'n')
 
+const entropy_seed_material_t kEntropyEmptySeed = {
+    .len = 0,
+    .data = {0},
+};
+
 enum {
   kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
   kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
