@@ -155,7 +155,7 @@ def verilator_params(
         "--interface=verilator",
         "--verilator-bin=$(location @//hw/top_darjeeling:verilator)",
         "--verilator-rom=$(location {rom})",
-        "--verilator-second-rom=$(location {second_rom})",
+        "--verilator-rom1=$(location {second_rom})",
         # TODO: we need to split the build rules here so that both CTN SRAM and
         # flash options can co-exist.
         "--verilator-ram-ctn=$(location {flash})",
