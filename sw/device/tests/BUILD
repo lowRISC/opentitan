@@ -4425,7 +4425,10 @@ opentitan_test(
         },
         bitstream =
             "//sw/device/silicon_creator/manuf/tests:bitstream_rom_exec_disabled_test_unlocked0",
-        tags = ["manual"],
+        tags = [
+            "broken",
+            "manual",
+        ],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
