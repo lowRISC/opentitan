@@ -138,7 +138,7 @@ def parse_declaration(hdl_raw, dut, handler):
                 buf += c
             else:
                 # end of the declaration list
-                handler(buf, dut)
+                handler(buf.rstrip(), dut)
                 hdl_raw.insert(0, ')')
                 break
         else:
