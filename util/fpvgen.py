@@ -53,7 +53,7 @@ def main():
         '-o',
         '--outdir',
         type=Path,
-        default="",
+        default=None,
         help="""Path where to place the testbench code. This is defaults to
         '../fpv' w.r.t. to the module path. For instance, if the module path is
         'hw/ip/mymod/rtl/mymod.sv', the FPV testbench would be generated under
