@@ -13,12 +13,14 @@ def _certificate_codegen_impl(ctx):
     # Output files before formatting.
     pre_c = ctx.actions.declare_file("{}.pre.c".format(basename))
     pre_h = ctx.actions.declare_file("{}.pre.h".format(basename))
+    pre_ut = ctx.actions.declare_file("{}_unittest.pre.cc".format(basename))
 
     # Final output files.
     out_c = ctx.actions.declare_file("{}.c".format(basename))
     out_h = ctx.actions.declare_file("{}.h".format(basename))
+    out_ut = ctx.actions.declare_file("{}_unittest.cc".format(basename))
     ctx.actions.run(
-        outputs = [pre_c, pre_h],
+        outputs = [pre_c, pre_h, pre_ut],
         inputs = [
             ctx.file.template,
         ],
@@ -30,13 +32,14 @@ def _certificate_codegen_impl(ctx):
             "--template={}".format(ctx.file.template.path),
             "--output-c={}".format(pre_c.path),
             "--output-h={}".format(pre_h.path),
+            "--output-unittest={}".format(pre_ut.path),
         ],
         executable = tc.tools.opentitantool,
         mnemonic = "GenCertTemplate",
     )
 
     # Format files
-    format_list = {out_c: pre_c, out_h: pre_h}
+    format_list = {out_c: pre_c, out_h: pre_h, out_ut: pre_ut}
     for (out, pre) in format_list.items():
         ctx.actions.run_shell(
             outputs = [out],
@@ -46,10 +49,11 @@ def _certificate_codegen_impl(ctx):
         )
 
     return [
-        DefaultInfo(files = depset([out_c, out_h])),
+        DefaultInfo(files = depset([out_c, out_h, out_ut])),
         OutputGroupInfo(
             sources = depset([out_c]),
             headers = depset([out_h]),
+            unittest = depset([out_ut]),
         ),
     ]
 
@@ -101,11 +105,26 @@ def certificate_template(name, template):
         output_group = "headers",
     )
 
+    native.filegroup(
+        name = "{}_unittest_srcs".format(name),
+        srcs = [":{}".format(name)],
+        output_group = "unittest",
+    )
+
     native.cc_library(
         name = "{}_library".format(name),
         srcs = [":{}_srcs".format(name)],
         hdrs = [":{}_hdrs".format(name)],
         deps = [
             ":asn1",
+        ],
+    )
+
+    native.cc_test(
+        name = "{}_unittest".format(name),
+        srcs = [":{}_unittest_srcs".format(name)],
+        deps = [
+            ":{}_library".format(name),
+            "@googletest//:gtest_main",
         ],
     )

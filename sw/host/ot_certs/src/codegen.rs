@@ -12,7 +12,9 @@ use std::fmt::Write;
 
 use crate::asn1::codegen::{self, ConstantPool, VariableCodegenInfo, VariableInfo};
 use crate::asn1::x509::X509;
+use crate::template::subst::{Subst, SubstValue};
 use crate::template::{EcdsaSignature, Signature, Template, Value, Variable, VariableType};
+use crate::x509;
 
 const INDENT: &str = "  ";
 
@@ -21,6 +23,8 @@ pub struct Codegen {
     pub source_h: String,
     /// Code containing the template and setters.
     pub source_c: String,
+    /// Code containing the unittest.
+    pub source_unittest: String,
 }
 
 /// Generate the certificate template header and source file.
@@ -54,6 +58,7 @@ pub struct Codegen {
 pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let mut source_c = String::new();
     let mut source_h = String::new();
+    let mut source_unittest = String::new();
 
     let license_and_warning = indoc::formatdoc! { r#"
     // Copyright lowRISC contributors.
@@ -171,7 +176,119 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 
     writeln!(source_h, "\n#endif /* __{}__ */", preproc_guard_include)?;
 
-    Ok(Codegen { source_h, source_c })
+    // Generate unittest.
+    let unittest_data = tmpl.random_test()?;
+    let expected_cert = x509::generate_certificate(&tmpl.subst(&unittest_data)?)?;
+
+    source_unittest.push_str(&license_and_warning);
+    source_unittest.push('\n');
+    source_unittest.push_str("extern \"C\" {\n");
+    writeln!(source_unittest, "#include \"{}.h\"", tmpl.name)?;
+    source_unittest.push_str("}\n");
+    source_unittest.push_str("#include \"gtest/gtest.h\"\n\n");
+
+    // Generate constants holding the data.
+    for (var_name, data) in unittest_data.values {
+        match data {
+            SubstValue::ByteArray(bytes) => {
+                writeln!(
+                    source_unittest,
+                    "uint8_t g_{var_name}[] = {{ {} }};",
+                    bytes
+                        .iter()
+                        .map(|x| format!("{:#02x}", x))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )?;
+            }
+            SubstValue::String(s) => writeln!(source_unittest, "char g_{var_name}[] = \"{s}\";")?,
+            SubstValue::Int32(val) => writeln!(source_unittest, "uint32_t g_{var_name} = {val};")?,
+        }
+    }
+    // Generate structure to hold the TBS data.
+    source_unittest.push('\n');
+    writeln!(source_unittest, "{tbs_value_struct_name} g_tbs_values = {{")?;
+    for (var_name, var_type) in tbs_vars {
+        let (codegen, _) = c_variable_info(&var_name, "", &var_type);
+        match codegen {
+            VariableCodegenInfo::Pointer {
+                ptr_expr,
+                size_expr,
+            } => {
+                writeln!(source_unittest, "{INDENT}.{ptr_expr} = g_{var_name},")?;
+                writeln!(
+                    source_unittest,
+                    "{INDENT}.{size_expr} = sizeof(g_{var_name}),"
+                )?
+            }
+            VariableCodegenInfo::Int32 { value_expr } => {
+                writeln!(source_unittest, "{INDENT}.{value_expr} = g_{var_name},")?
+            }
+        }
+    }
+    source_unittest.push_str("};\n");
+    // Generate buffer for the TBS data.
+    source_unittest.push('\n');
+    writeln!(
+        source_unittest,
+        "uint8_t g_{tbs_binary_val_name}[{max_tbs_size}];"
+    )?;
+    // Generate structure to hold the certificate data.
+    source_unittest.push('\n');
+    writeln!(source_unittest, "{sig_value_struct_name} g_sig_values = {{")?;
+    for (var_name, var_type) in sig_vars {
+        let (codegen, _) = c_variable_info(&var_name, "", &var_type);
+        // The TBS variable is special
+        match codegen {
+            VariableCodegenInfo::Pointer {
+                ptr_expr,
+                size_expr,
+            } => {
+                writeln!(source_unittest, "{INDENT}.{ptr_expr} = g_{var_name},")?;
+                writeln!(
+                    source_unittest,
+                    "{INDENT}.{size_expr} = sizeof(g_{var_name}),"
+                )?;
+            }
+            VariableCodegenInfo::Int32 { value_expr } => {
+                writeln!(source_unittest, "{INDENT}.{value_expr} = g_{var_name},\n")?;
+            }
+        }
+    }
+    source_unittest.push_str("};\n");
+    // Generate buffer for the certificate data.
+    source_unittest.push('\n');
+    writeln!(source_unittest, "uint8_t g_cert_data[{max_cert_size}];\n")?;
+    // Generate expected result.
+    writeln!(
+        source_unittest,
+        "const uint8_t kExpectedCert[{}] = {{ {} }};\n",
+        expected_cert.len(),
+        expected_cert
+            .iter()
+            .map(|x| format!("{:#02x}", x))
+            .collect::<Vec<_>>()
+            .join(", ")
+    )?;
+    source_unittest.push('\n');
+    // Generate the body of the test.
+    source_unittest.push_str(&indoc::formatdoc!{ r#"
+        TEST({}, Verify) {{
+        {INDENT}EXPECT_EQ(kErrorOk, {generate_tbs_fn_name}(&g_tbs_values, g_{tbs_binary_val_name}, &g_sig_values.{tbs_binary_val_name}_size));
+        {INDENT}size_t cert_size = sizeof(g_cert_data);
+        {INDENT}EXPECT_EQ(kErrorOk, {generate_cert_fn_name}(&g_sig_values, g_cert_data, &cert_size));
+        {INDENT}EXPECT_EQ(cert_size, sizeof(kExpectedCert));
+        {INDENT}EXPECT_EQ(0, memcmp(g_cert_data, kExpectedCert, cert_size));
+        }}
+        "#,
+        tmpl.name.to_upper_camel_case()
+    });
+
+    Ok(Codegen {
+        source_h,
+        source_c,
+        source_unittest,
+    })
 }
 
 // Generate a structure holding the value of the variables.
