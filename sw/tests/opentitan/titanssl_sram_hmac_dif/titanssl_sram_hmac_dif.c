@@ -49,9 +49,9 @@ static titanssl_buffer_t titanssl_data_iv;
 #define TITANSSL_BENCHMARK_PAYLOAD_65536 0
 
 // Configure cryptographic operation.
-#define TITANSSL_BENCHMARK_SHA256 1
+#define TITANSSL_BENCHMARK_SHA256 0
 #define TITANSSL_BENCHMARK_HMAC   0
-#define TITANSSL_BENCHMARK_AES    0
+#define TITANSSL_BENCHMARK_AES    1
 
 /* ============================================================================
  * Benchmark automatic configuration
@@ -241,9 +241,9 @@ void titanssl_benchmark_hmac(
 
     // Print the message digest, if we are in debug mode.
 #if TITANSSL_BENCHMARK_DEBUG
-	for (int i=0; i<HMAC_PARAM_NUM_WORDS; i++)
+	for (int i=0; i<dst->n; i++)
 	{
-		printf("0x%08x\r\n", ((uint32_t*)(dst->data))[i]);
+		printf("0x%02x\r\n", dst->data[i]);
         uart_wait_tx_done();
 	}
 #endif
@@ -255,98 +255,122 @@ void titanssl_benchmark_aes(
         titanssl_buffer_t *const key,
         titanssl_buffer_t *const iv)
 {
-    dif_aes_key_share_t round_key;
-    dif_aes_iv_t round_iv;
-    dif_aes_t aes;
-    dif_aes_transaction_t cfg;
-    dif_result_t res;
+    mmio_region_t aes;
+    uint32_t reg;
+    uint8_t *dp_src;
+    uint8_t *dp_dst;
 
-	// Initialize AES IP in CBC mode
-    cfg.operation = kDifAesOperationEncrypt;
-    cfg.mode = kDifAesModeCbc;
-    cfg.key_len = kDifAesKey256;
-    cfg.key_provider = kDifAesKeySoftwareProvided;
-    cfg.mask_reseeding = kDifAesReseedPer64Block;
-    cfg.manual_operation = kDifAesManualOperationAuto;
-    cfg.reseed_on_key_change = false;
-    cfg.ctrl_aux_lock = false;
-    for (size_t i=0; i<sizeof(round_key.share0); i++)
+    // Get the AES IP base address
+    aes = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
+
+    // Reset the IP
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+    reg = bitfield_bit32_write(0, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    reg = bitfield_bit32_write(0, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
+    reg = bitfield_bit32_write(reg, AES_TRIGGER_DATA_OUT_CLEAR_BIT, true);
+    mmio_region_write32(aes, AES_TRIGGER_REG_OFFSET, reg);
+    while (!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+    reg = bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD, AES_CTRL_SHADOWED_OPERATION_MASK);
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD, AES_CTRL_SHADOWED_MODE_VALUE_AES_NONE);
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, AES_CTRL_SHADOWED_KEY_LEN_MASK);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+
+    // Initialize AES IP configurations
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+    reg = bitfield_field32_write(0, AES_CTRL_SHADOWED_OPERATION_FIELD, AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC);
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_MODE_FIELD, AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_PRNG_RESEED_RATE_FIELD, AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_64);
+    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, false);
+    reg = bitfield_bit32_write(reg, AES_CTRL_SHADOWED_SIDELOAD_BIT, false);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+
+    // Initialize AES IP auxiliary configurations
+    reg = bitfield_bit32_write(0, AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, false);
+    reg = bitfield_bit32_write(reg, AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, false);
+    mmio_region_write32(aes, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_AUX_REGWEN_REG_OFFSET, true);
+
+    // Initialize key shares
+    mmio_region_write32(aes, AES_KEY_SHARE0_0_REG_OFFSET, ((uint32_t*)(key->data))[0]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_1_REG_OFFSET, ((uint32_t*)(key->data))[1]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_2_REG_OFFSET, ((uint32_t*)(key->data))[2]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_3_REG_OFFSET, ((uint32_t*)(key->data))[3]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_4_REG_OFFSET, ((uint32_t*)(key->data))[4]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_5_REG_OFFSET, ((uint32_t*)(key->data))[5]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_6_REG_OFFSET, ((uint32_t*)(key->data))[6]);
+    mmio_region_write32(aes, AES_KEY_SHARE0_7_REG_OFFSET, ((uint32_t*)(key->data))[7]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_0_REG_OFFSET, ((uint32_t*)(key->data))[0]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_1_REG_OFFSET, ((uint32_t*)(key->data))[1]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_2_REG_OFFSET, ((uint32_t*)(key->data))[2]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_3_REG_OFFSET, ((uint32_t*)(key->data))[3]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_4_REG_OFFSET, ((uint32_t*)(key->data))[4]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_5_REG_OFFSET, ((uint32_t*)(key->data))[5]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_6_REG_OFFSET, ((uint32_t*)(key->data))[6]);
+    mmio_region_write32(aes, AES_KEY_SHARE1_7_REG_OFFSET, ((uint32_t*)(key->data))[7]);
+
+    // Initialize IV
+    reg = mmio_region_read32(aes, AES_CTRL_SHADOWED_REG_OFFSET);
+    reg = bitfield_field32_read(reg, AES_CTRL_SHADOWED_MODE_FIELD);
+    if (reg != AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB)
     {
-        round_key.share0[i] = key->data[i];
-        round_key.share1[i] = key->data[i];
+        while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+        mmio_region_write32(aes, AES_IV_0_REG_OFFSET, ((uint32_t*)(iv->data))[0]);
+        mmio_region_write32(aes, AES_IV_1_REG_OFFSET, ((uint32_t*)(iv->data))[1]);
+        mmio_region_write32(aes, AES_IV_2_REG_OFFSET, ((uint32_t*)(iv->data))[2]);
+        mmio_region_write32(aes, AES_IV_3_REG_OFFSET, ((uint32_t*)(iv->data))[3]);
     }
-    for (size_t i=0; i<sizeof(round_iv.iv); i++)
-    {
-        round_iv.iv[i] = iv->data[i];
-    }
-    res = dif_aes_init(
-        mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), 
-        &aes
-    );
-    res = dif_aes_reset(&aes);
-    res = dif_aes_start(
-        &aes, 
-        &cfg, 
-        &round_key, 
-        &round_iv
-    );
 
     // Compute AES
-    const uint8_t *kDataSrc = src->data;
-    const uint8_t *kDataDst = dst->data;
-    size_t kDataSize = src->n;
-    uint8_t *dpSrc = src->data;
-    uint8_t *dpDst = dst->data;
-
-    mmio_region_write32(aes.base_addr, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dpSrc)[0]);
-    mmio_region_write32(aes.base_addr, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dpSrc)[1]);
-    mmio_region_write32(aes.base_addr, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dpSrc)[2]);
-    mmio_region_write32(aes.base_addr, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dpSrc)[3]);
-    while(!mmio_region_get_bit32(
-        aes.base_addr, 
-        AES_STATUS_REG_OFFSET,
-        AES_STATUS_INPUT_READY_BIT
-    ));
-    dpSrc += 16;
+    dp_src = src->data;
+    dp_dst = dst->data;
+    mmio_region_write32(aes, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dp_src)[0]);
+    mmio_region_write32(aes, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dp_src)[1]);
+    mmio_region_write32(aes, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dp_src)[2]);
+    mmio_region_write32(aes, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dp_src)[3]);
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_INPUT_READY_BIT));
+    dp_src += 16;
     
-    while (dpSrc - kDataSrc < kDataSize) {
-        mmio_region_write32(aes.base_addr, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dpSrc)[0]);
-        mmio_region_write32(aes.base_addr, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dpSrc)[1]);
-        mmio_region_write32(aes.base_addr, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dpSrc)[2]);
-        mmio_region_write32(aes.base_addr, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dpSrc)[3]);
+    while (dp_src - src->data < src->n) {
+        mmio_region_write32(aes, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dp_src)[0]);
+        mmio_region_write32(aes, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dp_src)[1]);
+        mmio_region_write32(aes, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dp_src)[2]);
+        mmio_region_write32(aes, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dp_src)[3]);
 
-        while(!mmio_region_get_bit32(
-            aes.base_addr, 
-            AES_STATUS_REG_OFFSET,
-            AES_STATUS_OUTPUT_VALID_BIT
-        ));
-        *(uint32_t*)(dpDst+0x0) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_0_REG_OFFSET);
-        *(uint32_t*)(dpDst+0x4) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_1_REG_OFFSET);
-        *(uint32_t*)(dpDst+0x8) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_2_REG_OFFSET);
-        *(uint32_t*)(dpDst+0xc) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_3_REG_OFFSET);
-        dpDst += 16;
-        dpSrc += 16;
+        while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_OUTPUT_VALID_BIT));
+        ((uint32_t*)(dp_dst))[0] = mmio_region_read32(aes, AES_DATA_OUT_0_REG_OFFSET);
+        ((uint32_t*)(dp_dst))[1] = mmio_region_read32(aes, AES_DATA_OUT_1_REG_OFFSET);
+        ((uint32_t*)(dp_dst))[2] = mmio_region_read32(aes, AES_DATA_OUT_2_REG_OFFSET);
+        ((uint32_t*)(dp_dst))[3] = mmio_region_read32(aes, AES_DATA_OUT_3_REG_OFFSET);
+        dp_dst += 16;
+        dp_src += 16;
     }
-    while(!mmio_region_get_bit32(
-        aes.base_addr, 
-        AES_STATUS_REG_OFFSET,
-        AES_STATUS_OUTPUT_VALID_BIT
-    ));
-    *(uint32_t*)(dpDst+0x0) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_0_REG_OFFSET);
-    *(uint32_t*)(dpDst+0x4) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_1_REG_OFFSET);
-    *(uint32_t*)(dpDst+0x8) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_2_REG_OFFSET);
-    *(uint32_t*)(dpDst+0xc) = mmio_region_read32(aes.base_addr, AES_DATA_OUT_3_REG_OFFSET);
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_OUTPUT_VALID_BIT));
+    ((uint32_t*)(dp_dst))[0] = mmio_region_read32(aes, AES_DATA_OUT_0_REG_OFFSET);
+    ((uint32_t*)(dp_dst))[1] = mmio_region_read32(aes, AES_DATA_OUT_1_REG_OFFSET);
+    ((uint32_t*)(dp_dst))[2] = mmio_region_read32(aes, AES_DATA_OUT_2_REG_OFFSET);
+    ((uint32_t*)(dp_dst))[3] = mmio_region_read32(aes, AES_DATA_OUT_3_REG_OFFSET);
 
-    res = dif_aes_end(&aes);
+    // Reset operation mode, key, iv, and data registers
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+    reg = bitfield_bit32_write(0, AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    reg = bitfield_bit32_write(0, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
+    reg = bitfield_bit32_write(reg, AES_TRIGGER_DATA_OUT_CLEAR_BIT, true);
+    mmio_region_write32(aes, AES_TRIGGER_REG_OFFSET, reg);
+    while (!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
 
     // Print the message digest, if we are in debug mode.
 #if TITANSSL_BENCHMARK_DEBUG
 	for (int i=0; i<dst->n; i++)
 	{
-		printf(
-            "0x%08x\r\n",
-            ((uint32_t*)(dst->data))[i]
-        );
+		printf("0x%02x\r\n", dst->data[i]);
         uart_wait_tx_done();
 	}
 #endif
