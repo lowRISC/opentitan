@@ -268,10 +268,10 @@ static void xfer_respond_next_trans(void *ctx_void) {
 
     strcat(ctx->xfer_buf_out, "{\"Read\":{\"data\":[");
     for (int i = 0; i < (ctx->nmax - 1); i++) {
-      sprintf(value, "%d,", ctx->buf[i]);
+      sprintf(value, "%u,", (uint8_t)ctx->buf[i]);
       strcat(ctx->xfer_buf_out, value);
     }
-    sprintf(value, "%d", ctx->buf[ctx->nmax - 1]);
+    sprintf(value, "%u", (uint8_t)ctx->buf[ctx->nmax - 1]);
     strcat(ctx->xfer_buf_out, value);
     strcat(ctx->xfer_buf_out, "]}}");
   } else {
@@ -331,6 +331,7 @@ void *spidpi_create(const char *name, int listen_port, int mode, int loglevel) {
   ctx->nout = 0;
   ctx->bout = 0;
   ctx->state = SP_IDLE;
+  ctx->delay = 0;
   /* mode is CPOL << 1 | CPHA
    * cpol = 0 --> external clock matches internal
    * cpha = 0 --> drive on internal falling edge, capture on rising
@@ -440,6 +441,9 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         }
       }
       if (valid) {
+        if (buf == '\n') {
+           // Eat newlines
+        } else
         if (ctx->xfer_start) {
           ctx->xfer_buf_in[ctx->xfer_count++] = buf;
           switch (buf) {
@@ -493,6 +497,12 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
     return ctx->driving;
   }
 
+  // Create a set delay between transactions
+  if ((ctx->delay > 0)) {
+    ctx->delay--;
+    return ctx->driving;
+  }
+
   // Only get here on sck edges when active
   int internal_sck = (ctx->tick & 4) ? 1 : 0;
   int set_sck = (internal_sck ? P2D_SCK : 0);
@@ -540,18 +550,12 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
         break;
       case SP_CSFALL:
-        if (ctx->delay > 0) {
-          ctx->delay--;
-        } else {
-          // CSB low, drive SDI to first bit
-          ctx->driving =
-              (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
-          ctx->state = SP_DMOVE;
-        }
+        // CSB low, drive SDI to first bit
+        ctx->driving =
+            (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
+        ctx->state = SP_DMOVE;
         break;
       case SP_CSRISE:
-        // CSB high, clock stopped
-        ctx->driving = P2D_CSB;
         xfer_respond_next_trans(ctx);
         if ((ctx->xfer_next =
              xfer_parse_next_trans(ctx, ctx->xfer_next)) != NULL) {
@@ -561,12 +565,15 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
           ctx->bin = ctx->msbfirst ? 0x80 : 0x01;
           ctx->din = 0;
           ctx->state = SP_CSFALL;
-          ctx->delay = 0;
 #ifdef CONTROL_TRACE
           VerilatorSimCtrl::GetInstance().TraceOn();
 #endif
         } else {
+          // CSB high, clock stopped
+          ctx->driving = P2D_CSB;
           ctx->state = SP_IDLE;
+          // TODO: Make this configurable.
+          ctx->delay = 100;
           xfer_respond(ctx, false);
           xfer_reset(ctx);
         }
