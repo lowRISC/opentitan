@@ -303,6 +303,22 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "rsa_2048_encryption_functest",
+    srcs = ["rsa_2048_encryption_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
     cw310 = cw310_params(
