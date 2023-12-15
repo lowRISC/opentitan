@@ -40,6 +40,13 @@ cc_library(
 )
 
 cc_library(
+    name = "otbn_sca_commands",
+    srcs = ["otbn_sca_commands.c"],
+    hdrs = ["otbn_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "prng_sca_commands",
     srcs = ["prng_sca_commands.c"],
     hdrs = ["prng_sca_commands.h"],
