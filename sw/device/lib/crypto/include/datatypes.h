@@ -218,9 +218,11 @@ typedef enum kmac_key_mode {
  */
 typedef enum rsa_key_mode {
   // Mode RSA Sign, RSASSA-PKCS.
-  kRsaKeyModeSignPkcs = 0x9ff,
+  kRsaKeyModeSignPkcs = 0x3d4,
   // Mode RSA Sign, RSASSA-PSS.
-  kRsaKeyModeSignPss = 0xa95,
+  kRsaKeyModeSignPss = 0x761,
+  // Mode RSA Encrypt, RSAES-OAEP.
+  kRsaKeyModeEncryptOaep = 0x585,
 } rsa_key_mode_t;
 
 /**
@@ -295,6 +297,8 @@ typedef enum key_mode {
   kKeyModeRsaSignPkcs = kKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
   kKeyModeRsaSignPss = kKeyTypeRsa << 16 | kRsaKeyModeSignPss,
+  // Key is intended for RSA encryption RSAES-OAEP mode.
+  kKeyModeRsaEncryptOaep = kKeyTypeRsa << 16 | kRsaKeyModeEncryptOaep,
   // Key is intended for ECDSA mode.
   kKeyModeEcdsa = kKeyTypeEcc << 16 | kEccKeyModeEcdsa,
   // Key is intended for ECDH mode.
