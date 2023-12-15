@@ -2,11 +2,10 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Generates boilerplate code for the FPV testbench setup.
-"""
+
+"""Generates boilerplate code for the FPV testbench setup."""
+
 import argparse
-import sys
-from io import StringIO
 from pathlib import Path
 
 from mako.template import Template
@@ -67,8 +66,7 @@ def main():
         help="""Indicates whether this is a comportable IP. If yes, FPV
         assertions for the TL-UL interface and CSRs are automatically bound in
         the testbench. Note however that these CSR assertions need to be
-        generated separately using the regtool automation."""
-        )
+        generated separately using the regtool automation.""")
 
     args = parser.parse_args()
 
@@ -100,21 +98,20 @@ def main():
         # likely the correct basename of the IP
         dut.deps += ["lowrisc:ip:" + parentpath.stem]
 
-    # define template files to iterate over
-    template_files = [(Path(__file__).parent.joinpath("fpvgen/tb.sv.tpl"),                  \
-                       outpath.joinpath("tb").joinpath(mod_path.stem + "_tb.sv")),          \
-                      (Path(__file__).parent.joinpath("fpvgen/bind_fpv.sv.tpl"),             \
-                        outpath.joinpath("tb").joinpath(mod_path.stem + "_bind_fpv.sv")),    \
-                      (Path(__file__).parent.joinpath("fpvgen/assert_fpv.sv.tpl"),           \
-                        outpath.joinpath("vip").joinpath(mod_path.stem + "_assert_fpv.sv")), \
-                      (Path(__file__).parent.joinpath("fpvgen/fusesoc.core.tpl"),            \
-                        outpath.joinpath(mod_path.stem + "_fpv.core"))]
+    fpvgen_dir = Path(__file__).parent.joinpath('fpvgen')
+    tpls = [('tb.sv.tpl', 'tb', '_tb.sv'),
+            ('bind_fpv.sv.tpl', 'tb', '_bind_fpv.sv'),
+            ('assert_fpv.sv.tpl', 'vip', '_assert_fpv.sv'),
+            ('fusesoc.core.tpl', '.', '_fpv.core')]
 
-    for (tpl_file, out_file) in template_files:
-        print("Generating %s" % str(out_file))
-        out_file.parent.mkdir(parents=True, exist_ok=True)
-        tpl = Template(tpl_file.read_text())
-        out_file.write_text(tpl.render(dut=dut))
+    for rel_tpl_path, out_subdir, out_suffix in tpls:
+        tpl_path = fpvgen_dir.joinpath(rel_tpl_path)
+        out_path = outpath.joinpath(out_subdir, mod_path.stem + out_suffix)
+
+        print(f"Generating {out_path}")
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        tpl = Template(tpl_path.read_text())
+        out_path.write_text(tpl.render(dut=dut))
 
     return 0
 
