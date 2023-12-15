@@ -187,7 +187,13 @@ impl X509 {
         //
         // AttributeValue ::= ANY -- DEFINED BY AttributeType
         builder.push_seq(name_hint.clone(), |builder| {
-            for (attr_type, val) in name {
+            // Always sort the entries to have a deterministic order: use the OID as order.
+            let mut values = name
+                .iter()
+                .map(|x| (x, x.0.oid().oid().to_string()))
+                .collect::<Vec<_>>();
+            values.sort_by(|a, b| a.1.cmp(&b.1));
+            for ((attr_type, val), _) in values {
                 builder.push_set(concat_suffix(&name_hint, "set"), |builder| {
                     builder.push_seq(
                         concat_suffix(&name_hint, &attr_type.to_string()),
