@@ -1,38 +1,26 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Helper functions for parsing a systemverilog module header.
-"""
 
-from io import StringIO
-from pathlib import Path
+"""Helper functions for parsing a systemverilog module header."""
 
 
-class Param():
-    name = ""
-    datatype = ""
-    style = ""
-    value = ""
-
-    def __init__(self, name_="", datatype_="", style_="", value_=""):
-        self.name = name_
-        self.datatype = datatype_
-        self.style = style_
-        self.value = value_
+class Param:
+    def __init__(self, name, datatype, style, value):
+        self.name = name
+        self.datatype = datatype
+        self.style = style
+        self.value = value
 
 
-class Port():
-    name = ""
-    datatype = ""
-    direction = ""
-
-    def __init__(self, name_="", datatype_="", direction_=""):
-        self.name = name_
-        self.datatype = datatype_
-        self.direction = direction_
+class Port:
+    def __init__(self, name, datatype, direction):
+        self.name = name
+        self.datatype = datatype
+        self.direction = direction
 
 
-class Dut():
+class Dut:
     name = ""
     pkgs = []
     params = []
@@ -40,21 +28,10 @@ class Dut():
     deps = []
     is_cip = False
 
-    def __init__(self, name_="", pkgs_=[], ports_=[], \
-        params_=[], deps_=[], is_cip_=False):
-        self.name = name_
-        self.pkgs = pkgs_
-        self.ports = ports_
-        self.params = params_
-        self.deps = deps_
-        self.is_cip = is_cip_
-
     # filters out localparams
     def get_param_style(self, style):
-      params = []
-      for p in self.params:
-        params += [p] if p.style == style else []
-      return params
+        return [p for p in self.params if p.style == style]
+
 
 # strip // comments
 def strip_comments(buf):
