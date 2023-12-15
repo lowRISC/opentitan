@@ -24,7 +24,7 @@ ${module_header_params}
   ${module_header_ports}
 );
 % if num_techlibs > 1:
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
+  localparam prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
 % endif
 
 ${instances}
