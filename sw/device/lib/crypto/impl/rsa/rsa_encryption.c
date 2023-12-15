@@ -1,0 +1,103 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
+
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
+#include "sw/device/lib/crypto/impl/sha2/sha256.h"
+#include "sw/device/lib/crypto/impl/sha2/sha512.h"
+#include "sw/device/lib/crypto/include/hash.h"
+
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('r', 'e', 'n')
+
+status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
+                                const hash_mode_t hash_mode,
+                                const uint8_t *message, size_t message_bytelen,
+                                const uint8_t *label, size_t label_bytelen) {
+  // Encode the message.
+  rsa_2048_int_t encoded_message;
+  HARDENED_TRY(rsa_padding_oaep_encode(
+      hash_mode, message, message_bytelen, label, label_bytelen,
+      ARRAYSIZE(encoded_message.data), encoded_message.data));
+
+  // Start computing (encoded_message ^ e) mod n with a variable-time
+  // exponentiation.
+  return rsa_modexp_vartime_2048_start(&encoded_message, public_key->e,
+                                       &public_key->n);
+}
+
+status_t rsa_encrypt_2048_finalize(rsa_2048_int_t *ciphertext) {
+  return rsa_modexp_2048_finalize(ciphertext);
+}
+
+status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
+                                const rsa_2048_int_t *ciphertext) {
+  // Start computing (ciphertext ^ d) mod n.
+  return rsa_modexp_consttime_2048_start(ciphertext, &private_key->d,
+                                         &private_key->n);
+}
+
+status_t rsa_decrypt_finalize(const hash_mode_t hash_mode, const uint8_t *label,
+                              size_t label_bytelen,
+                              size_t plaintext_max_wordlen, uint8_t *plaintext,
+                              size_t *plaintext_len) {
+  // Wait for OTBN to complete and get the size for the last RSA operation.
+  size_t num_words;
+  HARDENED_TRY(rsa_modexp_wait(&num_words));
+
+  // Guard against overflow in the plaintext length checks.
+  if (plaintext_max_wordlen > UINT32_MAX / sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check that enough space has been allocated for the plaintext.
+  size_t max_plaintext_bytelen = 0;
+  HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(hash_mode, num_words,
+                                                    &max_plaintext_bytelen));
+  if (plaintext_max_wordlen <
+      ceil_div(max_plaintext_bytelen, sizeof(uint32_t))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GE(plaintext_max_wordlen * sizeof(uint32_t),
+                    max_plaintext_bytelen);
+
+  // Call the appropriate `finalize()` operation to get the recovered encoded
+  // message.
+  switch (num_words) {
+    case kRsa2048NumWords: {
+      rsa_2048_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
+      return rsa_padding_oaep_decode(
+          hash_mode, label, label_bytelen, recovered_message.data,
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+    }
+    case kRsa3072NumWords: {
+      rsa_3072_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
+      return rsa_padding_oaep_decode(
+          hash_mode, label, label_bytelen, recovered_message.data,
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+    }
+    case kRsa4096NumWords: {
+      rsa_4096_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
+      return rsa_padding_oaep_decode(
+          hash_mode, label, label_bytelen, recovered_message.data,
+          ARRAYSIZE(recovered_message.data), plaintext, plaintext_len);
+    }
+    default:
+      // Unexpected number of words; should never get here.
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
