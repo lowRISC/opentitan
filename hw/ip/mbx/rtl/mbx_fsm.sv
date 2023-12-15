@@ -62,9 +62,9 @@ module mbx_fsm #(
   assign mbx_read_o      = (ctrl_state_q == MbxRead);
   assign mbx_sys_abort_o = (ctrl_state_q == MbxSysAbortHost);
   // The transition to the abort state marks the abort interrupt generation
-  assign mbx_irq_abort_o = (ctrl_state_d == MbxSysAbortHost);
+  assign mbx_irq_abort_o = (ctrl_state_q != MbxSysAbortHost) && (ctrl_state_d == MbxSysAbortHost);
   // The transition to the read state marks the ready interrupt generation
-  assign mbx_irq_ready_o  = (ctrl_state_d == MbxRead);
+  assign mbx_irq_ready_o = (ctrl_state_q != MbxRead) && (ctrl_state_d == MbxRead);
 
   logic ombx_set_ready, ombx_clear_ready;
   // Outbound mailbox is Ready, but only if not simultaneous with the exceptional conditions that
