@@ -17,7 +17,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Enum to define padding scheme for RSA data.
+ * Enum to define padding scheme for RSA signature data.
  *
  * Values are hardened.
  */
@@ -177,14 +177,82 @@ crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
                                     hardened_bool_t *verification_result);
 
 /**
+ * Encrypts a message with RSA.
+ *
+ * The only padding scheme available is OAEP, where the hash function is a
+ * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * MGF1 with the same hash function.
+ *
+ * OAEP imposes strict limits on the length of the message (see IETF RFC 8017
+ * for details). Specifically, the message is at most k - 2*hLen - 2 bytes
+ * long, where k is the byte-length of the RSA modulus and hLen is the length
+ * of the hash function digest. If the message is too long, this function will
+ * return an error.
+ *
+ * The caller should allocate space for the `ciphertext` buffer and set the
+ * length of expected output in the `len` field of `signature`. The ciphertext
+ * is always the same length as the RSA modulus (so an RSA-2048 ciphertext is
+ * always 2048 bits long). If the length does not match the private key mode,
+ * this function returns an error.
+ *
+ * Note: RSA encryption is included for compatibility with legacy interfaces,
+ * and is typically not recommended for modern applications because it is
+ * slower and more fragile than other encryption methods. Consult an expert
+ * before using RSA encryption.
+ *
+ * @param private_key Pointer to public key struct.
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param message Message to encrypt.
+ * @param label Label for OAEP encoding.
+ * @param[out] ciphertext Buffer for the ciphertext.
+ * @return The result of the RSA encryption operation.
+ */
+crypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
+                                     const hash_mode_t hash_mode,
+                                     crypto_const_byte_buf_t message,
+                                     crypto_const_byte_buf_t label,
+                                     crypto_word32_buf_t *ciphertext);
+
+/**
+ * Decrypts a message with RSA.
+ *
+ * The only padding scheme available is OAEP, where the hash function is a
+ * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * MGF1 with the same hash function.
+ *
+ * The caller should allocate space for the `plaintext` buffer and set the
+ * allocated length in the `len` field. The length should be at least as long
+ * as the maximum message length imposed by OAEP; that is, k - 2*hLen - 2 bytes
+ * long, where k is the byte-length of the RSA modulus and hLen is the length
+ * of the hash function digest. If the plaintext buffer is not long enough,
+ * this function will return an error.
+ *
+ * If the plaintext buffer is longer than necessary, this function will change
+ * the `len` field in `plaintext` to match the actual plaintext length. At this
+ * point, excess memory at the end of the buffer may be safely freed.
+ *
+ * Note: RSA encryption is included for compatibility with legacy interfaces,
+ * and is typically not recommended for modern applications because it is
+ * slower and more fragile than other encryption methods. Consult an expert
+ * before using RSA encryption.
+ *
+ * @param private_key Pointer to blinded private key struct.
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param ciphertext Ciphertext to decrypt.
+ * @param label Label for OAEP encoding.
+ * @param[out] plaintext Buffer for the decrypted message.
+ * @return Result of the RSA decryption operation.
+ */
+crypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
+                                     const hash_mode_t hash_mode,
+                                     crypto_const_word32_buf_t ciphertext,
+                                     crypto_const_byte_buf_t label,
+                                     crypto_byte_buf_t *plaintext);
+/**
  * Starts the asynchronous RSA key generation function.
  *
  * Initializes OTBN and starts the OTBN routine to compute the RSA
  * private key (d), RSA public key exponent (e) and modulus (n).
- *
- * Returns `kCryptoStatusOK` if the operation was successfully
- * started, or`kCryptoStatusInternalError` if the operation cannot be
- * started.
  *
  * @param size RSA size parameter.
  * @return Result of async RSA keygen start operation.
@@ -209,10 +277,6 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  *
  * Initializes OTBN and starts the OTBN routine to compute the digital
  * signature on the input message.
- *
- * Returns `kCryptoStatusOK` if the operation was successfully
- * started, or`kCryptoStatusInternalError` if the operation cannot be
- * started.
  *
  * @param private_key Pointer to blinded private key struct.
  * @param message_digest Message digest to be signed (pre-hashed).
@@ -263,6 +327,65 @@ crypto_status_t otcrypto_rsa_verify_async_start(
 crypto_status_t otcrypto_rsa_verify_async_finalize(
     const hash_digest_t *message_digest, rsa_padding_t padding_mode,
     hardened_bool_t *verification_result);
+
+/**
+ * Starts the asynchronous encryption function.
+ *
+ * See `otcrypto_rsa_encrypt` for details on the length requirements for
+ * `message`.
+ *
+ * @param private_key Pointer to public key struct.
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param message Message to encrypt.
+ * @param label Label for OAEP encoding.
+ * @return The result of the RSA encryption start operation.
+ */
+crypto_status_t otcrypto_rsa_encrypt_async_start(
+    const crypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
+    crypto_const_byte_buf_t message, crypto_const_byte_buf_t label);
+
+/**
+ * Finalizes the asynchronous encryption function.
+ *
+ * See `otcrypto_rsa_encrypt` for details on the length requirements for
+ * `ciphertext`. Infers the RSA size from `ciphertext`'s length, and will
+ * return an error if this does not match the RSA size for the current OTBN
+ * data.
+ *
+ * @param[out] ciphertext Buffer for the ciphertext.
+ * @return The result of the RSA encryption operation.
+ */
+crypto_status_t otcrypto_rsa_encrypt_async_finalize(
+    crypto_word32_buf_t *ciphertext);
+
+/**
+ * Starts the asynchronous decryption function.
+ *
+ * See `otcrypto_rsa_decrypt` for details on the length requirements for
+ * `ciphertext`.
+ *
+ * @param private_key Pointer to blinded private key struct.
+ * @param ciphertext Ciphertext to decrypt.
+ * @return Result of the RSA decryption start operation.
+ */
+crypto_status_t otcrypto_rsa_decrypt_async_start(
+    const crypto_blinded_key_t *private_key,
+    crypto_const_word32_buf_t ciphertext);
+
+/**
+ * Finalizes the asynchronous decryption function.
+ *
+ * See `otcrypto_rsa_decrypt` for details on the requirements for `plaintext`
+ * length and the way in which the actual length of the plaintext is returned.
+ *
+ * @param hash_mode Hash function to use for OAEP encoding.
+ * @param label Label for OAEP encoding.
+ * @param[out] plaintext Buffer for the decrypted message.
+ * @return Result of the RSA decryption finalize operation.
+ */
+crypto_status_t otcrypto_rsa_decrypt_async_finalize(
+    const hash_mode_t hash_mode, crypto_const_byte_buf_t label,
+    crypto_byte_buf_t *plaintext);
 
 #ifdef __cplusplus
 }  // extern "C"
