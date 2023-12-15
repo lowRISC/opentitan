@@ -76,6 +76,7 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )

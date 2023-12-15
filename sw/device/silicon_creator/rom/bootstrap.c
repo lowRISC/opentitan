@@ -4,9 +4,8 @@
 
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
-#include <stdalign.h>
+#include <string.h>
 
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
@@ -16,20 +15,16 @@
 #include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 
-#include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 enum {
   /*
-   * Maximum flash address, exclusive.
+   * Maximum ctn sram address, exclusive.
    */
-  kMaxAddress =
-      FLASH_CTRL_PARAM_BYTES_PER_BANK * FLASH_CTRL_PARAM_REG_NUM_BANKS,
+  kMaxAddress = TOP_DARJEELING_RAM_CTN_SIZE_BYTES,
 };
-
-static_assert(FLASH_CTRL_PARAM_REG_NUM_BANKS == 2, "Flash must have 2 banks");
 
 /**
  * Bootstrap states.
@@ -65,36 +60,27 @@ typedef enum bootstrap_state {
 } bootstrap_state_t;
 
 /**
- * Handles access permissions and erases both data banks of the embedded flash.
+ * Handles access permissions and erases both data banks of the ctn sram.
  *
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_chip_erase(void) {
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
-  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                            kFlashCtrlEraseTypeBank);
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+  memset((void *)TOP_DARJEELING_RAM_CTN_BASE_ADDR,
+         0x0, TOP_DARJEELING_RAM_CTN_SIZE_BYTES);
 
-  HARDENED_RETURN_IF_ERROR(err_0);
-  return err_1;
+  return kErrorOk;
 }
 
 /**
  * Handles access permissions and erases a 4 KiB region in the data partition of
- * the embedded flash.
- *
- * Since OpenTitan's flash page size is 2 KiB, this function erases two
- * consecutive pages.
+ * the ctn sram.
  *
  * @param addr Address that falls within the 4 KiB region being deleted.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_sector_erase(uint32_t addr) {
-  static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
-                "Page size must be 2 KiB");
   enum {
     /**
      * Mask for truncating `addr` to the lower 4 KiB aligned address.
@@ -107,22 +93,9 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
   }
   addr &= kPageAddrMask;
 
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4True,
-  });
-  rom_error_t err_0 = flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage);
-  rom_error_t err_1 = flash_ctrl_data_erase(
-      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kFlashCtrlEraseTypePage);
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4False,
-  });
+  memset((void *)(TOP_DARJEELING_RAM_CTN_BASE_ADDR + addr), 0x0, 4096);
 
-  HARDENED_RETURN_IF_ERROR(err_0);
-  return err_1;
+  return kErrorOk;
 }
 
 /**
@@ -143,6 +116,7 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
+#if 0  // TODO: Implement for CTN SRAM
   static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_WORD) == 1,
                 "Bytes per flash word must be a power of two.");
   enum {
@@ -211,15 +185,13 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   });
 
   HARDENED_RETURN_IF_ERROR(err_0);
-  return err_1;
+#endif
+  return kErrorOk;
 }
 
 /**
  * Bootstrap state 1: Wait for an erase command and erase the data
  * partition.
- *
- * This function erases both data banks of the flash regardless of the type of
- * the erase command (CHIP_ERASE or SECTOR_ERASE).
  *
  * @param state Bootstrap state.
  * @return Result of the operation.
@@ -267,11 +239,19 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase_verify(
-      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  memset((void *)TOP_DARJEELING_RAM_CTN_BASE_ADDR,
+         0x0, TOP_DARJEELING_RAM_CTN_SIZE_BYTES);
+
+  rom_error_t err_0 = kErrorOk;
+  for (uint32_t i = 0; i < TOP_DARJEELING_RAM_CTN_SIZE_BYTES / 4; i++) {
+    uint32_t zero = 0x0;
+    if (!memcmp((void *)(TOP_DARJEELING_RAM_CTN_BASE_ADDR + 4 * i),
+                (void *)zero, 4)) {
+        err_0 = kErrorFlashCtrlDataEraseVerify;
+        break;
+    }
+  }
   HARDENED_RETURN_IF_ERROR(err_0);
-  HARDENED_RETURN_IF_ERROR(err_1);
 
   *state = kBootstrapStateProgram;
   spi_device_flash_status_clear();
@@ -289,11 +269,6 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   static_assert(alignof(spi_device_cmd_t) >= sizeof(uint32_t) &&
                     offsetof(spi_device_cmd_t, payload) >= sizeof(uint32_t),
                 "Payload must be word aligned.");
-  static_assert(
-      sizeof((spi_device_cmd_t){0}.payload) % FLASH_CTRL_PARAM_BYTES_PER_WORD ==
-          0,
-      "Payload size must be a multiple of flash word size.");
-
   HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
 
   spi_device_cmd_t cmd;
