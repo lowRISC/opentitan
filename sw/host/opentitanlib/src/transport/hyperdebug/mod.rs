@@ -58,6 +58,7 @@ pub struct Hyperdebug<T: Flavor> {
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
     current_firmware_version: Option<String>,
+    cmsis_google_capabilities: Cell<Option<u16>>,
     phantom: PhantomData<T>,
 }
 
@@ -110,6 +111,17 @@ impl<T: Flavor> Hyperdebug<T> {
     const USB_PROTOCOL_UART: u8 = 1;
     const USB_PROTOCOL_SPI: u8 = 2;
     const USB_PROTOCOL_I2C: u8 = 1;
+
+    /// CMSIS extension for HyperDebug.
+    const CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO: u8 = 0x80;
+
+    /// Sub-command for reading set of Google extension capabilities.
+    const GOOGLE_INFO_CAPABILITIES: u8 = 0x00;
+
+    // Values for capabilities bitfield
+    const GOOGLE_CAP_I2C: u16 = 0x0001;
+    const GOOGLE_CAP_I2C_DEVICE: u16 = 0x0002;
+    const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -266,6 +278,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 uarts: Default::default(),
             }),
             current_firmware_version,
+            cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
         };
         Ok(result)
@@ -330,6 +343,42 @@ impl<T: Flavor> Hyperdebug<T> {
                 "Missing one or more endpoints".to_string()
             )),
         }
+    }
+
+    fn get_cmsis_google_capabilities(&self) -> Result<u16> {
+        let Some(cmsis_interface) = self.cmsis_interface else {
+            // Since this debugger does not advertise any CMSIS USB interface at all, report no
+            // Google CMSIS extension capabilites.
+            return Ok(0);
+        };
+        if let Some(capabilities) = self.cmsis_google_capabilities.get() {
+            // Return cached value.
+            return Ok(capabilities);
+        }
+        let cmd = [
+            Self::CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO,
+            Self::GOOGLE_INFO_CAPABILITIES,
+        ];
+        self.inner
+            .usb_device
+            .borrow()
+            .write_bulk(cmsis_interface.out_endpoint, &cmd)?;
+        let mut resp = [0u8; 64];
+        let bytecount = self
+            .inner
+            .usb_device
+            .borrow()
+            .read_bulk(cmsis_interface.in_endpoint, &mut resp)?;
+        let resp = &resp[..bytecount];
+        // First byte of response is echo of the request header, second byte indicates the number
+        // of data bytes to follow.
+        ensure!(
+            bytecount >= 4 && resp[0] == Self::CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO && resp[1] >= 2,
+            TransportError::CommunicationError("Unrecognized CMSIS-DAP response".to_string())
+        );
+        let capabilities = u16::from_le_bytes([resp[2], resp[3]]);
+        self.cmsis_google_capabilities.set(Some(capabilities));
+        Ok(capabilities)
     }
 }
 
@@ -545,23 +594,30 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 .insert(name.to_string(), Rc::clone(instance));
             return Ok(Rc::clone(instance));
         }
+        let cmsis_google_capabilities = self.get_cmsis_google_capabilities()?;
         let instance: Rc<dyn Bus> = Rc::new(
-            match (self.cmsis_interface.as_ref(), self.i2c_interface.as_ref()) {
-                (Some(cmsis_interface), _) => i2c::HyperdebugI2cBus::open(
+            match (
+                cmsis_google_capabilities & Self::GOOGLE_CAP_I2C != 0,
+                self.cmsis_interface.as_ref(),
+                self.i2c_interface.as_ref(),
+            ) {
+                (true, Some(cmsis_interface), _) => i2c::HyperdebugI2cBus::open(
                     &self.inner,
                     cmsis_interface,
                     true, /* cmsis_encapsulation */
+                    cmsis_google_capabilities & Self::GOOGLE_CAP_I2C_DEVICE != 0,
                     idx,
                     mode,
                 )?,
-                (None, Some(i2c_interface)) => i2c::HyperdebugI2cBus::open(
+                (_, _, Some(i2c_interface)) => i2c::HyperdebugI2cBus::open(
                     &self.inner,
                     i2c_interface,
                     false, /* cmsis_encapsulation */
+                    false, /* supports_i2c_device */
                     idx,
                     mode,
                 )?,
-                (None, None) => bail!(TransportError::InvalidInstance(
+                _ => bail!(TransportError::InvalidInstance(
                     TransportInterfaceType::I2c,
                     name.to_string()
                 )),

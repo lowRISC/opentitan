@@ -17,6 +17,7 @@ pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
     interface: BulkInterface,
     cmsis_encapsulation: bool,
+    supports_i2c_device: bool,
     bus_idx: u8,
     mode: Cell<Mode>,
     max_write_size: usize,
@@ -147,6 +148,7 @@ impl HyperdebugI2cBus {
         inner: &Rc<Inner>,
         i2c_interface: &BulkInterface,
         cmsis_encapsulation: bool,
+        supports_i2c_device: bool,
         idx: u8,
         mode: Mode,
     ) -> Result<Self> {
@@ -163,6 +165,7 @@ impl HyperdebugI2cBus {
             inner: Rc::clone(inner),
             interface: *i2c_interface,
             cmsis_encapsulation,
+            supports_i2c_device,
             bus_idx: idx,
             mode: Cell::new(mode),
             max_read_size: 0x8000,
@@ -303,6 +306,10 @@ impl Bus for HyperdebugI2cBus {
             }
             // Put I2C debugger into device mode.
             i2c::Mode::Device(addr) => {
+                ensure!(
+                    self.supports_i2c_device,
+                    TransportError::UnsupportedOperation,
+                );
                 self.inner
                     .cmd_no_output(&format!("i2c set mode {} device {}", &self.bus_idx, addr))?;
                 self.mode.set(Mode::Device);
@@ -380,7 +387,7 @@ impl Bus for HyperdebugI2cBus {
 
     fn get_device_status(&self, timeout: Duration) -> Result<DeviceStatus> {
         ensure!(
-            self.cmsis_encapsulation,
+            self.cmsis_encapsulation && self.supports_i2c_device,
             TransportError::UnsupportedOperation
         );
         ensure!(self.mode.get() == Mode::Device, I2cError::NotInDeviceMode);
@@ -470,7 +477,7 @@ impl Bus for HyperdebugI2cBus {
 
     fn prepare_read_data(&self, data: &[u8], sticky: bool) -> Result<()> {
         ensure!(
-            self.cmsis_encapsulation,
+            self.cmsis_encapsulation && self.supports_i2c_device,
             TransportError::UnsupportedOperation
         );
         ensure!(self.mode.get() == Mode::Device, I2cError::NotInDeviceMode);
