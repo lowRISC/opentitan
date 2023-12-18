@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
+use byteorder::WriteBytesExt;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::mem::size_of;
 use std::rc::Rc;
+use zerocopy::{FromBytes, FromZeroes};
 
 use crate::io::gpio::{
     ClockNature, Edge, GpioError, GpioMonitoring, GpioPin, MonitoringEvent, MonitoringReadResponse,
     MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::hyperdebug::Inner;
+use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::TransportError;
 
 pub struct HyperdebugGpioPin {
@@ -145,14 +148,64 @@ impl GpioPin for HyperdebugGpioPin {
     }
 }
 
+const USB_MAX_SIZE: usize = 64;
+
+/// HyperDebug supports retreiving a transcript of events on a set of monitored GPIO pins either
+/// through its textual console, or for improved performance, through a vendor extension to the
+/// binary CMSIS-DAP endpoint.
+///
+/// This struct describes the binary header of the response (following the one-byte CMSIS-DAP
+/// response header), after which the transcript data will follow.  The protocol is designed to
+/// allow HyperDebug to pretty much dump the contents of its internal buffer to the USB interface.
+///
+/// The data part consists of a sequence of integers in leb128 encoding.  Each integer contains
+/// the index of the signal that changed in the low bits, and the number of microseconds since
+/// last event in the high bits.  The number of bits used for encoding the signal depends on how
+/// many signals are monitored.
+///
+/// The source for the HyperDebug firmware generating these responses is here:
+/// https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/main/board/hyperdebug/gpio.c
+#[derive(FromBytes, FromZeroes, Debug)]
+#[repr(C)]
+struct RspGpioMonitoringHeader {
+    /// Size of the header as sent by HyperDebug (excluding one byte CMSIS-DAP header), will be at
+    /// least `size_of::<RspGpioMonitoringHeader>`, but future versions could add more header
+    /// fields.
+    struct_size: u16,
+    /// Status/error code, zero means success.
+    status: u16,
+    /// Bitfield containing the levels of the monitored signals as of the begining of the
+    /// transcript about to be sent, starting from the lest significant bit.
+    start_levels: u16,
+    /// Number of data bytes following this header.
+    transcript_size: u16,
+    /// Timestamp when the monitoring was originally started (will be the same in subsequent
+    /// responses).
+    start_timestamp: u64,
+    /// Timestamp when the current transcript ends (will be different in subsequenct responses).
+    end_timestamp: u64,
+}
+
 pub struct HyperdebugGpioMonitoring {
     inner: Rc<Inner>,
+    cmsis_interface: Option<BulkInterface>,
 }
 
 impl HyperdebugGpioMonitoring {
-    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
+    /// CMSIS extension for HyperDebug GPIO.
+    const CMSIS_DAP_CUSTOM_COMMAND_GPIO: u8 = 0x83;
+
+    /// Sub-command for reading list of GPIO edge events
+    const GPIO_MONITORING_READ: u8 = 0x00;
+
+    // Some of the possible values for RspGpioMonitoringHeader.status
+    const MON_SUCCESS: u16 = 0;
+    const MON_BUFFER_OVERRUN: u16 = 5;
+
+    pub fn open(inner: &Rc<Inner>, cmsis_interface: Option<BulkInterface>) -> Result<Self> {
         Ok(Self {
             inner: Rc::clone(inner),
+            cmsis_interface,
         })
     }
 }
@@ -220,6 +273,119 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                     .ok_or(TransportError::InvalidOperation)?,
             );
         }
+
+        if let Some(cmsis_interface) = self.cmsis_interface {
+            // HyperDebug firmware supports binary protocol for retrieving list of events, use
+            // that for greatly improved performance.
+
+            let mut pkt = Vec::<u8>::new();
+            pkt.write_u8(Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO)?;
+            pkt.write_u8(Self::GPIO_MONITORING_READ)?;
+            pkt.write_u8(pin_names.len().try_into()?)?;
+            for pin_name in &pin_names {
+                pkt.write_u8(pin_name.len().try_into()?)?;
+                pkt.extend_from_slice(pin_name.as_bytes());
+            }
+            self.inner
+                .usb_device
+                .borrow()
+                .write_bulk(cmsis_interface.out_endpoint, &pkt)?;
+
+            let mut databytes: Vec<u8> =
+                vec![0u8; 1 + size_of::<RspGpioMonitoringHeader>() + USB_MAX_SIZE];
+            let mut bytecount = 0;
+
+            while bytecount < 1 + size_of::<RspGpioMonitoringHeader>() {
+                let read_count = self.inner.usb_device.borrow().read_bulk(
+                    cmsis_interface.in_endpoint,
+                    &mut databytes[bytecount..][..USB_MAX_SIZE],
+                )?;
+                ensure!(
+                    read_count > 0,
+                    TransportError::CommunicationError("Truncated GPIO response".to_string())
+                );
+                bytecount += read_count;
+            }
+            ensure!(
+                databytes[0] == Self::CMSIS_DAP_CUSTOM_COMMAND_GPIO,
+                TransportError::CommunicationError(
+                    "Unrecognized CMSIS-DAP response to GPIO request".to_string()
+                )
+            );
+            let resp: RspGpioMonitoringHeader =
+                FromBytes::read_from_prefix(&databytes[1..]).unwrap();
+            ensure!(
+                resp.struct_size as usize >= size_of::<RspGpioMonitoringHeader>(),
+                TransportError::CommunicationError(
+                    "Short CMSIS-DAP response to GPIO request".to_string()
+                )
+            );
+            let header_bytes = resp.struct_size as usize + 1;
+            databytes.resize(header_bytes + resp.transcript_size as usize, 0u8);
+
+            while bytecount < databytes.len() {
+                let c = self
+                    .inner
+                    .usb_device
+                    .borrow()
+                    .read_bulk(cmsis_interface.in_endpoint, &mut databytes[bytecount..])?;
+                bytecount += c;
+            }
+
+            match resp.status {
+                Self::MON_SUCCESS => (),
+                Self::MON_BUFFER_OVERRUN => bail!(TransportError::CommunicationError(
+                    "HyperDebug GPIO monitoring buffer overrun".to_string()
+                )),
+                n => bail!(TransportError::CommunicationError(format!(
+                    "Unexpected HyperDebug GPIO error: {}",
+                    n
+                ))),
+            }
+
+            // Figure out how many of the low bits are used for storing the index of the signal
+            // hanving changed. (If only one signal, no bits are used, if two signals, then one
+            // bit is used, if three or four, then two bits are used, etc.)
+            let signal_bits = 32 - (pin_names.len() as u32 - 1).leading_zeros();
+            let signal_mask = (1u64 << signal_bits) - 1;
+
+            let mut cur_time: u64 = resp.start_timestamp;
+            let mut cur_levels = resp.start_levels;
+            let mut events = Vec::new();
+            let mut idx = header_bytes;
+
+            // Now decode the list of events, each consisting of a variable legnth encoded 64-bit
+            // integer.
+            while idx < databytes.len() {
+                let value = decode_leb128(&mut idx, &databytes)?;
+
+                // The 64-bit value consists of two parts, the lower `signal_bits` bits indicate
+                // which signal had an edge, the upper bits indicate the number of microseconds
+                // since the previous event (on any signal, not necessarily on that same one).
+                cur_time += value >> signal_bits;
+                let signal_index = (value & signal_mask) as u8;
+                cur_levels ^= 1 << signal_index;
+                events.push(MonitoringEvent {
+                    signal_index,
+                    edge: if cur_levels & (1 << signal_index) == 0 {
+                        Edge::Falling
+                    } else {
+                        Edge::Rising
+                    },
+                    timestamp: cur_time,
+                });
+            }
+
+            if !continue_monitoring {
+                self.inner
+                    .cmd_no_output(&format!("gpio monitoring stop {}", pin_names.join(" ")))?;
+            }
+            return Ok(MonitoringReadResponse {
+                events,
+                timestamp: resp.end_timestamp,
+            });
+        }
+
         static START_TIME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new("^ +@([0-9]+)").unwrap());
         static EDGE_REGEX: Lazy<Regex> =
             Lazy::new(|| Regex::new("^ +([0-9]+) (-?[0-9]+) ([RF])").unwrap());
@@ -227,6 +393,7 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
         let mut events = Vec::new();
         loop {
             let mut more_data = false;
+            let mut buffer_overrun = false;
             let mut unexpected_output = false;
             self.inner.execute_command(
                 &format!("gpio monitoring read {}", pin_names.join(" ")),
@@ -247,6 +414,8 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                         });
                     } else if line == "Warning: more data" {
                         more_data = true;
+                    } else if line == "Error: Buffer overrun" {
+                        buffer_overrun = true;
                     } else {
                         unexpected_output = true;
                         log::error!("Unexpected HyperDebug output: {}\n", line);
@@ -256,6 +425,11 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
             if unexpected_output {
                 bail!(TransportError::CommunicationError(
                     "Unrecognized response".to_string()
+                ))
+            }
+            if buffer_overrun {
+                bail!(TransportError::CommunicationError(
+                    "HyperDebug GPIO monitoring buffer overrun".to_string()
                 ))
             }
             if !more_data {
@@ -268,7 +442,35 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
         }
         Ok(MonitoringReadResponse {
             events,
-            timestamp: reference_time, // TODO: adjust in case of event later than this timestamp
+            timestamp: reference_time,
         })
     }
+}
+
+/// Read 7 bits from each byte, least significant byte first.  High bit of one indicates more
+/// bytes belong to the same value.
+fn decode_leb128(idx: &mut usize, databytes: &[u8]) -> Result<u64> {
+    let mut i = *idx;
+    let mut value = 0u64;
+    let mut shift = 0;
+    while i < databytes.len() {
+        let byte = databytes[i];
+        value |= ((byte & 0x7F) as u64) << shift;
+        shift += 7;
+        i += 1;
+        if (byte & 0x80) == 0 {
+            *idx = i;
+            return Ok(value);
+        }
+        if shift + 7 > 64 {
+            // Too many bytes in encoding of a single integer, could overflow 64 bit unsigned.
+            bail!(TransportError::CommunicationError(
+                "Corrupt data from HyperDebug GPIO monitoring".to_string(),
+            ));
+        }
+    }
+    // End of stream "in the middle" of a multi-byte integer encoding.
+    bail!(TransportError::CommunicationError(
+        "Corrupt data from HyperDebug GPIO monitoring".to_string(),
+    ));
 }
