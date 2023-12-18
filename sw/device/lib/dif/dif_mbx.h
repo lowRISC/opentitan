@@ -82,7 +82,7 @@ dif_result_t dif_mbx_range_get(const dif_mbx_t *mbx,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx_host,
+dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx,
                                      dif_mbx_transaction_t *request);
 
 /**
