@@ -35,9 +35,9 @@ static titanssl_buffer_t buffer_key;
 
 // Configure debug mode.
 #define TITANSSL_CFG_DEBUG     1
-#define TITANSSL_CFG_MEM_L3    1
-#define TITANSSL_CFG_MEM_L1    0
-#define TITANSSL_CFG_PAYLOAD   64
+#define TITANSSL_CFG_MEM_L3    0
+#define TITANSSL_CFG_MEM_L1    1
+#define TITANSSL_CFG_PAYLOAD   1024
 #define TITANSSL_CFG_OP_SHA256 1
 #define TITANSSL_CFG_OP_HMAC   0
 
@@ -49,7 +49,7 @@ static titanssl_buffer_t buffer_key;
 #define TITANSSL_ADDR_PAYLOAD 0x80720000
 #define TITANSSL_ADDR_DIGEST  0x80740000
 #define TITANSSL_ADDR_KEY     0xe0006000
-#elif TITANSSL_BENCHMARK_L1
+#elif TITANSSL_CFG_MEM_L1
 #define TITANSSL_ADDR_PAYLOAD 0xe0002000
 #define TITANSSL_ADDR_DIGEST  0xe0004000
 #define TITANSSL_ADDR_KEY     0xe0006000
