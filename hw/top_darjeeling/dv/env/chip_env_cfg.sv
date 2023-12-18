@@ -101,6 +101,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // Chip-level DMI register model
   rand chip_soc_dbg_reg_block chip_soc_dbg_ral;
+  // Chip-level register model for mailboxes accessible through the 'mbx_tl' interface
+  rand chip_soc_mbx_reg_block chip_soc_mbx_ral;
+
+  // Connect mbx_if in the chip_if
+  // - Due to using force, this can cause some xbar tests to fail
+  bit use_mbx_if = 1'b0;
 
   // The JTAG RV debugger model.
   jtag_rv_debugger debugger;
@@ -134,6 +140,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     dv_base_reg_block soc_dbg_base_reg_block;
+    dv_base_reg_block soc_mbx_base_reg_block;
     has_devmode = 0;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
     is_chip = 1;
@@ -146,10 +153,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     en_scb_ping_chk = 0;
 
     ral_model_names.push_back("chip_soc_dbg_reg_block");
+    ral_model_names.push_back("chip_soc_mbx_reg_block");
     super.initialize(csr_base_addr);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
     soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];
     `downcast(chip_soc_dbg_ral, soc_dbg_base_reg_block);
+    soc_mbx_base_reg_block = ral_models["chip_soc_mbx_reg_block"];
+    `downcast(chip_soc_mbx_ral, soc_mbx_base_reg_block);
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
     // TODO: use a parameter (or some better way)?

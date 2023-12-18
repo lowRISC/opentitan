@@ -132,6 +132,7 @@ filesets:
       - rstmgr_cnsty_fault_if.sv
       - flash_ctrl_host_gnt_fault_if.sv
       - top_darjeeling_error_injection_ifs_bind.sv
+      - mbx_if.sv
     file_type: systemVerilogSource
 
 generate:

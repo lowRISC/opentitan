@@ -293,6 +293,10 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_chip_soc_dbg_reg_block", dut.chip_if.dmi_clk_rst_if);
 
+    // soc_mbx clk_rst_vif
+    uvm_config_db#(virtual clk_rst_if)::set(
+        null, "*.env", "clk_rst_vif_chip_soc_mbx_reg_block", dut.chip_if.sys_clk_rst_if);
+
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
     $timeformat(-6, 6, " us", 13);

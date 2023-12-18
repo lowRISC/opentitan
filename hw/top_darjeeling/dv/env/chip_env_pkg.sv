@@ -12,6 +12,7 @@ package chip_env_pkg;
   import bus_params_pkg::*;
   import chip_ral_pkg::*;
   import chip_soc_dbg_ral_pkg::*;
+  import chip_soc_mbx_ral_pkg::*;
   import chip_common_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
@@ -48,6 +49,7 @@ package chip_env_pkg;
   import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   import i2c_agent_pkg::*;
+  import mbx_soc_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
