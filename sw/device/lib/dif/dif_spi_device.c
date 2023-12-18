@@ -1608,9 +1608,7 @@ dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
   uint8_t offset = length & 0x3;  // lower two bits of length
   uint32_t rdfifo_wdata;
 
-  if (result != kDifOk) {
-    return result;
-  }
+  DIF_RETURN_IF_ERROR(result);
 
   // TODO: Ensure the received length is greater than FIFO SIZE
   if (DIF_SPI_DEVICE_TPM_FIFO_DEPTH * sizeof(uint32_t) < length) {
@@ -1639,10 +1637,7 @@ dif_result_t dif_spi_device_tpm_read_data(dif_spi_device_handle_t *spi,
     return kDifBadArg;
   }
   dif_spi_device_tpm_data_status_t status;
-  dif_result_t result = dif_spi_device_tpm_get_data_status(spi, &status);
-  if (result != kDifOk) {
-    return result;
-  }
+  DIF_RETURN_IF_ERROR(dif_spi_device_tpm_get_data_status(spi, &status));
   if (status.write_fifo_occupancy < length) {
     return kDifOutOfRange;
   }
