@@ -44,6 +44,9 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     cfg.chip_vif.dios_if.pins_pd[top_darjeeling_pkg::DioPadSpiDevD3:
                                  top_darjeeling_pkg::DioPadSpiHostD0] = '1;
 
+    // Automated csr tests will cover the chip_soc_mbx_ral, so connect it
+    cfg.chip_vif.connect_mbx_if();
+
     super.pre_start();
   endtask
 

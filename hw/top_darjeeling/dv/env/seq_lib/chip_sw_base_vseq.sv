@@ -106,6 +106,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
       cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
     end
 
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_mbox_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamMbox0 + ram_idx)].randomize_mem();
+    end
+
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
     // TODO(opentitan-integrated/issues/251):

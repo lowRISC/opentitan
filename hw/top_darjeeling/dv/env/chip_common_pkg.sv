@@ -12,6 +12,7 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_UARTS = 1;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 1;
   parameter dv_utils_pkg::uint NUM_I2CS = 1;
+  parameter dv_utils_pkg::uint NUM_MBXS = 10; // 7mbx + 1jtag + 2pcie
 
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_START_ADDR = tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG +
@@ -89,6 +90,8 @@ package chip_common_pkg;
     JtagTapRvDm = 2'b10,
     JtagTapDft = 2'b11
   } chip_jtag_tap_e;
+
+  typedef logic [3:0] mbx_intr_signals_t;
 
   // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
   // which have different enum numbering in top_darjeeling_pkg.sv.

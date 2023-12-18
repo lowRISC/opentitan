@@ -600,6 +600,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_mbx_smoketest
+      uvm_test_seq: chip_sw_mbx_smoke_vseq
+      sw_images: ["//sw/device/tests:mbx_smoketest:6"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_mbx_if=1"]
+    }
+    {
       name: chip_sw_otp_ctrl_lc_signals_test_unlocked0
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:6"]

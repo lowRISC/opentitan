@@ -379,6 +379,85 @@ interface chip_if;
     __enable_i2c[inst_num] = enable;
   endfunction
 
+  /////////////////////////////////////////////////
+  // Functional (dedicated) interfaces: mailbox(es)
+  //
+  // The TB currently instantiates 'chip_darjeeling_asic' as the DUT, but this does not
+  // patch-through the mailbox interfaces. For now, use hierarchical references to
+  // connect to these signals.
+
+  wire mbx_if_clk = `TOP_HIER.clkmgr_aon_clocks.clk_main_infra;
+  wire mbx_if_rst_n = `TOP_HIER.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel];
+  wire mbx_intr_signals_t[NUM_MBXS-1:0] mbx_interrupts;
+  mbx_if darjeeling_mbx_if(.clk(mbx_if_clk), .rst_n(mbx_if_rst_n));
+  function automatic void connect_mbx_if();
+    force darjeeling_mbx_if.interrupts    = mbx_interrupts;
+    force darjeeling_mbx_if.mbx_tl_if.d2h = `TOP_HIER.mbx_tl_rsp_o;
+    force `TOP_HIER.mbx_tl_req_i          = darjeeling_mbx_if.mbx_tl_if.h2d;
+  endfunction
+  function automatic void disconnect_mbx_if();
+    release darjeeling_mbx_if.interrupts;
+    release darjeeling_mbx_if.mbx_tl_if.d2h;
+    release `TOP_HIER.mbx_tl_req_i;
+  endfunction
+
+  // All of the mailbox signals egressing the design have unique names, which makes the
+  // process of assigning them to interfaces not ergonomic.
+  // TODO: Macroize / autogen alias array which can be iterated over
+  assign mbx_interrupts = '{
+    '{`TOP_HIER.mbx_pcie1_doe_intr_o,
+      `TOP_HIER.mbx_pcie1_doe_intr_en_o,
+      `TOP_HIER.mbx_pcie1_doe_intr_support_o,
+      `TOP_HIER.mbx_pcie1_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx_pcie0_doe_intr_o,
+      `TOP_HIER.mbx_pcie0_doe_intr_en_o,
+      `TOP_HIER.mbx_pcie0_doe_intr_support_o,
+      `TOP_HIER.mbx_pcie0_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx_jtag_doe_intr_o,
+      `TOP_HIER.mbx_jtag_doe_intr_en_o,
+      `TOP_HIER.mbx_jtag_doe_intr_support_o,
+      `TOP_HIER.mbx_jtag_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx6_doe_intr_o,
+      `TOP_HIER.mbx6_doe_intr_en_o,
+      `TOP_HIER.mbx6_doe_intr_support_o,
+      `TOP_HIER.mbx6_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx5_doe_intr_o,
+      `TOP_HIER.mbx5_doe_intr_en_o,
+      `TOP_HIER.mbx5_doe_intr_support_o,
+      `TOP_HIER.mbx5_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx4_doe_intr_o,
+      `TOP_HIER.mbx4_doe_intr_en_o,
+      `TOP_HIER.mbx4_doe_intr_support_o,
+      `TOP_HIER.mbx4_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx3_doe_intr_o,
+      `TOP_HIER.mbx3_doe_intr_en_o,
+      `TOP_HIER.mbx3_doe_intr_support_o,
+      `TOP_HIER.mbx3_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx2_doe_intr_o,
+      `TOP_HIER.mbx2_doe_intr_en_o,
+      `TOP_HIER.mbx2_doe_intr_support_o,
+      `TOP_HIER.mbx2_doe_async_msg_support_o
+      },
+    '{`TOP_HIER.mbx1_doe_intr_o,
+      `TOP_HIER.mbx1_doe_intr_en_o,
+      `TOP_HIER.mbx1_doe_intr_support_o,
+      `TOP_HIER.mbx1_doe_async_msg_support_o
+      }, // [1]
+    '{`TOP_HIER.mbx0_doe_intr_o,               // [3]
+      `TOP_HIER.mbx0_doe_intr_en_o,            // [2]
+      `TOP_HIER.mbx0_doe_intr_support_o,       // [1]
+      `TOP_HIER.mbx0_doe_async_msg_support_o   // [0]
+      }  // [0]
+    };
+
+  ///////////////////////////////////////////////////////
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.
@@ -642,6 +721,9 @@ interface chip_if;
 
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_chip_soc_dbg_reg_block*", "vif", dmi_tl_if);
+    uvm_config_db#(virtual tl_if)::set(
+        null, "*.env.m_tl_agent_chip_soc_mbx_reg_block*", "vif", darjeeling_mbx_if.mbx_tl_if);
+
     // foreach (alert_if[i]) begin
     //   uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",
     //       LIST_OF_ALERTS[i]), "vif", alert_if[i]);
@@ -659,6 +741,7 @@ interface chip_if;
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
+    disconnect_mbx_if();
     otp_ext_volt_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();

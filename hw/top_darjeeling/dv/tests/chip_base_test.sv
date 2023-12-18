@@ -73,6 +73,8 @@ class chip_base_test extends cip_base_test #(
                     $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
                                "with this LC state needs to be created first."}, cfg.use_otp_image))
 
+    void'($value$plusargs("use_mbx_if=%0b", cfg.use_mbx_if));
+
     // Set the test timeout value to be sufficiently large.
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);

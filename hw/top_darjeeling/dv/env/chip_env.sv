@@ -38,6 +38,8 @@ class chip_env extends cip_base_env #(
       !cfg.use_jtag_dmi && cfg.chip_vif.stub_cpu;
     cfg.chip_vif.configure_jtag_dmi(cfg.use_jtag_dmi || !cfg.chip_vif.stub_cpu);
 
+    if (cfg.use_mbx_if || !cfg.chip_vif.stub_cpu) cfg.chip_vif.connect_mbx_if();
+
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
       string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
       bit is_invalid;
