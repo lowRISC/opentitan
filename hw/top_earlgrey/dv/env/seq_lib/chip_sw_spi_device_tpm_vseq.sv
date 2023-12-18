@@ -65,7 +65,6 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
 
       `DV_WAIT(cfg.sw_logger_vif.printed_log == "SYNC: Waiting Read",
              "Timedout waiting for read config.")
-             
       // Read transaction
       tpm_txn (.wr(0), .addr(addr), .len(data_q.size()), .rdata_q(rdata_q));
       foreach (rdata_q[i]) begin
