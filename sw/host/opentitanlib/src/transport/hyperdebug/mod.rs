@@ -676,7 +676,20 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
         // GpioMonitoring does not carry any state, so returning a new instance every time is
         // harmless (save for some memory usage).
-        Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(&self.inner)?))
+        if self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_GPIO_MONITORING != 0 {
+            Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(
+                &self.inner,
+                self.cmsis_interface,
+            )?))
+        } else {
+            // Older HyperDebug firmware does not support GPIO monitoring via binary CMSIS-DAP
+            // protocol.  Not passing the `cmsis_interface` below forces the code to use textual
+            // console protocol as fallback.
+            Ok(Rc::new(gpio::HyperdebugGpioMonitoring::open(
+                &self.inner,
+                None,
+            )?))
+        }
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
