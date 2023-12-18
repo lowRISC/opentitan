@@ -706,6 +706,14 @@ interface chip_if;
     release `AST_HIER.adc_d_o;
   endtask
 
+  task static trigger_sensor_ctrl_wkup();
+    `uvm_info(MsgId, "forcing sensor_ctrl ast_alert_i to 1", UVM_MEDIUM)
+    force `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p = 1'b1;
+    #100us;
+    `uvm_info(MsgId, "releasing sensor_ctrl ast_alert_i", UVM_MEDIUM)
+    release `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p;
+  endtask
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
