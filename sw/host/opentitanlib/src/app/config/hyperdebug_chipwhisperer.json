@@ -8,6 +8,16 @@
       "alias_of": "CN10_29"
     },
     {
+      "name": "DFT_STRAP0",
+      "mode": "Alternate",
+      "alias_of": "IOC3"
+    },
+    {
+      "name": "DFT_STRAP1",
+      "mode": "Alternate",
+      "alias_of": "IOC4"
+    },
+    {
       "name": "IOA0",
       "alias_of": "CN8_6"
     },
@@ -236,6 +246,23 @@
     {
       "name": "console",
       "alias_of": "UART2"
+    }
+  ],
+  "strappings": [
+    {
+      "name": "PRERESET_DFT_DISABLE",
+      "pins": [
+        {
+          "name": "DFT_STRAP0",
+          "mode": "PushPull",
+          "level": false
+        },
+        {
+          "name": "DFT_STRAP1",
+          "mode": "PushPull",
+          "level": false
+        }
+      ]
     }
   ]
 }

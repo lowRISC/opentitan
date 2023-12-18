@@ -59,6 +59,7 @@ class OTDevice:
                 "sram_cp_provision_fpga_cw310_rom_with_fake_keys.elf")
         else:
             platform_flags = """--interface=hyper310 \
+--disable-dft-on-reset \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/cmsis-dap.cfg"""
             elf = elf_path.format("sram_cp_provision_silicon_creator.elf")
@@ -135,6 +136,7 @@ class OTDevice:
 
             platform_bazel_flags = "--//signing:token=//signing/tokens:nitrokey"
             platform_harness_flags = """--interface=hyper310 \
+--disable-dft-on-reset \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/cmsis-dap.cfg"""
 

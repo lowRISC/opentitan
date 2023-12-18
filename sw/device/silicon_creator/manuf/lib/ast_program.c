@@ -97,6 +97,7 @@ status_t ast_program_config(bool verbose) {
       (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page) +
       kFlashInfoFieldAstCalibrationData.byte_offset;
   uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+  TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
   TRY(flash_ctrl_testutils_read(&flash_state, byte_address,
                                 kFlashInfoFieldAstCalibrationData.partition,
                                 ast_data, kDifFlashCtrlPartitionTypeInfo,
