@@ -694,7 +694,7 @@
     {
       name: chip_sw_spi_device_tpm
       uvm_test_seq: chip_sw_spi_device_tpm_vseq
-      sw_images: ["//sw/device/tests/sim_dv:spi_device_tpm_tx_rx_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:spi_device_tpm_tx_rx_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {

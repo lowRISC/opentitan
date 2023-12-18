@@ -2956,6 +2956,50 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "spi_device_tpm_tx_rx_test",
+    srcs = ["spi_device_tpm_tx_rx_test.c"],
+    cw310 = new_cw310_params(
+        # This test requires the spi full duplex on the hyperdebug board.
+        tags = [
+            "broken",
+            "manual",
+        ],
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    silicon_owner = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_tpm_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
