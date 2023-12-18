@@ -175,6 +175,9 @@ fn main() -> Result<()> {
         }
     };
 
+    // Once we are in a mission mode, we no longer need to provide a DFT strapping sequence on
+    // every reset, as DFT is no longer enabled in mission modes.
+    transport.ignore_dft_straps_on_reset()?;
     run_ft_personalize(
         &transport,
         &opts.init,

@@ -193,6 +193,7 @@ pub struct I2cConfiguration {
 
 pub struct TransportWrapperBuilder {
     interface: String,
+    disable_dft_on_reset: bool,
     openocd_adapter_config: Option<PathBuf>,
     provides_list: Vec<(String, String)>,
     requires_list: Vec<(String, String)>,
@@ -211,6 +212,7 @@ pub struct TransportWrapperBuilder {
 // transport will have been computed from a number ConfigurationFiles.
 pub struct TransportWrapper {
     transport: Rc<dyn Transport>,
+    disable_dft_on_reset: Cell<bool>,
     openocd_adapter_config: Option<PathBuf>,
     provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
@@ -227,9 +229,10 @@ pub struct TransportWrapper {
 }
 
 impl TransportWrapperBuilder {
-    pub fn new(interface: String) -> Self {
+    pub fn new(interface: String, disable_dft_on_reset: bool) -> Self {
         Self {
             interface,
+            disable_dft_on_reset,
             openocd_adapter_config: None,
             provides_list: Vec::new(),
             requires_list: Vec::new(),
@@ -623,6 +626,7 @@ impl TransportWrapperBuilder {
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_conf_map)?;
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
+            disable_dft_on_reset: Cell::new(self.disable_dft_on_reset),
             openocd_adapter_config: self.openocd_adapter_config,
             provides_map,
             pin_map: self.pin_alias_map,
@@ -666,6 +670,11 @@ impl TransportWrapperBuilder {
 }
 
 impl TransportWrapper {
+    pub fn ignore_dft_straps_on_reset(&self) -> Result<()> {
+        self.disable_dft_on_reset.set(false);
+        Ok(())
+    }
+
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
@@ -923,16 +932,24 @@ impl TransportWrapper {
     }
 
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
-        let reset_strapping = self.pin_strapping("RESET")?;
         log::info!("Asserting the reset signal");
-        reset_strapping.apply()?;
+        if self.disable_dft_on_reset.get() {
+            self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
+        }
+        self.pin_strapping("RESET")?.apply()?;
         std::thread::sleep(reset_delay);
         if clear_uart_rx {
             log::info!("Clearing the UART RX buffer");
             self.uart("console")?.clear_rx_buffer()?;
         }
         log::info!("Deasserting the reset signal");
-        reset_strapping.remove()?;
+        self.pin_strapping("RESET")?.remove()?;
+        if self.disable_dft_on_reset.get() {
+            std::thread::sleep(Duration::from_millis(5));
+            // We remove the DFT strapping after waiting some time, as the DFT straps should have been
+            // sampled by then and we can resume our desired pin configuration.
+            self.pin_strapping("PRERESET_DFT_DISABLE")?.remove()?;
+        }
         std::thread::sleep(reset_delay);
         Ok(())
     }

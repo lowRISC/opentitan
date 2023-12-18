@@ -30,6 +30,13 @@ pub struct BackendOpts {
     #[arg(long, default_value = "")]
     pub interface: String,
 
+    /// Whether to disable DFT with a strapping config during reset. Only required in TestUnlocked*
+    /// LC states activate the JTAG RV TAP. This is required since the DFT straps share the console
+    /// UART pins, that hyperdebug tries to pull high. In mission mode states this should be set to
+    /// false, as DFT straps are not sampled here.
+    #[arg(long)]
+    pub disable_dft_on_reset: bool,
+
     /// USB Vendor ID of the interface.
     #[arg(long, value_parser = u16::from_str)]
     pub usb_vid: Option<u16>,
@@ -73,7 +80,7 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let mut env = TransportWrapperBuilder::new(interface.to_string());
+    let mut env = TransportWrapperBuilder::new(interface.to_string(), args.disable_dft_on_reset);
 
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?
