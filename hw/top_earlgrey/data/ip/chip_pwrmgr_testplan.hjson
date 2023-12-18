@@ -63,6 +63,8 @@
         "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_REQUEST",
         "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_ENABLE",
         "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
@@ -199,6 +201,24 @@
         "//sw/device/tests:aon_timer_wdog_bite_reset_test_fpga_cw310_test_rom",
         "//sw/device/tests:pwrmgr_deep_sleep_all_reset_reqs_test_fpga_cw310_test_rom",
       ]
+    }
+    {
+      name: chip_sw_sensor_ctrl_deep_sleep_wake_up
+      desc: '''Verify that the chip will wake up from deep sleep by sensor_ctrl.
+
+            This forces the sensor_ctrl alert input from AST to trigger wake up.
+            It does this while the chip is in deep sleep, so clocks are off.
+            SiVal: This test can only run in sim_dv.
+            '''
+      stage: V3
+      si_stage: None
+      features: [
+        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
+      tests: ["chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
