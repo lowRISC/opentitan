@@ -48,6 +48,7 @@ opentitan_binary(
         ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
@@ -64,10 +65,11 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/manuf/data/ast:fake",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
-        "//sw/device/silicon_creator/manuf/lib:sram_start",
+        "//sw/device/silicon_creator/manuf/lib:sram_start_no_ast_init",
     ],
 )
 

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -19,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/manuf/data/ast/calibration_values.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
@@ -50,8 +52,14 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-static status_t device_id_and_manuf_state_flash_info_page_erase(
-    manuf_cp_provisioning_data_t *provisioning_data) {
+static void manually_init_ast(uint32_t *data) {
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
+                     data[i]);
+  }
+}
+
+static status_t flash_info_page_0_erase(void) {
   uint32_t byte_address = 0;
   // DeviceId and ManufState are located on the same flash info page.
   TRY(flash_ctrl_testutils_info_region_setup_properties(
@@ -64,7 +72,7 @@ static status_t device_id_and_manuf_state_flash_info_page_erase(
   return OK_STATUS();
 }
 
-static status_t device_id_and_manuf_state_flash_info_page_write(
+static status_t flash_info_page_0_write(
     manuf_cp_provisioning_data_t *provisioning_data) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
@@ -84,11 +92,18 @@ static status_t device_id_and_manuf_state_flash_info_page_write(
       kFlashInfoFieldManufState.partition, provisioning_data->manuf_state,
       kDifFlashCtrlPartitionTypeInfo, kHwCfgManufStateSizeIn32BitWords));
 
+  // Write AST calibration values (on same page as DeviceId).
+  TRY(flash_ctrl_testutils_write(
+      &flash_ctrl_state,
+      byte_address + kFlashInfoFieldAstCalibrationData.byte_offset,
+      kFlashInfoFieldAstCalibrationData.partition, ast_cfg_data,
+      kDifFlashCtrlPartitionTypeInfo,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
+
   return OK_STATUS();
 }
 
-static status_t wafer_auth_secret_flash_info_page_erase(
-    manuf_cp_provisioning_data_t *provisioning_data) {
+static status_t wafer_auth_secret_flash_info_page_erase(void) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
@@ -116,7 +131,7 @@ static status_t wafer_auth_secret_flash_info_page_write(
   return OK_STATUS();
 }
 
-static status_t print_tokens_to_console(
+static status_t print_inputs_to_console(
     manuf_cp_provisioning_data_t *provisioning_data) {
   LOG_INFO("Device ID:");
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
@@ -140,10 +155,11 @@ static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for CP provisioning data ...");
   manuf_cp_provisioning_data_t provisioning_data;
   TRY(ujson_deserialize_manuf_cp_provisioning_data_t(uj, &provisioning_data));
-  TRY(print_tokens_to_console(&provisioning_data));
-  TRY(device_id_and_manuf_state_flash_info_page_erase(&provisioning_data));
-  TRY(wafer_auth_secret_flash_info_page_erase(&provisioning_data));
-  TRY(device_id_and_manuf_state_flash_info_page_write(&provisioning_data));
+  TRY(print_inputs_to_console(&provisioning_data));
+  TRY(flash_ctrl_testutils_wait_for_init(&flash_ctrl_state));
+  TRY(flash_info_page_0_erase());
+  TRY(wafer_auth_secret_flash_info_page_erase());
+  TRY(flash_info_page_0_write(&provisioning_data));
   TRY(wafer_auth_secret_flash_info_page_write(&provisioning_data));
   TRY(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
                                          &provisioning_data));
@@ -152,15 +168,17 @@ static status_t provision(ujson_t *uj) {
 }
 
 bool sram_main(void) {
+  // Initialize AST, DIF handles, pinmux, and UART.
+  manually_init_ast(ast_cfg_data);
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
+  LOG_INFO("AST manually configured.");
 
-  // Check we are in in TEST_UNLOCKED0.
+  // Check we are in in TEST_UNLOCKED0 and perform CP provisioning operations.
   CHECK_STATUS_OK(
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked0));
-
   CHECK_STATUS_OK(provision(&uj));
 
   return true;
