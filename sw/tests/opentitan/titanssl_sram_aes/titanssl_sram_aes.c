@@ -34,10 +34,10 @@ static titanssl_buffer_t buffer_iv;
  * Benchmark setup
  * ========================================================================= */
 
-#define TITANSSL_CFG_DEBUG   1
-#define TITANSSL_CFG_MEM_L3  1
-#define TITANSSL_CFG_MEM_L1  0
-#define TITANSSL_CFG_PAYLOAD 64
+#define TITANSSL_CFG_DEBUG   0
+#define TITANSSL_CFG_MEM_L3  0
+#define TITANSSL_CFG_MEM_L1  1
+#define TITANSSL_CFG_PAYLOAD 8192
 
 /* ============================================================================
  * Benchmark automatic configuration
@@ -49,8 +49,8 @@ static titanssl_buffer_t buffer_iv;
 #define TITANSSL_ADDR_KEY    0xe0006000
 #define TITANSSL_ADDR_IV     0xe0006100
 #elif TITANSSL_CFG_MEM_L1
-#define TITANSSL_ADDR_PLAIN  0x80720000
-#define TITANSSL_ADDR_CIPHER 0x80740000
+#define TITANSSL_ADDR_PLAIN  0xe0002000
+#define TITANSSL_ADDR_CIPHER 0xe0004000
 #define TITANSSL_ADDR_KEY    0xe0006000
 #define TITANSSL_ADDR_IV     0xe0006100
 #else
