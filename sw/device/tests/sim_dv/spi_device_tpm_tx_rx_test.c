@@ -28,6 +28,7 @@ static dif_rv_plic_t plic;
 typedef enum {
   kTpmWriteCommand = 0x0,
   kTpmReadCommand = 0x80,
+  kTpmCommandMask = 0xbf
 } tpm_cmd_t;
 
 enum {
@@ -167,16 +168,18 @@ bool test_main(void) {
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb,
       kTopEarlgreyPinmuxInselIoa7));
 
-  dif_pinmux_pad_attr_t out_attr;
-  dif_pinmux_pad_attr_t in_attr = {
-      .slew_rate = 0,
-      .drive_strength = 0,
-      .flags = kDifPinmuxPadAttrPullResistorEnable |
-               kDifPinmuxPadAttrPullResistorUp};
+  if (kDeviceType == kDeviceSimDV) {
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {
+        .slew_rate = 0,
+        .drive_strength = 0,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp};
 
-  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
-                                          kDifPinmuxPadKindMio, in_attr,
-                                          &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+                                            kDifPinmuxPadKindMio, in_attr,
+                                            &out_attr));
+  }
 
   CHECK_DIF_OK(
       dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, kTpmConfig));
@@ -219,7 +222,6 @@ bool test_main(void) {
 
     LOG_INFO("SYNC: Waiting Read");
     // Send the written data right back out for reads.
-
     // Wait for read interrupt.
     atomic_wait_for_interrupt();
     // Send the written data right back out for reads.
@@ -232,6 +234,7 @@ bool test_main(void) {
     ack_spi_tpm_header_irq(&spi_device);
 
     // Make sure the received command matches expectation
+    read_command &= kTpmCommandMask;
     LOG_INFO("Expected 0x%x, received 0x%x",
              (kTpmReadCommand | (num_bytes - 1)), read_command);
     CHECK((kTpmReadCommand | (num_bytes - 1)) == read_command,
