@@ -51,12 +51,10 @@ static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
  * ========================================================================= */
 
 #define TITANSSL_CFG_DEBUG    1
-#define TITANSSL_CFG_MEM_L3   1
-#define TITANSSL_CFG_MEM_L1   0
-#define TITANSSL_CFG_KEY_512  1
-#define TITANSSL_CFG_KEY_1024 0
-#define TITANSSL_CFG_OP_ENC   0
-#define TITANSSL_CFG_OP_DEC   1
+#define TITANSSL_CFG_MEM_L3   0
+#define TITANSSL_CFG_MEM_L1   1
+#define TITANSSL_CFG_KEY_512  0
+#define TITANSSL_CFG_KEY_1024 1
 
 /* ============================================================================
  * Benchmark automatic configuration
@@ -157,14 +155,6 @@ static const uint8_t TITANSSL_TEST_OUTPUT[TITANSSL_SIZE_KEY] = {
 #error "Wrong benchmark key configuration"
 #endif
 
-#if TITANSSL_CFG_OP_ENC
-#define titanssl_benchmark titanssl_benchmark_rsa_enc
-#elif TITANSSL_CFG_OP_DEC
-#define titanssl_benchmark titanssl_benchmark_rsa_dec
-#else
-#error "Wrong benchmark RSA configuration"
-#endif
-
 /* ============================================================================
  * Benchmark implementation
  * ========================================================================= */
@@ -173,11 +163,7 @@ void initialize_memory()
 {
     buffer_plain.data = (uint8_t*)TITANSSL_ADDR_PLAIN;
     buffer_plain.n = TITANSSL_SIZE_KEY;
-#if TITANSSL_CFG_OP_ENC
     for (size_t i=0; i<TITANSSL_SIZE_KEY; i++) buffer_plain.data[i] = TITANSSL_TEST_PLAIN[i];
-#else
-    for (size_t i=0; i<TITANSSL_SIZE_KEY; i++) buffer_plain.data[i] = TITANSSL_TEST_OUTPUT[i];
-#endif
 
     buffer_cipher.data = (uint8_t*)TITANSSL_ADDR_CIPHER;
     buffer_cipher.n = TITANSSL_SIZE_KEY;
@@ -195,8 +181,7 @@ void initialize_memory()
 void titanssl_benchmark_rsa_enc(
         titanssl_buffer_t *const plain,
         titanssl_buffer_t *const cipher,
-        titanssl_buffer_t *const modulus,
-        __attribute__((unused)) titanssl_buffer_t *const private)
+        titanssl_buffer_t *const modulus)
 {
     otbn_t otbn_ctx;
     uint32_t n_limbs;
@@ -223,12 +208,6 @@ void titanssl_benchmark_rsa_enc(
 
     // Read back results.
     otbn_copy_data_from_otbn(&otbn_ctx, TITANSSL_SIZE_KEY, kOtbnVarRsaInOut, cipher->data);
-
-#if TITANSSL_CFG_DEBUG
-    for (int i = 0; i < TITANSSL_SIZE_KEY; ++i) {
-        printf("%02x vs. %02x\r\n", cipher->data[i], TITANSSL_TEST_OUTPUT[i]);
-    }
-#endif
 }
 
 void titanssl_benchmark_rsa_dec(
@@ -263,12 +242,6 @@ void titanssl_benchmark_rsa_dec(
 
     // Read back results.
     otbn_copy_data_from_otbn(&otbn_ctx, TITANSSL_SIZE_KEY, kOtbnVarRsaInOut, cipher->data);
-
-#if TITANSSL_CFG_DEBUG
-    for (int i = 0; i < TITANSSL_SIZE_KEY; ++i) {
-        printf("%02x vs. %02x\r\n", cipher->data[i], TITANSSL_TEST_PLAIN[i]);
-    }
-#endif
 }
 
 int main(
@@ -289,12 +262,29 @@ int main(
 
     entropy_testutils_auto_mode_init();
     initialize_memory();
-    titanssl_benchmark(
+    titanssl_benchmark_rsa_enc(
         &buffer_plain,
         &buffer_cipher,
+        &buffer_modulus
+    );
+#if TITANSSL_CFG_DEBUG
+    printf("RSA Encryption\r\n");
+    for (int i = 0; i < TITANSSL_SIZE_KEY; i++) {
+        printf("%02x vs. %02x\r\n", buffer_cipher.data[i], TITANSSL_TEST_OUTPUT[i]);
+    }
+#endif
+    titanssl_benchmark_rsa_dec(
+        &buffer_cipher,
+        &buffer_plain,
         &buffer_modulus,
         &buffer_private
     );
+#if TITANSSL_CFG_DEBUG
+    printf("RSA Decryption\r\n");
+    for (int i = 0; i < TITANSSL_SIZE_KEY; i++) {
+        printf("%02x vs. %02x\r\n", buffer_plain.data[i], TITANSSL_TEST_PLAIN[i]);
+    }
+#endif
 
     return 0;
 }
