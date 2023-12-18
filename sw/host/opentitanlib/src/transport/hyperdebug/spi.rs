@@ -246,7 +246,6 @@ impl HyperdebugSpiTarget {
                 "Unrecognized reponse to GET_USB_SPI_CONFIG".to_string()
             )
         );
-        log::info!("HyperDebug feature bitmap: 0x{:04x}", resp.feature_bitmap);
 
         Ok(Self {
             inner: Rc::clone(inner),
