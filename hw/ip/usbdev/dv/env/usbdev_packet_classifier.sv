@@ -7,15 +7,15 @@ class usbdev_packet_classifier extends uvm_object;
 
   // Define packet types
   typedef enum logic [3:0] {
-  TOKEN_SETUP = 4'b0010,
-  TOKEN_IN = 4'b0110,
-  TOKEN_OUT = 4'b1110,
-  SOF = 4'b1010,
-  DATA_0 = 4'b1100,
-  DATA_1 = 4'b0100,
-  HANDSHAKE_ACK = 4'b1101,
-  HANDSHAKE_NACK = 4'b0101,
-  HANDSHAKE_STALL = 4'b0001,
+  TOKEN_SETUP = 4'b1101,
+  TOKEN_IN = 4'b1001,
+  TOKEN_OUT = 4'b0001,
+  SOF = 4'b0101,
+  DATA_0 = 4'b0011,
+  DATA_1 = 4'b1011,
+  HANDSHAKE_ACK = 4'b0010,
+  HANDSHAKE_NACK = 4'b1010,
+  HANDSHAKE_STALL = 4'b1110,
   UNSUPPORTED_PACKET = 4'b0000
   }usbpackettype_e;
   // Packet fields
@@ -69,7 +69,7 @@ class usbdev_packet_classifier extends uvm_object;
           for(int i = 8; i <= 18; i++) begin
             frameNumber  = {frameNumber , pkt[i]};
           end
-          for(int i = 20; i <= 23; i++) begin
+          for(int i = 19; i <= 23; i++) begin
             crc5 = {crc5, pkt[i]};
           end
         end
