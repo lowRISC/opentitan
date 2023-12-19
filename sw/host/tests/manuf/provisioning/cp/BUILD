@@ -22,5 +22,6 @@ rust_binary(
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
+        "@crate_index//:log",
     ],
 )
