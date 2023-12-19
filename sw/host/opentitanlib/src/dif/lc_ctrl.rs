@@ -279,6 +279,18 @@ impl From<[u32; 4]> for DifLcCtrlToken {
     }
 }
 
+impl From<Vec<u32>> for DifLcCtrlToken {
+    fn from(vector: Vec<u32>) -> Self {
+        let bytes: [u8; 16] = vector
+            .iter()
+            .flat_map(|v| v.to_le_bytes())
+            .collect::<Vec<u8>>()
+            .try_into()
+            .unwrap();
+        DifLcCtrlToken::from(bytes)
+    }
+}
+
 impl DifLcCtrlToken {
     /// Converts a 128-bit transition token into four native u32 words. These
     /// values are suitable to write to [LcCtrlReg::TransitionToken0] and
