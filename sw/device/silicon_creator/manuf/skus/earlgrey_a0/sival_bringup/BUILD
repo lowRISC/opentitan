@@ -2,11 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST")
 load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
 )
+load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_jtag_params",
@@ -23,8 +25,6 @@ load(
     "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
 )
-load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -173,12 +173,11 @@ opentitan_test(
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
-            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:pinmux_testutils",
             "//sw/device/lib/testing/test_framework:check",
@@ -186,7 +185,9 @@ opentitan_test(
             "//sw/device/lib/testing/test_framework:ottf_test_config",
             "//sw/device/lib/testing/test_framework:status",
             "//sw/device/lib/testing/test_framework:ujson_ottf",
+            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize",
+            "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_{}".format(otp_sw_cfgs),
         ],
