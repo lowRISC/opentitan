@@ -22,8 +22,8 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufFtIndividualizeData,
-    ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
+    EccP256PublicKey, ManufCertPersoDataIn, ManufFtIndividualizeData, ManufRmaTokenPersoDataIn,
+    ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -156,9 +156,9 @@ pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
     second_bootstrap: PathBuf,
-    third_bootstrap: PathBuf,
+    _third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
-    attestation_tcb_measurements: &ManufCertPersoDataIn,
+    _attestation_tcb_measurements: &ManufCertPersoDataIn,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
@@ -220,28 +220,28 @@ pub fn run_ft_personalize(
     log::info!("{:x?}", rma_token_out_data);
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
-    // -------------------------------------------------------------------------
-    // FT Personalize 3                                                        |
-    // -------------------------------------------------------------------------
+    // // -------------------------------------------------------------------------
+    // // FT Personalize 3                                                        |
+    // // -------------------------------------------------------------------------
 
-    // Bootstrap third personalization binary into flash.
-    uart.clear_rx_buffer()?;
-    init.bootstrap.load(transport, &third_bootstrap)?;
+    // // Bootstrap third personalization binary into flash.
+    // uart.clear_rx_buffer()?;
+    // init.bootstrap.load(transport, &_third_bootstrap)?;
 
-    // Get UART, set flow control, and wait for test to start running.
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
+    // // Get UART, set flow control, and wait for test to start running.
+    // uart.set_flow_control(true)?;
+    // let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
 
-    // Send attestation TCB measurements for generating certificates.
-    attestation_tcb_measurements.send(&*uart)?;
+    // // Send attestation TCB measurements for generating certificates.
+    // _attestation_tcb_measurements.send(&*uart)?;
 
-    // Wait until device exports the attestation certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting attestation certificates ...", timeout)?;
-    let attestation_cert_out_data = ManufCertPersoDataOut::recv(&*uart, timeout, false)?;
-    // TODO(#19455): write the attestation certificates to files.
-    log::info!("{:x?}", attestation_cert_out_data);
+    // // Wait until device exports the attestation certificates.
+    // let _ = UartConsole::wait_for(&*uart, r"Exporting attestation certificates ...", timeout)?;
+    // let attestation_cert_out_data = ManufCertPersoDataOut::recv(&*uart, timeout, false)?;
+    // // TODO(#19455): write the attestation certificates to files.
+    // log::info!("{:x?}", attestation_cert_out_data);
 
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+    // let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     Ok(())
 }
