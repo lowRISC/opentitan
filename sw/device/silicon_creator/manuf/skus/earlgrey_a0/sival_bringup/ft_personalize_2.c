@@ -6,10 +6,8 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -23,7 +21,6 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_rstmgr_t rstmgr;
 
 static manuf_rma_token_perso_data_in_t in_data;
 static manuf_rma_token_perso_data_out_t out_data;
@@ -39,18 +36,7 @@ static status_t peripheral_handles_init(void) {
                        &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-                      &rstmgr));
   return OK_STATUS();
-}
-
-/**
- * Perform software reset.
- */
-static void sw_reset(void) {
-  rstmgr_testutils_reason_clear();
-  CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-  wait_for_interrupt();
 }
 
 /**
@@ -64,8 +50,6 @@ static status_t personalize(ujson_t *uj) {
                                          &in_data, &out_data));
     LOG_INFO("Exporting FT provisioning data ...");
     RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj, &out_data);
-    // We need to reset the chip here to activate the keymgr seeds.
-    sw_reset();
   }
 
   return OK_STATUS();
