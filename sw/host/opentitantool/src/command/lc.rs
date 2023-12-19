@@ -58,11 +58,13 @@ fn parse_token_str(token: &str) -> Result<DifLcCtrlToken> {
     } else {
         hex_str_no_sep.as_str()
     };
-    let mut token_bytes_vec = decode(sanitized_hex_str)?;
-    token_bytes_vec.reverse();
+    let token_bytes_vec = decode(sanitized_hex_str)?
+        .chunks(4)
+        .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
+        .collect::<Vec<u32>>();
     let length = token_bytes_vec.len();
     ensure!(
-        length == 16,
+        length == 4,
         "Expected a token of length 16-bytes but it was {length}-bytes."
     );
     Ok(DifLcCtrlToken::from(token_bytes_vec))
