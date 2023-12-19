@@ -162,9 +162,6 @@ status_t manuf_individualize_device_hw_cfg_check(
 status_t manuf_individualize_device_secret0(
     const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
     const manuf_cp_provisioning_data_t *provisioning_data) {
-  // Check life cycle in TEST_UNLOCKED0.
-  TRY(lc_ctrl_testutils_check_lc_state(lc_ctrl, kDifLcCtrlStateTestUnlocked0));
-
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
                                       &is_locked));

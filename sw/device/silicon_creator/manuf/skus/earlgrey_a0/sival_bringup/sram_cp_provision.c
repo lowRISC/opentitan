@@ -176,9 +176,7 @@ bool sram_main(void) {
   ujson_t uj = ujson_ottf_console();
   LOG_INFO("AST manually configured.");
 
-  // Check we are in in TEST_UNLOCKED0 and perform CP provisioning operations.
-  CHECK_STATUS_OK(
-      lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked0));
+  // Perform CP provisioning operations.
   CHECK_STATUS_OK(provision(&uj));
 
   return true;
