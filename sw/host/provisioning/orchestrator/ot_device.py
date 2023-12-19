@@ -177,7 +177,7 @@ class OTDevice:
                                      errors="backslashreplace")
 
         rma_msg_matches = re.findall(
-            r"RESP_OK:(\{\"wrapped_rma_unlock_token\":.*) CRC:.*", stdout)
+            r"(\{\"wrapped_rma_unlock_token\":.*) CRC:.*", stdout)
         if len(rma_msg_matches) != 1:
             logging.error(
                 f"Expected 1 RMA unlock token message, found these messages: {rma_msg_matches}"
