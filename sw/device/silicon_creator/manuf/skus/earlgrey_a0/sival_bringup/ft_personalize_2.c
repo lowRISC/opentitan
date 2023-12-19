@@ -68,8 +68,6 @@ static status_t personalize(ujson_t *uj) {
     sw_reset();
   }
 
-  // TODO(#19455): crank keymgr and generate certificates.
-
   return OK_STATUS();
 }
 
