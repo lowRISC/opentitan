@@ -63,8 +63,8 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
             REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/",
         ),
         (
-            REPO_TOP / "hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson",
-            REPO_TOP / "hw/ip/rstmgr/",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/",
         ),
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
