@@ -25,6 +25,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -197,6 +198,9 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
   // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
   // assertion here since its definition is not an integer constant expression.
   HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
+
+  // Initialize KMAC for key manager operations.
+  HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Load OTBN attestation keygen program.
   HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
