@@ -9,11 +9,9 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-      - "fileset_top    ? (lowrisc:systems:rstmgr_reg)"
-      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - "fileset_ip ? (rtl/rstmgr_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/rstmgr_reg_top.sv)"
+      - rtl/rstmgr_reg_pkg.sv
+      - rtl/rstmgr_reg_top.sv
     file_type: systemVerilogSource
 
 targets:

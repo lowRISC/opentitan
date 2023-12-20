@@ -12,10 +12,8 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rstmgr_reg
       - lowrisc:ip_interfaces:alert_handler_reg
-      - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
-      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - "fileset_ip ? (rtl/rstmgr_pkg.sv)"
+      - rtl/rstmgr_pkg.sv
     file_type: systemVerilogSource
 
 targets:

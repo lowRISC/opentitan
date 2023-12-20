@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:rstmgr_pkg
 
     files:
       - rstmgr_env_pkg.sv
@@ -41,7 +42,7 @@ generate:
     generator: ralgen
     parameters:
       name: rstmgr
-      ip_hjson: ../../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson
+      ip_hjson: ../../data/rstmgr.hjson
 
 targets:
   default:
