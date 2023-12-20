@@ -458,6 +458,8 @@
       - [Test Plan](./sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson)
       - [Signoff Test Plan](./sw/device/silicon_creator/rom/data/rom_manual_testplan.hjson)
       - [Shutdown Specification](./sw/device/silicon_creator/rom/doc/shutdown.md)
+    - [ROM\_EXT](./sw/device/silicon_creator/rom_ext/README.md)
+      - [ROM\_EXT for Silicon Validation](./sw/device/silicon_creator/rom_ext/doc/si_val.md)
     - [Manifest Format](./sw/device/silicon_creator/rom_ext/doc/manifest.md)
     - [Boot Log](./sw/device/silicon_creator/doc/boot_log.md)
   - [Top-Level Tests](./sw/device/tests/README.md)
