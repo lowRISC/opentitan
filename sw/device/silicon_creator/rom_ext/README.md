@@ -1,6 +1,6 @@
 # ROM\_EXT
 
-The ROM\_EXT is the first boot mutable stage in the Secure Boot implementation,
+The ROM\_EXT is the first (mutable) boot stage in the Secure Boot implementation,
 and starts executing after a successful signature verification performed by
 the ROM.
 
