@@ -8,9 +8,9 @@ use anyhow::Result;
 use clap::Parser;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, ManufCpProvisioningDataInput};
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
-use opentitanlib::io::jtag::JtagTap;
+use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::ManufCpProvisioningData;
 use util_lib::hex_string_to_u32_arrayvec;
@@ -50,21 +50,14 @@ fn main() -> Result<()> {
         )?,
     };
 
-    // Read the LC state.
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts
-        .init
-        .jtag_params
-        .create(&transport)?
-        .connect(JtagTap::LcTap)?;
-    let lc_state =
-        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
-    jtag.disconnect()?;
-
     // Only run CP provisioning if requested in any of the TestUnlocked states, except the last
     // state (TestUnlocked7), as this state requires special handling of the wafer authentication
     // secret, which is not yet implemented.
+    let lc_state = read_lc_state(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )?;
     match lc_state {
         DifLcCtrlState::TestUnlocked0
         | DifLcCtrlState::TestUnlocked1
@@ -81,23 +74,22 @@ fn main() -> Result<()> {
                 &provisioning_data,
                 opts.timeout,
             )?;
+            // Only perform lock if we are in TEST_UNLOCKED0, otherwise we are running from a later
+            // stage and want to run FT stage directly after.
+            if lc_state == DifLcCtrlState::TestUnlocked0 {
+                reset_and_lock(
+                    &transport,
+                    &opts.init.jtag_params,
+                    opts.init.bootstrap.options.reset_delay,
+                )?;
+            } else {
+                log::info!("Skipping resetting and locking the device.");
+            }
         }
         _ => {
             log::info!("Skipping executing the SRAM CP provisioning binary.");
         }
     };
-
-    // Only perform lock if we are in TEST_UNLOCKED0, otherwise we are running from a later
-    // stage and want to run FT stage directly after.
-    if lc_state == DifLcCtrlState::TestUnlocked0 {
-        reset_and_lock(
-            &transport,
-            &opts.init.jtag_params,
-            opts.init.bootstrap.options.reset_delay,
-        )?;
-    } else {
-        log::info!("Skipping resetting and locking the device.");
-    }
 
     Ok(())
 }
