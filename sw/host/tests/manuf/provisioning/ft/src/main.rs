@@ -10,9 +10,9 @@ use clap::{Args, Parser};
 
 use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock};
 use opentitanlib::backend;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
-use opentitanlib::io::jtag::JtagTap;
+use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertPersoDataIn, ManufFtIndividualizeData};
 use util_lib::hex_string_to_u32_arrayvec;
@@ -112,20 +112,12 @@ fn main() -> Result<()> {
         owner_measurement: owner_measurement.clone(),
     };
 
-    // Read the LC state.
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    let mut jtag = opts
-        .init
-        .jtag_params
-        .create(&transport)?
-        .connect(JtagTap::LcTap)?;
-    let lc_state =
-        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
-    jtag.disconnect()?;
-
     // Only run test unlock operation if we are in a locked LC state.
-    match lc_state {
+    match read_lc_state(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )? {
         DifLcCtrlState::TestLocked0
         | DifLcCtrlState::TestLocked1
         | DifLcCtrlState::TestLocked2
@@ -147,7 +139,11 @@ fn main() -> Result<()> {
 
     // Only run the SRAM individualize program in a test unlocked state. If we have transitioned to
     // a mission state already, then we can skip this step.
-    match lc_state {
+    match read_lc_state(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )? {
         DifLcCtrlState::TestUnlocked0 => {
             bail!("FT stage cannot be run from test unlocked 0. Run CP stage first.");
         }

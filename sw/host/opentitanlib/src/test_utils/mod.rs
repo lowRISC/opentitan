@@ -10,6 +10,7 @@ pub mod extclk;
 pub mod gpio;
 pub mod i2c_target;
 pub mod init;
+pub mod lc;
 pub mod lc_transition;
 pub mod load_bitstream;
 pub mod load_sram_program;
