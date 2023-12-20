@@ -48,7 +48,7 @@ static dif_alert_handler_t alert_handler;
  * the escalation.
  */
 enum {
-  kEscalationPhase0Micros = 100 * 1000,  // 10 ms
+  kEscalationPhase0Micros = 100 * 1000,  // 100 ms
   kEscalationPhase2Micros = 100,         // 100 us
   kIrqDeadlineMicros = 10,               // 10 us
   kWdogBarkMicros = 500,                 // 500 us
