@@ -121,7 +121,6 @@ static volatile uint32_t uart_irq_rx_watermartk_id;
 static volatile uint32_t uart_irq_tx_empty_id;
 static volatile uint32_t uart_irq_rx_overflow_id;
 static volatile uint32_t uart_irq_rx_frame_err_id;
-static volatile uint32_t uart_irq_rx_frame_err_id;
 static volatile uint32_t uart_irq_rx_break_err_id;
 static volatile uint32_t uart_irq_rx_timeout_id;
 static volatile uint32_t uart_irq_rx_parity_err_id;
@@ -150,7 +149,6 @@ void update_uart_base_addr_and_irq_id(void) {
       uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart0TxEmpty;
       uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart0RxOverflow;
       uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr;
       uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart0RxBreakErr;
       uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart0RxTimeout;
       uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart0RxParityErr;
@@ -162,7 +160,6 @@ void update_uart_base_addr_and_irq_id(void) {
       uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart1RxWatermark;
       uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart1TxEmpty;
       uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart1RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr;
       uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr;
       uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart1RxBreakErr;
       uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart1RxTimeout;
@@ -176,7 +173,6 @@ void update_uart_base_addr_and_irq_id(void) {
       uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart2TxEmpty;
       uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart2RxOverflow;
       uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr;
       uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart2RxBreakErr;
       uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart2RxTimeout;
       uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart2RxParityErr;
@@ -188,7 +184,6 @@ void update_uart_base_addr_and_irq_id(void) {
       uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart3RxWatermark;
       uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart3TxEmpty;
       uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart3RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr;
       uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr;
       uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart3RxBreakErr;
       uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart3RxTimeout;
