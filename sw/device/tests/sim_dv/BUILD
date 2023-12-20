@@ -774,7 +774,7 @@ opentitan_test(
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",

@@ -807,7 +807,7 @@ cc_library(
     deps = [
         ":base",
         ":rstmgr_intf",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
