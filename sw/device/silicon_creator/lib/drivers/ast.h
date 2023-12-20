@@ -16,6 +16,8 @@ extern "C" {
 /**
  * Check that the AST is in the expected state.
  *
+ * @param lc_state The current life cycle state.
+ *
  * @return an error if the AST is not in the expected state.
  */
 OT_WARN_UNUSED_RESULT
@@ -29,6 +31,22 @@ rom_error_t ast_check(lifecycle_state_t lc_state);
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t ast_init_done(void);
+
+/**
+ * Conditionally patch the AST registers using data stored in an info partition
+ * used to store manufacturing information.
+ *
+ * The patch is skipped if any of the first to AST words stored in the info
+ * partition are equivalent to 0 or UINT32_MAX.
+ *
+ * This function also calls `ast_check()` before returning.
+ *
+ * @param lc_state The current life cycle state.
+ *
+ * @return an error if the AST is not in the expected state.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t ast_patch(lifecycle_state_t lc_state);
 
 #ifdef __cplusplus
 }
