@@ -55,6 +55,32 @@ enum {
 static_assert(kShake256KeccakRateWords <= kStateShareSize,
               "assert SHAKE256 rate is <= share size");
 
+static const uint32_t kEntropySeed[] = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a,
+                                        0x48465647, 0x70410fef};
+
+/**
+ * KMAC configuration parameters.
+ */
+typedef struct kmac_config {
+  /**
+   * Entropy fast process mode when enabled prevents the KMAC unit consuming
+   * entropy unless it is processing a secret key. This process should not be
+   * used when resistance against side-channel attacks is required, because
+   * it may lead to leakage of the secret key in the power trace.
+   */
+  bool entropy_fast_process;
+  /**
+   * Message Masking with PRNG.
+   * If true, KMAC applies PRNG to the input messages to the Keccak module when
+   * KMAC mode is on.
+   */
+  bool msg_mask;
+  /**
+   * Enable KMAC sideload mode.
+   */
+  bool sideload;
+} kmac_config_t;
+
 /**
  * Polls the KMAC block state until the desired status bit is set.
  *
@@ -110,16 +136,13 @@ static rom_error_t poll_state(bitfield_bit32_index_t bit_index) {
 }
 
 /**
- * Issue a command to the KMAC block.
+ * Configure kmac block using `config` parameters.
  *
- * @param cmd_value Value to write to the CMD register.
+ * @param config The kmac configuration parameters.
+ *
+ * @return Error code indicating if the operation succeeded.
  */
-static void issue_command(uint32_t cmd_value) {
-  uint32_t cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, cmd_value);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-}
-
-rom_error_t kmac_shake256_configure(void) {
+static rom_error_t kmac_configure(kmac_config_t config) {
   HARDENED_RETURN_IF_ERROR(poll_state(KMAC_STATUS_SHA3_IDLE_BIT));
 
   uint32_t entropy_period_reg = KMAC_ENTROPY_PERIOD_REG_RESVAL;
@@ -152,19 +175,24 @@ rom_error_t kmac_shake256_configure(void) {
   // Set `CFG.STATE_ENDIANNESS` bit to 0 (little-endian).
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, 0);
-  // Set `CFG.SIDELOAD` bit to 0 (no sideloading).
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
+
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
+                                 config.sideload);
+
   // Set `CFG.ENTROPY_MODE` field to use software entropy. SHAKE does not
   // require any entropy, so there is no reason we should wait for entropy
   // availability before we start hashing.
   cfg_reg =
       bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
                              KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE);
-  // Set `CFG.ENTROPY_FAST_PROCESS` bit to 0.
-  cfg_reg = bitfield_bit32_write(cfg_reg,
-                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
-  // Set `CFG.MSG_MASK` bit to 0.
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
+
+  cfg_reg =
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT,
+                           config.entropy_fast_process);
+
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
+                                 config.msg_mask);
+
   // Set `CFG.ENTROPY_READY` bit to 1.
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
@@ -176,16 +204,42 @@ rom_error_t kmac_shake256_configure(void) {
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
   abs_mmio_write32_shadowed(kBase + KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
-  // Write entropy seed registers (all-zero). Even though the values are
+  // Write entropy seed registers. Even though the values are
   // irrelevant, these registers must be written for the KMAC block to consider
   // its entropy "ready" and to begin operation.
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_0_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_1_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_2_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_3_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_4_REG_OFFSET, 0);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_0_REG_OFFSET, kEntropySeed[0]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_1_REG_OFFSET, kEntropySeed[1]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_2_REG_OFFSET, kEntropySeed[2]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_3_REG_OFFSET, kEntropySeed[3]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_4_REG_OFFSET, kEntropySeed[4]);
 
   return kErrorOk;
+}
+
+/**
+ * Issue a command to the KMAC block.
+ *
+ * @param cmd_value Value to write to the CMD register.
+ */
+static void issue_command(uint32_t cmd_value) {
+  uint32_t cmd_reg = bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, cmd_value);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+rom_error_t kmac_keymgr_configure(void) {
+  return kmac_configure((kmac_config_t){
+      .entropy_fast_process = false,
+      .msg_mask = true,
+      .sideload = true,
+  });
+}
+
+rom_error_t kmac_shake256_configure(void) {
+  return kmac_configure((kmac_config_t){
+      .entropy_fast_process = false,
+      .msg_mask = false,
+      .sideload = false,
+  });
 }
 
 rom_error_t kmac_shake256_start(void) {

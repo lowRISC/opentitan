@@ -8,11 +8,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
-#include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
@@ -114,24 +114,6 @@ static void init_flash(void) {
   // Initialize flash secrets.
   CHECK_STATUS_OK(
       keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
-}
-
-/** Place kmac into sideload mode for correct keymgr operation */
-static void init_kmac_for_keymgr(void) {
-  dif_kmac_t kmac;
-  CHECK_DIF_OK(dif_kmac_init(
-      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
-
-  // Configure KMAC hardware using software entropy.
-  dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_fast_process = false,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
-      .sideload = true,
-      .msg_mask = true,
-  };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 }
 
 static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
@@ -256,7 +238,7 @@ bool test_main(void) {
 
     check_lock_otp_partition(&otp);
     sec_mmio_init();
-    init_kmac_for_keymgr();
+    kmac_keymgr_configure();
 
     EXECUTE_TEST(result, keymgr_rom_test);
     EXECUTE_TEST(result, keymgr_rom_ext_test);
