@@ -143,7 +143,7 @@
              {    name: rstmgr
                   fusesoc_core: lowrisc:dv:rstmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rstmgr/dv/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/dv/lint/{tool}"
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:dv:rv_dm_sim

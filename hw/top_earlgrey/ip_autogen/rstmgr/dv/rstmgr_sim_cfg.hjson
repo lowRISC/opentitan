@@ -21,7 +21,7 @@
   testplan: "{self_dir}/../data/rstmgr_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson"
+  ral_spec: "{self_dir}/../data/rstmgr.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -38,7 +38,7 @@
                 ]
 
   // Specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/rstmgr/dv/cov/rstmgr_unr_excl.el"]
+  vcs_cov_excl_files: ["{self_dir}/cov/rstmgr_unr_excl.el"]
 
   // Overrides
   overrides: [

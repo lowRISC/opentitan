@@ -177,7 +177,7 @@
                dut: rstmgr
                fusesoc_core: lowrisc:dv:rstmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/rstmgr/{sub_flow}/{tool}"
+               rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/{sub_flow}/{tool}"
                overrides: [
                  {
                    name:  design_level
