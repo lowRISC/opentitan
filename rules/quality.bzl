@@ -47,7 +47,12 @@ def _clang_format_impl(ctx):
 
 clang_format_attrs = {
     "patterns": attr.string_list(
-        default = ["*.c", "*.h", "*.cc", "*.cpp"],
+        default = [
+            "*.c",
+            "*.h",
+            "*.cc",
+            "*.cpp",
+        ],
         doc = "Filename patterns for format checking",
     ),
     "exclude_patterns": attr.string_list(
@@ -55,7 +60,10 @@ clang_format_attrs = {
     ),
     "mode": attr.string(
         default = "diff",
-        values = ["diff", "fix"],
+        values = [
+            "diff",
+            "fix",
+        ],
         doc = "Execution mode: display diffs or fix formatting",
     ),
     "diff_command": attr.string(
@@ -80,15 +88,15 @@ clang_format_attrs = {
 }
 
 clang_format_check = rule(
-    implementation = _clang_format_impl,
     attrs = clang_format_attrs,
     executable = True,
+    implementation = _clang_format_impl,
 )
 
 _clang_format_test = rule(
-    implementation = _clang_format_impl,
     attrs = clang_format_attrs,
     test = True,
+    implementation = _clang_format_impl,
 )
 
 def clang_format_test(**kwargs):
@@ -274,13 +282,13 @@ def _make_clang_tidy_aspect(enable_fix):
             "_output_group_name": attr.string(default = "clang_tidy"),
             "_output_file_suffix": attr.string(default = "clang-tidy.out"),
         },
-        incompatible_use_toolchain_transition = True,
         fragments = ["cpp"],
         host_fragments = ["cpp"],
         toolchains = ["@rules_cc//cc:toolchain_type"],
     )
 
 clang_tidy_fix_aspect = _make_clang_tidy_aspect(True)
+
 clang_tidy_check_aspect = _make_clang_tidy_aspect(False)
 
 def _audit_sec_mmio_calls_run_action(ctx, cc_toolchain, cc_compile_ctx, generated_file, command_line, src):
@@ -311,7 +319,6 @@ def _audit_sec_mmio_calls_run_action(ctx, cc_toolchain, cc_compile_ctx, generate
     )
 
 audit_sec_mmio_calls_aspect = aspect(
-    implementation = lambda target, ctx: _cc_aspect_impl(target, ctx, _audit_sec_mmio_calls_run_action),
     attr_aspects = ["deps"],
     attrs = {
         "_audit_tool": attr.label(
@@ -322,10 +329,10 @@ audit_sec_mmio_calls_aspect = aspect(
         "_output_group_name": attr.string(default = "audit_sec_mmio"),
         "_output_file_suffix": attr.string(default = "clang-audit.out"),
     },
-    incompatible_use_toolchain_transition = True,
     fragments = ["cpp"],
     host_fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    implementation = lambda target, ctx: _cc_aspect_impl(target, ctx, _audit_sec_mmio_calls_run_action),
 )
 
 def _clang_tidy_test_impl(ctx):
@@ -345,23 +352,23 @@ def _clang_tidy_test_impl(ctx):
     ]
 
 clang_tidy_rv_test = rv_rule(
-    implementation = _clang_tidy_test_impl,
     attrs = {
         "deps": attr.label_list(
             aspects = [clang_tidy_check_aspect],
         ),
     },
     test = True,
+    implementation = _clang_tidy_test_impl,
 )
 
 clang_tidy_test = rule(
-    implementation = _clang_tidy_test_impl,
     attrs = {
         "deps": attr.label_list(
             aspects = [clang_tidy_check_aspect],
         ),
     },
     test = True,
+    implementation = _clang_tidy_test_impl,
 )
 
 def _html_coverage_report_impl(ctx):
@@ -380,7 +387,6 @@ def _html_coverage_report_impl(ctx):
     )
 
 html_coverage_report = rule(
-    implementation = _html_coverage_report_impl,
     attrs = {
         "_runner": attr.label(
             default = "//rules/scripts:html_coverage_report.template.sh",
@@ -388,6 +394,7 @@ html_coverage_report = rule(
         ),
     },
     executable = True,
+    implementation = _html_coverage_report_impl,
 )
 
 HasModuleIdInfo = provider()
@@ -445,7 +452,6 @@ def _modid_check_aspect_impl(target, ctx):
     ]
 
 modid_check_aspect = aspect(
-    implementation = _modid_check_aspect_impl,
     # Propagate down all dependencies so we go through test suites and other
     # types of dependencies to reach the binaries.
     attr_aspects = ["*"],
@@ -470,6 +476,7 @@ modid_check_aspect = aspect(
             cfg = "exec",
         ),
     },
+    implementation = _modid_check_aspect_impl,
 )
 
 def _rustfmt_impl(ctx):
@@ -526,7 +533,7 @@ rustfmt_attrs = {
 }
 
 rustfmt_fix = rule(
-    implementation = _rustfmt_impl,
     attrs = rustfmt_attrs,
     executable = True,
+    implementation = _rustfmt_impl,
 )

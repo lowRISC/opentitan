@@ -243,7 +243,6 @@ def _otbn_insn_count_range(ctx):
     return [DefaultInfo(files = depset([out]), runfiles = runfiles)]
 
 otbn_library = rv_rule(
-    implementation = _otbn_library,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "_cc_toolchain": attr.label(
@@ -257,11 +256,10 @@ otbn_library = rv_rule(
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
-    incompatible_use_toolchain_transition = True,
+    implementation = _otbn_library,
 )
 
 otbn_binary = rv_rule(
-    implementation = _otbn_binary,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
@@ -283,12 +281,10 @@ otbn_binary = rv_rule(
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
-    incompatible_use_toolchain_transition = True,
+    implementation = _otbn_binary,
 )
 
 otbn_sim_test = rv_rule(
-    implementation = _otbn_sim_test,
-    test = True,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
@@ -320,13 +316,12 @@ otbn_sim_test = rv_rule(
         ),
     },
     fragments = ["cpp"],
+    test = True,
     toolchains = ["@rules_cc//cc:toolchain_type"],
-    incompatible_use_toolchain_transition = True,
+    implementation = _otbn_sim_test,
 )
 
 otbn_consttime_test = rule(
-    implementation = _otbn_consttime_test_impl,
-    test = True,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [OutputGroupInfo]),
@@ -339,10 +334,11 @@ otbn_consttime_test = rule(
             cfg = "exec",
         ),
     },
+    test = True,
+    implementation = _otbn_consttime_test_impl,
 )
 
 otbn_insn_count_range = rule(
-    implementation = _otbn_insn_count_range,
     attrs = {
         "deps": attr.label_list(providers = [OutputGroupInfo]),
         "_counter": attr.label(
@@ -350,4 +346,5 @@ otbn_insn_count_range = rule(
             allow_single_file = True,
         ),
     },
+    implementation = _otbn_insn_count_range,
 )

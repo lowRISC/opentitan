@@ -23,7 +23,9 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 # Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
 # to get to them.
 OPENTITAN_CPU = _OPENTITAN_CPU
+
 OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
+
 opentitan_transition = _opentitan_transition
 
 _targets_compatible_with = {
@@ -93,25 +95,25 @@ def create_key_struct(rsa_key, spx_key):
 SILICON_CREATOR_KEYS = struct(
     FAKE = struct(
         RSA = struct(
-            TEST = [
-                create_test_key("fake_rsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0"),
-            ],
             DEV = [
                 create_dev_key("fake_rsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0"),
             ],
             PROD = [
                 create_prod_key("fake_rsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0"),
             ],
+            TEST = [
+                create_test_key("fake_rsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0"),
+            ],
         ),
         SPX = struct(
-            TEST = [
-                create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
-            ],
             DEV = [
                 create_dev_key("fake_spx_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
             ],
             PROD = [
                 create_prod_key("fake_spx_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
+            ],
+            TEST = [
+                create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
             ],
         ),
     ),
@@ -119,27 +121,35 @@ SILICON_CREATOR_KEYS = struct(
     REAL = None,
     UNAUTHORIZED = struct(
         RSA = [
-            create_key_("rsa_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/rsa:unauthorized_private_key_0", []),
+            create_key_(
+                "rsa_unauthorized_0",
+                "@//sw/device/silicon_creator/rom/keys/unauthorized/rsa:unauthorized_private_key_0",
+                [],
+            ),
         ],
         SPX = [
-            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
+            create_key_(
+                "spx_unauthorized_0",
+                "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx",
+                [],
+            ),
         ],
     ),
 )
 
 SILICON_OWNER_KEYS = struct(
     FAKE = struct(
+        # We can't expose real private keys publicly.
+        REAL = None,
         RSA = struct(
-            TEST = [
-                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
-            ],
             DEV = [
                 create_dev_key("fake_rsa_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
             ],
             PROD = None,
+            TEST = [
+                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
+            ],
         ),
-        # We can't expose real private keys publicly.
-        REAL = None,
         UNAUTHORIZED = None,
     ),
 )
@@ -181,22 +191,52 @@ def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
     return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
 
 RSA_ONLY_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], None),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0],
+        None,
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0],
+        None,
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0],
+        None,
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0],
+        None,
+    ),
 ]
 
 RSA_SPX_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0],
+        SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0],
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0],
+        SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0],
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0],
+        SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0],
+    ),
+    create_key_struct(
+        SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0],
+        SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0],
+    ),
 ]
 
 RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
-    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
+    create_key_struct(
+        SILICON_OWNER_KEYS.FAKE.RSA.TEST[0],
+        None,
+    ),
+    create_key_struct(
+        SILICON_OWNER_KEYS.FAKE.RSA.DEV[0],
+        None,
+    ),
 ]
 
 def _obj_transform_impl(ctx):
@@ -224,7 +264,6 @@ def _obj_transform_impl(ctx):
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
 obj_transform = rv_rule(
-    implementation = _obj_transform_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "suffix": attr.string(default = "bin"),
@@ -232,6 +271,7 @@ obj_transform = rv_rule(
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    implementation = _obj_transform_impl,
 )
 
 # A provider for device-specific archive files that hold binaries of SRAM programs.
@@ -367,7 +407,6 @@ def _bin_to_archive_impl(ctx):
     return ArchiveInfo(archive_infos = cc_info_dict)
 
 bin_to_archive = rv_rule(
-    implementation = _bin_to_archive_impl,
     attrs = {
         "binaries": attr.label_list(allow_files = True),
         "devices": attr.string_list(),
@@ -377,6 +416,7 @@ bin_to_archive = rv_rule(
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    implementation = _bin_to_archive_impl,
 )
 
 def _elf_to_disassembly_impl(ctx):
@@ -405,14 +445,13 @@ def _elf_to_disassembly_impl(ctx):
         return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
 elf_to_disassembly = rv_rule(
-    implementation = _elf_to_disassembly_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     toolchains = ["@rules_cc//cc:toolchain_type"],
-    incompatible_use_toolchain_transition = True,
+    implementation = _elf_to_disassembly_impl,
 )
 
 def _elf_to_scrambled_rom_impl(ctx):
@@ -447,7 +486,6 @@ def _elf_to_scrambled_rom_impl(ctx):
     )]
 
 elf_to_scrambled_rom_vmem = rv_rule(
-    implementation = _elf_to_scrambled_rom_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "data": attr.label_list(allow_files = True),
@@ -461,6 +499,7 @@ elf_to_scrambled_rom_vmem = rv_rule(
             allow_single_file = True,
         ),
     },
+    implementation = _elf_to_scrambled_rom_impl,
 )
 
 def _bin_to_vmem_impl(ctx):
@@ -509,16 +548,19 @@ def _bin_to_vmem_impl(ctx):
     )]
 
 bin_to_vmem = rv_rule(
-    implementation = _bin_to_vmem_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
         "word_size": attr.int(
             default = 64,
             doc = "Word size of VMEM file.",
             mandatory = True,
-            values = [32, 64],
+            values = [
+                32,
+                64,
+            ],
         ),
     },
+    implementation = _bin_to_vmem_impl,
 )
 
 def _scramble_flash_vmem_impl(ctx):
@@ -575,7 +617,6 @@ def _scramble_flash_vmem_impl(ctx):
     )]
 
 scramble_flash_vmem = rv_rule(
-    implementation = _scramble_flash_vmem_impl,
     attrs = {
         "otp": attr.label(allow_single_file = True),
         "otp_mmap": attr.label(
@@ -598,6 +639,7 @@ scramble_flash_vmem = rv_rule(
             cfg = "exec",
         ),
     },
+    implementation = _scramble_flash_vmem_impl,
 )
 
 def _gen_sim_dv_logs_db_impl(ctx):
@@ -635,8 +677,6 @@ def _gen_sim_dv_logs_db_impl(ctx):
     )]
 
 gen_sim_dv_logs_db = rule(
-    implementation = _gen_sim_dv_logs_db_impl,
-    cfg = opentitan_transition,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "platform": attr.string(default = OPENTITAN_PLATFORM),
@@ -649,6 +689,8 @@ gen_sim_dv_logs_db = rule(
             default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
     },
+    cfg = opentitan_transition,
+    implementation = _gen_sim_dv_logs_db_impl,
 )
 
 def _assemble_flash_image_impl(ctx):
@@ -682,13 +724,16 @@ def _assemble_flash_image_impl(ctx):
     )]
 
 assemble_flash_image = rv_rule(
-    implementation = _assemble_flash_image_impl,
     attrs = {
-        "image_size": attr.int(default = 0, doc = "Size of the assembled image"),
+        "image_size": attr.int(
+            default = 0,
+            doc = "Size of the assembled image",
+        ),
         "output": attr.string(),
         "binaries": attr.label_keyed_string_dict(allow_empty = False),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
+    implementation = _assemble_flash_image_impl,
 )
 
 def opentitan_binary(
@@ -878,13 +923,13 @@ def _pick_correct_archive_for_device(ctx):
     return [cc_common.merge_cc_infos(cc_infos = cc_infos)]
 
 pick_correct_archive_for_device = rv_rule(
-    implementation = _pick_correct_archive_for_device,
     attrs = {
         "deps": attr.label_list(allow_files = True),
         "device": attr.string(),
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
+    implementation = _pick_correct_archive_for_device,
 )
 
 def opentitan_multislot_flash_binary(
