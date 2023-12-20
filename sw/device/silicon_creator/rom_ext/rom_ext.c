@@ -21,6 +21,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -106,16 +107,19 @@ void rom_ext_check_rom_expectations(void) {
   sec_mmio_check_values(rnd_uint32());
 }
 
-void rom_ext_init(void) {
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_init(void) {
   sec_mmio_next_stage_init();
-
   lc_state = lifecycle_state_get();
-
-  // TODO: Verify ePMP expectations from ROM.
-
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
+
+  // TODO: Verify ePMP expectations from ROM.
+
+  // Conditionally patch AST and check that it is in the expected state.
+  HARDENED_RETURN_IF_ERROR(ast_patch(lc_state));
+  return kErrorOk;
 }
 
 void rom_ext_sram_exec(hardened_bool_t enable) {
@@ -530,7 +534,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
 void rom_ext_main(void) {
   rom_ext_check_rom_expectations();
-  rom_ext_init();
+  SHUTDOWN_IF_ERROR(rom_ext_init());
   dbg_printf("Starting ROM_EXT\r\n");
   rom_error_t error = rom_ext_try_boot();
   // If the boot failed, enter bootstrap if it's enabled.

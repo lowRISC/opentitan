@@ -17,7 +17,7 @@ LINK_ORDER = [
     "$(location //sw/device/lib/crt)",
 ]
 
-manifest({
+manifest(d = {
     "name": "manifest_sival",
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),

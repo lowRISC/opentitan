@@ -106,9 +106,11 @@ cc_library(
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
     deps = [
+        ":flash_ctrl",
         ":lifecycle",
         ":otp",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

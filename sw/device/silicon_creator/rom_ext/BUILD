@@ -219,6 +219,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
@@ -234,14 +235,14 @@ cc_library(
     ],
 )
 
-manifest({
+manifest(d = {
     "name": "manifest_standard",
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "visibility": ["//visibility:public"],
 })
 
-manifest({
+manifest(d = {
     "name": "manifest_virtual",
     "address_translation": hex(CONST.HARDENED_TRUE),
     "identifier": hex(CONST.ROM_EXT),
@@ -301,7 +302,7 @@ opentitan_binary(
     ],
 )
 
-manifest({
+manifest(d = {
     "name": "manifest_bad_address_translation",
     "address_translation": "0",
     "identifier": hex(CONST.ROM_EXT),
