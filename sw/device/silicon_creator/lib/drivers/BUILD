@@ -295,12 +295,12 @@ opentitan_test(
     ),
     deps = [
         ":keymgr",
+        ":kmac",
         ":lifecycle",
         ":retention_sram",
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:flash_ctrl_testutils",
