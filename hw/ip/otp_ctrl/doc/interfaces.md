@@ -250,6 +250,7 @@ The keys can be requested as illustrated below:
 
 The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
+The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
 
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_sync_reqack.sv` primitive as shown below.
@@ -279,6 +280,7 @@ The wave diagram below illustrates this process for the OTBN scrambling device.
 ```
 
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
+The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
 It should be noted that this mechanism requires the EDN and entropy distribution network to be operational, and a key derivation request will block if they are not.
 
 Note that the req/ack protocol runs on the OTP clock.
