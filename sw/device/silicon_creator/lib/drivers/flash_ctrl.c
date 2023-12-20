@@ -699,10 +699,17 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
  * `flash_ctrl_creator_info_pages_lockdown()`.
  */
 static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
-    &kFlashCtrlInfoPageCreatorSecret,   &kFlashCtrlInfoPageOwnerSecret,
-    &kFlashCtrlInfoPageWaferAuthSecret, &kFlashCtrlInfoPageAttestationKeySeeds,
-    &kFlashCtrlInfoPageBootData0,       &kFlashCtrlInfoPageBootData1,
-    &kFlashCtrlInfoPageOwnerSlot0,      &kFlashCtrlInfoPageOwnerSlot1,
+    // Bank 0
+    &kFlashCtrlInfoPageFactoryId,
+    &kFlashCtrlInfoPageCreatorSecret,
+    &kFlashCtrlInfoPageOwnerSecret,
+    &kFlashCtrlInfoPageWaferAuthSecret,
+    &kFlashCtrlInfoPageAttestationKeySeeds,
+    // Bank 1
+    &kFlashCtrlInfoPageBootData0,
+    &kFlashCtrlInfoPageBootData1,
+    &kFlashCtrlInfoPageOwnerSlot0,
+    &kFlashCtrlInfoPageOwnerSlot1,
 };
 
 enum {
