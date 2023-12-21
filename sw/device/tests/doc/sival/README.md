@@ -165,11 +165,12 @@ The following command runs the `SV1` test suite on `fpga_cw310_sival` and
 `fpga_cw310_sival_rom_ext` execution environments.
 
 ```console
-bazel test   --define DISABLE_VERILATOR_BUILD=true   \
-    --test_tag_filters=cw310_sival,cw310_sival_rom_ext   \
-    --test_output=streamed   \
+bazel test   --define DISABLE_VERILATOR_BUILD=true      \
+    --build_tag_filters=cw310_sival,cw310_sival_rom_ext \
+    --test_tag_filters=cw310_sival,cw310_sival_rom_ext  \
+    --test_output=streamed          \
     --define bitstream=gcp_splice   \
-    --cache_test_results=no \
+    --cache_test_results=no         \
     //sw/device/tests/sival:sv1_tests
 ```
 
@@ -180,15 +181,15 @@ execution environment. The binaries are signed with the `earlgrey_a0_dev_0`
 key using the `nitrokey` signing token configuration.
 
 ```console
-bazel test --define DISABLE_VERILATOR_BUILD=true   \
-    --//signing:token=//signing/tokens:nitrokey \
+bazel test --define DISABLE_VERILATOR_BUILD=true \
+    --//signing:token=//signing/tokens:nitrokey  \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
     --build_tag_filters=silicon_creator \
-    --test_tag_filters=silicon_creator \
-    --test_output=streamed   \
-    --define bitstream=gcp_splice   \
-    --cache_test_results=no \
-    --local_test_jobs 1 \
+    --test_tag_filters=silicon_creator  \
+    --test_output=streamed              \
+    --define bitstream=gcp_splice       \
+    --cache_test_results=no             \
+    --local_test_jobs 1                 \
     //sw/device/tests/sival:sv2_tests
 ```
 
@@ -199,21 +200,23 @@ The following command runs the `SV2` test suite using the
 using the `cloud_kms` signing token configuration.
 
 ```console
-bazel test --define DISABLE_VERILATOR_BUILD=true   \
-    --//signing:token=//signing/tokens:cloud_kms \
+bazel test --define DISABLE_VERILATOR_BUILD=true    \
+    --//signing:token=//signing/tokens:cloud_kms    \
     --build_tag_filters=silicon_owner_sival_rom_ext \
-    --test_tag_filters=silicon_owner_sival_rom_ext \
-    --test_output=streamed   \
+    --test_tag_filters=silicon_owner_sival_rom_ext  \
+    --test_output=streamed          \
     --define bitstream=gcp_splice   \
-    --cache_test_results=no \
-    --local_test_jobs 1 \
+    --cache_test_results=no         \
+    --local_test_jobs 1             \
     //sw/device/tests/sival:sv2_tests
 ```
 
 ## Read More
 
-*  [SiVal Developer Guide](./devguide.md)
-*  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
 *  [Build & Test Rules](../../../../../rules/opentitan/README.md)
-*  [OTP Build and Test Infrastructure](../../../../../hw/ip/otp_ctrl/data/README.md)
 *  [FPGA Bitstreams](../../../../../hw/bitstream/README.md)
+*  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
+*  [OTP Build and Test Infrastructure](../../../../../hw/ip/otp_ctrl/data/README.md)
+*  [ROM\_EXT for Silicon Validation](../../../silicon_creator/rom_ext/doc/si_val.md)
+*  [Signing Guide](../../../../../signing/README.md)
+*  [SiVal Developer Guide](./devguide.md)
