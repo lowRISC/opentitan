@@ -5,6 +5,7 @@
 EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS = [
     "sival_bringup",
     "sival",
+    "prodc",
 ]
 
 _DEVICE_ID_AND_TEST_TOKENS = """
