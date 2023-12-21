@@ -36,9 +36,9 @@ impl SerialPortUart {
     const FOREVER: Duration = Duration::from_secs(100 * 365 * 86400);
 
     /// Open the given serial device, such as `/dev/ttyUSB0`.
-    pub fn open(port_name: &str) -> Result<Self> {
+    pub fn open(port_name: &str, baud: u32) -> Result<Self> {
         let lock = SerialPortExclusiveLock::lock(port_name)?;
-        let port = TTYPort::open(&serialport::new(port_name, 115200))
+        let port = TTYPort::open(&serialport::new(port_name, baud))
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
