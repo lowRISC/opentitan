@@ -114,6 +114,7 @@ CONST = struct(
     ),
     MANUF_STATE = struct(
         SIVAL = 0x30305653,  # ASCII `SV00`.
+        PRODC = 0x30304350,  # ASCII `PC00`.
     ),
 )
 
