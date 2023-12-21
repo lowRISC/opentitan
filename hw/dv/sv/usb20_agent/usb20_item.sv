@@ -71,8 +71,88 @@ class data_pkt extends usb20_item;
   function void set_payload(byte bmRequestType, byte bRequest, byte wVH, byte wVL, byte wIH,
                             byte wIL, byte wLH, byte wLL);
 
+<<<<<<< HEAD
     data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
     crc16 = generate_crc16(data);
+=======
+    // bRequestType 0_00_00000
+    if (bmRequestType == bmRequestType0) begin
+      if (bRequest == bRequestCLEAR_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_ADDRESS) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_CONFIGURATION) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_DESCRIPTOR) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end
+
+    // bRequestType 0_00_00001
+    else if (bmRequestType == bmRequestType1) begin
+      if (bRequest == bRequestCLEAR_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_INTERFACE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end
+
+    // bRequestType 0_00_00010
+    else if (bmRequestType == bmRequestType2) begin
+      if (bRequest == bRequestCLEAR_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSET_FEATURE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end
+
+    // bRequestType 1_00_00000
+    else if (bmRequestType == bmRequestType3) begin
+      if(bRequest == bRequestGET_CONFIGURATION) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestGET_DESCRIPTOR) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestGET_STATUS) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end
+
+    // bRequestType 1_00_00001
+    else if (bmRequestType == bmRequestType4) begin
+      if (bRequest == bRequestGET_INTERFACE) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestGET_STATUS) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end
+
+    // bRequestType 1_00_00010
+    else if (bmRequestType == bmRequestType5) begin
+      if (bRequest == bRequestGET_STATUS) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+      else if (bRequest == bRequestSYNCH_FRAME) begin
+        data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+      end
+    end else begin
+       data = data;
+    end
+     crc16 = generate_crc16(data);
+>>>>>>> 331d1f7645 ([Usbdev] usbdev_env)
   endfunction
 
   function void post_randomize();
