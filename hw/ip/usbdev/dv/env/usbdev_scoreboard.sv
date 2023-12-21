@@ -9,7 +9,14 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 );
   `uvm_component_utils(usbdev_scoreboard)
 
-  // local variables
+  usbdev_packetiser  m_packetiser;
+  usbdev_TransactionManager m_usbdev_trans;
+  usbdev_pkt_manager m_pkt_manager;
+  usb20_item m_usb20_item;
+
+  // Arrays to store actual packet and expected packet
+  bit expected_pkt[];
+  bit actual_pkt[];
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(usb20_item) usb20_fifo;
@@ -25,6 +32,10 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    m_packetiser = new();
+    m_pkt_manager = new();
+    m_usbdev_trans = new();
+    m_usb20_item = new();
     usb20_fifo = new("usb20_fifo", this);
   endfunction
 
@@ -42,9 +53,25 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   virtual task process_usb20_fifo();
     usb20_item item;
     forever begin
+      usbdev_expected_pkt();
       usb20_fifo.get(item);
-      `uvm_info(`gfn, $sformatf("received usb20 item:\n%0s", item.sprint()), UVM_HIGH)
+      item.pack(actual_pkt);
+      `uvm_info(`gfn, $sformatf("received usb20 item :\n%0s", item.sprint()), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("ACTUAL PACKET : %p", actual_pkt), UVM_DEBUG)
     end
+  endtask
+
+  // usbdev_expected_pkt task : To run the predictor
+  // and compare the actual pkt with expected pkt
+  // -------------------------------
+  virtual task usbdev_expected_pkt();
+    m_packetiser.pack_pkt(m_usb20_item);
+    m_usbdev_trans.transaction_manager(m_packetiser.token_pkt_arr, m_packetiser.data_pkt_arr,
+                                       m_packetiser.handshake_pkt_arr);
+    m_pkt_manager.pop_packet(expected_pkt);
+    `uvm_info(`gfn, $sformatf("EXPECTED PACKET : %p", expected_pkt), UVM_DEBUG)
+    foreach(actual_pkt[i])
+      `DV_CHECK_EQ(actual_pkt[i], expected_pkt[i]);
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -72,6 +99,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
+
     case (csr.get_name())
       // add individual case item for each csr
       "usbctrl": begin
@@ -114,6 +142,72 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
           end
         end // read & data phase
       end
+      "alert_test": begin
+        // TODO
+      end
+      "ep_out_enable": begin
+        // TODO
+      end
+      "ep_in_enable": begin
+        // TODO
+      end
+      "usbstat": begin
+        do_read_check = 1'b0;
+      end
+      "avbuffer": begin
+        // TODO
+      end
+      "rxfifo": begin
+        do_read_check = 1'b0;
+      end
+      "rxenable_setup": begin
+        // TODO
+      end
+      "rxenable_out": begin
+        // TODO
+      end
+      "set_nak_out": begin
+        // TODO
+      end
+      "in_sent": begin
+        // TODO
+      end
+      "out_stall": begin
+        // TODO
+      end
+      "in_stall": begin
+        // TODO
+      end
+      "configin": begin
+        // TODO
+      end
+      "out_iso": begin
+        // TODO
+      end
+      "in_iso": begin
+        // TODO
+      end
+      "data_toggle_clear": begin
+        // TODO
+      end
+      "phy_pins_sense": begin
+        // TODO
+      end
+      "phy_pin_drive": begin
+        // TODO
+      end
+      "phy_config": begin
+        // TODO
+      end
+      "wake_control": begin
+        // TODO
+      end
+      "wake_events": begin
+        // TODO
+      end
+      "buffer": begin
+        // TODO
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
@@ -131,12 +225,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+    // Reset local fifos queues and variables
+    usb20_fifo.flush();
+    usb20_q.delete();
+    intr_exp = 0;
+    intr_exp_at_addr_phase = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+    // Post test checks to ensure that all local fifos and queues are empty
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(usb20_item, usb20_fifo)
+    `DV_EOT_PRINT_Q_CONTENTS(usb20_item, usb20_q)
   endfunction
 
 endclass
