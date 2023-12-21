@@ -175,7 +175,7 @@ bazel test   --define DISABLE_VERILATOR_BUILD=true   \
 
 ### Silicon Creator
 
-The following commands runs the `SV2` test suite on the `silicon_creator`
+The following command runs the `SV2` test suite using the `silicon_creator`
 execution environment. The binaries are signed with the `earlgrey_a0_dev_0`
 key using the `nitrokey` signing token configuration.
 
@@ -189,6 +189,22 @@ bazel test --define DISABLE_VERILATOR_BUILD=true   \
     --cache_test_results=no \
     --local_test_jobs 1 \
     //sw/device/tests/sival:sv2_tests
+```
+
+### Silicon Owner
+
+The following command runs the `hmac_smoketest` using the
+`silicon_owner_sival_rom_ext` execution environment. The binaries are signed
+using the `cloud_kms` signing token configuration.
+
+```console
+bazel test --define DISABLE_VERILATOR_BUILD=true   \
+    --//signing:token=//signing/tokens:cloud_kms \
+    --test_output=streamed   \
+    --define bitstream=gcp_splice   \
+    --cache_test_results=no \
+    --local_test_jobs 1 \
+    //sw/device/tests:hmac_smoketest_silicon_owner_sival_rom_ext
 ```
 
 ## Read More
