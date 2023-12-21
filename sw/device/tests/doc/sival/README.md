@@ -183,7 +183,8 @@ key using the `nitrokey` signing token configuration.
 bazel test --define DISABLE_VERILATOR_BUILD=true   \
     --//signing:token=//signing/tokens:nitrokey \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
-    --test_tag_filters=silicon \
+    --build_tag_filters=silicon_creator \
+    --test_tag_filters=silicon_creator \
     --test_output=streamed   \
     --define bitstream=gcp_splice   \
     --cache_test_results=no \
@@ -193,18 +194,20 @@ bazel test --define DISABLE_VERILATOR_BUILD=true   \
 
 ### Silicon Owner
 
-The following command runs the `hmac_smoketest` using the
+The following command runs the `SV2` test suite using the
 `silicon_owner_sival_rom_ext` execution environment. The binaries are signed
 using the `cloud_kms` signing token configuration.
 
 ```console
 bazel test --define DISABLE_VERILATOR_BUILD=true   \
     --//signing:token=//signing/tokens:cloud_kms \
+    --build_tag_filters=silicon_owner_sival_rom_ext \
+    --test_tag_filters=silicon_owner_sival_rom_ext \
     --test_output=streamed   \
     --define bitstream=gcp_splice   \
     --cache_test_results=no \
     --local_test_jobs 1 \
-    //sw/device/tests:hmac_smoketest_silicon_owner_sival_rom_ext
+    //sw/device/tests/sival:sv2_tests
 ```
 
 ## Read More

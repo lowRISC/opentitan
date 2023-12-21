@@ -122,6 +122,11 @@ def _hacky_tags(env):
         # rule's implementation, we have to infer these tag names from the
         # label name.
         tags.append(suffix[5:])
+    if suffix.startswith("silicon"):
+        # We add the entire suffix for silicon exec environments to be able
+        # to filter tests by them. "silicon_creator" and
+        # "silicon_owner_sival_rom_ext" have different target configurations.
+        tags.append(suffix)
     return tags
 
 def opentitan_test(
