@@ -9,7 +9,7 @@ typedef enum bit [7:0] {PidTypeOutToken=8'b0001_1110, PidTypeInToken=8'b1001_011
   PidTypeAck=8'b0010_1101, PidTypeNak=8'b1010_0101, PidTypeStall=8'b1110_0001,
   PidTypeNyet=8'b0110_1001} pid_type_e;
 
-virtual class usb20_item extends uvm_sequence_item;
+class usb20_item extends uvm_sequence_item;
   pid_type_e m_pid_type;
   pkt_type_e m_pkt_type;
 
