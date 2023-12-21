@@ -13,13 +13,15 @@ use std::time::{Duration, Instant};
 
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
+use crate::transport::common::uart::SerialPortUart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
 use crate::transport::verilator::subprocess::{Options, Subprocess};
-use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::parse_int::ParseInt;
+
+const UART_BAUD: u32 = 40;
 
 pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
@@ -29,7 +31,7 @@ pub(crate) struct Inner {
 /// Represents the verilator transport object.
 pub struct Verilator {
     subprocess: Option<Subprocess>,
-    pub uart_file: String,
+    pub uart_tty: String,
     pub spi_file: String,
     pub gpio_read_file: String,
     pub gpio_write_file: String,
@@ -67,7 +69,7 @@ impl Verilator {
 
         Ok(Verilator {
             subprocess: Some(subprocess),
-            uart_file: uart,
+            uart_tty: uart,
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
@@ -103,7 +105,7 @@ impl Transport for Verilator {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
-            inner.uart = Some(Rc::new(VerilatorUart::open(&self.uart_file)?));
+            inner.uart = Some(Rc::new(SerialPortUart::open(&self.uart_tty, UART_BAUD)?));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
