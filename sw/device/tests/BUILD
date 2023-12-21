@@ -3999,10 +3999,8 @@ opentitan_binary(
             test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
         ),
         exec_env = {
-            # TODO: this test currently fails on FPGA.
-            # "//hw/top_earlgrey:fpga_cw310_sival": None,
-            # "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            # "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
