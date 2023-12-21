@@ -194,5 +194,51 @@ Configuration:
 ### `:fpga_cw310_sival_rom_ext`
 
 FPGA configuration used to emulate silicon targets containing a `rom_ext`
-stage.This is the recommended option for test cases that implemented to run in
+stage. This is the recommended option for test cases that implemented to run in
 `prod` or `prod_end` life cycle states.
+
+## Silicon Targets
+
+`//hw/top_earlgrey/BUILD` defines targets for silicon execution. The following
+sections describe the targets in more detail.
+
+### `:silicon_creator`
+
+This execution environment can be used by targets that require execution at the
+`rom_ext` stage level as well as SRAM programs. Use the
+`silicon_owner_sival_rom_ext` execution environment to target silicon
+configurations where the test must be loaded by a `rom_ext`.
+
+This execution environment is restricted to devices in one of the following
+life cycle stages:
+
+* `test_unlocked{1..7}`
+* `dev`
+* `rma`
+
+This is because PROD signing keys are restricted to offline signing, and by
+policy PROD keys are only targeted for production environments.
+
+> This execution environment requires a physical signing token. See
+[NitroKey](../../../../../signing/README.md#configuration-of-nitrokeys) token
+configuration for more details.
+
+> See [instructions](./README.md#silicon-creator) on how to run the SiVal test
+suites with this execution environment.
+
+### `:silicon_owner_sival_rom_ext`
+
+This execution environment is used to execute on silicon targets containing a
+`rom_ext` stage. This is the recommended option for test cases that implemented
+to run in `prod` or `prod_end` life cycle states.
+
+> This execution environment requires access to the OpenTitan Cloud KMS
+service. See
+[CloudKMS](../../../../../signing/README.md#configuration-for-silicon_owner-sival-signing)
+for more details.
+
+> See [instructions](./README.md#silicon-owner) on how to run the SiVal test
+suites with this execution environment.
+
+> See [ROM\_EXT for SiVal](../../../silicon_creator/rom_ext/doc/si_val.md) for
+more details on the ROM\_EXT configuration.
