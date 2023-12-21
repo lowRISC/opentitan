@@ -5,7 +5,6 @@
 pub mod gpio;
 pub mod subprocess;
 pub mod transport;
-pub mod uart;
 
 pub use subprocess::Options;
 pub use transport::Verilator;
