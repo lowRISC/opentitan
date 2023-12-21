@@ -152,6 +152,24 @@ fpga_cw310(
     """,
 )
 
+fpga_cw310(
+    name = "fpga_hyper310_rom_ext",
+    testonly = True,
+    base = ":fpga_hyper310_rom_with_fake_keys",
+    exec_env = "fpga_hyper310_rom_ext",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+    param = {
+        "interface": "hyper310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
 # FPGA configuration used to emulate silicon targets. This rule can be used by
 # targets that require executing at the `rom_ext` stage level in flash, as well
 # as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
@@ -178,7 +196,7 @@ fpga_cw310(
 fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
     testonly = True,
-    base = ":fpga_cw310_rom_ext",
+    base = ":fpga_hyper310_rom_ext",
     exec_env = "fpga_cw310_sival_rom_ext",
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
