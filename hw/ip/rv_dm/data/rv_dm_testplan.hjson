@@ -147,9 +147,10 @@
       desc: '''
             Verify that the debugger can cancel an on-going DMI transaction with a hard reset.
 
-            - Perform a random legal DMI write to a chosen DMI register and immediately write to
-              dtmcs[dmihardreset] bit.
-            - Read the target DMI register to verify the write did not succeed.
+            - Perform DMI register read and check the data value.
+            - Write 1 to dtmcs[dmihardreset] bit.
+            - Perform DMI register read and check the data value to make sure the reset doesn't
+              create any harmful event.
             '''
       stage: V2
       tests: [] // TODO(#15670)
