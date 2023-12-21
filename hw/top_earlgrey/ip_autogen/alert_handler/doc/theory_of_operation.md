@@ -81,7 +81,7 @@ The latter is to ensure that all escalation receivers are always active and have
 
 #### Low-power Indication Signals
 
-The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication signals from the [clock](../../../../ip/clkmgr/README.md) and [reset managers](../../../../ip/rstmgr/README.md).
+The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication signals from the [clock](../../../../ip/clkmgr/README.md) and [reset managers](../../rstmgr/README.md).
 These indication signals convey whether a specific group of alert senders are either clock gated or in reset.
 As explained in [more detail below](#low-power-management-of-alert-channels), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
 

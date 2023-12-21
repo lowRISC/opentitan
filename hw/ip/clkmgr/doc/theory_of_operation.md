@@ -151,7 +151,7 @@ This ensures that other clock manager functions still release early relative to 
 The escalation reset restoration is especially important as the clock manager can generate fatal faults that lead to escalation.
 If there were not a mechanism that allows escalation to clear the original fault, the system would simply remain in a faulted state until a user initiated a `por` event.
 
-For a detailed breakdown between `por` and `life cycle` resets, please see the [reset manager](../../rstmgr/README.md).
+For a detailed breakdown between `por` and `life cycle` resets, please see the [reset manager](../../../top_earlgrey/ip_autogen/rstmgr/README.md).
 
 The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
 ![Clock Manager Block Diagram](../doc/clkmgr_rst_domain.svg)

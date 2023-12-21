@@ -24,7 +24,6 @@
 | [`pinmux`]       | Multiplexes between on-chip hardware blocks and pins; can be configured at runtime                                                |
 | [`pwm`]          | Transmission of pulse-width modulated output signals with adjustable duty cycle                                                   |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
-| [`rstmgr`]       | Controls the on-chip reset signals, records reset cause and CPU crash dump for software                                           |
 | [`rv_core_ibex`] | Dual-core lockstep 32-bit RISC-V processor running application and control software                                               |
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_timer`]     | Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers                                                         |
@@ -58,7 +57,6 @@
 [`pinmux`]: ./pinmux/README.md
 [`pwm`]: ./pwm/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
-[`rstmgr`]: ./rstmgr/README.md
 [`rv_core_ibex`]: ./rv_core_ibex/README.md
 [`rv_dm`]: ./rv_dm/README.md
 [`rv_timer`]: ./rv_timer/README.md

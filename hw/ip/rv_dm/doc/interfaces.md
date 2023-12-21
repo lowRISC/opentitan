@@ -60,7 +60,7 @@ Note that in order to support the non-debug module (NDM) reset functionality, th
 
 The first one comes directly from the life cycle controller and is a "live" value, decoded from the current life cycle state.
 The second one is a latched version coming from the [strap sampling and TAP selection logic inside the pinmux](../../pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
-When NDM reset is triggered the life cycle controller is reset, but the debug module is not, so the latched variant of the signal allows the JTAG side of the debug module to remain operational.
+When NDM reset is triggered the life cycle controller is reset, but the debug module is not, so the latched variant of the signal allows to keep the JTAG side of the debug module operational.
 
 ## JTAG
 

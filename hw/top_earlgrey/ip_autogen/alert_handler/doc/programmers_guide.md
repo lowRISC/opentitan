@@ -10,7 +10,7 @@ The low-power state management of alert channels is handled entirely by hardware
 Note however that the LPGs inherit the security properties of the associated clock groups and resets.
 This means that the low-power state of certain alerts can be controlled by SW by means of clock gating or block reset.
 For example, certain crypto blocks are located in a transactional clock group which can be clock gated by SW - and this also affects the associated alerts of these crypto blocks.
-See [clock](../../../../ip/clkmgr/README.md) and [reset managers](../../../../ip/rstmgr/README.md) for more detail.
+See [clock](../../../../ip/clkmgr/README.md) and [reset managers](../../rstmgr/README.md) for more detail.
 
 
 ## Initialization
