@@ -154,23 +154,20 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       .len = ARRAYSIZE(share1),
   };
 
-  // Construct the private key.
-  size_t key_length;
-  size_t keyblob_length;
-  TRY(otcrypto_rsa_private_key_length(kRsaSize3072, &key_length,
-                                      &keyblob_length));
   crypto_key_config_t private_key_config = {
       .version = kCryptoLibVersion1,
       .key_mode = key_mode,
-      .key_length = key_length,
+      .key_length = kRsa3072PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
   };
-  uint32_t keyblob[ceil_div(keyblob_length, sizeof(uint32_t))];
+  size_t keyblob_words =
+      ceil_div(kRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
   crypto_blinded_key_t private_key = {
       .config = private_key_config,
       .keyblob = keyblob,
-      .keyblob_length = keyblob_length,
+      .keyblob_length = kRsa3072PrivateKeyblobBytes,
   };
   crypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
@@ -232,19 +229,15 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
       return INVALID_ARGUMENT();
   };
 
-  // Get the public key length from the size.
-  size_t key_length;
-  TRY(otcrypto_rsa_public_key_length(kRsaSize3072, &key_length));
-
   // Construct the public key.
   crypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  uint32_t public_key_data[ceil_div(key_length, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kRsa3072PublicKeyBytes, sizeof(uint32_t))];
   crypto_unblinded_key_t public_key = {
       .key_mode = key_mode,
-      .key_length = key_length,
+      .key_length = kRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
   TRY(otcrypto_rsa_public_key_construct(kRsaSize3072, modulus,
