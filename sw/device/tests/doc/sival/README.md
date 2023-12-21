@@ -184,8 +184,8 @@ key using the `nitrokey` signing token configuration.
 bazel test --define DISABLE_VERILATOR_BUILD=true \
     --//signing:token=//signing/tokens:nitrokey  \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
-    --build_tag_filters=silicon_creator \
-    --test_tag_filters=silicon_creator  \
+    --build_tag_filters=silicon_creator,-broken \
+    --test_tag_filters=silicon_creator,-broken  \
     --test_output=streamed              \
     --define bitstream=gcp_splice       \
     --cache_test_results=no             \
@@ -202,8 +202,8 @@ using the `cloud_kms` signing token configuration.
 ```console
 bazel test --define DISABLE_VERILATOR_BUILD=true    \
     --//signing:token=//signing/tokens:cloud_kms    \
-    --build_tag_filters=silicon_owner_sival_rom_ext \
-    --test_tag_filters=silicon_owner_sival_rom_ext  \
+    --build_tag_filters=silicon_owner_sival_rom_ext,-broken \
+    --test_tag_filters=silicon_owner_sival_rom_ext,-broken  \
     --test_output=streamed          \
     --define bitstream=gcp_splice   \
     --cache_test_results=no         \
