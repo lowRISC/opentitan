@@ -67,7 +67,8 @@ class usbdev_TransactionManager extends uvm_object;
          end
        end
        2: begin // wait for handshake Assuming HANDSHAKE packet is sent by the device as an ACK TODO
-         `uvm_info(get_type_name(),"ACK Handshake",UVM_LOW);
+         pid = 8'b0010_1101;
+         m_handshake_pkt.send_handshake_packet(pid);
          state = 0;
        end
        default: state =0;
@@ -133,7 +134,8 @@ class usbdev_TransactionManager extends uvm_object;
       end
       2: begin // TODO Simulate the reception of a HANDSHAKE packet from the device.
         // Currently assuming that the HANDSHAKE packet is an ACKNOWLEDGE
-        `uvm_info(get_type_name(),"ACK Handshake",UVM_LOW);
+        pid = 8'b0010_1101;
+        m_handshake_pkt.send_handshake_packet(pid);
         state = 0;
       end
       default: state =0;
