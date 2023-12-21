@@ -47,6 +47,7 @@ jobs:
       - name: Run Verible linter action
         uses: chipsalliance/verible-linter-action@main
         with:
+          verible_version: "v0.0-3430-g060bde0f"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reviewdog_reporter: 'github-pr-check'
           suggest_fixes: 'false'
