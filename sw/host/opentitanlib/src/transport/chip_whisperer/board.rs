@@ -5,6 +5,8 @@
 pub trait Board {
     const VENDOR_ID: u16 = 0x2b3e;
     const PRODUCT_ID: u16;
+
+    const UART_BAUD: u32 = 115200;
 }
 
 pub struct Cw310 {}

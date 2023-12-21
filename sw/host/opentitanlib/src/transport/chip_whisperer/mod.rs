@@ -79,14 +79,14 @@ impl<B: Board> ChipWhisperer<B> {
             let port = ports.get(instance as usize).ok_or_else(|| {
                 TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
             })?;
-            SerialPortUart::open(&port.port_name)
+            SerialPortUart::open(&port.port_name, B::UART_BAUD)
         } else {
             let instance = instance as usize;
             ensure!(
                 instance < self.uart_override.len(),
                 TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
             );
-            SerialPortUart::open(&self.uart_override[instance])
+            SerialPortUart::open(&self.uart_override[instance], B::UART_BAUD)
         }
     }
 }
