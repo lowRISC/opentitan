@@ -7,6 +7,7 @@
 #include "sw/device/silicon_creator/manuf/data/ast/calibration_values.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
+// clang-format off
 uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {
     0x00000000,  // 0x00
     0x00000000,  // 0x04
@@ -48,3 +49,4 @@ uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {
     0x00000000,  // 0x94
     0x00000000,  // 0x98
 };
+// clang-format on

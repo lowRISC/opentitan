@@ -20,5 +20,6 @@ pub fn read_lc_state(
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
     let raw_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
     DifLcCtrlState::from_redundant_encoding(raw_lc_state)
 }
