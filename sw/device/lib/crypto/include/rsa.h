@@ -44,38 +44,38 @@ typedef enum rsa_size {
   kRsaSize4096 = 0x8da,
 } rsa_size_t;
 
-/**
- * Get the length of an RSA public key.
- *
- * The internal representation of RSA public keys is implementation-specific;
- * this function will return the expected key length for a given RSA size.
- *
- * @param size RSA size parameter.
- * @param[out] key_length Key length in bytes.
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_rsa_public_key_length(rsa_size_t size,
-                                               size_t *key_length);
-
-/**
- * Get the length of an RSA private key.
- *
- * The internal representation of RSA private keys is implementation-specific;
- * this function will return the expected key and keyblob length for a given
- * RSA size. The `key_length` output parameter represents the unmasked form of
- * the private key and is intended for the `key_length` field of
- * `crypto_key_config_t`, while the `keyblob_length` parameter represents the
- * blinded form and is intended for the `keyblob_length` field of
- * `crypto_unblinded_key_t`.
- *
- * @param size RSA size parameter.
- * @param[out] key_length Unblinded key length in bytes.
- * @param[out] keyblob_length Blinded keyblob length in bytes.
- * @return Result of the operation.
- */
-crypto_status_t otcrypto_rsa_private_key_length(rsa_size_t size,
-                                                size_t *key_length,
-                                                size_t *keyblob_length);
+enum {
+  /**
+   * Number of bytes needed for RSA public keys.
+   *
+   * The exact representation is an implementation-specific detail and subject
+   * to change. This is the length that the caller should set as `key_length`
+   * and allocate for the `key` buffer in unblinded keys.
+   */
+  kRsa2048PublicKeyBytes = 260,
+  kRsa3072PublicKeyBytes = 388,
+  kRsa4096PublicKeyBytes = 516,
+  /**
+   * Number of bytes needed for RSA private keys.
+   *
+   * The exact representation is an implementation-specific detail and subject
+   * to change. This is the length that the caller should set in `key_length`
+   * for the blinded key configuration (NOT the blinded keyblob length).
+   */
+  kRsa2048PrivateKeyBytes = 256,
+  kRsa3072PrivateKeyBytes = 384,
+  kRsa4096PrivateKeyBytes = 512,
+  /**
+   * Number of bytes needed for RSA private keyblobs.
+   *
+   * The exact representation is an implementation-specific detail and subject
+   * to change. This is the length that the caller should set in
+   * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
+   */
+  kRsa2048PrivateKeyblobBytes = 512,
+  kRsa3072PrivateKeyblobBytes = 768,
+  kRsa4096PrivateKeyblobBytes = 1024,
+};
 
 /**
  * Performs the RSA key generation.
@@ -84,13 +84,11 @@ crypto_status_t otcrypto_rsa_private_key_length(rsa_size_t size,
  * modulus (n).
  *
  * The caller should allocate space for the public key and set the `key` and
- * `key_length` fields accordingly. Use `otcrypto_rsa_public_key_length` to get
- * the expected length.
+ * `key_length` fields accordingly.
  *
  * The caller should fully populate the blinded key configuration and allocate
  * space for the keyblob, setting `config.key_length` and `keyblob_length`
- * accordingly. Use `otcrypto_rsa_private_key_length` to get the expected
- * lengths.
+ * accordingly.
  *
  * The value in the `checksum` field of key structs is not checked here and
  * will be populated by the key generation function.
@@ -108,8 +106,7 @@ crypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
  * Constructs an RSA public key from the modulus and public exponent.
  *
  * The caller should allocate space for the public key and set the `key` and
- * `key_length` fields accordingly. Use `otcrypto_rsa_public_key_length` to get
- * the expected length.
+ * `key_length` fields accordingly.
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
@@ -125,8 +122,7 @@ crypto_status_t otcrypto_rsa_public_key_construct(
  * Constructs an RSA private key from the modulus and public/private exponents.
  *
  * The caller should allocate space for the private key and set the `keyblob`,
- * `keyblob_length`, and `key_length` fields accordingly. Use
- * `otcrypto_rsa_private_key_length` to get the expected length.
+ * `keyblob_length`, and `key_length` fields accordingly.
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).

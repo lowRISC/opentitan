@@ -300,8 +300,6 @@ Always ensure that you fully understand the security implications of the padding
 
 ### RSA Synchronous API
 
-{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_public_key_length }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_length }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_public_key_construct }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}

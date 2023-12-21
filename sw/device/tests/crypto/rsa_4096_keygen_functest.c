@@ -29,36 +29,30 @@ static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
 static const key_mode_t kTestKeyMode = kKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
-  // Get the key lengths from the size.
-  size_t public_key_length;
-  TRY(otcrypto_rsa_public_key_length(kRsaSize4096, &public_key_length));
-  size_t private_key_length;
-  size_t private_keyblob_length;
-  TRY(otcrypto_rsa_private_key_length(kRsaSize4096, &private_key_length,
-                                      &private_keyblob_length));
-
   // Allocate buffer for the public key.
-  uint32_t public_key_data[ceil_div(public_key_length, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kRsa4096PublicKeyBytes, sizeof(uint32_t))];
   memset(public_key_data, 0, sizeof(public_key_data));
   crypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
-      .key_length = public_key_length,
+      .key_length = kRsa4096PublicKeyBytes,
       .key = public_key_data,
   };
 
   // Allocate buffers for the private key.
-  uint32_t keyblob[ceil_div(private_keyblob_length, sizeof(uint32_t))];
+  size_t keyblob_words =
+      ceil_div(kRsa4096PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
   memset(keyblob, 0, sizeof(keyblob));
   crypto_blinded_key_t private_key = {
       .config =
           {
               .version = kCryptoLibVersion1,
               .key_mode = kTestKeyMode,
-              .key_length = private_key_length,
+              .key_length = kRsa4096PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
               .security_level = kSecurityLevelLow,
           },
-      .keyblob_length = private_keyblob_length,
+      .keyblob_length = kRsa4096PrivateKeyblobBytes,
       .keyblob = keyblob,
   };
 
@@ -69,11 +63,11 @@ status_t keygen_then_sign_test(void) {
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
   // Interpret public key using internal RSA datatype.
-  TRY_CHECK(public_key_length == sizeof(rsa_4096_public_key_t));
+  TRY_CHECK(public_key.key_length == sizeof(rsa_4096_public_key_t));
   rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key.key;
 
   // Interpret private key using internal RSA datatype.
-  TRY_CHECK(private_keyblob_length == sizeof(rsa_4096_private_key_t));
+  TRY_CHECK(private_key.keyblob_length == sizeof(rsa_4096_private_key_t));
   rsa_4096_private_key_t *sk = (rsa_4096_private_key_t *)private_key.keyblob;
 
   // Check that the key uses the F4 exponent.
