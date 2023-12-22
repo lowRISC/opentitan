@@ -76,6 +76,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // RNG data.  For other tests (which rely on fixed RNG sequences) we leave handshaking enabled.
   bit      rng_ignores_backpressure = 0;
 
+  // The number of seeds that are consumed via the CSRNG interface or the entopy_data register are
+  // recorded by the scoreboard.
+  int      total_seeds_consumed = 0;
 
   /////////////////////
   // Knobs & Weights //
@@ -132,16 +135,27 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand ht_fail_e        which_ht_fail;
   rand cntr_e           which_cntr;
   rand which_ht_e       which_ht;
+  rand state_e          which_ht_state;
 
   rand uint  which_cntr_replicate;
 
   rand uint  which_bin;
 
   rand bit   induce_targeted_transition;
+  // Read the entropy over the entropy_data register if this is set.
+  rand mubi4_t es_route_sw;
 
   /////////////////
   // Constraints //
   /////////////////
+  constraint which_ht_state_c {
+    which_ht_state dist {
+      BootHTRunning :/ 25,
+      BootPhaseDone :/ 25,
+      StartupFail1  :/ 25,
+      ContHTRunning :/ 25
+    };
+  }
 
   constraint otp_en_es_fw_read_c {
     `DV_MUBI8_DIST(otp_en_es_fw_read, otp_en_es_fw_read_pct,
@@ -207,6 +221,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   constraint induce_targeted_transition_c {induce_targeted_transition dist {
     1                         :/ induce_targeted_transition_pct,
     0                         :/ (100 - induce_targeted_transition_pct) };}
+
+  constraint es_route_sw_c {es_route_sw inside {MuBi4False, MuBi4True};}
 
   ///////////////
   // Functions //
