@@ -759,9 +759,8 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
                                                crypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
                                                crypto_word32_buf_t *auth_tag) {
-  if (ctx == NULL || ciphertext == NULL ||
-      ciphertext_bytes_written == NULL || auth_tag == NULL ||
-      auth_tag->data == NULL) {
+  if (ctx == NULL || ciphertext == NULL || ciphertext_bytes_written == NULL ||
+      auth_tag == NULL || auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (ciphertext->len != 0 && ciphertext->data == NULL) {
@@ -785,8 +784,8 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag->len, auth_tag->data,
-                                     ciphertext_bytes_written,
+  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag->len,
+                                     auth_tag->data, ciphertext_bytes_written,
                                      ciphertext->data));
 
   // Clear the context and the key if needed.
@@ -795,15 +794,12 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_decrypt_final(aes_gcm_ctx_t *ctx,
-                                               crypto_word32_buf_t *auth_tag,
-                                               aead_gcm_tag_len_t tag_len,
-                                               crypto_byte_buf_t *plaintext,
-                                               size_t *plaintext_bytes_written,
-                                               hardened_bool_t *success) {
-  if (ctx == NULL || plaintext == NULL ||
-      plaintext_bytes_written == NULL || auth_tag == NULL ||
-      auth_tag->data == NULL || success == NULL) {
+crypto_status_t otcrypto_aes_gcm_decrypt_final(
+    aes_gcm_ctx_t *ctx, crypto_const_word32_buf_t auth_tag,
+    aead_gcm_tag_len_t tag_len, crypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytes_written, hardened_bool_t *success) {
+  if (ctx == NULL || plaintext == NULL || plaintext_bytes_written == NULL ||
+      auth_tag.data == NULL || success == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (plaintext->len != 0 && plaintext->data == NULL) {
@@ -813,7 +809,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_final(aes_gcm_ctx_t *ctx,
   *success = kHardenedBoolFalse;
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -828,7 +824,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_final(aes_gcm_ctx_t *ctx,
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag->len, auth_tag->data,
+  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
                                      plaintext_bytes_written, plaintext->data,
                                      success));
 

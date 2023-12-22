@@ -107,7 +107,7 @@ opentitan_test(
     srcs = ["aes_gcm_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         ":aes_gcm_testutils",

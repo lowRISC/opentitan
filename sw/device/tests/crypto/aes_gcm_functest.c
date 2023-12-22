@@ -15,7 +15,7 @@ const aes_gcm_test_t *current_test = NULL;
 
 static status_t encrypt_test(void) {
   uint32_t cycles;
-  TRY(aes_gcm_testutils_encrypt(current_test, &cycles));
+  TRY(aes_gcm_testutils_encrypt(current_test, /*streaming=*/false, &cycles));
   LOG_INFO("Encrypt cycles: %d", cycles);
   return OK_STATUS();
 }
@@ -23,8 +23,26 @@ static status_t encrypt_test(void) {
 static status_t decrypt_test(void) {
   uint32_t cycles;
   hardened_bool_t tag_valid;
-  TRY(aes_gcm_testutils_decrypt(current_test, &tag_valid, &cycles));
+  TRY(aes_gcm_testutils_decrypt(current_test, &tag_valid, /*streaming=*/false,
+                                &cycles));
   LOG_INFO("Decrypt cycles: %d", cycles);
+  TRY_CHECK(tag_valid == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
+static status_t encrypt_streaming_test(void) {
+  uint32_t cycles;
+  TRY(aes_gcm_testutils_encrypt(current_test, /*streaming=*/true, &cycles));
+  LOG_INFO("Encrypt streaming cycles: %d", cycles);
+  return OK_STATUS();
+}
+
+static status_t decrypt_streaming_test(void) {
+  uint32_t cycles;
+  hardened_bool_t tag_valid;
+  TRY(aes_gcm_testutils_decrypt(current_test, &tag_valid, /*streaming=*/true,
+                                &cycles));
+  LOG_INFO("Decrypt streaming cycles: %d", cycles);
   TRY_CHECK(tag_valid == kHardenedBoolTrue);
   return OK_STATUS();
 }
@@ -44,6 +62,8 @@ bool test_main(void) {
     LOG_INFO("Tag length = %d", current_test->tag_len);
     EXECUTE_TEST(result, encrypt_test);
     EXECUTE_TEST(result, decrypt_test);
+    EXECUTE_TEST(result, encrypt_streaming_test);
+    EXECUTE_TEST(result, decrypt_streaming_test);
   }
 
   return status_ok(result);
