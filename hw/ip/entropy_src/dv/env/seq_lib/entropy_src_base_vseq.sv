@@ -434,28 +434,31 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
   endtask // run_rng_host_seq
 
-  task repcnt_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq);
+  task repcnt_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+                          int num_trans = m_rng_push_seq.num_trans);
     // Set rng_val
     // Use randomly generated but fixed rng_val through the test to cause the repcnt health test
     // to fail
     `DV_CHECK_STD_RANDOMIZE_FATAL(rng_val)
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
+    for (int i = 0; i < num_trans; i++) begin
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // repcnt_ht_fail_seq
 
   task adaptp_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_thresh, bit[15:0] bypass_thresh);
-    ral.adaptp_hi_thresholds.fips_thresh.set(fips_thresh);
-    ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_thresh);
+                          bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
+                          bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
+                          int num_trans = m_rng_push_seq.num_trans);
+    ral.adaptp_hi_thresholds.fips_thresh.set(fips_hi_thresh);
+    ral.adaptp_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.adaptp_hi_thresholds));
-    ral.adaptp_lo_thresholds.fips_thresh.set(fips_thresh);
-    ral.adaptp_lo_thresholds.bypass_thresh.set(bypass_thresh);
+    ral.adaptp_lo_thresholds.fips_thresh.set(fips_lo_thresh);
+    ral.adaptp_lo_thresholds.bypass_thresh.set(bypass_lo_thresh);
     csr_update(.csr(ral.adaptp_lo_thresholds));
     // Turn on module_enable
     enable_dut();
     // Set rng_val
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
+    for (int i = 0; i < num_trans; i++) begin
       rng_val = (i % 16 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
                                (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
@@ -463,31 +466,34 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask // adaptp_ht_fail_seq
 
   task bucket_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_thresh, bit[15:0] bypass_thresh);
+                          bit[15:0] fips_thresh, bit[15:0] bypass_thresh,
+                          int num_trans = m_rng_push_seq.num_trans);
     ral.bucket_thresholds.fips_thresh.set(fips_thresh);
     ral.bucket_thresholds.bypass_thresh.set(bypass_thresh);
     csr_update(.csr(ral.bucket_thresholds));
     // Turn on module_enable
     enable_dut();
     // Set rng_val
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
+    for (int i = 0; i < num_trans; i++) begin
       rng_val = (i % 2 == 0 ? 5 : 10);
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
     end
   endtask // bucket_ht_fail_seq
 
   task markov_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
-                          bit[15:0] fips_thresh, bit[15:0] bypass_thresh);
-    ral.markov_hi_thresholds.fips_thresh.set(fips_thresh);
-    ral.markov_hi_thresholds.bypass_thresh.set(bypass_thresh);
+                          bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
+                          bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
+                          int num_trans = m_rng_push_seq.num_trans);
+    ral.markov_hi_thresholds.fips_thresh.set(fips_hi_thresh);
+    ral.markov_hi_thresholds.bypass_thresh.set(bypass_hi_thresh);
     csr_update(.csr(ral.markov_hi_thresholds));
-    ral.markov_lo_thresholds.fips_thresh.set(fips_thresh);
-    ral.markov_lo_thresholds.bypass_thresh.set(bypass_thresh);
+    ral.markov_lo_thresholds.fips_thresh.set(fips_lo_thresh);
+    ral.markov_lo_thresholds.bypass_thresh.set(bypass_lo_thresh);
     csr_update(.csr(ral.markov_lo_thresholds));
     // Turn on module_enable
     enable_dut();
     // Set rng_val
-    for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
+    for (int i = 0; i < num_trans; i++) begin
       rng_val = (i % 2 == 0 ? (cfg.which_ht == high_test ? 0 : 1) :
                               (cfg.which_ht == high_test ? 1 : 0));
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
@@ -607,7 +613,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     bit [15:0] fips_thresh = 16'h0008;
     bit [15:0] bypass_thresh = 16'h0008;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
-    adaptp_ht_fail_seq(m_rng_push_seq, fips_thresh, bypass_thresh);
+    adaptp_ht_fail_seq(m_rng_push_seq, fips_thresh, fips_thresh, bypass_thresh, bypass_thresh);
     // Start the sequence
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
@@ -656,7 +662,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     fips_thresh = 16'h0008;
     bypass_thresh = 16'h0008;
-    markov_ht_fail_seq(m_rng_push_seq, fips_thresh, bypass_thresh);
+    markov_ht_fail_seq(m_rng_push_seq, fips_thresh, fips_thresh, bypass_thresh, bypass_thresh);
     // Start the sequence
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);

@@ -936,6 +936,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             seed_tl_read_cnt = 0;
             full_seed = entropy_data_q.pop_front();
             entropy_data_seeds++;
+            cfg.total_seeds_consumed++;
 
           end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
@@ -1076,6 +1077,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Clear records of repcnt/repnts failures
     continuous_fail_count     = 0;
     cont_fail_in_last_sample  = 0;
+
+    // Reset the total_seeds_consumed count.
+    cfg.total_seeds_consumed = 0;
 
     // Clear interrupt state
     known_intr_state                         = 0;
@@ -1414,6 +1418,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "err_code_test": begin
       end
       "main_sm_state": begin
+        do_read_check = 1'b0;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
@@ -2388,6 +2393,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         prediction = fips_csrng_q.pop_front();
         if (prediction == item.d_data) begin
           csrng_seeds++;
+          cfg.total_seeds_consumed++;
           match_found = 1;
           `uvm_info(`gfn, $sformatf("CSRNG Match found: %d\n", csrng_seeds), UVM_FULL)
           break;
