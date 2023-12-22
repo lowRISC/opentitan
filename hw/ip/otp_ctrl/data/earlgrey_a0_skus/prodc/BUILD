@@ -77,8 +77,8 @@ otp_json(
                 "CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE": otp_hex(0x0),
                 # Disable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_TRUE),
+                "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_FALSE),
+                "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
                 "CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x0),
                 "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.PRODC),
                 # ROM execution is enabled if this item is set to a non-zero
@@ -334,7 +334,6 @@ cc_library(
 otp_image(
     name = "otp_img_test_unlocked0_manuf_empty",
     src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
-    visibility = ["//visibility:private"],
 )
 
 # `MANUF_INITIALIZED` configuration. This configuration will be generally used
