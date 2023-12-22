@@ -77,7 +77,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .len = ARRAYSIZE(act_tag),
   };
 
-  TRY(otcrypto_hmac(&blinded_key, msg, kHashModeSha256, &tag_buf));
+  TRY(otcrypto_hmac(&blinded_key, msg, &tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }

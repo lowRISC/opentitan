@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -19,10 +20,10 @@
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_word32_buf_t *tag) {
+                              crypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
   hmac_context_t ctx;
-  HARDENED_TRY(otcrypto_hmac_init(&ctx, key, hash_mode));
+  HARDENED_TRY(otcrypto_hmac_init(&ctx, key));
   HARDENED_TRY(otcrypto_hmac_update(&ctx, input_message));
   return otcrypto_hmac_final(&ctx, tag);
 }
@@ -106,8 +107,7 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
 }
 
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   hash_mode_t hash_mode) {
+                                   const crypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -124,27 +124,22 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   // digest and message block sizes.
   size_t digest_words = 0;
   size_t message_block_words = 0;
+  hash_mode_t hash_mode;
   switch (key->config.key_mode) {
     case kKeyModeHmacSha256:
-      if (hash_mode != kHashModeSha256) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+      hash_mode = kHashModeSha256;
       digest_words = kSha256DigestWords;
       message_block_words = kSha256MessageBlockWords;
       break;
     case kKeyModeHmacSha384:
-      if (hash_mode != kHashModeSha384) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+      hash_mode = kHashModeSha384;
       digest_words = kSha384DigestWords;
       // Since SHA-512 and SHA-384 have the same core, they use the same
       // message block size.
       message_block_words = kSha512MessageBlockWords;
       break;
     case kKeyModeHmacSha512:
-      if (hash_mode != kHashModeSha512) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+      hash_mode = kHashModeSha512;
       digest_words = kSha512DigestWords;
       message_block_words = kSha512MessageBlockWords;
       break;
@@ -174,10 +169,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   // Initialize the key block, K0. See FIPS 198-1, section 4.
   uint32_t k0[message_block_words];
   memset(k0, 0, sizeof(k0));
-  if (key->config.key_length < (digest_words * sizeof(uint32_t))) {
-    // Key is too short.
-    return OTCRYPTO_BAD_ARGS;
-  } else if (key->config.key_length <= message_block_words * sizeof(uint32_t)) {
+  if (key->config.key_length <= message_block_words * sizeof(uint32_t)) {
     // If the key fits into the message block size, we just need to copy it
     // into the first part of K0.
     hardened_memcpy(k0, unmasked_key, ARRAYSIZE(unmasked_key));

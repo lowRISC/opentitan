@@ -207,6 +207,9 @@ status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask) {
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
 
+  // Double-check the length of the keyblob.
+  HARDENED_TRY(check_keyblob_length(key));
+
   size_t key_share_words = keyblob_share_num_words(key->config);
   size_t keyblob_words = keyblob_num_words(key->config);
 

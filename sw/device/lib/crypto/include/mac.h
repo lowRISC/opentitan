@@ -47,22 +47,21 @@ typedef struct hmac_context {
  *
  * This function computes the HMAC function on the `input_message` using the
  * `key` and returns a `tag`. The key should be at least as long as the digest
- * for the chosen hash function.. Only `kHashModeSha256`, `kHashModeSha384` and
- * `kHashModeSha512` are supported. Other modes (e.g. SHA-3) are not supported
- * and will result in errors.
+ * for the chosen hash function. The hash function is determined by the key
+ * mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3) are
+ * not supported and will result in errors.
  *
  * The caller should allocate 32 bytes (8 32-bit words) of space for the `tag`
  * buffer and set its `len` field to 8.
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
- * @param hash_mode Hash function to use.
  * @param[out] tag Output authentication tag.
  * @return The result of the HMAC operation.
  */
 crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_word32_buf_t *tag);
+                              crypto_word32_buf_t *tag);
 
 /**
  * Performs the KMAC function on the input data.
@@ -97,22 +96,17 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
  * Performs the INIT operation for HMAC.
  *
  * Initializes the HMAC context. The key should be at least as long as the
- * digest for the chosen hash function. Only `kHashModeSha256`,
- * `kHashModeSha384` and `kHashModeSha512` are supported. Other modes (e.g.
+ * digest for the chosen hash function. The hash function is determined by the
+ * key mode. Only SHA-2 hash functions are are supported. Other modes (e.g.
  * SHA-3) are not supported and will result in errors.
  *
- * The HMAC streaming API supports only the `kMacModeHmacSha256` mode.  Other
- * modes are not supported and an error would be returned. The interface is
- * designed to be generic to support other required modes in the future.
- *
- * @param ctx Pointer to the generic HMAC context struct.
+ * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
  * @param hash_mode Hash function to use.
  * @return Result of the HMAC init operation.
  */
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   hash_mode_t hash_mode);
+                                   const crypto_blinded_key_t *key);
 
 /**
  * Performs the UPDATE operation for HMAC.
