@@ -186,7 +186,12 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
       if (sba_tl_access_q.size() > 0) begin
         compare_sba_access(item, sba_tl_access_q.pop_front());
-      end else begin
+      end
+     else if(cfg.rv_dm_vif.lc_hw_debug_en==lc_ctrl_pkg::Off) begin
+       `uvm_info(`gfn, $sformatf("Does not receive SBA access item:\n%0s",
+                                item.sprint(uvm_default_line_printer)), UVM_HIGH)
+      end
+      else begin
         `uvm_error(`gfn, $sformatf({"Received predicted SBA access but no transaction was seen on ",
                                     "the SBA TL host interface: %0s"},
                                    item.sprint(uvm_default_line_printer)))
