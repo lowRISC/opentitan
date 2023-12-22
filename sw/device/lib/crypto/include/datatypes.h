@@ -251,10 +251,10 @@ typedef enum ecc_key_mode {
  * Values are hardened.
  */
 typedef enum kdf_key_mode {
-  // Mode KDF with HMAC as PRF.
-  kKdfKeyModeHMAC = 0x5d8,
-  // Mode KDF with KMAC as PRF.
-  kKdfKeyModeKMAC = 0xb29,
+  // Mode KDF-CTR with HMAC as PRF.
+  kKdfKeyModeCtrHMAC = 0x127,
+  // Mode KDF-CTR with KMAC as PRF.
+  kKdfKeyModeCtrKMAC = 0x3dd,
 } kdf_key_mode_t;
 
 /**
@@ -303,10 +303,10 @@ typedef enum key_mode {
   kKeyModeEd25519 = kKeyTypeEcc << 16 | kEccKeyModeEd25519,
   // Key is intended for X25519 mode.
   kKeyModeX25519 = kKeyTypeEcc << 16 | kEccKeyModeX25519,
-  // Key is intended for KDF with HMAC as PRF.
-  kKeyModeKdfHmac = kKeyTypeKdf << 16 | kKdfKeyModeHMAC,
-  // Key is intended for KDF with KMAC as PRF.
-  kKeyModeKdfKmac = kKeyTypeKdf << 16 | kKdfKeyModeKMAC,
+  // Key is intended for KDF-CTR with HMAC as PRF.
+  kKeyModeKdfCtrHmac = kKeyTypeKdf << 16 | kKdfKeyModeCtrHMAC,
+  // Key is intended for KDF-CTR with KMAC as PRF.
+  kKeyModeKdfCtrKmac = kKeyTypeKdf << 16 | kKdfKeyModeCtrKMAC,
 } key_mode_t;
 
 /**

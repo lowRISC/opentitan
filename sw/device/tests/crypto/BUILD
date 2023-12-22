@@ -536,6 +536,7 @@ py_binary(
 opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),

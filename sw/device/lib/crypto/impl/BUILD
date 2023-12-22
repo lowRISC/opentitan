@@ -90,7 +90,11 @@ cc_library(
     srcs = ["kdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf.h"],
     deps = [
+        ":integrity",
+        ":keyblob",
+        ":mac",
         ":status",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

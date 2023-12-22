@@ -460,14 +460,23 @@ Key derivation functions (KDFs) generate a new key from an existing key.
 
 ### Supported Modes
 
-The OpenTitan key derivation function is based on the counter mode and uses a pseudorandom function (PRF) as a building block.
-The PRF may be either HMAC or KMAC.
+OpenTitan supports two different key derivation methods:
+- KDF-CTR following [NIST SP800-108][kdf-prf-spec] with HMAC or KMAC as the PRF
+- HKDF following [IETF RFC 5869][hkdf-rfc], which is special case of [NIST SP800-56C][nist-kdf-key-establishment]
 
-To learn more about PRFs, various key derivation mechanisms and security considerations, please refer to [NIST SP800-108][kdf-spec] and the links in the [reference](#reference) section.
+To learn more about PRFs, various key derivation mechanisms and security considerations, please refer to the links in the [reference](#reference) section.
 
 ### API
 
+#### KDF-CTR
+
 {{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_ctr }}
+
+#### HKDF
+
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
 
 ## Key import and export
 
@@ -624,7 +633,9 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 4. OpenTitan [CSRNG block][csrng] technical specification
 
 **Key derivation**
-1. [NIST SP800-108][kdf-spec]: Recommendation for Key Derivation using Pseudorandom Functions
+1. [NIST SP800-108][kdf-prf-spec]: Recommendation for Key Derivation using Pseudorandom Functions
+2. [NIST SP800-56C][nist-kdf-key-establishment]: Recommendation for Key-Derivation Methods in Key-Establishment Schemes
+3. [RFC 5869][hkdf-rfc]: HMAC-based Extract-and-Expand Key Derivation Function (HKDF)
 
 **Key management and security strength**
 1. [NIST SP800-131][nist-sp800-131a]: Transitioning the Use of Cryptographic Algorithms and Key Lengths
@@ -643,17 +654,19 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [entropy-src]:  ../../../hw/ip/entropy_src/README.md
 [fips-186]: https://csrc.nist.gov/publications/detail/fips/186/5/final
 [gcm-spec]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+[hkdf-rfc]: https://datatracker.ietf.org/doc/html/rfc5869
 [hmac]:  ../../../hw/ip/hmac/README.md
 [hmac-rfc]: https://datatracker.ietf.org/doc/html/rfc2104
 [hmac-testvectors-rfc]: https://datatracker.ietf.org/doc/html/rfc4231
 [hmac-usage-rfc]: https://datatracker.ietf.org/doc/html/rfc4868
-[kdf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
+[kdf-prf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
 [keymgr]:  ../../../hw/ip/keymgr/README.md
 [kmac]:  ../../../hw/ip/kmac/README.md
 [kwp-spec]: https://csrc.nist.gov/publications/detail/sp/800-38f/final
 [nist-drbg-spec]: https://csrc.nist.gov/publications/detail/sp/800-90a/rev-1/final
 [nist-ecc-domain-params]: https://csrc.nist.gov/publications/detail/sp/800-186/final
 [nist-entropy-spec]: https://csrc.nist.gov/publications/detail/sp/800-90b/final
+[nist-kdf-key-establishment]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Cr2.pdf
 [nist-rng-spec]: https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf
 [nist-sp800-131a]: https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final
 [nist-sp800-57]: https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final
