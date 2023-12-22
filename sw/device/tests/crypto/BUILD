@@ -534,6 +534,21 @@ py_binary(
 )
 
 opentitan_test(
+    name = "hkdf_functest",
+    srcs = ["hkdf_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:kdf",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
