@@ -54,10 +54,11 @@ typedef struct aes_gcm_test {
  * Call AES-GCM authenticated encryption for the given test vector.
  *
  * @param test The test vector to run
+ * @param streaming Whether to use the streaming interface.
  * @param[out] cycles Cycle count for the encrypt() call
  * @return Test status
  */
-status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test,
+status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
                                    uint32_t *cycles);
 
 /**
@@ -68,12 +69,13 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test,
  * and check that `tag_valid` is false instead of true.
  *
  * @param test The test vector to run
+ * @param streaming Whether to use the streaming interface.
  * @param[out] tag_valid True iff the tag passed its validity check
  * @param[out] cycles Cycle count for the decrypt() call
  * @return Test status
  */
 status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
-                                   hardened_bool_t *tag_valid,
+                                   hardened_bool_t *tag_valid, bool streaming,
                                    uint32_t *cycles);
 
 #ifdef __cplusplus

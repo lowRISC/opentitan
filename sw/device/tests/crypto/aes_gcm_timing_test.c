@@ -38,7 +38,8 @@ static status_t test_decrypt_timing(void) {
   current_test->tag[0]++;
   uint32_t cycles_invalid1;
   hardened_bool_t valid;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid1));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid1));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[0]--;
   LOG_INFO("First invalid tag: %d cycles", cycles_invalid1);
@@ -46,7 +47,8 @@ static status_t test_decrypt_timing(void) {
   // Call AES-GCM decrypt with an incorrect tag (middle word wrong).
   current_test->tag[tag_num_words / 2]++;
   uint32_t cycles_invalid2;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid2));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid2));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[tag_num_words / 2]--;
   LOG_INFO("Second invalid tag: %d cycles", cycles_invalid2);
@@ -54,7 +56,8 @@ static status_t test_decrypt_timing(void) {
   // Call AES-GCM decrypt with an incorrect tag (last word wrong).
   current_test->tag[tag_num_words - 1]++;
   uint32_t cycles_invalid3;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid3));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid3));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[tag_num_words - 1]--;
   LOG_INFO("Third invalid tag: %d cycles", cycles_invalid3);

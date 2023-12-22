@@ -345,12 +345,10 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
  * @param[out] success Whether the tag passed verification.
  * @return Result of the final operation.
  */
-crypto_status_t otcrypto_aes_gcm_decrypt_final(aes_gcm_ctx_t *ctx,
-                                               crypto_word32_buf_t *auth_tag,
-                                               aead_gcm_tag_len_t tag_len,
-                                               crypto_byte_buf_t *plaintext,
-                                               size_t *plaintext_bytes_written,
-                                               hardened_bool_t *success);
+crypto_status_t otcrypto_aes_gcm_decrypt_final(
+    aes_gcm_ctx_t *ctx, crypto_const_word32_buf_t auth_tag,
+    aead_gcm_tag_len_t tag_len, crypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytes_written, hardened_bool_t *success);
 
 /**
  * Returns the length that the blinded key will have once wrapped.
