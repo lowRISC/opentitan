@@ -153,7 +153,7 @@
               create any harmful event.
             '''
       stage: V2
-      tests: [] // TODO(#15670)
+      tests: ["rv_dm_jtag_dtm_hard_reset"]
     }
     {
       name: jtag_dtm_idle_hint
