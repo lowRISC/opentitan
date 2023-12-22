@@ -245,6 +245,11 @@
       uvm_test_seq: rv_dm_jtag_dmi_debug_disabled_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_jtag_dtm_hard_reset
+      uvm_test_seq: rrv_dm_jtag_dtm_hard_reset_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.
