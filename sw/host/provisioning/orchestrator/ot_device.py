@@ -7,14 +7,13 @@ import os
 import re
 import sqlite3
 
-from util import format_hex, confirm, run, OT_SQL_TABLE_NAME
+from util import OT_SQL_TABLE_NAME, confirm, format_hex, run
 
 
 class OTDevice:
 
     def __init__(self, device_id, test_unlock_token, test_exit_token,
-                 target_lc_state, sku, fpga_test,
-                 log_archive_root):
+                 target_lc_state, sku, fpga_test, log_archive_root):
         """Class representing an Opentitan Device being provisioned.
 
         Arguments:
@@ -96,10 +95,7 @@ class OTDevice:
         logging.info("Running FT Provisioning")
 
         sram_ft_indiv_elf_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/sram_ft_individualize_{}_{}.elf"  # noqa: E501
-        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/"
-        if self.target_lc_state == "prod":
-            perso_bin_path += "binaries/"
-        perso_bin_path += "{}"
+        perso_bin_path = "sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries/{}"  # noqa: E501
 
         if self.fpga_test:
             elf = sram_ft_indiv_elf_path.format(
@@ -125,13 +121,13 @@ class OTDevice:
             elf = sram_ft_indiv_elf_path.format(self.sku, "silicon_creator")
 
             bootstrap = perso_bin_path.format(
-                f"ft_personalize_1_silicon_creator.earlgrey_a0_{self.target_lc_state}_0.signed.bin"
+                "ft_personalize_1_silicon_creator.earlgrey_a0_prod_0.signed.bin"
             )
             bootstrap2 = perso_bin_path.format(
-                f"ft_personalize_2_silicon_creator.earlgrey_a0_{self.target_lc_state}_0.signed.bin"
+                "ft_personalize_2_silicon_creator.earlgrey_a0_prod_0.signed.bin"
             )
             bootstrap3 = perso_bin_path.format(
-                f"ft_personalize_3_silicon_creator.earlgrey_a0_{self.target_lc_state}_0.signed.bin"
+                "ft_personalize_3_silicon_creator.earlgrey_a0_prod_0.signed.bin"
             )
 
             platform_bazel_flags = "--//signing:token=//signing/tokens:nitrokey"
