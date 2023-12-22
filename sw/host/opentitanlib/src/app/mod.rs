@@ -945,7 +945,7 @@ impl TransportWrapper {
         log::info!("Deasserting the reset signal");
         self.pin_strapping("RESET")?.remove()?;
         if self.disable_dft_on_reset.get() {
-            std::thread::sleep(Duration::from_millis(5));
+            std::thread::sleep(Duration::from_millis(10));
             // We remove the DFT strapping after waiting some time, as the DFT straps should have been
             // sampled by then and we can resume our desired pin configuration.
             self.pin_strapping("PRERESET_DFT_DISABLE")?.remove()?;
