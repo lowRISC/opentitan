@@ -91,7 +91,7 @@
         EDN.MODE.AUTO
       ]
       stage: V3
-      si_stage: SV2
+      si_stage: SV3
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_auto_mode"]
