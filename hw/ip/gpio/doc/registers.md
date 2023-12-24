@@ -140,10 +140,10 @@ and lower 16 bits as DATA_OUT[15:0].
 {"reg": [{"name": "data", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "mask", "bits": 16, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                      |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------|
-| 31:16  |   wo   |    x    | mask   | Write data mask[15:0].  A value of 1 in mask[i] allows the updating of DATA_OUT[i], 0 <= i <= 15 |
-|  15:0  |   rw   |    x    | data   | Write data value[15:0].  Value to write into DATA_OUT[i], valid in the presence of mask[i]==1    |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                     |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------|
+| 31:16  |   wo   |    x    | mask   | Write data mask[15:0]. A value of 1 in mask[i] allows the updating of DATA_OUT[i], 0 <= i <= 15 |
+|  15:0  |   rw   |    x    | data   | Write data value[15:0]. Value to write into DATA_OUT[i], valid in the presence of mask[i]==1    |
 
 ## MASKED_OUT_UPPER
 GPIO write data upper with mask.
@@ -166,10 +166,10 @@ and lower 16 bits as DATA_OUT[31:16].
 {"reg": [{"name": "data", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "mask", "bits": 16, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                        |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------|
-| 31:16  |   wo   |    x    | mask   | Write data mask[31:16].  A value of 1 in mask[i] allows the updating of DATA_OUT[i], 16 <= i <= 31 |
-|  15:0  |   rw   |    x    | data   | Write data value[31:16].     Value to write into DATA_OUT[i], valid in the presence of mask[i]==1  |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                       |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------|
+| 31:16  |   wo   |    x    | mask   | Write data mask[31:16]. A value of 1 in mask[i] allows the updating of DATA_OUT[i], 16 <= i <= 31 |
+|  15:0  |   rw   |    x    | data   | Write data value[31:16]. Value to write into DATA_OUT[i], valid in the presence of mask[i]==1     |
 
 ## DIRECT_OE
 GPIO Output Enable.
@@ -211,10 +211,10 @@ and lower 16 bits as DATA_OE[15:0].
 {"reg": [{"name": "data", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "mask", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                   |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |    x    | mask   | Write OE mask[15:0].  A value of 1 in mask[i] allows the updating of DATA_OE[i], 0 <= i <= 15 |
-|  15:0  |   rw   |    x    | data   | Write OE value[15:0].  Value to write into DATA_OE[i], valid in the presence of mask[i]==1    |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                  |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------|
+| 31:16  |   rw   |    x    | mask   | Write OE mask[15:0]. A value of 1 in mask[i] allows the updating of DATA_OE[i], 0 <= i <= 15 |
+|  15:0  |   rw   |    x    | data   | Write OE value[15:0]. Value to write into DATA_OE[i], valid in the presence of mask[i]==1    |
 
 ## MASKED_OE_UPPER
 GPIO write Output Enable upper with mask.
@@ -238,10 +238,10 @@ and lower 16 bits as DATA_OE[31:16].
 {"reg": [{"name": "data", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "mask", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                     |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |    x    | mask   | Write OE mask[31:16].  A value of 1 in mask[i] allows the updating of DATA_OE[i], 16 <= i <= 31 |
-|  15:0  |   rw   |    x    | data   | Write OE value[31:16].  Value to write into DATA_OE[i], valid in the presence of mask[i]==1     |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                    |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------|
+| 31:16  |   rw   |    x    | mask   | Write OE mask[31:16]. A value of 1 in mask[i] allows the updating of DATA_OE[i], 16 <= i <= 31 |
+|  15:0  |   rw   |    x    | data   | Write OE value[31:16]. Value to write into DATA_OE[i], valid in the presence of mask[i]==1     |
 
 ## INTR_CTRL_EN_RISING
 GPIO interrupt enable for GPIO, rising edge.

@@ -109,10 +109,10 @@ ACTIVE state) for any reason.
 {"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                            |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                                               |
-|   0    |   ro   |   0x1   | EN     | Configuration enable.  This bit defaults to 1 and is set to 0 by hardware when low power entry is initiated. When the device transitions back from low power state to active state, this bit is set back to 1 to allow software configuration of [`CONTROL`](#control) |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                           |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                                              |
+|   0    |   ro   |   0x1   | EN     | Configuration enable. This bit defaults to 1 and is set to 0 by hardware when low power entry is initiated. When the device transitions back from low power state to active state, this bit is set back to 1 to allow software configuration of [`CONTROL`](#control) |
 
 ## CONTROL
 Control register
@@ -159,10 +159,10 @@ USB clock enable during active power state
 ### CONTROL . USB_CLK_EN_LP
 USB clock enable during low power state
 
-| Value   | Name     | Description                                                                                                                    |
-|:--------|:---------|:-------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Disabled | USB clock disabled during low power state                                                                                      |
-| 0x1     | Enabled  | USB clock enabled during low power state.  However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled during low power state. |
+| Value   | Name     | Description                                                                                                                   |
+|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Disabled | USB clock disabled during low power state                                                                                     |
+| 0x1     | Enabled  | USB clock enabled during low power state. However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled during low power state. |
 
 
 ### CONTROL . IO_CLK_EN

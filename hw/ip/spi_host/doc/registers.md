@@ -32,11 +32,11 @@ Interrupt State Register
 {"reg": [{"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "spi_event", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                                                     |
-|:------:|:------:|:-------:|:----------|:------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |           | Reserved                                                                                        |
-|   1    |  rw1c  |   0x0   | spi_event | Event-related interrupts, see [`EVENT_ENABLE`](#event_enable) register for more    information. |
-|   0    |  rw1c  |   0x0   | error     | Error-related interrupts, see [`ERROR_ENABLE`](#error_enable) register for more    information. |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                  |
+|:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------|
+|  31:2  |        |         |           | Reserved                                                                                     |
+|   1    |  rw1c  |   0x0   | spi_event | Event-related interrupts, see [`EVENT_ENABLE`](#event_enable) register for more information. |
+|   0    |  rw1c  |   0x0   | error     | Error-related interrupts, see [`ERROR_ENABLE`](#error_enable) register for more information. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -443,14 +443,14 @@ Controls which classes of errors raise an interrupt.
 {"reg": [{"name": "CMDBUSY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "OVERFLOW", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "UNDERFLOW", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CMDINVAL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CSIDINVAL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                             |
-|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:5  |        |         |           | Reserved                                                                                                                                                                                                |
-|   4    |   rw   |   0x1   | CSIDINVAL | Invalid CSID: If this bit is set, the block sends an error interrupt whenever    a command is submitted, but CSID exceeds NumCS.                                                                        |
-|   3    |   rw   |   0x1   | CMDINVAL  | Invalid Command Errors: If this bit is set, the block sends an    error interrupt whenever a command is sent with invalid values for    [`COMMAND.SPEED`](#command) or [`COMMAND.DIRECTION.`](#command) |
-|   2    |   rw   |   0x1   | UNDERFLOW | Underflow Errors: If this bit is set, the block sends an    error interrupt whenever there is a read from [`RXDATA`](#rxdata)    but the RX FIFO is empty.                                              |
-|   1    |   rw   |   0x1   | OVERFLOW  | Overflow Errors: If this bit is set, the block sends an    error interrupt whenever the TX FIFO overflows.                                                                                              |
-|   0    |   rw   |   0x1   | CMDBUSY   | Command Error: If this bit is set, the block sends an error    interrupt whenever a command is issued while busy (i.e. a 1 is    when [`STATUS.READY`](#status) is not asserted.)                       |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                       |
+|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:5  |        |         |           | Reserved                                                                                                                                                                                          |
+|   4    |   rw   |   0x1   | CSIDINVAL | Invalid CSID: If this bit is set, the block sends an error interrupt whenever a command is submitted, but CSID exceeds NumCS.                                                                     |
+|   3    |   rw   |   0x1   | CMDINVAL  | Invalid Command Errors: If this bit is set, the block sends an error interrupt whenever a command is sent with invalid values for [`COMMAND.SPEED`](#command) or [`COMMAND.DIRECTION.`](#command) |
+|   2    |   rw   |   0x1   | UNDERFLOW | Underflow Errors: If this bit is set, the block sends an error interrupt whenever there is a read from [`RXDATA`](#rxdata) but the RX FIFO is empty.                                              |
+|   1    |   rw   |   0x1   | OVERFLOW  | Overflow Errors: If this bit is set, the block sends an error interrupt whenever the TX FIFO overflows.                                                                                           |
+|   0    |   rw   |   0x1   | CMDBUSY   | Command Error: If this bit is set, the block sends an error interrupt whenever a command is issued while busy (i.e. a 1 is when [`STATUS.READY`](#status) is not asserted.)                       |
 
 ## ERROR_STATUS
 Indicates that any errors that have occurred.
@@ -467,15 +467,15 @@ Indicates that any errors that have occurred.
 {"reg": [{"name": "CMDBUSY", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "OVERFLOW", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "UNDERFLOW", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "CMDINVAL", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "CSIDINVAL", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ACCESSINVAL", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                                   |
-|:------:|:------:|:-------:|:------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:6  |        |         |             | Reserved                                                                                                                                                                      |
-|   5    |  rw1c  |   0x0   | ACCESSINVAL | Indicates that TLUL attempted to write to TXDATA with no bytes enabled. Such    'zero byte' writes are not supported.                                                         |
-|   4    |  rw1c  |   0x0   | CSIDINVAL   | Indicates a command was attempted with an invalid value for [`CSID.`](#csid)                                                                                                  |
-|   3    |  rw1c  |   0x0   | CMDINVAL    | Indicates an invalid command segment, meaning either an invalid value of    [`COMMAND.SPEED`](#command) or a request for bidirectional data transfer at dual or quad    speed |
-|   2    |  rw1c  |   0x0   | UNDERFLOW   | Indicates that firmware has attempted to read from    [`RXDATA`](#rxdata) when the RX FIFO is empty.                                                                          |
-|   1    |  rw1c  |   0x0   | OVERFLOW    | Indicates that firmware has overflowed the TX FIFO                                                                                                                            |
-|   0    |  rw1c  |   0x0   | CMDBUSY     | Indicates a write to [`COMMAND`](#command) when [`STATUS.READY`](#status) = 0.                                                                                                |
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                             |
+|:------:|:------:|:-------:|:------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:6  |        |         |             | Reserved                                                                                                                                                                |
+|   5    |  rw1c  |   0x0   | ACCESSINVAL | Indicates that TLUL attempted to write to TXDATA with no bytes enabled. Such 'zero byte' writes are not supported.                                                      |
+|   4    |  rw1c  |   0x0   | CSIDINVAL   | Indicates a command was attempted with an invalid value for [`CSID.`](#csid)                                                                                            |
+|   3    |  rw1c  |   0x0   | CMDINVAL    | Indicates an invalid command segment, meaning either an invalid value of [`COMMAND.SPEED`](#command) or a request for bidirectional data transfer at dual or quad speed |
+|   2    |  rw1c  |   0x0   | UNDERFLOW   | Indicates that firmware has attempted to read from [`RXDATA`](#rxdata) when the RX FIFO is empty.                                                                       |
+|   1    |  rw1c  |   0x0   | OVERFLOW    | Indicates that firmware has overflowed the TX FIFO                                                                                                                      |
+|   0    |  rw1c  |   0x0   | CMDBUSY     | Indicates a write to [`COMMAND`](#command) when [`STATUS.READY`](#status) = 0.                                                                                          |
 
 ## EVENT_ENABLE
 Controls which classes of SPI events raise an interrupt.

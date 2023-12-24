@@ -291,10 +291,10 @@ It unlocks whenever the existing flash operation completes, regardless of succes
 {"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                           |
-|   0    |   ro   |   0x1   | EN     | Configuration enable.  This bit defaults to 1 and is set to 0 by hardware when flash operation is initiated. When the controller completes the flash operation, this bit is set back to 1 to allow software configuration of [`CONTROL`](#control) |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                       |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                          |
+|   0    |   ro   |   0x1   | EN     | Configuration enable. This bit defaults to 1 and is set to 0 by hardware when flash operation is initiated. When the controller completes the flash operation, this bit is set back to 1 to allow software configuration of [`CONTROL`](#control) |
 
 ## CONTROL
 Control register
@@ -361,11 +361,11 @@ Flash program operation type selection
 ### CONTROL . OP
 Flash operation selection
 
-| Value   | Name   | Description                                                          |
-|:--------|:-------|:---------------------------------------------------------------------|
-| 0x0     | Read   | Flash Read.  Read desired number of flash words                      |
-| 0x1     | Prog   | Flash Program.  Program desired number of flash words                |
-| 0x2     | Erase  | Flash Erase Operation.  See ERASE_SEL for details on erase operation |
+| Value   | Name   | Description                                                         |
+|:--------|:-------|:--------------------------------------------------------------------|
+| 0x0     | Read   | Flash Read. Read desired number of flash words                      |
+| 0x1     | Prog   | Flash Program. Program desired number of flash words                |
+| 0x2     | Erase  | Flash Erase Operation. See ERASE_SEL for details on erase operation |
 
 Other values are reserved.
 
@@ -994,11 +994,11 @@ HW interface info configuration rule overrides
 {"reg": [{"name": "SCRAMBLE_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                                                          |
-|:------:|:------:|:-------:|:-------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |              | Reserved                                                                                                                                                                                                                             |
-|  7:4   |   rw   |   0x9   | ECC_DIS      | The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field. If the hardware rules hardwires ECC to enable, we can disable via software if needed.  By default this field is false.           |
-|  3:0   |   rw   |   0x9   | SCRAMBLE_DIS | The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field. If the hardware rules hardwires scramble to enable, we can disable via software if needed.  By default this field is false. |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |              | Reserved                                                                                                                                                                                                                            |
+|  7:4   |   rw   |   0x9   | ECC_DIS      | The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field. If the hardware rules hardwires ECC to enable, we can disable via software if needed. By default this field is false.           |
+|  3:0   |   rw   |   0x9   | SCRAMBLE_DIS | The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field. If the hardware rules hardwires scramble to enable, we can disable via software if needed. By default this field is false. |
 
 ## BANK_CFG_REGWEN
 Bank configuration registers configuration enable.

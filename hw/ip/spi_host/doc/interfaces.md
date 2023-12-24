@@ -24,10 +24,10 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                                                                                                 |
-|:-----------------|:-------|:------------------------------------------------------------------------------------------------------------|
-| error            | Event  | Error-related interrupts, see [`ERROR_ENABLE`](registers.md#error_enable) register for more    information. |
-| spi_event        | Event  | Event-related interrupts, see [`EVENT_ENABLE`](registers.md#event_enable) register for more    information. |
+| Interrupt Name   | Type   | Description                                                                                              |
+|:-----------------|:-------|:---------------------------------------------------------------------------------------------------------|
+| error            | Event  | Error-related interrupts, see [`ERROR_ENABLE`](registers.md#error_enable) register for more information. |
+| spi_event        | Event  | Event-related interrupts, see [`EVENT_ENABLE`](registers.md#event_enable) register for more information. |
 
 ## Security Alerts
 
