@@ -859,9 +859,9 @@ Repetition count test failure counter register
 {"reg": [{"name": "REPCNT_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                  |
-|:------:|:------:|:-------:|:-------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | REPCNT_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                               |
+|:------:|:------:|:-------:|:-------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | REPCNT_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## REPCNTS_TOTAL_FAILS
 Repetition count symbol test failure counter register
@@ -875,9 +875,9 @@ Repetition count symbol test failure counter register
 {"reg": [{"name": "REPCNTS_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                  |
-|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | REPCNTS_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                               |
+|:------:|:------:|:-------:|:--------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | REPCNTS_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## ADAPTP_HI_TOTAL_FAILS
 Adaptive proportion high test failure counter register
@@ -891,9 +891,9 @@ Adaptive proportion high test failure counter register
 {"reg": [{"name": "ADAPTP_HI_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                  |
-|:------:|:------:|:-------:|:----------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | ADAPTP_HI_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                               |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | ADAPTP_HI_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## ADAPTP_LO_TOTAL_FAILS
 Adaptive proportion low test failure counter register
@@ -907,9 +907,9 @@ Adaptive proportion low test failure counter register
 {"reg": [{"name": "ADAPTP_LO_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                  |
-|:------:|:------:|:-------:|:----------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | ADAPTP_LO_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                               |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | ADAPTP_LO_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## BUCKET_TOTAL_FAILS
 Bucket test failure counter register
@@ -923,9 +923,9 @@ Bucket test failure counter register
 {"reg": [{"name": "BUCKET_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                  |
-|:------:|:------:|:-------:|:-------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | BUCKET_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                               |
+|:------:|:------:|:-------:|:-------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | BUCKET_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## MARKOV_HI_TOTAL_FAILS
 Markov high test failure counter register
@@ -939,9 +939,9 @@ Markov high test failure counter register
 {"reg": [{"name": "MARKOV_HI_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                  |
-|:------:|:------:|:-------:|:----------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | MARKOV_HI_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                               |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | MARKOV_HI_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## MARKOV_LO_TOTAL_FAILS
 Markov low test failure counter register
@@ -955,9 +955,9 @@ Markov low test failure counter register
 {"reg": [{"name": "MARKOV_LO_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                  |
-|:------:|:------:|:-------:|:----------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | MARKOV_LO_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                               |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | MARKOV_LO_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## EXTHT_HI_TOTAL_FAILS
 External health test high threshold failure counter register
@@ -971,9 +971,9 @@ External health test high threshold failure counter register
 {"reg": [{"name": "EXTHT_HI_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                  |
-|:------:|:------:|:-------:|:---------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | EXTHT_HI_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                               |
+|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | EXTHT_HI_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## EXTHT_LO_TOTAL_FAILS
 External health test low threshold failure counter register
@@ -987,9 +987,9 @@ External health test low threshold failure counter register
 {"reg": [{"name": "EXTHT_LO_TOTAL_FAILS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                  |
-|:------:|:------:|:-------:|:---------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |    x    | EXTHT_LO_TOTAL_FAILS | This register will hold a running count of test failures observed    during normal operation. It will persist until cleared. |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                               |
+|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |    x    | EXTHT_LO_TOTAL_FAILS | This register will hold a running count of test failures observed during normal operation. It will persist until cleared. |
 
 ## ALERT_THRESHOLD
 Alert threshold register
@@ -1004,10 +1004,10 @@ Alert threshold register
 {"reg": [{"name": "ALERT_THRESHOLD", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "ALERT_THRESHOLD_INV", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                    |
-|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   | 0xfffd  | ALERT_THRESHOLD_INV | This should be set to the value above, but inverted.                                                                                           |
-|  15:0  |   rw   |   0x2   | ALERT_THRESHOLD     | This is the threshold size that will signal an alert when    value is reached. A value of zero will disable alerts.    The default value is 2. |
+|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                              |
+|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |   rw   | 0xfffd  | ALERT_THRESHOLD_INV | This should be set to the value above, but inverted.                                                                                     |
+|  15:0  |   rw   |   0x2   | ALERT_THRESHOLD     | This is the threshold size that will signal an alert when value is reached. A value of zero will disable alerts. The default value is 2. |
 
 ## ALERT_SUMMARY_FAIL_COUNTS
 Alert summary failure counts register

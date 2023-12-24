@@ -135,10 +135,10 @@ Control Register
 {"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                        |
-|:------:|:------:|:-------:|:--------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                     | Reserved                                                                                                                                                           |
-|   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors.  When set software errors produce fatal errors, rather than recoverable errors.  Writes are ignored if OTBN is not idle. |
+|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                      |
+|:------:|:------:|:-------:|:--------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                     | Reserved                                                                                                                                                         |
+|   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors. When set software errors produce fatal errors, rather than recoverable errors. Writes are ignored if OTBN is not idle. |
 
 ## STATUS
 Status Register

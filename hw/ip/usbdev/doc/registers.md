@@ -237,7 +237,7 @@ USB Control
 |  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                                                                                                                                            |
 |:------:|:------:|:-------:|:-------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 31:23  |        |         |                    | Reserved                                                                                                                                                                                                                                               |
-| 22:16  |   rw   |   0x0   | device_address     | Device address set by host (this should be copied from the Set Device ID SETUP packet).  This will be zeroed by the hardware when the link resets.                                                                                                     |
+| 22:16  |   rw   |   0x0   | device_address     | Device address set by host (this should be copied from the Set Device ID SETUP packet). This will be zeroed by the hardware when the link resets.                                                                                                      |
 |  15:2  |        |         |                    | Reserved                                                                                                                                                                                                                                               |
 |   1    |   wo   |   0x0   | resume_link_active | Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state. The write will only have an effect when the device is in the LinkPowered state. Its intention is to handle a resume-from-suspend event after the IP has been powered down. |
 |   0    |   rw   |   0x0   | enable             | Set to connect the USB interface (i.e. assert the pullup).                                                                                                                                                                                             |
@@ -380,10 +380,10 @@ Available Buffer FIFO
 {"reg": [{"name": "buffer", "bits": 5, "attr": ["wo"], "rotate": 0}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                          |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:5  |        |         |        | Reserved                                                                                                                                             |
-|  4:0   |   wo   |   0x0   | buffer | This field contains the buffer ID being passed to the USB receive engine.  If the Available Buffer FIFO is full, any write operations are discarded. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:5  |        |         |        | Reserved                                                                                                                                            |
+|  4:0   |   wo   |   0x0   | buffer | This field contains the buffer ID being passed to the USB receive engine. If the Available Buffer FIFO is full, any write operations are discarded. |
 
 ## rxfifo
 Received Buffer FIFO
