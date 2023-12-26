@@ -21,7 +21,7 @@ test_name   ?=
 test_path   := $(common_test_path)/$(test_name)
 destination := $(OT_ROOT)/$(test_path)/bazel-out/
 
-bazel        := ./bazelisk.sh build
+bazel        := ./bazelisk.sh --output_user_root=/scratch2/$(whoami)/.local/bazel build
 bazel_tests  := $(common_test_path)/$(test_name)
 
 rom_path     := sw/device/silicon_creator/rom
