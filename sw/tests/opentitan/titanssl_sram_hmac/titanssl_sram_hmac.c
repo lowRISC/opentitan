@@ -140,25 +140,49 @@ void titanssl_benchmark_hmac(
         uint32_t n_bytes;
         uint32_t n_words;
 
-        // Compute how many bytes need will be pushed into the accelerator FIFO.
-        n_bytes = 16 * sizeof(uint32_t);
-        if (n_bytes > payload->data + payload->n - dp) n_bytes = payload->data + payload->n - dp;
-        n_words = n_bytes >> 2;
-        n_bytes = n_bytes & 0x3;
-
-        // Wait for the accelerator fifo to be empty.
+        // Wait for the accelerator fifo to be empty
         while(!mmio_region_get_bit32(hmac, HMAC_STATUS_REG_OFFSET, HMAC_STATUS_FIFO_EMPTY_BIT));
 
-        // Push data into the FIFO.
-        for (size_t i=0; i<n_words; i++)
+        // Process next 512 bits block
+        n_bytes = 16 * sizeof(uint32_t);
+        if (payload->data + payload->n - dp > n_bytes)
         {
-            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, *(uint32_t*)dp);
-            dp += sizeof(uint32_t);
+            // Push data into the FIFO
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[0]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[1]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[2]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[3]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[4]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[5]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[6]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[7]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[8]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[9]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[10]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[11]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[12]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[13]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[14]);
+            mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, ((uint32_t*)dp)[15]);
+            dp += 16 * sizeof(uint32_t);
         }
-        for (size_t i=0; i<n_bytes; i++)
+        else
         {
-            mmio_region_write8(hmac, HMAC_MSG_FIFO_REG_OFFSET, *dp);
-            dp += 1;
+            n_bytes = payload->data + payload->n - dp;
+            n_words = n_bytes >> 2;
+            n_bytes = n_bytes & 0x3;
+
+            // Push data into the FIFO
+            for (size_t i=0; i<n_words; i++)
+            {
+                mmio_region_write32(hmac, HMAC_MSG_FIFO_REG_OFFSET, *(uint32_t*)dp);
+                dp += sizeof(uint32_t);
+            }
+            for (size_t i=0; i<n_bytes; i++)
+            {
+                mmio_region_write8(hmac, HMAC_MSG_FIFO_REG_OFFSET, *dp);
+                dp += 1;
+            }
         }
     }
     mmio_region_nonatomic_set_bit32(hmac, HMAC_CMD_REG_OFFSET, HMAC_CMD_HASH_PROCESS_BIT);
