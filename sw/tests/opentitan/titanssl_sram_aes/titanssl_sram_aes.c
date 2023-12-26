@@ -35,8 +35,8 @@ static titanssl_buffer_t buffer_iv;
  * ========================================================================= */
 
 #define TITANSSL_CFG_DEBUG   0
-#define TITANSSL_CFG_MEM_L3  0
-#define TITANSSL_CFG_MEM_L1  1
+#define TITANSSL_CFG_MEM_L3  1
+#define TITANSSL_CFG_MEM_L1  0
 #define TITANSSL_CFG_PAYLOAD 8192
 
 /* ============================================================================

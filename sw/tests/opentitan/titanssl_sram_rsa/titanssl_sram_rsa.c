@@ -50,11 +50,11 @@ static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
  * Benchmark setup
  * ========================================================================= */
 
-#define TITANSSL_CFG_DEBUG    1
-#define TITANSSL_CFG_MEM_L3   0
-#define TITANSSL_CFG_MEM_L1   1
-#define TITANSSL_CFG_KEY_512  0
-#define TITANSSL_CFG_KEY_1024 1
+#define TITANSSL_CFG_DEBUG    0
+#define TITANSSL_CFG_MEM_L3   1
+#define TITANSSL_CFG_MEM_L1   0
+#define TITANSSL_CFG_KEY_512  1
+#define TITANSSL_CFG_KEY_1024 0
 
 /* ============================================================================
  * Benchmark automatic configuration
