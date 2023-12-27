@@ -115,14 +115,14 @@ void titanssl_benchmark_hmac(
     reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
     mmio_region_write32(hmac, HMAC_CFG_REG_OFFSET, reg);
 #elif TITANSSL_CFG_OP_HMAC
-    mmio_region_write32(hmac, HMAC_KEY_0_REG_OFFSET, key->data[0]);
-    mmio_region_write32(hmac, HMAC_KEY_1_REG_OFFSET, key->data[1]);
-    mmio_region_write32(hmac, HMAC_KEY_2_REG_OFFSET, key->data[2]);
-    mmio_region_write32(hmac, HMAC_KEY_3_REG_OFFSET, key->data[3]);
-    mmio_region_write32(hmac, HMAC_KEY_4_REG_OFFSET, key->data[4]);
-    mmio_region_write32(hmac, HMAC_KEY_5_REG_OFFSET, key->data[5]);
-    mmio_region_write32(hmac, HMAC_KEY_6_REG_OFFSET, key->data[6]);
-    mmio_region_write32(hmac, HMAC_KEY_7_REG_OFFSET, key->data[7]);
+    mmio_region_write32(hmac, HMAC_KEY_0_REG_OFFSET, ((uint32_t*)key->data)[0]);
+    mmio_region_write32(hmac, HMAC_KEY_1_REG_OFFSET, ((uint32_t*)key->data)[1]);
+    mmio_region_write32(hmac, HMAC_KEY_2_REG_OFFSET, ((uint32_t*)key->data)[2]);
+    mmio_region_write32(hmac, HMAC_KEY_3_REG_OFFSET, ((uint32_t*)key->data)[3]);
+    mmio_region_write32(hmac, HMAC_KEY_4_REG_OFFSET, ((uint32_t*)key->data)[4]);
+    mmio_region_write32(hmac, HMAC_KEY_5_REG_OFFSET, ((uint32_t*)key->data)[5]);
+    mmio_region_write32(hmac, HMAC_KEY_6_REG_OFFSET, ((uint32_t*)key->data)[6]);
+    mmio_region_write32(hmac, HMAC_KEY_7_REG_OFFSET, ((uint32_t*)key->data)[7]);
     reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
     reg = bitfield_bit32_write(reg, HMAC_CFG_DIGEST_SWAP_BIT, false);
     reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
