@@ -15,6 +15,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#include "otbn_regs.h"
 
 #define TARGET_SYNTHESIS
 
@@ -50,7 +51,7 @@ static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
  * Benchmark setup
  * ========================================================================= */
 
-#define TITANSSL_CFG_DEBUG    0
+#define TITANSSL_CFG_DEBUG    1
 #define TITANSSL_CFG_MEM_L3   1
 #define TITANSSL_CFG_MEM_L1   0
 #define TITANSSL_CFG_KEY_512  1
@@ -183,31 +184,36 @@ void titanssl_benchmark_rsa_enc(
         titanssl_buffer_t *const cipher,
         titanssl_buffer_t *const modulus)
 {
-    otbn_t otbn_ctx;
-    uint32_t n_limbs;
+    mmio_region_t otbn;
     uint32_t mode;
+    uint32_t n_limbs;
+    uint32_t reg;
 
     // Get OTBN base address
-    otbn_ctx.app_is_loaded = false;
-    otbn_ctx.dif.base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+    otbn = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
 
     // Load OTBN application
-    otbn_load_app(&otbn_ctx, kOtbnAppRsa);
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_IMEM_REG_OFFSET, kOtbnAppRsa.imem_start, kOtbnAppRsa.imem_end - kOtbnAppRsa.imem_start);
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET, kOtbnAppRsa.dmem_data_start, kOtbnAppRsa.dmem_data_end - kOtbnAppRsa.dmem_data_start);
 
     // Write input arguments to OTBN
     n_limbs = TITANSSL_SIZE_KEY / 32;
     mode = 1;
-    otbn_copy_data_to_otbn(&otbn_ctx, sizeof(uint32_t), &mode, kOtbnVarRsaMode);
-    otbn_copy_data_to_otbn(&otbn_ctx, sizeof(uint32_t), &n_limbs, kOtbnVarRsaNLimbs);
-    otbn_copy_data_to_otbn(&otbn_ctx, TITANSSL_SIZE_KEY, modulus->data, kOtbnVarRsaModulus);
-    otbn_copy_data_to_otbn(&otbn_ctx, TITANSSL_SIZE_KEY, plain->data, kOtbnVarRsaInOut);
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaMode, &mode, sizeof(uint32_t));
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaNLimbs, &n_limbs, sizeof(uint32_t));
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaModulus, modulus->data, TITANSSL_SIZE_KEY);
+    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, plain->data, TITANSSL_SIZE_KEY);
 
     // Call OTBN to perform operation, and wait for it to complete
-    otbn_execute(&otbn_ctx);
-    otbn_busy_wait_for_done(&otbn_ctx);
+    mmio_region_write32(otbn, OTBN_CMD_REG_OFFSET, kDifOtbnCmdExecute);
+    do
+    {
+        reg = mmio_region_read32(otbn, OTBN_STATUS_REG_OFFSET);
+    } while(bitfield_field32_read(reg, OTBN_STATUS_STATUS_FIELD));
+    if (mmio_region_read32(otbn, OTBN_ERR_BITS_REG_OFFSET)) while (true) asm volatile ("wfi");
 
     // Read back results.
-    otbn_copy_data_from_otbn(&otbn_ctx, TITANSSL_SIZE_KEY, kOtbnVarRsaInOut, cipher->data);
+    mmio_region_memcpy_from_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, cipher->data, TITANSSL_SIZE_KEY);
 }
 
 void titanssl_benchmark_rsa_dec(
