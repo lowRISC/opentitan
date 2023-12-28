@@ -23,3 +23,4 @@
 `include "rv_dm_jtag_dmi_dm_inactive_vseq.sv"
 `include "rv_dm_jtag_dmi_debug_disabled_vseq.sv"
 `include "rv_dm_jtag_dtm_hard_reset_vseq.sv"
+`include "rv_dm_sba_debug_disabled_vseq.sv"
