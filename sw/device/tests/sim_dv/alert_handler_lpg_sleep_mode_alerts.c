@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -18,10 +17,9 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -41,7 +39,6 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
-static dif_flash_ctrl_state_t flash_ctrl;
 
 // This location will be update from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
@@ -71,10 +68,6 @@ static void init_peripherals(void) {
   mmio_region_t ibex_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 // NVM counters/fields to keep test steps between deep sleep modes
@@ -264,7 +257,7 @@ static size_t test_step_cnt;
 
 /**
  * Helper function to keep the test body clean
- * Initializes the flash_ctrl and test counters.
+ * Initializes the test counters.
  */
 void init_test_components(void) {
   // Enable global and external IRQ at Ibex.
@@ -281,45 +274,21 @@ void init_test_components(void) {
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
-  // Need a NVM counter to keep the test-step info
-  // after waking up from the deep sleep mode.
-  // Enable flash access
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+      ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
   // Total number of iterations for each test phase
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterMaxWakeups, &num_total_wakeups));
+      ret_sram_testutils_counter_get(kCounterMaxWakeups, &num_total_wakeups));
 
-  // We don't expect test_step_cnt to 256 (flash mem is filled with all zeros)
-  // for this test. If it is 256, we just initialize the counters/NVM-fields
-  // again.
-  if (test_step_cnt == 256) {
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_init_zero(&flash_ctrl, kCounterTestSteps));
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_init_zero(&flash_ctrl,
-                                                           kCounterMaxWakeups));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterMaxWakeups,
-                                                     &num_total_wakeups));
-  }
+  CHECK(test_step_cnt < INT_MAX, "test_step_cnt too large");
 
   // If this is the first iteration,
   // set num_iterations to a random value between 8 and 32
   if (num_total_wakeups == 0) {
     // number of total wakeups
     num_total_wakeups = 2;
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl, kCounterMaxWakeups, num_total_wakeups));
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_set(kCounterMaxWakeups, num_total_wakeups));
   }
 }
 
@@ -346,10 +315,9 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     LOG_INFO("POR reset");
 
     // Increment the test_step counter for the next test step
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterTestSteps));
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
@@ -401,10 +369,9 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     CHECK(is_cause, "Phase #1: Expected alert has NOT been fired!!");
 
     // Increment the test_step counter for the next test step
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterTestSteps));
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterTestSteps));
-    CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
+        ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
     // Set the AON timer to send a wakeup signal in ~10-50us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
@@ -435,6 +402,19 @@ void ottf_external_isr(uint32_t *exc_info) {
 }
 
 bool test_main(void) {
+  // Check if there was a HW reset caused by the escalation.
+  dif_rstmgr_reset_info_bitfield_t rst_info;
+  rst_info = rstmgr_testutils_reason_get();
+  rstmgr_testutils_reason_clear();
+
+  CHECK(rst_info == kDifRstmgrResetInfoPor ||
+            rst_info == kDifRstmgrResetInfoEscalation,
+        "Wrong reset reason %02X", rst_info);
+
+  if (rst_info == kDifRstmgrResetInfoPor) {
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterTestSteps));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterMaxWakeups));
+  }
   init_test_components();
 
   // TEST PHASE #1 (ping-timeout = 256)
