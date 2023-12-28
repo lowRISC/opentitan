@@ -52,7 +52,7 @@
 // 6) NMI handler executes and checks that NMI is not due to Wdog, due to alert
 // handler escalation. Since we do not clear the escalation, the NMI handler may
 // execute several times, which will be reflected by a > 1 NMI count in the
-// flash counters.
+// retention sram counters.
 //
 // 7) Alert handler moves on to the next escalation phase and asserts
 // lc_escalate_en, which renders the chip inert. The Wdog should stop running,
@@ -62,7 +62,7 @@
 // 8) Alert handler moves on to the last excalation phase and resets the chip.
 //
 // 9) The chip reboots, and the test checks the alert handler state and the
-// various interrupt counts maintained in flash.
+// various interrupt counts maintained in retention sram.
 //
 // Throughout the entire test, we do not expect any Wdog bark or bite events.
 
@@ -83,8 +83,8 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -109,8 +109,6 @@ static const uint32_t kExpectedAlertNumber =
 
 // Alert class to use for the test. Will be chosen randomly by the test SW.
 static volatile dif_alert_handler_class_t alert_class_to_use;
-
-static volatile uint32_t reset_count;
 
 enum {
   // Counter for resets.
@@ -229,18 +227,9 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // There may be multiple interrupts due to the alert firing, so this keeps an
   // interrupt counter and errors-out if there are too many interrupts.
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterInterrupt));
 
-  // Increment the interrupt count and detect overflows.
-  uint32_t interrupt_count = 0;
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
-  if (interrupt_count == 0) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterInterrupt, 1));
-  }
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
-
-  LOG_INFO("Got irq_id 0x%x (%d)", irq_id, irq_id);
 
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
@@ -257,7 +246,6 @@ void ottf_external_isr(uint32_t *exc_info) {
         irq_id == kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use,
         "Unexpected irq_id, expected %d, got %d",
         kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use, irq_id);
-    LOG_INFO("Got expected alert handler interrupt %d", irq_id);
 
     // Disable these interrupts from alert_handler so they don't keep happening
     // until NMI.
@@ -294,17 +282,9 @@ void ottf_load_integrity_error_handler(uint32_t *exc_info) {
   CHECK(mtval == kErrorRamAddress, "Unexpected mtval: expected 0x%x, got 0x%x",
         kErrorRamAddress, mtval);
 
-  // Increment the exception count.
-  uint32_t exception_count = 0;
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
-  if (exception_count == 0) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, 1));
-  }
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterException));
 
   rv_core_ibex_fault_checker(true);
-
   LOG_INFO("Load integrity error handler exiting");
 }
 
@@ -318,18 +298,9 @@ void ottf_instr_access_fault_handler(uint32_t *exc_info) {
 
   CHECK(kFaultTargetMainSramInstr == 2, "Expected fault target 2, got %d",
         kFaultTarget);
-
-  // Increment the nmi interrupt count.
-  uint32_t exception_count = 0;
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
-  if (exception_count == 0) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, 1));
-  }
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterException));
 
   rv_core_ibex_fault_checker(true);
-
   LOG_INFO("Instr access fault handler exiting");
 }
 
@@ -342,13 +313,7 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
   dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   LOG_INFO("At NMI handler");
 
-  // Increment the nmi interrupt count.
-  uint32_t nmi_count = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
-  if (nmi_count == 0) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state,
-                                                              kCounterNmi, 1));
-  }
+  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterNmi));
 
   // Check that this NMI was due to an alert handler escalation, and not due
   // to a watchdog bark, since escalation suppresses the watchdog.
@@ -566,7 +531,6 @@ bool test_main(void) {
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
   CHECK_STATUS_OK(
@@ -577,18 +541,6 @@ bool test_main(void) {
                                                  /*scramble_en*/ false,
                                                  /*ecc_en*/ false,
                                                  /*he_en*/ false));
-
-  // Get the flash maintained reset counter.
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterReset,
-                                                   (uint32_t *)&reset_count));
-  LOG_INFO("Reset counter value: %u", reset_count);
-  if (reset_count > kMaxResets) {
-    CHECK(false, "Got too many resets (%d)", reset_count);
-  }
-
-  // Increment reset counter to know where we are.
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterReset, reset_count + 1));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -601,29 +553,43 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, starting test");
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterException));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterInterrupt));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterNmi));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterReset));
     execute_test();
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
+    uint32_t reset_count;
     LOG_INFO("Booting for the second time due to escalation reset");
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterReset,
+                                                   (uint32_t *)&reset_count));
+    LOG_INFO("Reset counter value: %u", reset_count);
+    if (reset_count > kMaxResets) {
+      CHECK(false, "Got too many resets (%d)", reset_count);
+    }
+
+    // Increment reset counter to know where we are.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterReset));
 
     // Get the counts from flash.
     uint32_t interrupt_count = 0;
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
+        ret_sram_testutils_counter_get(kCounterInterrupt, &interrupt_count));
     uint32_t nmi_count = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterNmi, &nmi_count));
     uint32_t exception_count = 0;
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
+        ret_sram_testutils_counter_get(kCounterException, &exception_count));
 
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
     LOG_INFO("Exception count %d", exception_count);
 
-    CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
+    CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
     // The NMI handler may execute multiple times during the corresponding
     // escalation phase since we do not clear/stop the escalation.
     CHECK(nmi_count > 0, "Expected at least one nmi");
-    CHECK(exception_count == 1, "Expected exactly one exception");
+    CHECK(exception_count > 0, "Expected at least one exception");
 
     // Check the alert handler cause is cleared.
     bool is_cause = true;

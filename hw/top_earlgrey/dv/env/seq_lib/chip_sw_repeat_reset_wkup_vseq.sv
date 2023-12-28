@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This requesnt randomly assert reset or wakeup 10 times
-// each time sequence waits for 'ready for power down' log from c test
-// then execute reset / wakeup or both.
-// After that it waits for dut reboot before it goes to the next round
+// This randomly requests reset or wakeup 10 times. Each time sequence waits
+// for 'ready for power down' log from c test and then executes reset, wakeup,
+// or both. After that it waits for dut reboot before it goes to the next round.
 class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_repeat_reset_wkup_vseq)
   typedef enum {TEST_WKUP, TEST_RST, TEST_BOTH} wk_or_rst_e;
