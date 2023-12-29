@@ -246,6 +246,46 @@ crypto_status_t otcrypto_rsa_private_key_from_exponents(
   return OTCRYPTO_OK;
 }
 
+crypto_status_t otcrypto_rsa_keypair_from_cofactor(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
+    crypto_const_word32_buf_t cofactor_share0,
+    crypto_const_word32_buf_t cofactor_share1,
+    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+  HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_start(
+      size, modulus, e, cofactor_share0, cofactor_share1));
+  HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
+                                                                 private_key));
+
+  // Interpret the recomputed public key. Double-check the lengths to be safe,
+  // but they should have been checked above already.
+  hardened_bool_t modulus_eq = kHardenedBoolFalse;
+  switch (size) {
+    case kRsaSize2048: {
+      if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
+          modulus.len != kRsa2048NumWords) {
+        return OTCRYPTO_RECOV_ERR;
+      }
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
+      return OTCRYPTO_OK;
+    }
+    case kRsaSize3072:
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    case kRsaSize4096:
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (modulus_eq != kHardenedBoolTrue) {
+    // This likely means that the cofactor/modulus combination was invalid,
+    // for example the modulus was not divisible by the cofactor, or the
+    // cofactor was too small.
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_OK;
+}
+
 crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
                                   const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
@@ -439,6 +479,97 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
   public_key->checksum = integrity_unblinded_checksum(public_key);
   private_key->checksum = integrity_blinded_checksum(private_key);
 
+  return OTCRYPTO_OK;
+}
+
+crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
+    crypto_const_word32_buf_t cofactor_share0,
+    crypto_const_word32_buf_t cofactor_share1) {
+  if (modulus.data == NULL || cofactor_share0.data == NULL ||
+      cofactor_share1.data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Ensure that the length of the cofactor shares is half the length
+  // of the modulus.
+  if (cofactor_share0.len != modulus.len / 2 ||
+      cofactor_share1.len != modulus.len / 2) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  switch (size) {
+    case kRsaSize2048: {
+      if (cofactor_share0.len !=
+              sizeof(rsa_2048_cofactor_t) / sizeof(uint32_t) ||
+          modulus.len != kRsa2048NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_2048_cofactor_t *cf = (rsa_2048_cofactor_t *)cofactor_share0.data;
+      // TODO: RSA keys are currently unblinded, so combine the shares.
+      for (size_t i = 0; i < cofactor_share1.len; i++) {
+        cf->data[i] ^= cofactor_share1.data[i];
+      }
+      rsa_2048_public_key_t pk;
+      hardened_memcpy(pk.n.data, modulus.data, modulus.len);
+      pk.e = e;
+      return rsa_keygen_from_cofactor_2048_start(&pk, cf);
+    }
+    case kRsaSize3072: {
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    }
+    case kRsaSize4096: {
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    }
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
+    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+  // Check for NULL pointers.
+  if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  // Infer the RSA size from the public key modulus.
+  rsa_size_t size;
+  HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  // Check the caller-provided public key buffer.
+  HARDENED_TRY(public_key_structural_check(public_key));
+
+  // Check the caller-provided private key buffer.
+  HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  // Call the required finalize() operation.
+  switch (size) {
+    case kRsaSize2048: {
+      rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
+      rsa_2048_private_key_t *sk =
+          (rsa_2048_private_key_t *)private_key->keyblob;
+      HARDENED_TRY(rsa_keygen_from_cofactor_2048_finalize(pk, sk));
+      break;
+    }
+    case kRsaSize3072: {
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    }
+    case kRsaSize4096: {
+      return OTCRYPTO_NOT_IMPLEMENTED;
+    }
+    default:
+      // Invalid key size.
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Construct checksums for the new keys.
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+  private_key->checksum = integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
 }
 
