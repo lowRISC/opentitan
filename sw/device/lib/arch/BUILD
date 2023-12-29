@@ -5,6 +5,29 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "boot_stage",
+    hdrs = ["boot_stage.h"],
+)
+
+cc_library(
+    name = "boot_stage_rom",
+    srcs = ["boot_stage_rom.c"],
+    deps = [":boot_stage"],
+)
+
+cc_library(
+    name = "boot_stage_rom_ext",
+    srcs = ["boot_stage_rom_ext.c"],
+    deps = [":boot_stage"],
+)
+
+cc_library(
+    name = "boot_stage_owner",
+    srcs = ["boot_stage_owner.c"],
+    deps = [":boot_stage"],
+)
+
+cc_library(
     name = "device",
     hdrs = ["device.h"],
     deps = [

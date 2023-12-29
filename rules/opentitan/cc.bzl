@@ -232,7 +232,7 @@ def _opentitan_binary(ctx):
     for exec_env in ctx.attr.exec_env:
         exec_env = exec_env[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
-        deps = ctx.attr.deps + [exec_env.lib]
+        deps = ctx.attr.deps + exec_env.libs
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(**provides))
@@ -362,7 +362,7 @@ def _opentitan_test(ctx):
 
     if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
-        deps = ctx.attr.deps + [exec_env.lib]
+        deps = ctx.attr.deps + exec_env.libs
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         p = exec_env.provider(**provides)
