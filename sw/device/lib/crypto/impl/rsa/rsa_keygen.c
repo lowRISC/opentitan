@@ -15,12 +15,15 @@ OTBN_DECLARE_APP_SYMBOLS(run_rsa_keygen);         // The OTBN RSA keygen binary.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, mode);   // Application mode.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_n);  // Public exponent n.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_d);  // Private exponent d.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_keygen, rsa_cofactor);  // Cofactor p or q.
 
 static const otbn_app_t kOtbnAppRsaKeygen = OTBN_APP_T_INIT(run_rsa_keygen);
 static const otbn_addr_t kOtbnVarRsaMode =
     OTBN_ADDR_T_INIT(run_rsa_keygen, mode);
 static const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_n);
 static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_d);
+static const otbn_addr_t kOtbnVarRsaCofactor =
+    OTBN_ADDR_T_INIT(run_rsa_keygen, rsa_cofactor);
 
 enum {
   /* Fixed public exponent for generated keys. This exponent is 2^16 + 1, also
@@ -35,13 +38,19 @@ enum {
 // the binary. See:
 //   hw/ip/otbn/util/otbn_objdump.py -t run_rsa_keygen.rv32embed.o
 enum {
-  kOtbnRsaMode2048 = 0x3b7,
-  kOtbnRsaMode3072 = 0x4fa,
-  kOtbnRsaMode4096 = 0x74d,
+  kOtbnRsaModeGen2048 = 0x137,
+  kOtbnRsaModeGen3072 = 0x4e5,
+  kOtbnRsaModeGen4096 = 0x63a,
+  kOtbnRsaModeCofactor2048 = 0x34e,
+  kOtbnRsaModeCofactor3072 = 0x0db,
+  kOtbnRsaModeCofactor4096 = 0x794,
 };
 
 /**
- * Start the OTBN key generation program.
+ * Start the OTBN key generation program in random-key mode.
+ *
+ * Cofactor mode should not use this routine, because it wipes DMEM and
+ * cofactor mode requires input data.
  *
  * @param mode Mode parameter for keygen.
  * @return Result of the operation.
@@ -56,7 +65,7 @@ static status_t keygen_start(uint32_t mode) {
 }
 
 /**
- * Finalize a key generation operation.
+ * Finalize a key generation operation (for either mode).
  *
  * Checks the application mode against expectations, then reads back the
  * modulus and private exponent.
@@ -91,11 +100,13 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_keygen_2048_start(void) { return keygen_start(kOtbnRsaMode2048); }
+status_t rsa_keygen_2048_start(void) {
+  return keygen_start(kOtbnRsaModeGen2048);
+}
 
 status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
                                   rsa_2048_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kOtbnRsaMode2048, kRsa2048NumWords,
+  HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen2048, kRsa2048NumWords,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
@@ -109,11 +120,13 @@ status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_keygen_3072_start(void) { return keygen_start(kOtbnRsaMode3072); }
+status_t rsa_keygen_3072_start(void) {
+  return keygen_start(kOtbnRsaModeGen3072);
+}
 
 status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
                                   rsa_3072_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kOtbnRsaMode3072, kRsa3072NumWords,
+  HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen3072, kRsa3072NumWords,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
@@ -127,11 +140,52 @@ status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_keygen_4096_start(void) { return keygen_start(kOtbnRsaMode4096); }
+status_t rsa_keygen_4096_start(void) {
+  return keygen_start(kOtbnRsaModeGen4096);
+}
 
 status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
                                   rsa_4096_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kOtbnRsaMode4096, kRsa4096NumWords,
+  HARDENED_TRY(keygen_finalize(kOtbnRsaModeGen4096, kRsa4096NumWords,
+                               private_key->n.data, private_key->d.data));
+
+  // Copy the modulus to the public key.
+  hardened_memcpy(public_key->n.data, private_key->n.data,
+                  ARRAYSIZE(private_key->n.data));
+
+  // Set the public exponent to F4, the only exponent our key generation
+  // algorithm supports.
+  public_key->e = kFixedPublicExponent;
+
+  return OTCRYPTO_OK;
+}
+
+status_t rsa_keygen_from_cofactor_2048_start(
+    const rsa_2048_public_key_t *public_key,
+    const rsa_2048_cofactor_t *cofactor) {
+  // Only the exponent F4 is supported.
+  if (public_key->e != kFixedPublicExponent) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Load the RSA key generation app. Fails if OTBN is non-idle.
+  HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
+
+  // Write the modulus and cofactor into DMEM.
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(public_key->n.data),
+                               public_key->n.data, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_dmem_write(ARRAYSIZE(cofactor->data), cofactor->data,
+                               kOtbnVarRsaCofactor));
+
+  // Set mode and start OTBN.
+  uint32_t mode = kOtbnRsaModeCofactor2048;
+  HARDENED_TRY(otbn_dmem_write(kOtbnRsaModeWords, &mode, kOtbnVarRsaMode));
+  return otbn_execute();
+}
+
+status_t rsa_keygen_from_cofactor_2048_finalize(
+    rsa_2048_public_key_t *public_key, rsa_2048_private_key_t *private_key) {
+  HARDENED_TRY(keygen_finalize(kOtbnRsaModeCofactor2048, kRsa2048NumWords,
                                private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.

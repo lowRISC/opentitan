@@ -129,6 +129,33 @@ typedef struct rsa_4096_private_key_t {
   rsa_4096_int_t n;
 } rsa_4096_private_key_t;
 
+/**
+ * A type that holds a cofactor for an RSA-2048 key.
+ *
+ * This type is half the size of an RSA-2048 integer.
+ */
+typedef struct rsa_2048_cofactor_t {
+  uint32_t data[kRsa2048NumWords / 2];
+} rsa_2048_cofactor_t;
+
+/**
+ * A type that holds a cofactor for an RSA-3072 key.
+ *
+ * This type is half the size of an RSA-3072 integer.
+ */
+typedef struct rsa_3072_cofactor_t {
+  uint32_t data[kRsa3072NumWords / 2];
+} rsa_3072_cofactor_t;
+
+/**
+ * A type that holds a cofactor for an RSA-4096 key.
+ *
+ * This type is half the size of an RSA-4096 integer.
+ */
+typedef struct rsa_4096_cofactor_t {
+  uint32_t data[kRsa4096NumWords / 2];
+} rsa_4096_cofactor_t;
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
