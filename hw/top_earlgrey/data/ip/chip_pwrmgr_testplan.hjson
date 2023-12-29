@@ -118,6 +118,7 @@
         "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_sival",
         "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_deep_sleep_por_reset_test_silicon_owner_sival_rom_ext",
       ]
     }
     {
@@ -145,6 +146,7 @@
         "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_sival",
         "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_normal_sleep_por_reset_test_silicon_owner_sival_rom_ext",
       ]
     }
     {
@@ -453,6 +455,7 @@
         "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_sival",
         "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_sleep_disabled_test_silicon_owner_sival_rom_ext",
       ]
     }
     {
@@ -477,6 +480,7 @@
         "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_sival",
         "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_sival_rom_ext",
         "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_silicon_owner_sival_rom_ext",
       ]
     }
     {
