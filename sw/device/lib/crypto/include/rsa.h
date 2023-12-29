@@ -138,6 +138,29 @@ crypto_status_t otcrypto_rsa_private_key_from_exponents(
     crypto_blinded_key_t *private_key);
 
 /**
+ * Constructs an RSA keypair from the public key and one prime cofactor.
+ *
+ * The caller should allocate space for the private key and set the `keyblob`,
+ * `keyblob_length`, and `key_length` fields accordingly. Similarly, the caller
+ * should allocate space for the public key and set the `key` and `key_length`
+ * fields.
+ *
+ * @param size RSA size parameter.
+ * @param modulus RSA modulus (n).
+ * @param exponent RSA public exponent (e).
+ * @param cofactor_share0 First share of the prime cofactor (p or q).
+ * @param cofactor_share1 Second share of the prime cofactor (p or q).
+ * @param[out] public_key Destination public key struct.
+ * @param[out] private_key Destination private key struct.
+ * @return Result of the RSA key construction.
+ */
+crypto_status_t otcrypto_rsa_keypair_from_cofactor(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
+    crypto_const_word32_buf_t cofactor_share0,
+    crypto_const_word32_buf_t cofactor_share1,
+    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key);
+
+/**
  * Computes the digital signature on the input message data.
  *
  * The caller should allocate space for the `signature` buffer
@@ -270,6 +293,43 @@ crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size);
  * @return Result of asynchronous RSA keygen finalize operation.
  */
 crypto_status_t otcrypto_rsa_keygen_async_finalize(
+    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key);
+
+/**
+ * Starts constructing an RSA private key using a cofactor.
+ *
+ * See `otcrypto_rsa_keypair_from_cofactor` for the details
+ * on the requirements for input buffers.
+ *
+ * @param size RSA size parameter.
+ * @param modulus RSA modulus (n).
+ * @param exponent RSA public exponent (e).
+ * @param cofactor_share0 First share of the prime cofactor (p or q).
+ * @param cofactor_share1 Second share of the prime cofactor (p or q).
+ * @return Result of the RSA key construction.
+ */
+crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
+    rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
+    crypto_const_word32_buf_t cofactor_share0,
+    crypto_const_word32_buf_t cofactor_share1);
+
+/**
+ * Finalizes constructing an RSA private key using a cofactor.
+ *
+ * See `otcrypto_rsa_keypair_from_cofactor` for the details
+ * on the requirements for output buffers.
+ *
+ * The public key returned from this function is recomputed; we recommend that
+ * the caller compare it to the originally passed public key value to ensure
+ * that everything went as expected. If the key is invalid in certain ways
+ * (such as the modulus not being divisible by the key), then the modulus will
+ * not match the original input.
+ *
+ * @param[out] public_key Destination public key struct.
+ * @param[out] private_key Destination private key struct.
+ * @return Result of the RSA key construction.
+ */
+crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key);
 
 /**
