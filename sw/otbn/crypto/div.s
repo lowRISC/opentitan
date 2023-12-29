@@ -2,6 +2,9 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+/* Public interface. */
+.globl div
+
 /**
  * Shift a bignum one bit to the right.
  *
@@ -269,7 +272,6 @@ cond_sub_shifted:
  * clobbered registers: x2 to x5, x8, x23 to x25, w23 to w27
  * clobbered flag groups: FG0
  */
-.globl div
 div:
   /* Initialize quotient to zero.
        dmem[dptr_q..dptr_q+n*32] = 0  */
