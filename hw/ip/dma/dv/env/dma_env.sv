@@ -30,9 +30,17 @@ class dma_env extends cip_base_env #(
     cfg.tl_agent_dma_ctn_cfg.synchronise_ports = 1'b1;
     cfg.tl_agent_dma_sys_cfg.synchronise_ports  = 1'b1;
 
+    // The SoC System bus does not have a TL-style 'ready' signal on the address channel.
+    cfg.tl_agent_dma_sys_cfg.a_ready_delay_min = 0;
+    cfg.tl_agent_dma_sys_cfg.a_ready_delay_max = 0;
+
     // Get dma interface
     if (!uvm_config_db#(dma_vif)::get(this, "", "dma_vif", cfg.dma_vif)) begin
       `uvm_fatal(`gfn, "failed to get dma_vif from uvm_config_db")
+    end
+    // Get SoC System bus <-> TL-UL adapter interface
+    if (!uvm_config_db#(dma_sys_tl_vif)::get(this, "", "dma_sys_tl_vif", cfg.dma_sys_tl_vif)) begin
+      `uvm_fatal(`gfn, "failed to get dma_sys_tl_vif from uvm_config_db")
     end
 
     // Host agent
