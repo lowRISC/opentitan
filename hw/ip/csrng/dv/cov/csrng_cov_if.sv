@@ -392,6 +392,7 @@ interface csrng_cov_if (
       // Ignore invalid MuBi values for flags.
       ignore_bins ignore_invalid_mubi = !binsof(cp_flags) intersect { MuBi4True, MuBi4False };
     }
+    cmd_flag0_transition_app_cross: cross cp_flags_transition, cp_app;
   endgroup : csrng_cmds_cg
 
   // Covergroup to sample otp_en_cs_sw_app_read feature
@@ -475,6 +476,8 @@ interface csrng_cov_if (
       bins valid = { 1'b1 };
       bins invalid = { 1'b0 };
     }
+
+    genbits_fips_transition_app_cross: cross cp_genbits_fips_transition, cp_genbits_app;
   endgroup
 
   // This covergroup tracks the compliance bit in the CSRNG state_db.
