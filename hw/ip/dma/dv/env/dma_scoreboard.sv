@@ -109,7 +109,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   // Look up the given address in the list of 'Clear Interrupt' addresses, returning a positive
   // index iff found.
-  function int intr_addr_lookup(bit [31:0] addr);
+  function int intr_addr_lookup(bit [63:0] addr);
     for (uint idx = 0; idx < dma_config.intr_src_addr.size(); idx++) begin
       if (dma_config.intr_src_addr[idx] == addr) begin
         // Address matches; this address should just receive write traffic.
@@ -174,12 +174,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // On-the-fly checking of write data against the pre-randomized source data
-  function void check_write_data(string if_name, ref tl_seq_item item);
+  function void check_write_data(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     bit [tl_agent_pkg::DataWidth-1:0] wdata = item.a_data;
     bit [31:0] offset = num_bytes_transferred;
 
     `uvm_info(`gfn, $sformatf("if_name %s: write addr 0x%0x mask 0x%0x data 0x%0x", if_name,
-                              item.a_addr, item.a_mask, item.a_data), UVM_HIGH)
+                              a_addr, item.a_mask, item.a_data), UVM_HIGH)
 
     // Check each of the bytes being written, Little Endian byte ordering
     for (int i = 0; i < $bits(item.a_mask); i++) begin
@@ -231,7 +231,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // Process items on Addr channel
-  task process_tl_addr_txn(string if_name, ref tl_seq_item item);
+  task process_tl_addr_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     uint expected_txn_size = dma_config.transfer_width_to_a_size(
                                dma_config.per_transfer_width);
     uint expected_per_txn_bytes = dma_config.transfer_width_to_num_bytes(
@@ -272,11 +272,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
                $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
 
       // Is this address a 'Clear Interrupt' operation?
-      intr_source = intr_addr_lookup(item.a_addr);
+      intr_source = intr_addr_lookup(a_addr);
       `DV_CHECK_EQ(intr_source, -1, "Unexpected Read access to Clear Interrupt address")
 
       // Validate the read address for this source access.
-      check_addr(item.a_addr, exp_src_addr, restricted, dma_config.get_read_fifo_en(),
+      check_addr(a_addr, exp_src_addr, restricted, dma_config.get_read_fifo_en(),
                  dma_config.src_addr, memory_range, dma_config, "Source");
 
       // Push addr item to source queue
@@ -300,7 +300,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                                       dma_config.src_asid != OtInternalAddr);
 
       // Is this address a 'Clear Interrupt' operation?
-      intr_source = intr_addr_lookup(item.a_addr);
+      intr_source = intr_addr_lookup(a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
@@ -314,7 +314,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         uint remaining_bytes;
 
         // Validate the write address for this destination access.
-        check_addr(item.a_addr, exp_dst_addr, restricted, dma_config.get_write_fifo_en(),
+        check_addr(a_addr, exp_dst_addr, restricted, dma_config.get_write_fifo_en(),
                    dma_config.dst_addr, memory_range, dma_config, "Destination");
 
         // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
@@ -349,7 +349,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   num_bytes_this_txn, intr_source), UVM_HIGH);
 
         // On-the-fly checking of writing data
-        check_write_data(if_name, item);
+        check_write_data(if_name, a_addr, item);
 
         // Check if opcode is as expected
         if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
@@ -359,6 +359,22 @@ class dma_scoreboard extends cip_base_scoreboard #(
         end else begin
           `DV_CHECK(a_opcode inside {PutFullData},
                     $sformatf("Unexpected opcode : %d on %s", a_opcode.name(), if_name))
+        end
+
+        // Update the expected value of destination address limit interrupt for this address;
+        // applicable only to reading from FIFO hardware when auto-incrementing is enabled for the
+        // memory address.
+        if ((dma_config.handshake & dma_config.direction == DmaRcvData &&
+             dma_config.auto_inc_buffer) &&
+            (a_addr >= dma_config.dst_addr_limit ||
+             a_addr >= dma_config.dst_addr_almost_limit)) begin
+          `uvm_info(`gfn,
+                    $sformatf("Memory address: 0x%0x crosses almost limit: 0x%0x limit: 0x%0x",
+                              a_addr, dma_config.dst_addr_almost_limit, dma_config.dst_addr_limit),
+                    UVM_HIGH)
+
+          // Interrupt is expected only if enabled.
+          predict_interrupts(MemLimitToIntrLatency, 1 << DMA_MEM_LIMIT, intr_enable);
         end
 
         // Update number of bytes transferred only in case of write txn - refer #338
@@ -391,25 +407,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
     end
 
-    // Update the expected value of destination address limit interrupt for this address
-    if ((dma_config.handshake & dma_config.auto_inc_buffer) &&
-        (item.a_addr >= dma_config.dst_addr_limit ||
-         item.a_addr >= dma_config.dst_addr_almost_limit)) begin
-      `uvm_info(`gfn, $sformatf("Memory address:%0x crosses almost limit: 0x%0x limit: 0x%0x",
-                                item.a_addr, dma_config.dst_addr_almost_limit,
-                                dma_config.dst_addr_limit), UVM_HIGH)
-
-      // Interrupt is expected only if enabled.
-      predict_interrupts(MemLimitToIntrLatency, 1 << DMA_MEM_LIMIT, intr_enable);
-    end
-
     // Track byte-counting within the transfer since it determines the prediction of completion
     `uvm_info(`gfn, $sformatf("num_bytes_transferred 0x%x total_data_size 0x%x",
                               num_bytes_transferred, dma_config.total_data_size), UVM_HIGH);
   endtask
 
   // Process items on Data channel
-  task process_tl_data_txn(string if_name, ref tl_seq_item item);
+  task process_tl_data_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
+    bit tl_error_suppressed = 0;
     bit got_source_item = 0;
     bit got_dest_item = 0;
     uint queue_idx = 0;
@@ -446,7 +451,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
     if (got_source_item) begin
       src_tl_error_detected = item.d_error;
       if (src_tl_error_detected) begin
-        `uvm_info(`gfn, "Detected TL error on Source Data item", UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Detected TL error on Source Data item (addr 0x%0x)", a_addr),
+                  UVM_HIGH)
+        // SoC System bus is able to signal Read errors, so these are never suppressed.
       end
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAckData},
@@ -459,7 +466,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Destination interface item checks
       dst_tl_error_detected = item.d_error;
       if (dst_tl_error_detected) begin
-        `uvm_info(`gfn, "Detected TL error on Destination Data item", UVM_HIGH)
+        `uvm_info(`gfn,
+                  $sformatf("Detected TL error on Destination Data item (addr 0x%0x)", a_addr),
+                  UVM_HIGH)
+        // The SoC System bus does not support signaling of Write errors, so the TL-UL write error
+        // will not be reported by the DMA controller; modify our expectation accordingly.
+        if (if_name == "sys") begin
+          `uvm_info(`gfn, "WARN: Error suppressed because Full System bus DV waived", UVM_LOW)
+          tl_error_suppressed = 1;
+        end
       end
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAck},
@@ -477,7 +492,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Errors are expected to raise an interrupt if enabled, but we not must forget a configuration
     // error whilst error-free 'clear interrupt' writes are occurring.
-    if (item.d_error) begin
+    if (item.d_error && !tl_error_suppressed) begin
       `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
       predict_interrupts(BusErrorToIntrLatency, 1 << DMA_ERROR, intr_enable);
     end else if (got_dest_item) begin
@@ -503,6 +518,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     tl_seq_item   item;
     fork
       forever begin
+        bit [63:0] a_addr;
+
         dir_fifo.get(dir);
         // Clear Interrupt writes are emitted even for invalid configurations.
         exp_intr_clearing = dma_config.handshake & |dma_config.clear_intr_src &
@@ -520,12 +537,16 @@ class dma_scoreboard extends cip_base_scoreboard #(
           AddrChannel: begin
             `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
                             "dir_fifo pointed at A channel, but a_chan_fifo empty")
+            a_addr = item.a_addr;
+            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
+              a_addr[63:32] = cfg.soc_system_hi_addr;
+            end
+
             `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
                                       if_name,
-                                      item.is_write() ? "write" : "read",
-                                      item.a_addr,
+                                      item.is_write() ? "write" : "read", a_addr,
                                       item.a_data), UVM_HIGH)
-            process_tl_addr_txn(if_name, item);
+            process_tl_addr_txn(if_name, a_addr, item);
             // Update num_fifo_reg_write
             if (num_fifo_reg_write > 0) begin
               `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
@@ -539,9 +560,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
           DataChannel: begin
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
                             "dir_fifo pointed at D channel, but d_chan_fifo empty")
+            a_addr = item.a_addr;
+            if (cfg.dma_dv_waive_system_bus && if_name == "sys") begin
+              a_addr[63:32] = cfg.soc_system_hi_addr;
+            end
             `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
-                                      if_name, item.a_addr, item.d_data), UVM_HIGH)
-            process_tl_data_txn(if_name, item);
+                                      if_name, a_addr, item.d_data), UVM_HIGH)
+            process_tl_data_txn(if_name, a_addr, item);
           end
           default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
         endcase
@@ -638,7 +663,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       elapsed = (pred.delay == 0);
       if (elapsed || changed || curr_intr === pred.intr_expected) begin
         exp_intr = pred.intr_expected;
-        exp_intr_queue[intr].pop_front();
+        void'(exp_intr_queue[intr].pop_front());
       end else begin
         // Just update the lifetime of the prediction.
         exp_intr_queue[intr][0].delay--;
@@ -996,7 +1021,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
-          // Check if configuration is valid
+          // Check if configuration is valid;
+          // Note: this may depend upon whether full SoC System bus testing has been waived.
+          dma_config.dma_dv_waive_system_bus = cfg.dma_dv_waive_system_bus;
+          dma_config.soc_system_hi_addr = cfg.soc_system_hi_addr;
           operation_in_progress = 1'b1;
           exp_src_addr = dma_config.src_addr;
           exp_dst_addr = dma_config.dst_addr;

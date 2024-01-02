@@ -6,6 +6,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
 
   `uvm_object_param_utils(dma_pull_seq#(AddrWidth))
 
+  logic [AddrWidth-1:0] base_addr;
+
   // FIFO enable bits
   bit read_fifo_en;
   bit write_fifo_en;
@@ -33,6 +35,13 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     bytes_written = 0;
   endfunction: new
 
+  // Set the base address of the TL-UL address space within a larger address space, where required.
+  // (This permits a 32-bit TL-UL agent to be employed within a restricted window of a 64-bit SoC
+  //  System bus address space).
+  virtual function void set_base_addr(logic [AddrWidth-1:0] addr);
+    base_addr = addr;
+  endfunction
+
   // Specify the number of bytes/transaction on the bus, so that the number of bytes read may be
   // tracked.
   virtual function void set_txn_bytes(uint bytes);
@@ -57,18 +66,26 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   endfunction
 
   virtual function void update_mem(REQ rsp);
+    bit [AddrWidth-1:0] a_addr = rsp.a_addr;
     bit [65:0] intg;
+
+    // Do we need to reinstate the upper address bits because of the narrower address space of the
+    // TL-UL agent?
+    if (AddrWidth > $bits(rsp.a_addr)) begin
+      a_addr += base_addr;
+    end
+
     if (mem != null) begin
       if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin
         bit [tl_agent_pkg::DataWidth-1:0] data;
         data = rsp.a_data;
         // First series of writes will be to clear FIFO interrupts
-        if (fifo_reg_clear_en && fifo_intr_clear_reg.exists(rsp.a_addr)) begin
+        if (fifo_reg_clear_en && fifo_intr_clear_reg.exists(a_addr)) begin
           // Check if the address matches FIFO register address
-          `DV_CHECK(fifo_intr_clear_reg.exists(rsp.a_addr),
-                    $sformatf("Invalid FIFO reg addr: 0x%0x detected", rsp.a_addr))
+          `DV_CHECK(fifo_intr_clear_reg.exists(a_addr),
+                    $sformatf("Invalid FIFO reg addr: 0x%0x detected", a_addr))
           // Check if write value matches FIFO register clear value
-          `DV_CHECK_EQ(fifo_intr_clear_reg[rsp.a_addr], rsp.a_data,
+          `DV_CHECK_EQ(fifo_intr_clear_reg[a_addr], rsp.a_data,
                        "Invalid FIFO reg value detected")
         end else begin
           // Write data to destination model
@@ -76,9 +93,9 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
             if (rsp.a_mask[i]) begin
               bytes_written++;
               if (write_fifo_en) begin
-                fifo.write_byte(rsp.a_addr + i, data[7:0]);
+                fifo.write_byte(a_addr + i, data[7:0]);
               end else begin
-                mem.write_byte(rsp.a_addr + i, data[7:0]);
+                mem.write_byte(a_addr + i, data[7:0]);
               end
             end
             data = data >> 8;
@@ -87,12 +104,12 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
       end else begin
         // Collect data from source model
         if (read_fifo_en) begin
-          rsp.d_data = fifo.read_word_tlul(rsp.a_addr, rsp.a_mask);
+          rsp.d_data = fifo.read_word_tlul(a_addr, rsp.a_mask);
         end else begin
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
             rsp.d_data = rsp.d_data >> 8;
             if (rsp.a_mask[i]) begin
-              rsp.d_data[tl_agent_pkg::DataWidth-1 -: 8] = mem.read_byte(rsp.a_addr+i);
+              rsp.d_data[tl_agent_pkg::DataWidth-1 -: 8] = mem.read_byte(a_addr+i);
             end
           end
         end

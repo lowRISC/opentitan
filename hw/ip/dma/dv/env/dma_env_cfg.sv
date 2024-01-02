@@ -18,6 +18,12 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // Variable to indicate if any memory checks are in progress
   bit mem_check_in_progress;
 
+  // Waive full testing of the SoC System bus within block level DV?
+  bit dma_dv_waive_system_bus;
+  // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus when full testing of
+  // the System bus has been explicitly waived.
+  logic [31:0] soc_system_hi_addr;
+
   // Names of interfaces used in DMA block
   // These variables are used to store names of FIFO that are used
   // in scoreboard and environment
