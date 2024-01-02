@@ -1,0 +1,428 @@
+% Copyright lowRISC contributors.
+% Copyright (c) 2022 ChairImpSec. All rights reserved.
+% SPDX-License-Identifier: BSD-3-Clause
+%
+% Redistribution and use in source and binary forms, with or without modification, are permitted
+% provided that the following conditions are met:
+%
+%   1. Redistributions of source code must retain the above copyright notice, this list of
+%      conditions and the following disclaimer.
+%   2. Redistributions in binary form must reproduce the above copyright notice, this list of
+%      conditions and the following disclaimer in the documentation and/or other materials
+%      provided with the distribution.
+%   3. Neither the name of the copyright holder nor the names of its contributors may be used to
+%      endorse or promote products derived from this software without specific prior written
+%      permission.
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+% IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+% FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+% DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+% DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+% WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+% WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+%%%%%%  library file %%%%%%%
+% usage:
+%
+% Library
+% library_name
+%
+% Type of the cell: Gate/Reg
+%
+% # of its variants
+% variant names
+%
+% # of inputs
+% input names
+%
+% # of outputs
+% output names
+%
+% formula of each output. Possible terms in formula: not, nand, and, or, nor, xor, xnor.
+% Parentheses MUST be placed.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Library
+custom
+
+Reg
+1 DFF
+2 C D
+1 Q
+((not C) and Q) or (C and D)
+
+Gate
+1 AND
+2 A B
+1 Y
+A and B
+
+Gate
+1 NAND
+2 A B
+1 Y
+not (A and B)
+
+Gate
+1 OR
+2 A B
+1 Y
+A or B
+
+Gate
+1 NOR
+2 A B
+1 Y
+not (A or B)
+
+Gate
+1 XOR
+2 A B
+1 Y
+A xor B
+
+Gate
+1 XNOR
+2 A B
+1 Y
+not (A xor B)
+
+Gate
+1 NOT
+1 A
+1 Y
+not A
+
+Gate
+1 MUX2
+3 S A B
+1 Q
+(S and B) or (A and (not S))
+
+Buffer
+2 BUFF BUF
+1 A
+1 Y
+not (not A)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Library
+NANG45
+
+Gate
+4
+INV_X1 INV_X2 INV_X4 INV_X8
+1
+A
+1
+ZN
+not A
+
+Gate
+3
+XNOR2_X1 XNOR2_X2 XNOR2_X4
+2
+A B
+1
+ZN
+not (A xor B)
+
+Gate
+3
+XOR2_X1 XOR2_X2 XOR2_X4
+2
+A B
+1
+Z
+A xor B
+
+Gate
+3
+AOI22_X1 AOI22_X2 AOI22_X4
+4
+A1 A2 B1 B2
+1
+ZN
+not ((A1 and A2) or (B1 and B2))
+
+Gate
+3
+MUX2_X1 MUX2_X2 MUX2_X4
+3
+A B S
+1
+Z
+(S and B) or (A and (not S))
+
+Gate
+3
+AND4_X1 AND4_X2 AND4_X4
+4
+A1 A2 A3 A4
+1
+ZN
+A1 and A2 and A3 and A4
+
+Gate
+3
+NOR2_X1 NOR2_X2 NOR2_X4
+2
+A1 A2
+1
+ZN
+not (A1 or A2)
+
+Gate
+3
+NAND2_X1 NAND2_X2 NAND2_X4
+2
+A1 A2
+1
+ZN
+not (A1 and A2)
+
+Gate
+3
+NAND3_X1 NAND3_X2 NAND3_X4
+3
+A1 A2 A3
+1
+ZN
+not (A1 and A2 and A3)
+
+Gate
+3
+NAND4_X1 NAND4_X2 NAND4_X4
+4
+A1 A2 A3 A4
+1
+ZN
+not (A1 and A2 and A3 and A4)
+
+Gate
+3
+OR2_X1 OR2_X2 OR2_X4
+2
+A1 A2
+1
+ZN
+A1 or A2
+
+Gate
+3
+NOR3_X1 NOR3_X2 NOR3_X4
+3
+A1 A2 A3
+1
+ZN
+not (A1 or A2 or A3)
+
+Gate
+3
+AOI211_X1 AOI211_X2 AOI211_X4
+4
+A B C1 C2
+1
+ZN
+not ((C1 and C2) or B or A)
+
+Gate
+3
+AOI221_X1 AOI221_X2 AOI221_X4
+5
+A B1 B2 C1 C2
+1
+ZN
+not ((C1 and C2) or A or (B1 and B2))
+
+Gate
+3
+OAI211_X1 OAI211_X2 OAI211_X4
+4
+A B C1 C2
+1
+ZN
+not ((C1 or C2) and A and B)
+
+Reg
+3
+DFF_X1 DFF_X2 DFF_X4
+2
+D CK
+2
+Q QN
+((not CK) and      Q ) or (CK and      D )
+((not CK) and (not Q)) or (CK and (not D))
+
+Reg
+3
+SDFF_X1 SDFF_X2 SDFF_X4
+4
+D SI SE CK
+2
+Q QN
+((not CK) and      Q ) or (CK and (((not SE) and      D ) or (SE and      SI )))
+((not CK) and (not Q)) or (CK and (((not SE) and (not D)) or (SE and (not SI))))
+
+Gate
+3
+OAI21_X1 OAI21_X2 OAI21_X4
+3
+A B1 B2
+1
+ZN
+not (A and (B1 or B2))
+
+Gate
+3
+AOI21_X1 AOI21_X2 AOI21_X4
+3
+A B1 B2
+1
+ZN
+not (A or (B1 and B2))
+
+Gate
+3
+OAI33_X1 OAI33_X2 OAI33_X4
+6
+A1 A2 A3 B1 B2 B3
+1
+ZN
+not ((A1 or A2 or A3) and (B1 or B2 or B3))
+
+Buffer
+7
+BUF_X1 BUF_X2 BUF_X4 BUF_X8
+CLKBUF_X1 CLKBUF_X2 CLKBUF_X4
+1
+A
+1
+Z
+not (not A)
+
+Gate
+3
+AND2_X1 AND2_X2 AND2_X4
+2
+A1 A2
+1
+ZN
+A1 and A2
+
+Gate
+3
+OAI22_X1 OAI22_X2 OAI22_X4
+4
+A1 A2 B1 B2
+1
+ZN
+not ((A1 or A2) and (B1 or B2))
+
+Gate
+3
+NOR4_X1 NOR4_X2 NOR4_X4
+4
+A1 A2 A3 A4
+1
+ZN
+not (A1 or A2 or A3 or A4)
+
+Gate
+3
+OAI221_X1 OAI221_X2 OAI221_X4
+5
+A B1 B2 C1 C2
+1
+ZN
+not ((C1 or C2) and A and (B1 or B2))
+
+Gate
+3
+AOI222_X1 AOI222_X2 AOI222_X4
+6
+A1 A2 B1 B2 C1 C2
+1
+ZN
+not (((A1 and A2) or (B1 and B2)) or (C1 and C2))
+
+Gate
+3
+OR3_X1 OR3_X2 OR3_X4
+3
+A1 A2 A3
+1
+ZN
+A1 or A2 or A3
+
+Gate
+3
+AND3_X1 AND3_X2 AND3_X4
+3
+A1 A2 A3
+1
+ZN
+A1 and A2 and A3
+
+Gate
+3
+OAI222_X1 OAI222_X2 OAI222_X4
+6
+A1 A2 B1 B2 C1 C2
+1
+ZN
+not (((A1 or A2) and (B1 or B2)) and (C1 or C2))
+
+Gate
+3
+OR4_X1 OR4_X2 OR4_X4
+4
+A1 A2 A3 A4
+1
+ZN
+A1 or A2 or A3 or A4
+
+%%%%%%%%%%%%%%%%%%%%%
+
+Gate
+3
+DLL_X1 DLL_X2 DLL_X4
+2
+D GN
+1
+Q
+not (not D)
+
+Reg
+3
+DFFR_X1 DFFR_X2 DFFR_X4
+3
+D CK RN
+2
+Q QN
+     RN and (((not CK) and      Q ) or (CK and      D ))
+(not RN) or (((not CK) and (not Q)) or (CK and (not D)))
+
+Reg
+3
+DFFS_X1 DFFS_X2 DFFS_X4
+3
+D CK SN
+2
+Q QN
+(not SN) or (((not CK) and      Q ) or (CK and      D ))
+     SN and (((not CK) and (not Q)) or (CK and (not D)))
+
+Reg
+3
+SDFFR_X1 SDFFR_X2 SDFFR_X4
+5
+D SI SE CK RN
+2
+Q QN
+     RN and (((not CK) and      Q ) or (CK and (((not SE) and      D ) or (SE and      SI ))))
+(not RN) or (((not CK) and (not Q)) or (CK and (((not SE) and (not D)) or (SE and (not SI)))))
