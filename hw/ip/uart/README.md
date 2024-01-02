@@ -37,5 +37,5 @@ to 1Mbps.
 
 ## Compatibility
 
-The OpenTitan UART is feature compatible to a specific implementation in [Chromium EC](https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/chip/g/uart.c).
+The OpenTitan UART is feature compatible to a specific implementation in [Chromium EC](https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/uart.c).
 Additional features such as parity have been added.
