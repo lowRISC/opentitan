@@ -21,9 +21,4 @@ task automatic init();
   handshake_i <= '0;
 endtask : init
 
-// Drive Handshake
-task automatic drive(input int pos = 0);
-  handshake_i[pos] <= 1'b1;
-endtask : drive
-
 endinterface

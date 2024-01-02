@@ -71,8 +71,11 @@ class dma_seq_item extends uvm_sequence_item;
 
   // variable used to constrain randomization to only valid configs
   bit valid_dma_config;
-  // Waive testing of the system bus within this DV environment?
+  // Waive full testing of the system bus within this DV environment?
   bit dma_dv_waive_system_bus;
+  // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus when full testing of
+  // the System bus has been explicitly waived.
+  rand bit [31:0] soc_system_hi_addr;
 
   // Bit used to indicate if the configuration is valid
   bit is_valid_config;
@@ -137,16 +140,6 @@ class dma_seq_item extends uvm_sequence_item;
     intr_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
   }
 
-  // Constrain source and destinatination address space ids for valid configurations
-  constraint asid_c {
-    if (dma_dv_waive_system_bus) {
-      // There is no model of the SoC System bus, so attempting any transaction to that bus will
-      // result in the DMA controller stalling
-      src_asid != SocSystemAddr;
-      dst_asid != SocSystemAddr;
-    }
-  }
-
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
     // valid_dma_config is set
@@ -169,6 +162,13 @@ class dma_seq_item extends uvm_sequence_item;
       per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
       // Only the SoC System bus has a full 64-bit address space.
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
+    }
+    // When full testing of the SoC System bus has been waived, testing is restricted to a 4GiB
+    // address window but we can vary the address window for each transfer.
+    if (dma_dv_waive_system_bus && src_asid == SocSystemAddr) {
+      // Source address range must lie within the selected 4GiB window and not spill over.
+      src_addr[63:32] == soc_system_hi_addr;
+      src_addr[31:0] <= ~total_data_size;  // == 32'hFFFF_FFFF - total_data_size.
     }
   }
 
@@ -206,6 +206,13 @@ class dma_seq_item extends uvm_sequence_item;
       per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
       // Only the SoC System bus has a full 64-bit address space.
       dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
+    }
+    // When full testing of the SoC System bus has been waived, testing is restricted to a 4GiB
+    // address window but we can vary the address window for each transfer.
+    if (dma_dv_waive_system_bus && dst_asid == SocSystemAddr) {
+      // Destination address range must lie within the selected 4GiB window and not spill over.
+      dst_addr[63:32] == soc_system_hi_addr;
+      dst_addr[31:0] <= ~total_data_size;  // == 32'hFFFF_FFFF - total_data_size.
     }
   }
 
@@ -287,9 +294,18 @@ class dma_seq_item extends uvm_sequence_item;
     // For valid dma config, mem buffer limit must be greater than destination address
     // in order to detect passing the limit
     if (valid_dma_config) {
-       if (handshake && direction == DmaRcvData) {
-          dst_addr_limit > dst_addr_almost_limit;
-       }
+      if (handshake && direction == DmaRcvData) {
+        dst_addr_limit >= dst_addr_almost_limit;
+        // When full testing of the SoC System bus has been waived, testing is restricted to a
+        // 4GiB address window but we can vary the address window for each transfer.
+        if (dma_dv_waive_system_bus && dst_asid == SocSystemAddr) {
+          // Destination address range must lie within the selected 4GiB window and not spill
+          // over. Since dst_addr <= dst_addr_almost_limit <= dst_addr_limit, we do not need to
+          // constrain `dst_addr_almost_limit` further.
+          dst_addr_limit[63:32] == soc_system_hi_addr;
+          dst_addr_limit[31:0] <= ~total_data_size;  // == 32'hFFFF_FFFF - total_data_size.
+        }
+      }
     }
   }
 
@@ -300,9 +316,9 @@ class dma_seq_item extends uvm_sequence_item;
     // For valid dma config, mem buffer almost limit must not be
     // less than destination address
     if (valid_dma_config) {
-       if (handshake && direction == DmaRcvData) {
-          dst_addr_almost_limit > dst_addr;
-       }
+      if (handshake && direction == DmaRcvData) {
+        dst_addr_almost_limit >= dst_addr;
+      }
     }
   }
 
@@ -456,14 +472,39 @@ class dma_seq_item extends uvm_sequence_item;
     bit [1:0] align_mask;
     bit valid_config = 1;
 
-    `uvm_info(`gfn, $sformatf("Checking configuration (%s)", reason), UVM_MEDIUM)
     // Each check is performed independently and reported, to produce a complete list of reasons
     // that the configuration is invalid.
+    `uvm_info(`gfn, $sformatf("Checking configuration (%s)", reason), UVM_MEDIUM)
+
+    // Ascertain the size of the in-memory buffer
+    memory_range = total_data_size;
+    if (handshake && !auto_inc_buffer) begin
+      memory_range = chunk_data_size;  // All chunks overlap each other
+    end
 
     // Testing of the System bus may be waived in this DV environment
-    if (!dma_dv_waive_system_bus && (src_asid == SocSystemAddr || dst_asid == SocSystemAddr)) begin
-      `uvm_info(`gfn, " - SoCSystemAddr is NOT yet implemented", UVM_MEDIUM)
-      valid_config = 0;
+    if (dma_dv_waive_system_bus) begin
+      // Use of the System bus is not invalid per se, but there are additional constraints that
+      // have had to be introduced to permit testing in block level DV (see `soc_system_hi_addr`
+      // above); if the upper bits do not match then reads or writes will be faulted, and 32-bit
+      // address wraparound is not permitted.
+      if (src_asid == SocSystemAddr) begin
+        if (src_addr[63:32] != soc_system_hi_addr || src_addr[31:0] >= ~memory_range) begin
+          `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Reads not met",
+                    UVM_MEDIUM)
+          valid_config = 0;
+        end
+      end
+      if (dst_asid == SocSystemAddr) begin
+        if (dst_addr[63:32] != soc_system_hi_addr || dst_addr[31:0] >= ~memory_range) begin
+          `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Writes not met",
+                    UVM_MEDIUM)
+          valid_config = 0;
+        end
+      end
+    end else if (src_asid == SocSystemAddr || dst_asid == SocSystemAddr) begin
+      // This is not necessarily invalid; just issue a notification in case the test fails.
+      `uvm_info(`gfn, " - SoCSystemAddr is NOT fully implemented", UVM_LOW)
     end
 
     // Check that the ASIDs are valid
@@ -497,12 +538,6 @@ class dma_seq_item extends uvm_sequence_item;
     if (mem_range_valid && !(mem_range_base <= mem_range_limit)) begin
       `uvm_info(`gfn, " - DMA-enabled memory range invalid but enabled", UVM_MEDIUM)
       valid_config = 0;
-    end
-
-    // Ascertain the size of the in-memory buffer
-    memory_range = total_data_size;
-    if (handshake && !auto_inc_buffer) begin
-      memory_range = chunk_data_size;  // All chunks overlap each other
     end
 
     // Check if operation is performed between valid source and destination combinations

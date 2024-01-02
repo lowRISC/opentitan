@@ -8,8 +8,9 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   tl_agent_cfg tl_agent_dma_ctn_cfg;
   tl_agent_cfg tl_agent_dma_sys_cfg;
 
-  // Interface
+  // Interfaces
   dma_vif               dma_vif;
+  dma_sys_tl_vif        dma_sys_tl_vif;
   virtual clk_rst_if    clk_rst_vif;
 
   // Scoreboard

@@ -39,6 +39,11 @@ module tb;
   tl_if tl_ctn_if(.clk(clk), .rst_n(rst_n)); // to CTN
   tl_if tl_sys_if(.clk(clk), .rst_n(rst_n)); // to SYS
 
+  // Adapter to convert SoC System bus to TL
+  dma_sys_tl_if #(.TLAddrWidth(32)) sys_tl_adapter_if(.clk_i(clk), .rst_ni(rst_n));
+  assign tl_sys_if.h2d = sys_tl_adapter_if.tl_h2d;
+  assign sys_tl_adapter_if.tl_d2h = tl_sys_if.d2h;
+
   `DV_ALERT_IF_CONNECT()
 
   // Instantiate DUT
@@ -54,18 +59,18 @@ module tb;
     .intr_dma_memory_buffer_limit_o (interrupts[DMA_MEM_LIMIT]),
     .alert_rx_i (alert_rx),
     .alert_tx_o (alert_tx),
-    // TL Interface
+    // TL Interface to OT Internal address space
     .host_tl_h_o (tl_host_if.h2d),
     .host_tl_h_i (tl_host_if.d2h),
     // TL Interface for CSR
     .tl_d_o (tl_if.d2h),
     .tl_d_i (tl_if.h2d),
-
+    // TL Interface to SoC ConTrol Network
     .ctn_tl_h2d_o (tl_ctn_if.h2d),
     .ctn_tl_d2h_i (tl_ctn_if.d2h),
-
-    .sys_o (),
-    .sys_i ('0)
+    // SoC System bus
+    .sys_o (sys_tl_adapter_if.sys_h2d),
+    .sys_i (sys_tl_adapter_if.sys_d2h)
   );
 
   assign dma_intf.remaining     = dut.remaining_bytes;
@@ -87,13 +92,14 @@ module tb;
     clk_rst_if.set_active();
     dma_intf.init();
 
-    // Registeration
+    // Registration
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_reg_block*", "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_ctn*", "vif", tl_ctn_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_sys*", "vif", tl_sys_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual dma_if)::set(null, "*.env", "dma_vif", dma_intf);
+    uvm_config_db#(virtual dma_sys_tl_if)::set(null, "*.env", "dma_sys_tl_vif", sys_tl_adapter_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 
