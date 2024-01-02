@@ -132,7 +132,7 @@
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.POR_REQUEST",
       ]
-      tests: ["chip_sw_pwrmgr_sleep_por_reset"]
+      tests: ["chip_sw_pwrmgr_normal_sleep_por_reset"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_por_reset_test"]
     }
     {
