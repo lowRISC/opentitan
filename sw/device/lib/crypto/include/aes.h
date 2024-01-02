@@ -83,7 +83,7 @@ typedef enum aes_padding {
  * change.
  */
 typedef struct aes_gcm_ctx {
-  uint32_t data[93];
+  uint32_t data[98];
 } aes_gcm_ctx_t;
 
 /**

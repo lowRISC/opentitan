@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
@@ -29,14 +30,24 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, (uint32_t)kBlockCipherModeOfb);
 OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kBlockCipherModeCtr);
 
 // Check GHASH context size against the underlying implementation.
-static_assert(sizeof(aes_gcm_ctx_t) == sizeof(aes_gcm_context_t),
-              "Size of AES-GCM context object for top-level API must match the "
+static_assert(sizeof(aes_gcm_ctx_t) >= sizeof(aes_gcm_context_t),
+              "Size of AES-GCM context object for top-level API must be at "
+              "least as large as the context for the "
               "underlying implementation.");
 static_assert(alignof(aes_gcm_context_t) >= alignof(uint32_t),
               "Internal AES-GCM context object must be word-aligned for use "
               "with `hardened_memcpy`.");
 static_assert(sizeof(crypto_key_config_t) % sizeof(uint32_t) == 0,
               "Key configuration size should be a multiple of 32 bits");
+
+// Ensure the internal AES-GCM context size is a multiple of the word size and
+// calculate the number of words.
+static_assert(sizeof(aes_gcm_context_t) % sizeof(uint32_t) == 0,
+              "Internal AES-GCM context object must be a multiple of the word "
+              "size for use with `hardened_memcpy`.");
+enum {
+  kAesGcmContextNumWords = sizeof(aes_gcm_context_t) / sizeof(uint32_t),
+};
 
 /**
  * Save an AES-GCM context.
@@ -47,7 +58,7 @@ static_assert(sizeof(crypto_key_config_t) % sizeof(uint32_t) == 0,
 static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
                                     aes_gcm_ctx_t *api_ctx) {
   hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
-                  ARRAYSIZE(api_ctx->data));
+                  kAesGcmContextNumWords);
 }
 
 /**
@@ -59,7 +70,7 @@ static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
 static inline void gcm_context_restore(aes_gcm_ctx_t *api_ctx,
                                        aes_gcm_context_t *internal_ctx) {
   hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
-                  ARRAYSIZE(api_ctx->data));
+                  kAesGcmContextNumWords);
 }
 
 /**
@@ -776,10 +787,10 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
   gcm_context_restore(ctx, &internal_ctx);
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
 
-  // If the partial block is nonempty, the output must be at least one block
-  // long.
+  // If the partial block is nonempty, the output must be at least as long as
+  // the partial block.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
-  if (partial_block_len > 0 && ciphertext->len < kAesBlockNumBytes) {
+  if (ciphertext->len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -816,10 +827,10 @@ crypto_status_t otcrypto_aes_gcm_decrypt_final(
   gcm_context_restore(ctx, &internal_ctx);
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
 
-  // If the partial block is nonempty, the output must be at least one block
-  // long.
+  // If the partial block is nonempty, the output must be at least as long as
+  // the partial block.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
-  if (partial_block_len > 0 && plaintext->len < kAesBlockNumBytes) {
+  if (plaintext->len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 

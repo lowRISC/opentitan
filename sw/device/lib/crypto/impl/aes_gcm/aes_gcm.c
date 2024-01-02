@@ -342,9 +342,6 @@ static status_t aes_gcm_init(const aes_key_t key, const size_t iv_len,
   ctx->partial_ghash_block = (ghash_block_t){.data = {0}};
   ctx->partial_aes_block = (aes_block_t){.data = {0}};
 
-  // Start in the "updating AAD" state.
-  ctx->state = kAesGcmStateUpdateAad;
-
   return OTCRYPTO_OK;
 }
 
@@ -371,7 +368,7 @@ status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
   // Check for null pointers and ensure we are in the expected state. Once
   // we've started accumulating encrypted data, we can't add more associated
   // data because of the structure of the tag's GHASH operation.
-  if (ctx == NULL || aad == NULL || ctx->state != kAesGcmStateUpdateAad) {
+  if (ctx == NULL || aad == NULL || ctx->input_len > 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -404,18 +401,12 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // If this is the first part of the plaintext, process the remaining partial
-  // AAD and update the state.
-  if (ctx->state == kAesGcmStateUpdateAad) {
-    size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  // If this is the first part of the plaintext and we haven't finished the AAD
+  // yet, process the remaining partial AAD and update the state.
+  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
     ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
                  (unsigned char *)ctx->partial_ghash_block.data);
-    ctx->state = kAesGcmStateUpdateEncryptedData;
-  }
-
-  // Ensure we are in the expected state.
-  if (ctx->state != kAesGcmStateUpdateEncryptedData) {
-    return OTCRYPTO_BAD_ARGS;
   }
 
   // Process any full blocks of input with GCTR to generate more ciphertext.
@@ -467,16 +458,11 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
 
   // If there was no input (we never entered the "update encrypted data"
   // stage), process the remaining partial AAD and update the state.
-  if (ctx->state == kAesGcmStateUpdateAad) {
+  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
     size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
     ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
                  (unsigned char *)ctx->partial_ghash_block.data);
-    ctx->state = kAesGcmStateUpdateEncryptedData;
-  }
-
-  // Ensure we are in the expected state.
-  if (ctx->state != kAesGcmStateUpdateEncryptedData) {
-    return OTCRYPTO_BAD_ARGS;
   }
 
   // If a partial block of input data remains, pad it with zeroes and generate
