@@ -172,11 +172,10 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   };
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
-  size_t ciphertext_len = ciphertext_blocks * kAesBlockNumBytes;
-  uint8_t actual_ciphertext_data[ciphertext_len];
+  uint8_t actual_ciphertext_data[ciphertext_blocks * kAesBlockNumBytes];
   crypto_byte_buf_t actual_ciphertext = {
       .data = actual_ciphertext_data,
-      .len = sizeof(actual_ciphertext_data),
+      .len = test->plaintext_len,
   };
 
   aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
@@ -190,7 +189,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
                    &ciphertext_bytes_written));
     crypto_byte_buf_t final_ciphertext = {
         .data = actual_ciphertext.data + ciphertext_bytes_written,
-        .len = actual_ciphertext.len - ciphertext_bytes_written,
+        .len = test->plaintext_len - ciphertext_bytes_written,
     };
     TRY(otcrypto_aes_gcm_encrypt_final(&ctx, tag_len, &final_ciphertext,
                                        &ciphertext_bytes_written, &actual_tag));
@@ -270,11 +269,10 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   };
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
-  size_t ciphertext_len = ciphertext_blocks * kAesBlockNumBytes;
-  uint8_t actual_plaintext_data[ciphertext_len];
+  uint8_t actual_plaintext_data[ciphertext_blocks * kAesBlockNumBytes];
   crypto_byte_buf_t actual_plaintext = {
       .data = actual_plaintext_data,
-      .len = sizeof(actual_plaintext_data),
+      .len = test->plaintext_len,
   };
 
   aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);

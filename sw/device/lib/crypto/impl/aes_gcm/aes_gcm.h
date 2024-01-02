@@ -18,21 +18,9 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Stage of a streaming AES-GCM operation.
- */
-typedef enum aes_gcm_state {
-  kAesGcmStateUpdateAad,
-  kAesGcmStateUpdateEncryptedData,
-} aes_gcm_state_t;
-
-/**
  * AES-GCM context object for streaming operations.
  */
 typedef struct aes_gcm_context {
-  /**
-   * State of the ongoing operation.
-   */
-  aes_gcm_state_t state;
   /**
    * Whether this is an encryption operation (false indicates decryption).
    */
@@ -77,7 +65,7 @@ typedef struct aes_gcm_context {
    * Current context for the tag's ongoing GHASH computation.
    */
   ghash_context_t ghash_ctx;
-} aes_gcm_context_t;
+} __attribute__((aligned(sizeof(uint32_t)))) aes_gcm_context_t;
 
 /**
  * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.
