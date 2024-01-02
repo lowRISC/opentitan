@@ -189,14 +189,19 @@ It protects both the confidentiality and authenticity of the main input and the 
 GCM is specified in [NIST SP800-38D][gcm-spec].
 One important note for using AES-GCM is that shorter tags degrade authentication guarantees, so it is important to fully understand the implications before using shortened tags.
 
-In addition, we expose the internal GHASH and GCTR operation that GCM relies upon (from [NIST SP800-38D][gcm-spec], section 6.4).
-This allows flexibility for use-cases that need custom GCM constructs: for example, we do not provide AES-GCM in streaming mode here because it encourages decryption and processing of unauthenticated data, but some users may need it for compatibility purposes.
-Additionally, the GHASH operation can be used to construct GCM with block ciphers other than AES.
+The cryptolib offers GCM in one-shot and in streaming mode.
+In streaming mode, it is strongly recommended not to process the decrypted data before verifying the authentication tag.
 
 #### GCM - Authenticated Encryption and Decryption
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_encrypt_gcm }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_decrypt_gcm }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_aad }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_encrypted_data }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_final }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_final }}
 
 ### AES-KWP
 
