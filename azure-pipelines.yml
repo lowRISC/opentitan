@@ -220,7 +220,11 @@ jobs:
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
-      echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      # echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      ./bazelisk.sh cquery "deps(//hw:all)" \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        >> "${TARGET_PATTERN_FILE}"
       ./bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
@@ -228,7 +232,9 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         -- "rdeps(//..., kind(bitstream_splice, //...))" \
         >> "${TARGET_PATTERN_FILE}"
-
+      echo "target pattern file"
+      cat ${TARGET_PATTERN_FILE}
+      echo "build sw targets"
       # Build all unit tests and their dependencies.
       ci/bazelisk.sh build \
         --build_tests_only=false \
@@ -291,8 +297,9 @@ jobs:
 - job: chip_englishbreakfast_verilator
   displayName: Verilated English Breakfast (Build)
   # Build Verilator simulation of the English Breakfast toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  dependsOn: checkout
+  # dependsOn: lint
+  # condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
     vmImage: ubuntu-20.04
   steps:
@@ -304,8 +311,34 @@ jobs:
       verilator --version
       verible-verilog-lint --version
     displayName: Display environment
-  - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
+  - bash: |
+      ci/scripts/build-chip-setup.sh englishbreakfast && tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo-build.tar.gz .
+      echo "a" && ls $(Pipeline.Workspace)/a
+      echo "b" && ls $(Pipeline.Workspace)/b
+      echo "s" && ls $(Pipeline.Workspace)/s
+      echo "repo" && ls $(Pipeline.Workspace)/opentitan-repo
+    displayName: Setup simulation with Verilator
+  - publish: $(Pipeline.Workspace)/opentitan-repo-build.tar.gz
+    artifact: opentitan-with-build
+    displayName: Upload opentitan-with-build
+  # The repo should have all generated artifacts at this point.
+  - bash: |
+      echo "a" && ls $(Pipeline.Workspace)/a
+      echo "b" && ls $(Pipeline.Workspace)/b
+      echo "s" && ls $(Pipeline.Workspace)/s
+      echo "repo" && ls $(Pipeline.Workspace)/opentitan-repo
+      echo "Verilator version" && fusesoc --version
+  - bash: |
+      tar -C $(Build.StagingDirectory) -czf $(Pipeline.Workspace)/eng_staging_dir.tar.gz .
+    # displayName: Pack up eng_staging_dif
+  - publish: $(Pipeline.Workspace)/eng_staging_dir.tar.gz
+    artifact: eng_staging_dir
+    displayName: Upload eng_staging_dir
+  - bash: ci/scripts/build-chip-verilator.sh englishbreakfast || tar -C $(Build.StagingDirectory) -czf $(Pipeline.Workspace)/build_dir.tar.gz .
     displayName: Build simulation with Verilator
+  - publish: $(Pipeline.Workspace)/build_dir.tar.gz
+    artifact: build_dir
+    displayName: Upload build_dir
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:

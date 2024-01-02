@@ -79,6 +79,12 @@ targets:
       - files_sim_verilator
     toplevel: chip_englishbreakfast_verilator
 
+  simple: &simple_target
+    toplevel: chip_englishbreakfast_verilator
+    filesets:
+      - files_sim_verilator
+    default_tool: vcs
+
   sim:
     parameters:
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplGeneric
@@ -97,6 +103,7 @@ targets:
       verilator:
         mode: cc
         verilator_options:
+          # - '-E'
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
           - '--trace'

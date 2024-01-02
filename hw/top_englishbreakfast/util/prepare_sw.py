@@ -145,7 +145,7 @@ def main():
         'ip/clkmgr/data/autogen/clkmgr.hjson',
         'ip/flash_ctrl/data/autogen/flash_ctrl.hjson',
         'ip_autogen/pwrmgr/data/pwrmgr.hjson',
-        'ip/rstmgr/data/autogen/rstmgr.hjson',
+        'ip_autogen/rstmgr/data/rstmgr.hjson',
         'ip/pinmux/data/autogen/pinmux.hjson',
         'ip_autogen/rv_plic/data/rv_plic.hjson',
         'ip/ast/data/ast.hjson',

@@ -257,7 +257,7 @@
       param_decl: {
         SecCheck: "0",
       }
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "clkmgr_aon",
       type: "clkmgr",

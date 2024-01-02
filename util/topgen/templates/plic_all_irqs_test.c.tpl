@@ -5,6 +5,8 @@
 ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
+has_csrng = "csrng" in irq_peripheral_names
+csrng_index = irq_peripheral_names.index("csrng") if has_csrng else None
 
 # For some rv_timer DIFs, tha hart argument follows the instance handle.
 def args(p):
@@ -47,7 +49,6 @@ def args(p):
 % for p in helper.irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
-  csrng_index = irq_peripheral_names.index("csrng")
 %>\
 % if i == csrng_index:
 // TODO(lowrisc/opentitan#20747) Adjust csrng special handling once this is
@@ -87,11 +88,13 @@ static volatile dif_${n}_irq_t ${n}_irq_serviced;
 
 % endfor
 
+% if has_csrng:
 #if TEST_MIN_IRQ_PERIPHERAL <= ${csrng_index} < TEST_MAX_IRQ_PERIPHERAL
 static volatile bool allow_csrng_irq = true;
 #else
 static volatile bool allow_csrng_irq = false;
 #endif
+% endif
 
 /**
  * Provides external IRQ handling for this test.
@@ -112,13 +115,14 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_${top["name"]}_plic_peripheral_t peripheral = (top_${top["name"]}_plic_peripheral_t)
       top_${top["name"]}_plic_interrupt_for_peripheral[plic_irq_id];
+% if has_csrng:
   // TODO(lowrisc/opentitan#20747) Adjust code once this issue is fixed.
   if (allow_csrng_irq && kBootStage == kBootStageOwner &&
       peripheral != peripheral_expected &&
       peripheral == kTopEarlgreyPlicPeripheralCsrng) {
     dif_csrng_irq_t irq = (dif_csrng_irq_t)(
         plic_irq_id -
-        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+        (dif_rv_plic_irq_id_t)kTop${top["name"].capitalize()}PlicIrqIdCsrngCsCmdReqDone);
 
     dif_csrng_irq_state_snapshot_t snapshot;
     CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
@@ -129,6 +133,9 @@ void ottf_external_isr(uint32_t *exc_info) {
     // TODO: Check Interrupt type then clear INTR_TEST if needed.
     CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
     CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+% else:
+  if (false) {
+% endif
   } else {
     CHECK(peripheral == peripheral_expected,
           "Interrupt from incorrect peripheral: exp = %d, obs = %d",
@@ -144,7 +151,7 @@ void ottf_external_isr(uint32_t *exc_info) {
         dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
             plic_irq_id -
             (dif_rv_plic_irq_id_t)${p.plic_start_irq});
-      % if i == irq_peripheral_names.index("csrng"):
+      % if i == csrng_index:
         // This special handling of CSRNG is because it is configured
         // to constantly generate interrupts. There may be better ways
         // to configure the entropy complex so it is less noisy.
