@@ -49,7 +49,7 @@ package dma_env_pkg;
 
   // types
   typedef virtual dma_if dma_vif;
-  //typedef virtual clk_if clk_rst_vif;
+  typedef virtual dma_sys_tl_if dma_sys_tl_vif;
   typedef class dma_scoreboard;
 
   // DMAC data direction in hardware handshake mode
