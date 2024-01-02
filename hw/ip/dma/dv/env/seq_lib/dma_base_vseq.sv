@@ -78,6 +78,30 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.fifo_sys.init();
   endfunction
 
+  // When full testing of the Soc System bus has been waived at block level and we have only a
+  // 32-bit TL-UL agent available, the additional address bits must be supplied for checking and
+  // subsequent reinstatement to permit checking within the scoreboard and SoC System
+  // `dma_pull_seq`.
+  function void set_system_base_addr(ref dma_seq_item dma_config);
+    // We need to retain this configuration setting so that the scoreboard has awareness of it.
+    cfg.dma_dv_waive_system_bus = dma_config.dma_dv_waive_system_bus;
+    if (dma_config.dma_dv_waive_system_bus) begin
+      logic [63:0] full_addr;
+      if (dma_config.src_asid == SocSystemAddr || dma_config.dst_asid == SocSystemAddr) begin
+        // TODO: maybe we randomize a full 64-bit base address instead?
+        full_addr = {dma_config.soc_system_hi_addr, 32'b0};
+      end else begin
+        full_addr = {64{1'bX}};
+      end
+      cfg.soc_system_hi_addr = full_addr >> 32;
+      // Inform the interface adapter of the chosen base address so that it may perform checking.
+      cfg.dma_sys_tl_vif.set_base_addr(full_addr);
+      seq_sys.set_base_addr(full_addr);
+    end else begin
+      seq_sys.set_base_addr(0);
+    end
+  endfunction
+
   // Randomization of DMA configuration and transfer properties; to be overridden in those
   // derived classes where further constraints are required.
   virtual function void randomize_item(ref dma_seq_item dma_config);
@@ -165,7 +189,7 @@ class dma_base_vseq extends cip_base_vseq #(
     end else begin
       // The source address depends upon the configuration; chunks may overlap each other for
       // hardware-handshaking mode.
-      bit [31:0] src_addr = dma_config.src_addr;
+      bit [63:0] src_addr = dma_config.src_addr;
       if (!dma_config.handshake ||
           (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
         src_addr += offset;
@@ -362,6 +386,7 @@ class dma_base_vseq extends cip_base_vseq #(
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_valid,
                                  dma_config.range_regwen);
+    set_system_base_addr(dma_config);
   endtask : run_common_config
 
   // Task: Enable/Disable Interrupt(s)

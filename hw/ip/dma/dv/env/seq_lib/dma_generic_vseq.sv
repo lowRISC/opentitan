@@ -295,6 +295,8 @@ class dma_generic_vseq extends dma_base_vseq;
           `uvm_fatal(`gfn, $sformatf("FATAL: Unexpected/unrecognised completion status 0x%0x",
                                      int'(status)))
         end
+        // Clear 'memory limit' interrupt to prevent it interfering with subsequent transfers.
+        clear_interrupts(1 << DMA_MEM_LIMIT);
 
         // Now that we've finished all DUT accesses for his iteration...
         stop_device();
