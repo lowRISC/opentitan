@@ -111,7 +111,7 @@ offline_presigning_artifacts(
     ],
     manifest = ":manifest_sival",
     rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "ealrgrey_a0_prod_0",
+        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "earlgrey_a0_prod_0",
     },
     tags = ["manual"],
 )
