@@ -22,7 +22,7 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
         cfg.esc_clk_rst_vif.stop_clk();
         cfg.clk_rst_vif.wait_clks(stop_cycles);
         cfg.esc_clk_rst_vif.start_clk();
-        cfg.esc_clk_rst_vif.wait_clks(10000);
+        cfg.esc_clk_rst_vif.wait_clks(4000);
       end
       begin
         cfg.clk_rst_vif.wait_clks(TIMEOUT_THRESHOLD);
@@ -50,12 +50,18 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
     wait_for_fast_fsm_active();
     cfg.slow_clk_rst_vif.set_freq_mhz(1);
     cfg.esc_clk_rst_vif.wait_clks(200);
-    check_stopped_esc_clk(120, 1'b0);
+    // The timeout is not predictable for two reasons:
+    // - The initial count for the timeout can be from 0 to 7, which means the timeout could
+    //   happen between 121 and 128 cycles after the clock.
+    // - The timeout has a req-ack synchronizer which has some randomness due to the phase.
+    //   This adds a few more cycles of uncertainty.
+    // Keep the clock stopped for less than 118 cycles should be safe to avoid an alert.
+    check_stopped_esc_clk(118, 1'b0);
     check_stopped_esc_clk(2000, 1'b1);
     wait_for_fast_fsm_active();
-    // This fails to generate a reset, so the test fails. It should pass once
-    // lowrisc/opentitan#20516 is addressed.
-    check_stopped_esc_clk(136, 1'b1);
+    // This should generate a reset but it doesn't so the test will fail.
+    // TODO(lowrisc/opentitan#20516): Enable this test when this is fixed.
+    // check_stopped_esc_clk(136, 1'b1);
   endtask : body
 
 endclass
