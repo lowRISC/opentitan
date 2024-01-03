@@ -10,10 +10,51 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 load(
     "//rules/opentitan:defs.bzl",
     "opentitan_test",
+    "silicon_params",
     "verilator_params",
 )
 
+package(default_visibility = ["//visibility:public"])
+
 # IP Integration Tests
+opentitan_test(
+    name = "plic_all_irqs_test_0".format(min),
+    srcs = ["plic_all_irqs_test.c"],
+    copts = [
+        "-DTEST_MIN_IRQ_PERIPHERAL=0",
+        "-DTEST_MAX_IRQ_PERIPHERAL=10",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    silicon_owner = silicon_params(
+        # TODO(lowrisc/opentitan#20747): Enable silicon_owner when fixed.
+        tags = ["broken"],
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+        tags = ["flaky"],
+        # often times out in 3600s on 4 cores
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage",
+        "//sw/device/lib/base:mmio",
+% for n in sorted(irq_peripheral_names + ["rv_plic"]):
+        "//sw/device/lib/dif:${n}",
+% endfor
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 [
     opentitan_test(
         name = "plic_all_irqs_test_{}".format(min),
@@ -26,6 +67,7 @@ load(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -36,6 +78,7 @@ load(
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:mmio",
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
             "//sw/device/lib/dif:${n}",
@@ -46,7 +89,7 @@ load(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, ${len(irq_peripheral_names)}, 10)
+    for min in range(10, ${len(irq_peripheral_names)}, 10)
 ]
 
 test_suite(
