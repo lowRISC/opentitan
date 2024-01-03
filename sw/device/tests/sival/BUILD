@@ -48,6 +48,8 @@ test_suite(
         "//sw/device/tests:uart1_tx_rx_test",
         "//sw/device/tests:uart2_tx_rx_test",
         "//sw/device/tests:uart_smoketest",
+        "//sw/device/tests/autogen:plic_all_irqs_test_10",
+        "//sw/device/tests/autogen:plic_all_irqs_test_20",
     ],
 )
 

@@ -9,10 +9,14 @@
 // -o hw/top_earlgrey
 #include <limits.h>
 
+// This test should avoid otp_ctrl interrupts in rom_ext, since the rom
+// extension configures CSR accesses to OTP and AST to become illegal.
+//
 // This test is getting too big so we need to split it up. To do so,
 // each peripheral is given an ID (according to their alphabetical order)
 // and we define TEST_MIN_IRQ_PERIPHERAL and TEST_MAX_IRQ_PERIPHERAL to
 // choose which ones are being tested.
+
 #ifndef TEST_MIN_IRQ_PERIPHERAL
 #define TEST_MIN_IRQ_PERIPHERAL 0
 #endif
@@ -21,6 +25,7 @@
 #define TEST_MAX_IRQ_PERIPHERAL 23
 #endif
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -1292,7 +1297,9 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
+  if (kBootStage != kBootStageOwner) {
+    CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
+  }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
@@ -1538,8 +1545,10 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(
-      dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
+  if (kBootStage != kBootStageOwner) {
+    CHECK_DIF_OK(
+        dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
+  }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
@@ -1870,17 +1879,21 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
-  for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
-       irq <= kDifOtpCtrlIrqOtpError; ++irq) {
-    otp_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
+  // Skip OTP_CTRL in boot stage owner since ROM_EXT configures all accesses
+  // to OTP_CTRL and AST to be illegal.
+  if (kBootStage != kBootStageOwner) {
+    peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
+    for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
+         irq <= kDifOtpCtrlIrqOtpError; ++irq) {
+      otp_ctrl_irq_expected = irq;
+      LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
+      CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
 
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
+      // This avoids a race where *irq_serviced is read before
+      // entering the ISR.
+      IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
+      LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
+    }
   }
 #endif
 

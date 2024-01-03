@@ -24,6 +24,11 @@
         "chip_plic_all_irqs_10",
         "chip_plic_all_irqs_20",
       ]
+      bazel: [
+        "//sw/device/tests/autogen:plic_all_irqs_test_0",
+        "//sw/device/tests/autogen:plic_all_irqs_test_10",
+        "//sw/device/tests/autogen:plic_all_irqs_test_20",
+      ]
     }
     {
       name: chip_sw_plic_sw_irq

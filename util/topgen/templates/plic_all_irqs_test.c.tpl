@@ -13,10 +13,14 @@ def args(p):
 %>\
 #include <limits.h>
 
+// This test should avoid otp_ctrl interrupts in rom_ext, since the rom
+// extension configures CSR accesses to OTP and AST to become illegal.
+//
 // This test is getting too big so we need to split it up. To do so,
 // each peripheral is given an ID (according to their alphabetical order)
 // and we define TEST_MIN_IRQ_PERIPHERAL and TEST_MAX_IRQ_PERIPHERAL to
 // choose which ones are being tested.
+
 #ifndef TEST_MIN_IRQ_PERIPHERAL
 #define TEST_MIN_IRQ_PERIPHERAL 0
 #endif
@@ -25,6 +29,7 @@ def args(p):
 #define TEST_MAX_IRQ_PERIPHERAL ${len(irq_peripheral_names)}
 #endif
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
@@ -162,10 +167,20 @@ static void peripherals_init(void) {
 static void peripheral_irqs_clear(void) {
   % for p in helper.irq_peripherals:
 <%
+  indent = ""
   i = irq_peripheral_names.index(p.name)
 %>\
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_${p.name}_irq_acknowledge_all(${args(p)}));
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  if (kBootStage != kBootStageOwner) {
+  % endif
+  ${indent}CHECK_DIF_OK(dif_${p.name}_irq_acknowledge_all(${args(p)}));
+  % if p.inst_name == "otp_ctrl":
+  }
+  % endif
 #endif
 ${"" if loop.last else "\n"}\
   % endfor
@@ -202,9 +217,15 @@ static void peripheral_irqs_enable(void) {
   // from the logging facility.
   if (kDeviceType == kDeviceSimDV) {
   % endif
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  if (kBootStage != kBootStageOwner) {
+  % endif
   ${indent}CHECK_DIF_OK(
   ${indent}    dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irqs));
-  % if p.inst_name == "uart0":
+  % if p.inst_name == "uart0" or p.inst_name == "otp_ctrl":
   }
   % endif
 #endif
@@ -241,6 +262,14 @@ static void peripheral_irqs_trigger(void) {
   // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
   % endif
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  // Skip OTP_CTRL in boot stage owner since ROM_EXT configures all accesses
+  // to OTP_CTRL and AST to be illegal.
+  if (kBootStage != kBootStageOwner) {
+  % endif
   ${indent}peripheral_expected = ${p.plic_name};
   ${indent}for (dif_${p.name}_irq_t irq = ${p.start_irq};
   ${indent}     irq <= ${p.end_irq}; ++irq) {
@@ -253,7 +282,7 @@ static void peripheral_irqs_trigger(void) {
   ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
   ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   ${indent}}
-  % if p.inst_name == "uart0" or p.name == "aon_timer":
+  % if p.inst_name == "uart0" or p.name == "aon_timer" or p.name == "otp_ctrl":
   }
   % endif
 #endif
