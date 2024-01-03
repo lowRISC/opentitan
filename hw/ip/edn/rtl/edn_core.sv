@@ -44,12 +44,9 @@ module edn_core import edn_pkg::*;
   localparam int RescmdFifoDepth = 13;
   localparam int GencmdFifoWidth = 32;
   localparam int GencmdFifoDepth = 13;
-  localparam int OutputFifoWidth = 32;
-  localparam int OutputFifoDepth = 13;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
-  localparam int OutputFifoIdxWidth = $clog2(OutputFifoDepth);
   localparam int FifoRstCopies = 4;
   localparam int BootReqCopies = 2;
 
@@ -58,7 +55,6 @@ module edn_core import edn_pkg::*;
     FatalErr,
     ReseedCmdErr,
     GenCmdErr,
-    OutputErr,
     FifoWrErr,
     FifoRdErr,
     FifoStErr,
@@ -69,7 +65,6 @@ module edn_core import edn_pkg::*;
     SwCmdSts,
     SendReseedCmd,
     SendGenCmd,
-    OutputClr,
     MainFsmEn,
     CmdFifoCnt,
     CsrngPackerClr,
@@ -161,18 +156,6 @@ module edn_core import edn_pkg::*;
   logic                               sfifo_gencmd_full;
   logic                               sfifo_gencmd_not_empty;
 
-  // output fifo
-  logic [OutputFifoWidth-1:0]         sfifo_output_rdata;
-  logic                               sfifo_output_clr;
-  logic                               sfifo_output_push;
-  logic [OutputFifoWidth-1:0]         sfifo_output_wdata;
-  logic                               sfifo_output_pop;
-  logic                               sfifo_output_full;
-  logic [OutputFifoIdxWidth-1:0]      sfifo_output_depth;
-  logic                               sfifo_output_err_sum;
-  logic [2:0]                         sfifo_output_err;
-  logic                               sfifo_output_not_empty;
-
   logic                               edn_main_sm_err_sum;
   logic [8:0]                         edn_main_sm_state;
   logic                               edn_main_sm_err;
@@ -187,7 +170,7 @@ module edn_core import edn_pkg::*;
   logic [RegWidth-1:0]                max_reqs_cnt;
   logic                               max_reqs_cnt_err;
   logic                               cmd_rdy;
-  logic                               sfifo_output_rdy;
+  logic                               output_rdy;
   logic [31:0]                        boot_ins_cmd;
   logic [31:0]                        boot_gen_cmd;
 
@@ -303,8 +286,7 @@ module edn_core import edn_pkg::*;
   // set the interrupt sources
   assign event_edn_fatal_err = (edn_enable_fo[FatalErr] && (
          sfifo_rescmd_err_sum ||
-         sfifo_gencmd_err_sum ||
-         sfifo_output_err_sum )) ||
+         sfifo_gencmd_err_sum )) ||
          fatal_loc_events;
 
   // set fifo errors that are single instances of source
@@ -312,8 +294,6 @@ module edn_core import edn_pkg::*;
          err_code_test_bit[0];
   assign sfifo_gencmd_err_sum = (|sfifo_gencmd_err) ||
          err_code_test_bit[1];
-  assign sfifo_output_err_sum = (|sfifo_output_err) ||
-         err_code_test_bit[2];
   assign edn_ack_sm_err_sum = (|edn_ack_sm_err) ||
          err_code_test_bit[20];
   assign edn_main_sm_err_sum = edn_main_sm_err ||
@@ -324,17 +304,14 @@ module edn_core import edn_pkg::*;
   assign fifo_write_err_sum =
          sfifo_rescmd_err[2] ||
          sfifo_gencmd_err[2] ||
-         sfifo_output_err[2] ||
          err_code_test_bit[28];
   assign fifo_read_err_sum =
          sfifo_rescmd_err[1] ||
          sfifo_gencmd_err[1] ||
-         sfifo_output_err[1] ||
          err_code_test_bit[29];
   assign fifo_status_err_sum =
          sfifo_rescmd_err[0] ||
          sfifo_gencmd_err[0] ||
-         sfifo_output_err[0] ||
          err_code_test_bit[30];
 
 
@@ -344,9 +321,6 @@ module edn_core import edn_pkg::*;
 
   assign hw2reg.err_code.sfifo_gencmd_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable_fo[GenCmdErr] && sfifo_gencmd_err_sum;
-
-  assign hw2reg.err_code.sfifo_output_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_output_err.de = edn_enable_fo[OutputErr] && sfifo_output_err_sum;
 
   assign hw2reg.err_code.edn_ack_sm_err.d = 1'b1;
   assign hw2reg.err_code.edn_ack_sm_err.de = edn_ack_sm_err_sum;
@@ -496,6 +470,9 @@ module edn_core import edn_pkg::*;
          (send_rescmd || send_gencmd || (boot_send_gencmd && cmd_sent)) ? 1'b1 :
          cs_cmd_req_vld_q;
 
+  // drive outputs
+  assign csrng_cmd_o.csrng_req_valid = cs_cmd_req_vld_out_q;
+  assign csrng_cmd_o.csrng_req_bus = cs_cmd_req_out_q;
 
   // Accept a new command only if no command is currently being written to SW_CMD_REQ
   // and the register is ready for the next word.
@@ -519,10 +496,9 @@ module edn_core import edn_pkg::*;
   assign cmd_reg_rdy_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
          !sw_cmd_valid ? 1'b0 :
-         sfifo_output_rdy;
+         output_rdy;
   // Do not accept new words if the output FIFO would overflow.
-  assign sfifo_output_rdy = !sfifo_output_full
-      && !((sfifo_output_depth == (OutputFifoDepth-1)) && (sfifo_output_push || sw_cmd_req_load));
+  assign output_rdy = 1'b1;
 
   // Whenever a sw_cmd_req is acked by CSRNG, update the command status.
   assign hw2reg.sw_cmd_sts.cmd_sts.de = 1'b1;
@@ -622,40 +598,6 @@ module edn_core import edn_pkg::*;
          {(sfifo_gencmd_push && sfifo_gencmd_full),
           (sfifo_gencmd_pop && !sfifo_gencmd_not_empty),
           (sfifo_gencmd_full && !sfifo_gencmd_not_empty)};
-
-  // output fifo
-  prim_fifo_sync #(
-    .Width(OutputFifoWidth),
-    .Pass(0),
-    .Depth(OutputFifoDepth)
-  ) u_prim_fifo_sync_output (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .clr_i    (sfifo_output_clr),
-    .wvalid_i (sfifo_output_push),
-    .wready_o (),
-    .wdata_i  (sfifo_output_wdata),
-    .rvalid_o (sfifo_output_not_empty),
-    .rready_i (sfifo_output_pop),
-    .rdata_o  (sfifo_output_rdata),
-    .full_o   (sfifo_output_full),
-    .depth_o  (sfifo_output_depth),
-    .err_o    ()
-  );
-
-  // drive outputs
-  assign csrng_cmd_o.csrng_req_valid = sfifo_output_not_empty;
-  assign csrng_cmd_o.csrng_req_bus = sfifo_output_rdata;
-
-  assign sfifo_output_clr = !edn_enable_fo[OutputClr];
-  assign sfifo_output_push = cs_cmd_req_vld_out_q;
-  assign sfifo_output_wdata = cs_cmd_req_out_q;
-  assign sfifo_output_pop = sfifo_output_not_empty && csrng_cmd_i.csrng_req_ready;
-
-  assign sfifo_output_err =
-         {(sfifo_output_push && sfifo_output_full),
-          (sfifo_output_pop && !sfifo_output_not_empty),
-          (sfifo_output_full && !sfifo_output_not_empty)};
 
   // sm to process csrng commands
   // SEC_CM: MAIN_SM.FSM.SPARSE
@@ -907,7 +849,7 @@ module edn_core import edn_pkg::*;
   // unused signals
   //--------------------------------------------
 
-  assign unused_err_code_test_bit = (|err_code_test_bit[19:3]) || (|err_code_test_bit[27:22]);
+  assign unused_err_code_test_bit = (|err_code_test_bit[19:2]) || (|err_code_test_bit[27:22]);
 
 
 endmodule
