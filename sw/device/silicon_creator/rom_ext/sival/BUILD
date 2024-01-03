@@ -22,7 +22,7 @@ manifest(d = {
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
-    "visibility": ["//visibility:public"],
+    "visibility": ["//visibility:private"],
 })
 
 # To test that the fake-signed SiVAL ROM_EXT can boot, you need a bitstream
