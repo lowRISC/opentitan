@@ -374,12 +374,12 @@ Recoverable alert status register
 Hardware detection of fatal error conditions status register
 - Offset: `0x38`
 - Reset default: `0x0`
-- Reset mask: `0x70700007`
+- Reset mask: `0x70700003`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SFIFO_RESCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_OUTPUT_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 17}, {"name": "EDN_ACK_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_CNTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 5}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "SFIFO_RESCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_GENCMD_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 18}, {"name": "EDN_ACK_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EDN_CNTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 5}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                            |
@@ -392,8 +392,7 @@ Hardware detection of fatal error conditions status register
 |   22   |   ro   |   0x0   | [EDN_CNTR_ERR](#err_code--edn_cntr_err)         |
 |   21   |   ro   |   0x0   | [EDN_MAIN_SM_ERR](#err_code--edn_main_sm_err)   |
 |   20   |   ro   |   0x0   | [EDN_ACK_SM_ERR](#err_code--edn_ack_sm_err)     |
-|  19:3  |        |         | Reserved                                        |
-|   2    |   ro   |   0x0   | [SFIFO_OUTPUT_ERR](#err_code--sfifo_output_err) |
+|  19:2  |        |         | Reserved                                        |
 |   1    |   ro   |   0x0   | [SFIFO_GENCMD_ERR](#err_code--sfifo_gencmd_err) |
 |   0    |   ro   |   0x0   | [SFIFO_RESCMD_ERR](#err_code--sfifo_rescmd_err) |
 
@@ -429,12 +428,6 @@ This bit will stay set until the next reset.
 This bit will be set to one when an illegal state has been detected for the
 EDN ack stage state machine. This error will signal a fatal alert.
 This bit will stay set until the next reset.
-
-### ERR_CODE . SFIFO_OUTPUT_ERR
-This bit will be set to one when an error has been detected for the
-output FIFO. The type of error is reflected in the type status
-bits (bits 28 through 30 of this register).
-When this bit is set, a fatal error condition will result.
 
 ### ERR_CODE . SFIFO_GENCMD_ERR
 This bit will be set to one when an error has been detected for the
