@@ -352,7 +352,7 @@ silicon(
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/keys/real:keyset": "earlgrey_z0_sival_1"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
     }),
     test_cmd = """
         --exec="transport init"

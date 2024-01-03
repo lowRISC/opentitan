@@ -15,7 +15,7 @@ For example, a configuration for `//sw/device/silicon_creator/rom/keys/real/rsa:
 might look like the following:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
-mode to 700.
+mode to 600.
 
 ```json
 {
@@ -60,7 +60,7 @@ You need an hsmtool profile that maps to the cloud-kms token.  Add an entry
 to your profiles confiuration file:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
-mode to 700.
+mode to 600.
 
 ```json
 {
