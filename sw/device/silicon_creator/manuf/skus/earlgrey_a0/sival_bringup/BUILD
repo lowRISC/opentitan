@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//rules:const.bzl", "CONST")
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
@@ -327,6 +328,13 @@ opentitan_test(
     ),
 )
 
+manifest(d = {
+    "name": "manifest",
+    "address_translation": hex(CONST.HARDENED_FALSE),
+    "identifier": hex(CONST.ROM_EXT),
+    "visibility": ["//visibility:private"],
+})
+
 offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
@@ -335,7 +343,7 @@ offline_presigning_artifacts(
         ":ft_personalize_2",
         ":ft_personalize_3",
     ],
-    manifest = "//sw/device/silicon_creator/rom_ext/sival:manifest_sival",
+    manifest = ":manifest",
     rsa_key = {
         "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "ealrgrey_a0_prod_0",
     },
