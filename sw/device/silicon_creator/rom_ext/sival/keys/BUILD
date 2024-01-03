@@ -7,9 +7,9 @@ load("//rules:signing.bzl", "keyset")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "real",
+    name = "keys",
     srcs = [
-        "sigverify_rsa_keys_real.c",
+        "sigverify_rsa_keys_sival.c",
         "//sw/device/silicon_creator/rom_ext:sigverify_keys.h",
     ],
     hdrs = [
@@ -23,14 +23,14 @@ cc_library(
 )
 
 cc_test(
-    name = "real_unittest",
+    name = "keys_unittest",
     srcs = [
-        "sigverify_rsa_keys_real_unittest.cc",
+        "sigverify_rsa_keys_sival_unittest.cc",
         "//sw/device/silicon_creator/lib/sigverify:rsa_verify.c",
         "//sw/device/silicon_creator/lib/sigverify:rsa_verify.h",
     ],
     deps = [
-        ":real",
+        ":keys",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
