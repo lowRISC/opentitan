@@ -24,7 +24,8 @@ extern "C" {
  *
  * Use this only for symmetric algorithms (e.g. AES, HMAC, KMAC). Asymmetric
  * algorithms (e.g. ECDSA, RSA) have their own specialized key-generation
- * routines.
+ * routines. Cannot be used for hardware-backed keys; use
+ * `otcrypto_hw_backed_key` instead to generate these.
  *
  * The caller should allocate space for the keyblob and populate the blinded
  * key struct with the length of the keyblob, the pointer to the keyblob
@@ -34,14 +35,8 @@ extern "C" {
  * will return an error if the keyblob length does not match expectations based
  * on the key mode and configuration.
  *
- * For hardware-backed keys, the keyblob length should always be 256 bits and
- * the caller should populate the key blob with their desired key version and
- * salt value. The first 32 bits of the key blob are interpreted in
- * little-endian form as the version, and the remaining 224 bits are
- * concatenated with the one-word key mode to become the salt.
- *
- * For non-hardware-backed keys, the keyblob should be twice the length of the
- * key, and the caller only needs to allocate the keyblob, not populate it.
+ * The keyblob should be twice the length of the key. The caller only needs to
+ * allocate the keyblob, not populate it.
  *
  * The personalization string may empty, and may be up to 48 bytes long; any
  * longer will result in an error. It is passed as an extra seed input to the
@@ -80,39 +75,19 @@ crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
                                        crypto_blinded_key_t *key);
 
 /**
- * Imports a user provided key to an unblinded key struct.
- *
- * This API takes as input a plain key from the user and writes it to the
- * `unblinded_key.key`.
- *
- * The caller should populate the `unblinded_key.key_mode` and allocate
- * space for the key. The value in the `checksum` field of the unblinded
- * key struct will be populated by the key generation function.
- *
- * @param plain_key Pointer to the user defined plain key.
- * @param[out] unblinded_key Generated unblinded key struct.
- * @return Result of the unblinded key import operation.
- */
-crypto_status_t otcrypto_import_unblinded_key(
-    const crypto_const_word32_buf_t plain_key,
-    crypto_unblinded_key_t *unblinded_key);
-
-/**
- * Imports a user provided masked key in shares, to a blinded key struct.
- *
- * This API takes as input a masked key from the user in two shares, and masks
- * it using an implementation specific masking with `n` shares writing the
- * output to the `blinded_key.keyblob`.
+ * Creates a blinded key struct from masked key material.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
- * keyblob. For non-hardware-backed keys, the keyblob should be twice the
- * length of the user key. For hardware-backed keys, the user should call the
- * `otcrypto_hw_backed_key` function instead. The value in the `checksum` field
- * of the blinded key struct will be populated by the key generation function.
+ * keyblob. The keyblob should be twice the length of the user key.
+ * Hardware-backed and asymmetric (ECC or RSA) keys cannot be imported this
+ * way. For asymmetric keys, use algorithm-specific key construction methods.
  *
- * @param key_share0 Pointer to the 1st share of the user provided key.
- * @param key_share1 Pointer to the 2nd share of the user provided key.
+ * This function will copy the data from the shares into the keyblob; it is
+ * safe to free `key_share0` and `key_share1` after this call.
+ *
+ * @param key_share0 First share of the user provided key.
+ * @param key_share1 Second share of the user provided key.
  * @param[out] blinded_key Generated blinded key struct.
  * @return Result of the blinded key import operation.
  */
@@ -122,23 +97,18 @@ crypto_status_t otcrypto_import_blinded_key(
     crypto_blinded_key_t *blinded_key);
 
 /**
- * Exports an unblinded key to the user provided key buffer.
- *
- * @param unblinded_key Unblinded key struct to be exported.
- * @param[out] plain_key Pointer to the user provided key buffer.
- * @return Result of the unblinded key export operation.
- */
-crypto_status_t otcrypto_export_unblinded_key(
-    const crypto_unblinded_key_t unblinded_key, crypto_word32_buf_t *plain_key);
-
-/**
  * Exports a blinded key to the user provided key buffer, in shares.
  *
+ * This function will copy data from the keyblob into the shares; after the
+ * call, it is safe to free the blinded key and the data pointed to by
+ * `blinded_key.keyblob`.
+ *
+ * Hardware-backed, non-exportable, and asymmetric (ECC or RSA) keys cannot be
+ * exported this way. For asymmetric keys, use an algorithm-specific funtion.
+ *
  * @param blinded_key Blinded key struct to be exported.
- * @param[out] key_share0 Pointer to the 1st share of the user provided key
- * buffer.
- * @param[out] key_share1 Pointer to the 2nd share of the user provided key
- * buffer.
+ * @param[out] key_share0 First share of the blinded key.
+ * @param[out] key_share1 Second share of the blinded key.
  * @return Result of the blinded key export operation.
  */
 crypto_status_t otcrypto_export_blinded_key(
