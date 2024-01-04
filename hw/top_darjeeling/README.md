@@ -2,7 +2,7 @@
 
 ## Specification
 
-The specification of Darjeeling is located [here](./doc/specification.md).
+The datasheet of Darjeeling is located [here](./doc/datasheet.md).
 
 ## Tool: TopGen
 

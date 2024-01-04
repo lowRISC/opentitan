@@ -19,7 +19,7 @@
 * [Simulation results](https://reports.opentitan.org/integrated/hw/top_darjeeling/dv/latest/report.html)
 
 ## Design features
-For detailed information on `top_darjeeling` design features, please see the [Darjeeling Top Level Specification](../doc/specification.md).
+For detailed information on `top_darjeeling` design features, please see the [Darjeeling Datasheet](../doc/datasheet.md).
 
 ## Testbench architecture
 The `top_darjeeling` chip level testbench has been constructed based on the [CIP testbench architecture](../../dv/sv/cip_lib/README.md).
