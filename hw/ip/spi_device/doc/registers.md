@@ -78,7 +78,8 @@
 | spi_device.[`TPM_CMD_ADDR`](#tpm_cmd_addr)               | 0x830    |        4 | TPM Command and Address buffer                  |
 | spi_device.[`TPM_READ_FIFO`](#tpm_read_fifo)             | 0x834    |        4 | TPM Read command return data FIFO.              |
 | spi_device.[`TPM_WRITE_FIFO`](#tpm_write_fifo)           | 0x838    |        4 | TPM Write command received data FIFO.           |
-| spi_device.[`buffer`](#buffer)                           | 0x1000   |     4096 | SPI internal buffer.                            |
+| spi_device.[`egress_buffer`](#egress_buffer)             | 0x1000   |     3328 | SPI internal egress buffer.                     |
+| spi_device.[`ingress_buffer`](#ingress_buffer)           | 0x1e00   |      384 | SPI internal ingress buffer.                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -1574,16 +1575,29 @@ TPM Write command received data FIFO.
 |  31:8  |        |         |        | Reserved                         |
 |  7:0   |   ro   |    x    | value  | Read only port of the write FIFO |
 
-## buffer
-SPI internal buffer.
+## egress_buffer
+SPI internal egress buffer.
 
-The lower 2kB is for Read content emulating eFlash. The next 1 kB is
-for Mailbox read/write buffer. The rest is 256B SFDP buffer, 32B of
-CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
+The lower 2 kB is for Read content emulating eFlash.
+The next 1 kB is for the Mailbox buffer.
 
-- Word Aligned Offset Range: `0x1000`to`0x1ffc`
-- Size (words): `1024`
-- Access: `rw`
+- Word Aligned Offset Range: `0x1000`to`0x1cfc`
+- Size (words): `832`
+- Access: `wo`
+- Byte writes are *not* supported.
+
+## ingress_buffer
+SPI internal ingress buffer.
+
+The layout is as follows (starting from offset 0):
+- 256 B SFDP buffer
+- 32 B CmdFIFO
+- 32 B AddrFIFO
+- 256 B payload FIFO
+
+- Word Aligned Offset Range: `0x1e00`to`0x1f7c`
+- Size (words): `96`
+- Access: `ro`
 - Byte writes are *not* supported.
 
 

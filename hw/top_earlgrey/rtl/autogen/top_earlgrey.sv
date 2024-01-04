@@ -21,6 +21,7 @@ module top_earlgrey #(
   // parameters for gpio
   parameter bit GpioGpioAsyncOn = 1,
   // parameters for spi_device
+  parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for i2c0
   // parameters for i2c1
   // parameters for i2c2
@@ -1164,7 +1165,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   spi_device #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[5:5])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[5:5]),
+    .SramType(SpiDeviceSramType)
   ) u_spi_device (
 
       // Input

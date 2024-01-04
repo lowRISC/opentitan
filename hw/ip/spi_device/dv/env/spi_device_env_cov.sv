@@ -47,20 +47,6 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     cr_all: cross tx_order, rx_order, cp_cpol, cp_cpha;
   endgroup
 
-  covergroup fw_tx_fifo_size_cg with function sample(int tx_size);
-    cp_tx_size: coverpoint tx_size {
-      bins sizes[5] = {[0:SRAM_SIZE]};
-      bins specific_sizes[] = {SRAM_WORD_SIZE, SRAM_SIZE / 2, SRAM_SIZE - SRAM_WORD_SIZE};
-    }
-  endgroup
-
-  covergroup fw_rx_fifo_size_cg with function sample(int rx_size);
-    cp_rx_size: coverpoint rx_size {
-      bins sizes[5] = {[0:SRAM_SIZE]};
-      bins specific_sizes[] = {SRAM_WORD_SIZE, SRAM_SIZE / 2, SRAM_SIZE - SRAM_WORD_SIZE};
-    }
-  endgroup
-
   // TPM related
   covergroup tpm_cfg_cg with function sample(
       // CSR cfg
@@ -296,8 +282,6 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     end
     all_modes_cg = new();
     bit_order_clk_cfg_cg = new();
-    fw_tx_fifo_size_cg = new();
-    fw_rx_fifo_size_cg = new();
     // tpm
     tpm_cfg_cg = new();
     tpm_transfer_size_cg = new();

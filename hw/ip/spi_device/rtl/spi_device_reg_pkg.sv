@@ -8,6 +8,8 @@ package spi_device_reg_pkg;
 
   // Param list
   parameter int unsigned SramDepth = 1024;
+  parameter int unsigned SramEgressDepth = 832;
+  parameter int unsigned SramIngressDepth = 96;
   parameter int unsigned NumCmdInfo = 24;
   parameter int unsigned NumLocality = 5;
   parameter int unsigned TpmWrFifoPtrW = 7;
@@ -648,9 +650,12 @@ package spi_device_reg_pkg;
   parameter logic [7:0] SPI_DEVICE_TPM_WRITE_FIFO_RESVAL = 8'h 0;
 
   // Window parameters
-  parameter logic [BlockAw-1:0] SPI_DEVICE_BUFFER_OFFSET = 13'h 1000;
-  parameter int unsigned        SPI_DEVICE_BUFFER_SIZE   = 'h 1000;
-  parameter int unsigned        SPI_DEVICE_BUFFER_IDX    = 0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_EGRESS_BUFFER_OFFSET = 13'h 1000;
+  parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_SIZE   = 'h d00;
+  parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_IDX    = 0;
+  parameter logic [BlockAw-1:0] SPI_DEVICE_INGRESS_BUFFER_OFFSET = 13'h 1e00;
+  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_SIZE   = 'h 180;
+  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_IDX    = 1;
 
   // Register index
   typedef enum int {

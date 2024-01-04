@@ -60,25 +60,25 @@ enum {
 // TODO(#11740): Auto-generated macros for HW constants.
 enum {
   /**
-   * Size of the SFDP area in spi_device buffer in bytes.
+   * Size of the SFDP area in spi_device egress buffer in bytes.
    *
    * spi_device provides 256 bytes for the SFDP table.
    */
   kSpiDeviceSfdpAreaNumBytes = 256,
   /**
-   * Offset of the SFDP area in spi_device buffer.
+   * Offset of the SFDP area in spi_device egress buffer.
    */
   kSpiDeviceSfdpAreaOffset = 0xc00,
   /**
-   * Offset of the payload area in spi_device buffer.
+   * Offset of the payload area in spi_device ingress buffer.
    */
-  kSpiDevicePayloadAreaOffset = 0xd00,
+  kSpiDevicePayloadAreaOffset = 0x0,
   /**
-   * Size of the payload area in spi_device buffer in bytes.
+   * Size of the payload area in spi_device ingress buffer in bytes.
    */
   kSpiDevicePayloadAreaNumBytes = 256,
   /**
-   * Size of the payload area in spi_device buffer in words.
+   * Size of the payload area in spi_device ingress buffer in words.
    */
   kSpiDevicePayloadAreaNumWords =
       kSpiDevicePayloadAreaNumBytes / sizeof(uint32_t),

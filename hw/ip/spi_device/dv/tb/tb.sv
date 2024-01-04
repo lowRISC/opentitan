@@ -45,7 +45,9 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  spi_device dut (
+  spi_device #(
+    .SramType(SRAM_TYPE)
+  ) dut (
     .clk_i          (clk       ),
     .rst_ni         (rst_n     ),
 

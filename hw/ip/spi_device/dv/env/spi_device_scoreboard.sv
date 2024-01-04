@@ -706,7 +706,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endfunction
 
   virtual function void process_upload_cmd(spi_item item);
-    bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
+    bit [31:0] payload_start_addr = get_converted_addr(ral.ingress_buffer.get_offset());
     int payload_depth_exp;
     upload_cmd_q.push_back(item.opcode);
     update_pending_intr_w_delay(.intr(CmdFifoNotEmpty), .delay_cyc(4));
@@ -953,7 +953,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end
-    else if (csr_addr inside {[cfg.sram_start_addr:cfg.sram_end_addr]}) begin
+    else if (csr_addr inside {[cfg.sram_egress_start_addr:cfg.sram_egress_end_addr]}) begin
+      // TODO: Anything to do here?
+      return;
+    end
+    else if (csr_addr inside {[cfg.sram_ingress_start_addr:cfg.sram_ingress_end_addr]}) begin
       if (!write) begin
         // cip_base_scoreboard compares the mem read only when the address exists
         // just need to ensure address exists here and mem check is done at process_mem_read

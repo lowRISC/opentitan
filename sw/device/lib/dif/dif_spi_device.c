@@ -12,8 +12,6 @@
 
 #define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 
-const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
-
 enum { kDifSpiDeviceFlashStatusWelBit = 1 };
 enum { kDifSpiDeviceEFlashLen = 2048 };
 enum { kDifSpiDeviceMailboxLen = 1024 };
@@ -24,7 +22,7 @@ enum {
   kDifSpiDeviceEFlashOffset = 0,
   kDifSpiDeviceMailboxOffset = 2048,
   kDifSpiDeviceSfdpOffset = 3072,
-  kDifSpiDevicePayloadOffset = 3328,
+  kDifSpiDevicePayloadOffset = 0,
 };
 
 /**
@@ -653,36 +651,29 @@ static dif_result_t dif_spi_device_get_flash_buffer_info(
       info->buffer_len = kDifSpiDeviceSfdpLen;
       info->buffer_offset = kDifSpiDeviceSfdpOffset;
       break;
-    case kDifSpiDeviceFlashBufferTypePayload:
-      info->buffer_len = kDifSpiDevicePayloadLen;
-      info->buffer_offset = kDifSpiDevicePayloadOffset;
-      break;
     default:
       return kDifBadArg;
   }
   return kDifOk;
 }
 
-dif_result_t dif_spi_device_read_flash_buffer(
-    dif_spi_device_handle_t *spi,
-    dif_spi_device_flash_buffer_type_t buffer_type, uint32_t offset,
-    size_t length, uint8_t *buf) {
+dif_result_t dif_spi_device_read_flash_payload_buffer(
+    dif_spi_device_handle_t *spi, uint32_t offset, size_t length,
+    uint8_t *buf) {
   if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
-  dif_spi_device_flash_buffer_info_t info;
-  dif_result_t status =
-      dif_spi_device_get_flash_buffer_info(buffer_type, &info);
-  if (status != kDifOk) {
-    return status;
-  }
+  const dif_spi_device_flash_buffer_info_t info = {
+      .buffer_len = kDifSpiDevicePayloadLen,
+      .buffer_offset = kDifSpiDevicePayloadOffset,
+  };
   if (offset >= (info.buffer_offset + (ptrdiff_t)info.buffer_len) ||
       length > (info.buffer_offset + (ptrdiff_t)info.buffer_len -
                 (ptrdiff_t)offset)) {
     return kDifBadArg;
   }
-  ptrdiff_t offset_from_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + (ptrdiff_t)offset;
+  ptrdiff_t offset_from_base = SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
+                               info.buffer_offset + (ptrdiff_t)offset;
   mmio_region_memcpy_from_mmio32(spi->dev.base_addr, (uint32_t)offset_from_base,
                                  buf, length);
   return kDifOk;
@@ -706,8 +697,8 @@ dif_result_t dif_spi_device_write_flash_buffer(
                 (ptrdiff_t)offset)) {
     return kDifBadArg;
   }
-  ptrdiff_t offset_from_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + (ptrdiff_t)offset;
+  ptrdiff_t offset_from_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                               info.buffer_offset + (ptrdiff_t)offset;
   mmio_region_memcpy_to_mmio32(spi->dev.base_addr, (uint32_t)offset_from_base,
                                buf, length);
   return kDifOk;

@@ -385,7 +385,13 @@ package spi_device_pkg;
     CmdResetDevice = 8'h 99
   } spi_cmd_e;
 
+  typedef enum int unsigned {
+    SramType2p   = 0,  // True dual-port SRAM (2 RW ports)
+    SramType1r1w = 1   // Simple dual-port SRAM (1 RO port + 1 WO port)
+  } sram_type_e;
+
   // Sram parameters
+  parameter sram_type_e DefaultSramType = SramType2p;
   parameter int unsigned SramDw      = 32;
   parameter int unsigned SramStrbW   = SramDw/8;
   parameter int unsigned SramOffsetW = $clog2(SramStrbW);
@@ -460,7 +466,17 @@ package spi_device_pkg;
   endfunction : sram_mask2strb
 
   // Calculate each space's base and size
-  parameter sram_addr_t SramReadBufferIdx  = sram_addr_t'(0);
+  // The egress buffer is located at the base of the SRAM address region, and
+  // the ingress buffer is higher in the map (controlled by reggen).
+  import spi_device_reg_pkg::SPI_DEVICE_EGRESS_BUFFER_OFFSET;
+  import spi_device_reg_pkg::SPI_DEVICE_INGRESS_BUFFER_OFFSET;
+  parameter int unsigned SramEgressByteOffset = 0;
+  parameter int unsigned SramIngressByteOffset =
+    SPI_DEVICE_INGRESS_BUFFER_OFFSET - SPI_DEVICE_EGRESS_BUFFER_OFFSET;
+
+  parameter sram_addr_t SramEgressIdx =
+    sram_addr_t'(SramEgressByteOffset[$clog2(SramDw / 8) +: SramAw]);
+  parameter sram_addr_t SramReadBufferIdx  = SramEgressIdx;
   parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);
 
   parameter sram_addr_t SramMailboxIdx  = SramReadBufferIdx + SramReadBufferSize;
@@ -469,13 +485,15 @@ package spi_device_pkg;
   parameter sram_addr_t SramSfdpIdx  = SramMailboxIdx + SramMailboxSize;
   parameter sram_addr_t SramSfdpSize = sram_addr_t'(SramSfdpDepth);
 
-  parameter sram_addr_t SramPayloadIdx  = SramSfdpIdx + SramSfdpSize;
+  parameter sram_addr_t SramIngressIdx =
+    sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
+  parameter sram_addr_t SramPayloadIdx  = SramIngressIdx;
   parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
 
-  parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize ;
+  parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize;
   parameter sram_addr_t SramCmdFifoSize = sram_addr_t'(SramCmdFifoDepth);
 
-  parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize ;
+  parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize;
   parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
 
   // Max BitCount in a transaction

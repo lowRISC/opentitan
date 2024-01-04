@@ -15,9 +15,6 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
   parameter dv_utils_pkg::uint NUM_PATTGEN_CH = pattgen_agent_pkg::NUM_PATTGEN_CHANNELS;
 
-  // Buffer is half of SPI_DEVICE Dual Port SRAM
-  parameter dv_utils_pkg::uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
-
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_START_ADDR = tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG +
       rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;

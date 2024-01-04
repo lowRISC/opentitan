@@ -46,6 +46,9 @@ waive -rules CONST_FF -location {spi_p2s.sv} \
       -regexp {Flip-flop 'tx_state' is driven} \
       -comment "Intended behavior"
 
+waive -rules TWO_STATE_TYPE -location {spi_device_pkg.sv} \
+      -regexp {'sram_type_e' is of two state type} \
+      -comment "Enum int unsigned is used as a generate selection. OK to be two state"
 waive -rules TWO_STATE_TYPE -location {spi_device.sv} \
       -regexp {'sys_sram_e' is of two state type} \
       -comment "Enum int unsigned is used as a index. OK to be two state"
@@ -107,6 +110,9 @@ waive -rules CLOCK_MUX -location {spi_device.sv} \
 waive -rules {NOT_USED NOT_READ} -location {spi_device.sv} \
       -regexp {'sub_(sram|p2s)_.*\[0\]' is not (used|read)} \
       -comment "CmdParse does not have SRAM intf"
+waive -rules {NOT_USED NOT_READ} -location {spid_dpram.sv} \
+      -regexp {'.*_unused' is not (used|read)} \
+      -comment "1r1w control signals are not used in the 2p config"
 
 #### Intented Terminal States
 waive -rules {TERMINAL_STATE} -location {spi_cmdparse.sv} \

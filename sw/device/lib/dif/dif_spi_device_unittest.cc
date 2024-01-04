@@ -163,12 +163,10 @@ TEST_F(FlashTest, NullArgs) {
   EXPECT_DIF_BADARG(
       dif_spi_device_pop_flash_address_fifo(nullptr, &uint32_arg));
   EXPECT_DIF_BADARG(dif_spi_device_pop_flash_address_fifo(&spi_, nullptr));
-  EXPECT_DIF_BADARG(dif_spi_device_read_flash_buffer(
-      nullptr, kDifSpiDeviceFlashBufferTypeSfdp, /*offset=*/0, /*length=*/1,
-      &uint8_arg));
-  EXPECT_DIF_BADARG(
-      dif_spi_device_read_flash_buffer(&spi_, kDifSpiDeviceFlashBufferTypeSfdp,
-                                       /*offset=*/0, /*length=*/1, nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_read_flash_payload_buffer(
+      nullptr, /*offset=*/0, /*length=*/1, &uint8_arg));
+  EXPECT_DIF_BADARG(dif_spi_device_read_flash_payload_buffer(
+      &spi_, /*offset=*/0, /*length=*/1, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_write_flash_buffer(
       nullptr, kDifSpiDeviceFlashBufferTypeSfdp, /*offset=*/0, /*length=*/1,
       &uint8_arg));
@@ -659,24 +657,23 @@ TEST_F(FlashTest, FifoPop) {
 
 TEST_F(FlashTest, MemoryOps) {
   constexpr uint32_t kSfdpOffset = 3072;
-  constexpr uint32_t kMailboxOffset = 2048;
 
   uint32_t buf[64];
   for (uint32_t i = 0; i < (sizeof(buf) / sizeof(buf[0])); i++) {
     buf[i] = i;
-    EXPECT_WRITE32(
-        SPI_DEVICE_BUFFER_REG_OFFSET + kSfdpOffset + i * sizeof(uint32_t), i);
+    EXPECT_WRITE32(SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSfdpOffset +
+                       i * sizeof(uint32_t),
+                   i);
   }
   EXPECT_DIF_OK(dif_spi_device_write_flash_buffer(
       &spi_, kDifSpiDeviceFlashBufferTypeSfdp, /*offset=*/0,
       /*length=*/sizeof(buf), reinterpret_cast<uint8_t *>(buf)));
   for (uint32_t i = 4; i < (sizeof(buf) / sizeof(buf[0])); i++) {
-    EXPECT_READ32(
-        SPI_DEVICE_BUFFER_REG_OFFSET + kMailboxOffset + i * sizeof(uint32_t),
-        0x1000u - i);
+    EXPECT_READ32(SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET + i * sizeof(uint32_t),
+                  0x1000u - i);
   }
-  EXPECT_DIF_OK(dif_spi_device_read_flash_buffer(
-      &spi_, kDifSpiDeviceFlashBufferTypeMailbox, /*offset=*/16,
+  EXPECT_DIF_OK(dif_spi_device_read_flash_payload_buffer(
+      &spi_, /*offset=*/16,
       /*length=*/sizeof(buf) - 16, reinterpret_cast<uint8_t *>(buf)));
   for (uint32_t i = 4; i < (sizeof(buf) / sizeof(buf[0])); i++) {
     EXPECT_EQ(buf[i - 4], 0x1000u - i);
