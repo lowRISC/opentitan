@@ -175,9 +175,8 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   CHECK_DIF_OK(dif_spi_device_get_flash_payload_fifo_occupancy(
       &spi_device, &occupancy, &start_offset));
   CHECK(occupancy == 1);
-  CHECK_DIF_OK(dif_spi_device_read_flash_buffer(
-      &spi_device, kDifSpiDeviceFlashBufferTypePayload, start_offset, occupancy,
-      &payload));
+  CHECK_DIF_OK(dif_spi_device_read_flash_payload_buffer(
+      &spi_device, start_offset, occupancy, &payload));
 
   status &= (0xffu << offset);
   status |= ((uint32_t)(payload) << offset);
@@ -259,9 +258,8 @@ void handle_page_program(void) {
       &spi_device, &payload_occupancy, &start_offset));
   CHECK(start_offset == 0);
   CHECK(payload_occupancy <= sizeof(payload));
-  CHECK_DIF_OK(dif_spi_device_read_flash_buffer(
-      &spi_device, kDifSpiDeviceFlashBufferTypePayload, start_offset,
-      payload_occupancy, payload));
+  CHECK_DIF_OK(dif_spi_device_read_flash_payload_buffer(
+      &spi_device, start_offset, payload_occupancy, payload));
 
   dif_toggle_t addr4b_enabled;
   CHECK_DIF_OK(

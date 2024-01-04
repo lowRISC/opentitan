@@ -413,7 +413,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     config_all_cmd_infos();
 
-    random_write_spi_mem(.start_addr(0), .end_addr(SRAM_SIZE - 1));
+    // TODO: Randomize the ingress buffer too.
+    random_write_spi_mem(.start_addr(0), .end_addr(SRAM_EGRESS_SIZE - 1));
     randomize_all_cmd_filters();
   endtask : spi_device_flash_pass_init
 
@@ -695,12 +696,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (payload_depth_val > PAYLOAD_FIFO_SIZE) payload_depth_val = PAYLOAD_FIFO_SIZE;
 
     // need to shift by 2 for the offset used at mem_rd
-    payload_base_offset = (READ_BUFFER_SIZE + MAILBOX_BUFFER_SIZE + SFDP_SIZE) / 4;
+    payload_base_offset = 0;
     payload_depth_val = payload_depth_val / 4;
     for (int i = 0; i < payload_depth_val; i++) begin
       bit [TL_DW-1:0] val;
       int offset = i + payload_base_offset;
-      mem_rd(.ptr(ral.buffer), .offset(offset), .data(val));
+      mem_rd(.ptr(ral.ingress_buffer), .offset(offset), .data(val));
       `uvm_info(`gfn, $sformatf("read upload_payloadfifo: idx: %0d, data: 0x%0x", i, val),
                 UVM_MEDIUM)
     end
@@ -763,7 +764,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end
     for (int i = start_addr / 4; i <= end_addr / 4; i++) begin
       bit [TL_DW-1:0] data = $urandom();
-      mem_wr(.ptr(ral.buffer), .offset(i), .data(data), .blocking(!zero_delay_write));
+      mem_wr(.ptr(ral.egress_buffer), .offset(i), .data(data), .blocking(!zero_delay_write));
       `uvm_info(`gfn, $sformatf("write %s offset 0x%0x: 0x%0x", msg_region, i << 2, data),
                 UVM_MEDIUM)
     end

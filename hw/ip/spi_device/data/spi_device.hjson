@@ -114,10 +114,29 @@
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
+    { name:    "SramType"
+      desc:    "Sram Entries. Word size is 32bit width."
+      type:    "spi_device_pkg::sram_type_e"
+      default: "spi_device_pkg::DefaultSramType"
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "SramDepth"
       desc:    "Sram Entries. Word size is 32bit width."
       type:    "int unsigned"
       default: "1024"
+      local:   "true"
+    }
+    { name:    "SramEgressDepth"
+      desc:    "Sram Egress Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "832"
+      local:   "true"
+    }
+    { name:    "SramIngressDepth"
+      desc:    "Sram Ingress Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "96"
       local:   "true"
     }
     { name:    "NumCmdInfo"
@@ -1317,18 +1336,35 @@
     //---------------------------------------------------------------
     { skipto: "0x1000" }
     { window: {
-        name: "buffer",
-        items: "SramDepth",
+        name: "egress_buffer",
+        items: "SramEgressDepth",
         validbits: "32",
         byte-write: "false",
-        unusual: "false"
-        swaccess: "rw",
+        unusual: "true"
+        swaccess: "wo",
         desc: '''
-          SPI internal buffer.
+          SPI internal egress buffer.
 
-          The lower 2kB is for Read content emulating eFlash. The next 1 kB is
-          for Mailbox read/write buffer. The rest is 256B SFDP buffer, 32B of
-          CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
+          The lower 2 kB is for Read content emulating eFlash.
+          The next 1 kB is for the Mailbox buffer.
+          '''
+      },
+    },
+    { window: {
+        name: "ingress_buffer",
+        items: "SramIngressDepth",
+        validbits: "32",
+        byte-write: "false",
+        unusual: "true"
+        swaccess: "ro",
+        desc: '''
+          SPI internal ingress buffer.
+
+          The layout is as follows (starting from offset 0):
+              - 256 B SFDP buffer
+              - 32 B CmdFIFO
+              - 32 B AddrFIFO
+              - 256 B payload FIFO
           '''
       },
     },

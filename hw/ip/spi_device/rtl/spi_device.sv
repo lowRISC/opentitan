@@ -9,8 +9,11 @@
 
 module spi_device
   import spi_device_reg_pkg::NumAlerts;
+  import spi_device_reg_pkg::SPI_DEVICE_EGRESS_BUFFER_IDX;
+  import spi_device_reg_pkg::SPI_DEVICE_INGRESS_BUFFER_IDX;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter spi_device_pkg::sram_type_e SramType = spi_device_pkg::DefaultSramType
 ) (
   input clk_i,
   input rst_ni,
@@ -81,8 +84,12 @@ module spi_device
   spi_device_reg_pkg::spi_device_reg2hw_t reg2hw;
   spi_device_reg_pkg::spi_device_hw2reg_t hw2reg;
 
-  tlul_pkg::tl_h2d_t tl_sram_h2d;
-  tlul_pkg::tl_d2h_t tl_sram_d2h;
+  tlul_pkg::tl_h2d_t tl_sram_h2d[2];
+  tlul_pkg::tl_d2h_t tl_sram_d2h[2];
+  tlul_pkg::tl_h2d_t tl_sram_egress_h2d;
+  tlul_pkg::tl_d2h_t tl_sram_egress_d2h;
+  tlul_pkg::tl_h2d_t tl_sram_ingress_h2d;
+  tlul_pkg::tl_d2h_t tl_sram_ingress_d2h;
 
   // Dual-port SRAM Interface: Refer prim_ram_2p_wrapper.sv
   logic              mem_a_req;
@@ -118,10 +125,11 @@ module spi_device
 
   // Upload related interfaces (SRAM, FIFOs)
   typedef enum int unsigned {
-    SysSramFw       = 0,
-    SysSramCmdFifo  = 1,
-    SysSramAddrFifo = 2,
-    SysSramEnd      = 3
+    SysSramFwEgress  = 0,
+    SysSramFwIngress = 1,
+    SysSramCmdFifo   = 2,
+    SysSramAddrFifo  = 3,
+    SysSramEnd       = 4
   } sys_sram_e;
 
   sram_l2m_t sys_sram_l2m [SysSramEnd]; // FW, CMDFIFO, ADDRFIFO
@@ -130,7 +138,7 @@ module spi_device
   // Arbiter among Upload CmdFifo/AddrFifo & FW access
   logic [SysSramEnd-1:0] sys_sram_req                ;
   logic [SysSramEnd-1:0] sys_sram_gnt                ;
-  logic                  sys_sram_fw_gnt             ;
+  logic [1:0]            sys_sram_fw_gnt             ;
   logic [SramAw-1:0]     sys_sram_addr   [SysSramEnd];
   logic [SysSramEnd-1:0] sys_sram_write              ;
   logic [SramDw-1:0]     sys_sram_wdata  [SysSramEnd];
@@ -1522,52 +1530,96 @@ module spi_device
   // Common modules //
   ////////////////////
 
-  logic [SramDw-1:0] sys_sram_l2m_fw_wmask;
+  logic [SramDw-1:0] sys_sram_l2m_fw_wmask[2];
+  assign tl_sram_egress_h2d = tl_sram_h2d[SPI_DEVICE_EGRESS_BUFFER_IDX];
+  assign tl_sram_d2h[SPI_DEVICE_EGRESS_BUFFER_IDX] = tl_sram_egress_d2h;
+  assign tl_sram_ingress_h2d = tl_sram_h2d[SPI_DEVICE_INGRESS_BUFFER_IDX];
+  assign tl_sram_d2h[SPI_DEVICE_INGRESS_BUFFER_IDX] = tl_sram_ingress_d2h;
 
   tlul_adapter_sram #(
     .SramAw      (SramAw),
     .SramDw      (SramDw),
     .Outstanding (1),
+    .ErrOnRead   (1), // write-only memory window
     .ByteAccess  (0)
-  ) u_tlul2sram (
+  ) u_tlul2sram_egress (
     .clk_i,
     .rst_ni,
 
-    .tl_i        (tl_sram_h2d),
-    .tl_o        (tl_sram_d2h),
+    .tl_i        (tl_sram_egress_h2d),
+    .tl_o        (tl_sram_egress_d2h),
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
-    .req_o       (sys_sram_l2m[SysSramFw].req),
+    .req_o       (sys_sram_l2m[SysSramFwEgress].req),
     .req_type_o  (),
-    .gnt_i       (sys_sram_fw_gnt),
-    .we_o        (sys_sram_l2m[SysSramFw].we),
-    .addr_o      (sys_sram_l2m[SysSramFw].addr),
-    .wdata_o     (sys_sram_l2m[SysSramFw].wdata),
-    .wmask_o     (sys_sram_l2m_fw_wmask),           // Not used
+    .gnt_i       (sys_sram_fw_gnt[SPI_DEVICE_EGRESS_BUFFER_IDX]),
+    .we_o        (sys_sram_l2m[SysSramFwEgress].we),
+    .addr_o      (sys_sram_l2m[SysSramFwEgress].addr),
+    .wdata_o     (sys_sram_l2m[SysSramFwEgress].wdata),
+    .wmask_o     (sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]),  // Not used
     .intg_error_o(),
-    .rdata_i     (sys_sram_m2l[SysSramFw].rdata),
-    .rvalid_i    (sys_sram_m2l[SysSramFw].rvalid),
-    .rerror_i    (sys_sram_m2l[SysSramFw].rerror)
+    .rdata_i     (sys_sram_m2l[SysSramFwEgress].rdata),
+    .rvalid_i    (sys_sram_m2l[SysSramFwEgress].rvalid),
+    .rerror_i    (sys_sram_m2l[SysSramFwEgress].rerror)
   );
-  assign sys_sram_l2m[SysSramFw].wstrb = sram_mask2strb(sys_sram_l2m_fw_wmask);
 
-  for (genvar i = 0 ; i < SysSramEnd ; i++) begin : g_sram_connect
-    if (i == SysSramFw) begin : g_sram_req_sw
+  tlul_adapter_sram #(
+    .SramAw      (SramAw),
+    .SramDw      (SramDw),
+    .Outstanding (1),
+    .ErrOnWrite  (1), // read-only memory window
+    .ByteAccess  (0)
+  ) u_tlul2sram_ingress (
+    .clk_i,
+    .rst_ni,
+
+    .tl_i        (tl_sram_ingress_h2d),
+    .tl_o        (tl_sram_ingress_d2h),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
+    .req_o       (sys_sram_l2m[SysSramFwIngress].req),
+    .req_type_o  (),
+    .gnt_i       (sys_sram_fw_gnt[SPI_DEVICE_INGRESS_BUFFER_IDX]),
+    .we_o        (sys_sram_l2m[SysSramFwIngress].we),
+    .addr_o      (sys_sram_l2m[SysSramFwIngress].addr),
+    .wdata_o     (sys_sram_l2m[SysSramFwIngress].wdata),
+    .wmask_o     (sys_sram_l2m_fw_wmask[SPI_DEVICE_INGRESS_BUFFER_IDX]),  // Not used
+    .intg_error_o(),
+    .rdata_i     (sys_sram_m2l[SysSramFwIngress].rdata),
+    .rvalid_i    (sys_sram_m2l[SysSramFwIngress].rvalid),
+    .rerror_i    (sys_sram_m2l[SysSramFwIngress].rerror)
+  );
+  assign sys_sram_l2m[SysSramFwEgress].wstrb =
+    sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]);
+  assign sys_sram_l2m[SysSramFwIngress].wstrb =
+    sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_INGRESS_BUFFER_IDX]);
+
+  logic sys_sram_hw_req;
+  always_comb begin
+    sys_sram_hw_req = 1'b0;
+    for (int unsigned i = 0; i < SysSramEnd; i++) begin
+      if ((i != SysSramFwEgress) && (i != SysSramFwIngress)) begin
+        sys_sram_hw_req |= sys_sram_l2m[i].req;
+      end
+    end
+  end
+
+  always_comb begin
+    for (int unsigned i = 0; i < SysSramEnd; i++) begin
+      sys_sram_req[i] = sys_sram_l2m[i].req;
+    end
+    if (sys_sram_hw_req) begin
       // Fixed low priority. (Discussed in #10065)
       // When HW requests the SRAM access, lower the SW requests (and grant)
-      always_comb begin
-        sys_sram_req[i] = sys_sram_l2m[i].req;
-        sys_sram_fw_gnt = sys_sram_gnt[i];
-        for (int unsigned j = 0; j < SysSramEnd ; j++) begin
-          if (i != j && sys_sram_l2m[j].req) begin
-            sys_sram_req[i] = 1'b 0;
-            // lower the grant
-            sys_sram_fw_gnt = 1'b 0;
-          end
-        end
-      end
-    end else begin : g_sram_req_hw
-      assign sys_sram_req[i] = sys_sram_l2m[i].req;
+      sys_sram_req[SysSramFwEgress] = 1'b0;
+      sys_sram_fw_gnt[SPI_DEVICE_EGRESS_BUFFER_IDX] = 1'b0;
+      sys_sram_req[SysSramFwIngress] = 1'b0;
+      sys_sram_fw_gnt[SPI_DEVICE_INGRESS_BUFFER_IDX] = 1'b0;
+    end else begin
+      sys_sram_fw_gnt[SPI_DEVICE_EGRESS_BUFFER_IDX] = sys_sram_gnt[SysSramFwEgress];
+      sys_sram_fw_gnt[SPI_DEVICE_INGRESS_BUFFER_IDX] = sys_sram_gnt[SysSramFwIngress];
     end
+  end
+
+  for (genvar i = 0 ; i < SysSramEnd ; i++) begin : g_sram_connect
     assign sys_sram_addr  [i] = sys_sram_l2m[i].addr;
     assign sys_sram_write [i] = sys_sram_l2m[i].we;
     assign sys_sram_wdata [i] = sys_sram_l2m[i].wdata;
@@ -1628,41 +1680,38 @@ module spi_device
   assign mem_b_m2l.rdata  = mem_b_rdata;
   assign mem_b_m2l.rerror = mem_b_rerror;
 
-  prim_ram_2p_async_adv #(
-    .Depth (SramDepth),
-    .Width (SramDw),    // 32 x 512 --> 2kB
-    .DataBitsPerMask (8),
-
+  spid_dpram #(
+    .SramType            (SramType),
     .EnableECC           (0),
     .EnableParity        (1),
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0)
-  ) u_memory_2p (
-    .clk_a_i    (clk_i),
-    .rst_a_ni   (rst_ni),
+  ) u_spid_dpram (
+    .clk_sys_i      (clk_i),
+    .rst_sys_ni     (rst_ni),
 
-    .clk_b_i    (clk_spi_in_buf),
-    .rst_b_ni   (rst_spi_n),
+    .clk_spi_i      (clk_spi_in_buf),
+    .rst_spi_ni     (rst_spi_n),
 
-    .a_req_i    (mem_a_req),
-    .a_write_i  (mem_a_write),
-    .a_addr_i   (mem_a_addr),
-    .a_wdata_i  (mem_a_wdata),
-    .a_wmask_i  (mem_a_wmask),
-    .a_rvalid_o (mem_a_rvalid),
-    .a_rdata_o  (mem_a_rdata),
-    .a_rerror_o (mem_a_rerror),
+    .sys_req_i      (mem_a_req),
+    .sys_write_i    (mem_a_write),
+    .sys_addr_i     (mem_a_addr),
+    .sys_wdata_i    (mem_a_wdata),
+    .sys_wmask_i    (mem_a_wmask),
+    .sys_rvalid_o   (mem_a_rvalid),
+    .sys_rdata_o    (mem_a_rdata),
+    .sys_rerror_o   (mem_a_rerror),
 
-    .b_req_i    (mem_b_req),
-    .b_write_i  (mem_b_write),
-    .b_addr_i   (mem_b_addr),
-    .b_wdata_i  (mem_b_wdata),
-    .b_wmask_i  (mem_b_wmask),
-    .b_rvalid_o (mem_b_rvalid),
-    .b_rdata_o  (mem_b_rdata),
-    .b_rerror_o (mem_b_rerror),
+    .spi_req_i      (mem_b_req),
+    .spi_write_i    (mem_b_write),
+    .spi_addr_i     (mem_b_addr),
+    .spi_wdata_i    (mem_b_wdata),
+    .spi_wmask_i    (mem_b_wmask),
+    .spi_rvalid_o   (mem_b_rvalid),
+    .spi_rdata_o    (mem_b_rdata),
+    .spi_rerror_o   (mem_b_rerror),
 
-    .cfg_i      (ram_cfg_i)
+    .cfg_i          (ram_cfg_i)
   );
 
   // Register module

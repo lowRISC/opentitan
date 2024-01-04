@@ -796,7 +796,18 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: SramType
+          desc: Sram Entries. Word size is 32bit width.
+          type: spi_device_pkg::sram_type_e
+          default: spi_device_pkg::DefaultSramType
+          expose: "true"
+          name_top: SpiDeviceSramType
+        }
+      ]
       inter_signal_list:
       [
         {

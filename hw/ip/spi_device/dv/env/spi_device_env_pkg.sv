@@ -70,9 +70,12 @@ package spi_device_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
-  // SPI SRAM is 2kB
+  parameter spi_device_pkg::sram_type_e SRAM_TYPE = spi_device_pkg::SramType2p;
+  // SPI SRAM is 4kB
   parameter uint SRAM_OFFSET                     = 'h1000;
-  parameter uint SRAM_SIZE                       = 4096; // 672 depth
+  parameter uint SRAM_SIZE                       = 4096;
+  parameter uint SRAM_EGRESS_SIZE                = 2048 + 1024 + 256; // 832 depth
+  parameter uint SRAM_INGRESS_SIZE               = 256 + 64 + 64; // 96 depth
   parameter uint SRAM_MSB                        = $clog2(SRAM_SIZE) - 1;
   parameter uint SRAM_PTR_PHASE_BIT              = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE                  = 4;

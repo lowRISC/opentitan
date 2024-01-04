@@ -392,8 +392,6 @@ typedef enum dif_spi_device_flash_buffer_type {
   kDifSpiDeviceFlashBufferTypeMailbox,
   /** SFDP region */
   kDifSpiDeviceFlashBufferTypeSfdp,
-  /** Payload for uploaded commands */
-  kDifSpiDeviceFlashBufferTypePayload,
   /** Count of buffer types */
   kDifSpiDeviceFlashBufferTypes,
 } dif_spi_device_flash_buffer_type_t;
@@ -589,22 +587,19 @@ dif_result_t dif_spi_device_pop_flash_address_fifo(dif_spi_device_handle_t *spi,
                                                    uint32_t *address);
 
 /**
- * Read data from one of the memories associated with flash / passthrough modes.
+ * Read data from the payload buffer associated with flash / passthrough modes.
  *
  * @param spi A handle to a spi device.
- * @param buffer_type An identifier for which memory space to read from.
  * @param offset The starting offset for read data in the memory.
  * @param length The length, in bytes, of the data to be copied.
  * @param[out] buf A pointer to the location where the data should be stored.
  * @return `kDifBadArg` is any pointers are NULL or the `buffer_type` does not
  * exist. `kDifOutOfRange` if the requested `offset` and `length` go beyond the
- * indicated `buffer_type` region. `kDifOk` otherwise.
+ * payload buffer region. `kDifOk` otherwise.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_spi_device_read_flash_buffer(
-    dif_spi_device_handle_t *spi,
-    dif_spi_device_flash_buffer_type_t buffer_type, uint32_t offset,
-    size_t length, uint8_t *buf);
+dif_result_t dif_spi_device_read_flash_payload_buffer(
+    dif_spi_device_handle_t *spi, uint32_t offset, size_t length, uint8_t *buf);
 
 /**
  * Write data to one of the memories associated with flash / passthrough modes.

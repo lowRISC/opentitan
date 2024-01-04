@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:spi_agent
+      - lowrisc:ip:spi_device_pkg:0.1
     files:
       - spi_device_env_pkg.sv
       - spi_device_env_cfg.sv: {is_include_file: true}

@@ -5,8 +5,10 @@
 class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block));
   rand spi_agent_cfg  spi_host_agent_cfg;
   rand spi_agent_cfg  spi_device_agent_cfg;
-  bit [TL_AW-1:0]     sram_start_addr;
-  bit [TL_AW-1:0]     sram_end_addr;
+  bit [TL_AW-1:0]     sram_egress_start_addr;
+  bit [TL_AW-1:0]     sram_egress_end_addr;
+  bit [TL_AW-1:0]     sram_ingress_start_addr;
+  bit [TL_AW-1:0]     sram_ingress_end_addr;
 
   // read buffer needs to be read with incremental address, otherwise, watermark/fip won't work
   // this needs to be kept across sequences and cleared when reset occurs. Only seq uses it.
@@ -54,8 +56,11 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     // set num_interrupts & num_alerts which will be used to create coverage and more
     num_interrupts = ral.intr_state.get_n_used_bits();
 
-    sram_start_addr = ral.get_addr_from_offset(SRAM_OFFSET);
-    sram_end_addr   = sram_start_addr + SRAM_SIZE - 1;
+    sram_egress_start_addr = ral.get_addr_from_offset(ral.egress_buffer.get_offset());
+    sram_egress_end_addr   = sram_egress_start_addr + SRAM_EGRESS_SIZE - 1;
+    sram_ingress_start_addr = ral.get_addr_from_offset(ral.ingress_buffer.get_offset());
+    sram_ingress_end_addr   = sram_ingress_start_addr + SRAM_INGRESS_SIZE - 1;
+    $display("SRAM ingress start = 0x%h", sram_ingress_start_addr);
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
