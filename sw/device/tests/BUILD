@@ -187,7 +187,12 @@ opentitan_test(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
     cw310 = new_cw310_params(timeout = "moderate"),
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
@@ -483,7 +488,12 @@ opentitan_test(
 opentitan_test(
     name = "aon_timer_wdog_lc_escalate_test",
     srcs = ["aon_timer_wdog_lc_escalate_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -508,7 +518,12 @@ opentitan_test(
 opentitan_test(
     name = "aon_timer_sleep_wdog_sleep_pause_test",
     srcs = ["aon_timer_sleep_wdog_sleep_pause_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -1332,7 +1347,12 @@ opentitan_test(
 opentitan_test(
     name = "example_concurrency_test",
     srcs = ["example_concurrency_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     deps = [
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
@@ -3183,7 +3203,12 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_smoketest",
     srcs = ["sram_ctrl_smoketest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -4204,7 +4229,12 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_memset_test",
     srcs = ["sram_ctrl_memset_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
