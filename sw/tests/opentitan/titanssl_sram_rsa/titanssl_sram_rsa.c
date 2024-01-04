@@ -179,30 +179,112 @@ void initialize_memory()
     for (size_t i=0; i<TITANSSL_SIZE_KEY; i++) buffer_private.data[i] = TITANSSL_TEST_PRIVATE[i];
 }
 
+__attribute__((always_inline))
+void titanssl_benchmark_memcpy32_aligned_from_otbn(
+        mmio_region_t otbn,
+        size_t offset,
+        uint8_t* dst,
+        size_t n)
+{
+    size_t n_words;
+    size_t n_bytes;
+
+    n_words = n / sizeof(uint32_t);
+    for (size_t i=0; i<n_words; i++)
+    {
+        *(uint32_t*)dst = mmio_region_read32(otbn, offset);
+        dst += sizeof(uint32_t);
+        offset += sizeof(uint32_t);
+    }
+    n_bytes = n & 0x3;
+    for (size_t i=0; i<n_bytes; i++)
+    {
+        *dst = mmio_region_read8(otbn, offset);
+        dst++;
+        offset++;
+    }
+}
+
+__attribute__((always_inline))
+void titanssl_benchmark_memcpy32_aligned_to_otbn(
+        mmio_region_t otbn,
+        size_t offset,
+        const uint8_t* src,
+        size_t n)
+{
+    size_t n_words;
+    size_t n_bytes;
+
+    printf("=== titanssl_benchmark_memcpy32_aligned_to_otbn ===\r\n");
+    printf("offset: %d\r\n", offset);
+    printf("src: 0x%08x\r\n", src);
+    printf("n: %d\r\n", n);
+
+    n_words = n / sizeof(uint32_t);
+    printf("n_words: %d\r\n", n_words);
+    for (size_t i=0; i<n_words; i++)
+    {
+        printf("    i: %d\r\n", i);
+        printf("    *src: 0x%08x\r\n", *(uint32_t*)src);
+        printf("    src: 0x%08x\r\n", src);
+        printf("    offset: 0x%08x\r\n", offset);
+        mmio_region_write32(otbn, offset, *(uint32_t*)src);
+        src += sizeof(uint32_t);
+        offset += sizeof(uint32_t);
+    }
+    n_bytes = n & 0x3;
+    for (size_t i=0; i<n_bytes; i++)
+    {
+        mmio_region_write8(otbn, offset, *src);
+        src++;
+        offset++;
+    }
+}
+
 void titanssl_benchmark_rsa_enc(
         titanssl_buffer_t *const plain,
         titanssl_buffer_t *const cipher,
         titanssl_buffer_t *const modulus)
 {
     mmio_region_t otbn;
-    uint32_t mode;
-    uint32_t n_limbs;
     uint32_t reg;
 
     // Get OTBN base address
     otbn = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
 
     // Load OTBN application
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_IMEM_REG_OFFSET, kOtbnAppRsa.imem_start, kOtbnAppRsa.imem_end - kOtbnAppRsa.imem_start);
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET, kOtbnAppRsa.dmem_data_start, kOtbnAppRsa.dmem_data_end - kOtbnAppRsa.dmem_data_start);
+    titanssl_benchmark_memcpy32_aligned_to_otbn(
+        otbn,
+        OTBN_IMEM_REG_OFFSET, 
+        kOtbnAppRsa.imem_start, 
+        kOtbnAppRsa.imem_end-kOtbnAppRsa.imem_start
+    );
+    //mmio_region_memcpy_to_mmio32(otbn, OTBN_IMEM_REG_OFFSET, kOtbnAppRsa.imem_start, kOtbnAppRsa.imem_end - kOtbnAppRsa.imem_start);
+    titanssl_benchmark_memcpy32_aligned_to_otbn(
+        otbn,
+        OTBN_DMEM_REG_OFFSET, 
+        kOtbnAppRsa.dmem_data_start, 
+        kOtbnAppRsa.dmem_data_end-kOtbnAppRsa.dmem_data_start
+    );
+    //mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET, kOtbnAppRsa.dmem_data_start, kOtbnAppRsa.dmem_data_end - kOtbnAppRsa.dmem_data_start);
 
     // Write input arguments to OTBN
-    n_limbs = TITANSSL_SIZE_KEY / 32;
-    mode = 1;
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaMode, &mode, sizeof(uint32_t));
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaNLimbs, &n_limbs, sizeof(uint32_t));
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaModulus, modulus->data, TITANSSL_SIZE_KEY);
-    mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, plain->data, TITANSSL_SIZE_KEY);
+    mmio_region_write32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaMode, 1);
+    mmio_region_write32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaNLimbs, TITANSSL_SIZE_KEY/32);
+    titanssl_benchmark_memcpy32_aligned_to_otbn(
+        otbn,
+        OTBN_DMEM_REG_OFFSET+kOtbnVarRsaModulus, 
+        modulus->data, 
+        TITANSSL_SIZE_KEY
+    );
+    //mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaModulus, modulus->data, TITANSSL_SIZE_KEY);
+    titanssl_benchmark_memcpy32_aligned_to_otbn(
+        otbn,
+        OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, 
+        plain->data, 
+        TITANSSL_SIZE_KEY
+    );
+    //mmio_region_memcpy_to_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, plain->data, TITANSSL_SIZE_KEY);
 
     // Call OTBN to perform operation, and wait for it to complete
     mmio_region_write32(otbn, OTBN_CMD_REG_OFFSET, kDifOtbnCmdExecute);
@@ -210,10 +292,16 @@ void titanssl_benchmark_rsa_enc(
     {
         reg = mmio_region_read32(otbn, OTBN_STATUS_REG_OFFSET);
     } while(bitfield_field32_read(reg, OTBN_STATUS_STATUS_FIELD));
-    if (mmio_region_read32(otbn, OTBN_ERR_BITS_REG_OFFSET)) while (true) asm volatile ("wfi");
+    if (mmio_region_read32(otbn, OTBN_ERR_BITS_REG_OFFSET)) asm volatile ("wfi");
 
     // Read back results.
-    mmio_region_memcpy_from_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, cipher->data, TITANSSL_SIZE_KEY);
+    titanssl_benchmark_memcpy32_aligned_from_otbn(
+        otbn,
+        OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, 
+        cipher->data, 
+        TITANSSL_SIZE_KEY
+    );
+    //mmio_region_memcpy_from_mmio32(otbn, OTBN_DMEM_REG_OFFSET+kOtbnVarRsaInOut, cipher->data, TITANSSL_SIZE_KEY);
 }
 
 void titanssl_benchmark_rsa_dec(
@@ -279,18 +367,18 @@ int main(
         printf("%02x vs. %02x\r\n", buffer_cipher.data[i], TITANSSL_TEST_OUTPUT[i]);
     }
 #endif
-    titanssl_benchmark_rsa_dec(
-        &buffer_cipher,
-        &buffer_plain,
-        &buffer_modulus,
-        &buffer_private
-    );
-#if TITANSSL_CFG_DEBUG
-    printf("RSA Decryption\r\n");
-    for (int i = 0; i < TITANSSL_SIZE_KEY; i++) {
-        printf("%02x vs. %02x\r\n", buffer_plain.data[i], TITANSSL_TEST_PLAIN[i]);
-    }
-#endif
+//    titanssl_benchmark_rsa_dec(
+//        &buffer_cipher,
+//        &buffer_plain,
+//        &buffer_modulus,
+//        &buffer_private
+//    );
+//#if TITANSSL_CFG_DEBUG
+//    printf("RSA Decryption\r\n");
+//    for (int i = 0; i < TITANSSL_SIZE_KEY; i++) {
+//        printf("%02x vs. %02x\r\n", buffer_plain.data[i], TITANSSL_TEST_PLAIN[i]);
+//    }
+//#endif
 
     return 0;
 }
