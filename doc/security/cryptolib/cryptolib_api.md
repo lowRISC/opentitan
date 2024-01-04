@@ -17,7 +17,7 @@ This page:
   - [Elliptic curve cryptography](#elliptic-curve-cryptography)
   - [Deterministic random bit generation (DRBG)](#deterministic-random-bit-generation)
   - [Key derivation functions (KDF)](#key-derivation)
-  - [Key import and export](#key-import-and-export)
+  - [Key transport](#key-transport)
 - Explains how [asynchronous operations](#asynchronous-operations) work
 - Lists the [security strength](#security-strength) of each algorithm
 - Lists [references](#reference) for further reading
@@ -77,23 +77,24 @@ Therefore, the caller should not compute the checksum themselves; use the key im
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_unblinded_key }}
 
-Secret keys are "blinded", meaning that keys are represented by at least two "shares" the same size as the key.
+Secret keys are _blinded_ (also called "masked"), meaning that keys are represented by at least two "shares" the same size as the key.
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
-The choice of blinding method depends on the algorithm and is implementation-specific.
-Callers should use key import/export functions to interpret blinded keys.
+The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
+Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_blinded_key }}
 
 As shown above, all secret keys have a configuration value.
+Once the key is created, or imported, the configuration is not expected to change; the cryptolib will never change it, and the caller would have to recompute the key checksum to change it, which is not recommended.
 The configuration helps the cryptolib interpret how the key is represented and how it is permitted to be used.
 Nothing in the configuration is typically secret.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_key_config }}
 
 In most cases, the caller needs to provide a configuration before calling algorithms which generate secret keys.
-
-Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` and `diversification_hw_backed` in the key configuration.
-If the key is produced by the key manager, then the keyblob has length 0; the diversification information is enough to produce the key.
+Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` in the key configuration.
+In this case, the keyblob is the diversification input for key manager instead of the key material itself.
+See the [key transport](#key-transport) section for more details.
 
 ### Bookkeeping data structures
 
@@ -478,21 +479,15 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 {{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
 {{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
 
-## Key import and export
+## Key transport
 
-The following section defines the interface for importing keys to and exporting keys from the crypto library.
+This is the interface for generating, importing, and exporting crypto library symmetric keys.
+Asymmetric schemes (e.g. RSA or elliptic-curve cryptography) use algorithm-specific routines for key generation; refer to the RSA and ECC sections instead to generate, import, or export asymmetric keys.
 
-The crypto library typically represents private keys in blinded form, where the exact shape of the blinded key is opaque to the user.
-Public keys are in unblinded form, and the user can easily extract the plain key data.
-However, in some cases, a user might want to import a key generated elsewhere into the cryptolib, or might want to export a private key for use in a different piece of code.
-
-### Supported Modes
-
-The crypto library provides four functions for this purpose:
-- Build an unblinded key from user-provided key data and mode
-- Build a blinded key from user-provided key data and configuration
-- Export an unblinded key to the user-provided key data
-- Export a blinded key to the user-provided key data in shares
+The crypto library represents private keys in masked form ("blinded keys").
+The internal structure of blinded keys is opaque to the user and may change in subsequent versions of the crypto library.
+The caller can control certain characteristics of the generated key via the key configuration.
+See the [key data structures](#key-data-structures) section for more details.
 
 ### Generate random keys
 
@@ -502,15 +497,16 @@ The crypto library provides four functions for this purpose:
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
 
-### Import Keys
+### Import Symmetric Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_unblinded_key }}
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_blinded_key }}
 
-### Export Keys
+### Export Symmetric Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_unblinded_key }}
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_blinded_key }}
+
+Some blinded keys are marked as non-exportable in their configurations.
+The crypto library will always refuse to export these keys.
 
 ## Asynchronous operations
 
