@@ -108,6 +108,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
     else:
         basename = paths.replace_extension(basename, "")
 
+    signing_directives = []
     pre = ctx.actions.declare_file("{}.pre-signing".format(basename))
     inputs = [
         src,
@@ -152,6 +153,15 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         executable = opentitantool,
         mnemonic = "PreSigningDigest",
     )
+    signing_directives.append(struct(
+        command = "rsa-sign",
+        id = None,
+        label = rsa_key.name,
+        format = "Sha256Hash",
+        little_endian = True,
+        output = "{}.rsa_sig".format(basename),
+        input = "{}.digest".format(basename),
+    ))
 
     # Compute message to be signed with SPX+.
     spxmsg = None
@@ -171,7 +181,10 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
             executable = opentitantool,
             mnemonic = "PreSigningSpxMessage",
         )
-    return struct(pre = pre, digest = digest, spxmsg = spxmsg)
+        # TODO(cfrantz): After adding SPX support to hsmtool, append an appropriate
+        # signing directive here.
+
+    return struct(pre = pre, digest = digest, spxmsg = spxmsg, script = signing_directives)
 
 def _local_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profile = None):
     """Sign a digest with a local on-disk RSA private key.
@@ -309,6 +322,7 @@ def _offline_presigning_artifacts(ctx):
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
     digests = []
     bins = []
+    script = []
     for src in get_binary_files(ctx.attr.srcs):
         artifacts = _presigning_artifacts(
             ctx,
@@ -320,12 +334,20 @@ def _offline_presigning_artifacts(ctx):
         )
         bins.append(artifacts.pre)
         digests.append(artifacts.digest)
+        script.extend(artifacts.script)
         if artifacts.spxmsg:
             digests.append(artifacts.spxmsg)
+
+    default_files = digests
+    if script:
+        script_file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
+        ctx.actions.write(script_file, json.encode_indent(script, indent = "  ") + "\n")
+        default_files.append(script_file)
+
     return [
-        DefaultInfo(files = depset(digests), data_runfiles = ctx.runfiles(files = digests)),
+        DefaultInfo(files = depset(default_files), data_runfiles = ctx.runfiles(files = default_files)),
         PreSigningBinaryInfo(files = depset(bins)),
-        OutputGroupInfo(digest = depset(digests), binary = depset(bins)),
+        OutputGroupInfo(digest = depset(digests), binary = depset(bins), script = depset([script_file])),
     ]
 
 offline_presigning_artifacts = rule(
