@@ -44,6 +44,7 @@ test_suite(
         "//sw/device/tests:spi_device_smoketest",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
+        "//sw/device/tests:sram_ctrl_smoketest",
         "//sw/device/tests:uart0_tx_rx_test",
         "//sw/device/tests:uart1_tx_rx_test",
         "//sw/device/tests:uart2_tx_rx_test",
@@ -58,6 +59,9 @@ test_suite(
     tests = [
         "//sw/device/tests:aes_entropy_test",
         "//sw/device/tests:aes_idle_test",
+        "//sw/device/tests:alert_handler_ping_timeout_test",
+        "//sw/device/tests:aon_timer_sleep_wdog_sleep_pause_test",
+        "//sw/device/tests:aon_timer_wdog_lc_escalate_test",
         "//sw/device/tests:clkmgr_jitter_frequency_test",
         "//sw/device/tests:clkmgr_off_aes_trans_test",
         "//sw/device/tests:clkmgr_off_hmac_trans_test",
@@ -77,6 +81,7 @@ test_suite(
         "//sw/device/tests:entropy_src_edn_reqs_test",
         "//sw/device/tests:entropy_src_fw_ovr_test",
         "//sw/device/tests:entropy_src_kat_test",
+        "//sw/device/tests:example_concurrency_test",
         "//sw/device/tests:flash_ctrl_clock_freqs_test",
         "//sw/device/tests:flash_ctrl_idle_low_power_test",
         "//sw/device/tests:flash_ctrl_ops_test",
@@ -111,6 +116,7 @@ test_suite(
         "//sw/device/tests:sensor_ctrl_alert_test",
         "//sw/device/tests:sensor_ctrl_wakeup_test",
         "//sw/device/tests:sleep_pwm_pulses_test",
+        "//sw/device/tests:sram_ctrl_memset_test",
         "//sw/device/tests:sram_ctrl_subword_access_test",
     ],
 )
