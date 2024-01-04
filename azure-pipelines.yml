@@ -140,3 +140,6 @@ jobs:
     parameters:
       includePatterns:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
+  - publish: $(System.DefaultWorkingDirectory)
+    artifact: cwd_dump
+    condition: always()
