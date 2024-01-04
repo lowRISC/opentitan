@@ -71,15 +71,17 @@ Word buffers can be safely interpreted as byte streams by the caller; the bytes 
 ### Key data structures
 
 Keys receive extra protection from the cryptolib.
-Public keys are represented in plain, "unblinded" form, but have a checksum to protect their integrity.
+Public keys are represented in plain, "unblinded" form, but include a checksum to protect them against accidental corruption.
 The checksum is implementation-specific and may change over time.
-Therefore, the caller should not compute the checksum themselves; use the key import/export functions to construct unblinded keys.
+The caller should use algorithm-specific routines to construct unblinded keys; see e.g. the ECC and RSA sections for details.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_unblinded_key }}
 
-Secret keys are _blinded_ (also called "masked"), meaning that keys are represented by at least two "shares" the same size as the key.
+Secret keys are "blinded", meaning that keys are represented by at least two "shares" the same size as the key.
+Blinded keys are also sometimes referred to as "masked".
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
 The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
+Lke unblinded keys, they include a checksum.
 Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_blinded_key }}
