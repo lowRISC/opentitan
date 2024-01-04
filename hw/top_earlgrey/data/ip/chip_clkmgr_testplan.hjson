@@ -35,18 +35,10 @@
         "chip_sw_otbn_randomness",
       ]
       bazel: [
-        "//sw/device/tests:aes_idle_test_fpga_cw310_sival",
-        "//sw/device/tests:aes_idle_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:aes_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:hmac_enc_idle_test_fpga_cw310_sival",
-        "//sw/device/tests:hmac_enc_idle_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:hmac_enc_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:kmac_idle_test_fpga_cw310_sival",
-        "//sw/device/tests:kmac_idle_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:kmac_idle_test_fpga_cw310_test_rom",
-        "//sw/device/tests:otbn_randomness_test_fpga_cw310_sival",
-        "//sw/device/tests:otbn_randomness_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:otbn_randomness_test_fpga_cw310_test_rom",
+        "//sw/device/tests:aes_idle_test",
+        "//sw/device/tests:hmac_enc_idle_test",
+        "//sw/device/tests:kmac_idle_test",
+        "//sw/device/tests:otbn_randomness_test",
       ]
     }
     {
@@ -82,18 +74,10 @@
         "chip_sw_clkmgr_off_otbn_trans",
       ]
       bazel: [
-        "//sw/device/tests:clkmgr_off_aes_trans_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_off_aes_trans_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_off_aes_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_hmac_trans_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_off_hmac_trans_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_off_hmac_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_kmac_trans_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_off_kmac_trans_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_off_kmac_trans_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_off_otbn_trans_test_fpga_cw310_sival"
-        "//sw/device/tests:clkmgr_off_otbn_trans_test_fpga_cw310_sival_rom_ext"
-        "//sw/device/tests:clkmgr_off_otbn_trans_test_fpga_cw310_test_rom"
+        "//sw/device/tests:clkmgr_off_aes_trans_test",
+        "//sw/device/tests:clkmgr_off_hmac_trans_test",
+        "//sw/device/tests:clkmgr_off_kmac_trans_test",
+        "//sw/device/tests:clkmgr_off_otbn_trans_test",
       ]
     }
     {
@@ -120,11 +104,7 @@
         "CLKMGR.ENABLE.USB",
       ]
       tests: ["chip_sw_clkmgr_off_peri"]
-      bazel: [
-        "//sw/device/tests:clkmgr_off_peri_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_off_peri_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_off_peri_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:clkmgr_off_peri_test"]
     }
     {
       name: chip_sw_clkmgr_div
@@ -161,15 +141,9 @@
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
       ]
       bazel: [
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_sival",
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_sival_rom",
-        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test_fpga_cw310_test_rom",
+        "//sw/device/tests:ast_clk_outs_test",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_fast_test",
+        "//sw/device/tests:clkmgr_external_clk_src_for_sw_slow_test",
       ]
     }
     {
@@ -211,12 +185,8 @@
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
       ]
       bazel: [
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_test_rom",
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_test_rom",
+        "//sw/device/tests:clkmgr_sleep_frequency_test",
+        "//sw/device/tests:clkmgr_reset_frequency_test",
       ]
     }
     {
@@ -270,11 +240,7 @@
         "CLKMGR.MEAS_CTRL.USB",
       ]
       tests: ["chip_sw_clkmgr_jitter_frequency"]
-      bazel: [
-        "//sw/device/tests:clkmgr_jitter_frequency_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_jitter_frequency_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_jitter_frequency_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:clkmgr_jitter_frequency_test"]
     }
     {
       name: chip_sw_clkmgr_extended_range
@@ -342,11 +308,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_ast_clk_outputs"]
-      bazel: [
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_sival",
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:ast_clk_outs_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:ast_clk_outs_test"]
     }
     {
       name: chip_sw_clkmgr_sleep_frequency
@@ -374,11 +336,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_clkmgr_sleep_frequency"]
-      bazel: [
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_sleep_frequency_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:clkmgr_sleep_frequency_test"]
     }
     {
       name: chip_sw_clkmgr_reset_frequency
@@ -402,11 +360,7 @@
         "CLKMGR.MEAS_CTRL.RECOV_ERR",
       ]
       tests: ["chip_sw_clkmgr_reset_frequency"]
-      bazel: [
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_sival",
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:clkmgr_reset_frequency_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:clkmgr_reset_frequency_test"]
     }
     {
       name: chip_sw_clkmgr_escalation_reset
@@ -443,11 +397,7 @@
       ]
       features: ["CLKMGR.ALERT_HANDLER.CLOCK_STATUS"]
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
-      bazel: [
-        "//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_sival",
-        "//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test"]
     }
   ]
 }

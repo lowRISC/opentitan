@@ -55,12 +55,8 @@
         "chip_sw_sleep_sram_ret_contents_scramble",
       ]
       bazel: [
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_sival",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_rom_test",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_sival",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_rom_test",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
       ]
     }
     {

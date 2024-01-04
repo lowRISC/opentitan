@@ -96,9 +96,7 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: [
-        "//sw/device/tests:rv_dm_ndm_reset_req",
-      ],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [
@@ -185,9 +183,7 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_tap_straps_rma"]
-      bazel: [
-        "//sw/device/tests:rv_dm_jtag_tap_sel",
-      ],
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [
@@ -240,9 +236,7 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: [
-        "//sw/device/tests:rv_dm_jtag",
-      ],
+      bazel: ["//sw/device/tests:rv_dm_jtag"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [
