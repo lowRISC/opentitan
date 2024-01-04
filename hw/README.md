@@ -37,7 +37,7 @@ Finally, we provide the same set of information for all available [top level des
 
 ## Darjeeling chip-level results
 
-* [Datasheet](./top_darjeeling/doc/specification.md)
+* [Datasheet](./top_darjeeling/doc/datasheet.md)
 * [Specification](./top_darjeeling/doc/design/README.md)
 * [DV Document](./top_darjeeling/dv/README.md)
 * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/integrated/hw/top_darjeeling/dv/latest/report.html)

@@ -1,7 +1,7 @@
 # OpenTitan Darjeeling Chip Specification
 
 This document describes the OpenTitan Darjeeling chip functionality in detail.
-For an overview, refer to the [OpenTitan Darjeeling Chip Datasheet](../specification.md).
+For an overview, refer to the [OpenTitan Darjeeling Chip Datasheet](../datasheet.md).
 
 # Theory of Operations
 
