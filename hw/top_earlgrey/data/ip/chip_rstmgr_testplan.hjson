@@ -46,15 +46,9 @@
         "chip_sw_pwrmgr_wdog_reset",
       ]
       bazel: [
-        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival",
-        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_sival_rom",
-        "//sw/device/tests:pwrmgr_all_reset_reqs_test_fpga_cw310_test_rom",
-        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival",
-        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
+        "//sw/device/tests:pwrmgr_all_reset_reqs_test",
+        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
       ]
     }
     {
@@ -88,9 +82,7 @@
         "RSTMGR.RESET_INFO.CLEAR",
       ]
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: [
-        "//sw/device/tests:rv_dm_ndm_reset_req",
-      ],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
     }
     {
       name: chip_sw_rstmgr_cpu_info
@@ -118,11 +110,7 @@
         "RSTMGR.CPU_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_cpu_info"]
-      bazel: [
-        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_sival",
-        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:rstmgr_cpu_info_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:rstmgr_cpu_info_test"]
     }
     {
       name: chip_sw_rstmgr_sw_req_reset
@@ -149,12 +137,8 @@
       features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
       bazel: [
-        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_sival",
-        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:rstmgr_sw_req_test_fpga_cw310_test_rom",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
+        "//sw/device/tests:rstmgr_sw_req_test",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
       ]
     }
     {
@@ -235,11 +219,7 @@
         "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
       ]
       tests: ["chip_sw_rstmgr_sw_rst"]
-      bazel: [
-        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_sival",
-        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:rstmgr_sw_rst_ctrl_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test"]
     }
     {
       name: chip_sw_rstmgr_escalation_reset
@@ -269,11 +249,7 @@
         "RSTMGR.ALERT_INFO.CAPTURE",
       ]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: [
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs"]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables
@@ -297,11 +273,7 @@
       ]
       features: ["RSTMGR.ALERT_HANDLER.RESET_STATUS"]
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
-      bazel: [
-        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_sival",
-        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test"]
     }
   ]
 }
