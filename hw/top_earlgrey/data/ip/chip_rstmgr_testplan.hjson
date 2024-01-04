@@ -48,7 +48,7 @@
       bazel: [
         "//sw/device/tests:pwrmgr_all_reset_reqs_test",
         "//sw/device/tests:pwrmgr_wdog_reset_reqs_test",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
       ]
     }
     {
