@@ -13,6 +13,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/status.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -43,10 +44,26 @@ enum {
    */
   kIbexSha3SleepCycles = 1180,
   /**
+   * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
+   * noise during loading and hashing the prefix as well as loading and hashing
+   * the key.
+   */
+  kIbexLoadHashPrefixKeySleepCycles = 300,
+  /**
+   * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
+   * noise during loading and hashing the message.
+   */
+  kIbexLoadHashMessageSleepCycles = 500,
+  /**
    * Max number of traces per batch.
    */
   kNumBatchOpsMax = 128,
 };
+
+/**
+ * Enable FPGA mode.
+ */
+static bool fpga_mode = false;
 
 /**
  * A handle to KMAC.
@@ -327,18 +344,38 @@ static kmac_sca_error_t kmac_msg_write(const void *msg, size_t msg_len,
 /**
  * Starts actual processing of a previously provided message.
  *
- * This function issues a START command directly followed by a PROCESS command.
+ * This function issues a PROCESS command.
  */
-static void kmac_msg_proc(void) {
+static void kmac_process_cmd(void) {
+  // Issue PROCESS command.
+  uint32_t cmd_reg =
+      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+/**
+ * Prepares KMAC to receive the message via the FIFO.
+ *
+ * This function issues a START command.
+ */
+static void kmac_start_cmd(void) {
   // Issue START command.
   uint32_t cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+/**
+ * Starts actual processing of a previously provided message.
+ *
+ * This function issues a START command directly followed by a PROCESS command.
+ */
+static void kmac_start_process_cmd(void) {
+  // Issue START command.
+  kmac_start_cmd();
 
   // Issue PROCESS command.
-  cmd_reg =
-      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
-  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  kmac_process_cmd();
 }
 
 /**
@@ -409,11 +446,16 @@ kmac_sca_error_t kmac_get_digest(uint32_t *out, size_t len) {
  * This function configures KMAC to use software entropy.
  */
 status_t handle_kmac_sca_init(ujson_t *uj) {
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
-  if (dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                    &kmac) != kDifOk) {
-    return ABORTED();
+  // Read mode. FPGA or discrete.
+  cryptotest_kmac_sca_fpga_mode_t uj_data;
+  TRY(ujson_deserialize_cryptotest_kmac_sca_fpga_mode_t(uj, &uj_data));
+  if (read_32(uj_data.fpga_mode) == 0x01) {
+    fpga_mode = true;
   }
+  // Setup the trigger.
+  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  UJSON_CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
@@ -425,9 +467,7 @@ status_t handle_kmac_sca_init(ujson_t *uj) {
       .sideload = kDifToggleDisabled,
       .msg_mask = kDifToggleEnabled,
   };
-  if (dif_kmac_configure(&kmac, config) != kDifOk) {
-    return ABORTED();
-  }
+  UJSON_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
   return OK_STATUS(0);
@@ -466,26 +506,56 @@ status_t handle_kmac_sca_set_key(ujson_t *uj) {
 /**
  * Absorbs a message using KMAC128 without a customization string.
  *
+ * Two modes are supported: FPGA and non-FPGA mode.
+ * The FPGA mode can be used to improve KMAC SCA. Here, features only available
+ * on the FPGA bitstream are used (i.e., SecKmacCmdDelay and
+ * SecKmacIdleAcceptSwMsg). The non-FPGA mode represents the chip where these
+ * features are disabled.
+ *
+ * In the FPGA mode, this function performs:
+ * - Configure mode/key/...
+ * - Write data to the message FIFO.
+ * - Send START and PROCESS commands, put Ibex into sleep.
+ *
+ * In the non-FPGA mode, this function performs:
+ * - Configure mode/key/...
+ * - Send START command, put Ibex into sleep.
+ * - Write message FIFO.
+ * - Send PROCESS command, put Ibex into sleep.
+ *
  * @param msg Message.
  * @param msg_len Message length.
  */
 static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
-  // Start a new message and write data to message FIFO.
+  // Start a new message.
   if (kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key, NULL) !=
       kmacScaOk) {
     return kmacScaAborted;
   }
 
+  if (fpga_mode == false) {
+    // Start command. On the chip, we need to first issue a START command
+    // before writing to the message FIFO.
+    sca_call_and_sleep(kmac_start_cmd, kIbexLoadHashPrefixKeySleepCycles);
+  }
+
+  // Write data to message FIFO.
   if (kmac_msg_write(msg, msg_len, NULL) != kmacScaOk) {
     return kmacScaAborted;
   }
 
-  // Start the SHA3 processing (this triggers the capture) and go to sleep.
-  // Using the SecCmdDelay hardware parameter, the KMAC unit is
-  // configured to start operation 40 cycles after receiving the START and PROC
-  // commands. This allows Ibex to go to sleep in order to not disturb the
-  // capture.
-  sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles);
+  if (fpga_mode) {
+    // On the FPGA, start the SHA3 processing (this triggers the capture) and
+    // go to sleep. Using the SecCmdDelay hardware parameter, the KMAC unit is
+    // configured to start operation 320 cycles after receiving the START and
+    // PROC commands. This allows Ibex to go to sleep in order to not disturb
+    // the capture.
+    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles);
+  } else {
+    // On the chip, issue a PROCESS command to start operation and put Ibex
+    // into sleep.
+    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles);
+  }
 
   return kmacScaOk;
 }
@@ -518,7 +588,7 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
   }
   sca_set_trigger_low();
 
-  // Check KMAC has finsihed processing the message.
+  // Check KMAC has finished processing the message.
   kmac_msg_done();
 
   // Read the digest and send it to the host for verification.
@@ -526,6 +596,7 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
   if (kmac_get_digest(out, kDigestLength) != kmacScaOk) {
     return ABORTED();
   }
+
   cryptotest_kmac_sca_batch_digest_t uj_output;
   memcpy(uj_output.batch_digest, (uint8_t *)out, kDigestLength * 4);
   RESP_OK(ujson_serialize_cryptotest_kmac_sca_batch_digest_t, uj, &uj_output);
@@ -594,7 +665,6 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    kmac_reset();
     memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
 
     sca_set_trigger_high();
