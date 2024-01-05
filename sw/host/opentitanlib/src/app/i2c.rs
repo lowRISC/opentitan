@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::i2c::{self, Bus};
+use crate::io::i2c::{self, Bus, DeviceStatus, Mode};
 use crate::transport::Transport;
 
 use anyhow::Result;
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::Duration;
 
 /// Exactly one `PhysicalI2cWrapper` exists for every underlying tranport `Bus` instance that
 /// has been accessed through the `TransportWrapper`.  It is used to keep track of which
@@ -85,6 +86,10 @@ impl LogicalI2cWrapper {
 }
 
 impl Bus for LogicalI2cWrapper {
+    fn set_mode(&self, mode: Mode) -> Result<()> {
+        self.physical_wrapper.underlying_target.set_mode(mode)
+    }
+
     fn get_max_speed(&self) -> Result<u32> {
         self.physical_wrapper.underlying_target.get_max_speed()
     }
@@ -103,5 +108,17 @@ impl Bus for LogicalI2cWrapper {
         self.physical_wrapper
             .underlying_target
             .run_transaction(addr, transaction)
+    }
+
+    fn get_device_status(&self, timeout: Duration) -> Result<DeviceStatus> {
+        self.physical_wrapper
+            .underlying_target
+            .get_device_status(timeout)
+    }
+
+    fn prepare_read_data(&self, data: &[u8], sticky: bool) -> Result<()> {
+        self.physical_wrapper
+            .underlying_target
+            .prepare_read_data(data, sticky)
     }
 }
