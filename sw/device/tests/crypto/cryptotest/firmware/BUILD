@@ -68,7 +68,10 @@ cc_library(
 cc_library(
     name = "kmac_sca",
     srcs = ["kmac_sca.c"],
-    hdrs = ["kmac_sca.h"],
+    hdrs = [
+        "kmac_sca.h",
+        "status.h",
+    ],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
