@@ -258,6 +258,19 @@ cc_library(
 )
 
 cc_library(
+    name = "otbn_testutils_rsa",
+    srcs = ["otbn_testutils_rsa.c"],
+    hdrs = ["otbn_testutils_rsa.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":otbn_testutils",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:otbn",
+        "//sw/otbn/crypto:rsa",
+    ],
+)
+
+cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],
