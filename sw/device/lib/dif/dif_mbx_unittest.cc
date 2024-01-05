@@ -48,21 +48,23 @@ TEST_P(MemoryRangeSuccessTests, SetSuccess) {
   EXPECT_DIF_OK(dif_mbx_range_set(&mbx_, range));
 }
 
-INSTANTIATE_TEST_SUITE_P(MemoryRangeSuccessTests, MemoryRangeSuccessTests,
-                         testing::ValuesIn(std::vector<dif_mbx_range_config_t>{{
-                             {.imbx_base_addr = 0xD0CF2C50,
-                              .imbx_limit_addr = 0xD1CF2C0F,
-                              .ombx_base_addr = 0xD1CF3C0F,
-                              .ombx_limit_addr = 0xD1CF3C10},
-                             {.imbx_base_addr = 0x1000,
-                              .imbx_limit_addr = 0x2000,
-                              .ombx_base_addr = 0x3000,
-                              .ombx_limit_addr = 0x4000},
-                             {.imbx_base_addr = 0x1000,
-                              .imbx_limit_addr = 0x1001,
-                              .ombx_base_addr = 0x1001,
-                              .ombx_limit_addr = 0x1002},
-                         }}));
+// 'Limit' addresses are _inclusive_.
+INSTANTIATE_TEST_SUITE_P(
+    MemoryRangeSuccessTests, MemoryRangeSuccessTests,
+    testing::ValuesIn(std::vector<dif_mbx_range_config_t>{{
+        {.imbx_base_addr = 0xD0CF2C50,
+         .imbx_limit_addr = 0xD1CF2C0F,
+         .ombx_base_addr = 0xD1CF3C0F,
+         .ombx_limit_addr = 0xD1CF3C10},
+        {.imbx_base_addr = 0x1000,
+         .imbx_limit_addr = 0x2000,
+         .ombx_base_addr = 0x3000,
+         .ombx_limit_addr = 0x4000},
+        {.imbx_base_addr = 0x1000,
+         .imbx_limit_addr = 0x1003,  // Inbound mailbox is a single DWORD.
+         .ombx_base_addr = 0x1004,
+         .ombx_limit_addr = 0x1007},  // Single DWORD
+    }}));
 
 class MemoryRangeBadArgTests
     : public MbxTestInitialized,
