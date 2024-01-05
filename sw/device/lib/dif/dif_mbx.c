@@ -15,16 +15,18 @@ dif_result_t dif_mbx_range_set(const dif_mbx_t *mbx,
   if (mbx == NULL) {
     return kDifBadArg;
   }
-  if (config.imbx_base_addr >= config.imbx_limit_addr) {
+  // Note: the limit addresses are _inclusive_, specifying the start address of
+  // the final valid DWORD.
+  if (config.imbx_base_addr > config.imbx_limit_addr) {
     return kDifBadArg;
   }
-  if (config.ombx_base_addr >= config.ombx_limit_addr) {
+  if (config.ombx_base_addr > config.ombx_limit_addr) {
     return kDifBadArg;
   }
-  // Check that the inbound mailbox and outbound mailbox memory ranges collide
-  // with each other.
-  if ((config.imbx_base_addr < config.ombx_limit_addr) &&
-      (config.ombx_base_addr < config.imbx_limit_addr)) {
+  // Check that the inbound mailbox and outbound mailbox memory ranges do not
+  // collide with each other.
+  if ((config.imbx_base_addr <= config.ombx_limit_addr) &&
+      (config.ombx_base_addr <= config.imbx_limit_addr)) {
     return kDifBadArg;
   }
 
