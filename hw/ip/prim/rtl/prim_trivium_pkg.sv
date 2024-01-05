@@ -87,7 +87,7 @@ package prim_trivium_pkg;
 
   function automatic logic [TriviumStateWidth-1:0] trivium_seed_key_iv(
       logic [KeyIvWidth-1:0] key,
-      logic [KeyIvWidth-1:0] iv,
+      logic [KeyIvWidth-1:0] iv
     );
     logic [TriviumStateWidth-1:0] state;
     //     [287:285] [284:173] [172:93] [92:80] [79:0]
@@ -148,7 +148,7 @@ package prim_trivium_pkg;
 
   function automatic logic [BiviumStateWidth-1:0] bivium_seed_key_iv(
       logic [KeyIvWidth-1:0] key,
-      logic [KeyIvWidth-1:0] iv,
+      logic [KeyIvWidth-1:0] iv
     );
     logic [BiviumStateWidth-1:0] state;
     //   [176:173] [172:93] [92:80] [79:0]
