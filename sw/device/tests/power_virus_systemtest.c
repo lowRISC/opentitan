@@ -5,8 +5,6 @@
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -31,6 +29,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils_rsa.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -50,12 +49,6 @@
 #include "pwm_regs.h"       // Generated.
 #include "spi_host_regs.h"  // Generated.
 #include "uart_regs.h"      // Generated.
-
-// The autogen rule that creates this header creates it in a directory named
-// after the rule, then manipulates the include path in the
-// cc_compilation_context to include that directory, so the compiler will find
-// the version of this file matching the Bazel rule under test.
-#include "rsa_3072_verify_testvectors.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true);
@@ -220,9 +213,51 @@ static const uint32_t kKmacDigest[] = {
     0x839A69B2, 0xD9E4A27D, 0xFDACFB70, 0xAE3300E5, 0xA2F185A5, 0xC3108570,
     0x0888072D, 0x2818BD01, 0x6847FE98, 0x6589FC76};
 
-static rsa_3072_verify_test_vector_t rsa3072_test_vector;
-static rsa_3072_int_t rsa3072_encoded_message;
-static rsa_3072_constants_t rsa3072_constants;
+// Randomly generated public key modulus with public exponent 65537.
+static uint32_t kRsa2KModulus[] = {
+    0x40d984b1, 0x3611356d, 0x9eb2f35c, 0x031a892c, 0x16354662, 0x6a260bad,
+    0xb2b807d6, 0xb7de7ccb, 0x278492e0, 0x41adab06, 0x9e60110f, 0x1414eeff,
+    0x8b80e14e, 0x5eb5ae79, 0x0d98fa5b, 0x58bece1f, 0xcf6bdca8, 0x82f5611f,
+    0x351e3869, 0x075005d6, 0xe813fe23, 0xdd967a37, 0x682d1c41, 0x9fdd2d8c,
+    0x21bdd5fc, 0x4fc459c7, 0x508c9293, 0x1f9ac759, 0x55aacb04, 0x58389f05,
+    0x0d0b00fb, 0x59bb4141, 0x68f9e0bf, 0xc2f1a546, 0x0a71ad19, 0x9c400301,
+    0xa4f8ecb9, 0xcdf39538, 0xaabe9cb0, 0xd9f7b2dc, 0x0e8b292d, 0x8ef6c717,
+    0x720e9520, 0xb0c6a23e, 0xda1e92b1, 0x8b6b4800, 0x2f25082b, 0x7f2d6711,
+    0x426fc94f, 0x9926ba5a, 0x89bd4d2b, 0x977718d5, 0x5a8406be, 0x87d090f3,
+    0x639f9975, 0x5948488b, 0x1d3d9cd7, 0x28c7956b, 0xebb97a3e, 0x1edbf4e2,
+    0x105cc797, 0x924ec514, 0x146810df, 0xb1ab4a49,
+};
+
+// Valid PKCS1v1.5 signature of "Test message." using SHA-256 as the hash
+// function.
+static const uint32_t kRsa2KSignature[] = {
+    0xab66c6c7, 0x97effc0a, 0x9869cdba, 0x7b6c09fe, 0x2124d28f, 0x793084b3,
+    0x4da24b72, 0x4f6c8659, 0x63e3a27b, 0xbbe8d120, 0x8789190f, 0x1722fe46,
+    0x25573178, 0x3accbdb3, 0x1eb7ca00, 0xe8eb40aa, 0x1d3b21a8, 0x9997925e,
+    0x1793f81d, 0x12728f54, 0x66e40608, 0x4b1057a0, 0xba433eb3, 0x702c73b2,
+    0xa9391740, 0xf838710f, 0xf33cf109, 0x595cee1d, 0x07341be9, 0xcfce52b1,
+    0x5b48ba7a, 0xf70e5a0e, 0xdbb98c42, 0x85fd6979, 0xcdb760fc, 0xd2e09553,
+    0x70bba417, 0x04e52609, 0xc215420e, 0x2407242e, 0x4f19674b, 0x5d996a9d,
+    0xf2fb1d05, 0x88e0fc14, 0xe1a38f0c, 0xd111935d, 0xd23bf5b3, 0xdcd7a882,
+    0x0f242315, 0xd7247d51, 0xc247d6ec, 0xe2492739, 0x3dfb115c, 0x031aea7a,
+    0xcdcb09c0, 0x29318ddb, 0xd0a10dd8, 0x3307018e, 0xe13c5616, 0x98d4db80,
+    0x50692a42, 0x41e94a74, 0x0a6f79eb, 0x1c405c66,
+};
+
+// PKCS1v1.5 encoding of "Test message." using SHA-256 as the hash function.
+static const uint32_t kRsa2KEncodedMessage[] = {
+    0x20b50917, 0xdc72a118, 0xd13b02ca, 0x4bc0a4ca, 0x807ce588, 0x43e1f083,
+    0x966ee07c, 0xb2da997a, 0x05000420, 0x03040201, 0x86480165, 0x0d060960,
+    0x00303130, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+    0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff,
+};
 
 static const uint8_t kUartMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -969,14 +1004,7 @@ void configure_pwm(void) {
 }
 
 static void configure_otbn(void) {
-  rsa3072_test_vector = rsa_3072_verify_tests[0];
-  // Only one exponent (65537) is currently supported.
-  CHECK(rsa3072_test_vector.publicKey.e == 65537);
-  CHECK_STATUS_OK(rsa_3072_encode_sha256(rsa3072_test_vector.msg,
-                                         rsa3072_test_vector.msgLen,
-                                         &rsa3072_encoded_message));
-  CHECK_STATUS_OK(rsa_3072_compute_constants(&rsa3072_test_vector.publicKey,
-                                             &rsa3072_constants));
+  CHECK_STATUS_OK(otbn_testutils_rsa_load(&otbn));
 }
 
 static void check_crypto_blocks_idle(void) {
@@ -1194,9 +1222,9 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
   // Issue OTBN start command.
-  CHECK_STATUS_OK(rsa_3072_verify_start(&rsa3072_test_vector.signature,
-                                        &rsa3072_test_vector.publicKey,
-                                        &rsa3072_constants));
+  CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_start(
+      &otbn, (unsigned char *)kRsa2KModulus, (unsigned char *)kRsa2KSignature,
+      sizeof(kRsa2KModulus)));
 
   // Enable pattgen.
   mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
@@ -1260,9 +1288,12 @@ static void max_power_task(void *task_parameters) {
   CHECK_ARRAYS_EQ(kmac_digest, kKmacDigest, ARRAYSIZE(kKmacDigest));
 
   // Check OTBN operations.
-  hardened_bool_t result;
-  CHECK_STATUS_OK(rsa_3072_verify_finalize(&rsa3072_encoded_message, &result));
-  CHECK(result == kHardenedBoolTrue);
+  uint32_t rsa_recovered_message[ARRAYSIZE(kRsa2KEncodedMessage)];
+  CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_finalize(
+      &otbn, (unsigned char *)rsa_recovered_message,
+      sizeof(rsa_recovered_message)));
+  CHECK_ARRAYS_EQ(rsa_recovered_message, kRsa2KEncodedMessage,
+                  ARRAYSIZE(kRsa2KEncodedMessage));
 
   // Check UART transactions.
   uint8_t received_uart_data[kUartFifoDepth];
@@ -1354,11 +1385,8 @@ bool test_main(void) {
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
-  // Note: configuration of OTBN must be done *before* configuration of the
-  // HMAC, as the cryptolib uses HMAC in SHA256 mode, which will cause HMAC
-  // computation errors later in this test.
-  configure_otbn();
   CHECK_STATUS_OK(configure_aes());
+  configure_otbn();
   configure_hmac();
   configure_kmac();
   configure_uart(&uart_1);
