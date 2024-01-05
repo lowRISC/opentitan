@@ -187,7 +187,7 @@
       }
       { name: "INBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to back up the inbound mailbox data.
-              This address is 4-byte aligned, the lower 2-bits are ignored.
+              This address is 4-byte aligned, the lower 2 bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
         swaccess: "rw"
@@ -202,8 +202,9 @@
         tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "INBOUND_LIMIT_ADDRESS"
-        desc: '''Limit Address to mark the end of the inbound mailbox memory range in the private SRAM..
-              This address is 4-byte aligned, the lower 2-bits are ignored.
+        desc: '''Inclusive end address of the inbound mailbox memory range in the private SRAM.
+              This address is 4-byte aligned and it specifies the start address of the final valid
+              DWORD location. The lower 2 bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
         swaccess: "rw"
@@ -219,7 +220,7 @@
       }
       { name: "INBOUND_WRITE_PTR"
         desc: '''Write pointer for the next inbound data write.
-              This pointer is 4-byte aligned, the lower 2-bits are always zero.
+              This pointer is 4-byte aligned, the lower 2 bits are always zero.
               '''
         hwext: "true"
         fields: [
@@ -235,7 +236,7 @@
       }
       { name: "OUTBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to buffer the outbound mailbox data.
-              This address is 4-byte aligned, the lower 2-bits are ignored.
+              This address is 4-byte aligned, the lower 2 bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
         swaccess: "rw"
@@ -250,8 +251,9 @@
         tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
       }
       { name: "OUTBOUND_LIMIT_ADDRESS"
-        desc: '''Limit Address to mark the end of the outbound mailbox memory range in the private SRAM.
-              This address is 4-byte aligned, the lower 2-bits are ignored.
+        desc: '''Inclusive end address of the outbound mailbox memory range in the private SRAM.
+              This address is 4-byte aligned and it specifies the start address of the final valid
+              DWORD location. The lower 2 bits are ignored.
               '''
         regwen: "ADDRESS_RANGE_REGWEN"
         swaccess: "rw"
@@ -267,7 +269,7 @@
       }
       { name: "OUTBOUND_READ_PTR"
         desc: '''Read pointer for the next outbound data read.
-              This pointer is 4-byte aligned, the lower 2-bits are always zero.
+              This pointer is 4-byte aligned, the lower 2 bits are always zero.
               '''
         hwext: "true"
         fields: [
