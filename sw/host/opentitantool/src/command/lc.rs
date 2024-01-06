@@ -89,6 +89,9 @@ impl CommandDispatch for LcStateRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
+        // enabled.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
@@ -102,6 +105,8 @@ impl CommandDispatch for LcStateRead {
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
@@ -133,6 +138,10 @@ impl CommandDispatch for LcRegRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
+        // enabled.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+        transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
         let mut jtag = self
@@ -144,6 +153,8 @@ impl CommandDispatch for LcRegRead {
         let value = jtag.read_lc_ctrl_reg(&self.reg)?;
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
         Ok(Some(Box::new(LcRegReadResult {
             value: format!("{:#x}", value),
         })))
@@ -169,6 +180,9 @@ impl CommandDispatch for LcDeviceIdRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
+        // enabled.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
@@ -195,6 +209,8 @@ impl CommandDispatch for LcDeviceIdRead {
         }
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
         Ok(Some(Box::new(LcRegReadResult {
             value: value.join(""),
         })))
@@ -257,6 +273,7 @@ impl CommandDispatch for RawUnlock {
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
@@ -288,6 +305,10 @@ impl CommandDispatch for Transition {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // In order to be on the safe side, we're asserting ROM bootstrap and
+        // reset the chip to prevent ROM from going into a reset loop.
+        let rom_bootstrap = transport.pin_strapping("ROM_BOOTSTRAP")?;
+        rom_bootstrap.apply()?;
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
@@ -295,11 +316,6 @@ impl CommandDispatch for Transition {
             .jtag_params
             .create(transport)?
             .connect(JtagTap::LcTap)?;
-
-        // In order to be on the safe side, we're asserting ROM bootstrap and
-        // reset the chip to prevent ROM from going into a reset loop.
-        let rom_bootstrap = transport.pin_strapping("ROM_BOOTSTRAP")?;
-        rom_bootstrap.apply()?;
 
         // Reset the chip so that LC_CTRL is in a clean state.
         let _ = transport.reset_target(Duration::from_millis(50), false);
@@ -329,6 +345,7 @@ impl CommandDispatch for Transition {
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
         rom_bootstrap.remove()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
@@ -369,6 +386,9 @@ impl CommandDispatch for Status {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
+        // enabled.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
@@ -378,7 +398,8 @@ impl CommandDispatch for Status {
             .connect(JtagTap::LcTap)?;
         let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
         jtag.disconnect()?;
-
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
         Ok(Some(Box::new(LcStatusResult {
             initialized: (status & LcCtrlStatus::INITIALIZED.bits()) != 0,
             ready: (status & LcCtrlStatus::READY.bits()) != 0,
@@ -420,6 +441,9 @@ impl CommandDispatch for TransitionCount {
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Set the TAP straps for the lifecycle controller and reset.
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+        // Apply bootstrap pin to be able to connect to JTAG when ROM execution is
+        // enabled.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
         transport.reset_target(self.reset_delay, true)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
@@ -429,7 +453,8 @@ impl CommandDispatch for TransitionCount {
             .connect(JtagTap::LcTap)?;
         let transition_count = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?;
         jtag.disconnect()?;
-
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
         Ok(Some(Box::new(LcTransitionCountResult { transition_count })))
     }
 }
@@ -490,6 +515,7 @@ impl CommandDispatch for VolatileRawUnlock {
             DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
 
         jtag.disconnect()?;
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
         Ok(Some(Box::new(LcStateReadResult { lc_state })))
     }
 }
