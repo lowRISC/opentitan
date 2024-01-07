@@ -371,10 +371,12 @@ module tb;
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!dut.chip_if.stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
-`ifdef GATE_LEVEL
-       force `CPU_HIER.u_tlul_rsp_buf.out_o = gsim_tl_win_d2h_int;
-`else
-      force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
+`ifndef PATTERN
+  `ifdef GATE_LEVEL
+    force `CPU_HIER.u_tlul_rsp_buf.out_o = gsim_tl_win_d2h_int;
+  `else
+    force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
+  `endif
 `endif
     end
   end
