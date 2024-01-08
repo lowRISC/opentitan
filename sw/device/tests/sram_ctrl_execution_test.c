@@ -85,8 +85,19 @@ bool test_main(void) {
   // execution is unconditionally enabled for the main SRAM in the RMA life
   // cycle state.
   sram_ret_neg_test();
-  CHECK_DIF_OK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled));
-  sram_function_test();
+
+  // Try to enable SRAM execution.
+  dif_result_t exec_enabled =
+      dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled);
+
+  // If SRAM execution was not enabled, re-check that execution fails, else
+  // check the positive case.
+  if (exec_enabled == kDifLocked) {
+    sram_ret_neg_test();
+  } else {
+    CHECK_DIF_OK(exec_enabled);
+    sram_function_test();
+  }
 
   return true;
 }

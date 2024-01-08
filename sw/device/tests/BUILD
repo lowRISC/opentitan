@@ -3120,6 +3120,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
