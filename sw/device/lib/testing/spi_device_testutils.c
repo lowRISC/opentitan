@@ -292,6 +292,42 @@ status_t spi_device_testutils_configure_passthrough(
   return OK_STATUS();
 }
 
+status_t spi_device_testutils_configure_read_pipeline(
+    dif_spi_device_handle_t *spi_device,
+    dif_spi_device_read_pipeline_mode_t dual_mode,
+    dif_spi_device_read_pipeline_mode_t quad_mode) {
+  if (spi_device == NULL || dual_mode >= kDifSpiDeviceReadPipelineModeCount ||
+      quad_mode >= kDifSpiDeviceReadPipelineModeCount) {
+    return INVALID_ARGUMENT();
+  }
+
+  const dif_spi_device_flash_command_t dual_read_cmd = {
+      // Slot 7: ReadDual
+      .opcode = kSpiDeviceFlashOpReadDual,
+      .address_type = kDifSpiDeviceFlashAddrCfg,
+      .passthrough_swap_address = true,
+      .dummy_cycles = 8,
+      .payload_io_type = kDifSpiDevicePayloadIoDual,
+      .payload_dir_to_host = true,
+      .read_pipeline_mode = dual_mode,
+  };
+  const dif_spi_device_flash_command_t quad_read_cmd = {
+      // Slot 8: ReadQuad
+      .opcode = kSpiDeviceFlashOpReadQuad,
+      .address_type = kDifSpiDeviceFlashAddrCfg,
+      .passthrough_swap_address = true,
+      .dummy_cycles = 8,
+      .payload_io_type = kDifSpiDevicePayloadIoQuad,
+      .payload_dir_to_host = true,
+      .read_pipeline_mode = quad_mode,
+  };
+  TRY(dif_spi_device_set_flash_command_slot(spi_device, /*slot=*/7,
+                                            kDifToggleEnabled, dual_read_cmd));
+  TRY(dif_spi_device_set_flash_command_slot(spi_device, /*slot=*/8,
+                                            kDifToggleEnabled, quad_read_cmd));
+  return OK_STATUS();
+}
+
 status_t spi_device_testutils_wait_for_upload(dif_spi_device_handle_t *spid,
                                               upload_info_t *info) {
   // Wait for a SPI transaction cause an upload.

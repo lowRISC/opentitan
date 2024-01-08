@@ -354,6 +354,22 @@ typedef enum dif_spi_device_payload_io {
   kDifSpiDevicePayloadIoInvalid = 0x10,
 } dif_spi_device_payload_io_t;
 
+typedef enum dif_spi_device_read_pipeline_mode {
+  /** No additional flash payload read pipeline stages. */
+  kDifSpiDeviceReadPipelineModeZeroStages = 0,
+  /**
+   * Add 2-stage pipeline to command read output. Perform half-cycle sampling on
+   * the incoming data.
+   */
+  kDifSpiDeviceReadPipelineModeTwoStagesHalfCycle,
+  /**
+   * Add 2-stage pipeline to command read output. Perform full-cycle sampling on
+   * the incoming data.
+   */
+  kDifSpiDeviceReadPipelineModeTwoStagesFullCycle,
+  kDifSpiDeviceReadPipelineModeCount,
+} dif_spi_device_read_pipeline_mode_t;
+
 typedef struct dif_spi_device_flash_command {
   /** The opcode for this command. */
   uint8_t opcode;
@@ -379,6 +395,8 @@ typedef struct dif_spi_device_flash_command {
   bool payload_dir_to_host;
   /** Whether to swap up to the first 32 bits of the payload. */
   bool payload_swap_enable;
+  /** The read payload pipeline mode to use for this command. */
+  dif_spi_device_read_pipeline_mode_t read_pipeline_mode;
   /** Whether to upload the command to the payload FIFO. */
   bool upload;
   /** Whether to set the busy bit in the status register. */

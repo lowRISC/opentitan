@@ -345,6 +345,24 @@ dif_result_t dif_spi_device_set_flash_command_slot(
         return kDifBadArg;
     }
 
+    uint32_t read_pipeline_mode;
+    switch (command_info.read_pipeline_mode) {
+      case kDifSpiDeviceReadPipelineModeZeroStages:
+        read_pipeline_mode =
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_ZERO_STAGES;
+        break;
+      case kDifSpiDeviceReadPipelineModeTwoStagesHalfCycle:
+        read_pipeline_mode =
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_TWO_STAGES_HALF_CYCLE;
+        break;
+      case kDifSpiDeviceReadPipelineModeTwoStagesFullCycle:
+        read_pipeline_mode =
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_TWO_STAGES_FULL_CYCLE;
+        break;
+      default:
+        return kDifBadArg;
+    }
+
     // Check for invalid argument combinations.
     if (command_info.payload_swap_enable &&
         (command_info.payload_dir_to_host ||
@@ -379,6 +397,9 @@ dif_result_t dif_spi_device_set_flash_command_slot(
     reg_val = bitfield_bit32_write(reg_val,
                                    SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT,
                                    command_info.payload_swap_enable);
+    reg_val = bitfield_field32_write(
+        reg_val, SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_FIELD,
+        read_pipeline_mode);
     reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT,
                                    command_info.upload);
     reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,

@@ -57,6 +57,9 @@ module spi_cmdparse
   input cfg_intercept_en_jedec_i,
   input cfg_intercept_en_sfdp_i,
 
+  // CFG: Additional 2-stage pipeline for read payloads
+  output logic cmd_read_pipeline_sel_o,
+
   // Output assumed
   output logic intercept_status_o,
   output logic intercept_jedec_o,
@@ -221,6 +224,7 @@ module spi_cmdparse
       cmd_info_q <= '{
         payload_dir: payload_dir_e'(PayloadIn),
         addr_mode: addr_mode_e'(0),
+        read_pipeline_mode: read_pipeline_mode_e'(0),
         default: '0
       };
       cmd_info_idx_q <= '0;
@@ -234,6 +238,7 @@ module spi_cmdparse
     cmd_info_d = '{
       payload_dir: payload_dir_e'(PayloadIn),
       addr_mode: addr_mode_e'(0),
+      read_pipeline_mode: read_pipeline_mode_e'(0),
       default: '0
     };
     cmd_info_idx_d = '0;
@@ -263,6 +268,7 @@ module spi_cmdparse
     cmd_only_info_o = '{
       payload_dir: payload_dir_e'(PayloadIn),
       addr_mode: addr_mode_e'(0),
+      read_pipeline_mode: read_pipeline_mode_e'(0),
       default: '0
     };
     cmd_only_info_idx_o = '0;
@@ -289,6 +295,10 @@ module spi_cmdparse
       if (opcode_readsfdp)   intercept_sfdp_o   <= 1'b 1;
     end
   end
+
+  // CFG: Added 2-stage pipeline for read payloads
+  assign cmd_read_pipeline_sel_o = (cmd_info_q.read_pipeline_mode == RdPipeTwoStageHalfCycle) ||
+                                   (cmd_info_q.read_pipeline_mode == RdPipeTwoStageFullCycle);
 
   ///////////////////
   // State Machine //

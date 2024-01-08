@@ -255,6 +255,9 @@ package spi_device_reg_pkg;
       logic        q;
     } upload;
     struct packed {
+      logic [1:0]  q;
+    } read_pipeline_mode;
+    struct packed {
       logic        q;
     } payload_swap_en;
     struct packed {
@@ -560,27 +563,27 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1516:1511]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1510:1505]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1504:1493]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1492:1491]
-    spi_device_reg2hw_control_reg_t control; // [1490:1488]
-    spi_device_reg2hw_cfg_reg_t cfg; // [1487:1483]
-    spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1482:1479]
-    spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1478:1477]
-    spi_device_reg2hw_flash_status_reg_t flash_status; // [1476:1450]
-    spi_device_reg2hw_jedec_cc_reg_t jedec_cc; // [1449:1434]
-    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1433:1410]
-    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1409:1400]
-    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1399:1368]
-    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1367:1353]
-    spi_device_reg2hw_upload_addrfifo_reg_t upload_addrfifo; // [1352:1320]
-    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [1319:1064]
-    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [1063:1032]
-    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [1031:1000]
-    spi_device_reg2hw_payload_swap_mask_reg_t payload_swap_mask; // [999:968]
-    spi_device_reg2hw_payload_swap_data_reg_t payload_swap_data; // [967:936]
-    spi_device_reg2hw_cmd_info_mreg_t [23:0] cmd_info; // [935:336]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1564:1559]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1558:1553]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1552:1541]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1540:1539]
+    spi_device_reg2hw_control_reg_t control; // [1538:1536]
+    spi_device_reg2hw_cfg_reg_t cfg; // [1535:1531]
+    spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1530:1527]
+    spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1526:1525]
+    spi_device_reg2hw_flash_status_reg_t flash_status; // [1524:1498]
+    spi_device_reg2hw_jedec_cc_reg_t jedec_cc; // [1497:1482]
+    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1481:1458]
+    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1457:1448]
+    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1447:1416]
+    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1415:1401]
+    spi_device_reg2hw_upload_addrfifo_reg_t upload_addrfifo; // [1400:1368]
+    spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [1367:1112]
+    spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [1111:1080]
+    spi_device_reg2hw_addr_swap_data_reg_t addr_swap_data; // [1079:1048]
+    spi_device_reg2hw_payload_swap_mask_reg_t payload_swap_mask; // [1047:1016]
+    spi_device_reg2hw_payload_swap_data_reg_t payload_swap_data; // [1015:984]
+    spi_device_reg2hw_cmd_info_mreg_t [23:0] cmd_info; // [983:336]
     spi_device_reg2hw_cmd_info_en4b_reg_t cmd_info_en4b; // [335:327]
     spi_device_reg2hw_cmd_info_ex4b_reg_t cmd_info_ex4b; // [326:318]
     spi_device_reg2hw_cmd_info_wren_reg_t cmd_info_wren; // [317:309]

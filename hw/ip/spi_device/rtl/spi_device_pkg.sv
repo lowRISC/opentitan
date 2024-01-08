@@ -110,6 +110,12 @@ package spi_device_pkg;
     Addr4B       = 2'b 11
   } addr_mode_e;
 
+  typedef enum logic [1:0] {
+    RdPipeZeroStages        = 2'b 00,
+    RdPipeTwoStageHalfCycle = 2'b 01,
+    RdPipeTwoStageFullCycle = 2'b 10
+  } read_pipeline_mode_e;
+
   // cmd_info_t defines the command relevant information. SPI Device IP has
   // #NumCmdInfo cmd registers (default 16). A few of them are assigned to a
   // specific commands such as Read Status, Read SFDP.
@@ -162,6 +168,14 @@ package spi_device_pkg;
     // `payload_en` should be 4'b 0001 && `payload_dir` to be PayloadIn.
     logic payload_swap_en;
 
+    // If read_pipeline_mode is not set to 0 cycles, read commands will add a
+    // 2-stage pipeline between the read data and output pins. For passthrough,
+    // this will enable higher throughput / clock rates, due to the shortened
+    // path to a flop; the read data will first be latched inside spi_device,
+    // instead of needing to travel back to the upstream host in the same
+    // cycle.
+    read_pipeline_mode_e read_pipeline_mode;
+
     // upload: If upload field in the command info entry is set, the cmdparse
     // activates the upload submodule when the opcode is received. `addr_en`,
     // `addr_4B_affected`, and `addr_4b_forced` (TBD) affect the upload
@@ -182,18 +196,19 @@ package spi_device_pkg;
   // CmdInfoInput parameter is the default value if no opcode in the cmd info
   // slot is matched to the received command opcode.
   parameter cmd_info_t CmdInfoInput = '{
-    valid:            1'b 0,
-    opcode:           8'h 00,
-    addr_mode:        AddrDisabled,
-    addr_swap_en:     1'b 0,
-    mbyte_en:         1'b 0,
-    dummy_en:         1'b 0,
-    dummy_size:       3'h 0,
-    payload_en:       4'b 0001, // MOSI active
-    payload_dir:      PayloadIn,
-    payload_swap_en:  1'b 0,
-    upload:           1'b 0,
-    busy:             1'b 0
+    valid:                 1'b 0,
+    opcode:                8'h 00,
+    addr_mode:             AddrDisabled,
+    addr_swap_en:          1'b 0,
+    mbyte_en:              1'b 0,
+    dummy_en:              1'b 0,
+    dummy_size:            3'h 0,
+    payload_en:            4'b 0001, // MOSI active
+    payload_dir:           PayloadIn,
+    payload_swap_en:       1'b 0,
+    read_pipeline_mode:    RdPipeZeroStages,
+    upload:                1'b 0,
+    busy:                  1'b 0
   };
 
   function automatic logic is_cmdinfo_addr_4b(addr_mode_e ci_addr_mode, logic addr_4b_en);

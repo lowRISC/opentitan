@@ -120,7 +120,7 @@ module spi_device
   sram_m2l_t sub_sram_m2l [IoModeEnd];
 
   // Host return path mux
-  logic [3:0] internal_sd, internal_sd_en;
+  logic [3:0] internal_sd, internal_sd_out, internal_sd_en, internal_sd_en_out;
   logic [3:0] passthrough_sd, passthrough_sd_en;
 
   // Upload related interfaces (SRAM, FIFOs)
@@ -257,6 +257,9 @@ module spi_device
 
   logic [31:0] payload_swap_mask;
   logic [31:0] payload_swap_data;
+
+  // Additional 2-stage read pipeline configuration
+  logic cmd_read_pipeline_sel;
 
   // Command Info structure
   cmd_info_t [NumTotalCmdInfo-1:0] cmd_info;
@@ -543,18 +546,19 @@ module spi_device
   always_comb begin
     for (int unsigned i = 0 ; i < spi_device_reg_pkg::NumCmdInfo ; i++) begin
       cmd_info[i] = '{
-        valid:            reg2hw.cmd_info[i].valid.q,
-        opcode:           reg2hw.cmd_info[i].opcode.q,
-        addr_mode:        addr_mode_e'(reg2hw.cmd_info[i].addr_mode.q),
-        addr_swap_en:     reg2hw.cmd_info[i].addr_swap_en.q,
-        mbyte_en:         reg2hw.cmd_info[i].mbyte_en.q,
-        dummy_en:         reg2hw.cmd_info[i].dummy_en.q,
-        dummy_size:       reg2hw.cmd_info[i].dummy_size.q,
-        payload_en:       reg2hw.cmd_info[i].payload_en.q,
-        payload_dir:      payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
-        payload_swap_en:  reg2hw.cmd_info[i].payload_swap_en.q,
-        upload:           reg2hw.cmd_info[i].upload.q,
-        busy:             reg2hw.cmd_info[i].busy.q
+        valid:                 reg2hw.cmd_info[i].valid.q,
+        opcode:                reg2hw.cmd_info[i].opcode.q,
+        addr_mode:             addr_mode_e'(reg2hw.cmd_info[i].addr_mode.q),
+        addr_swap_en:          reg2hw.cmd_info[i].addr_swap_en.q,
+        mbyte_en:              reg2hw.cmd_info[i].mbyte_en.q,
+        dummy_en:              reg2hw.cmd_info[i].dummy_en.q,
+        dummy_size:            reg2hw.cmd_info[i].dummy_size.q,
+        payload_en:            reg2hw.cmd_info[i].payload_en.q,
+        payload_dir:           payload_dir_e'(reg2hw.cmd_info[i].payload_dir.q),
+        payload_swap_en:       reg2hw.cmd_info[i].payload_swap_en.q,
+        read_pipeline_mode:    read_pipeline_mode_e'(reg2hw.cmd_info[i].read_pipeline_mode.q),
+        upload:                reg2hw.cmd_info[i].upload.q,
+        busy:                  reg2hw.cmd_info[i].busy.q
       };
     end
 
@@ -943,9 +947,69 @@ module spi_device
   end
   `ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
 
+  // Add 2-cycle delay to flash read data when requested.
+  // This mechanism should only be deployed on read commands with dummy cycles,
+  // so omit delaying the output enable.
+  logic [3:0] internal_sd_stg1_d, internal_sd_stg1_q;
+  logic [3:0] internal_sd_stg2_d, internal_sd_stg2_q;
+  logic [3:0] internal_sd_en_stg1, internal_sd_en_stg2;
+  assign internal_sd_stg1_d = internal_sd;
+  assign internal_sd_stg2_d = internal_sd_stg1_q;
+
+  prim_flop #(
+    .Width         ($bits(internal_sd_stg1_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_stg1 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (internal_sd_stg1_d),
+    .q_o       (internal_sd_stg1_q)
+  );
+
+  prim_flop #(
+    .Width         ($bits(internal_sd_stg2_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_stg2 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (internal_sd_stg2_d),
+    .q_o       (internal_sd_stg2_q)
+  );
+
+  prim_flop #(
+    .Width         ($bits(internal_sd_en)),
+    .ResetValue    ('0)
+  ) u_read_en_pipe_stg1 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (internal_sd_en),
+    .q_o       (internal_sd_en_stg1)
+  );
+
+  prim_flop #(
+    .Width         ($bits(internal_sd_en_stg1)),
+    .ResetValue    ('0)
+  ) u_read_en_pipe_stg2 (
+    .clk_i     (clk_spi_out_buf),
+    .rst_ni    (rst_spi_n),
+    .d_i       (internal_sd_en_stg1),
+    .q_o       (internal_sd_en_stg2)
+  );
+
   always_comb begin
-    cio_sd_o    = internal_sd;
-    cio_sd_en_o = internal_sd_en;
+    if (cmd_read_pipeline_sel) begin
+      internal_sd_out = internal_sd_stg2_q;
+      internal_sd_en_out = internal_sd_en_stg2;
+    end else begin
+      internal_sd_out = internal_sd;
+      internal_sd_en_out = internal_sd_en;
+    end
+  end
+
+
+  always_comb begin
+    cio_sd_o    = internal_sd_out;
+    cio_sd_en_o = internal_sd_en_out;
 
     if (cfg_tpm_en && !sck_tpm_csb_buf) begin : miso_tpm
       // TPM transaction is on-going. MOSI, MISO is being used by TPM
@@ -956,14 +1020,14 @@ module spi_device
       // SPI Flash, Passthrough modes
       unique case (spi_mode)
         FlashMode: begin
-          cio_sd_o    = internal_sd;
-          cio_sd_en_o = internal_sd_en;
+          cio_sd_o    = internal_sd_out;
+          cio_sd_en_o = internal_sd_en_out;
         end
 
         PassThrough: begin
           if (intercept_en) begin
-            cio_sd_o    = internal_sd;
-            cio_sd_en_o = internal_sd_en;
+            cio_sd_o    = internal_sd_out;
+            cio_sd_en_o = internal_sd_en_out;
           end else begin
             cio_sd_o    = passthrough_sd;
             cio_sd_en_o = passthrough_sd_en;
@@ -1049,6 +1113,8 @@ module spi_device
     .cmd_only_info_o     (cmd_only_info_broadcast),
     .cmd_only_info_idx_o (cmd_only_info_idx_broadcast),
     .cmd_sync_pulse_o  (cmd_sync_pulse),
+
+    .cmd_read_pipeline_sel_o (cmd_read_pipeline_sel),
 
     .cfg_intercept_en_status_i (cfg_intercept_en.status),
     .cfg_intercept_en_jedec_i  (cfg_intercept_en.jedec),
