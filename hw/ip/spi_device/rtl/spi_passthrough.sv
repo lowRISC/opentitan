@@ -625,7 +625,70 @@ module spi_passthrough
   end
   assign passthrough_o.s_en = passthrough_s_en;
 
-  assign host_s_o = passthrough_i.s;
+  // 2-stage pipeline for high-throughput read commands
+  logic [3:0] half_cycle_sampled_sd;
+  logic [3:0] read_pipeline_stg1_d, read_pipeline_stg1_q;
+  logic [3:0] read_pipeline_stg2_d, read_pipeline_stg2_q;
+
+  // Sample on the ordinary capture edge, in case half-cycle sampling is
+  // selected. This flop samples data that is to be prepared for a later
+  // launch edge, in a sort of store-and-forward setup.
+  prim_flop #(
+    .Width         ($bits(passthrough_i.s)),
+    .ResetValue    ('0)
+  ) u_read_half_cycle (
+    .clk_i     (clk_i),
+    .rst_ni,
+    .d_i       (passthrough_i.s),
+    .q_o       (half_cycle_sampled_sd)
+  );
+
+  // This flop begins the 2-stage pipeline on clk_out_i, the launch clock for
+  // data output. The input data is either the combinatorial input from the
+  // pad connected to the downstream SPI flash, or it is the output of the
+  // u_read_half_cycle flop above, which sampled the data on the capture edge
+  // that occurred a half cycle earlier.
+  prim_flop #(
+    .Width         ($bits(read_pipeline_stg1_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_stg1 (
+    .clk_i     (clk_out_i),
+    .rst_ni,
+    .d_i       (read_pipeline_stg1_d),
+    .q_o       (read_pipeline_stg1_q)
+  );
+
+  prim_flop #(
+    .Width         ($bits(read_pipeline_stg2_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_stg2 (
+    .clk_i     (clk_out_i),
+    .rst_ni,
+    .d_i       (read_pipeline_stg2_d),
+    .q_o       (read_pipeline_stg2_q)
+  );
+
+  always_comb begin
+    host_s_o = passthrough_i.s;
+    read_pipeline_stg2_d = read_pipeline_stg1_q;
+    read_pipeline_stg1_d = half_cycle_sampled_sd;
+
+    unique case (cmd_info.read_pipeline_mode)
+      RdPipeTwoStageFullCycle: begin
+        host_s_o = read_pipeline_stg2_q;
+        read_pipeline_stg1_d = passthrough_i.s;
+      end
+      RdPipeTwoStageHalfCycle: begin
+        host_s_o = read_pipeline_stg2_q;
+        read_pipeline_stg1_d = half_cycle_sampled_sd;
+      end
+      default: begin
+        host_s_o = passthrough_i.s;
+        read_pipeline_stg1_d = half_cycle_sampled_sd;
+      end
+    endcase
+  end
+
   always_ff @(posedge clk_out_i or negedge rst_ni) begin
     if (!rst_ni) host_s_en_o <= '0; // input mode
     else         host_s_en_o <= host_s_en_inclk;

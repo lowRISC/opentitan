@@ -830,6 +830,8 @@ module spi_device_reg_top (
   logic cmd_info_0_payload_dir_0_wd;
   logic cmd_info_0_payload_swap_en_0_qs;
   logic cmd_info_0_payload_swap_en_0_wd;
+  logic [1:0] cmd_info_0_read_pipeline_mode_0_qs;
+  logic [1:0] cmd_info_0_read_pipeline_mode_0_wd;
   logic cmd_info_0_upload_0_qs;
   logic cmd_info_0_upload_0_wd;
   logic cmd_info_0_busy_0_qs;
@@ -855,6 +857,8 @@ module spi_device_reg_top (
   logic cmd_info_1_payload_dir_1_wd;
   logic cmd_info_1_payload_swap_en_1_qs;
   logic cmd_info_1_payload_swap_en_1_wd;
+  logic [1:0] cmd_info_1_read_pipeline_mode_1_qs;
+  logic [1:0] cmd_info_1_read_pipeline_mode_1_wd;
   logic cmd_info_1_upload_1_qs;
   logic cmd_info_1_upload_1_wd;
   logic cmd_info_1_busy_1_qs;
@@ -880,6 +884,8 @@ module spi_device_reg_top (
   logic cmd_info_2_payload_dir_2_wd;
   logic cmd_info_2_payload_swap_en_2_qs;
   logic cmd_info_2_payload_swap_en_2_wd;
+  logic [1:0] cmd_info_2_read_pipeline_mode_2_qs;
+  logic [1:0] cmd_info_2_read_pipeline_mode_2_wd;
   logic cmd_info_2_upload_2_qs;
   logic cmd_info_2_upload_2_wd;
   logic cmd_info_2_busy_2_qs;
@@ -905,6 +911,8 @@ module spi_device_reg_top (
   logic cmd_info_3_payload_dir_3_wd;
   logic cmd_info_3_payload_swap_en_3_qs;
   logic cmd_info_3_payload_swap_en_3_wd;
+  logic [1:0] cmd_info_3_read_pipeline_mode_3_qs;
+  logic [1:0] cmd_info_3_read_pipeline_mode_3_wd;
   logic cmd_info_3_upload_3_qs;
   logic cmd_info_3_upload_3_wd;
   logic cmd_info_3_busy_3_qs;
@@ -930,6 +938,8 @@ module spi_device_reg_top (
   logic cmd_info_4_payload_dir_4_wd;
   logic cmd_info_4_payload_swap_en_4_qs;
   logic cmd_info_4_payload_swap_en_4_wd;
+  logic [1:0] cmd_info_4_read_pipeline_mode_4_qs;
+  logic [1:0] cmd_info_4_read_pipeline_mode_4_wd;
   logic cmd_info_4_upload_4_qs;
   logic cmd_info_4_upload_4_wd;
   logic cmd_info_4_busy_4_qs;
@@ -955,6 +965,8 @@ module spi_device_reg_top (
   logic cmd_info_5_payload_dir_5_wd;
   logic cmd_info_5_payload_swap_en_5_qs;
   logic cmd_info_5_payload_swap_en_5_wd;
+  logic [1:0] cmd_info_5_read_pipeline_mode_5_qs;
+  logic [1:0] cmd_info_5_read_pipeline_mode_5_wd;
   logic cmd_info_5_upload_5_qs;
   logic cmd_info_5_upload_5_wd;
   logic cmd_info_5_busy_5_qs;
@@ -980,6 +992,8 @@ module spi_device_reg_top (
   logic cmd_info_6_payload_dir_6_wd;
   logic cmd_info_6_payload_swap_en_6_qs;
   logic cmd_info_6_payload_swap_en_6_wd;
+  logic [1:0] cmd_info_6_read_pipeline_mode_6_qs;
+  logic [1:0] cmd_info_6_read_pipeline_mode_6_wd;
   logic cmd_info_6_upload_6_qs;
   logic cmd_info_6_upload_6_wd;
   logic cmd_info_6_busy_6_qs;
@@ -1005,6 +1019,8 @@ module spi_device_reg_top (
   logic cmd_info_7_payload_dir_7_wd;
   logic cmd_info_7_payload_swap_en_7_qs;
   logic cmd_info_7_payload_swap_en_7_wd;
+  logic [1:0] cmd_info_7_read_pipeline_mode_7_qs;
+  logic [1:0] cmd_info_7_read_pipeline_mode_7_wd;
   logic cmd_info_7_upload_7_qs;
   logic cmd_info_7_upload_7_wd;
   logic cmd_info_7_busy_7_qs;
@@ -1030,6 +1046,8 @@ module spi_device_reg_top (
   logic cmd_info_8_payload_dir_8_wd;
   logic cmd_info_8_payload_swap_en_8_qs;
   logic cmd_info_8_payload_swap_en_8_wd;
+  logic [1:0] cmd_info_8_read_pipeline_mode_8_qs;
+  logic [1:0] cmd_info_8_read_pipeline_mode_8_wd;
   logic cmd_info_8_upload_8_qs;
   logic cmd_info_8_upload_8_wd;
   logic cmd_info_8_busy_8_qs;
@@ -1055,6 +1073,8 @@ module spi_device_reg_top (
   logic cmd_info_9_payload_dir_9_wd;
   logic cmd_info_9_payload_swap_en_9_qs;
   logic cmd_info_9_payload_swap_en_9_wd;
+  logic [1:0] cmd_info_9_read_pipeline_mode_9_qs;
+  logic [1:0] cmd_info_9_read_pipeline_mode_9_wd;
   logic cmd_info_9_upload_9_qs;
   logic cmd_info_9_upload_9_wd;
   logic cmd_info_9_busy_9_qs;
@@ -1080,6 +1100,8 @@ module spi_device_reg_top (
   logic cmd_info_10_payload_dir_10_wd;
   logic cmd_info_10_payload_swap_en_10_qs;
   logic cmd_info_10_payload_swap_en_10_wd;
+  logic [1:0] cmd_info_10_read_pipeline_mode_10_qs;
+  logic [1:0] cmd_info_10_read_pipeline_mode_10_wd;
   logic cmd_info_10_upload_10_qs;
   logic cmd_info_10_upload_10_wd;
   logic cmd_info_10_busy_10_qs;
@@ -1105,6 +1127,8 @@ module spi_device_reg_top (
   logic cmd_info_11_payload_dir_11_wd;
   logic cmd_info_11_payload_swap_en_11_qs;
   logic cmd_info_11_payload_swap_en_11_wd;
+  logic [1:0] cmd_info_11_read_pipeline_mode_11_qs;
+  logic [1:0] cmd_info_11_read_pipeline_mode_11_wd;
   logic cmd_info_11_upload_11_qs;
   logic cmd_info_11_upload_11_wd;
   logic cmd_info_11_busy_11_qs;
@@ -1130,6 +1154,8 @@ module spi_device_reg_top (
   logic cmd_info_12_payload_dir_12_wd;
   logic cmd_info_12_payload_swap_en_12_qs;
   logic cmd_info_12_payload_swap_en_12_wd;
+  logic [1:0] cmd_info_12_read_pipeline_mode_12_qs;
+  logic [1:0] cmd_info_12_read_pipeline_mode_12_wd;
   logic cmd_info_12_upload_12_qs;
   logic cmd_info_12_upload_12_wd;
   logic cmd_info_12_busy_12_qs;
@@ -1155,6 +1181,8 @@ module spi_device_reg_top (
   logic cmd_info_13_payload_dir_13_wd;
   logic cmd_info_13_payload_swap_en_13_qs;
   logic cmd_info_13_payload_swap_en_13_wd;
+  logic [1:0] cmd_info_13_read_pipeline_mode_13_qs;
+  logic [1:0] cmd_info_13_read_pipeline_mode_13_wd;
   logic cmd_info_13_upload_13_qs;
   logic cmd_info_13_upload_13_wd;
   logic cmd_info_13_busy_13_qs;
@@ -1180,6 +1208,8 @@ module spi_device_reg_top (
   logic cmd_info_14_payload_dir_14_wd;
   logic cmd_info_14_payload_swap_en_14_qs;
   logic cmd_info_14_payload_swap_en_14_wd;
+  logic [1:0] cmd_info_14_read_pipeline_mode_14_qs;
+  logic [1:0] cmd_info_14_read_pipeline_mode_14_wd;
   logic cmd_info_14_upload_14_qs;
   logic cmd_info_14_upload_14_wd;
   logic cmd_info_14_busy_14_qs;
@@ -1205,6 +1235,8 @@ module spi_device_reg_top (
   logic cmd_info_15_payload_dir_15_wd;
   logic cmd_info_15_payload_swap_en_15_qs;
   logic cmd_info_15_payload_swap_en_15_wd;
+  logic [1:0] cmd_info_15_read_pipeline_mode_15_qs;
+  logic [1:0] cmd_info_15_read_pipeline_mode_15_wd;
   logic cmd_info_15_upload_15_qs;
   logic cmd_info_15_upload_15_wd;
   logic cmd_info_15_busy_15_qs;
@@ -1230,6 +1262,8 @@ module spi_device_reg_top (
   logic cmd_info_16_payload_dir_16_wd;
   logic cmd_info_16_payload_swap_en_16_qs;
   logic cmd_info_16_payload_swap_en_16_wd;
+  logic [1:0] cmd_info_16_read_pipeline_mode_16_qs;
+  logic [1:0] cmd_info_16_read_pipeline_mode_16_wd;
   logic cmd_info_16_upload_16_qs;
   logic cmd_info_16_upload_16_wd;
   logic cmd_info_16_busy_16_qs;
@@ -1255,6 +1289,8 @@ module spi_device_reg_top (
   logic cmd_info_17_payload_dir_17_wd;
   logic cmd_info_17_payload_swap_en_17_qs;
   logic cmd_info_17_payload_swap_en_17_wd;
+  logic [1:0] cmd_info_17_read_pipeline_mode_17_qs;
+  logic [1:0] cmd_info_17_read_pipeline_mode_17_wd;
   logic cmd_info_17_upload_17_qs;
   logic cmd_info_17_upload_17_wd;
   logic cmd_info_17_busy_17_qs;
@@ -1280,6 +1316,8 @@ module spi_device_reg_top (
   logic cmd_info_18_payload_dir_18_wd;
   logic cmd_info_18_payload_swap_en_18_qs;
   logic cmd_info_18_payload_swap_en_18_wd;
+  logic [1:0] cmd_info_18_read_pipeline_mode_18_qs;
+  logic [1:0] cmd_info_18_read_pipeline_mode_18_wd;
   logic cmd_info_18_upload_18_qs;
   logic cmd_info_18_upload_18_wd;
   logic cmd_info_18_busy_18_qs;
@@ -1305,6 +1343,8 @@ module spi_device_reg_top (
   logic cmd_info_19_payload_dir_19_wd;
   logic cmd_info_19_payload_swap_en_19_qs;
   logic cmd_info_19_payload_swap_en_19_wd;
+  logic [1:0] cmd_info_19_read_pipeline_mode_19_qs;
+  logic [1:0] cmd_info_19_read_pipeline_mode_19_wd;
   logic cmd_info_19_upload_19_qs;
   logic cmd_info_19_upload_19_wd;
   logic cmd_info_19_busy_19_qs;
@@ -1330,6 +1370,8 @@ module spi_device_reg_top (
   logic cmd_info_20_payload_dir_20_wd;
   logic cmd_info_20_payload_swap_en_20_qs;
   logic cmd_info_20_payload_swap_en_20_wd;
+  logic [1:0] cmd_info_20_read_pipeline_mode_20_qs;
+  logic [1:0] cmd_info_20_read_pipeline_mode_20_wd;
   logic cmd_info_20_upload_20_qs;
   logic cmd_info_20_upload_20_wd;
   logic cmd_info_20_busy_20_qs;
@@ -1355,6 +1397,8 @@ module spi_device_reg_top (
   logic cmd_info_21_payload_dir_21_wd;
   logic cmd_info_21_payload_swap_en_21_qs;
   logic cmd_info_21_payload_swap_en_21_wd;
+  logic [1:0] cmd_info_21_read_pipeline_mode_21_qs;
+  logic [1:0] cmd_info_21_read_pipeline_mode_21_wd;
   logic cmd_info_21_upload_21_qs;
   logic cmd_info_21_upload_21_wd;
   logic cmd_info_21_busy_21_qs;
@@ -1380,6 +1424,8 @@ module spi_device_reg_top (
   logic cmd_info_22_payload_dir_22_wd;
   logic cmd_info_22_payload_swap_en_22_qs;
   logic cmd_info_22_payload_swap_en_22_wd;
+  logic [1:0] cmd_info_22_read_pipeline_mode_22_qs;
+  logic [1:0] cmd_info_22_read_pipeline_mode_22_wd;
   logic cmd_info_22_upload_22_qs;
   logic cmd_info_22_upload_22_wd;
   logic cmd_info_22_busy_22_qs;
@@ -1405,6 +1451,8 @@ module spi_device_reg_top (
   logic cmd_info_23_payload_dir_23_wd;
   logic cmd_info_23_payload_swap_en_23_qs;
   logic cmd_info_23_payload_swap_en_23_wd;
+  logic [1:0] cmd_info_23_read_pipeline_mode_23_qs;
+  logic [1:0] cmd_info_23_read_pipeline_mode_23_wd;
   logic cmd_info_23_upload_23_qs;
   logic cmd_info_23_upload_23_wd;
   logic cmd_info_23_busy_23_qs;
@@ -10089,6 +10137,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_0_payload_swap_en_0_qs)
   );
 
+  //   F[read_pipeline_mode_0]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_0_read_pipeline_mode_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_0_we),
+    .wd     (cmd_info_0_read_pipeline_mode_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[0].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_0_read_pipeline_mode_0_qs)
+  );
+
   //   F[upload_0]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -10414,6 +10489,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_1_payload_swap_en_1_qs)
+  );
+
+  //   F[read_pipeline_mode_1]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_1_read_pipeline_mode_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_1_we),
+    .wd     (cmd_info_1_read_pipeline_mode_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[1].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_1_read_pipeline_mode_1_qs)
   );
 
   //   F[upload_1]: 24:24
@@ -10743,6 +10845,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_2_payload_swap_en_2_qs)
   );
 
+  //   F[read_pipeline_mode_2]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_2_read_pipeline_mode_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_2_we),
+    .wd     (cmd_info_2_read_pipeline_mode_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[2].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_2_read_pipeline_mode_2_qs)
+  );
+
   //   F[upload_2]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -11068,6 +11197,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_3_payload_swap_en_3_qs)
+  );
+
+  //   F[read_pipeline_mode_3]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_3_read_pipeline_mode_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_3_we),
+    .wd     (cmd_info_3_read_pipeline_mode_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[3].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_3_read_pipeline_mode_3_qs)
   );
 
   //   F[upload_3]: 24:24
@@ -11397,6 +11553,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_4_payload_swap_en_4_qs)
   );
 
+  //   F[read_pipeline_mode_4]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_4_read_pipeline_mode_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_4_we),
+    .wd     (cmd_info_4_read_pipeline_mode_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[4].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_4_read_pipeline_mode_4_qs)
+  );
+
   //   F[upload_4]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -11722,6 +11905,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_5_payload_swap_en_5_qs)
+  );
+
+  //   F[read_pipeline_mode_5]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_5_read_pipeline_mode_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_5_we),
+    .wd     (cmd_info_5_read_pipeline_mode_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[5].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_5_read_pipeline_mode_5_qs)
   );
 
   //   F[upload_5]: 24:24
@@ -12051,6 +12261,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_6_payload_swap_en_6_qs)
   );
 
+  //   F[read_pipeline_mode_6]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_6_read_pipeline_mode_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_6_we),
+    .wd     (cmd_info_6_read_pipeline_mode_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[6].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_6_read_pipeline_mode_6_qs)
+  );
+
   //   F[upload_6]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -12376,6 +12613,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_7_payload_swap_en_7_qs)
+  );
+
+  //   F[read_pipeline_mode_7]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_7_read_pipeline_mode_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_7_we),
+    .wd     (cmd_info_7_read_pipeline_mode_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[7].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_7_read_pipeline_mode_7_qs)
   );
 
   //   F[upload_7]: 24:24
@@ -12705,6 +12969,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_8_payload_swap_en_8_qs)
   );
 
+  //   F[read_pipeline_mode_8]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_8_read_pipeline_mode_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_8_we),
+    .wd     (cmd_info_8_read_pipeline_mode_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[8].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_8_read_pipeline_mode_8_qs)
+  );
+
   //   F[upload_8]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -13030,6 +13321,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_9_payload_swap_en_9_qs)
+  );
+
+  //   F[read_pipeline_mode_9]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_9_read_pipeline_mode_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_9_we),
+    .wd     (cmd_info_9_read_pipeline_mode_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[9].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_9_read_pipeline_mode_9_qs)
   );
 
   //   F[upload_9]: 24:24
@@ -13359,6 +13677,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_10_payload_swap_en_10_qs)
   );
 
+  //   F[read_pipeline_mode_10]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_10_read_pipeline_mode_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_10_we),
+    .wd     (cmd_info_10_read_pipeline_mode_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[10].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_10_read_pipeline_mode_10_qs)
+  );
+
   //   F[upload_10]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -13684,6 +14029,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_11_payload_swap_en_11_qs)
+  );
+
+  //   F[read_pipeline_mode_11]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_11_read_pipeline_mode_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_11_we),
+    .wd     (cmd_info_11_read_pipeline_mode_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[11].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_11_read_pipeline_mode_11_qs)
   );
 
   //   F[upload_11]: 24:24
@@ -14013,6 +14385,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_12_payload_swap_en_12_qs)
   );
 
+  //   F[read_pipeline_mode_12]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_12_read_pipeline_mode_12 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_12_we),
+    .wd     (cmd_info_12_read_pipeline_mode_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[12].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_12_read_pipeline_mode_12_qs)
+  );
+
   //   F[upload_12]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -14338,6 +14737,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_13_payload_swap_en_13_qs)
+  );
+
+  //   F[read_pipeline_mode_13]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_13_read_pipeline_mode_13 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_13_we),
+    .wd     (cmd_info_13_read_pipeline_mode_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[13].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_13_read_pipeline_mode_13_qs)
   );
 
   //   F[upload_13]: 24:24
@@ -14667,6 +15093,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_14_payload_swap_en_14_qs)
   );
 
+  //   F[read_pipeline_mode_14]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_14_read_pipeline_mode_14 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_14_we),
+    .wd     (cmd_info_14_read_pipeline_mode_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[14].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_14_read_pipeline_mode_14_qs)
+  );
+
   //   F[upload_14]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -14992,6 +15445,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_15_payload_swap_en_15_qs)
+  );
+
+  //   F[read_pipeline_mode_15]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_15_read_pipeline_mode_15 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_15_we),
+    .wd     (cmd_info_15_read_pipeline_mode_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[15].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_15_read_pipeline_mode_15_qs)
   );
 
   //   F[upload_15]: 24:24
@@ -15321,6 +15801,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_16_payload_swap_en_16_qs)
   );
 
+  //   F[read_pipeline_mode_16]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_16_read_pipeline_mode_16 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_16_we),
+    .wd     (cmd_info_16_read_pipeline_mode_16_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[16].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_16_read_pipeline_mode_16_qs)
+  );
+
   //   F[upload_16]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -15646,6 +16153,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_17_payload_swap_en_17_qs)
+  );
+
+  //   F[read_pipeline_mode_17]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_17_read_pipeline_mode_17 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_17_we),
+    .wd     (cmd_info_17_read_pipeline_mode_17_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[17].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_17_read_pipeline_mode_17_qs)
   );
 
   //   F[upload_17]: 24:24
@@ -15975,6 +16509,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_18_payload_swap_en_18_qs)
   );
 
+  //   F[read_pipeline_mode_18]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_18_read_pipeline_mode_18 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_18_we),
+    .wd     (cmd_info_18_read_pipeline_mode_18_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[18].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_18_read_pipeline_mode_18_qs)
+  );
+
   //   F[upload_18]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -16300,6 +16861,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_19_payload_swap_en_19_qs)
+  );
+
+  //   F[read_pipeline_mode_19]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_19_read_pipeline_mode_19 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_19_we),
+    .wd     (cmd_info_19_read_pipeline_mode_19_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[19].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_19_read_pipeline_mode_19_qs)
   );
 
   //   F[upload_19]: 24:24
@@ -16629,6 +17217,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_20_payload_swap_en_20_qs)
   );
 
+  //   F[read_pipeline_mode_20]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_20_read_pipeline_mode_20 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_20_we),
+    .wd     (cmd_info_20_read_pipeline_mode_20_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[20].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_20_read_pipeline_mode_20_qs)
+  );
+
   //   F[upload_20]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -16954,6 +17569,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_21_payload_swap_en_21_qs)
+  );
+
+  //   F[read_pipeline_mode_21]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_21_read_pipeline_mode_21 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_21_we),
+    .wd     (cmd_info_21_read_pipeline_mode_21_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[21].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_21_read_pipeline_mode_21_qs)
   );
 
   //   F[upload_21]: 24:24
@@ -17283,6 +17925,33 @@ module spi_device_reg_top (
     .qs     (cmd_info_22_payload_swap_en_22_qs)
   );
 
+  //   F[read_pipeline_mode_22]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_22_read_pipeline_mode_22 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_22_we),
+    .wd     (cmd_info_22_read_pipeline_mode_22_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[22].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_22_read_pipeline_mode_22_qs)
+  );
+
   //   F[upload_22]: 24:24
   prim_subreg #(
     .DW      (1),
@@ -17608,6 +18277,33 @@ module spi_device_reg_top (
 
     // to register interface (read)
     .qs     (cmd_info_23_payload_swap_en_23_qs)
+  );
+
+  //   F[read_pipeline_mode_23]: 23:22
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_cmd_info_23_read_pipeline_mode_23 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (cmd_info_23_we),
+    .wd     (cmd_info_23_read_pipeline_mode_23_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cmd_info[23].read_pipeline_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cmd_info_23_read_pipeline_mode_23_qs)
   );
 
   //   F[upload_23]: 24:24
@@ -19473,6 +20169,8 @@ module spi_device_reg_top (
 
   assign cmd_info_0_payload_swap_en_0_wd = reg_wdata[21];
 
+  assign cmd_info_0_read_pipeline_mode_0_wd = reg_wdata[23:22];
+
   assign cmd_info_0_upload_0_wd = reg_wdata[24];
 
   assign cmd_info_0_busy_0_wd = reg_wdata[25];
@@ -19497,6 +20195,8 @@ module spi_device_reg_top (
   assign cmd_info_1_payload_dir_1_wd = reg_wdata[20];
 
   assign cmd_info_1_payload_swap_en_1_wd = reg_wdata[21];
+
+  assign cmd_info_1_read_pipeline_mode_1_wd = reg_wdata[23:22];
 
   assign cmd_info_1_upload_1_wd = reg_wdata[24];
 
@@ -19523,6 +20223,8 @@ module spi_device_reg_top (
 
   assign cmd_info_2_payload_swap_en_2_wd = reg_wdata[21];
 
+  assign cmd_info_2_read_pipeline_mode_2_wd = reg_wdata[23:22];
+
   assign cmd_info_2_upload_2_wd = reg_wdata[24];
 
   assign cmd_info_2_busy_2_wd = reg_wdata[25];
@@ -19547,6 +20249,8 @@ module spi_device_reg_top (
   assign cmd_info_3_payload_dir_3_wd = reg_wdata[20];
 
   assign cmd_info_3_payload_swap_en_3_wd = reg_wdata[21];
+
+  assign cmd_info_3_read_pipeline_mode_3_wd = reg_wdata[23:22];
 
   assign cmd_info_3_upload_3_wd = reg_wdata[24];
 
@@ -19573,6 +20277,8 @@ module spi_device_reg_top (
 
   assign cmd_info_4_payload_swap_en_4_wd = reg_wdata[21];
 
+  assign cmd_info_4_read_pipeline_mode_4_wd = reg_wdata[23:22];
+
   assign cmd_info_4_upload_4_wd = reg_wdata[24];
 
   assign cmd_info_4_busy_4_wd = reg_wdata[25];
@@ -19597,6 +20303,8 @@ module spi_device_reg_top (
   assign cmd_info_5_payload_dir_5_wd = reg_wdata[20];
 
   assign cmd_info_5_payload_swap_en_5_wd = reg_wdata[21];
+
+  assign cmd_info_5_read_pipeline_mode_5_wd = reg_wdata[23:22];
 
   assign cmd_info_5_upload_5_wd = reg_wdata[24];
 
@@ -19623,6 +20331,8 @@ module spi_device_reg_top (
 
   assign cmd_info_6_payload_swap_en_6_wd = reg_wdata[21];
 
+  assign cmd_info_6_read_pipeline_mode_6_wd = reg_wdata[23:22];
+
   assign cmd_info_6_upload_6_wd = reg_wdata[24];
 
   assign cmd_info_6_busy_6_wd = reg_wdata[25];
@@ -19647,6 +20357,8 @@ module spi_device_reg_top (
   assign cmd_info_7_payload_dir_7_wd = reg_wdata[20];
 
   assign cmd_info_7_payload_swap_en_7_wd = reg_wdata[21];
+
+  assign cmd_info_7_read_pipeline_mode_7_wd = reg_wdata[23:22];
 
   assign cmd_info_7_upload_7_wd = reg_wdata[24];
 
@@ -19673,6 +20385,8 @@ module spi_device_reg_top (
 
   assign cmd_info_8_payload_swap_en_8_wd = reg_wdata[21];
 
+  assign cmd_info_8_read_pipeline_mode_8_wd = reg_wdata[23:22];
+
   assign cmd_info_8_upload_8_wd = reg_wdata[24];
 
   assign cmd_info_8_busy_8_wd = reg_wdata[25];
@@ -19697,6 +20411,8 @@ module spi_device_reg_top (
   assign cmd_info_9_payload_dir_9_wd = reg_wdata[20];
 
   assign cmd_info_9_payload_swap_en_9_wd = reg_wdata[21];
+
+  assign cmd_info_9_read_pipeline_mode_9_wd = reg_wdata[23:22];
 
   assign cmd_info_9_upload_9_wd = reg_wdata[24];
 
@@ -19723,6 +20439,8 @@ module spi_device_reg_top (
 
   assign cmd_info_10_payload_swap_en_10_wd = reg_wdata[21];
 
+  assign cmd_info_10_read_pipeline_mode_10_wd = reg_wdata[23:22];
+
   assign cmd_info_10_upload_10_wd = reg_wdata[24];
 
   assign cmd_info_10_busy_10_wd = reg_wdata[25];
@@ -19747,6 +20465,8 @@ module spi_device_reg_top (
   assign cmd_info_11_payload_dir_11_wd = reg_wdata[20];
 
   assign cmd_info_11_payload_swap_en_11_wd = reg_wdata[21];
+
+  assign cmd_info_11_read_pipeline_mode_11_wd = reg_wdata[23:22];
 
   assign cmd_info_11_upload_11_wd = reg_wdata[24];
 
@@ -19773,6 +20493,8 @@ module spi_device_reg_top (
 
   assign cmd_info_12_payload_swap_en_12_wd = reg_wdata[21];
 
+  assign cmd_info_12_read_pipeline_mode_12_wd = reg_wdata[23:22];
+
   assign cmd_info_12_upload_12_wd = reg_wdata[24];
 
   assign cmd_info_12_busy_12_wd = reg_wdata[25];
@@ -19797,6 +20519,8 @@ module spi_device_reg_top (
   assign cmd_info_13_payload_dir_13_wd = reg_wdata[20];
 
   assign cmd_info_13_payload_swap_en_13_wd = reg_wdata[21];
+
+  assign cmd_info_13_read_pipeline_mode_13_wd = reg_wdata[23:22];
 
   assign cmd_info_13_upload_13_wd = reg_wdata[24];
 
@@ -19823,6 +20547,8 @@ module spi_device_reg_top (
 
   assign cmd_info_14_payload_swap_en_14_wd = reg_wdata[21];
 
+  assign cmd_info_14_read_pipeline_mode_14_wd = reg_wdata[23:22];
+
   assign cmd_info_14_upload_14_wd = reg_wdata[24];
 
   assign cmd_info_14_busy_14_wd = reg_wdata[25];
@@ -19847,6 +20573,8 @@ module spi_device_reg_top (
   assign cmd_info_15_payload_dir_15_wd = reg_wdata[20];
 
   assign cmd_info_15_payload_swap_en_15_wd = reg_wdata[21];
+
+  assign cmd_info_15_read_pipeline_mode_15_wd = reg_wdata[23:22];
 
   assign cmd_info_15_upload_15_wd = reg_wdata[24];
 
@@ -19873,6 +20601,8 @@ module spi_device_reg_top (
 
   assign cmd_info_16_payload_swap_en_16_wd = reg_wdata[21];
 
+  assign cmd_info_16_read_pipeline_mode_16_wd = reg_wdata[23:22];
+
   assign cmd_info_16_upload_16_wd = reg_wdata[24];
 
   assign cmd_info_16_busy_16_wd = reg_wdata[25];
@@ -19897,6 +20627,8 @@ module spi_device_reg_top (
   assign cmd_info_17_payload_dir_17_wd = reg_wdata[20];
 
   assign cmd_info_17_payload_swap_en_17_wd = reg_wdata[21];
+
+  assign cmd_info_17_read_pipeline_mode_17_wd = reg_wdata[23:22];
 
   assign cmd_info_17_upload_17_wd = reg_wdata[24];
 
@@ -19923,6 +20655,8 @@ module spi_device_reg_top (
 
   assign cmd_info_18_payload_swap_en_18_wd = reg_wdata[21];
 
+  assign cmd_info_18_read_pipeline_mode_18_wd = reg_wdata[23:22];
+
   assign cmd_info_18_upload_18_wd = reg_wdata[24];
 
   assign cmd_info_18_busy_18_wd = reg_wdata[25];
@@ -19947,6 +20681,8 @@ module spi_device_reg_top (
   assign cmd_info_19_payload_dir_19_wd = reg_wdata[20];
 
   assign cmd_info_19_payload_swap_en_19_wd = reg_wdata[21];
+
+  assign cmd_info_19_read_pipeline_mode_19_wd = reg_wdata[23:22];
 
   assign cmd_info_19_upload_19_wd = reg_wdata[24];
 
@@ -19973,6 +20709,8 @@ module spi_device_reg_top (
 
   assign cmd_info_20_payload_swap_en_20_wd = reg_wdata[21];
 
+  assign cmd_info_20_read_pipeline_mode_20_wd = reg_wdata[23:22];
+
   assign cmd_info_20_upload_20_wd = reg_wdata[24];
 
   assign cmd_info_20_busy_20_wd = reg_wdata[25];
@@ -19997,6 +20735,8 @@ module spi_device_reg_top (
   assign cmd_info_21_payload_dir_21_wd = reg_wdata[20];
 
   assign cmd_info_21_payload_swap_en_21_wd = reg_wdata[21];
+
+  assign cmd_info_21_read_pipeline_mode_21_wd = reg_wdata[23:22];
 
   assign cmd_info_21_upload_21_wd = reg_wdata[24];
 
@@ -20023,6 +20763,8 @@ module spi_device_reg_top (
 
   assign cmd_info_22_payload_swap_en_22_wd = reg_wdata[21];
 
+  assign cmd_info_22_read_pipeline_mode_22_wd = reg_wdata[23:22];
+
   assign cmd_info_22_upload_22_wd = reg_wdata[24];
 
   assign cmd_info_22_busy_22_wd = reg_wdata[25];
@@ -20047,6 +20789,8 @@ module spi_device_reg_top (
   assign cmd_info_23_payload_dir_23_wd = reg_wdata[20];
 
   assign cmd_info_23_payload_swap_en_23_wd = reg_wdata[21];
+
+  assign cmd_info_23_read_pipeline_mode_23_wd = reg_wdata[23:22];
 
   assign cmd_info_23_upload_23_wd = reg_wdata[24];
 
@@ -20626,6 +21370,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_0_payload_en_0_qs;
         reg_rdata_next[20] = cmd_info_0_payload_dir_0_qs;
         reg_rdata_next[21] = cmd_info_0_payload_swap_en_0_qs;
+        reg_rdata_next[23:22] = cmd_info_0_read_pipeline_mode_0_qs;
         reg_rdata_next[24] = cmd_info_0_upload_0_qs;
         reg_rdata_next[25] = cmd_info_0_busy_0_qs;
         reg_rdata_next[31] = cmd_info_0_valid_0_qs;
@@ -20641,6 +21386,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_1_payload_en_1_qs;
         reg_rdata_next[20] = cmd_info_1_payload_dir_1_qs;
         reg_rdata_next[21] = cmd_info_1_payload_swap_en_1_qs;
+        reg_rdata_next[23:22] = cmd_info_1_read_pipeline_mode_1_qs;
         reg_rdata_next[24] = cmd_info_1_upload_1_qs;
         reg_rdata_next[25] = cmd_info_1_busy_1_qs;
         reg_rdata_next[31] = cmd_info_1_valid_1_qs;
@@ -20656,6 +21402,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_2_payload_en_2_qs;
         reg_rdata_next[20] = cmd_info_2_payload_dir_2_qs;
         reg_rdata_next[21] = cmd_info_2_payload_swap_en_2_qs;
+        reg_rdata_next[23:22] = cmd_info_2_read_pipeline_mode_2_qs;
         reg_rdata_next[24] = cmd_info_2_upload_2_qs;
         reg_rdata_next[25] = cmd_info_2_busy_2_qs;
         reg_rdata_next[31] = cmd_info_2_valid_2_qs;
@@ -20671,6 +21418,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_3_payload_en_3_qs;
         reg_rdata_next[20] = cmd_info_3_payload_dir_3_qs;
         reg_rdata_next[21] = cmd_info_3_payload_swap_en_3_qs;
+        reg_rdata_next[23:22] = cmd_info_3_read_pipeline_mode_3_qs;
         reg_rdata_next[24] = cmd_info_3_upload_3_qs;
         reg_rdata_next[25] = cmd_info_3_busy_3_qs;
         reg_rdata_next[31] = cmd_info_3_valid_3_qs;
@@ -20686,6 +21434,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_4_payload_en_4_qs;
         reg_rdata_next[20] = cmd_info_4_payload_dir_4_qs;
         reg_rdata_next[21] = cmd_info_4_payload_swap_en_4_qs;
+        reg_rdata_next[23:22] = cmd_info_4_read_pipeline_mode_4_qs;
         reg_rdata_next[24] = cmd_info_4_upload_4_qs;
         reg_rdata_next[25] = cmd_info_4_busy_4_qs;
         reg_rdata_next[31] = cmd_info_4_valid_4_qs;
@@ -20701,6 +21450,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_5_payload_en_5_qs;
         reg_rdata_next[20] = cmd_info_5_payload_dir_5_qs;
         reg_rdata_next[21] = cmd_info_5_payload_swap_en_5_qs;
+        reg_rdata_next[23:22] = cmd_info_5_read_pipeline_mode_5_qs;
         reg_rdata_next[24] = cmd_info_5_upload_5_qs;
         reg_rdata_next[25] = cmd_info_5_busy_5_qs;
         reg_rdata_next[31] = cmd_info_5_valid_5_qs;
@@ -20716,6 +21466,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_6_payload_en_6_qs;
         reg_rdata_next[20] = cmd_info_6_payload_dir_6_qs;
         reg_rdata_next[21] = cmd_info_6_payload_swap_en_6_qs;
+        reg_rdata_next[23:22] = cmd_info_6_read_pipeline_mode_6_qs;
         reg_rdata_next[24] = cmd_info_6_upload_6_qs;
         reg_rdata_next[25] = cmd_info_6_busy_6_qs;
         reg_rdata_next[31] = cmd_info_6_valid_6_qs;
@@ -20731,6 +21482,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_7_payload_en_7_qs;
         reg_rdata_next[20] = cmd_info_7_payload_dir_7_qs;
         reg_rdata_next[21] = cmd_info_7_payload_swap_en_7_qs;
+        reg_rdata_next[23:22] = cmd_info_7_read_pipeline_mode_7_qs;
         reg_rdata_next[24] = cmd_info_7_upload_7_qs;
         reg_rdata_next[25] = cmd_info_7_busy_7_qs;
         reg_rdata_next[31] = cmd_info_7_valid_7_qs;
@@ -20746,6 +21498,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_8_payload_en_8_qs;
         reg_rdata_next[20] = cmd_info_8_payload_dir_8_qs;
         reg_rdata_next[21] = cmd_info_8_payload_swap_en_8_qs;
+        reg_rdata_next[23:22] = cmd_info_8_read_pipeline_mode_8_qs;
         reg_rdata_next[24] = cmd_info_8_upload_8_qs;
         reg_rdata_next[25] = cmd_info_8_busy_8_qs;
         reg_rdata_next[31] = cmd_info_8_valid_8_qs;
@@ -20761,6 +21514,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_9_payload_en_9_qs;
         reg_rdata_next[20] = cmd_info_9_payload_dir_9_qs;
         reg_rdata_next[21] = cmd_info_9_payload_swap_en_9_qs;
+        reg_rdata_next[23:22] = cmd_info_9_read_pipeline_mode_9_qs;
         reg_rdata_next[24] = cmd_info_9_upload_9_qs;
         reg_rdata_next[25] = cmd_info_9_busy_9_qs;
         reg_rdata_next[31] = cmd_info_9_valid_9_qs;
@@ -20776,6 +21530,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_10_payload_en_10_qs;
         reg_rdata_next[20] = cmd_info_10_payload_dir_10_qs;
         reg_rdata_next[21] = cmd_info_10_payload_swap_en_10_qs;
+        reg_rdata_next[23:22] = cmd_info_10_read_pipeline_mode_10_qs;
         reg_rdata_next[24] = cmd_info_10_upload_10_qs;
         reg_rdata_next[25] = cmd_info_10_busy_10_qs;
         reg_rdata_next[31] = cmd_info_10_valid_10_qs;
@@ -20791,6 +21546,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_11_payload_en_11_qs;
         reg_rdata_next[20] = cmd_info_11_payload_dir_11_qs;
         reg_rdata_next[21] = cmd_info_11_payload_swap_en_11_qs;
+        reg_rdata_next[23:22] = cmd_info_11_read_pipeline_mode_11_qs;
         reg_rdata_next[24] = cmd_info_11_upload_11_qs;
         reg_rdata_next[25] = cmd_info_11_busy_11_qs;
         reg_rdata_next[31] = cmd_info_11_valid_11_qs;
@@ -20806,6 +21562,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_12_payload_en_12_qs;
         reg_rdata_next[20] = cmd_info_12_payload_dir_12_qs;
         reg_rdata_next[21] = cmd_info_12_payload_swap_en_12_qs;
+        reg_rdata_next[23:22] = cmd_info_12_read_pipeline_mode_12_qs;
         reg_rdata_next[24] = cmd_info_12_upload_12_qs;
         reg_rdata_next[25] = cmd_info_12_busy_12_qs;
         reg_rdata_next[31] = cmd_info_12_valid_12_qs;
@@ -20821,6 +21578,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_13_payload_en_13_qs;
         reg_rdata_next[20] = cmd_info_13_payload_dir_13_qs;
         reg_rdata_next[21] = cmd_info_13_payload_swap_en_13_qs;
+        reg_rdata_next[23:22] = cmd_info_13_read_pipeline_mode_13_qs;
         reg_rdata_next[24] = cmd_info_13_upload_13_qs;
         reg_rdata_next[25] = cmd_info_13_busy_13_qs;
         reg_rdata_next[31] = cmd_info_13_valid_13_qs;
@@ -20836,6 +21594,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_14_payload_en_14_qs;
         reg_rdata_next[20] = cmd_info_14_payload_dir_14_qs;
         reg_rdata_next[21] = cmd_info_14_payload_swap_en_14_qs;
+        reg_rdata_next[23:22] = cmd_info_14_read_pipeline_mode_14_qs;
         reg_rdata_next[24] = cmd_info_14_upload_14_qs;
         reg_rdata_next[25] = cmd_info_14_busy_14_qs;
         reg_rdata_next[31] = cmd_info_14_valid_14_qs;
@@ -20851,6 +21610,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_15_payload_en_15_qs;
         reg_rdata_next[20] = cmd_info_15_payload_dir_15_qs;
         reg_rdata_next[21] = cmd_info_15_payload_swap_en_15_qs;
+        reg_rdata_next[23:22] = cmd_info_15_read_pipeline_mode_15_qs;
         reg_rdata_next[24] = cmd_info_15_upload_15_qs;
         reg_rdata_next[25] = cmd_info_15_busy_15_qs;
         reg_rdata_next[31] = cmd_info_15_valid_15_qs;
@@ -20866,6 +21626,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_16_payload_en_16_qs;
         reg_rdata_next[20] = cmd_info_16_payload_dir_16_qs;
         reg_rdata_next[21] = cmd_info_16_payload_swap_en_16_qs;
+        reg_rdata_next[23:22] = cmd_info_16_read_pipeline_mode_16_qs;
         reg_rdata_next[24] = cmd_info_16_upload_16_qs;
         reg_rdata_next[25] = cmd_info_16_busy_16_qs;
         reg_rdata_next[31] = cmd_info_16_valid_16_qs;
@@ -20881,6 +21642,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_17_payload_en_17_qs;
         reg_rdata_next[20] = cmd_info_17_payload_dir_17_qs;
         reg_rdata_next[21] = cmd_info_17_payload_swap_en_17_qs;
+        reg_rdata_next[23:22] = cmd_info_17_read_pipeline_mode_17_qs;
         reg_rdata_next[24] = cmd_info_17_upload_17_qs;
         reg_rdata_next[25] = cmd_info_17_busy_17_qs;
         reg_rdata_next[31] = cmd_info_17_valid_17_qs;
@@ -20896,6 +21658,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_18_payload_en_18_qs;
         reg_rdata_next[20] = cmd_info_18_payload_dir_18_qs;
         reg_rdata_next[21] = cmd_info_18_payload_swap_en_18_qs;
+        reg_rdata_next[23:22] = cmd_info_18_read_pipeline_mode_18_qs;
         reg_rdata_next[24] = cmd_info_18_upload_18_qs;
         reg_rdata_next[25] = cmd_info_18_busy_18_qs;
         reg_rdata_next[31] = cmd_info_18_valid_18_qs;
@@ -20911,6 +21674,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_19_payload_en_19_qs;
         reg_rdata_next[20] = cmd_info_19_payload_dir_19_qs;
         reg_rdata_next[21] = cmd_info_19_payload_swap_en_19_qs;
+        reg_rdata_next[23:22] = cmd_info_19_read_pipeline_mode_19_qs;
         reg_rdata_next[24] = cmd_info_19_upload_19_qs;
         reg_rdata_next[25] = cmd_info_19_busy_19_qs;
         reg_rdata_next[31] = cmd_info_19_valid_19_qs;
@@ -20926,6 +21690,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_20_payload_en_20_qs;
         reg_rdata_next[20] = cmd_info_20_payload_dir_20_qs;
         reg_rdata_next[21] = cmd_info_20_payload_swap_en_20_qs;
+        reg_rdata_next[23:22] = cmd_info_20_read_pipeline_mode_20_qs;
         reg_rdata_next[24] = cmd_info_20_upload_20_qs;
         reg_rdata_next[25] = cmd_info_20_busy_20_qs;
         reg_rdata_next[31] = cmd_info_20_valid_20_qs;
@@ -20941,6 +21706,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_21_payload_en_21_qs;
         reg_rdata_next[20] = cmd_info_21_payload_dir_21_qs;
         reg_rdata_next[21] = cmd_info_21_payload_swap_en_21_qs;
+        reg_rdata_next[23:22] = cmd_info_21_read_pipeline_mode_21_qs;
         reg_rdata_next[24] = cmd_info_21_upload_21_qs;
         reg_rdata_next[25] = cmd_info_21_busy_21_qs;
         reg_rdata_next[31] = cmd_info_21_valid_21_qs;
@@ -20956,6 +21722,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_22_payload_en_22_qs;
         reg_rdata_next[20] = cmd_info_22_payload_dir_22_qs;
         reg_rdata_next[21] = cmd_info_22_payload_swap_en_22_qs;
+        reg_rdata_next[23:22] = cmd_info_22_read_pipeline_mode_22_qs;
         reg_rdata_next[24] = cmd_info_22_upload_22_qs;
         reg_rdata_next[25] = cmd_info_22_busy_22_qs;
         reg_rdata_next[31] = cmd_info_22_valid_22_qs;
@@ -20971,6 +21738,7 @@ module spi_device_reg_top (
         reg_rdata_next[19:16] = cmd_info_23_payload_en_23_qs;
         reg_rdata_next[20] = cmd_info_23_payload_dir_23_qs;
         reg_rdata_next[21] = cmd_info_23_payload_swap_en_23_qs;
+        reg_rdata_next[23:22] = cmd_info_23_read_pipeline_mode_23_qs;
         reg_rdata_next[24] = cmd_info_23_upload_23_qs;
         reg_rdata_next[25] = cmd_info_23_busy_23_qs;
         reg_rdata_next[31] = cmd_info_23_valid_23_qs;

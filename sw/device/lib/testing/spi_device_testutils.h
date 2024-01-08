@@ -97,6 +97,22 @@ status_t spi_device_testutils_configure_passthrough(
     bool upload_write_commands);
 
 /**
+ * Configure the read pipeline setting of the read command slots.
+ *
+ * Note that these settings can be overwritten by any other function that writes
+ * the command slots. As such, this configuration should come after any function
+ * calls that would affect dual read and quad read commands.
+ *
+ * @param spi_device A spi_device DIF handle.
+ * @param dual_mode Desired read pipeline mode for the dual read command.
+ * @param quad_mode Desired read pipeline mode for the quad read command.
+ */
+status_t spi_device_testutils_configure_read_pipeline(
+    dif_spi_device_handle_t *spi_device,
+    dif_spi_device_read_pipeline_mode_t dual_mode,
+    dif_spi_device_read_pipeline_mode_t quad_mode);
+
+/**
  * Wait for a spi command upload.
  *
  * Upon detecting a spi command upload, the `info` block will be populated

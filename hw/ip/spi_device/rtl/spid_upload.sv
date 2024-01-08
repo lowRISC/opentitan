@@ -220,6 +220,7 @@ module spid_upload
     cmd_only_info_i.payload_dir,
     cmd_only_info_i.payload_en,
     cmd_only_info_i.payload_swap_en,
+    cmd_only_info_i.read_pipeline_mode,
     cmd_only_info_i.upload
   };
 

@@ -1040,7 +1040,7 @@ byte.
 Command Info register.
 
 - Reset default: `0x7000`
-- Reset mask: `0x833fffff`
+- Reset mask: `0x83ffffff`
 
 ### Instances
 
@@ -1075,25 +1075,25 @@ Command Info register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "opcode", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "addr_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "addr_swap_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "mbyte_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dummy_size", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "dummy_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "payload_en", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "payload_dir", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "payload_swap_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "upload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "busy", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "valid", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "opcode", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "addr_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "addr_swap_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "mbyte_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "dummy_size", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "dummy_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "payload_en", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "payload_dir", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "payload_swap_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "read_pipeline_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "upload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "busy", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "valid", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                          |
-|:------:|:------:|:-------:|:----------------------------------------------|
-|   31   |   rw   |   0x0   | [valid](#cmd_info--valid)                     |
-| 30:26  |        |         | Reserved                                      |
-|   25   |   rw   |   0x0   | [busy](#cmd_info--busy)                       |
-|   24   |   rw   |   0x0   | [upload](#cmd_info--upload)                   |
-| 23:22  |        |         | Reserved                                      |
-|   21   |   rw   |   0x0   | [payload_swap_en](#cmd_info--payload_swap_en) |
-|   20   |   rw   |   0x0   | [payload_dir](#cmd_info--payload_dir)         |
-| 19:16  |   rw   |   0x0   | [payload_en](#cmd_info--payload_en)           |
-|   15   |   rw   |   0x0   | [dummy_en](#cmd_info--dummy_en)               |
-| 14:12  |   rw   |   0x7   | [dummy_size](#cmd_info--dummy_size)           |
-|   11   |   rw   |   0x0   | [mbyte_en](#cmd_info--mbyte_en)               |
-|   10   |   rw   |   0x0   | [addr_swap_en](#cmd_info--addr_swap_en)       |
-|  9:8   |   rw   |   0x0   | [addr_mode](#cmd_info--addr_mode)             |
-|  7:0   |   rw   |   0x0   | [opcode](#cmd_info--opcode)                   |
+|  Bits  |  Type  |  Reset  | Name                                                |
+|:------:|:------:|:-------:|:----------------------------------------------------|
+|   31   |   rw   |   0x0   | [valid](#cmd_info--valid)                           |
+| 30:26  |        |         | Reserved                                            |
+|   25   |   rw   |   0x0   | [busy](#cmd_info--busy)                             |
+|   24   |   rw   |   0x0   | [upload](#cmd_info--upload)                         |
+| 23:22  |   rw   |   0x0   | [read_pipeline_mode](#cmd_info--read_pipeline_mode) |
+|   21   |   rw   |   0x0   | [payload_swap_en](#cmd_info--payload_swap_en)       |
+|   20   |   rw   |   0x0   | [payload_dir](#cmd_info--payload_dir)               |
+| 19:16  |   rw   |   0x0   | [payload_en](#cmd_info--payload_en)                 |
+|   15   |   rw   |   0x0   | [dummy_en](#cmd_info--dummy_en)                     |
+| 14:12  |   rw   |   0x7   | [dummy_size](#cmd_info--dummy_size)                 |
+|   11   |   rw   |   0x0   | [mbyte_en](#cmd_info--mbyte_en)                     |
+|   10   |   rw   |   0x0   | [addr_swap_en](#cmd_info--addr_swap_en)             |
+|  9:8   |   rw   |   0x0   | [addr_mode](#cmd_info--addr_mode)                   |
+|  7:0   |   rw   |   0x0   | [opcode](#cmd_info--opcode)                         |
 
 ### CMD_INFO . valid
 Set to 1 if the config in the register is valid
@@ -1115,6 +1115,25 @@ defines the command address field size.
 The logic assumes the following SPI input stream as payload,
 which max size is 256B. If the command exceeds the maximum
 payload size 256B, the logic wraps the payload and overwrites.
+
+### CMD_INFO . read_pipeline_mode
+Add 2-stage pipeline to read payload.
+
+If `read_pipeline_mode` is not set to `zero_stages`, the read logic adds a 2-stage pipeline to the read data for this command.
+This read pipeline enables higher throughput for certain read commands in passthrough mode.
+
+`payload_dir` must be set to PayloadOut: `payload_pipeline_en` only works with read data.
+It may be used with any IO mode, but general host compatibility is likely limited to Quad Read.
+If this pipeline is used for passthrough, the internal SFDP should report 2 additional dummy cycles compared to the downstream flash.
+SFDP read commands should be processed internally, and `dummy_size` should still reflect the downstream device's dummy cycle count.
+
+| Value   | Name                  | Description                                                                                                                                                                                                                                                                                                                                                                       |
+|:--------|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | zero_stages           | Bypass the 2-stage read pipeline. This mode is for ordinary SPI flash operation. Passthrough read data flows combinatorially from input pads to output pads.                                                                                                                                                                                                                      |
+| 0x1     | two_stages_half_cycle | 2-stage read pipeline with half-cycle sampling. In this mode, the 2-stage read pipeline is enabled. Read data appears 2 cycles later than the `zero_stages` option. In addition, read data originating from the downstream flash is first sampled on the normal sampling edge for half-cycle sampling.                                                                            |
+| 0x2     | two_stages_full_cycle | 2-stage read pipeline with full-cycle sampling. In this mode, the 2-stage read pipeline is enabled. Read data appears 2 cycles later than the `zero_stages` option. In addition, read data originating from the downstream flash is first sampled on the next launch edge. In other words, the internal pipeline performs full-cycle sampling of the downstream flash's response. |
+
+Other values are reserved.
 
 ### CMD_INFO . payload_swap_en
 Swap the first byte of the write payload.

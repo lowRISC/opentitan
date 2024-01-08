@@ -1077,6 +1077,48 @@
               `payload_swap_en` only works with write data and SingleIO mode. `payload_en` must be 4'b 0001 and `paylod_dir` to be PayloadIn.
               '''
           } // f: payload_swap_en
+          { bits: "23:22"
+            name: "read_pipeline_mode"
+            desc: '''Add 2-stage pipeline to read payload.
+
+              If `read_pipeline_mode` is not set to `zero_stages`, the read logic adds a 2-stage pipeline to the read data for this command.
+              This read pipeline enables higher throughput for certain read commands in passthrough mode.
+
+              `payload_dir` must be set to PayloadOut: `payload_pipeline_en` only works with read data.
+              It may be used with any IO mode, but general host compatibility is likely limited to Quad Read.
+              If this pipeline is used for passthrough, the internal SFDP should report 2 additional dummy cycles compared to the downstream flash.
+              SFDP read commands should be processed internally, and `dummy_size` should still reflect the downstream device's dummy cycle count.
+              '''
+            enum: [
+              { value: "0",
+                name: "zero_stages",
+                desc: '''Bypass the 2-stage read pipeline.
+
+                  This mode is for ordinary SPI flash operation.
+                  Passthrough read data flows combinatorially from input pads to output pads.
+                  '''
+              },
+              { value: "1"
+                name: "two_stages_half_cycle"
+                desc: '''2-stage read pipeline with half-cycle sampling.
+
+                  In this mode, the 2-stage read pipeline is enabled.
+                  Read data appears 2 cycles later than the `zero_stages` option.
+                  In addition, read data originating from the downstream flash is first sampled on the normal sampling edge for half-cycle sampling.
+                  '''
+              }
+              { value: "2"
+                name: "two_stages_full_cycle"
+                desc: '''2-stage read pipeline with full-cycle sampling.
+
+                  In this mode, the 2-stage read pipeline is enabled.
+                  Read data appears 2 cycles later than the `zero_stages` option.
+                  In addition, read data originating from the downstream flash is first sampled on the next launch edge.
+                  In other words, the internal pipeline performs full-cycle sampling of the downstream flash's response.
+                  '''
+              }
+            ]
+          } // f: payload_pipeline_en
           { bits: "24"
             name: "upload"
             desc: '''Set to 1 to upload the command.
