@@ -27,7 +27,7 @@ extern "C" {
  * The crypto library's return value is defined as OpenTitan's internal
  * `status_t` in order to simplify testing. However, informally the library
  * guarantees that the concrete value contained in the status will be one of
- * the members of the `crypto_status_value` enum below.
+ * the members of the `otcrypto_status_value` enum below.
  */
 typedef status_t otcrypto_status_t;
 
