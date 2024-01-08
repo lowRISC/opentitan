@@ -14,7 +14,6 @@ rust_library(
         "src/asn1/mod.rs",
         "src/asn1/x509.rs",
         "src/lib.rs",
-        "src/template/hjson.rs",
         "src/template/mod.rs",
         "src/template/subst.rs",
         "src/x509.rs",
@@ -36,7 +35,6 @@ rust_library(
         "@crate_index//:rand",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
-        "@crate_index//:serde_with",
         "@crate_index//:strum",
         # We need those because they are not re-exported by openssl
         # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021
