@@ -452,3 +452,187 @@ where
             .collect::<Result<HashMap<K, V>>>()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test parsing of byte arrays.
+    #[test]
+    fn parse_byte_array() {
+        let byte_array = SubstValue::ByteArray(vec![0xde, 0xad, 0xbe, 0xef]);
+        // Size 0 means any size.
+        assert_eq!(
+            byte_array
+                .parse(&VariableType::ByteArray { size: 0 })
+                .unwrap(),
+            byte_array
+        );
+        assert_eq!(
+            byte_array
+                .parse(&VariableType::ByteArray { size: 4 })
+                .unwrap(),
+            byte_array
+        );
+        assert!(byte_array
+            .parse(&VariableType::ByteArray { size: 3 })
+            .is_err());
+        // Size must match exactly.
+        assert!(byte_array
+            .parse(&VariableType::ByteArray { size: 5 })
+            .is_err());
+
+        // Strings are interpreted as hexstrings.
+        let byte_array_str = SubstValue::String("deadbeef".into());
+        // Size 0 means any size.
+        assert_eq!(
+            byte_array_str
+                .parse(&VariableType::ByteArray { size: 0 })
+                .unwrap(),
+            byte_array
+        );
+        assert_eq!(
+            byte_array_str
+                .parse(&VariableType::ByteArray { size: 4 })
+                .unwrap(),
+            byte_array
+        );
+        assert!(byte_array_str
+            .parse(&VariableType::ByteArray { size: 3 })
+            .is_err());
+        // Size must match exactly.
+        assert!(byte_array_str
+            .parse(&VariableType::ByteArray { size: 5 })
+            .is_err());
+    }
+
+    /// Test parsing of integers.
+    #[test]
+    fn parse_integers() {
+        // Big-endian integer.
+        let byte_array = SubstValue::ByteArray(vec![0x3f, 0x2e, 0x1d, 0x0c]);
+        // Size 0 means any size.
+        assert_eq!(
+            byte_array
+                .parse(&VariableType::Integer { size: 0 })
+                .unwrap(),
+            byte_array
+        );
+        assert_eq!(
+            byte_array
+                .parse(&VariableType::Integer { size: 4 })
+                .unwrap(),
+            byte_array
+        );
+        assert!(byte_array
+            .parse(&VariableType::Integer { size: 3 })
+            .is_err());
+        // Size must match exactly.
+        assert!(byte_array
+            .parse(&VariableType::Integer { size: 5 })
+            .is_err());
+
+        let byte_array_int = SubstValue::Int32(0x3f2e1d0c);
+        // Size 0 means any size.
+        assert_eq!(
+            byte_array_int
+                .parse(&VariableType::Integer { size: 0 })
+                .unwrap(),
+            byte_array
+        );
+        assert_eq!(
+            byte_array_int
+                .parse(&VariableType::Integer { size: 4 })
+                .unwrap(),
+            byte_array
+        );
+        assert!(byte_array_int
+            .parse(&VariableType::Integer { size: 3 })
+            .is_err());
+        // A bigger size is acceptable and it should be padded.
+        let byte_array_pad = SubstValue::ByteArray(vec![0x00, 0x3f, 0x2e, 0x1d, 0x0c]);
+        assert_eq!(
+            byte_array_int
+                .parse(&VariableType::Integer { size: 5 })
+                .unwrap(),
+            byte_array_pad
+        );
+    }
+
+    /// Test parsing of strings.
+    #[test]
+    fn parse_strings() {
+        // Big-endian integer.
+        let s = SubstValue::String("OpenTitan".into());
+        // Size 0 means any size.
+        assert_eq!(s.parse(&VariableType::String { size: 0 }).unwrap(), s);
+        assert_eq!(s.parse(&VariableType::String { size: 9 }).unwrap(), s);
+        // A shorting string than specified is acceptable.
+        assert_eq!(s.parse(&VariableType::String { size: 10 }).unwrap(), s);
+        assert!(s.parse(&VariableType::String { size: 8 }).is_err());
+    }
+
+    /// Test conversion to byte arrays.
+    #[test]
+    fn convert_to_byte_array() {
+        // Parsing is already tested so we only need to test conversion *after* parsing.
+
+        // The only valid conversion from a byte array to a byte array is None.
+        let byte_array = vec![0xde, 0xad, 0xbe, 0xef, 0x13, 0x24, 0x35];
+        let array_val = SubstValue::ByteArray(byte_array.clone());
+        let conv_none: Result<Vec<u8>> = array_val.convert(&None);
+        let conv_lowercase: Result<Vec<u8>> = array_val.convert(&Some(Conversion::LowercaseHex));
+        let conv_bigendian: Result<Vec<u8>> = array_val.convert(&Some(Conversion::BigEndian));
+
+        assert_eq!(conv_none.unwrap(), byte_array);
+        assert!(conv_lowercase.is_err());
+        assert!(conv_bigendian.is_err());
+        // There are no valid conversions from any other type to a byte array.
+    }
+
+    /// Test conversion to strings.
+    #[test]
+    fn convert_to_string() {
+        // The only valid conversion from a string to a string is None.
+        let s = "OpenTitan".to_string();
+        let s_val = SubstValue::String(s.clone());
+        let conv_none: Result<String> = s_val.convert(&None);
+        let conv_lowercase: Result<String> = s_val.convert(&Some(Conversion::LowercaseHex));
+        let conv_bigendian: Result<String> = s_val.convert(&Some(Conversion::BigEndian));
+
+        assert_eq!(conv_none.unwrap(), s);
+        assert!(conv_lowercase.is_err());
+        assert!(conv_bigendian.is_err());
+
+        // It is possible to convert a byte array to string (which gives the corresponding hexstring).
+        // Explicitly check that the hexstring produces two characters per byte with '0' padding.
+        let byte_array = vec![0x0e, 0xad, 0xbe, 0xef, 0x13, 0x24, 0x35];
+        let array_hexstr = "0eadbeef132435".to_string();
+        let array_val = SubstValue::ByteArray(byte_array);
+        let conv_none: Result<String> = array_val.convert(&None);
+        let conv_lowercase: Result<String> = array_val.convert(&Some(Conversion::LowercaseHex));
+        let conv_bigendian: Result<String> = array_val.convert(&Some(Conversion::BigEndian));
+
+        assert!(conv_none.is_err());
+        assert_eq!(conv_lowercase.unwrap(), array_hexstr);
+        assert!(conv_bigendian.is_err());
+    }
+
+    /// Test conversion to integers.
+    #[test]
+    fn convert_to_integer() {
+        // Parsing is already tested so we only need to test conversion *after* parsing.
+
+        // The only valid conversion to an integer is from a byte array using either None or big-endian.
+        let byte_array = vec![0xde, 0xad, 0xbe, 0xef, 0x13, 0x24, 0x35];
+        let array_val = SubstValue::ByteArray(byte_array.clone());
+        let array_int = BigUint::from_bytes_be(&byte_array);
+        let conv_none: Result<BigUint> = array_val.convert(&None);
+        let conv_lowercase: Result<BigUint> = array_val.convert(&Some(Conversion::LowercaseHex));
+        let conv_bigendian: Result<BigUint> = array_val.convert(&Some(Conversion::BigEndian));
+
+        assert_eq!(conv_none.unwrap(), array_int);
+        assert!(conv_lowercase.is_err());
+        assert_eq!(conv_bigendian.unwrap(), array_int);
+    }
+}
