@@ -117,8 +117,8 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
                                                  .len = kAesBlockBytes};
       otcrypto_byte_buf_t ciphertext_block = {.data = ciphertext,
                                             .len = kAesBlockBytes};
-      TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt,
-                       plaintext_block, kAesPaddingNull, ciphertext_block));
+      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
+                       plaintext_block, kOtcryptoAesPaddingNull, ciphertext_block));
       plaintext += kAesBlockBytes;
       ciphertext += kAesBlockBytes;
       plaintext_len -= kAesBlockBytes;
@@ -131,7 +131,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
                                            .len = plaintext_len};
   otcrypto_byte_buf_t ciphertext_buf = {.data = ciphertext,
                                       .len = ciphertext_len};
-  TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt, plaintext_buf,
+  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt, plaintext_buf,
                    test->padding, ciphertext_buf));
 
   TRY_CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
@@ -193,8 +193,8 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
                                                   .len = kAesBlockBytes};
       otcrypto_byte_buf_t recovered_plaintext_block = {
           .data = recovered_plaintext, .len = kAesBlockBytes};
-      TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt,
-                       ciphertext_block, kAesPaddingNull,
+      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
+                       ciphertext_block, kOtcryptoAesPaddingNull,
                        recovered_plaintext_block));
       ciphertext += kAesBlockBytes;
       recovered_plaintext += kAesBlockBytes;
@@ -209,7 +209,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   otcrypto_const_byte_buf_t ciphertext_buf = {.data = ciphertext, .len = len};
   otcrypto_byte_buf_t recovered_plaintext_buf = {.data = recovered_plaintext,
                                                .len = len};
-  TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt, ciphertext_buf,
+  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt, ciphertext_buf,
                    test->padding, recovered_plaintext_buf));
 
   // Check the result (not including padding).

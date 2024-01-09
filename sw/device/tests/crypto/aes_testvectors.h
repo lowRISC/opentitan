@@ -23,7 +23,7 @@ typedef struct aes_test {
   // IV data (always 16 bytes).
   const uint32_t *iv;
   // Padding mode.
-  aes_padding_t padding;
+  otcrypto_aes_padding_t padding;
   // Block cipher mode.
   otcrypto_aes_mode_t mode;
   // Expected ciphertext (length = same as #blocks in plaintext).
@@ -107,7 +107,7 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey128,
         .key_len = sizeof(kKey128),
-        .padding = kAesPaddingPkcs7,
+        .padding = kOtcryptoAesPaddingPkcs7,
         .mode = kOtcryptoAesModeEcb,
         .exp_ciphertext = kEcb128Pkcs7,
     },
@@ -118,7 +118,7 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey192,
         .key_len = sizeof(kKey192),
-        .padding = kAesPaddingIso9797M2,
+        .padding = kOtcryptoAesPaddingIso9797M2,
         .mode = kOtcryptoAesModeCbc,
         .exp_ciphertext = kCbc192Iso9797M2,
     },
@@ -129,7 +129,7 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey256,
         .key_len = sizeof(kKey256),
-        .padding = kAesPaddingNull,
+        .padding = kOtcryptoAesPaddingNull,
         .mode = kOtcryptoAesModeCfb,
         .exp_ciphertext = kCfb256Null,
     },
@@ -140,7 +140,7 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey192,
         .key_len = sizeof(kKey192),
-        .padding = kAesPaddingPkcs7,
+        .padding = kOtcryptoAesPaddingPkcs7,
         .mode = kOtcryptoAesModeOfb,
         .exp_ciphertext = kOfb192Pkcs7,
     },
@@ -151,7 +151,7 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey256,
         .key_len = sizeof(kKey256),
-        .padding = kAesPaddingIso9797M2,
+        .padding = kOtcryptoAesPaddingIso9797M2,
         .mode = kOtcryptoAesModeCtr,
         .exp_ciphertext = kCtr256Iso9797M2,
     },
