@@ -98,10 +98,10 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
  */
 static status_t hkdf_check_prk(size_t digest_words,
                                const crypto_blinded_key_t *prk) {
-  if (launder32(prk->config.key_mode) >> 16 != kKeyTypeHmac) {
+  if (launder32(prk->config.key_mode) >> 16 != kOtcryptoKeyTypeHmac) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(prk->config.key_mode >> 16, kKeyTypeHmac);
+  HARDENED_CHECK_EQ(prk->config.key_mode >> 16, kOtcryptoKeyTypeHmac);
 
   // PRK should be the same length as the digest.
   size_t digest_bytelen = digest_words * sizeof(uint32_t);
