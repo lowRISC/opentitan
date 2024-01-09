@@ -32,7 +32,7 @@ extern "C" {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pkcs1v15_encode(const hash_digest_t *message_digest,
+status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_digest,
                                      size_t encoded_message_len,
                                      uint32_t *encoded_message);
 
@@ -55,7 +55,7 @@ status_t rsa_padding_pkcs1v15_encode(const hash_digest_t *message_digest,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pkcs1v15_verify(const hash_digest_t *message_digest,
+status_t rsa_padding_pkcs1v15_verify(const otcrypto_hash_digest_t *message_digest,
                                      const uint32_t *encoded_message,
                                      const size_t encoded_message_len,
                                      hardened_bool_t *result);
@@ -77,7 +77,7 @@ status_t rsa_padding_pkcs1v15_verify(const hash_digest_t *message_digest,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pss_encode(const hash_digest_t *message_digest,
+status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 size_t encoded_message_len,
                                 uint32_t *encoded_message);
@@ -107,7 +107,7 @@ status_t rsa_padding_pss_encode(const hash_digest_t *message_digest,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pss_verify(const hash_digest_t *message_digest,
+status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
                                 uint32_t *encoded_message,
                                 size_t encoded_message_len,
                                 hardened_bool_t *result);

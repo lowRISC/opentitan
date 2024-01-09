@@ -154,7 +154,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha256,
@@ -219,7 +219,7 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha256,

@@ -24,7 +24,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
 }
 
 otcrypto_status_t otcrypto_ecdsa_sign(const otcrypto_blinded_key_t *private_key,
-                                    const hash_digest_t *message_digest,
+                                    const otcrypto_hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
                                     otcrypto_word32_buf_t signature) {
   HARDENED_TRY(otcrypto_ecdsa_sign_async_start(private_key, message_digest,
@@ -33,7 +33,7 @@ otcrypto_status_t otcrypto_ecdsa_sign(const otcrypto_blinded_key_t *private_key,
 }
 
 otcrypto_status_t otcrypto_ecdsa_verify(const otcrypto_unblinded_key_t *public_key,
-                                      const hash_digest_t *message_digest,
+                                      const otcrypto_hash_digest_t *message_digest,
                                       otcrypto_const_word32_buf_t signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result) {
@@ -321,7 +321,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  */
 static status_t internal_ecdsa_p256_sign_start(
     const otcrypto_blinded_key_t *private_key,
-    const hash_digest_t *message_digest) {
+    const otcrypto_hash_digest_t *message_digest) {
   // Check the digest length.
   if (launder32(message_digest->len) != kP256ScalarWords) {
     return OTCRYPTO_BAD_ARGS;
@@ -349,7 +349,7 @@ static status_t internal_ecdsa_p256_sign_start(
 
 otcrypto_status_t otcrypto_ecdsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve) {
+    const otcrypto_hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve) {
   if (private_key == NULL || private_key->keyblob == NULL ||
       elliptic_curve == NULL || message_digest == NULL ||
       message_digest->data == NULL) {
@@ -456,7 +456,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
  */
 static status_t internal_ecdsa_p256_verify_start(
     const otcrypto_unblinded_key_t *public_key,
-    const hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature) {
+    const otcrypto_hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature) {
   // Check the public key size.
   HARDENED_TRY(p256_public_key_length_check(public_key));
   p256_point_t *pk = (p256_point_t *)public_key->key;
@@ -477,7 +477,7 @@ static status_t internal_ecdsa_p256_verify_start(
 
 otcrypto_status_t otcrypto_ecdsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature,
+    const otcrypto_hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature,
     const ecc_curve_t *elliptic_curve) {
   if (public_key == NULL || elliptic_curve == NULL || signature.data == NULL ||
       message_digest == NULL || message_digest->data == NULL ||

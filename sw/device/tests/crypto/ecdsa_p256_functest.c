@@ -68,7 +68,7 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
       .data = (unsigned char *)&kMessage,
   };
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha256,
