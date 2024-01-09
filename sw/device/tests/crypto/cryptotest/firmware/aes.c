@@ -38,27 +38,27 @@ status_t handle_aes_block(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_aes_data_t(uj, &uj_data));
 
   block_cipher_mode_t mode;
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   switch (uj_mode) {
     case kCryptotestAesModeEcb:
       mode = kBlockCipherModeEcb;
-      key_mode = kKeyModeAesEcb;
+      key_mode = kOtcryptoKeyModeAesEcb;
       break;
     case kCryptotestAesModeCbc:
       mode = kBlockCipherModeCbc;
-      key_mode = kKeyModeAesCbc;
+      key_mode = kOtcryptoKeyModeAesCbc;
       break;
     case kCryptotestAesModeCfb:
       mode = kBlockCipherModeCfb;
-      key_mode = kKeyModeAesCfb;
+      key_mode = kOtcryptoKeyModeAesCfb;
       break;
     case kCryptotestAesModeOfb:
       mode = kBlockCipherModeOfb;
-      key_mode = kKeyModeAesOfb;
+      key_mode = kOtcryptoKeyModeAesOfb;
       break;
     case kCryptotestAesModeCtr:
       mode = kBlockCipherModeCtr;
-      key_mode = kKeyModeAesCtr;
+      key_mode = kOtcryptoKeyModeAesCtr;
       break;
     default:
       LOG_ERROR("Unrecognized AES block cipher mode: %d", uj_mode);

@@ -159,13 +159,13 @@ static const uint32_t kValidSignaturePss[kRsa4096NumWords] = {
  */
 static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
                                   rsa_padding_t padding_mode, uint32_t *sig) {
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
     case kRsaPaddingPkcs:
-      key_mode = kKeyModeRsaSignPkcs;
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
       break;
     case kRsaPaddingPss:
-      key_mode = kKeyModeRsaSignPss;
+      key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
     default:
       return INVALID_ARGUMENT();
@@ -246,13 +246,13 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
                                     const uint32_t *sig,
                                     const rsa_padding_t padding_mode,
                                     hardened_bool_t *verification_result) {
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
     case kRsaPaddingPkcs:
-      key_mode = kKeyModeRsaSignPkcs;
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
       break;
     case kRsaPaddingPss:
-      key_mode = kKeyModeRsaSignPss;
+      key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
     default:
       return INVALID_ARGUMENT();

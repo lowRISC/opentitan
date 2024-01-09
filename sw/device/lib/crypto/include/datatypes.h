@@ -154,7 +154,7 @@ typedef enum otcrypto_key_type{
 /**
  * Enum to specify the AES modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -179,7 +179,7 @@ typedef enum otcrypto_aes_key_mode{
 /**
  * Enum to specify the HMAC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -196,7 +196,7 @@ typedef enum otcrypto_hmac_key_mode{
 /**
  * Enum to specify the KMAC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -211,7 +211,7 @@ typedef enum otcrypto_kmac_key_mode{
 /**
  * Enum to specify the RSA modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -228,7 +228,7 @@ typedef enum otcrypto_rsa_key_mode{
 /**
  * Enum to specify the ECC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -247,7 +247,7 @@ typedef enum otcrypto_ecc_key_mode{
 /**
  * Enum to specify the KDF modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
@@ -263,55 +263,55 @@ typedef enum otcrypto_kdf_key_mode{
  * Enum for opentitan crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
- * This `key_mode_t` will be a parameter in the `crypto_blinded_key_t`
+ * This `otcrypto_key_mode_t` will be a parameter in the `crypto_blinded_key_t`
  * and `crypto_unblinded_key_t` structs.
  *
  * Values are hardened.
  */
-typedef enum key_mode {
+typedef enum otcrypto_key_mode{
   // Key is intended for AES ECB mode.
-  kKeyModeAesEcb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeEcb,
+  kOtcryptoKeyModeAesEcb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeEcb,
   // Key is intended for AES CBC mode.
-  kKeyModeAesCbc = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCbc,
+  kOtcryptoKeyModeAesCbc = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCbc,
   // Key is intended for AES CFB mode.
-  kKeyModeAesCfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCfb,
+  kOtcryptoKeyModeAesCfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCfb,
   // Key is intended for AES OFB mode.
-  kKeyModeAesOfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeOfb,
+  kOtcryptoKeyModeAesOfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeOfb,
   // Key is intended for AES CTR mode.
-  kKeyModeAesCtr = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCtr,
+  kOtcryptoKeyModeAesCtr = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCtr,
   // Key is intended for AES GCM mode.
-  kKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeGcm,
+  kOtcryptoKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeGcm,
   // Key is intended for AES KWP mode.
-  kKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
+  kOtcryptoKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
   // Key is intended for HMAC SHA256 mode.
-  kKeyModeHmacSha256 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
+  kOtcryptoKeyModeHmacSha256 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
   // Key is intended for HMAC SHA384 mode.
-  kKeyModeHmacSha384 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha384,
+  kOtcryptoKeyModeHmacSha384 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha384,
   // Key is intended for HMAC SHA512 mode.
-  kKeyModeHmacSha512 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha512,
+  kOtcryptoKeyModeHmacSha512 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha512,
   // Key is intended for KMAC128 mode.
-  kKeyModeKmac128 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac128,
+  kOtcryptoKeyModeKmac128 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac128,
   // Key is intended for KMAC256 mode.
-  kKeyModeKmac256 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac256,
+  kOtcryptoKeyModeKmac256 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac256,
   // Key is intended for RSA signature RSASSA-PKCS mode.
-  kKeyModeRsaSignPkcs = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPkcs,
+  kOtcryptoKeyModeRsaSignPkcs = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
-  kKeyModeRsaSignPss = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPss,
+  kOtcryptoKeyModeRsaSignPss = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPss,
   // Key is intended for RSA encryption RSAES-OAEP mode.
-  kKeyModeRsaEncryptOaep = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
+  kOtcryptoKeyModeRsaEncryptOaep = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
   // Key is intended for ECDSA mode.
-  kKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsa,
+  kOtcryptoKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsa,
   // Key is intended for ECDH mode.
-  kKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdh,
+  kOtcryptoKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdh,
   // Key is intended for Ed25519 mode.
-  kKeyModeEd25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
+  kOtcryptoKeyModeEd25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
   // Key is intended for X25519 mode.
-  kKeyModeX25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
+  kOtcryptoKeyModeX25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
   // Key is intended for KDF-CTR with HMAC as PRF.
-  kKeyModeKdfCtrHmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
+  kOtcryptoKeyModeKdfCtrHmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
   // Key is intended for KDF-CTR with KMAC as PRF.
-  kKeyModeKdfCtrKmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrKmac,
-} key_mode_t;
+  kOtcryptoKeyModeKdfCtrKmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrKmac,
+} otcrypto_key_mode_t;
 
 /**
  * Enum to denote key security level.
@@ -356,7 +356,7 @@ typedef struct crypto_key_config {
   // Crypto library version for this key.
   crypto_lib_version_t version;
   // Mode for which the key usage is intended.
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   // Length in bytes of the unblinded form of this key.
   size_t key_length;
   // Whether the hardware key manager should produce this key.
@@ -374,7 +374,7 @@ typedef struct crypto_key_config {
  */
 typedef struct crypto_unblinded_key {
   // Mode for which the key usage is intended.
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   // Key length in bytes.
   size_t key_length;
   // Implementation specific, storage provided by caller.

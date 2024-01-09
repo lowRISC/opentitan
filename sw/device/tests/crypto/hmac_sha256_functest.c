@@ -55,7 +55,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   // Construct blinded key.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeHmacSha256,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,

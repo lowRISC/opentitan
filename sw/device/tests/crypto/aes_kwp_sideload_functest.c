@@ -26,7 +26,7 @@ static const uint32_t kKeySalt[7] = {
 // Key configuration for wrapping key (AES-256).
 static const crypto_key_config_t kWrappingKeyConfig = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesKwp,
+    .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,
@@ -85,7 +85,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
 static status_t wrap_unwrap_random_test(void) {
   const crypto_key_config_t kKmacKeyConfig = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeKmac128,
+      .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 128 / 8,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,

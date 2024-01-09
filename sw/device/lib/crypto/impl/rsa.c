@@ -48,13 +48,13 @@ otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
  * @param mode Mode to check.
  * @return OK if the mode is for RSA, OTCRYPTO_BAD_ARGS otherwise.
  */
-static status_t rsa_mode_check(const key_mode_t mode) {
+static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
   switch (mode) {
-    case kKeyModeRsaSignPkcs:
+    case kOtcryptoKeyModeRsaSignPkcs:
       return OTCRYPTO_OK;
-    case kKeyModeRsaSignPss:
+    case kOtcryptoKeyModeRsaSignPss:
       return OTCRYPTO_OK;
-    case kKeyModeRsaEncryptOaep:
+    case kOtcryptoKeyModeRsaEncryptOaep:
       return OTCRYPTO_OK;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -581,22 +581,22 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param key_mode Mode for the RSA key.
  * @param padding_mode RSA signature padding scheme.
  */
-static status_t key_mode_padding_check(key_mode_t key_mode,
+static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
                                        rsa_padding_t padding_mode) {
   switch (launder32(padding_mode)) {
     case kRsaPaddingPkcs:
       HARDENED_CHECK_EQ(padding_mode, kRsaPaddingPkcs);
-      if (launder32(key_mode) != kKeyModeRsaSignPkcs) {
+      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
         return OTCRYPTO_BAD_ARGS;
       }
-      HARDENED_CHECK_EQ(key_mode, kKeyModeRsaSignPkcs);
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
       return OTCRYPTO_OK;
     case kRsaPaddingPss:
       HARDENED_CHECK_EQ(padding_mode, kRsaPaddingPss);
-      if (launder32(key_mode) != kKeyModeRsaSignPss) {
+      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
         return OTCRYPTO_BAD_ARGS;
       }
-      HARDENED_CHECK_EQ(key_mode, kKeyModeRsaSignPss);
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
       return OTCRYPTO_OK;
     default:
       // Invalid padding mode.
@@ -791,10 +791,10 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
   }
 
   // Ensure the key is intended for encryption.
-  if (launder32(public_key->key_mode) != kKeyModeRsaEncryptOaep) {
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(public_key->key_mode, kKeyModeRsaEncryptOaep);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeRsaEncryptOaep);
 
   // Infer the RSA size from the public key.
   rsa_size_t size;
@@ -876,10 +876,10 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
   }
 
   // Ensure that the key is intended for encryption.
-  if (launder32(private_key->config.key_mode) != kKeyModeRsaEncryptOaep) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeRsaEncryptOaep);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeRsaEncryptOaep);
 
   // Start the appropriate decryption routine.
   switch (launder32(size)) {

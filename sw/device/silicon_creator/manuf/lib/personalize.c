@@ -43,7 +43,7 @@ static const ecc_curve_t kCurveP256 = {
 // ECDH private key configuration.
 static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeEcdh,
+    .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelHigh,
@@ -52,7 +52,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 // ECDH shared secret configuration.
 static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesEcb,
+    .key_mode = kOtcryptoKeyModeAesEcb,
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelHigh,
@@ -74,7 +74,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
   // ECDH host (HSM) private key.
   // TODO: update the .checksum fields once cryptolib uses this field.
   crypto_unblinded_key_t pk_host = {
-      .key_mode = kKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(host_pk),
       .key = (uint32_t *)&host_pk,
       .checksum = 0,
@@ -91,7 +91,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
 
   // ECDH device public key.
   crypto_unblinded_key_t pk_device = {
-      .key_mode = kKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(wrapped_token->device_pk),
       .key = (uint32_t *)&wrapped_token->device_pk,
       .checksum = 0,

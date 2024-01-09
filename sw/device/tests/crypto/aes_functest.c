@@ -30,27 +30,27 @@ enum {
 };
 
 static crypto_key_config_t make_key_config(const aes_test_t *test) {
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   switch (test->mode) {
     case kBlockCipherModeEcb:
       LOG_INFO("Mode: ECB");
-      key_mode = kKeyModeAesEcb;
+      key_mode = kOtcryptoKeyModeAesEcb;
       break;
     case kBlockCipherModeCbc:
       LOG_INFO("Mode: CBC");
-      key_mode = kKeyModeAesCbc;
+      key_mode = kOtcryptoKeyModeAesCbc;
       break;
     case kBlockCipherModeCfb:
       LOG_INFO("Mode: CFB");
-      key_mode = kKeyModeAesCfb;
+      key_mode = kOtcryptoKeyModeAesCfb;
       break;
     case kBlockCipherModeOfb:
       LOG_INFO("Mode: OFB");
-      key_mode = kKeyModeAesOfb;
+      key_mode = kOtcryptoKeyModeAesOfb;
       break;
     case kBlockCipherModeCtr:
       LOG_INFO("Mode: CTR");
-      key_mode = kKeyModeAesCtr;
+      key_mode = kOtcryptoKeyModeAesCtr;
       break;
     default:
       // Should be unreachable.

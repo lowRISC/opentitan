@@ -108,7 +108,7 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
   };
   uint32_t public_key_data[ceil_div(kRsa2048PublicKeyBytes, sizeof(uint32_t))];
   crypto_unblinded_key_t public_key = {
-      .key_mode = kKeyModeRsaEncryptOaep,
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kRsa2048PublicKeyBytes,
       .key = public_key_data,
   };
@@ -163,7 +163,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
   // Construct the private key.
   crypto_key_config_t private_key_config = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeRsaEncryptOaep,
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,

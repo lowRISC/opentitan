@@ -80,7 +80,7 @@ otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
   switch (kmac_mode) {
     case kMacModeKmac128:
       // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kKeyModeKmac128) {
+      if (key->config.key_mode != kOtcryptoKeyModeKmac128) {
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY(kmac_kmac_128(&kmac_key, input_message.data,
@@ -90,7 +90,7 @@ otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
       break;
     case kMacModeKmac256:
       // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kKeyModeKmac256) {
+      if (key->config.key_mode != kOtcryptoKeyModeKmac256) {
         return OTCRYPTO_BAD_ARGS;
       }
 
@@ -126,19 +126,19 @@ otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   size_t message_block_words = 0;
   hash_mode_t hash_mode;
   switch (key->config.key_mode) {
-    case kKeyModeHmacSha256:
+    case kOtcryptoKeyModeHmacSha256:
       hash_mode = kHashModeSha256;
       digest_words = kSha256DigestWords;
       message_block_words = kSha256MessageBlockWords;
       break;
-    case kKeyModeHmacSha384:
+    case kOtcryptoKeyModeHmacSha384:
       hash_mode = kHashModeSha384;
       digest_words = kSha384DigestWords;
       // Since SHA-512 and SHA-384 have the same core, they use the same
       // message block size.
       message_block_words = kSha512MessageBlockWords;
       break;
-    case kKeyModeHmacSha512:
+    case kOtcryptoKeyModeHmacSha512:
       hash_mode = kHashModeSha512;
       digest_words = kSha512DigestWords;
       message_block_words = kSha512MessageBlockWords;

@@ -54,7 +54,7 @@ typedef enum kdf_type {
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
-                                 kdf_type_t kdf_mode, key_mode_t key_mode,
+                                 kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
                                  crypto_blinded_key_t keying_material);
 
@@ -63,7 +63,7 @@ otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key
  *
  * HKDF is defined in IETF RFC 5869 and is based on HMAC. The HMAC hash
  * function is determined by the mode of the key derivation key, e.g. the key
- * mode kKeyModeHmacSha256 results in HMAC with SHA-256. The key mode for the
+ * mode kOtcryptoKeyModeHmacSha256 results in HMAC with SHA-256. The key mode for the
  * output pseudo-random key (PRK) should match the key mode for the input key
  * derivation key.
  *
@@ -95,7 +95,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_ke
  *
  * HKDF is defined in IETF RFC 5869 and is based on HMAC. The HMAC hash
  * function is determined by the mode of the key derivation key,  e.g. the key
- * mode `kKeyModeHmacSha256` results in HMAC with SHA-256. The key mode for the
+ * mode `kOtcryptoKeyModeHmacSha256` results in HMAC with SHA-256. The key mode for the
  * output pseudo-random key (PRK) should match the key mode for the input key
  * derivation key.
  *

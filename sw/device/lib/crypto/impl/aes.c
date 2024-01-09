@@ -123,19 +123,19 @@ static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
 
   // Set the block cipher mode based on the key mode.
   switch (blinded_key->config.key_mode) {
-    case kKeyModeAesEcb:
+    case kOtcryptoKeyModeAesEcb:
       aes_key->mode = kAesCipherModeEcb;
       break;
-    case kKeyModeAesCbc:
+    case kOtcryptoKeyModeAesCbc:
       aes_key->mode = kAesCipherModeCbc;
       break;
-    case kKeyModeAesCfb:
+    case kOtcryptoKeyModeAesCfb:
       aes_key->mode = kAesCipherModeCfb;
       break;
-    case kKeyModeAesOfb:
+    case kOtcryptoKeyModeAesOfb:
       aes_key->mode = kAesCipherModeOfb;
       break;
-    case kKeyModeAesCtr:
+    case kOtcryptoKeyModeAesCtr:
       aes_key->mode = kAesCipherModeCtr;
       break;
     default:
@@ -425,10 +425,10 @@ static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
                     kHardenedBoolTrue);
 
   // Check the key mode.
-  if (launder32((uint32_t)blinded_key->config.key_mode) != kKeyModeAesGcm) {
+  if (launder32((uint32_t)blinded_key->config.key_mode) != kOtcryptoKeyModeAesGcm) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(blinded_key->config.key_mode, kKeyModeAesGcm);
+  HARDENED_CHECK_EQ(blinded_key->config.key_mode, kOtcryptoKeyModeAesGcm);
 
   // Set the mode of the underlying AES key to CTR (since this is the
   // underlying block cipher mode for GCM).
@@ -540,7 +540,7 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
-      key.key_shares[0], kKeyModeAesGcm, &diversification));
+      key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
   return keymgr_generate_key_aes(diversification);
 }
 
@@ -889,10 +889,10 @@ static status_t aes_kwp_key_construct(const crypto_blinded_key_t *key_kek,
   HARDENED_CHECK_EQ(integrity_blinded_key_check(key_kek), kHardenedBoolTrue);
 
   // Check the key mode.
-  if (launder32((uint32_t)key_kek->config.key_mode) != kKeyModeAesKwp) {
+  if (launder32((uint32_t)key_kek->config.key_mode) != kOtcryptoKeyModeAesKwp) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key_kek->config.key_mode, kKeyModeAesKwp);
+  HARDENED_CHECK_EQ(key_kek->config.key_mode, kOtcryptoKeyModeAesKwp);
 
   // Set the mode of the underlying AES key to ECB (since this is the
   // underlying block cipher mode for KWP).
