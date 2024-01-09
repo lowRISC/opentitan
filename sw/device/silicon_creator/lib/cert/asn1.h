@@ -84,6 +84,23 @@ typedef struct asn1_tag {
   size_t len_size;
 } asn1_tag_t;
 
+/**
+ * Structure holding the information about an unfinished bistring.
+ *
+ * The fields in this structure should be considered
+ * private and not be read or written directly.
+ */
+typedef struct asn1_bitstring {
+  // Pointer to state.
+  asn1_state_t *state;
+  // Offset of the "unused bits" byte.
+  size_t unused_bits_offset;
+  // How many bits have been added to the current byte (between 0 and 7).
+  size_t used_bits;
+  // Current value of the last byte of the string.
+  size_t current_byte;
+} asn1_bitstring_t;
+
 // ASN1 tag classes.
 typedef enum asn1_tag_class {
   kAsn1TagClassUniversal = 0 << 6,
@@ -232,6 +249,29 @@ rom_error_t asn1_push_string(asn1_state_t *state, uint8_t tag, const char *str,
  */
 rom_error_t asn1_push_hexstring(asn1_state_t *state, uint8_t tag,
                                 const uint8_t *bytes, size_t size);
+
+/**
+ * Start an ASN1 bitstring.
+ *
+ * @param state Pointer to the state initialized by asn1_start.
+ * @param[out] out_bitstring Pointer to a user-allocated bitstring to be
+ * initialized.
+ */
+rom_error_t asn1_start_bitstring(asn1_state_t *state,
+                                 asn1_bitstring_t *out_bitstring);
+
+/** Add a bit to a bitstring.
+ *
+ * @param bitstring Pointer to a bitstring initialized by asn1_start_bitstring.
+ * @param bit Bit to add at the end of the string.
+ */
+rom_error_t asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit);
+
+/** Finish an ASN1 bitstring.
+ *
+ * @param bitstring Pointer to a bitstring initialized by asn1_start_bitstring.
+ */
+rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring);
 
 #ifdef __cplusplus
 }  // extern "C"

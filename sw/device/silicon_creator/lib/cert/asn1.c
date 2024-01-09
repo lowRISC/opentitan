@@ -222,3 +222,46 @@ rom_error_t asn1_push_hexstring(asn1_state_t *state, uint8_t id,
   }
   return asn1_finish_tag(&tag);
 }
+
+rom_error_t asn1_start_bitstring(asn1_state_t *state,
+                                 asn1_bitstring_t *out_bitstring) {
+  out_bitstring->state = state;
+  out_bitstring->unused_bits_offset = state->offset;
+  out_bitstring->used_bits = 0;
+  out_bitstring->current_byte = 0;
+  // Push a single byte that will hold the unused bit count (it will be updated
+  // in asn1_finish_bitstring.
+  RETURN_IF_ERROR(asn1_push_byte(state, 0));
+  return kErrorOk;
+}
+
+rom_error_t asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit) {
+  // Update the current byte: bits are added from MSB to LSB.
+  if (bit) {
+    bitstring->current_byte |= 1 << (7 - bitstring->used_bits);
+  }
+  // If this makes a full byte, push it and reset.
+  bitstring->used_bits++;
+  if (bitstring->used_bits == 8) {
+    RETURN_IF_ERROR(asn1_push_byte(bitstring->state, bitstring->current_byte));
+    bitstring->current_byte = 0;
+    bitstring->used_bits = 0;
+  }
+  return kErrorOk;
+}
+
+rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring) {
+  // If the last byte contains some bits, we need to push it and update
+  // the number of unused bits. If the string length was a multiple of 8
+  // (ie used_bits = 0) then there are 0 unused bits which is the value pushed
+  // in asn1_start_bitstring so we do not need to update it.
+  if (bitstring->used_bits != 0) {
+    RETURN_IF_ERROR(asn1_push_byte(bitstring->state, bitstring->current_byte));
+    // Update the "unused bits value"
+    bitstring->state->buffer[bitstring->unused_bits_offset] =
+        8 - bitstring->used_bits;
+  }
+  // Hardening: clear out the tag structure to prevent accidental reuse.
+  bitstring->state = NULL;
+  return kErrorOk;
+}
