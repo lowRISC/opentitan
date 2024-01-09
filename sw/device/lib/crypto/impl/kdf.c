@@ -14,10 +14,10 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
-otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t ikm,
                                  kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
-                                 crypto_blinded_key_t keying_material) {
+                                 otcrypto_blinded_key_t keying_material) {
   // TODO: Implement HMAC-KDF-CTR and KMAC-KDF-CTR.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
@@ -52,10 +52,10 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf(const otcrypto_blinded_key_t ikm,
                                   otcrypto_const_byte_buf_t salt,
                                   otcrypto_const_byte_buf_t info,
-                                  crypto_blinded_key_t *okm) {
+                                  otcrypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
   HARDENED_TRY(
@@ -73,7 +73,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
   };
   size_t keyblob_wordlen = keyblob_num_words(prk_config);
   uint32_t keyblob[keyblob_wordlen];
-  crypto_blinded_key_t prk = {
+  otcrypto_blinded_key_t prk = {
       .config = prk_config,
       .keyblob = keyblob,
       .keyblob_length = sizeof(keyblob),
@@ -97,7 +97,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
  * @return OK if the PRK is acceptable, otherwise OTCRYPTO_BAD_ARGS.
  */
 static status_t hkdf_check_prk(size_t digest_words,
-                               const crypto_blinded_key_t *prk) {
+                               const otcrypto_blinded_key_t *prk) {
   if (launder32(prk->config.key_mode) >> 16 != kOtcryptoKeyTypeHmac) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -124,9 +124,9 @@ static status_t hkdf_check_prk(size_t digest_words,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
                                           otcrypto_const_byte_buf_t salt,
-                                          crypto_blinded_key_t *prk) {
+                                          otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
   if (ikm.keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -206,7 +206,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
   uint32_t salt_keyblob[keyblob_num_words(salt_key_config)];
   TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask, salt_key_config,
                                 salt_keyblob));
-  crypto_blinded_key_t salt_key = {
+  otcrypto_blinded_key_t salt_key = {
       .config = salt_key_config,
       .keyblob = salt_keyblob,
       .keyblob_length = sizeof(salt_keyblob),
@@ -227,9 +227,9 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_kdf_hkdf_expand(const otcrypto_blinded_key_t prk,
                                          otcrypto_const_byte_buf_t info,
-                                         crypto_blinded_key_t *okm) {
+                                         otcrypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

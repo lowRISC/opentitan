@@ -82,7 +82,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -155,7 +155,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

@@ -123,7 +123,7 @@ status_t handle_aes_block(ujson_t *uj) {
   uint32_t keyblob[keyblob_num_words(config)];
   // Create blinded key
   TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

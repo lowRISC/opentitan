@@ -53,10 +53,10 @@ typedef enum kdf_type {
  * @param[out] keying_material Pointer to the blinded keying material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
+otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t key_derivation_key,
                                  kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
-                                 crypto_blinded_key_t keying_material);
+                                 otcrypto_blinded_key_t keying_material);
 
 /**
  * Performs HKDF in one shot, both expand and extract stages.
@@ -85,10 +85,10 @@ otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key
  * @param[out] derived_key Derived keying material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_key,
+otcrypto_status_t otcrypto_kdf_hkdf(const otcrypto_blinded_key_t key_derivation_key,
                                   otcrypto_const_byte_buf_t salt,
                                   otcrypto_const_byte_buf_t info,
-                                  crypto_blinded_key_t *derived_key);
+                                  otcrypto_blinded_key_t *derived_key);
 
 /**
  * Performs the "extract" step of HKDF.
@@ -114,9 +114,9 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_ke
  * @param[out] prk Extracted pseudo-random key.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
                                           otcrypto_const_byte_buf_t salt,
-                                          crypto_blinded_key_t *prk);
+                                          otcrypto_blinded_key_t *prk);
 
 /**
  * Performs the "expand" step of HKDF.
@@ -140,9 +140,9 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
  * @param[out] okm Blinded output key material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_kdf_hkdf_expand(const otcrypto_blinded_key_t prk,
                                          otcrypto_const_byte_buf_t info,
-                                         crypto_blinded_key_t *okm);
+                                         otcrypto_blinded_key_t *okm);
 
 #ifdef __cplusplus
 }  // extern "C"

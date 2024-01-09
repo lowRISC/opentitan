@@ -69,11 +69,11 @@ static const otcrypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
-    ecc_p256_public_key_t host_pk, crypto_blinded_key_t *aes_key,
+    ecc_p256_public_key_t host_pk, otcrypto_blinded_key_t *aes_key,
     wrapped_rma_unlock_token_t *wrapped_token) {
   // ECDH host (HSM) private key.
   // TODO: update the .checksum fields once cryptolib uses this field.
-  crypto_unblinded_key_t pk_host = {
+  otcrypto_unblinded_key_t pk_host = {
       .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(host_pk),
       .key = (uint32_t *)&host_pk,
@@ -82,7 +82,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
 
   // ECDH device private key.
   uint32_t sk_device_keyblob[keyblob_num_words(kEcdhPrivateKeyConfig)];
-  crypto_blinded_key_t sk_device = {
+  otcrypto_blinded_key_t sk_device = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = sizeof(sk_device_keyblob),
       .keyblob = sk_device_keyblob,
@@ -90,7 +90,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
   };
 
   // ECDH device public key.
-  crypto_unblinded_key_t pk_device = {
+  otcrypto_unblinded_key_t pk_device = {
       .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(wrapped_token->device_pk),
       .key = (uint32_t *)&wrapped_token->device_pk,
@@ -103,7 +103,7 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
 
 OT_WARN_UNUSED_RESULT
 static status_t encrypt_rma_unlock_token(
-    crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
+    otcrypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
   // Construct IV, which since we are using ECB mode, is empty.
   otcrypto_word32_buf_t iv = {
       .data = NULL,
@@ -350,7 +350,7 @@ status_t manuf_personalize_device_secrets(
   // Generate AES encryption key and IV for exporting the RMA unlock token.
   // AES key (i.e., ECDH shared secret).
   uint32_t aes_key_buf[keyblob_num_words(kRmaUnlockTokenAesKeyConfig)];
-  crypto_blinded_key_t token_aes_key = {
+  otcrypto_blinded_key_t token_aes_key = {
       .config = kRmaUnlockTokenAesKeyConfig,
       .keyblob_length = sizeof(aes_key_buf),
       .keyblob = aes_key_buf,

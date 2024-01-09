@@ -69,7 +69,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
 
   uint32_t keyblob[keyblob_num_words(config)];
   TRY(keyblob_from_key_and_mask(key, kTestMask, config, keyblob));
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = config,
       .keyblob = keyblob,
       .keyblob_length = sizeof(keyblob),

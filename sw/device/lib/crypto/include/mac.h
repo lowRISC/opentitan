@@ -59,7 +59,7 @@ typedef struct hmac_context {
  * @param[out] tag Output authentication tag.
  * @return The result of the HMAC operation.
  */
-otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
                               otcrypto_word32_buf_t *tag);
 
@@ -85,7 +85,7 @@ otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  * @param[out] tag Output authentication tag.
  * @return The result of the KMAC operation.
  */
-otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
                               kmac_mode_t kmac_mode,
                               otcrypto_const_byte_buf_t customization_string,
@@ -106,7 +106,7 @@ otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
  * @return Result of the HMAC init operation.
  */
 otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key);
+                                   const otcrypto_blinded_key_t *key);
 
 /**
  * Performs the UPDATE operation for HMAC.

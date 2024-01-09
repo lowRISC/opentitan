@@ -66,7 +66,7 @@ size_t keyblob_num_words(const otcrypto_key_config_t config) {
  * @param key Blinded key.
  * @returns OK if the keyblob length is correct, BAD_ARGS otherwise.
  */
-static status_t check_keyblob_length(const crypto_blinded_key_t *key) {
+static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   size_t num_words = keyblob_num_words(key->config);
   if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
     HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
@@ -76,7 +76,7 @@ static status_t check_keyblob_length(const crypto_blinded_key_t *key) {
   return OTCRYPTO_BAD_ARGS;
 }
 
-status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
+status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1) {
   // Double-check the length of the keyblob.
   HARDENED_TRY(check_keyblob_length(key));
@@ -115,7 +115,7 @@ status_t keyblob_buffer_to_keymgr_diversification(
 }
 
 status_t keyblob_to_keymgr_diversification(
-    const crypto_blinded_key_t *key,
+    const otcrypto_blinded_key_t *key,
     keymgr_diversification_t *diversification) {
   if (launder32(key->config.hw_backed) != kHardenedBoolTrue ||
       key->keyblob == NULL) {
@@ -196,7 +196,7 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   return OTCRYPTO_OK;
 }
 
-status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask) {
+status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask) {
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
 

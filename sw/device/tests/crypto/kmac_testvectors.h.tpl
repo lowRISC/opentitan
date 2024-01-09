@@ -31,7 +31,7 @@ typedef struct kmac_test_vector {
   char* vector_identifier;
   kmac_test_operation_t test_operation;
   size_t security_strength;
-  crypto_blinded_key_t key;
+  otcrypto_blinded_key_t key;
   otcrypto_const_byte_buf_t input_msg;
   otcrypto_const_byte_buf_t func_name;
   otcrypto_const_byte_buf_t cust_str;

@@ -85,7 +85,7 @@ static inline void gcm_context_restore(aes_gcm_ctx_t *api_ctx,
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
+static status_t aes_key_construct(const otcrypto_blinded_key_t *blinded_key,
                                   const block_cipher_mode_t aes_mode,
                                   aes_key_t *aes_key) {
   // Key integrity check.
@@ -284,7 +284,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
                              otcrypto_word32_buf_t iv,
                              block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
@@ -414,7 +414,7 @@ otcrypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
+static status_t aes_gcm_key_construct(const otcrypto_blinded_key_t *blinded_key,
                                       aes_key_t *aes_key) {
   // Key integrity check.
   if (launder32(integrity_blinded_key_check(blinded_key)) !=
@@ -566,7 +566,7 @@ static status_t clear_key_if_sideloaded(const aes_key_t key) {
   return keymgr_sideload_clear_aes();
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
                                          otcrypto_const_byte_buf_t plaintext,
                                          otcrypto_const_word32_buf_t iv,
                                          otcrypto_const_byte_buf_t aad,
@@ -612,7 +612,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
-    const crypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
+    const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
     aead_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_byte_buf_t *plaintext, hardened_bool_t *success) {
@@ -654,7 +654,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
@@ -676,7 +676,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
@@ -880,7 +880,7 @@ otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const otcrypto_key_config_t confi
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t aes_kwp_key_construct(const crypto_blinded_key_t *key_kek,
+static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
                                       aes_key_t *aes_key) {
   // Key integrity check.
   if (launder32(integrity_blinded_key_check(key_kek)) != kHardenedBoolTrue) {
@@ -921,8 +921,8 @@ static status_t aes_kwp_key_construct(const crypto_blinded_key_t *key_kek,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
-                                      const crypto_blinded_key_t *key_kek,
+otcrypto_status_t otcrypto_aes_kwp_wrap(const otcrypto_blinded_key_t *key_to_wrap,
+                                      const otcrypto_blinded_key_t *key_kek,
                                       otcrypto_word32_buf_t *wrapped_key) {
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key == NULL ||
@@ -977,9 +977,9 @@ otcrypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
 }
 
 otcrypto_status_t otcrypto_aes_kwp_unwrap(otcrypto_const_word32_buf_t wrapped_key,
-                                        const crypto_blinded_key_t *key_kek,
+                                        const otcrypto_blinded_key_t *key_kek,
                                         hardened_bool_t *success,
-                                        crypto_blinded_key_t *unwrapped_key) {
+                                        otcrypto_blinded_key_t *unwrapped_key) {
   *success = kHardenedBoolFalse;
 
   if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||

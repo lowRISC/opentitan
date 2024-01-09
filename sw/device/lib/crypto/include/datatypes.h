@@ -263,8 +263,8 @@ typedef enum otcrypto_kdf_key_mode{
  * Enum for opentitan crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
- * This `otcrypto_key_mode_t` will be a parameter in the `crypto_blinded_key_t`
- * and `crypto_unblinded_key_t` structs.
+ * This `otcrypto_key_mode_t` will be a parameter in the `otcrypto_blinded_key_t`
+ * and `otcrypto_unblinded_key_t` structs.
  *
  * Values are hardened.
  */
@@ -372,7 +372,7 @@ typedef struct otcrypto_key_config{
 /**
  * Struct to handle unmasked key type.
  */
-typedef struct crypto_unblinded_key {
+typedef struct otcrypto_unblinded_key{
   // Mode for which the key usage is intended.
   otcrypto_key_mode_t key_mode;
   // Key length in bytes.
@@ -381,12 +381,12 @@ typedef struct crypto_unblinded_key {
   uint32_t *key;
   // Implementation specific, checksum for this struct.
   uint32_t checksum;
-} crypto_unblinded_key_t;
+} otcrypto_unblinded_key_t;
 
 /**
  * Struct to handle masked key type.
  */
-typedef struct crypto_blinded_key {
+typedef struct otcrypto_blinded_key{
   // Key configuration information.
   const otcrypto_key_config_t config;
   // Length of blinded key material in bytes.
@@ -395,7 +395,7 @@ typedef struct crypto_blinded_key {
   uint32_t *keyblob;
   // Implementation specific, checksum for this struct.
   uint32_t checksum;
-} crypto_blinded_key_t;
+} otcrypto_blinded_key_t;
 
 /**
  * Enum to define supported hashing modes.
