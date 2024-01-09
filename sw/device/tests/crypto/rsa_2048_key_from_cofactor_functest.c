@@ -52,7 +52,7 @@ static uint32_t kTestPrivateExponent[kRsa2048NumWords] = {
 static uint32_t kTestPublicExponent = 65537;
 
 // Key mode for testing.
-static key_mode_t kTestKeyMode = kKeyModeRsaSignPss;
+static otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPss;
 
 // The prime cofactor p for the test private key.
 static uint32_t kTestPrimeP[kRsa2048CofactorNumWords] = {

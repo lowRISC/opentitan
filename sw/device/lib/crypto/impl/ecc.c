@@ -119,10 +119,10 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
   }
 
   // Check the key mode.
-  if (launder32(private_key->config.key_mode) != kKeyModeEcdsa) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdsa) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdsa);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsa);
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -283,12 +283,12 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
   }
 
   // Check the key modes.
-  if (launder32(private_key->config.key_mode) != kKeyModeEcdsa ||
-      launder32(public_key->key_mode) != kKeyModeEcdsa) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdsa ||
+      launder32(public_key->key_mode) != kOtcryptoKeyModeEcdsa) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdsa);
-  HARDENED_CHECK_EQ(public_key->key_mode, kKeyModeEcdsa);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsa);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdsa);
 
   // Select the correct keygen operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
@@ -365,10 +365,10 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
                     kHardenedBoolTrue);
 
   // Check the private key mode.
-  if (launder32(private_key->config.key_mode) != kKeyModeEcdsa) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdsa) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdsa);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsa);
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -486,10 +486,10 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_start(
   }
 
   // Check the public key mode.
-  if (launder32(public_key->key_mode) != kKeyModeEcdsa) {
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEcdsa) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(public_key->key_mode, kKeyModeEcdsa);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdsa);
 
   // Check the integrity of the public key.
   if (launder32(integrity_unblinded_key_check(public_key)) !=
@@ -561,10 +561,10 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
   }
 
   // Check the key mode.
-  if (launder32(private_key->config.key_mode) != kKeyModeEcdh) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdh) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdh);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdh);
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -648,12 +648,12 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_finalize(
   }
 
   // Check the key modes.
-  if (launder32(public_key->key_mode) != kKeyModeEcdh ||
-      launder32(private_key->config.key_mode) != kKeyModeEcdh) {
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEcdh ||
+      launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdh) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(public_key->key_mode, kKeyModeEcdh);
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdh);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdh);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdh);
 
   // Select the correct keygen operation and finalize it.
   switch (launder32(elliptic_curve->curve_type)) {
@@ -726,12 +726,12 @@ otcrypto_status_t otcrypto_ecdh_async_start(
                     kHardenedBoolTrue);
 
   // Check the key modes.
-  if (launder32(private_key->config.key_mode) != kKeyModeEcdh ||
-      launder32(public_key->key_mode) != kKeyModeEcdh) {
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdh ||
+      launder32(public_key->key_mode) != kOtcryptoKeyModeEcdh) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kKeyModeEcdh);
-  HARDENED_CHECK_EQ(public_key->key_mode, kKeyModeEcdh);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdh);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdh);
 
   // Select the correct ECDH operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {

@@ -26,7 +26,7 @@ static const unsigned char kTestMessage[] = "Test message.";
 static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
 
 // RSA key mode for testing.
-static const key_mode_t kTestKeyMode = kKeyModeRsaSignPkcs;
+static const otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
   // Allocate buffer for the public key.

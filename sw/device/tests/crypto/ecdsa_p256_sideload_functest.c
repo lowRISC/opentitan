@@ -36,7 +36,7 @@ static const ecc_curve_t kCurveP256 = {
 
 static const crypto_key_config_t kPrivateKeyConfig = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsa,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,
@@ -64,7 +64,7 @@ status_t sign_then_verify_test(void) {
   // Allocate space for a public key.
   uint32_t pk[kP256PublicKeyWords] = {0};
   crypto_unblinded_key_t public_key = {
-      .key_mode = kKeyModeEcdsa,
+      .key_mode = kOtcryptoKeyModeEcdsa,
       .key_length = sizeof(pk),
       .key = pk,
   };

@@ -34,7 +34,7 @@ static const uint32_t kKeySalt2[7] = {
 // Indicates a sideloaded 256-bit AES-CTR key.
 static const crypto_key_config_t kAesKeyConfig = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,

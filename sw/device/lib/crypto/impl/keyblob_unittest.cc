@@ -21,7 +21,7 @@ using ::testing::ElementsAreArray;
 // Key configuration for testing (128-bit AES-CTR software key).
 constexpr crypto_key_config_t kConfigCtr128 = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
@@ -31,7 +31,7 @@ constexpr crypto_key_config_t kConfigCtr128 = {
 // issues with keys that don't have an even word size).
 constexpr crypto_key_config_t kConfigOddBytes = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
@@ -41,7 +41,7 @@ constexpr crypto_key_config_t kConfigOddBytes = {
 // but helps test for overflow).
 constexpr crypto_key_config_t kConfigHuge = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = SIZE_MAX,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kSecurityLevelLow,
@@ -50,7 +50,7 @@ constexpr crypto_key_config_t kConfigHuge = {
 // Key configuration for testing (sideloaded AES-CTR key).
 constexpr crypto_key_config_t kConfigCtrSideloaded = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,
@@ -59,7 +59,7 @@ constexpr crypto_key_config_t kConfigCtrSideloaded = {
 // Key configuration for testing (sideloaded AES-OFB key).
 constexpr crypto_key_config_t kConfigOfbSideloaded = {
     .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesOfb,
+    .key_mode = kOtcryptoKeyModeAesOfb,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,

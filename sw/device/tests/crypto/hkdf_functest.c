@@ -21,7 +21,7 @@ typedef struct hkdf_test_vector {
   /**
    * Key mode for HKDF (e.g. HMAC-256). Determines hash function.
    */
-  key_mode_t hmac_key_mode;
+  otcrypto_key_mode_t hmac_key_mode;
   /**
    * Input key derivation key (called IKM in RFC 5869).
    */
@@ -130,7 +130,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   // doesn't really matter, it just needs to be some symmetric key.
   crypto_key_config_t okm_config = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -223,7 +223,7 @@ static status_t rfc_test1(void) {
       0x562db05d, 0xbfc5c4ec, 0x08720034, 0x1887b8d5, 0x00006558,
   };
   hkdf_test_vector_t test = {
-      .hmac_key_mode = kKeyModeHmacSha256,
+      .hmac_key_mode = kOtcryptoKeyModeHmacSha256,
       .ikm = ikm_data,
       .ikm_bytelen = 22,
       .salt = salt_data,
@@ -307,7 +307,7 @@ static status_t rfc_test2(void) {
 
   };
   hkdf_test_vector_t test = {
-      .hmac_key_mode = kKeyModeHmacSha256,
+      .hmac_key_mode = kOtcryptoKeyModeHmacSha256,
       .ikm = ikm_data,
       .ikm_bytelen = 80,
       .salt = salt_data,
@@ -353,7 +353,7 @@ static status_t rfc_test3(void) {
       0x5f4e45c3, 0x2d8d733c, 0x9513209d, 0x1ab6a4fa, 0x0000c896,
   };
   hkdf_test_vector_t test = {
-      .hmac_key_mode = kKeyModeHmacSha256,
+      .hmac_key_mode = kOtcryptoKeyModeHmacSha256,
       .ikm = ikm_data,
       .ikm_bytelen = 22,
       .salt = NULL,

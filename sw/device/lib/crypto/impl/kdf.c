@@ -15,7 +15,7 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
 otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t ikm,
-                                 kdf_type_t kdf_mode, key_mode_t key_mode,
+                                 kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
                                  crypto_blinded_key_t keying_material) {
   // TODO: Implement HMAC-KDF-CTR and KMAC-KDF-CTR.
@@ -29,20 +29,20 @@ otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t ikm,
  * @param[out] digest_words Number of words in the hash digest.
  * @return OK or error.
  */
-static status_t digest_num_words_from_key_mode(key_mode_t key_mode,
+static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
                                                size_t *digest_words) {
   *digest_words = 0;
   switch (launder32(key_mode)) {
-    case kKeyModeHmacSha256:
-      HARDENED_CHECK_EQ(key_mode, kKeyModeHmacSha256);
+    case kOtcryptoKeyModeHmacSha256:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha256);
       *digest_words = 256 / 32;
       break;
-    case kKeyModeHmacSha384:
-      HARDENED_CHECK_EQ(key_mode, kKeyModeHmacSha384);
+    case kOtcryptoKeyModeHmacSha384:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha384);
       *digest_words = 384 / 32;
       break;
-    case kKeyModeHmacSha512:
-      HARDENED_CHECK_EQ(key_mode, kKeyModeHmacSha512);
+    case kOtcryptoKeyModeHmacSha512:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha512);
       *digest_words = 512 / 32;
       break;
     default:

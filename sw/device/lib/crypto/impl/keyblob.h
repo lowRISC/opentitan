@@ -90,7 +90,7 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_buffer_to_keymgr_diversification(
-    const uint32_t *keyblob, key_mode_t mode,
+    const uint32_t *keyblob, otcrypto_key_mode_t mode,
     keymgr_diversification_t *diversification);
 
 /**

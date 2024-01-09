@@ -125,7 +125,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   // Construct the blinded key configuration.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeAesGcm,
+      .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
@@ -222,7 +222,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   // Construct the blinded key configuration.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeAesGcm,
+      .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = test->key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
