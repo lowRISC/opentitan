@@ -122,9 +122,9 @@ static status_t digest_info_write(const otcrypto_hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_digest,
-                                     size_t encoded_message_len,
-                                     uint32_t *encoded_message) {
+status_t rsa_padding_pkcs1v15_encode(
+    const otcrypto_hash_digest_t *message_digest, size_t encoded_message_len,
+    uint32_t *encoded_message) {
   // Initialize all bits of the encoded message to 1.
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   memset(encoded_message, 0xff, encoded_message_bytelen);
@@ -155,10 +155,10 @@ status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_diges
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pkcs1v15_verify(const otcrypto_hash_digest_t *message_digest,
-                                     const uint32_t *encoded_message,
-                                     const size_t encoded_message_len,
-                                     hardened_bool_t *result) {
+status_t rsa_padding_pkcs1v15_verify(
+    const otcrypto_hash_digest_t *message_digest,
+    const uint32_t *encoded_message, const size_t encoded_message_len,
+    hardened_bool_t *result) {
   // Re-encode the message.
   uint32_t expected_encoded_message[encoded_message_len];
   HARDENED_TRY(rsa_padding_pkcs1v15_encode(message_digest, encoded_message_len,
@@ -181,7 +181,8 @@ status_t rsa_padding_pkcs1v15_verify(const otcrypto_hash_digest_t *message_diges
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode, size_t *num_words) {
+static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
+                                   size_t *num_words) {
   *num_words = 0;
   switch (hash_mode) {
     case kOtcryptoHashModeSha3_224:
@@ -265,9 +266,10 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   uint32_t digest_data[digest_wordlen];
   otcrypto_hash_digest_t digest = {
       .data = digest_data, .len = digest_wordlen, .mode = hash_mode};
-  HARDENED_TRY(otcrypto_hash(
-      (otcrypto_const_byte_buf_t){.data = hash_input, .len = sizeof(hash_input)},
-      &digest));
+  HARDENED_TRY(
+      otcrypto_hash((otcrypto_const_byte_buf_t){.data = hash_input,
+                                                .len = sizeof(hash_input)},
+                    &digest));
   hardened_memcpy(mask, digest_data, ceil_div(mask_len, sizeof(uint32_t)));
   return OTCRYPTO_OK;
 }
@@ -322,7 +324,7 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t *message_digest,
       .data = h, .len = message_digest->len, .mode = message_digest->mode};
   return otcrypto_hash(
       (otcrypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
-                                .len = sizeof(m_prime)},
+                                  .len = sizeof(m_prime)},
       &h_buffer);
 }
 
@@ -461,9 +463,9 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_oaep_max_message_bytelen(const otcrypto_hash_mode_t hash_mode,
-                                              size_t rsa_wordlen,
-                                              size_t *max_message_bytelen) {
+status_t rsa_padding_oaep_max_message_bytelen(
+    const otcrypto_hash_mode_t hash_mode, size_t rsa_wordlen,
+    size_t *max_message_bytelen) {
   // Get the hash digest length for the given hash function (and check that it
   // is one of the supported hash functions).
   size_t digest_wordlen = 0;

@@ -15,9 +15,10 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
 otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t ikm,
-                                 otcrypto_kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
-                                 size_t required_bit_len,
-                                 otcrypto_blinded_key_t keying_material) {
+                                   otcrypto_kdf_type_t kdf_mode,
+                                   otcrypto_key_mode_t key_mode,
+                                   size_t required_bit_len,
+                                   otcrypto_blinded_key_t keying_material) {
   // TODO: Implement HMAC-KDF-CTR and KMAC-KDF-CTR.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
@@ -53,9 +54,9 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf(const otcrypto_blinded_key_t ikm,
-                                  otcrypto_const_byte_buf_t salt,
-                                  otcrypto_const_byte_buf_t info,
-                                  otcrypto_blinded_key_t *okm) {
+                                    otcrypto_const_byte_buf_t salt,
+                                    otcrypto_const_byte_buf_t info,
+                                    otcrypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
   HARDENED_TRY(
@@ -125,8 +126,8 @@ static status_t hkdf_check_prk(size_t digest_words,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
-                                          otcrypto_const_byte_buf_t salt,
-                                          otcrypto_blinded_key_t *prk) {
+                                            otcrypto_const_byte_buf_t salt,
+                                            otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
   if (ikm.keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -228,8 +229,8 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf_expand(const otcrypto_blinded_key_t prk,
-                                         otcrypto_const_byte_buf_t info,
-                                         otcrypto_blinded_key_t *okm) {
+                                           otcrypto_const_byte_buf_t info,
+                                           otcrypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

@@ -44,8 +44,8 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
                                          &private_key->n);
 }
 
-status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode, const uint8_t *label,
-                              size_t label_bytelen,
+status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
+                              const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_wordlen, uint8_t *plaintext,
                               size_t *plaintext_len) {
   // Wait for OTBN to complete and get the size for the last RSA operation.

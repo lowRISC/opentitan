@@ -103,7 +103,8 @@ static const uint32_t kValidSignaturePss[kRsa2048NumWords] = {
  * @return OK or error.
  */
 static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
-                                  otcrypto_rsa_padding_t padding_mode, uint32_t *sig) {
+                                  otcrypto_rsa_padding_t padding_mode,
+                                  uint32_t *sig) {
   otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
     case kOtcryptoRsaPaddingPkcs:
@@ -207,7 +208,8 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = key_mode,
       .key_length = kOtcryptoRsa2048PublicKeyBytes,
@@ -242,7 +244,8 @@ status_t pkcs1v15_sign_test(void) {
   // Generate a signature using PKCS#1 v1.5 padding and SHA-256 as the hash
   // function.
   uint32_t sig[kRsa2048NumWords];
-  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPkcs, sig));
+  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPkcs,
+                        sig));
 
   // Compare to the expected signature.
   TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
@@ -276,12 +279,13 @@ status_t pkcs1v15_verify_invalid_test(void) {
 status_t pss_sign_test(void) {
   // PSS signatures are not deterministic, so we need to sign-then-verify.
   uint32_t sig[kRsa2048NumWords];
-  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss, sig));
+  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
+                        sig));
 
   // Try to verify the signature.
   hardened_bool_t verification_result;
-  TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig, kOtcryptoRsaPaddingPss,
-                          &verification_result));
+  TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                          kOtcryptoRsaPaddingPss, &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

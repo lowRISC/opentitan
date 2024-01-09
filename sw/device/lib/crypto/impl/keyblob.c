@@ -88,7 +88,8 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
 }
 
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const otcrypto_key_config_t config, uint32_t *keyblob) {
+                         const otcrypto_key_config_t config,
+                         uint32_t *keyblob) {
   size_t share_words = keyblob_share_num_words(config);
   hardened_memcpy(keyblob, share0, share_words);
   hardened_memcpy(keyblob + share_words, share1, share_words);

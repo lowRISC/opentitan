@@ -24,7 +24,7 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum otcrypto_kmac_mode{
+typedef enum otcrypto_kmac_mode {
   // KMAC128 mode.
   kOtcryptoKmacModeKmac128 = 0x336,
   // KMAC256 mode.
@@ -37,7 +37,7 @@ typedef enum otcrypto_kmac_mode{
  * Representation is internal to the hmac implementation; initialize
  * with #otcrypto_hmac_init.
  */
-typedef struct otcrypto_hmac_context{
+typedef struct otcrypto_hmac_context {
   otcrypto_hash_context_t inner;
   otcrypto_hash_context_t outer;
 } otcrypto_hmac_context_t;
@@ -60,8 +60,8 @@ typedef struct otcrypto_hmac_context{
  * @return The result of the HMAC operation.
  */
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                              otcrypto_const_byte_buf_t input_message,
-                              otcrypto_word32_buf_t *tag);
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the KMAC function on the input data.
@@ -86,11 +86,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * @return The result of the KMAC operation.
  */
 otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
-                              otcrypto_const_byte_buf_t input_message,
-                              otcrypto_kmac_mode_t kmac_mode,
-                              otcrypto_const_byte_buf_t customization_string,
-                              size_t required_output_len,
-                              otcrypto_word32_buf_t *tag);
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_kmac_mode_t kmac_mode,
+                                otcrypto_const_byte_buf_t customization_string,
+                                size_t required_output_len,
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
@@ -106,7 +106,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
  * @return Result of the HMAC init operation.
  */
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
-                                   const otcrypto_blinded_key_t *key);
+                                     const otcrypto_blinded_key_t *key);
 
 /**
  * Performs the UPDATE operation for HMAC.
@@ -123,7 +123,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
  * @return Result of the HMAC update operation.
  */
 otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
-                                     otcrypto_const_byte_buf_t input_message);
+                                       otcrypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for HMAC.
@@ -143,7 +143,7 @@ otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
  * @return Result of the HMAC final operation.
  */
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                    otcrypto_word32_buf_t *tag);
+                                      otcrypto_word32_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

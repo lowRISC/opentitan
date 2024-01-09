@@ -120,7 +120,8 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   };
 
   // Construct the public key buffer.
-  size_t public_key_words = ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t));
+  size_t public_key_words =
+      ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t));
   uint32_t public_key_data[public_key_words];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,

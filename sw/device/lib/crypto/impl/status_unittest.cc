@@ -33,7 +33,8 @@ TEST(Status, TopLevelStatusHammingDistance) {
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
   EXPECT_GE(HammingDistance(kOtcryptoStatusOk, 0), kMinimumHammingDistance)
-      << "The 'OK' status code " << kOtcryptoStatusOk << " is too close to zero.";
+      << "The 'OK' status code " << kOtcryptoStatusOk
+      << " is too close to zero.";
 
   for (const otcrypto_status_t status1 : error_codes) {
     // Expect a significant Hamming distance from 0.

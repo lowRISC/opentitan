@@ -28,7 +28,8 @@ extern "C" {
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
-otcrypto_status_t otcrypto_drbg_instantiate(otcrypto_const_byte_buf_t perso_string);
+otcrypto_status_t otcrypto_drbg_instantiate(
+    otcrypto_const_byte_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -39,7 +40,8 @@ otcrypto_status_t otcrypto_drbg_instantiate(otcrypto_const_byte_buf_t perso_stri
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the DRBG reseed operation.
  */
-otcrypto_status_t otcrypto_drbg_reseed(otcrypto_const_byte_buf_t additional_input);
+otcrypto_status_t otcrypto_drbg_reseed(
+    otcrypto_const_byte_buf_t additional_input);
 
 /**
  * Instantiates the DRBG system.
@@ -71,7 +73,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  * @return Result of the manual DRBG reseed operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_reseed(
-    otcrypto_const_byte_buf_t entropy, otcrypto_const_byte_buf_t additional_input);
+    otcrypto_const_byte_buf_t entropy,
+    otcrypto_const_byte_buf_t additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -91,8 +94,9 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
-otcrypto_status_t otcrypto_drbg_generate(otcrypto_const_byte_buf_t additional_input,
-                                       otcrypto_word32_buf_t *drbg_output);
+otcrypto_status_t otcrypto_drbg_generate(
+    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_word32_buf_t *drbg_output);
 
 /**
  * DRBG function for generating random bits.
@@ -113,7 +117,8 @@ otcrypto_status_t otcrypto_drbg_generate(otcrypto_const_byte_buf_t additional_in
  * @return Result of the DRBG generate operation.
  */
 otcrypto_status_t otcrypto_drbg_manual_generate(
-    otcrypto_const_byte_buf_t additional_input, otcrypto_word32_buf_t *drbg_output);
+    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_word32_buf_t *drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.

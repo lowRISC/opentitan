@@ -99,7 +99,8 @@ otcrypto_status_t otcrypto_drbg_instantiate(
                                    &seed_material);
 }
 
-otcrypto_status_t otcrypto_drbg_reseed(otcrypto_const_byte_buf_t additional_input) {
+otcrypto_status_t otcrypto_drbg_reseed(
+    otcrypto_const_byte_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -133,7 +134,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
 }
 
 otcrypto_status_t otcrypto_drbg_manual_reseed(
-    otcrypto_const_byte_buf_t entropy, otcrypto_const_byte_buf_t additional_input) {
+    otcrypto_const_byte_buf_t entropy,
+    otcrypto_const_byte_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -165,8 +167,8 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @return Result status; OK or error
  */
 static otcrypto_status_t generate(hardened_bool_t fips_check,
-                                otcrypto_const_byte_buf_t additional_input,
-                                otcrypto_word32_buf_t *drbg_output) {
+                                  otcrypto_const_byte_buf_t additional_input,
+                                  otcrypto_word32_buf_t *drbg_output) {
   if (drbg_output == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -187,8 +189,9 @@ static otcrypto_status_t generate(hardened_bool_t fips_check,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_drbg_generate(otcrypto_const_byte_buf_t additional_input,
-                                       otcrypto_word32_buf_t *drbg_output) {
+otcrypto_status_t otcrypto_drbg_generate(
+    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_word32_buf_t *drbg_output) {
   return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
                   drbg_output);
 }
