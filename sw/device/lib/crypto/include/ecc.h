@@ -23,17 +23,17 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum eddsa_sign_mode {
+typedef enum otcrypto_eddsa_sign_mode{
   // Signature mode EdDSA.
-  kEddsaSignModeEdDSA = 0xae1,
+  kOtcryptoEddsaSignModeEddsa = 0xae1,
   // Signature mode Hashed EdDSA.
-  kEddsaSignModeHashEdDSA = 0x9a6,
-} eddsa_sign_mode_t;
+  kOtcryptoEddsaSignModeHashEddsa = 0x9a6,
+} otcrypto_eddsa_sign_mode_t;
 
 /**
  * Struct for domain parameters of a custom Weierstrass curve.
  */
-typedef struct ecc_domain {
+typedef struct otcrypto_ecc_domain{
   // Prime P (modulus of coordinate finite field).
   otcrypto_const_byte_buf_t p;
   // Coefficient a.
@@ -50,36 +50,36 @@ typedef struct ecc_domain {
   const uint32_t cofactor;
   // Checksum value of the parameters.
   uint32_t checksum;
-} ecc_domain_t;
+} otcrypto_ecc_domain_t;
 
 /**
  * Enum to define the type of elliptic curve used for the operation.
  *
  * Values are hardened.
  */
-typedef enum ecc_curve_type {
+typedef enum otcrypto_ecc_curve_type{
   // Generic Weierstrass curve, with custom domain parameters.
-  kEccCurveTypeCustom = 0xbf7,
+  kOtcryptoEccCurveTypeCustom = 0xbf7,
   // Named Weierstrass curve - NIST P256.
-  kEccCurveTypeNistP256 = 0xec8,
+  kOtcryptoEccCurveTypeNistP256 = 0xec8,
   // Named Weierstrass curve - NIST P384.
-  kEccCurveTypeNistP384 = 0x1bc,
+  kOtcryptoEccCurveTypeNistP384 = 0x1bc,
   // Named Weierstrass curve - Brainpool P256r1.
   kEccCurveTypeBrainpoolP256R1 = 0xc1e,
-} ecc_curve_type_t;
+} otcrypto_ecc_curve_type_t;
 
 /**
  * Struct for ECC curve used for ECDSA / ECDH operation.
  *
  * Values are hardened.
  */
-typedef struct ecc_curve {
+typedef struct otcrypto_ecc_curve{
   // Type of the Weierstrass curve, custom curve or named curve.
-  ecc_curve_type_t curve_type;
+  otcrypto_ecc_curve_type_t curve_type;
   // Domain parameters for a custom Weierstrass curve. May be NULL for a named
   // curve.
-  const ecc_domain_t *const domain_parameter;
-} ecc_curve_t;
+  const otcrypto_ecc_domain_t *const domain_parameter;
+} otcrypto_ecc_curve_t;
 
 /**
  * Performs the key generation for ECDSA operation.
@@ -105,7 +105,7 @@ typedef struct ecc_curve {
  * @return Result of the ECDSA key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdsa_keygen(const otcrypto_ecc_curve_t *elliptic_curve,
                                       otcrypto_blinded_key_t *private_key,
                                       otcrypto_unblinded_key_t *public_key);
 
@@ -131,7 +131,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t *message_digest,
-                                    const ecc_curve_t *elliptic_curve,
+                                    const otcrypto_ecc_curve_t *elliptic_curve,
                                     otcrypto_word32_buf_t signature);
 
 /**
@@ -159,7 +159,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify(const otcrypto_unblinded_key_t *public_key,
                                       const otcrypto_hash_digest_t *message_digest,
                                       otcrypto_const_word32_buf_t signature,
-                                      const ecc_curve_t *elliptic_curve,
+                                      const otcrypto_ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
 
 /**
@@ -186,7 +186,7 @@ otcrypto_status_t otcrypto_ecdsa_verify(const otcrypto_unblinded_key_t *public_k
  * @return Result of the ECDH key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_keygen(const otcrypto_ecc_curve_t *elliptic_curve,
                                      otcrypto_blinded_key_t *private_key,
                                      otcrypto_unblinded_key_t *public_key);
 
@@ -206,7 +206,7 @@ otcrypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh(const otcrypto_blinded_key_t *private_key,
                               const otcrypto_unblinded_key_t *public_key,
-                              const ecc_curve_t *elliptic_curve,
+                              const otcrypto_ecc_curve_t *elliptic_curve,
                               otcrypto_blinded_key_t *shared_secret);
 
 /**
@@ -246,7 +246,7 @@ otcrypto_status_t otcrypto_ed25519_keygen(otcrypto_blinded_key_t *private_key,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(const otcrypto_blinded_key_t *private_key,
                                       otcrypto_const_byte_buf_t input_message,
-                                      eddsa_sign_mode_t sign_mode,
+                                      otcrypto_eddsa_sign_mode_t sign_mode,
                                       otcrypto_word32_buf_t signature);
 
 /**
@@ -263,7 +263,7 @@ otcrypto_status_t otcrypto_ed25519_sign(const otcrypto_blinded_key_t *private_ke
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_const_byte_buf_t input_message, otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t signature, hardened_bool_t *verification_result);
 
 /**
@@ -327,7 +327,7 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const otcrypto_blinded_key_t *private_key);
+    const otcrypto_ecc_curve_t *elliptic_curve, const otcrypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -349,7 +349,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
-    const ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *private_key,
+    const otcrypto_ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -368,7 +368,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve);
+    const otcrypto_hash_digest_t *message_digest, const otcrypto_ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
@@ -387,7 +387,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
-    const ecc_curve_t *elliptic_curve, otcrypto_word32_buf_t signature);
+    const otcrypto_ecc_curve_t *elliptic_curve, otcrypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.
@@ -407,7 +407,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature,
-    const ecc_curve_t *elliptic_curve);
+    const otcrypto_ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature verification.
@@ -429,7 +429,7 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
-    const ecc_curve_t *elliptic_curve, otcrypto_const_word32_buf_t signature,
+    const otcrypto_ecc_curve_t *elliptic_curve, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -455,7 +455,7 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_keygen_async_start(
-    const ecc_curve_t *elliptic_curve, const otcrypto_blinded_key_t *private_key);
+    const otcrypto_ecc_curve_t *elliptic_curve, const otcrypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
@@ -477,7 +477,7 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_keygen_async_finalize(
-    const ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *private_key,
+    const otcrypto_ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -497,7 +497,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
-    const ecc_curve_t *elliptic_curve);
+    const otcrypto_ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
@@ -517,7 +517,7 @@ otcrypto_status_t otcrypto_ecdh_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_async_finalize(
-    const ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *shared_secret);
+    const otcrypto_ecc_curve_t *elliptic_curve, otcrypto_blinded_key_t *shared_secret);
 
 /**
  * Starts the asynchronous key generation for Ed25519.
@@ -572,7 +572,7 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_const_byte_buf_t input_message, otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_word32_buf_t signature);
 
 /**
@@ -604,7 +604,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_const_byte_buf_t input_message, otcrypto_eddsa_sign_mode_t sign_mode,
     otcrypto_const_word32_buf_t signature);
 
 /**

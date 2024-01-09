@@ -35,8 +35,8 @@ static_assert(OTP_CTRL_PARAM_RMA_TOKEN_SIZE == 16,
               "definition for the wrapped RMA unlock token.");
 
 // ECC curve to use with ECDH keygen.
-static const ecc_curve_t kCurveP256 = {
-    .curve_type = kEccCurveTypeNistP256,
+static const otcrypto_ecc_curve_t kCurveP256 = {
+    .curve_type = kOtcryptoEccCurveTypeNistP256,
     .domain_parameter = NULL,
 };
 
