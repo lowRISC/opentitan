@@ -82,7 +82,7 @@ status_t sign_then_verify_test(void) {
   hash_digest_t message_digest = {
       .data = message_digest_data,
       .len = ARRAYSIZE(message_digest_data),
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(message, &message_digest));
 

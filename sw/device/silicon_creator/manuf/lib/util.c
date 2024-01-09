@@ -50,7 +50,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   hash_digest_t output = {
       .data = token_data,
       .len = token_num_words,
-      .mode = kHashXofModeCshake128,
+      .mode = kOtcryptoHashXofModeCshake128,
   };
 
   TRY(otcrypto_xof_cshake(input, function_name_string, customization_string,
@@ -69,7 +69,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
   hash_digest_t digest = {
       .data = output->data,
       .len = output->len,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
 
   switch (partition) {

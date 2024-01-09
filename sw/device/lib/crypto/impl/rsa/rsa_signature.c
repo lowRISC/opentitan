@@ -31,22 +31,22 @@ OT_WARN_UNUSED_RESULT
 static status_t digest_check(const hash_digest_t *digest) {
   size_t num_words = 0;
   switch (digest->mode) {
-    case kHashModeSha3_224:
+    case kOtcryptoHashModeSha3_224:
       num_words = 224 / 32;
       break;
-    case kHashModeSha256:
+    case kOtcryptoHashModeSha256:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_256:
+    case kOtcryptoHashModeSha3_256:
       num_words = 256 / 32;
       break;
-    case kHashModeSha384:
+    case kOtcryptoHashModeSha384:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_384:
+    case kOtcryptoHashModeSha3_384:
       num_words = 384 / 32;
       break;
-    case kHashModeSha512:
+    case kOtcryptoHashModeSha512:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_512:
+    case kOtcryptoHashModeSha3_512:
       num_words = 512 / 32;
       break;
     default:

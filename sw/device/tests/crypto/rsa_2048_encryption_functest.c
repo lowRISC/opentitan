@@ -62,7 +62,7 @@ static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
 
 // Hash mode for testing (and digest length in bytes).
-static const hash_mode_t kTestHashMode = kHashModeSha256;
+static const otcrypto_hash_mode_t kTestHashMode = kOtcryptoHashModeSha256;
 static const size_t kTestHashModeDigestBytes = 256 / 8;
 
 // Maximum plaintext length for OAEP (see IETF RFC 8017).

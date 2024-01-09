@@ -96,7 +96,7 @@ status_t keygen_then_sign_test(void) {
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
