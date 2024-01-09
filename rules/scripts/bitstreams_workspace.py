@@ -58,6 +58,7 @@ parser = argparse.ArgumentParser(
     description='Bitstream Downloader & Cache manager')
 parser.add_argument('--cache', default=CACHE_DIR, help='Cache directory name')
 parser.add_argument('--create-symlink', default=True,
+                    action=argparse.BooleanOptionalAction,
                     help='Create symlink to cache directory')
 parser.add_argument('--latest-update',
                     default='latest.txt',
@@ -99,7 +100,7 @@ class BitstreamCache(object):
         if bucket_url[-1] != '/':
             bucket_url += '/'
         self.bucket_url = bucket_url
-        cachedir = os.path.expanduser(cachedir)
+        cachedir = os.path.abspath(os.path.expanduser(cachedir))
         self.cachedir = os.path.join(cachedir, 'cache')
         latest_update = os.path.join(cachedir,
                                      os.path.expanduser(latest_update))
@@ -472,7 +473,9 @@ class BitstreamCache(object):
             # Write substitute manifest if none came with the cache entry.
             manifest_path = os.path.join(cache_base_dir,
                                          "substitute_manifest.json")
-            self._WriteSubstituteManifest(manifest, manifest_path)
+            abs_manifest_path = os.path.join(self.cachedir,
+                                             "substitute_manifest.json")
+            self._WriteSubstituteManifest(manifest, abs_manifest_path)
 
         bazel_lines += filegroup_lines("manifest", manifest_path)
 
