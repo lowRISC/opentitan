@@ -287,7 +287,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_expand(const otcrypto_blinded_key_t prk,
   uint32_t *t_data = okm_data;
   for (uint8_t i = 0; i < num_iterations; i++) {
     info_and_counter_data[info.len] = i + 1;
-    hmac_context_t ctx;
+    otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, &prk));
     if (launder32(i) != 0) {
       otcrypto_const_byte_buf_t t_bytes = {
