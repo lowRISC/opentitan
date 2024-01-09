@@ -37,7 +37,7 @@ static const crypto_key_config_t kPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdsa,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 status_t sign_then_verify_test(hardened_bool_t *verification_result) {

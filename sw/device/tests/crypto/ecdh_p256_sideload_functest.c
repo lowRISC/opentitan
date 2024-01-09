@@ -53,7 +53,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Configuration for the ECDH shared (symmetric) key. This configuration
@@ -64,7 +64,7 @@ static const crypto_key_config_t kEcdhSharedKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = kP256SharedKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 status_t key_exchange_test(void) {

@@ -46,7 +46,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelHigh,
+    .security_level = kOtcryptoKeySecurityLevelHigh,
 };
 
 // ECDH shared secret configuration.
@@ -55,7 +55,7 @@ static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesEcb,
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelHigh,
+    .security_level = kOtcryptoKeySecurityLevelHigh,
 };
 
 /**

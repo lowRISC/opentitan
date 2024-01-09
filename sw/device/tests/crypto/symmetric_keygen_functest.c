@@ -37,7 +37,7 @@ static const crypto_key_config_t kAesKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesCbc,
     .key_length = 192 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Represents a 256-bit HMAC-SHA256 key.
@@ -46,7 +46,7 @@ static const crypto_key_config_t kHmacKeyConfig = {
     .key_mode = kOtcryptoKeyModeHmacSha256,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Represents a 128-bit KMAC key.
@@ -55,7 +55,7 @@ static const crypto_key_config_t kKmacKeyConfig = {
     .key_mode = kOtcryptoKeyModeKmac128,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 static status_t entropy_complex_init_test(void) {
