@@ -18,7 +18,7 @@
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
                               crypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
@@ -29,7 +29,7 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
 }
 
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
                               kmac_mode_t kmac_mode,
                               crypto_const_byte_buf_t customization_string,
@@ -106,7 +106,7 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
+otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                    const crypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -225,7 +225,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                 .data = (unsigned char *)outer_block});
 }
 
-crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
                                      crypto_const_byte_buf_t input_message) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -235,7 +235,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
   return otcrypto_hash_update(&ctx->inner, input_message);
 }
 
-crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
                                     crypto_word32_buf_t *tag) {
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

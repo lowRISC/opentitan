@@ -15,7 +15,7 @@ extern "C" {
 
 /**
  * Values in `status_t` that are guaranteed to correspond to each
- * `crypto_status_t` value.
+ * `otcrypto_status_t` value.
  *
  * If `OTCRYPTO_STATUS_DEBUG` is set, full line-number and module information
  * is included to ease debugging. Otherwise, we use the cryptolib error codes
@@ -47,13 +47,13 @@ extern "C" {
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 #else
 
-#define OTCRYPTO_RECOV_ERR ((status_t){.value = kCryptoStatusInternalError})
+#define OTCRYPTO_RECOV_ERR ((status_t){.value = kOtcryptoStatusInternalError})
 #define OTCRYPTO_FATAL_ERR ((status_t){.value = kCryptoStatusFatalError})
-#define OTCRYPTO_BAD_ARGS ((status_t){.value = kCryptoStatusBadArgs})
+#define OTCRYPTO_BAD_ARGS ((status_t){.value = kOtcryptoStatusBadArgs})
 #define OTCRYPTO_ASYNC_INCOMPLETE \
-  ((status_t){.value = kCryptoStatusAsyncIncomplete})
+  ((status_t){.value = kOtcryptoStatusAsyncIncomplete})
 #define OTCRYPTO_NOT_IMPLEMENTED \
-  ((status_t){.value = kCryptoStatusNotImplemented})
+  ((status_t){.value = kOtcryptoStatusNotImplemented})
 
 #endif
 

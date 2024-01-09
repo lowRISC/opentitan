@@ -105,7 +105,7 @@ typedef struct ecc_curve {
  * @return Result of the ECDSA key generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
                                       crypto_unblinded_key_t *public_key);
 
@@ -129,7 +129,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
  * @return Result of the ECDSA signature generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     const hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
                                     crypto_word32_buf_t signature);
@@ -156,7 +156,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * @return Result of the ECDSA verification operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_verify(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_ecdsa_verify(const crypto_unblinded_key_t *public_key,
                                       const hash_digest_t *message_digest,
                                       crypto_const_word32_buf_t signature,
                                       const ecc_curve_t *elliptic_curve,
@@ -186,7 +186,7 @@ crypto_status_t otcrypto_ecdsa_verify(const crypto_unblinded_key_t *public_key,
  * @return Result of the ECDH key generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
                                      crypto_unblinded_key_t *public_key);
 
@@ -204,7 +204,7 @@ crypto_status_t otcrypto_ecdh_keygen(const ecc_curve_t *elliptic_curve,
  * @return Result of ECDH shared secret generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
                               const crypto_unblinded_key_t *public_key,
                               const ecc_curve_t *elliptic_curve,
                               crypto_blinded_key_t *shared_secret);
@@ -231,7 +231,7 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
  * @return Result of the Ed25519 key generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key);
 
 /**
@@ -244,7 +244,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
  * @return Result of the EdDSA signature generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_byte_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
                                       crypto_word32_buf_t signature);
@@ -261,7 +261,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
  * @return Result of the EdDSA verification operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_verify(
+otcrypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     crypto_const_word32_buf_t signature, hardened_bool_t *verification_result);
@@ -288,7 +288,7 @@ crypto_status_t otcrypto_ed25519_verify(
  * @return Result of the X25519 key generation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key);
 
 /**
@@ -300,7 +300,7 @@ crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
  * @return Result of the X25519 operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
                                 const crypto_unblinded_key_t *public_key,
                                 crypto_blinded_key_t *shared_secret);
 
@@ -317,8 +317,8 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
- * Returns `kCryptoStatusOK` if the operation was successfully
- * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * Returns `kOtcryptoStatusOk` if the operation was successfully
+ * started, or`kOtcryptoStatusInternalError` if the operation cannot be
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
@@ -326,16 +326,16 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * @return Result of asynchronous ECDSA keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_keygen_async_start(
+otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
  *
- * Returns `kCryptoStatusOK` and copies the private key (d) and public
+ * Returns `kOtcryptoStatusOk` and copies the private key (d) and public
  * key (Q), if the OTBN status is done, or
- * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kCryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -348,7 +348,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
  * @return Result of asynchronous ECDSA keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
+otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
     crypto_unblinded_key_t *public_key);
 
@@ -366,16 +366,16 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * @return Result of async ECDSA start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_sign_async_start(
+otcrypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
     const hash_digest_t *message_digest, const ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
  *
- * Returns `kCryptoStatusOK` and copies the signature if the OTBN
- * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
- * busy or `kCryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusOk` and copies the signature if the OTBN
+ * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kOtcryptoStatusInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -386,7 +386,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * @return Result of async ECDSA finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_sign_async_finalize(
+otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_word32_buf_t signature);
 
 /**
@@ -404,7 +404,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  * @return Result of async ECDSA verify start function.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_verify_async_start(
+otcrypto_status_t otcrypto_ecdsa_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     const hash_digest_t *message_digest, crypto_const_word32_buf_t signature,
     const ecc_curve_t *elliptic_curve);
@@ -412,9 +412,9 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
 /**
  * Finalizes the asynchronous ECDSA digital signature verification.
  *
- * Returns `kCryptoStatusOK` and populates the `verification result`
- * if the OTBN status is done. `kCryptoStatusAsyncIncomplete` if the
- * OTBN is busy or `kCryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusOk` and populates the `verification result`
+ * if the OTBN status is done. `kOtcryptoStatusAsyncIncomplete` if the
+ * OTBN is busy or `kOtcryptoStatusInternalError` if there is an error.
  * The computed signature is compared against the input signature
  * and a PASS or FAIL is returned.
  *
@@ -428,7 +428,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  * @return Result of async ECDSA verify finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdsa_verify_async_finalize(
+otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
@@ -445,8 +445,8 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
- * Returns `kCryptoStatusOK` if the operation was successfully
- * started, or`kCryptoStatusInternalError` if the operation cannot be
+ * Returns `kOtcryptoStatusOk` if the operation was successfully
+ * started, or`kOtcryptoStatusInternalError` if the operation cannot be
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
@@ -454,16 +454,16 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * @return Result of asynchronous ECDH keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh_keygen_async_start(
+otcrypto_status_t otcrypto_ecdh_keygen_async_start(
     const ecc_curve_t *elliptic_curve, const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
  *
- * Returns `kCryptoStatusOK` and copies the private key (d) and public
+ * Returns `kOtcryptoStatusOk` and copies the private key (d) and public
  * key (Q), if the OTBN status is done, or
- * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kCryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -476,7 +476,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
  * @return Result of asynchronous ECDH keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh_keygen_async_finalize(
+otcrypto_status_t otcrypto_ecdh_keygen_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *private_key,
     crypto_unblinded_key_t *public_key);
 
@@ -494,7 +494,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  * @return Result of async ECDH start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh_async_start(
+otcrypto_status_t otcrypto_ecdh_async_start(
     const crypto_blinded_key_t *private_key,
     const crypto_unblinded_key_t *public_key,
     const ecc_curve_t *elliptic_curve);
@@ -503,9 +503,9 @@ crypto_status_t otcrypto_ecdh_async_start(
  * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
  * secret generation.
  *
- * Returns `kCryptoStatusOK` and copies `shared_secret` if the OTBN
- * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
- * is busy or `kCryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusOk` and copies `shared_secret` if the OTBN
+ * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN
+ * is busy or `kOtcryptoStatusInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -516,7 +516,7 @@ crypto_status_t otcrypto_ecdh_async_start(
  * @return Result of async ECDH finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ecdh_async_finalize(
+otcrypto_status_t otcrypto_ecdh_async_finalize(
     const ecc_curve_t *elliptic_curve, crypto_blinded_key_t *shared_secret);
 
 /**
@@ -534,15 +534,15 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  * @return Result of asynchronous ed25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_keygen_async_start(
+otcrypto_status_t otcrypto_ed25519_keygen_async_start(
     const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for Ed25519.
  *
- * Returns `kCryptoStatusOK` and copies private key (d) and public key
- * (Q), if the OTBN status is done, or `kCryptoStatusAsyncIncomplete`
- * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
+ * Returns `kOtcryptoStatusOk` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kOtcryptoStatusAsyncIncomplete`
+ * if the OTBN is busy or `kOtcryptoStatusInternalError` if there is an
  * error.
  *
  * The caller must ensure that `config` matches the key configuration initially
@@ -553,7 +553,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_start(
  * @return Result of asynchronous ed25519 keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_keygen_async_finalize(
+otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
 
 /**
@@ -570,7 +570,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @return Result of async Ed25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_sign_async_start(
+otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     crypto_word32_buf_t signature);
@@ -578,15 +578,15 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
  *
- * Returns `kCryptoStatusOK` and copies the signature if the OTBN
- * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
- * busy or `kCryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusOk` and copies the signature if the OTBN
+ * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN is
+ * busy or `kOtcryptoStatusInternalError` if there is an error.
  *
  * @param[out] signature Pointer to the EdDSA signature to get (s) value.
  * @return Result of async Ed25519 finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_sign_async_finalize(
+otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
     crypto_word32_buf_t signature);
 
 /**
@@ -602,7 +602,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
  * @return Result of async Ed25519 verification start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_verify_async_start(
+otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     crypto_const_word32_buf_t signature);
@@ -610,17 +610,17 @@ crypto_status_t otcrypto_ed25519_verify_async_start(
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.
  *
- * Returns `kCryptoStatusOK` and populates the `verification result`
+ * Returns `kOtcryptoStatusOk` and populates the `verification result`
  * with a PASS or FAIL, if the OTBN status is done,
- * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kCryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusInternalError` if there is an error.
  *
  * @param[out] verification_result Result of signature verification
  * (Pass/Fail).
  * @return Result of async Ed25519 verification finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_ed25519_verify_async_finalize(
+otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result);
 
 /**
@@ -638,15 +638,15 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  * @return Result of asynchronous X25519 keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519_keygen_async_start(
+otcrypto_status_t otcrypto_x25519_keygen_async_start(
     const crypto_blinded_key_t *private_key);
 
 /**
  * Finalizes the asynchronous key generation for X25519.
  *
- * Returns `kCryptoStatusOK` and copies private key (d) and public key
- * (Q), if the OTBN status is done, or `kCryptoStatusAsyncIncomplete`
- * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
+ * Returns `kOtcryptoStatusOk` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kOtcryptoStatusAsyncIncomplete`
+ * if the OTBN is busy or `kOtcryptoStatusInternalError` if there is an
  * error.
  *
  * The caller must ensure that `config` matches the key configuration initially
@@ -657,7 +657,7 @@ crypto_status_t otcrypto_x25519_keygen_async_start(
  * @return Result of asynchronous X25519 keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519_keygen_async_finalize(
+otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
 
 /**
@@ -673,7 +673,7 @@ crypto_status_t otcrypto_x25519_keygen_async_finalize(
  * @return Result of the async X25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519_async_start(
+otcrypto_status_t otcrypto_x25519_async_start(
     const crypto_blinded_key_t *private_key,
     const crypto_unblinded_key_t *public_key);
 
@@ -681,15 +681,15 @@ crypto_status_t otcrypto_x25519_async_start(
  * Finalizes the asynchronous X25519 Diffie Hellman shared secret
  * generation.
  *
- * Returns `kCryptoStatusOK` and copies `shared_secret` if the OTBN
- * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
- * is busy or `kCryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusOk` and copies `shared_secret` if the OTBN
+ * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN
+ * is busy or `kOtcryptoStatusInternalError` if there is an error.
  *
  * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
  * @return Result of async X25519 finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_x25519_async_finalize(
+otcrypto_status_t otcrypto_x25519_async_finalize(
     crypto_blinded_key_t *shared_secret);
 
 #ifdef __cplusplus

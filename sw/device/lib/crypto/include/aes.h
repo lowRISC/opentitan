@@ -90,7 +90,7 @@ typedef struct aes_gcm_ctx {
  * Get the number of blocks needed for the plaintext length and padding mode.
  *
  * This returns the size of the padded plaintext, which is the same as the
- * ciphertext size. Returns `kCryptoStatusBadArgs` if the padding mode and
+ * ciphertext size. Returns `kOtcryptoStatusBadArgs` if the padding mode and
  * length are incompatible (for instance, if the padding mode is "no padding"
  * but the input length is not a multiple of the AES block size).
  *
@@ -99,7 +99,7 @@ typedef struct aes_gcm_ctx {
  * @return Size of the padded input or ciphertext.
  * @return Result of the operation.
  */
-crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
+otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
                                                      aes_padding_t aes_padding,
                                                      size_t *padded_len);
 
@@ -128,7 +128,7 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
  * @param[out] cipher_output Output data after cipher operation.
  * @return The result of the cipher operation.
  */
-crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
                              crypto_word32_buf_t iv,
                              block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
@@ -160,7 +160,7 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
  * @return Result of the authenticated encryption.
  * operation
  */
-crypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
                                          crypto_const_byte_buf_t plaintext,
                                          crypto_const_word32_buf_t iv,
                                          crypto_const_byte_buf_t aad,
@@ -195,7 +195,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
  * @return Result of the authenticated decryption.
  * operation
  */
-crypto_status_t otcrypto_aes_gcm_decrypt(
+otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
     crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
     aead_gcm_tag_len_t tag_len, crypto_const_word32_buf_t auth_tag,
@@ -223,7 +223,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt(
  * @param[out] ctx Context object for the operation.
  * @return Result of the initialization operation.
  */
-crypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
                                               crypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx);
 
@@ -253,7 +253,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
  * @param[out] ctx Context object for the operation.
  * @return Result of the initialization operation.
  */
-crypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
                                               crypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx);
 /**
@@ -266,7 +266,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
  * @param aad Additional authenticated data.
  * @return Result of the update operation.
  */
-crypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
                                             crypto_const_byte_buf_t aad);
 
 /**
@@ -293,7 +293,7 @@ crypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
  * @param[out] output_bytes_written Number of bytes written to `output`.
  * @return Result of the update operation.
  */
-crypto_status_t otcrypto_aes_gcm_update_encrypted_data(
+otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     aes_gcm_ctx_t *ctx, crypto_const_byte_buf_t input, crypto_byte_buf_t output,
     size_t *output_bytes_written);
 
@@ -316,7 +316,7 @@ crypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * @param[out] auth_tag Generated authentication tag.
  * @return Result of the final operation.
  */
-crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
                                                aead_gcm_tag_len_t tag_len,
                                                crypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
@@ -345,7 +345,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
  * @param[out] success Whether the tag passed verification.
  * @return Result of the final operation.
  */
-crypto_status_t otcrypto_aes_gcm_decrypt_final(
+otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     aes_gcm_ctx_t *ctx, crypto_const_word32_buf_t auth_tag,
     aead_gcm_tag_len_t tag_len, crypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
@@ -357,7 +357,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_final(
  * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
  * @return Result of the operation.
  */
-crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
                                              size_t *wrapped_num_words);
 
 /**
@@ -378,7 +378,7 @@ crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
  * @param[out] wrapped_key Pointer to the output wrapped key.
  * @return Result of the aes-kwp wrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
+otcrypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
                                       const crypto_blinded_key_t *key_kek,
                                       crypto_word32_buf_t *wrapped_key);
 
@@ -412,7 +412,7 @@ crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
  * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
  * @return Result of the aes-kwp unwrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
+otcrypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                         const crypto_blinded_key_t *key_kek,
                                         hardened_bool_t *success,
                                         crypto_blinded_key_t *unwrapped_key);

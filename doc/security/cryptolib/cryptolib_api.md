@@ -44,10 +44,10 @@ Note that in the OpenTitan cryptolib, memory allocation is left mostly to the ca
 
 ### Status Codes
 
-All functions in the OpenTitan cryptolib return `crypto_status_t`.
+All functions in the OpenTitan cryptolib return `otcrypto_status_t`.
 This design is compatible with OpenTitan's internal `status_t` datatype.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_status_t }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_status_t }}
 
 However, the cryptolib additionally guarantees that all status codes will be bit-compatible to the `crypto_status_value` enum.
 Callers who do not wish to use `status_t` infrastructure may compare to these values.

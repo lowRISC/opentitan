@@ -274,7 +274,7 @@ static status_t get_block(crypto_const_byte_buf_t input, aes_padding_t padding,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
+otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
                                                      aes_padding_t aes_padding,
                                                      size_t *padded_len) {
   size_t padded_nblocks;
@@ -284,7 +284,7 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
                              crypto_word32_buf_t iv,
                              block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
@@ -566,7 +566,7 @@ static status_t clear_key_if_sideloaded(const aes_key_t key) {
   return keymgr_sideload_clear_aes();
 }
 
-crypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
                                          crypto_const_byte_buf_t plaintext,
                                          crypto_const_word32_buf_t iv,
                                          crypto_const_byte_buf_t aad,
@@ -611,7 +611,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_decrypt(
+otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
     crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
     aead_gcm_tag_len_t tag_len, crypto_const_word32_buf_t auth_tag,
@@ -654,7 +654,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
                                               crypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
@@ -676,7 +676,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt_init(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
                                               crypto_const_word32_buf_t iv,
                                               aes_gcm_ctx_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
@@ -698,7 +698,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_init(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
                                             crypto_const_byte_buf_t aad) {
   if (ctx == NULL || aad.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -723,7 +723,7 @@ crypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_update_encrypted_data(
+otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     aes_gcm_ctx_t *ctx, crypto_const_byte_buf_t input, crypto_byte_buf_t output,
     size_t *output_bytes_written) {
   if (ctx == NULL || input.data == NULL || output.data == NULL ||
@@ -765,7 +765,7 @@ crypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
                                                aead_gcm_tag_len_t tag_len,
                                                crypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
@@ -805,7 +805,7 @@ crypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_gcm_decrypt_final(
+otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     aes_gcm_ctx_t *ctx, crypto_const_word32_buf_t auth_tag,
     aead_gcm_tag_len_t tag_len, crypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
@@ -845,7 +845,7 @@ crypto_status_t otcrypto_aes_gcm_decrypt_final(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
                                              size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
@@ -921,7 +921,7 @@ static status_t aes_kwp_key_construct(const crypto_blinded_key_t *key_kek,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
+otcrypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
                                       const crypto_blinded_key_t *key_kek,
                                       crypto_word32_buf_t *wrapped_key) {
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
@@ -976,7 +976,7 @@ crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
   return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key->data);
 }
 
-crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
+otcrypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
                                         const crypto_blinded_key_t *key_kek,
                                         hardened_bool_t *success,
                                         crypto_blinded_key_t *unwrapped_key) {

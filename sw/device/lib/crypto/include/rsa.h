@@ -98,7 +98,7 @@ enum {
  * @param[out] private_key Pointer to blinded private key struct.
  * @return Result of the RSA key generation.
  */
-crypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
+otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
                                     crypto_unblinded_key_t *public_key,
                                     crypto_blinded_key_t *private_key);
 
@@ -114,7 +114,7 @@ crypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
-crypto_status_t otcrypto_rsa_public_key_construct(
+otcrypto_status_t otcrypto_rsa_public_key_construct(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t exponent,
     crypto_unblinded_key_t *public_key);
 
@@ -132,7 +132,7 @@ crypto_status_t otcrypto_rsa_public_key_construct(
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
-crypto_status_t otcrypto_rsa_private_key_from_exponents(
+otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t d_share0, crypto_const_word32_buf_t d_share1,
     crypto_blinded_key_t *private_key);
@@ -154,7 +154,7 @@ crypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
-crypto_status_t otcrypto_rsa_keypair_from_cofactor(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t cofactor_share0,
     crypto_const_word32_buf_t cofactor_share1,
@@ -174,7 +174,7 @@ crypto_status_t otcrypto_rsa_keypair_from_cofactor(
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation.
  */
-crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
                                   const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
                                   crypto_word32_buf_t *signature);
@@ -193,7 +193,7 @@ crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
  * @param[out] verification_result Result of signature verification.
  * @return Result of the RSA verify operation.
  */
-crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
                                     const hash_digest_t *message_digest,
                                     rsa_padding_t padding_mode,
                                     crypto_const_word32_buf_t signature,
@@ -230,7 +230,7 @@ crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
  * @param[out] ciphertext Buffer for the ciphertext.
  * @return The result of the RSA encryption operation.
  */
-crypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
                                      const hash_mode_t hash_mode,
                                      crypto_const_byte_buf_t message,
                                      crypto_const_byte_buf_t label,
@@ -266,7 +266,7 @@ crypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
  * @param[out] plaintext Buffer for the decrypted message.
  * @return Result of the RSA decryption operation.
  */
-crypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
                                      const hash_mode_t hash_mode,
                                      crypto_const_word32_buf_t ciphertext,
                                      crypto_const_byte_buf_t label,
@@ -280,7 +280,7 @@ crypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
  * @param size RSA size parameter.
  * @return Result of async RSA keygen start operation.
  */
-crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size);
+otcrypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size);
 
 /**
  * Finalizes the asynchronous RSA key generation function.
@@ -292,7 +292,7 @@ crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size);
  * @param[out] private_key Pointer to blinded private key struct.
  * @return Result of asynchronous RSA keygen finalize operation.
  */
-crypto_status_t otcrypto_rsa_keygen_async_finalize(
+otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key);
 
 /**
@@ -308,7 +308,7 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @return Result of the RSA key construction.
  */
-crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t cofactor_share0,
     crypto_const_word32_buf_t cofactor_share1);
@@ -329,7 +329,7 @@ crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
  * @param[out] private_key Destination private key struct.
  * @return Result of the RSA key construction.
  */
-crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key);
 
 /**
@@ -343,7 +343,7 @@ crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param padding_mode Padding scheme to be used for the data.
  * @return Result of async RSA sign start operation.
  */
-crypto_status_t otcrypto_rsa_sign_async_start(
+otcrypto_status_t otcrypto_rsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
     const hash_digest_t *message_digest, rsa_padding_t padding_mode);
 
@@ -355,7 +355,7 @@ crypto_status_t otcrypto_rsa_sign_async_start(
  * @param[out] signature Pointer to generated signature struct.
  * @return Result of async RSA sign finalize operation.
  */
-crypto_status_t otcrypto_rsa_sign_async_finalize(
+otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     crypto_word32_buf_t *signature);
 
 /**
@@ -368,7 +368,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(
  * @param signature Pointer to the input signature to be verified.
  * @return Result of async RSA verify start operation.
  */
-crypto_status_t otcrypto_rsa_verify_async_start(
+otcrypto_status_t otcrypto_rsa_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_word32_buf_t signature);
 
@@ -384,7 +384,7 @@ crypto_status_t otcrypto_rsa_verify_async_start(
  * @param[out] verification_result Result of signature verification.
  * @return Result of async RSA verify finalize operation.
  */
-crypto_status_t otcrypto_rsa_verify_async_finalize(
+otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const hash_digest_t *message_digest, rsa_padding_t padding_mode,
     hardened_bool_t *verification_result);
 
@@ -400,7 +400,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
  * @param label Label for OAEP encoding.
  * @return The result of the RSA encryption start operation.
  */
-crypto_status_t otcrypto_rsa_encrypt_async_start(
+otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const crypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
     crypto_const_byte_buf_t message, crypto_const_byte_buf_t label);
 
@@ -415,7 +415,7 @@ crypto_status_t otcrypto_rsa_encrypt_async_start(
  * @param[out] ciphertext Buffer for the ciphertext.
  * @return The result of the RSA encryption operation.
  */
-crypto_status_t otcrypto_rsa_encrypt_async_finalize(
+otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     crypto_word32_buf_t *ciphertext);
 
 /**
@@ -428,7 +428,7 @@ crypto_status_t otcrypto_rsa_encrypt_async_finalize(
  * @param ciphertext Ciphertext to decrypt.
  * @return Result of the RSA decryption start operation.
  */
-crypto_status_t otcrypto_rsa_decrypt_async_start(
+otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_word32_buf_t ciphertext);
 
@@ -443,7 +443,7 @@ crypto_status_t otcrypto_rsa_decrypt_async_start(
  * @param[out] plaintext Buffer for the decrypted message.
  * @return Result of the RSA decryption finalize operation.
  */
-crypto_status_t otcrypto_rsa_decrypt_async_finalize(
+otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const hash_mode_t hash_mode, crypto_const_byte_buf_t label,
     crypto_byte_buf_t *plaintext);
 

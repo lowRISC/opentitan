@@ -47,7 +47,7 @@ typedef struct hash_context {
  * @param[out] digest Output digest after hashing the input message.
  * @return Result of the hash operation.
  */
-crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
                               hash_digest_t *digest);
 
 /**
@@ -61,7 +61,7 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
                                    hash_digest_t *digest);
 
 /**
@@ -82,7 +82,7 @@ crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof_cshake(
+otcrypto_status_t otcrypto_xof_cshake(
     crypto_const_byte_buf_t input_message,
     crypto_const_byte_buf_t function_name_string,
     crypto_const_byte_buf_t customization_string, hash_digest_t *digest);
@@ -103,7 +103,7 @@ crypto_status_t otcrypto_xof_cshake(
  * @param hash_mode Required hash mode.
  * @return Result of the hash init operation.
  */
-crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode);
 
 /**
@@ -120,7 +120,7 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the hash update operation.
  */
-crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_byte_buf_t input_message);
 
 /**
@@ -139,7 +139,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @param[out] digest Output digest after hashing the input blocks.
  * @return Result of the hash final operation.
  */
-crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     hash_digest_t *digest);
 
 #ifdef __cplusplus

@@ -29,12 +29,12 @@ extern "C" {
  * guarantees that the concrete value contained in the status will be one of
  * the members of the `crypto_status_value` enum below.
  */
-typedef status_t crypto_status_t;
+typedef status_t otcrypto_status_t;
 
 /**
  * Possible status values for the cryptolib.
  *
- * As long as the OTCRYPTO_STATUS_DEBUG define is unset, all `crypto_status_t`
+ * As long as the OTCRYPTO_STATUS_DEBUG define is unset, all `otcrypto_status_t`
  * codes returned by the cryptolib should be bit-by-bit equivalent with one of
  * the values in this enum.
  *
@@ -57,21 +57,21 @@ typedef status_t crypto_status_t;
  * without changing all error codes. Remove the seed (-s argument) to generate
  * completely new 11-bit values.
  */
-typedef enum crypto_status_value {
+typedef enum otcrypto_status_value{
   // Status is OK; no errors.
-  kCryptoStatusOK = (int32_t)0x739,
+  kOtcryptoStatusOk = (int32_t)0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
+  kOtcryptoStatusBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = (int32_t)0x80005340 | kAborted,
+  kOtcryptoStatusInternalError = (int32_t)0x80005340 | kAborted,
   // Error after which it is not OK to retry (e.g. integrity check).
   kCryptoStatusFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
+  kOtcryptoStatusAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
-} crypto_status_value_t;
+  kOtcryptoStatusNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
+} otcrypto_status_value_t;
 
 /**
  * Struct to hold a fixed-length byte array.

@@ -16,7 +16,7 @@ namespace status_unittest {
 namespace {
 
 TEST(Status, OkIsHardenedTrue) {
-  EXPECT_EQ(kCryptoStatusOK, kHardenedBoolTrue);
+  EXPECT_EQ(kOtcryptoStatusOk, kHardenedBoolTrue);
 }
 
 int HammingDistance(int32_t a, int32_t b) {
@@ -27,26 +27,26 @@ int HammingDistance(int32_t a, int32_t b) {
 // Check the Hamming distances of the top-level error codes.
 constexpr int kMinimumHammingDistance = 5;
 TEST(Status, TopLevelStatusHammingDistance) {
-  std::array<crypto_status_t, 5> error_codes = {
+  std::array<otcrypto_status_t, 5> error_codes = {
       OTCRYPTO_BAD_ARGS, OTCRYPTO_RECOV_ERR, OTCRYPTO_FATAL_ERR,
       OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
-  EXPECT_GE(HammingDistance(kCryptoStatusOK, 0), kMinimumHammingDistance)
-      << "The 'OK' status code " << kCryptoStatusOK << " is too close to zero.";
+  EXPECT_GE(HammingDistance(kOtcryptoStatusOk, 0), kMinimumHammingDistance)
+      << "The 'OK' status code " << kOtcryptoStatusOk << " is too close to zero.";
 
-  for (const crypto_status_t status1 : error_codes) {
+  for (const otcrypto_status_t status1 : error_codes) {
     // Expect a significant Hamming distance from 0.
     EXPECT_GE(HammingDistance(status1.value, 0), kMinimumHammingDistance)
         << "Error code " << status1.value << " is too close to zero.";
     // Expect an extra significant Hamming distance from the "OK" code.
-    EXPECT_GE(HammingDistance(status1.value, kCryptoStatusOK),
+    EXPECT_GE(HammingDistance(status1.value, kOtcryptoStatusOk),
               kMinimumHammingDistance)
         << "Error code " << status1.value << " is too close to the 'OK' value ("
-        << kCryptoStatusOK << ").";
+        << kOtcryptoStatusOk << ").";
 
     // Expect a significant Hamming distance from all other error codes.
-    for (const crypto_status_t status2 : error_codes) {
+    for (const otcrypto_status_t status2 : error_codes) {
       if (status1.value != status2.value) {
         EXPECT_GE(HammingDistance(status1.value, status2.value),
                   kMinimumHammingDistance)
@@ -99,7 +99,7 @@ TEST(Status, HardenedTryOfErrorWithTruthyArgIsError) {
             false);
 }
 
-__attribute__((noinline)) crypto_status_t try_interpret(status_t status) {
+__attribute__((noinline)) otcrypto_status_t try_interpret(status_t status) {
   HARDENED_TRY(status);
   return OTCRYPTO_OK;
 }

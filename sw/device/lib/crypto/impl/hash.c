@@ -202,7 +202,7 @@ static status_t hmac_sha256(crypto_const_byte_buf_t message,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
                               hash_digest_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -241,7 +241,7 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
                                    hash_digest_t *digest) {
   switch (digest->mode) {
     case kHashXofModeShake128:
@@ -259,7 +259,7 @@ crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_xof_cshake(
+otcrypto_status_t otcrypto_xof_cshake(
     crypto_const_byte_buf_t input_message,
     crypto_const_byte_buf_t function_name_string,
     crypto_const_byte_buf_t customization_string, hash_digest_t *digest) {
@@ -299,7 +299,7 @@ crypto_status_t otcrypto_xof_cshake(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -333,7 +333,7 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_byte_buf_t input_message) {
   if (ctx == NULL || (input_message.data == NULL && input_message.len != 0)) {
     return OTCRYPTO_BAD_ARGS;
@@ -372,7 +372,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     hash_digest_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
