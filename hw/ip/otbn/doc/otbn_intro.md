@@ -276,18 +276,18 @@ Look below for instructions on how to reproduce these benchmarks.
 
 | Operation | Cycles | Commit | Target | Constant time |
 |-----------|-------:|--------|:-------|---------------|
-| P256 scalar mult | 833356 | 875b3a | p256_scalar_mult_test | yes |
-| ECDSA-P256 sign | 867291 | 875b3a | p256_ecdsa_sign_test | yes |
-| ECDH-P256 verify | 517465 | 875b3a | p256_ecdsa_verify_test | no |
+| P256 scalar mult | 670089 | 5bcd7d | p256_scalar_mult_test | yes |
+| ECDSA-P256 sign | 704126 | 5bcd7d | p256_ecdsa_sign_test | yes |
+| ECDH-P256 verify | 420220 | 5bcd7d | p256_ecdsa_verify_test | no |
 | P384 scalar mult | 1632638 | 875b3a | p384_scalar_mult_test | yes |
 | ECDSA-P384 sign | 1697985 | 875b3a | p384_ecdsa_sign_test | yes |
 | ECDSA-P384 verify | 1075092 | 875b3a | p384_ecdsa_verify_test | no |
 | X25519 | 114488 | 636cb7 |  x25519_test1 | yes |
-| RSA-2048 modexp (e=65537) | 585405 | 5e539c | rsa_2048_enc_test | no |
-| RSA-2048 modexp | 19860177 | 5e539c | rsa_2048_dec_test | yes |
-| RSA-3072 modexp (e=65537) | 1262245 | 5e539c | rsa_3072_enc_test | no |
-| RSA-3072 modexp | 64041529 | 5e539c | rsa_3072_dec_test | yes |
-| RSA-4096 modexp (e=65537) | 2196429 | 5e539c | rsa_4096_enc_test | no |
+| RSA-2048 modexp (e=65537) | 132028 | 5bcd7d | rsa_2048_enc_test | no |
+| RSA-2048 modexp | 18889021 | 5bcd7d | rsa_2048_dec_test | yes |
+| RSA-3072 modexp (e=65537)  | 282128 | 5bcd7d | rsa_3072_enc_test | no |
+| RSA-3072 modexp  | 61303537 | 5bcd7d | rsa_3072_dec_test | yes |
+| RSA-4096 modexp (e=65537)  | 489572 | 5bcd7d | rsa_4096_enc_test | no |
 | SHA-256 (2 blocks) | 6851 | 875b3a | sha256_test | yes |
 | SHA-512 (1 block) | 3971 | 875b3a | sha512_test | yes |
 
@@ -307,7 +307,7 @@ To build the tests with Bazel, run `bazel build //sw/otbn/crypto/tests:<target_n
 Then you'll need to find the `.elf` file that Bazel generates; for me this is e.g. `bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/otbn/crypto/tests/p256_ecdsa_verify_test.elf`.
 You can find the path for yours by running:
 ```
-bazel aquery 'outputs(".*.elf", //sw/otbn/crypto/tests:p256_ecdsa_verify_test)' | grep 'Outputs'`
+bazel aquery 'outputs(".*.elf", //sw/otbn/crypto/tests:p256_ecdsa_verify_test)' | grep 'Outputs'
 ```
 
 Alternatively, you can build the tests manually with `otbn_as.py` and `otbn_ld.py`, as described in the [OTBN development guide](developing_otbn.md#build-otbn-software).
