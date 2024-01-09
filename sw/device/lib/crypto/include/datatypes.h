@@ -159,22 +159,22 @@ typedef enum otcrypto_key_type{
  *
  * Values are hardened.
  */
-typedef enum aes_key_mode {
+typedef enum otcrypto_aes_key_mode{
   // Mode AES ECB.
-  kAesKeyModeEcb = 0x1b6,
+  kOtcryptoAesKeyModeEcb = 0x1b6,
   // Mode AES CBC.
-  kAesKeyModeCbc = 0xf3a,
+  kOtcryptoAesKeyModeCbc = 0xf3a,
   // Mode AES CFB.
-  kAesKeyModeCfb = 0x0f9,
+  kOtcryptoAesKeyModeCfb = 0x0f9,
   // Mode AES OFB.
-  kAesKeyModeOfb = 0xb49,
+  kOtcryptoAesKeyModeOfb = 0xb49,
   // Mode AES CTR.
-  kAesKeyModeCtr = 0x4ce,
+  kOtcryptoAesKeyModeCtr = 0x4ce,
   // Mode AES GCM.
-  kAesKeyModeGcm = 0xaa5,
+  kOtcryptoAesKeyModeGcm = 0xaa5,
   // Mode AES KWP.
-  kAesKeyModeKwp = 0x7d5,
-} aes_key_mode_t;
+  kOtcryptoAesKeyModeKwp = 0x7d5,
+} otcrypto_aes_key_mode_t;
 
 /**
  * Enum to specify the HMAC modes that use a key.
@@ -184,14 +184,14 @@ typedef enum aes_key_mode {
  *
  * Values are hardened.
  */
-typedef enum hmac_key_mode {
+typedef enum otcrypto_hmac_key_mode{
   // Mode HMAC SHA256.
-  kHmacKeyModeSha256 = 0x7fd,
+  kOtcryptoHmacKeyModeSha256 = 0x7fd,
   // Mode HMAC SHA384.
-  kHmacKeyModeSha384 = 0x43b,
+  kOtcryptoHmacKeyModeSha384 = 0x43b,
   // Mode HMAC SHA512.
-  kHmacKeyModeSha512 = 0x7a2,
-} hmac_key_mode_t;
+  kOtcryptoHmacKeyModeSha512 = 0x7a2,
+} otcrypto_hmac_key_mode_t;
 
 /**
  * Enum to specify the KMAC modes that use a key.
@@ -201,12 +201,12 @@ typedef enum hmac_key_mode {
  *
  * Values are hardened.
  */
-typedef enum kmac_key_mode {
+typedef enum otcrypto_kmac_key_mode{
   // Mode KMAC128.
-  kKmacKeyModeKmac128 = 0xa56,
+  kOtcryptoKmacKeyModeKmac128 = 0xa56,
   // Mode KMAC256.
-  kKmacKeyModeKmac256 = 0x663,
-} kmac_key_mode_t;
+  kOtcryptoKmacKeyModeKmac256 = 0x663,
+} otcrypto_kmac_key_mode_t;
 
 /**
  * Enum to specify the RSA modes that use a key.
@@ -216,14 +216,14 @@ typedef enum kmac_key_mode {
  *
  * Values are hardened.
  */
-typedef enum rsa_key_mode {
+typedef enum otcrypto_rsa_key_mode{
   // Mode RSA Sign, RSASSA-PKCS.
-  kRsaKeyModeSignPkcs = 0x3d4,
+  kOtcryptoRsaKeyModeSignPkcs = 0x3d4,
   // Mode RSA Sign, RSASSA-PSS.
-  kRsaKeyModeSignPss = 0x761,
+  kOtcryptoRsaKeyModeSignPss = 0x761,
   // Mode RSA Encrypt, RSAES-OAEP.
-  kRsaKeyModeEncryptOaep = 0x585,
-} rsa_key_mode_t;
+  kOtcryptoRsaKeyModeEncryptOaep = 0x585,
+} otcrypto_rsa_key_mode_t;
 
 /**
  * Enum to specify the ECC modes that use a key.
@@ -233,16 +233,16 @@ typedef enum rsa_key_mode {
  *
  * Values are hardened.
  */
-typedef enum ecc_key_mode {
+typedef enum otcrypto_ecc_key_mode{
   // Mode ECDSA.
-  kEccKeyModeEcdsa = 0x4e5,
+  kOtcryptoEccKeyModeEcdsa = 0x4e5,
   // Mode ECDH.
-  kEccKeyModeEcdh = 0x6bb,
+  kOtcryptoEccKeyModeEcdh = 0x6bb,
   // Mode Ed25519.
-  kEccKeyModeEd25519 = 0xd32,
+  kOtcryptoEccKeyModeEd25519 = 0xd32,
   // Mode X25519.
-  kEccKeyModeX25519 = 0x276,
-} ecc_key_mode_t;
+  kOtcryptoEccKeyModeX25519 = 0x276,
+} otcrypto_ecc_key_mode_t;
 
 /**
  * Enum to specify the KDF modes that use a key.
@@ -252,12 +252,12 @@ typedef enum ecc_key_mode {
  *
  * Values are hardened.
  */
-typedef enum kdf_key_mode {
+typedef enum otcrypto_kdf_key_mode{
   // Mode KDF-CTR with HMAC as PRF.
-  kKdfKeyModeCtrHMAC = 0x127,
+  kOtcryptoKdfKeyModeCtrHmac = 0x127,
   // Mode KDF-CTR with KMAC as PRF.
-  kKdfKeyModeCtrKMAC = 0x3dd,
-} kdf_key_mode_t;
+  kOtcryptoKdfKeyModeCtrKmac = 0x3dd,
+} otcrypto_kdf_key_mode_t;
 
 /**
  * Enum for opentitan crypto modes that use a key.
@@ -270,47 +270,47 @@ typedef enum kdf_key_mode {
  */
 typedef enum key_mode {
   // Key is intended for AES ECB mode.
-  kKeyModeAesEcb = kOtcryptoKeyTypeAes << 16 | kAesKeyModeEcb,
+  kKeyModeAesEcb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeEcb,
   // Key is intended for AES CBC mode.
-  kKeyModeAesCbc = kOtcryptoKeyTypeAes << 16 | kAesKeyModeCbc,
+  kKeyModeAesCbc = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCbc,
   // Key is intended for AES CFB mode.
-  kKeyModeAesCfb = kOtcryptoKeyTypeAes << 16 | kAesKeyModeCfb,
+  kKeyModeAesCfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCfb,
   // Key is intended for AES OFB mode.
-  kKeyModeAesOfb = kOtcryptoKeyTypeAes << 16 | kAesKeyModeOfb,
+  kKeyModeAesOfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeOfb,
   // Key is intended for AES CTR mode.
-  kKeyModeAesCtr = kOtcryptoKeyTypeAes << 16 | kAesKeyModeCtr,
+  kKeyModeAesCtr = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCtr,
   // Key is intended for AES GCM mode.
-  kKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kAesKeyModeGcm,
+  kKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeGcm,
   // Key is intended for AES KWP mode.
-  kKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kAesKeyModeKwp,
+  kKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
   // Key is intended for HMAC SHA256 mode.
-  kKeyModeHmacSha256 = kOtcryptoKeyTypeHmac << 16 | kHmacKeyModeSha256,
+  kKeyModeHmacSha256 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
   // Key is intended for HMAC SHA384 mode.
-  kKeyModeHmacSha384 = kOtcryptoKeyTypeHmac << 16 | kHmacKeyModeSha384,
+  kKeyModeHmacSha384 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha384,
   // Key is intended for HMAC SHA512 mode.
-  kKeyModeHmacSha512 = kOtcryptoKeyTypeHmac << 16 | kHmacKeyModeSha512,
+  kKeyModeHmacSha512 = kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha512,
   // Key is intended for KMAC128 mode.
-  kKeyModeKmac128 = kOtcryptoKeyTypeKmac << 16 | kKmacKeyModeKmac128,
+  kKeyModeKmac128 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac128,
   // Key is intended for KMAC256 mode.
-  kKeyModeKmac256 = kOtcryptoKeyTypeKmac << 16 | kKmacKeyModeKmac256,
+  kKeyModeKmac256 = kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac256,
   // Key is intended for RSA signature RSASSA-PKCS mode.
-  kKeyModeRsaSignPkcs = kOtcryptoKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
+  kKeyModeRsaSignPkcs = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
-  kKeyModeRsaSignPss = kOtcryptoKeyTypeRsa << 16 | kRsaKeyModeSignPss,
+  kKeyModeRsaSignPss = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPss,
   // Key is intended for RSA encryption RSAES-OAEP mode.
-  kKeyModeRsaEncryptOaep = kOtcryptoKeyTypeRsa << 16 | kRsaKeyModeEncryptOaep,
+  kKeyModeRsaEncryptOaep = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
   // Key is intended for ECDSA mode.
-  kKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kEccKeyModeEcdsa,
+  kKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsa,
   // Key is intended for ECDH mode.
-  kKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kEccKeyModeEcdh,
+  kKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdh,
   // Key is intended for Ed25519 mode.
-  kKeyModeEd25519 = kOtcryptoKeyTypeEcc << 16 | kEccKeyModeEd25519,
+  kKeyModeEd25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
   // Key is intended for X25519 mode.
-  kKeyModeX25519 = kOtcryptoKeyTypeEcc << 16 | kEccKeyModeX25519,
+  kKeyModeX25519 = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
   // Key is intended for KDF-CTR with HMAC as PRF.
-  kKeyModeKdfCtrHmac = kOtcryptoKeyTypeKdf << 16 | kKdfKeyModeCtrHMAC,
+  kKeyModeKdfCtrHmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
   // Key is intended for KDF-CTR with KMAC as PRF.
-  kKeyModeKdfCtrKmac = kOtcryptoKeyTypeKdf << 16 | kKdfKeyModeCtrKMAC,
+  kKeyModeKdfCtrKmac = kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrKmac,
 } key_mode_t;
 
 /**
