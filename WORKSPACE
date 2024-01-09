@@ -7,6 +7,12 @@
 
 workspace(name = "lowrisc_opentitan")
 
+# Bazel skylib library
+load("//third_party/skylib:repos.bzl", "bazel_skylib_repos")
+bazel_skylib_repos()
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+bazel_skylib_workspace()
+
 # CRT is the Compiler Repository Toolkit.  It contains the configuration for
 # the windows compiler.
 load("//third_party/crt:repos.bzl", "crt_repos")
@@ -148,10 +154,6 @@ nonhermetic_repo(name = "nonhermetic")
 # Binary firmware image for HyperDebug
 load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
 hyperdebug_repos()
-
-# Bazel skylib library
-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-bazel_skylib_workspace()
 
 register_toolchains(
     "//rules/opentitan:localtools",

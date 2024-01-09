@@ -83,6 +83,10 @@ rust_library(
 cargo_build_script(
     name = "openssl-sys_build_script",
     srcs = glob(["**/*.rs"]),
+    build_script_env = {
+        "OPENSSL_STATIC": "1",
+        "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
+    },
     crate_name = "build_script_main",
     crate_root = "build/main.rs",
     data = glob(
@@ -108,6 +112,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
+    toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
     version = "0.9.95",
     visibility = ["//visibility:private"],
     deps = [
