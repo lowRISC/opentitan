@@ -19,12 +19,12 @@
 /**
  * Ensure that the hash context is large enough for all SHA2 state structs.
  */
-static_assert(sizeof(hash_context_t) >= sizeof(sha256_state_t),
-              "hash_context_t must be big enough to hold sha256_state_t");
-static_assert(sizeof(hash_context_t) >= sizeof(sha384_state_t),
-              "hash_context_t must be big enough to hold sha384_state_t");
-static_assert(sizeof(hash_context_t) >= sizeof(sha512_state_t),
-              "hash_context_t must be big enough to hold sha512_state_t");
+static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha256_state_t),
+              "otcrypto_hash_context_t must be big enough to hold sha256_state_t");
+static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha384_state_t),
+              "otcrypto_hash_context_t must be big enough to hold sha384_state_t");
+static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha512_state_t),
+              "otcrypto_hash_context_t must be big enough to hold sha512_state_t");
 /**
  * Ensure that all SHA2 state structs are suitable for `hardened_memcpy()`.
  */
@@ -43,7 +43,7 @@ static_assert(sizeof(sha512_state_t) % sizeof(uint32_t) == 0,
  * @param[out] ctx Generic hash context to copy to.
  * @param state SHA-256 context object.
  */
-static void sha256_state_save(hash_context_t *restrict ctx,
+static void sha256_state_save(otcrypto_hash_context_t *restrict ctx,
                               const sha256_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -58,7 +58,7 @@ static void sha256_state_save(hash_context_t *restrict ctx,
  * @param ctx Generic hash context to restore from.
  * @param[out] state Destination SHA-256 context object.
  */
-static void sha256_state_restore(const hash_context_t *restrict ctx,
+static void sha256_state_restore(const otcrypto_hash_context_t *restrict ctx,
                                  sha256_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -73,7 +73,7 @@ static void sha256_state_restore(const hash_context_t *restrict ctx,
  * @param[out] ctx Generic hash context to copy to.
  * @param state SHA-384 context object.
  */
-static void sha384_state_save(hash_context_t *restrict ctx,
+static void sha384_state_save(otcrypto_hash_context_t *restrict ctx,
                               const sha384_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -88,7 +88,7 @@ static void sha384_state_save(hash_context_t *restrict ctx,
  * @param ctx Generic hash context to restore from.
  * @param[out] state Destination SHA-384 context object.
  */
-static void sha384_state_restore(const hash_context_t *restrict ctx,
+static void sha384_state_restore(const otcrypto_hash_context_t *restrict ctx,
                                  sha384_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -103,7 +103,7 @@ static void sha384_state_restore(const hash_context_t *restrict ctx,
  * @param[out] ctx Generic hash context to copy to.
  * @param state SHA-512 context object.
  */
-static void sha512_state_save(hash_context_t *restrict ctx,
+static void sha512_state_save(otcrypto_hash_context_t *restrict ctx,
                               const sha512_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -118,7 +118,7 @@ static void sha512_state_save(hash_context_t *restrict ctx,
  * @param ctx Generic hash context to restore from.
  * @param[out] state Destination SHA-512 context object.
  */
-static void sha512_state_restore(const hash_context_t *restrict ctx,
+static void sha512_state_restore(const otcrypto_hash_context_t *restrict ctx,
                                  sha512_state_t *restrict state) {
   // As per the `hardened_memcpy()` documentation, it is OK to cast to
   // `uint32_t *` here as long as `state` is word-aligned, which it must be
@@ -299,7 +299,7 @@ otcrypto_status_t otcrypto_xof_cshake(
   return OTCRYPTO_FATAL_ERR;
 }
 
-otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *const ctx,
                                    otcrypto_hash_mode_t hash_mode) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -333,7 +333,7 @@ otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_update(otcrypto_hash_context_t *const ctx,
                                      otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL || (input_message.data == NULL && input_message.len != 0)) {
     return OTCRYPTO_BAD_ARGS;
@@ -372,7 +372,7 @@ otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
                                     otcrypto_hash_digest_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

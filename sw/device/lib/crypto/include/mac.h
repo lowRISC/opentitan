@@ -38,8 +38,8 @@ typedef enum kmac_mode {
  * with #otcrypto_hmac_init.
  */
 typedef struct hmac_context {
-  hash_context_t inner;
-  hash_context_t outer;
+  otcrypto_hash_context_t inner;
+  otcrypto_hash_context_t outer;
 } hmac_context_t;
 
 /**

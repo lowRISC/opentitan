@@ -108,7 +108,7 @@ static status_t empty_test(void) {
  * Test streaming API with a one-block message in one update.
  */
 static status_t one_update_streaming_test(void) {
-  hash_context_t ctx;
+  otcrypto_hash_context_t ctx;
   TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
   otcrypto_const_byte_buf_t msg_buf = {
@@ -135,7 +135,7 @@ static status_t one_update_streaming_test(void) {
  * Test streaming API with a two-block message in multiple updates.
  */
 static status_t multiple_update_streaming_test(void) {
-  hash_context_t ctx;
+  otcrypto_hash_context_t ctx;
   TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
   // Send 0 bytes, then 1, then 2, etc. until message is done.

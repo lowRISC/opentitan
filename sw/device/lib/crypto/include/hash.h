@@ -25,12 +25,12 @@ extern "C" {
  * Representation is internal to the hash implementation; initialize
  * with #otcrypto_hash_init.
  */
-typedef struct hash_context {
+typedef struct otcrypto_hash_context{
   // Required hash mode.
   otcrypto_hash_mode_t mode;
   // Context for the hash operation.
   uint32_t data[52];
-} hash_context_t;
+} otcrypto_hash_context_t;
 
 /**
  * Performs the required hash function on the input data.
@@ -103,7 +103,7 @@ otcrypto_status_t otcrypto_xof_cshake(
  * @param hash_mode Required hash mode.
  * @return Result of the hash init operation.
  */
-otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *const ctx,
                                    otcrypto_hash_mode_t hash_mode);
 
 /**
@@ -120,7 +120,7 @@ otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the hash update operation.
  */
-otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_update(otcrypto_hash_context_t *const ctx,
                                      otcrypto_const_byte_buf_t input_message);
 
 /**
@@ -139,7 +139,7 @@ otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @param[out] digest Output digest after hashing the input blocks.
  * @return Result of the hash final operation.
  */
-otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
+otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
                                     otcrypto_hash_digest_t *digest);
 
 #ifdef __cplusplus
