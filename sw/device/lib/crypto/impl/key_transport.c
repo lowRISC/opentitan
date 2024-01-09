@@ -14,7 +14,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
-crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
+otcrypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
                                           crypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -54,7 +54,7 @@ crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
+otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
                                        crypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -81,7 +81,7 @@ crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_import_blinded_key(
+otcrypto_status_t otcrypto_import_blinded_key(
     const crypto_const_word32_buf_t key_share0,
     const crypto_const_word32_buf_t key_share1,
     crypto_blinded_key_t *blinded_key) {
@@ -120,7 +120,7 @@ crypto_status_t otcrypto_import_blinded_key(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_export_blinded_key(
+otcrypto_status_t otcrypto_export_blinded_key(
     const crypto_blinded_key_t blinded_key, crypto_word32_buf_t *key_share0,
     crypto_word32_buf_t *key_share1) {
   if (blinded_key.keyblob == NULL || key_share0 == NULL || key_share1 == NULL ||

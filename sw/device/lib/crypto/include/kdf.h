@@ -53,7 +53,7 @@ typedef enum kdf_type {
  * @param[out] keying_material Pointer to the blinded keying material.
  * @return Result of the key derivation operation.
  */
-crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
+otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
                                  kdf_type_t kdf_mode, key_mode_t key_mode,
                                  size_t required_bit_len,
                                  crypto_blinded_key_t keying_material);
@@ -85,7 +85,7 @@ crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
  * @param[out] derived_key Derived keying material.
  * @return Result of the key derivation operation.
  */
-crypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_key,
+otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_key,
                                   crypto_const_byte_buf_t salt,
                                   crypto_const_byte_buf_t info,
                                   crypto_blinded_key_t *derived_key);
@@ -114,7 +114,7 @@ crypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_key,
  * @param[out] prk Extracted pseudo-random key.
  * @return Result of the key derivation operation.
  */
-crypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
                                           crypto_const_byte_buf_t salt,
                                           crypto_blinded_key_t *prk);
 
@@ -140,7 +140,7 @@ crypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
  * @param[out] okm Blinded output key material.
  * @return Result of the key derivation operation.
  */
-crypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
                                          crypto_const_byte_buf_t info,
                                          crypto_blinded_key_t *okm);
 

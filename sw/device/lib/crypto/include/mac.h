@@ -59,7 +59,7 @@ typedef struct hmac_context {
  * @param[out] tag Output authentication tag.
  * @return The result of the HMAC operation.
  */
-crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
                               crypto_word32_buf_t *tag);
 
@@ -85,7 +85,7 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  * @param[out] tag Output authentication tag.
  * @return The result of the KMAC operation.
  */
-crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
                               kmac_mode_t kmac_mode,
                               crypto_const_byte_buf_t customization_string,
@@ -105,7 +105,7 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
  * @param hash_mode Hash function to use.
  * @return Result of the HMAC init operation.
  */
-crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
+otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                    const crypto_blinded_key_t *key);
 
 /**
@@ -122,7 +122,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the HMAC update operation.
  */
-crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
                                      crypto_const_byte_buf_t input_message);
 
 /**
@@ -142,7 +142,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
  * @param[out] tag Output authentication tag.
  * @return Result of the HMAC final operation.
  */
-crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
                                     crypto_word32_buf_t *tag);
 
 #ifdef __cplusplus

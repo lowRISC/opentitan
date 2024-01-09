@@ -35,7 +35,7 @@ static_assert(kRsa3072PrivateKeyblobBytes == sizeof(rsa_3072_private_key_t),
 static_assert(kRsa4096PrivateKeyblobBytes == sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
 
-crypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
+otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
                                     crypto_unblinded_key_t *public_key,
                                     crypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
@@ -65,7 +65,7 @@ static status_t rsa_mode_check(const key_mode_t mode) {
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_public_key_construct(
+otcrypto_status_t otcrypto_rsa_public_key_construct(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t exponent,
     crypto_unblinded_key_t *public_key) {
   if (modulus.data == NULL || public_key == NULL || public_key->key == NULL) {
@@ -167,7 +167,7 @@ static status_t private_key_structural_check(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_private_key_from_exponents(
+otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t d_share0, crypto_const_word32_buf_t d_share1,
     crypto_blinded_key_t *private_key) {
@@ -246,7 +246,7 @@ crypto_status_t otcrypto_rsa_private_key_from_exponents(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_keypair_from_cofactor(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t cofactor_share0,
     crypto_const_word32_buf_t cofactor_share1,
@@ -286,7 +286,7 @@ crypto_status_t otcrypto_rsa_keypair_from_cofactor(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
                                   const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
                                   crypto_word32_buf_t *signature) {
@@ -295,7 +295,7 @@ crypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
   return otcrypto_rsa_sign_async_finalize(signature);
 }
 
-crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
                                     const hash_digest_t *message_digest,
                                     rsa_padding_t padding_mode,
                                     crypto_const_word32_buf_t signature,
@@ -305,7 +305,7 @@ crypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
                                             verification_result);
 }
 
-crypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
                                      const hash_mode_t hash_mode,
                                      crypto_const_byte_buf_t message,
                                      crypto_const_byte_buf_t label,
@@ -315,7 +315,7 @@ crypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
   return otcrypto_rsa_encrypt_async_finalize(ciphertext);
 }
 
-crypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
                                      const hash_mode_t hash_mode,
                                      crypto_const_word32_buf_t ciphertext,
                                      crypto_const_byte_buf_t label,
@@ -407,7 +407,7 @@ static status_t public_key_structural_check(
   return rsa_mode_check(public_key->key_mode);
 }
 
-crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
+otcrypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
@@ -427,7 +427,7 @@ crypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_keygen_async_finalize(
+otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
@@ -482,7 +482,7 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     rsa_size_t size, crypto_const_word32_buf_t modulus, uint32_t e,
     crypto_const_word32_buf_t cofactor_share0,
     crypto_const_word32_buf_t cofactor_share1) {
@@ -530,7 +530,7 @@ crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
+otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
@@ -608,7 +608,7 @@ static status_t key_mode_padding_check(key_mode_t key_mode,
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_sign_async_start(
+otcrypto_status_t otcrypto_rsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
     const hash_digest_t *message_digest, rsa_padding_t padding_mode) {
   // Check for NULL pointers.
@@ -664,7 +664,7 @@ crypto_status_t otcrypto_rsa_sign_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_sign_async_finalize(
+otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     crypto_word32_buf_t *signature) {
   // Check for NULL pointers.
   if (signature == NULL || signature->data == NULL) {
@@ -691,7 +691,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_verify_async_start(
+otcrypto_status_t otcrypto_rsa_verify_async_start(
     const crypto_unblinded_key_t *public_key,
     crypto_const_word32_buf_t signature) {
   // Check for NULL pointers.
@@ -747,7 +747,7 @@ crypto_status_t otcrypto_rsa_verify_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_verify_async_finalize(
+otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const hash_digest_t *message_digest, rsa_padding_t padding_mode,
     hardened_bool_t *verification_result) {
   // Check for NULL pointers.
@@ -766,7 +766,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
                                        verification_result);
 }
 
-crypto_status_t otcrypto_rsa_encrypt_async_start(
+otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const crypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
     crypto_const_byte_buf_t message, crypto_const_byte_buf_t label) {
   // Check for NULL pointers.
@@ -825,7 +825,7 @@ crypto_status_t otcrypto_rsa_encrypt_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_encrypt_async_finalize(
+otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     crypto_word32_buf_t *ciphertext) {
   // Check for NULL pointers.
   if (ciphertext == NULL || ciphertext->data == NULL) {
@@ -854,7 +854,7 @@ crypto_status_t otcrypto_rsa_encrypt_async_finalize(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_decrypt_async_start(
+otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const crypto_blinded_key_t *private_key,
     crypto_const_word32_buf_t ciphertext) {
   // Check for NULL pointers.
@@ -912,7 +912,7 @@ crypto_status_t otcrypto_rsa_decrypt_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_decrypt_async_finalize(
+otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const hash_mode_t hash_mode, crypto_const_byte_buf_t label,
     crypto_byte_buf_t *plaintext) {
   if (plaintext == NULL || plaintext->data == NULL || label.data == NULL) {

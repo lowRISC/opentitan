@@ -25,7 +25,7 @@
  * @param[out] seed_material Resulting entropy complex seed.
  * @return OK or error.
  */
-static crypto_status_t seed_material_construct(
+static otcrypto_status_t seed_material_construct(
     crypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
   if (value.len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -60,7 +60,7 @@ static crypto_status_t seed_material_construct(
  * @param seed_material Entropy complex seed, modified in-place.
  * @return OK or error.
  */
-static crypto_status_t seed_material_xor(
+static otcrypto_status_t seed_material_xor(
     crypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
   if (value.len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -84,7 +84,7 @@ static crypto_status_t seed_material_xor(
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_drbg_instantiate(
+otcrypto_status_t otcrypto_drbg_instantiate(
     crypto_const_byte_buf_t perso_string) {
   // Check for NULL pointers or bad length.
   if (perso_string.len != 0 && perso_string.data == NULL) {
@@ -99,7 +99,7 @@ crypto_status_t otcrypto_drbg_instantiate(
                                    &seed_material);
 }
 
-crypto_status_t otcrypto_drbg_reseed(crypto_const_byte_buf_t additional_input) {
+otcrypto_status_t otcrypto_drbg_reseed(crypto_const_byte_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -112,7 +112,7 @@ crypto_status_t otcrypto_drbg_reseed(crypto_const_byte_buf_t additional_input) {
                               &seed_material);
 }
 
-crypto_status_t otcrypto_drbg_manual_instantiate(
+otcrypto_status_t otcrypto_drbg_manual_instantiate(
     crypto_const_byte_buf_t entropy, crypto_const_byte_buf_t perso_string) {
   // Check for NULL pointers or bad length.
   if (perso_string.len != 0 && perso_string.data == NULL) {
@@ -132,7 +132,7 @@ crypto_status_t otcrypto_drbg_manual_instantiate(
                                    &seed_material);
 }
 
-crypto_status_t otcrypto_drbg_manual_reseed(
+otcrypto_status_t otcrypto_drbg_manual_reseed(
     crypto_const_byte_buf_t entropy, crypto_const_byte_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
@@ -164,7 +164,7 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Buffer for output
  * @return Result status; OK or error
  */
-static crypto_status_t generate(hardened_bool_t fips_check,
+static otcrypto_status_t generate(hardened_bool_t fips_check,
                                 crypto_const_byte_buf_t additional_input,
                                 crypto_word32_buf_t *drbg_output) {
   if (drbg_output == NULL) {
@@ -187,19 +187,19 @@ static crypto_status_t generate(hardened_bool_t fips_check,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_drbg_generate(crypto_const_byte_buf_t additional_input,
+otcrypto_status_t otcrypto_drbg_generate(crypto_const_byte_buf_t additional_input,
                                        crypto_word32_buf_t *drbg_output) {
   return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
                   drbg_output);
 }
 
-crypto_status_t otcrypto_drbg_manual_generate(
+otcrypto_status_t otcrypto_drbg_manual_generate(
     crypto_const_byte_buf_t additional_input,
     crypto_word32_buf_t *drbg_output) {
   return generate(/*fips_check=*/kHardenedBoolFalse, additional_input,
                   drbg_output);
 }
 
-crypto_status_t otcrypto_drbg_uninstantiate(void) {
+otcrypto_status_t otcrypto_drbg_uninstantiate(void) {
   return entropy_csrng_uninstantiate();
 }

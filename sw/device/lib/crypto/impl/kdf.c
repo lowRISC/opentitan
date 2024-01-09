@@ -14,7 +14,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
-crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t ikm,
                                  kdf_type_t kdf_mode, key_mode_t key_mode,
                                  size_t required_bit_len,
                                  crypto_blinded_key_t keying_material) {
@@ -52,7 +52,7 @@ static status_t digest_num_words_from_key_mode(key_mode_t key_mode,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
                                   crypto_const_byte_buf_t salt,
                                   crypto_const_byte_buf_t info,
                                   crypto_blinded_key_t *okm) {
@@ -124,7 +124,7 @@ static status_t hkdf_check_prk(size_t digest_words,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
+otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
                                           crypto_const_byte_buf_t salt,
                                           crypto_blinded_key_t *prk) {
   // Check for null pointers.
@@ -227,7 +227,7 @@ crypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
+otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
                                          crypto_const_byte_buf_t info,
                                          crypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {

@@ -46,7 +46,7 @@ extern "C" {
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
-crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
+otcrypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
                                           crypto_blinded_key_t *key);
 
 /**
@@ -71,7 +71,7 @@ crypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
-crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
+otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
                                        crypto_blinded_key_t *key);
 
 /**
@@ -91,7 +91,7 @@ crypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
  * @param[out] blinded_key Generated blinded key struct.
  * @return Result of the blinded key import operation.
  */
-crypto_status_t otcrypto_import_blinded_key(
+otcrypto_status_t otcrypto_import_blinded_key(
     const crypto_const_word32_buf_t key_share0,
     const crypto_const_word32_buf_t key_share1,
     crypto_blinded_key_t *blinded_key);
@@ -111,7 +111,7 @@ crypto_status_t otcrypto_import_blinded_key(
  * @param[out] key_share1 Second share of the blinded key.
  * @return Result of the blinded key export operation.
  */
-crypto_status_t otcrypto_export_blinded_key(
+otcrypto_status_t otcrypto_export_blinded_key(
     const crypto_blinded_key_t blinded_key, crypto_word32_buf_t *key_share0,
     crypto_word32_buf_t *key_share1);
 
