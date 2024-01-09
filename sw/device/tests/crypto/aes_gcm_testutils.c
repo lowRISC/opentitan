@@ -71,7 +71,7 @@ static otcrypto_aes_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
  * @param[out] output_bytes_written Number of output bytes written.
  * @return OK or error.
  */
-static status_t stream_gcm(aes_gcm_ctx_t *ctx, otcrypto_const_byte_buf_t aad,
+static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t aad,
                            otcrypto_const_byte_buf_t input,
                            otcrypto_byte_buf_t output,
                            size_t *output_bytes_written) {
@@ -182,7 +182,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
 
   if (streaming) {
     uint64_t t_start = profile_start();
-    aes_gcm_ctx_t ctx;
+    otcrypto_aes_gcm_context_t ctx;
     TRY(otcrypto_aes_gcm_encrypt_init(&key, iv, &ctx));
     size_t ciphertext_bytes_written;
     TRY(stream_gcm(&ctx, aad, plaintext, actual_ciphertext,
@@ -278,7 +278,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   otcrypto_aes_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
 
   if (streaming) {
-    aes_gcm_ctx_t ctx;
+    otcrypto_aes_gcm_context_t ctx;
     uint64_t t_start = profile_start();
     TRY(otcrypto_aes_gcm_decrypt_init(&key, iv, &ctx));
     size_t plaintext_bytes_written;

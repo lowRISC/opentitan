@@ -82,9 +82,9 @@ typedef enum otcrypto_aes_padding{
  * Representation is internal to the AES-GCM implementation and subject to
  * change.
  */
-typedef struct aes_gcm_ctx {
+typedef struct otcrypto_aes_gcm_context{
   uint32_t data[98];
-} aes_gcm_ctx_t;
+} otcrypto_aes_gcm_context_t;
 
 /**
  * Get the number of blocks needed for the plaintext length and padding mode.
@@ -225,7 +225,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
-                                              aes_gcm_ctx_t *ctx);
+                                              otcrypto_aes_gcm_context_t *ctx);
 
 /**
  * Initializes the AES-GCM authenticated decryption operation.
@@ -255,7 +255,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const otcrypto_blinded_key_t *ke
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
-                                              aes_gcm_ctx_t *ctx);
+                                              otcrypto_aes_gcm_context_t *ctx);
 /**
  * Updates additional authenticated data for an AES-GCM operation.
  *
@@ -266,7 +266,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const otcrypto_blinded_key_t *ke
  * @param aad Additional authenticated data.
  * @return Result of the update operation.
  */
-otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
                                             otcrypto_const_byte_buf_t aad);
 
 /**
@@ -294,7 +294,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
  * @return Result of the update operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
-    aes_gcm_ctx_t *ctx, otcrypto_const_byte_buf_t input, otcrypto_byte_buf_t output,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input, otcrypto_byte_buf_t output,
     size_t *output_bytes_written);
 
 /**
@@ -316,7 +316,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * @param[out] auth_tag Generated authentication tag.
  * @return Result of the final operation.
  */
-otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_final(otcrypto_aes_gcm_context_t *ctx,
                                                otcrypto_aes_gcm_tag_len_t tag_len,
                                                otcrypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
@@ -346,7 +346,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
  * @return Result of the final operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
-    aes_gcm_ctx_t *ctx, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
 

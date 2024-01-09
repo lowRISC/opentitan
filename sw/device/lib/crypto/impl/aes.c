@@ -30,7 +30,7 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, (uint32_t)kOtcryptoAesModeOfb);
 OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kOtcryptoAesModeCtr);
 
 // Check GHASH context size against the underlying implementation.
-static_assert(sizeof(aes_gcm_ctx_t) >= sizeof(aes_gcm_context_t),
+static_assert(sizeof(otcrypto_aes_gcm_context_t) >= sizeof(aes_gcm_context_t),
               "Size of AES-GCM context object for top-level API must be at "
               "least as large as the context for the "
               "underlying implementation.");
@@ -56,7 +56,7 @@ enum {
  * @param[out] api_ctx Resulting API-facing context object.
  */
 static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
-                                    aes_gcm_ctx_t *api_ctx) {
+                                    otcrypto_aes_gcm_context_t *api_ctx) {
   hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
                   kAesGcmContextNumWords);
 }
@@ -67,7 +67,7 @@ static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
  * @param api_ctx API-facing context object to restore from.
  * @param[out] internal_ctx Resulting internal context object.
  */
-static inline void gcm_context_restore(aes_gcm_ctx_t *api_ctx,
+static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
                                        aes_gcm_context_t *internal_ctx) {
   hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
                   kAesGcmContextNumWords);
@@ -656,7 +656,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
-                                              aes_gcm_ctx_t *ctx) {
+                                              otcrypto_aes_gcm_context_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -678,7 +678,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(const otcrypto_blinded_key_t *ke
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const otcrypto_blinded_key_t *key,
                                               otcrypto_const_word32_buf_t iv,
-                                              aes_gcm_ctx_t *ctx) {
+                                              otcrypto_aes_gcm_context_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -698,7 +698,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(const otcrypto_blinded_key_t *ke
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
                                             otcrypto_const_byte_buf_t aad) {
   if (ctx == NULL || aad.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -724,7 +724,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(aes_gcm_ctx_t *ctx,
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
-    aes_gcm_ctx_t *ctx, otcrypto_const_byte_buf_t input, otcrypto_byte_buf_t output,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input, otcrypto_byte_buf_t output,
     size_t *output_bytes_written) {
   if (ctx == NULL || input.data == NULL || output.data == NULL ||
       output_bytes_written == NULL) {
@@ -765,7 +765,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
+otcrypto_status_t otcrypto_aes_gcm_encrypt_final(otcrypto_aes_gcm_context_t *ctx,
                                                otcrypto_aes_gcm_tag_len_t tag_len,
                                                otcrypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
@@ -806,7 +806,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
-    aes_gcm_ctx_t *ctx, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
   if (ctx == NULL || plaintext == NULL || plaintext_bytes_written == NULL ||
