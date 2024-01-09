@@ -430,14 +430,14 @@ typedef enum otcrypto_hash_mode{
 /**
  * Container for a hash digest.
  */
-typedef struct hash_digest {
+typedef struct otcrypto_hash_digest{
   // Digest type.
   otcrypto_hash_mode_t mode;
   // Digest length in 32-bit words.
   size_t len;
   // Digest data.
   uint32_t *data;
-} hash_digest_t;
+} otcrypto_hash_digest_t;
 
 #ifdef __cplusplus
 }  // extern "C"

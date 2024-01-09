@@ -136,7 +136,7 @@ static void sha512_state_restore(const hash_context_t *restrict ctx,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-static status_t check_digest_len(hash_digest_t *digest) {
+static status_t check_digest_len(otcrypto_hash_digest_t *digest) {
   switch (launder32(digest->mode)) {
     case kOtcryptoHashModeSha3_224:
       if (launder32(digest->len) == (224 / 32)) {
@@ -184,7 +184,7 @@ static status_t check_digest_len(hash_digest_t *digest) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
-                            hash_digest_t *digest) {
+                            otcrypto_hash_digest_t *digest) {
   HARDENED_CHECK_EQ(digest->len, kHmacDigestNumWords);
   HARDENED_CHECK_EQ(digest->mode, kOtcryptoHashModeSha256);
 
@@ -203,7 +203,7 @@ static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
 }
 
 otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
-                              hash_digest_t *digest) {
+                              otcrypto_hash_digest_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -242,7 +242,7 @@ otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
 }
 
 otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
-                                   hash_digest_t *digest) {
+                                   otcrypto_hash_digest_t *digest) {
   switch (digest->mode) {
     case kOtcryptoHashXofModeShake128:
       return kmac_shake_128(input_message.data, input_message.len, digest->data,
@@ -262,7 +262,7 @@ otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
 otcrypto_status_t otcrypto_xof_cshake(
     otcrypto_const_byte_buf_t input_message,
     otcrypto_const_byte_buf_t function_name_string,
-    otcrypto_const_byte_buf_t customization_string, hash_digest_t *digest) {
+    otcrypto_const_byte_buf_t customization_string, otcrypto_hash_digest_t *digest) {
   // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
   // both `customization_string` and `function_name_string` are empty string
   if (customization_string.len == 0 && function_name_string.len == 0) {
@@ -373,7 +373,7 @@ otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
 }
 
 otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    hash_digest_t *digest) {
+                                    otcrypto_hash_digest_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

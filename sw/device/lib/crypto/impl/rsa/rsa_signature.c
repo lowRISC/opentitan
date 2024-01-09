@@ -28,7 +28,7 @@
  * @return Result of the operation (OK or BAD_ARGS).
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_check(const hash_digest_t *digest) {
+static status_t digest_check(const otcrypto_hash_digest_t *digest) {
   size_t num_words = 0;
   switch (digest->mode) {
     case kOtcryptoHashModeSha3_224:
@@ -70,7 +70,7 @@ static status_t digest_check(const hash_digest_t *digest) {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-static status_t message_encode(const hash_digest_t *message_digest,
+static status_t message_encode(const otcrypto_hash_digest_t *message_digest,
                                const rsa_signature_padding_t padding_mode,
                                size_t encoded_message_len,
                                uint32_t *encoded_message) {
@@ -123,7 +123,7 @@ static status_t message_encode(const hash_digest_t *message_digest,
  */
 OT_WARN_UNUSED_RESULT
 static status_t encoded_message_verify(
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode, uint32_t *encoded_message,
     const size_t encoded_message_len, hardened_bool_t *result) {
   // Check that the digest length is OK.
@@ -148,7 +148,7 @@ static status_t encoded_message_verify(
 
 status_t rsa_signature_generate_2048_start(
     const rsa_2048_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode) {
   // Encode the message.
   rsa_2048_int_t encoded_message;
@@ -173,7 +173,7 @@ status_t rsa_signature_verify_2048_start(
 }
 
 status_t rsa_signature_verify_finalize(
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
   // Wait for OTBN to complete and get the size for the last RSA operation.
@@ -216,7 +216,7 @@ status_t rsa_signature_verify_finalize(
 
 status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode) {
   // Encode the message.
   rsa_3072_int_t encoded_message;
@@ -242,7 +242,7 @@ status_t rsa_signature_verify_3072_start(
 
 status_t rsa_signature_generate_4096_start(
     const rsa_4096_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode) {
   // Encode the message.
   rsa_4096_int_t encoded_message;

@@ -82,7 +82,7 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
  * @return OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_info_write(const hash_digest_t *message_digest,
+static status_t digest_info_write(const otcrypto_hash_digest_t *message_digest,
                                   uint32_t *encoding) {
   switch (message_digest->mode) {
     case kOtcryptoHashModeSha256:
@@ -122,7 +122,7 @@ static status_t digest_info_write(const hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pkcs1v15_encode(const hash_digest_t *message_digest,
+status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_digest,
                                      size_t encoded_message_len,
                                      uint32_t *encoded_message) {
   // Initialize all bits of the encoded message to 1.
@@ -155,7 +155,7 @@ status_t rsa_padding_pkcs1v15_encode(const hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pkcs1v15_verify(const hash_digest_t *message_digest,
+status_t rsa_padding_pkcs1v15_verify(const otcrypto_hash_digest_t *message_digest,
                                      const uint32_t *encoded_message,
                                      const size_t encoded_message_len,
                                      hardened_bool_t *result) {
@@ -245,7 +245,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   for (uint32_t i = 0; i < num_iterations - 1; i++) {
     uint32_t ctr = __builtin_bswap32(i);
     memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
-    hash_digest_t digest = {
+    otcrypto_hash_digest_t digest = {
         .data = mask, .len = digest_wordlen, .mode = hash_mode};
     HARDENED_TRY(otcrypto_hash(
         (otcrypto_const_byte_buf_t){
@@ -263,7 +263,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   uint32_t ctr = __builtin_bswap32(num_iterations - 1);
   memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
   uint32_t digest_data[digest_wordlen];
-  hash_digest_t digest = {
+  otcrypto_hash_digest_t digest = {
       .data = digest_data, .len = digest_wordlen, .mode = hash_mode};
   HARDENED_TRY(otcrypto_hash(
       (otcrypto_const_byte_buf_t){.data = hash_input, .len = sizeof(hash_input)},
@@ -302,7 +302,7 @@ static inline void reverse_bytes(size_t input_len, uint32_t *input) {
  * @param[out] h Resulting digest, H.
  */
 OT_WARN_UNUSED_RESULT
-static status_t pss_construct_h(const hash_digest_t *message_digest,
+static status_t pss_construct_h(const otcrypto_hash_digest_t *message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 uint32_t *h) {
   // Create a buffer for M' = (0x0000000000000000 || digest || salt).
@@ -318,7 +318,7 @@ static status_t pss_construct_h(const hash_digest_t *message_digest,
   }
 
   // Construct H = Hash(M').
-  hash_digest_t h_buffer = {
+  otcrypto_hash_digest_t h_buffer = {
       .data = h, .len = message_digest->len, .mode = message_digest->mode};
   return otcrypto_hash(
       (otcrypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
@@ -326,7 +326,7 @@ static status_t pss_construct_h(const hash_digest_t *message_digest,
       &h_buffer);
 }
 
-status_t rsa_padding_pss_encode(const hash_digest_t *message_digest,
+status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 size_t encoded_message_len,
                                 uint32_t *encoded_message) {
@@ -377,7 +377,7 @@ status_t rsa_padding_pss_encode(const hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pss_verify(const hash_digest_t *message_digest,
+status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
                                 uint32_t *encoded_message,
                                 size_t encoded_message_len,
                                 hardened_bool_t *result) {
@@ -504,7 +504,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
       .len = label_bytelen,
   };
   uint32_t lhash_data[digest_wordlen];
-  hash_digest_t lhash = {
+  otcrypto_hash_digest_t lhash = {
       .data = lhash_data,
       .len = ARRAYSIZE(lhash_data),
       .mode = hash_mode,
@@ -626,7 +626,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
       .len = label_bytelen,
   };
   uint32_t lhash_data[digest_wordlen];
-  hash_digest_t lhash = {
+  otcrypto_hash_digest_t lhash = {
       .data = lhash_data,
       .len = digest_wordlen,
       .mode = hash_mode,

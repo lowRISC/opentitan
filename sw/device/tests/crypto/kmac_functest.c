@@ -121,7 +121,7 @@ static status_t run_test_vector(void) {
     digest_num_words++;
   }
   uint32_t digest[digest_num_words];
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .data = digest,
       .len = digest_num_words,
   };

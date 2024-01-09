@@ -47,7 +47,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   }
   uint32_t token_data[token_num_words];
   memset(token_data, 0, sizeof(token_data));
-  hash_digest_t output = {
+  otcrypto_hash_digest_t output = {
       .data = token_data,
       .len = token_num_words,
       .mode = kOtcryptoHashXofModeCshake128,
@@ -66,7 +66,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
   if (otp_ctrl == NULL || output == NULL || output->len != kSha256DigestWords) {
     return INVALID_ARGUMENT();
   }
-  hash_digest_t digest = {
+  otcrypto_hash_digest_t digest = {
       .data = output->data,
       .len = output->len,
       .mode = kOtcryptoHashModeSha256,

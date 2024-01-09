@@ -91,7 +91,7 @@ status_t keygen_then_sign_test(void) {
   otcrypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
                                      .len = kTestMessageLen};
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha256,

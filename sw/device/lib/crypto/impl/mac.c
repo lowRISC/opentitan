@@ -185,7 +185,7 @@ otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   } else {
     // If the key is longer than the hash function block size, we need to hash
     // it and write the digest into the start of K0.
-    hash_digest_t key_digest = {
+    otcrypto_hash_digest_t key_digest = {
         .len = digest_words,
         .data = k0,
         .mode = hash_mode,
@@ -242,7 +242,7 @@ otcrypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
   }
 
   // Create digest buffer that points to the tag.
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .mode = ctx->inner.mode,
       .len = tag->len,
       .data = tag->data,

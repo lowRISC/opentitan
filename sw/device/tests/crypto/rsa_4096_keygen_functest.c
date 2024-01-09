@@ -93,7 +93,7 @@ status_t keygen_then_sign_test(void) {
       .data = kTestMessage,
   };
   uint32_t msg_digest_data[kSha512DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha512,

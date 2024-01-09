@@ -48,7 +48,7 @@ typedef struct hash_context {
  * @return Result of the hash operation.
  */
 otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
-                              hash_digest_t *digest);
+                              otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the SHAKE extendable output function (XOF) on input data.
@@ -62,7 +62,7 @@ otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
  * @return Result of the xof operation.
  */
 otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
-                                   hash_digest_t *digest);
+                                   otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the CSHAKE extendable output function (XOF) on input data.
@@ -85,7 +85,7 @@ otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
 otcrypto_status_t otcrypto_xof_cshake(
     otcrypto_const_byte_buf_t input_message,
     otcrypto_const_byte_buf_t function_name_string,
-    otcrypto_const_byte_buf_t customization_string, hash_digest_t *digest);
+    otcrypto_const_byte_buf_t customization_string, otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
@@ -140,7 +140,7 @@ otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @return Result of the hash final operation.
  */
 otcrypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    hash_digest_t *digest);
+                                    otcrypto_hash_digest_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"
