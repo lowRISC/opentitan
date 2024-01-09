@@ -16,26 +16,26 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'a')
 
-static_assert(kRsa2048PublicKeyBytes == sizeof(rsa_2048_public_key_t),
+static_assert(kOtcryptoRsa2048PublicKeyBytes == sizeof(rsa_2048_public_key_t),
               "RSA-2048 public key size mismatch.");
-static_assert(kRsa3072PublicKeyBytes == sizeof(rsa_3072_public_key_t),
+static_assert(kOtcryptoRsa3072PublicKeyBytes == sizeof(rsa_3072_public_key_t),
               "RSA-3072 public key size mismatch.");
-static_assert(kRsa4096PublicKeyBytes == sizeof(rsa_4096_public_key_t),
+static_assert(kOtcryptoRsa4096PublicKeyBytes == sizeof(rsa_4096_public_key_t),
               "RSA-4096 public key size mismatch.");
-static_assert(kRsa2048PrivateKeyBytes == sizeof(rsa_2048_int_t),
+static_assert(kOtcryptoRsa2048PrivateKeyBytes == sizeof(rsa_2048_int_t),
               "RSA-2048 private key size mismatch.");
-static_assert(kRsa3072PrivateKeyBytes == sizeof(rsa_3072_int_t),
+static_assert(kOtcryptoRsa3072PrivateKeyBytes == sizeof(rsa_3072_int_t),
               "RSA-3072 private key size mismatch.");
-static_assert(kRsa4096PrivateKeyBytes == sizeof(rsa_4096_int_t),
+static_assert(kOtcryptoRsa4096PrivateKeyBytes == sizeof(rsa_4096_int_t),
               "RSA-4096 private key size mismatch.");
-static_assert(kRsa2048PrivateKeyblobBytes == sizeof(rsa_2048_private_key_t),
+static_assert(kOtcryptoRsa2048PrivateKeyblobBytes == sizeof(rsa_2048_private_key_t),
               "RSA-2048 keyblob size mismatch.");
-static_assert(kRsa3072PrivateKeyblobBytes == sizeof(rsa_3072_private_key_t),
+static_assert(kOtcryptoRsa3072PrivateKeyblobBytes == sizeof(rsa_3072_private_key_t),
               "RSA-3072 keyblob size mismatch.");
-static_assert(kRsa4096PrivateKeyblobBytes == sizeof(rsa_4096_private_key_t),
+static_assert(kOtcryptoRsa4096PrivateKeyblobBytes == sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
 
-otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
+otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                     otcrypto_unblinded_key_t *public_key,
                                     otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
@@ -66,7 +66,7 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
 }
 
 otcrypto_status_t otcrypto_rsa_public_key_construct(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t exponent,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t exponent,
     otcrypto_unblinded_key_t *public_key) {
   if (modulus.data == NULL || public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -74,7 +74,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
 
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
           modulus.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -84,7 +84,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       hardened_memcpy(pk->n.data, modulus.data, modulus.len);
       break;
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       if (public_key->key_length != sizeof(rsa_3072_public_key_t) ||
           modulus.len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -94,7 +94,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
       hardened_memcpy(pk->n.data, modulus.data, modulus.len);
       break;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       if (public_key->key_length != sizeof(rsa_4096_public_key_t) ||
           modulus.len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -125,7 +125,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t private_key_structural_check(
-    const rsa_size_t size, const otcrypto_blinded_key_t *private_key) {
+    const otcrypto_rsa_size_t size, const otcrypto_blinded_key_t *private_key) {
   // Check that the key mode is a valid RSA mode.
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
 
@@ -138,20 +138,20 @@ static status_t private_key_structural_check(
   size_t key_length = 0;
   size_t keyblob_length = 0;
   switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      key_length = kRsa2048PrivateKeyBytes;
-      keyblob_length = kRsa2048PrivateKeyblobBytes;
+    case kOtcryptoRsaSize2048:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
+      key_length = kOtcryptoRsa2048PrivateKeyBytes;
+      keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes;
       break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      key_length = kRsa3072PrivateKeyBytes;
-      keyblob_length = kRsa3072PrivateKeyblobBytes;
+    case kOtcryptoRsaSize3072:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
+      key_length = kOtcryptoRsa3072PrivateKeyBytes;
+      keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes;
       break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      key_length = kRsa4096PrivateKeyBytes;
-      keyblob_length = kRsa4096PrivateKeyblobBytes;
+    case kOtcryptoRsaSize4096:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
+      key_length = kOtcryptoRsa4096PrivateKeyBytes;
+      keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes;
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -168,7 +168,7 @@ static status_t private_key_structural_check(
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
     otcrypto_blinded_key_t *private_key) {
   if (modulus.data == NULL || d_share0.data == NULL || d_share1.data == NULL ||
@@ -193,7 +193,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
           modulus.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -208,7 +208,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       break;
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
           modulus.len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -223,7 +223,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       }
       break;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
           modulus.len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
@@ -247,7 +247,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
@@ -260,7 +260,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
   // but they should have been checked above already.
   hardened_bool_t modulus_eq = kHardenedBoolFalse;
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
           modulus.len != kRsa2048NumWords) {
         return OTCRYPTO_RECOV_ERR;
@@ -269,9 +269,9 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
       modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
       return OTCRYPTO_OK;
     }
-    case kRsaSize3072:
+    case kOtcryptoRsaSize3072:
       return OTCRYPTO_NOT_IMPLEMENTED;
-    case kRsaSize4096:
+    case kOtcryptoRsaSize4096:
       return OTCRYPTO_NOT_IMPLEMENTED;
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -288,7 +288,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
 
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                   const otcrypto_hash_digest_t *message_digest,
-                                  rsa_padding_t padding_mode,
+                                  otcrypto_rsa_padding_t padding_mode,
                                   otcrypto_word32_buf_t *signature) {
   HARDENED_TRY(
       otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
@@ -297,7 +297,7 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
 
 otcrypto_status_t otcrypto_rsa_verify(const otcrypto_unblinded_key_t *public_key,
                                     const otcrypto_hash_digest_t *message_digest,
-                                    rsa_padding_t padding_mode,
+                                    otcrypto_rsa_padding_t padding_mode,
                                     otcrypto_const_word32_buf_t signature,
                                     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
@@ -332,19 +332,19 @@ otcrypto_status_t otcrypto_rsa_decrypt(const otcrypto_blinded_key_t *private_key
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t rsa_size_from_public_key(
-    const otcrypto_unblinded_key_t *public_key, rsa_size_t *key_size) {
+    const otcrypto_unblinded_key_t *public_key, otcrypto_rsa_size_t *key_size) {
   switch (launder32(public_key->key_length)) {
-    case kRsa2048PublicKeyBytes:
-      HARDENED_CHECK_EQ(public_key->key_length, kRsa2048PublicKeyBytes);
-      *key_size = kRsaSize2048;
+    case kOtcryptoRsa2048PublicKeyBytes:
+      HARDENED_CHECK_EQ(public_key->key_length, kOtcryptoRsa2048PublicKeyBytes);
+      *key_size = kOtcryptoRsaSize2048;
       return OTCRYPTO_OK;
-    case kRsa3072PublicKeyBytes:
-      HARDENED_CHECK_EQ(public_key->key_length, kRsa3072PublicKeyBytes);
-      *key_size = kRsaSize3072;
+    case kOtcryptoRsa3072PublicKeyBytes:
+      HARDENED_CHECK_EQ(public_key->key_length, kOtcryptoRsa3072PublicKeyBytes);
+      *key_size = kOtcryptoRsaSize3072;
       return OTCRYPTO_OK;
-    case kRsa4096PublicKeyBytes:
-      HARDENED_CHECK_EQ(public_key->key_length, kRsa4096PublicKeyBytes);
-      *key_size = kRsaSize4096;
+    case kOtcryptoRsa4096PublicKeyBytes:
+      HARDENED_CHECK_EQ(public_key->key_length, kOtcryptoRsa4096PublicKeyBytes);
+      *key_size = kOtcryptoRsaSize4096;
       return OTCRYPTO_OK;
     default:
       // No matches.
@@ -364,22 +364,22 @@ static status_t rsa_size_from_public_key(
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t rsa_size_from_private_key(
-    const otcrypto_blinded_key_t *private_key, rsa_size_t *key_size) {
+    const otcrypto_blinded_key_t *private_key, otcrypto_rsa_size_t *key_size) {
   switch (launder32(private_key->config.key_length)) {
-    case kRsa2048PrivateKeyBytes:
+    case kOtcryptoRsa2048PrivateKeyBytes:
       HARDENED_CHECK_EQ(private_key->config.key_length,
-                        kRsa2048PrivateKeyBytes);
-      *key_size = kRsaSize2048;
+                        kOtcryptoRsa2048PrivateKeyBytes);
+      *key_size = kOtcryptoRsaSize2048;
       return OTCRYPTO_OK;
-    case kRsa3072PrivateKeyBytes:
+    case kOtcryptoRsa3072PrivateKeyBytes:
       HARDENED_CHECK_EQ(private_key->config.key_length,
-                        kRsa3072PrivateKeyBytes);
-      *key_size = kRsaSize3072;
+                        kOtcryptoRsa3072PrivateKeyBytes);
+      *key_size = kOtcryptoRsaSize3072;
       return OTCRYPTO_OK;
-    case kRsa4096PrivateKeyBytes:
+    case kOtcryptoRsa4096PrivateKeyBytes:
       HARDENED_CHECK_EQ(private_key->config.key_length,
-                        kRsa4096PrivateKeyBytes);
-      *key_size = kRsaSize4096;
+                        kOtcryptoRsa4096PrivateKeyBytes);
+      *key_size = kOtcryptoRsaSize4096;
       return OTCRYPTO_OK;
     default:
       // No matches.
@@ -407,16 +407,16 @@ static status_t public_key_structural_check(
   return rsa_mode_check(public_key->key_mode);
 }
 
-otcrypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
+otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
   switch (size) {
-    case kRsaSize2048:
+    case kOtcryptoRsaSize2048:
       return rsa_keygen_2048_start();
-    case kRsaSize3072:
+    case kOtcryptoRsaSize3072:
       return rsa_keygen_3072_start();
-    case kRsaSize4096:
+    case kOtcryptoRsaSize4096:
       return rsa_keygen_4096_start();
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -435,7 +435,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
   // Infer the RSA size from the public key modulus.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
   // Check the caller-provided public key buffer.
@@ -446,7 +446,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
 
   // Call the required finalize() operation.
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       // Finalize the keygen operation and retrieve the keys.
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_private_key_t *sk =
@@ -454,7 +454,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       HARDENED_TRY(rsa_keygen_2048_finalize(pk, sk));
       break;
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       // Finalize the keygen operation and retrieve the keys.
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
       rsa_3072_private_key_t *sk =
@@ -462,7 +462,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       HARDENED_TRY(rsa_keygen_3072_finalize(pk, sk));
       break;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       // Finalize the keygen operation and retrieve the keys.
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
       rsa_4096_private_key_t *sk =
@@ -483,7 +483,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1) {
   if (modulus.data == NULL || cofactor_share0.data == NULL ||
@@ -499,7 +499,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
   }
 
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       if (cofactor_share0.len !=
               sizeof(rsa_2048_cofactor_t) / sizeof(uint32_t) ||
           modulus.len != kRsa2048NumWords) {
@@ -515,10 +515,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       pk.e = e;
       return rsa_keygen_from_cofactor_2048_start(&pk, cf);
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     default:
@@ -538,7 +538,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
   // Infer the RSA size from the public key modulus.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
   // Check the caller-provided public key buffer.
@@ -549,17 +549,17 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
 
   // Call the required finalize() operation.
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY(rsa_keygen_from_cofactor_2048_finalize(pk, sk));
       break;
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     default:
@@ -582,17 +582,17 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  * @param padding_mode RSA signature padding scheme.
  */
 static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
-                                       rsa_padding_t padding_mode) {
+                                       otcrypto_rsa_padding_t padding_mode) {
   switch (launder32(padding_mode)) {
-    case kRsaPaddingPkcs:
-      HARDENED_CHECK_EQ(padding_mode, kRsaPaddingPkcs);
+    case kOtcryptoRsaPaddingPkcs:
+      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
       if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
       return OTCRYPTO_OK;
-    case kRsaPaddingPss:
-      HARDENED_CHECK_EQ(padding_mode, kRsaPaddingPss);
+    case kOtcryptoRsaPaddingPss:
+      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
       if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -610,7 +610,7 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
 
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest, rsa_padding_t padding_mode) {
+    const otcrypto_hash_digest_t *message_digest, otcrypto_rsa_padding_t padding_mode) {
   // Check for NULL pointers.
   if (message_digest == NULL || message_digest->data == NULL ||
       private_key == NULL || private_key->keyblob == NULL) {
@@ -618,7 +618,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
   }
 
   // Infer the RSA size from the private key.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_private_key(private_key, &size));
 
   // Check the caller-provided private key buffer.
@@ -635,19 +635,19 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 
   // Start the appropriate signature generation routine.
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_2048_start(
           sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_3072_start(
           sk, message_digest, (rsa_signature_padding_t)padding_mode);
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       return rsa_signature_generate_4096_start(
@@ -708,11 +708,11 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
   }
 
   // Infer the RSA size from the public key.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
   switch (size) {
-    case kRsaSize2048: {
+    case kOtcryptoRsaSize2048: {
       if (signature.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -720,7 +720,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
       rsa_2048_int_t *sig = (rsa_2048_int_t *)signature.data;
       return rsa_signature_verify_2048_start(pk, sig);
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       if (signature.len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -728,7 +728,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
       rsa_3072_int_t *sig = (rsa_3072_int_t *)signature.data;
       return rsa_signature_verify_3072_start(pk, sig);
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       if (signature.len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -748,7 +748,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
-    const otcrypto_hash_digest_t *message_digest, rsa_padding_t padding_mode,
+    const otcrypto_hash_digest_t *message_digest, otcrypto_rsa_padding_t padding_mode,
     hardened_bool_t *verification_result) {
   // Check for NULL pointers.
   if (message_digest == NULL || message_digest->data == NULL ||
@@ -797,21 +797,21 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
   HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeRsaEncryptOaep);
 
   // Infer the RSA size from the public key.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
   switch (launder32(size)) {
-    case kRsaSize2048: {
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
+    case kOtcryptoRsaSize2048: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_2048_public_key_t));
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
       return rsa_encrypt_2048_start(pk, hash_mode, message.data, message.len,
                                     label.data, label.len);
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     default:
@@ -864,7 +864,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
   }
 
   // Infer the RSA size from the private key.
-  rsa_size_t size;
+  otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_private_key(private_key, &size));
 
   // Check the caller-provided private key buffer.
@@ -883,8 +883,8 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
   // Start the appropriate decryption routine.
   switch (launder32(size)) {
-    case kRsaSize2048: {
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
+    case kOtcryptoRsaSize2048: {
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       HARDENED_CHECK_EQ(private_key->keyblob_length,
                         sizeof(rsa_2048_private_key_t));
       if (ciphertext.len != kRsa2048NumWords) {
@@ -895,10 +895,10 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext.data;
       return rsa_decrypt_2048_start(sk, ctext);
     }
-    case kRsaSize3072: {
+    case kOtcryptoRsaSize3072: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
-    case kRsaSize4096: {
+    case kOtcryptoRsaSize4096: {
       return OTCRYPTO_NOT_IMPLEMENTED;
     }
     default:

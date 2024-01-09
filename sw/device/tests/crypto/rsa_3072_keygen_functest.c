@@ -30,17 +30,17 @@ static const otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
   // Allocate buffer for the public key.
-  uint32_t public_key_data[ceil_div(kRsa3072PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa3072PublicKeyBytes, sizeof(uint32_t))];
   memset(public_key_data, 0, sizeof(public_key_data));
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
-      .key_length = kRsa3072PublicKeyBytes,
+      .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
 
   // Allocate buffers for the private key.
   size_t keyblob_words =
-      ceil_div(kRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
+      ceil_div(kOtcryptoRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
   memset(keyblob, 0, sizeof(keyblob));
   otcrypto_blinded_key_t private_key = {
@@ -48,17 +48,17 @@ status_t keygen_then_sign_test(void) {
           {
               .version = kOtcryptoLibVersion1,
               .key_mode = kTestKeyMode,
-              .key_length = kRsa3072PrivateKeyBytes,
+              .key_length = kOtcryptoRsa3072PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
               .security_level = kOtcryptoKeySecurityLevelLow,
           },
-      .keyblob_length = kRsa3072PrivateKeyblobBytes,
+      .keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes,
       .keyblob = keyblob,
   };
 
   // Generate the key pair.
   LOG_INFO("Starting keypair generation...");
-  TRY(otcrypto_rsa_keygen(kRsaSize3072, &public_key, &private_key));
+  TRY(otcrypto_rsa_keygen(kOtcryptoRsaSize3072, &public_key, &private_key));
   LOG_INFO("Keypair generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -112,7 +112,7 @@ status_t keygen_then_sign_test(void) {
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kRsaPaddingPkcs, &sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs, &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -120,7 +120,7 @@ status_t keygen_then_sign_test(void) {
   // p and q, incorrect d), then this is likely to fail.
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
-  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kRsaPaddingPkcs,
+  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
