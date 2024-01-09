@@ -279,13 +279,17 @@ impl Builder for Codegen<'_> {
         match val {
             // For a literal, try to use `asn1_push_uint32` if possible, otherwise
             // create a constant in the pool to hold the encoding and use `asn1_push_integer`.
+            // For unsigned integers, we might need to push one more byte of data then indicated
+            // by the length since they are represented in two's completement so an unsigned number
+            // with the MSB bit set needs to be padded with a 0x00 byte so that it is not interpreted
+            // as a negative number. Therefore, always add one to estimate.
             Value::Literal(x) => {
                 if x.bits() <= 32 {
                     self.push_str_with_indent(&format!(
                         "RETURN_IF_ERROR(asn1_push_uint32(&state, {}, {x}));\n",
                         tag.codestring()
                     ));
-                    self.max_out_size += Self::tag_and_content_size((x.bits() + 7) / 8);
+                    self.max_out_size += Self::tag_and_content_size(1 + (x.bits() + 7) / 8);
                 } else {
                     let bytes = x.to_bytes_be();
                     let const_name = self.add_constant_byte_array(name_hint, &bytes);
@@ -294,7 +298,7 @@ impl Builder for Codegen<'_> {
                             "RETURN_IF_ERROR(asn1_push_integer(&state, {}, false, {const_name}, sizeof({const_name})));\n",
                             tag.codestring())
                     );
-                    self.max_out_size += Self::tag_and_content_size(bytes.len())
+                    self.max_out_size += Self::tag_and_content_size(1 + bytes.len())
                 }
             }
             Value::Variable(Variable { name, convert }) => {
@@ -314,7 +318,6 @@ impl Builder for Codegen<'_> {
                             Some(Conversion::BigEndian) => (),
                             _ => bail!("conversion {:?} from byte array to integer is not supported", convert),
                         }
-                        self.max_out_size += Self::tag_and_content_size(size);
                         size
                     }
                     _ => bail!(
@@ -322,7 +325,7 @@ impl Builder for Codegen<'_> {
                         source_type
                     ),
                 };
-                self.max_out_size += Self::tag_and_content_size(size);
+                self.max_out_size += Self::tag_and_content_size(1 + size);
                 // For variables, an integer can either be represented by a pointer to a big-endian
                 // byte array, or by a `uint32_t` for a very small integers. Use `asn1_push_uint32`
                 // or `asn1_push_integer` depending on the case.
