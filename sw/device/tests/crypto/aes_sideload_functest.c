@@ -77,19 +77,19 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
   // Construct the IV.
   uint32_t iv_data[ARRAYSIZE(kAesIv)];
   memcpy(iv_data, kAesIv, sizeof(kAesIv));
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_data,
       .len = ARRAYSIZE(iv_data),
   };
 
   // Construct the input buffer.
-  crypto_const_byte_buf_t input_buf = {
+  otcrypto_const_byte_buf_t input_buf = {
       .data = (const unsigned char *)input,
       .len = sizeof(kAesPlaintextBlock),
   };
 
   // Construct the output buffer.
-  crypto_byte_buf_t output_buf = {
+  otcrypto_byte_buf_t output_buf = {
       .data = (unsigned char *)output,
       .len = sizeof(kAesPlaintextBlock),
   };

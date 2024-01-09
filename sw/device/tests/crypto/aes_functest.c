@@ -92,7 +92,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_data,
       .len = kAesBlockWords,
   };
@@ -113,9 +113,9 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   unsigned char *ciphertext = (unsigned char *)ciphertext_data;
   if (streaming) {
     while (plaintext_len > kAesBlockBytes) {
-      crypto_const_byte_buf_t plaintext_block = {.data = plaintext,
+      otcrypto_const_byte_buf_t plaintext_block = {.data = plaintext,
                                                  .len = kAesBlockBytes};
-      crypto_byte_buf_t ciphertext_block = {.data = ciphertext,
+      otcrypto_byte_buf_t ciphertext_block = {.data = ciphertext,
                                             .len = kAesBlockBytes};
       TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt,
                        plaintext_block, kAesPaddingNull, ciphertext_block));
@@ -127,9 +127,9 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   }
 
   // Encrypt the remaining input in one shot with the requested padding.
-  crypto_const_byte_buf_t plaintext_buf = {.data = plaintext,
+  otcrypto_const_byte_buf_t plaintext_buf = {.data = plaintext,
                                            .len = plaintext_len};
-  crypto_byte_buf_t ciphertext_buf = {.data = ciphertext,
+  otcrypto_byte_buf_t ciphertext_buf = {.data = ciphertext,
                                       .len = ciphertext_len};
   TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationEncrypt, plaintext_buf,
                    test->padding, ciphertext_buf));
@@ -165,7 +165,7 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_data,
       .len = kAesBlockWords,
   };
@@ -189,9 +189,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
       (unsigned char *)recovered_plaintext_data;
   if (streaming) {
     while (len > kAesBlockBytes) {
-      crypto_const_byte_buf_t ciphertext_block = {.data = ciphertext,
+      otcrypto_const_byte_buf_t ciphertext_block = {.data = ciphertext,
                                                   .len = kAesBlockBytes};
-      crypto_byte_buf_t recovered_plaintext_block = {
+      otcrypto_byte_buf_t recovered_plaintext_block = {
           .data = recovered_plaintext, .len = kAesBlockBytes};
       TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt,
                        ciphertext_block, kAesPaddingNull,
@@ -206,8 +206,8 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   }
 
   // Decrypt the remaining input in one shot.
-  crypto_const_byte_buf_t ciphertext_buf = {.data = ciphertext, .len = len};
-  crypto_byte_buf_t recovered_plaintext_buf = {.data = recovered_plaintext,
+  otcrypto_const_byte_buf_t ciphertext_buf = {.data = ciphertext, .len = len};
+  otcrypto_byte_buf_t recovered_plaintext_buf = {.data = recovered_plaintext,
                                                .len = len};
   TRY(otcrypto_aes(&key, iv, test->mode, kAesOperationDecrypt, ciphertext_buf,
                    test->padding, recovered_plaintext_buf));

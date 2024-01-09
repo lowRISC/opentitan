@@ -248,7 +248,7 @@ static status_t mgf1(hash_mode_t hash_mode, const uint8_t *seed,
     hash_digest_t digest = {
         .data = mask, .len = digest_wordlen, .mode = hash_mode};
     HARDENED_TRY(otcrypto_hash(
-        (crypto_const_byte_buf_t){
+        (otcrypto_const_byte_buf_t){
             .data = hash_input,
             .len = sizeof(hash_input),
         },
@@ -266,7 +266,7 @@ static status_t mgf1(hash_mode_t hash_mode, const uint8_t *seed,
   hash_digest_t digest = {
       .data = digest_data, .len = digest_wordlen, .mode = hash_mode};
   HARDENED_TRY(otcrypto_hash(
-      (crypto_const_byte_buf_t){.data = hash_input, .len = sizeof(hash_input)},
+      (otcrypto_const_byte_buf_t){.data = hash_input, .len = sizeof(hash_input)},
       &digest));
   hardened_memcpy(mask, digest_data, ceil_div(mask_len, sizeof(uint32_t)));
   return OTCRYPTO_OK;
@@ -321,7 +321,7 @@ static status_t pss_construct_h(const hash_digest_t *message_digest,
   hash_digest_t h_buffer = {
       .data = h, .len = message_digest->len, .mode = message_digest->mode};
   return otcrypto_hash(
-      (crypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
+      (otcrypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
                                 .len = sizeof(m_prime)},
       &h_buffer);
 }
@@ -499,7 +499,7 @@ status_t rsa_padding_oaep_encode(const hash_mode_t hash_mode,
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
 
   // Hash the label (step 2a).
-  crypto_const_byte_buf_t label_buf = {
+  otcrypto_const_byte_buf_t label_buf = {
       .data = label,
       .len = label_bytelen,
   };
@@ -621,7 +621,7 @@ status_t rsa_padding_oaep_decode(const hash_mode_t hash_mode,
   }
 
   // Hash the label (step 3a).
-  crypto_const_byte_buf_t label_buf = {
+  otcrypto_const_byte_buf_t label_buf = {
       .data = label,
       .len = label_bytelen,
   };

@@ -45,7 +45,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
 
   // Wrap the key.
   uint32_t wrapped_key_data[wrapped_num_words];
-  crypto_word32_buf_t wrapped_key = {
+  otcrypto_word32_buf_t wrapped_key = {
       .data = wrapped_key_data,
       .len = ARRAYSIZE(wrapped_key_data),
   };
@@ -61,7 +61,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
       .keyblob = unwrapped_key_keyblob,
   };
   TRY(otcrypto_aes_kwp_unwrap(
-      (crypto_const_word32_buf_t){
+      (otcrypto_const_word32_buf_t){
           .data = wrapped_key_data,
           .len = ARRAYSIZE(wrapped_key_data),
       },
@@ -98,7 +98,7 @@ static status_t wrap_unwrap_random_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  crypto_const_byte_buf_t personalization = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t personalization = {.data = NULL, .len = 0};
   TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
 
   // Construct the sideloaded wrapping key.

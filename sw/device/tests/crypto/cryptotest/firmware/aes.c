@@ -98,12 +98,12 @@ status_t handle_aes_block(ujson_t *uj) {
   const size_t AES_IV_SIZE = 4;
   uint32_t iv_buf[AES_IV_SIZE];
   memcpy(iv_buf, uj_data.iv, AES_IV_SIZE * 4);
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_buf,
       .len = kAesBlockWords,
   };
 
-  crypto_const_byte_buf_t input = {
+  otcrypto_const_byte_buf_t input = {
       .data = uj_data.input,
       .len = (size_t)uj_data.input_len,
   };
@@ -137,7 +137,7 @@ status_t handle_aes_block(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  crypto_byte_buf_t output = {
+  otcrypto_byte_buf_t output = {
       .data = (unsigned char *)output_buf,
       .len = sizeof(output_buf),
   };

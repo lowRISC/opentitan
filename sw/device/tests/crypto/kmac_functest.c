@@ -150,7 +150,7 @@ static status_t run_test_vector(void) {
     case kKmacTestOperationKmac: {
       kmac_mode_t mode;
       TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
-      crypto_word32_buf_t tag_buf = {
+      otcrypto_word32_buf_t tag_buf = {
           .data = digest_buf.data,
           .len = digest_buf.len,
       };

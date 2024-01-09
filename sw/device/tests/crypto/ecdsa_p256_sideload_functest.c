@@ -74,7 +74,7 @@ status_t sign_then_verify_test(void) {
   TRY(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key));
 
   // Hash the message.
-  crypto_const_byte_buf_t message = {
+  otcrypto_const_byte_buf_t message = {
       .len = sizeof(kMessage) - 1,
       .data = (unsigned char *)&kMessage,
   };
@@ -93,14 +93,14 @@ status_t sign_then_verify_test(void) {
   LOG_INFO("Signing...");
   CHECK_STATUS_OK(otcrypto_ecdsa_sign(
       &private_key, &message_digest, &kCurveP256,
-      (crypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ecdsa_verify(
       &public_key, &message_digest,
-      (crypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
+      (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
       &kCurveP256, &verification_result));
 
   // The signature should pass verification.

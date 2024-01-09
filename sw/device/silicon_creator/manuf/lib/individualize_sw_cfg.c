@@ -97,7 +97,7 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                    dif_otp_ctrl_partition_t partition) {
   // Compute SHA256 of the OTP partition.
   uint32_t digest[kSha256DigestWords];
-  crypto_word32_buf_t otp_partition_digest = {
+  otcrypto_word32_buf_t otp_partition_digest = {
       .len = ARRAYSIZE(digest),
       .data = digest,
   };

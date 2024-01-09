@@ -88,7 +88,7 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(d_large_enough);
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
+  otcrypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
                                      .len = kTestMessageLen};
   uint32_t msg_digest_data[kSha256DigestWords];
   hash_digest_t msg_digest = {
@@ -99,11 +99,11 @@ status_t keygen_then_sign_test(void) {
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa2048NumWords];
-  crypto_word32_buf_t sig_buf = {
+  otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };
-  crypto_const_word32_buf_t const_sig_buf = {
+  otcrypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };

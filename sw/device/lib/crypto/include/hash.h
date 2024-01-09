@@ -47,7 +47,7 @@ typedef struct hash_context {
  * @param[out] digest Output digest after hashing the input message.
  * @return Result of the hash operation.
  */
-otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
                               hash_digest_t *digest);
 
 /**
@@ -61,7 +61,7 @@ otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
                                    hash_digest_t *digest);
 
 /**
@@ -83,9 +83,9 @@ otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
  * @return Result of the xof operation.
  */
 otcrypto_status_t otcrypto_xof_cshake(
-    crypto_const_byte_buf_t input_message,
-    crypto_const_byte_buf_t function_name_string,
-    crypto_const_byte_buf_t customization_string, hash_digest_t *digest);
+    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t function_name_string,
+    otcrypto_const_byte_buf_t customization_string, hash_digest_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
@@ -121,7 +121,7 @@ otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  * @return Result of the hash update operation.
  */
 otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
-                                     crypto_const_byte_buf_t input_message);
+                                     otcrypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for a cryptographic hash function.

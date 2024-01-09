@@ -86,8 +86,8 @@ otcrypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_key,
-                                  crypto_const_byte_buf_t salt,
-                                  crypto_const_byte_buf_t info,
+                                  otcrypto_const_byte_buf_t salt,
+                                  otcrypto_const_byte_buf_t info,
                                   crypto_blinded_key_t *derived_key);
 
 /**
@@ -115,7 +115,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t key_derivation_ke
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
-                                          crypto_const_byte_buf_t salt,
+                                          otcrypto_const_byte_buf_t salt,
                                           crypto_blinded_key_t *prk);
 
 /**
@@ -141,7 +141,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
-                                         crypto_const_byte_buf_t info,
+                                         otcrypto_const_byte_buf_t info,
                                          crypto_blinded_key_t *okm);
 
 #ifdef __cplusplus
