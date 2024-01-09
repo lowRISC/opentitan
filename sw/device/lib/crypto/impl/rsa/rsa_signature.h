@@ -30,8 +30,8 @@ extern "C" {
  * - If the message is hashed with a SHAKE128 or SHAKE256 XOF, PSS padding will
  *   use the same XOF as the MGF, as described in FIPS 186-5.
  *
- * Values in this enum should match the top-level `rsa_padding` enum from
- * `sw/device/lib/crypto/include/rsa.h`.
+ * Values in this enum should match the top-level `otcrypto_rsa_padding` enum
+ * from `sw/device/lib/crypto/include/rsa.h`.
  */
 typedef enum rsa_signature_padding {
   // EMSA-PKCS1-v1_5 padding (RFC 8017, section 9.2).
