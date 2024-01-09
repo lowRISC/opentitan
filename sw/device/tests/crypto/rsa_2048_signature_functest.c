@@ -133,7 +133,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .key_mode = key_mode,
       .key_length = kRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_words =
       ceil_div(kRsa2048PrivateKeyblobBytes, sizeof(uint32_t));

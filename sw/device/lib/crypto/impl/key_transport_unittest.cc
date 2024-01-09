@@ -23,7 +23,7 @@ constexpr crypto_key_config_t kConfigHwBackedAesCtr128 = {
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolTrue,
     .exportable = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Invalid RSA key configuration for testing (sideloaded RSA-2048 key).
@@ -33,7 +33,7 @@ constexpr crypto_key_config_t kConfigRsaInvalid = {
     .key_length = 2048 / 8,
     .hw_backed = kHardenedBoolTrue,
     .exportable = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (128-bit AES-CTR exportable key).
@@ -43,7 +43,7 @@ constexpr crypto_key_config_t kConfigExportableAesCtr128 = {
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
     .exportable = kHardenedBoolTrue,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (128-bit AES-CTR non-exportable key).
@@ -53,7 +53,7 @@ constexpr crypto_key_config_t kConfigNonExportableAesCtr128 = {
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
     .exportable = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 TEST(KeyTransport, HwBackedKeyToDiversificationData) {

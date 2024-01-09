@@ -69,7 +69,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
       .key_length = digest_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_wordlen = keyblob_num_words(prk_config);
   uint32_t keyblob[keyblob_wordlen];
@@ -140,13 +140,13 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(ikm.config.security_level) != kSecurityLevelLow ||
-      launder32(prk->config.security_level) != kSecurityLevelLow) {
+  if (launder32(ikm.config.security_level) != kOtcryptoKeySecurityLevelLow ||
+      launder32(prk->config.security_level) != kOtcryptoKeySecurityLevelLow) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
-  HARDENED_CHECK_EQ(ikm.config.security_level, kSecurityLevelLow);
-  HARDENED_CHECK_EQ(prk->config.security_level, kSecurityLevelLow);
+  HARDENED_CHECK_EQ(ikm.config.security_level, kOtcryptoKeySecurityLevelLow);
+  HARDENED_CHECK_EQ(prk->config.security_level, kOtcryptoKeySecurityLevelLow);
 
   // Ensure the key modes match.
   if (launder32(prk->config.key_mode) != launder32(ikm.config.key_mode)) {
@@ -201,7 +201,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
       .key_length = salt_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t salt_keyblob[keyblob_num_words(salt_key_config)];
   TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask, salt_key_config,
@@ -237,8 +237,8 @@ otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(okm->config.security_level) != kSecurityLevelLow ||
-      launder32(prk.config.security_level) != kSecurityLevelLow) {
+  if (launder32(okm->config.security_level) != kOtcryptoKeySecurityLevelLow ||
+      launder32(prk.config.security_level) != kOtcryptoKeySecurityLevelLow) {
     // The underlying HMAC implementation is not currently hardened.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }

@@ -99,7 +99,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .key_length = test->ikm_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t ikm_keyblob[keyblob_num_words(ikm_config)];
   TRY(keyblob_from_key_and_mask(test->ikm, kTestMask, ikm_config, ikm_keyblob));
@@ -117,7 +117,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .key_length = test->prk_wordlen * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t prk_keyblob[keyblob_num_words(prk_config)];
   crypto_blinded_key_t prk = {
@@ -134,7 +134,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t okm_keyblob[keyblob_num_words(okm_config)];
   crypto_blinded_key_t okm = {

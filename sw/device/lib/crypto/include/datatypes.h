@@ -325,14 +325,14 @@ typedef enum otcrypto_key_mode{
  *
  * Values are hardened.
  */
-typedef enum crypto_key_security_level {
+typedef enum otcrypto_key_security_level{
   // Security level low.
-  kSecurityLevelLow = 0x1e9,
+  kOtcryptoKeySecurityLevelLow = 0x1e9,
   // Security level medium.
-  kSecurityLevelMedium = 0xeab,
+  kOtcryptoKeySecurityLevelMedium = 0xeab,
   // Security level high.
-  kSecurityLevelHigh = 0xa7e,
-} crypto_key_security_level_t;
+  kOtcryptoKeySecurityLevelHigh = 0xa7e,
+} otcrypto_key_security_level_t;
 
 /**
  * Enum to denote the crypto library version.
@@ -366,7 +366,7 @@ typedef struct crypto_key_config {
   // Whether the key can be exported (always false if `hw_backed` is true).
   hardened_bool_t exportable;
   // Key security level.
-  crypto_key_security_level_t security_level;
+  otcrypto_key_security_level_t security_level;
 } crypto_key_config_t;
 
 /**

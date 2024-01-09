@@ -19,7 +19,7 @@ static const crypto_key_config_t kWrappingKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 /**
@@ -78,7 +78,7 @@ static status_t wrap_unwrap_random_test(void) {
       .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 128 / 8,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
   // Generate a random KMAC key.

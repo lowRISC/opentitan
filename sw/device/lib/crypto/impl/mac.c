@@ -115,7 +115,7 @@ otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
     // TODO(#15590): Add support for sideloaded keys via a custom OTBN program.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
-  if (key->config.security_level != kSecurityLevelLow) {
+  if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
     // TODO: Harden SHA2 implementations.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }

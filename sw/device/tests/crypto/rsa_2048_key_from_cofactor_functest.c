@@ -108,7 +108,7 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
       .key_mode = kTestKeyMode,
       .key_length = kRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_words =
       ceil_div(kRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
