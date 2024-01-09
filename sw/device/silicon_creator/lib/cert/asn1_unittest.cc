@@ -229,6 +229,58 @@ TEST(Asn1, PushStrings) {
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
 }
 
+// Make sure that we can push bitstrings.
+TEST(Asn1, PushBitString) {
+  asn1_state_t state;
+  uint8_t buf[20];
+  EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
+  asn1_bitstring_t bitstring;
+  asn1_tag_t tag;
+  // Empty bitstring.
+  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
+  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
+  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
+  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  // Two trivial bitstrings.
+  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
+  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
+  EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, true), kErrorOk);
+  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
+  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+
+  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
+  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
+  EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, false), kErrorOk);
+  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
+  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  // A longer bitstring.
+  const std::array<bool, 12> kBitString = {
+      true,  false, true, true,  false, false,
+      false, false, true, false, false, true,
+  };
+  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
+  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
+  for (bool bit : kBitString) {
+    EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, bit), kErrorOk);
+  }
+  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
+  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  size_t out_size;
+  EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
+  const std::array<uint8_t, 16> kExpectedResult = {
+      // Identifier octet (bitstring, OID), length, content (encoded as per
+      // X.690 section 8.6).
+      0x03, 0x01, 0x0,
+      // Identifier octet (bitstring, OID), length, content.
+      0x03, 0x02, 0x7, 0x80,
+      // Identifier octet (bitstring, OID), length, content.
+      0x03, 0x02, 0x7, 0x00,
+      // Identifier octet (bitstring, OID), length, content (written in binary
+      // to make it easier to read).
+      0x03, 0x03, 0x04, 0b10110000, 0b10010000};
+  EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
+}
+
 // Make sure that we can push strings.
 TEST(Asn1, PushRawOid) {
   asn1_state_t state;
