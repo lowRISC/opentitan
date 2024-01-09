@@ -23,12 +23,12 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum kdf_type {
+typedef enum otcrypto_kdf_type{
   // KDF construction with HMAC as a PRF.
-  kKdfTypeHmac = 0x4f1,
+  kOtcryptoKdfTypeHmac = 0x4f1,
   // KDF construction with KMAC as a PRF.
-  kKdfTypeKmac = 0x754,
-} kdf_type_t;
+  kOtcryptoKdfTypeKmac = 0x754,
+} otcrypto_kdf_type_t;
 
 /**
  * Performs the key derivation function in counter mode.
@@ -54,7 +54,7 @@ typedef enum kdf_type {
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t key_derivation_key,
-                                 kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
+                                 otcrypto_kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
                                  otcrypto_blinded_key_t keying_material);
 
