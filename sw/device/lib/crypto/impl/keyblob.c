@@ -21,7 +21,7 @@
  * @param config Key configuration.
  * @return Number of bytes in one share of the blinded key.
  */
-static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
+static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
   // Get the key type from the top 16 bits of the full mode.
   otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
   switch (launder32(key_type)) {
@@ -43,12 +43,12 @@ static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
   HARDENED_TRAP();
 }
 
-size_t keyblob_share_num_words(const crypto_key_config_t config) {
+size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   size_t len_bytes = keyblob_share_num_bytes(config);
   return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
-size_t keyblob_num_words(const crypto_key_config_t config) {
+size_t keyblob_num_words(const otcrypto_key_config_t config) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolTrue);
     return kKeyblobHwBackedWords;
@@ -88,7 +88,7 @@ status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
 }
 
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const crypto_key_config_t config, uint32_t *keyblob) {
+                         const otcrypto_key_config_t config, uint32_t *keyblob) {
   size_t share_words = keyblob_share_num_words(config);
   hardened_memcpy(keyblob, share0, share_words);
   hardened_memcpy(keyblob + share_words, share1, share_words);
@@ -131,7 +131,7 @@ status_t keyblob_to_keymgr_diversification(
       key->keyblob, key->config.key_mode, diversification);
 }
 
-status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {
+status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
   // Reject hardware-backed keys, since the keyblob is not the actual key
   // material in this case but the version/salt.
   if (launder32(config.hw_backed) != kHardenedBoolFalse) {
@@ -178,7 +178,7 @@ status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {
 }
 
 status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
-                                   const crypto_key_config_t config,
+                                   const otcrypto_key_config_t config,
                                    uint32_t *keyblob) {
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(config));

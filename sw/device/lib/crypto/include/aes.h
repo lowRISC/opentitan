@@ -357,7 +357,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
  * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
  * @return Result of the operation.
  */
-otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const otcrypto_key_config_t config,
                                              size_t *wrapped_num_words);
 
 /**

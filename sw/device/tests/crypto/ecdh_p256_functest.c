@@ -29,7 +29,7 @@ static const ecc_curve_t kCurveP256 = {
 };
 
 // Configuration for the private key.
-static const crypto_key_config_t kEcdhPrivateKeyConfig = {
+static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256PrivateKeyBytes,
@@ -40,7 +40,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 // Configuration for the ECDH shared (symmetric) key. This configuration
 // specifies an AES key, but any symmetric mode that supports 256-bit keys is
 // OK here.
-static const crypto_key_config_t kEcdhSharedKeyConfig = {
+static const otcrypto_key_config_t kEcdhSharedKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = kP256SharedKeyBytes,

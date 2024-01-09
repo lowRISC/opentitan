@@ -161,7 +161,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
   };
 
   // Construct the private key.
-  crypto_key_config_t private_key_config = {
+  otcrypto_key_config_t private_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kRsa2048PrivateKeyBytes,

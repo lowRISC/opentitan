@@ -24,7 +24,7 @@ static const uint32_t kKeySalt[7] = {
 };
 
 // Key configuration for wrapping key (AES-256).
-static const crypto_key_config_t kWrappingKeyConfig = {
+static const otcrypto_key_config_t kWrappingKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesKwp,
     .key_length = 256 / 8,
@@ -72,7 +72,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
   TRY_CHECK_ARRAYS_EQ(unwrapped_key.keyblob, key_to_wrap->keyblob,
                       keyblob_words);
   TRY_CHECK(memcmp(&unwrapped_key.config, &key_to_wrap->config,
-                   sizeof(crypto_key_config_t)) == 0);
+                   sizeof(otcrypto_key_config_t)) == 0);
   TRY_CHECK(unwrapped_key.keyblob_length == key_to_wrap->keyblob_length);
   TRY_CHECK(unwrapped_key.checksum == key_to_wrap->checksum);
 
@@ -83,7 +83,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
  * Test wrapping/unwrapping a random key.
  */
 static status_t wrap_unwrap_random_test(void) {
-  const crypto_key_config_t kKmacKeyConfig = {
+  const otcrypto_key_config_t kKmacKeyConfig = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 128 / 8,

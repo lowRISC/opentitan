@@ -32,7 +32,7 @@ static const ecc_curve_t kCurveP256 = {
     .domain_parameter = NULL,
 };
 
-static const crypto_key_config_t kPrivateKeyConfig = {
+static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdsa,
     .key_length = kP256PrivateKeyBytes,

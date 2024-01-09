@@ -154,7 +154,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       .len = ARRAYSIZE(share1),
   };
 
-  crypto_key_config_t private_key_config = {
+  otcrypto_key_config_t private_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = kRsa3072PrivateKeyBytes,

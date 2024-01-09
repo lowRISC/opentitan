@@ -17,7 +17,7 @@ namespace {
 using ::testing::ElementsAreArray;
 
 // Key configuration for testing (128-bit AES-CTR hardware-backed key).
-constexpr crypto_key_config_t kConfigHwBackedAesCtr128 = {
+constexpr otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
@@ -27,7 +27,7 @@ constexpr crypto_key_config_t kConfigHwBackedAesCtr128 = {
 };
 
 // Invalid RSA key configuration for testing (sideloaded RSA-2048 key).
-constexpr crypto_key_config_t kConfigRsaInvalid = {
+constexpr otcrypto_key_config_t kConfigRsaInvalid = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeRsaSignPkcs,
     .key_length = 2048 / 8,
@@ -37,7 +37,7 @@ constexpr crypto_key_config_t kConfigRsaInvalid = {
 };
 
 // Key configuration for testing (128-bit AES-CTR exportable key).
-constexpr crypto_key_config_t kConfigExportableAesCtr128 = {
+constexpr otcrypto_key_config_t kConfigExportableAesCtr128 = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
@@ -47,7 +47,7 @@ constexpr crypto_key_config_t kConfigExportableAesCtr128 = {
 };
 
 // Key configuration for testing (128-bit AES-CTR non-exportable key).
-constexpr crypto_key_config_t kConfigNonExportableAesCtr128 = {
+constexpr otcrypto_key_config_t kConfigNonExportableAesCtr128 = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,

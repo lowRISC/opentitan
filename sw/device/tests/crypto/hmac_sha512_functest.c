@@ -61,7 +61,7 @@ static const uint32_t kTestMask[ARRAYSIZE(kLongTestKey)] = {
 static status_t run_test(const uint32_t *key, size_t key_len,
                          otcrypto_const_byte_buf_t msg, const uint32_t *exp_tag) {
   // Construct blinded key.
-  crypto_key_config_t config = {
+  otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeHmacSha512,
       .key_length = key_len,

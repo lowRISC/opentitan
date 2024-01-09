@@ -29,7 +29,7 @@ enum {
   kAesBlockWords = kAesBlockBytes / sizeof(uint32_t),
 };
 
-static crypto_key_config_t make_key_config(const aes_test_t *test) {
+static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
   otcrypto_key_mode_t key_mode;
   switch (test->mode) {
     case kBlockCipherModeEcb:
@@ -57,7 +57,7 @@ static crypto_key_config_t make_key_config(const aes_test_t *test) {
       CHECK(false, "Invalid block cipher mode.");
   };
 
-  return (crypto_key_config_t){
+  return (otcrypto_key_config_t){
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = test->key_len,
@@ -77,7 +77,7 @@ static crypto_key_config_t make_key_config(const aes_test_t *test) {
  */
 static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Determine the key configuration.
-  crypto_key_config_t config = make_key_config(test);
+  otcrypto_key_config_t config = make_key_config(test);
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
@@ -150,7 +150,7 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
  */
 static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   // Determine the key configuration.
-  crypto_key_config_t config = make_key_config(test);
+  otcrypto_key_config_t config = make_key_config(test);
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];

@@ -37,7 +37,7 @@ static_assert(sizeof(aes_gcm_ctx_t) >= sizeof(aes_gcm_context_t),
 static_assert(alignof(aes_gcm_context_t) >= alignof(uint32_t),
               "Internal AES-GCM context object must be word-aligned for use "
               "with `hardened_memcpy`.");
-static_assert(sizeof(crypto_key_config_t) % sizeof(uint32_t) == 0,
+static_assert(sizeof(otcrypto_key_config_t) % sizeof(uint32_t) == 0,
               "Key configuration size should be a multiple of 32 bits");
 
 // Ensure the internal AES-GCM context size is a multiple of the word size and
@@ -845,10 +845,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
+otcrypto_status_t otcrypto_aes_kwp_wrapped_len(const otcrypto_key_config_t config,
                                              size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.
-  size_t config_num_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -963,7 +963,7 @@ otcrypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
 
   // Create the plaintext by copying the key configuration, checksum, keyblob
   // length, and keyblob into a buffer.
-  uint32_t config_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
   uint32_t plaintext[plaintext_num_words];
   hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
@@ -1014,7 +1014,7 @@ otcrypto_status_t otcrypto_aes_kwp_unwrap(otcrypto_const_word32_buf_t wrapped_ke
   *success = kHardenedBoolFalse;
 
   // Extract the key configuration.
-  uint32_t config_words = sizeof(crypto_key_config_t) / sizeof(uint32_t);
+  uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   hardened_memcpy((uint32_t *)&unwrapped_key->config, plaintext, config_words);
 
   // Extract the checksum and keyblob length.

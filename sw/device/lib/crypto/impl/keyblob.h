@@ -30,7 +30,7 @@ enum {
  * @param config Key configuration.
  * @returns Word-length of the blinded keyblob.
  */
-size_t keyblob_num_words(const crypto_key_config_t config);
+size_t keyblob_num_words(const otcrypto_key_config_t config);
 
 /**
  * Get the word-length of a single key share for a given key length.
@@ -42,7 +42,7 @@ size_t keyblob_num_words(const crypto_key_config_t config);
  * @param config Key configuration.
  * @returns Word-length of one key share (or unblinded key).
  */
-size_t keyblob_share_num_words(const crypto_key_config_t config);
+size_t keyblob_share_num_words(const otcrypto_key_config_t config);
 
 /**
  * Return pointers to the separate shares within the blinded key.
@@ -75,7 +75,7 @@ status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
  * @param[out] keyblob Destination buffer.
  */
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const crypto_key_config_t config, uint32_t *keyblob);
+                         const otcrypto_key_config_t config, uint32_t *keyblob);
 
 /**
  * Construct key manager diversification data from a raw keyblob.
@@ -122,7 +122,7 @@ status_t keyblob_to_keymgr_diversification(
  * @return OK if `config` represents an XOR-masked key, BAD_ARGS otherwise.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_ensure_xor_masked(const crypto_key_config_t config);
+status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config);
 
 /**
  * Construct a blinded keyblob from the given key and mask.
@@ -146,7 +146,7 @@ status_t keyblob_ensure_xor_masked(const crypto_key_config_t config);
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
-                                   const crypto_key_config_t config,
+                                   const otcrypto_key_config_t config,
                                    uint32_t *keyblob);
 
 /**
