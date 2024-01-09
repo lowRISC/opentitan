@@ -37,18 +37,18 @@ typedef enum otcrypto_aes_gcm_tag_len{
  *
  * Values are hardened.
  */
-typedef enum block_cipher_mode {
+typedef enum otcrypto_aes_mode{
   // AES ECB mode (electronic codebook mode).
-  kBlockCipherModeEcb = 0x533,
+  kOtcryptoAesModeEcb = 0x533,
   // AES CBC mode (cipher block chaining mode).
-  kBlockCipherModeCbc = 0x45d,
+  kOtcryptoAesModeCbc = 0x45d,
   // AES CFB mode (cipher feedback mode).
-  kBlockCipherModeCfb = 0xcd2,
+  kOtcryptoAesModeCfb = 0xcd2,
   // AES OFB mode (output feedback mode).
-  kBlockCipherModeOfb = 0x39a,
+  kOtcryptoAesModeOfb = 0x39a,
   // AES CTR mode (counter mode).
-  kBlockCipherModeCtr = 0xd2c,
-} block_cipher_mode_t;
+  kOtcryptoAesModeCtr = 0xd2c,
+} otcrypto_aes_mode_t;
 
 /**
  * Enum to define AES operation to be performed.
@@ -130,7 +130,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
  */
 otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
                              otcrypto_word32_buf_t iv,
-                             block_cipher_mode_t aes_mode,
+                             otcrypto_aes_mode_t aes_mode,
                              aes_operation_t aes_operation,
                              otcrypto_const_byte_buf_t cipher_input,
                              aes_padding_t aes_padding,

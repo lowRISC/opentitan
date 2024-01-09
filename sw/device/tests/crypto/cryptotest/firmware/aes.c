@@ -37,27 +37,27 @@ status_t handle_aes_block(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_aes_padding_t(uj, &uj_padding));
   TRY(ujson_deserialize_cryptotest_aes_data_t(uj, &uj_data));
 
-  block_cipher_mode_t mode;
+  otcrypto_aes_mode_t mode;
   otcrypto_key_mode_t key_mode;
   switch (uj_mode) {
     case kCryptotestAesModeEcb:
-      mode = kBlockCipherModeEcb;
+      mode = kOtcryptoAesModeEcb;
       key_mode = kOtcryptoKeyModeAesEcb;
       break;
     case kCryptotestAesModeCbc:
-      mode = kBlockCipherModeCbc;
+      mode = kOtcryptoAesModeCbc;
       key_mode = kOtcryptoKeyModeAesCbc;
       break;
     case kCryptotestAesModeCfb:
-      mode = kBlockCipherModeCfb;
+      mode = kOtcryptoAesModeCfb;
       key_mode = kOtcryptoKeyModeAesCfb;
       break;
     case kCryptotestAesModeOfb:
-      mode = kBlockCipherModeOfb;
+      mode = kOtcryptoAesModeOfb;
       key_mode = kOtcryptoKeyModeAesOfb;
       break;
     case kCryptotestAesModeCtr:
-      mode = kBlockCipherModeCtr;
+      mode = kOtcryptoAesModeCtr;
       key_mode = kOtcryptoKeyModeAesCtr;
       break;
     default:

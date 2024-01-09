@@ -32,23 +32,23 @@ enum {
 static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
   otcrypto_key_mode_t key_mode;
   switch (test->mode) {
-    case kBlockCipherModeEcb:
+    case kOtcryptoAesModeEcb:
       LOG_INFO("Mode: ECB");
       key_mode = kOtcryptoKeyModeAesEcb;
       break;
-    case kBlockCipherModeCbc:
+    case kOtcryptoAesModeCbc:
       LOG_INFO("Mode: CBC");
       key_mode = kOtcryptoKeyModeAesCbc;
       break;
-    case kBlockCipherModeCfb:
+    case kOtcryptoAesModeCfb:
       LOG_INFO("Mode: CFB");
       key_mode = kOtcryptoKeyModeAesCfb;
       break;
-    case kBlockCipherModeOfb:
+    case kOtcryptoAesModeOfb:
       LOG_INFO("Mode: OFB");
       key_mode = kOtcryptoKeyModeAesOfb;
       break;
-    case kBlockCipherModeCtr:
+    case kOtcryptoAesModeCtr:
       LOG_INFO("Mode: CTR");
       key_mode = kOtcryptoKeyModeAesCtr;
       break;

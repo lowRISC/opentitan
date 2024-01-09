@@ -23,11 +23,11 @@
 
 // Check that cipher mode enum from AES driver matches the one from the
 // top-level API.
-OT_ASSERT_ENUM_VALUE(kAesCipherModeEcb, (uint32_t)kBlockCipherModeEcb);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCbc, (uint32_t)kBlockCipherModeCbc);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCfb, (uint32_t)kBlockCipherModeCfb);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, (uint32_t)kBlockCipherModeOfb);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kBlockCipherModeCtr);
+OT_ASSERT_ENUM_VALUE(kAesCipherModeEcb, (uint32_t)kOtcryptoAesModeEcb);
+OT_ASSERT_ENUM_VALUE(kAesCipherModeCbc, (uint32_t)kOtcryptoAesModeCbc);
+OT_ASSERT_ENUM_VALUE(kAesCipherModeCfb, (uint32_t)kOtcryptoAesModeCfb);
+OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, (uint32_t)kOtcryptoAesModeOfb);
+OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kOtcryptoAesModeCtr);
 
 // Check GHASH context size against the underlying implementation.
 static_assert(sizeof(aes_gcm_ctx_t) >= sizeof(aes_gcm_context_t),
@@ -86,7 +86,7 @@ static inline void gcm_context_restore(aes_gcm_ctx_t *api_ctx,
  * @return Result of the operation.
  */
 static status_t aes_key_construct(const otcrypto_blinded_key_t *blinded_key,
-                                  const block_cipher_mode_t aes_mode,
+                                  const otcrypto_aes_mode_t aes_mode,
                                   aes_key_t *aes_key) {
   // Key integrity check.
   if (launder32(integrity_blinded_key_check(blinded_key)) !=
@@ -286,13 +286,13 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
 
 otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
                              otcrypto_word32_buf_t iv,
-                             block_cipher_mode_t aes_mode,
+                             otcrypto_aes_mode_t aes_mode,
                              aes_operation_t aes_operation,
                              otcrypto_const_byte_buf_t cipher_input,
                              aes_padding_t aes_padding,
                              otcrypto_byte_buf_t cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
-  if (key == NULL || (aes_mode != kBlockCipherModeEcb && iv.data == NULL) ||
+  if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
