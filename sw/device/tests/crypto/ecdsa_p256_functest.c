@@ -33,7 +33,7 @@ static const ecc_curve_t kCurveP256 = {
 };
 
 static const crypto_key_config_t kPrivateKeyConfig = {
-    .version = kCryptoLibVersion1,
+    .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdsa,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,

@@ -94,7 +94,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
 
   // Construct the input key (IKM in the RFC terminology).
   crypto_key_config_t ikm_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = test->hmac_key_mode,
       .key_length = test->ikm_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -112,7 +112,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
 
   // Construct a blinded key struct for the intermediate key (PRK).
   crypto_key_config_t prk_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = test->hmac_key_mode,
       .key_length = test->prk_wordlen * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
@@ -129,7 +129,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   // Construct a blinded key struct for the output key (OKM). The key mode here
   // doesn't really matter, it just needs to be some symmetric key.
   crypto_key_config_t okm_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,

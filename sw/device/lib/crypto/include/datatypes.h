@@ -344,17 +344,17 @@ typedef enum otcrypto_key_security_level{
  *
  * Values are hardened.
  */
-typedef enum crypto_lib_version {
+typedef enum otcrypto_lib_version{
   // Version 1.
-  kCryptoLibVersion1 = 0x7f4,
-} crypto_lib_version_t;
+  kOtcryptoLibVersion1 = 0x7f4,
+} otcrypto_lib_version_t;
 
 /**
  * Struct to represent the configuration of a blinded key.
  */
 typedef struct crypto_key_config {
   // Crypto library version for this key.
-  crypto_lib_version_t version;
+  otcrypto_lib_version_t version;
   // Mode for which the key usage is intended.
   otcrypto_key_mode_t key_mode;
   // Length in bytes of the unblinded form of this key.

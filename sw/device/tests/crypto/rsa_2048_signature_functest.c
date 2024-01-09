@@ -129,7 +129,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
 
   // Construct the private key.
   crypto_key_config_t private_key_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = kRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,

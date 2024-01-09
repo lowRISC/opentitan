@@ -110,7 +110,7 @@ status_t handle_aes_block(ujson_t *uj) {
 
   // Build the key configuration
   crypto_key_config_t config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = uj_data.key_length,
       .hw_backed = kHardenedBoolFalse,

@@ -46,7 +46,7 @@ status_t keygen_then_sign_test(void) {
   crypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kCryptoLibVersion1,
+              .version = kOtcryptoLibVersion1,
               .key_mode = kTestKeyMode,
               .key_length = kRsa4096PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,

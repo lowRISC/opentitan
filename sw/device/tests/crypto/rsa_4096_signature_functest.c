@@ -184,7 +184,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
 
   // Construct the private key.
   crypto_key_config_t private_key_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = kRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,

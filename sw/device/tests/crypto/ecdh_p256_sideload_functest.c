@@ -49,7 +49,7 @@ static const uint32_t kPrivateKeyBSalt[7] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
 
 // Configuration for the private key.
 static const crypto_key_config_t kEcdhPrivateKeyConfig = {
-    .version = kCryptoLibVersion1,
+    .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
@@ -60,7 +60,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 // specifies an AES key, but any symmetric mode that supports 256-bit keys is
 // OK here.
 static const crypto_key_config_t kEcdhSharedKeyConfig = {
-    .version = kCryptoLibVersion1,
+    .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = kP256SharedKeyBytes,
     .hw_backed = kHardenedBoolFalse,
