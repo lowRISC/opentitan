@@ -56,7 +56,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
   hash_digest_t actual_digest = {
       .len = ARRAYSIZE(actual_digest_data),
       .data = actual_digest_data,
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash(input_message, &actual_digest));
 
@@ -73,7 +73,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
 status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
                                const uint8_t *expected_digest) {
   hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha512));
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha512));
 
   // Send the message 5 bytes at a time.
   while (msg_len > 0) {
@@ -93,7 +93,7 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
   hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash_final(&ctx, &actual_digest));
 

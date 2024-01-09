@@ -26,13 +26,13 @@ static kmac_test_vector_t *current_test_vector = NULL;
  * @param security_str Security strength (in bits).
  * @param[out] mode SHAKE mode enum value.
  */
-status_t get_shake_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_shake_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kHashXofModeShake128;
+      *mode = kOtcryptoHashXofModeShake128;
       break;
     case 256:
-      *mode = kHashXofModeShake256;
+      *mode = kOtcryptoHashXofModeShake256;
       break;
     default:
       LOG_INFO("Invalid security strength for SHAKE: %d bits",
@@ -48,13 +48,13 @@ status_t get_shake_mode(size_t security_strength, hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode cSHAKE mode enum value.
  */
-status_t get_cshake_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_cshake_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kHashXofModeCshake128;
+      *mode = kOtcryptoHashXofModeCshake128;
       break;
     case 256:
-      *mode = kHashXofModeCshake256;
+      *mode = kOtcryptoHashXofModeCshake256;
       break;
     default:
       LOG_INFO("Invalid security strength for cSHAKE: %d bits",
@@ -70,19 +70,19 @@ status_t get_cshake_mode(size_t security_strength, hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode Hash mode enum value.
  */
-status_t get_sha3_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 224:
-      *mode = kHashModeSha3_224;
+      *mode = kOtcryptoHashModeSha3_224;
       break;
     case 256:
-      *mode = kHashModeSha3_256;
+      *mode = kOtcryptoHashModeSha3_256;
       break;
     case 384:
-      *mode = kHashModeSha3_384;
+      *mode = kOtcryptoHashModeSha3_384;
       break;
     case 512:
-      *mode = kHashModeSha3_512;
+      *mode = kOtcryptoHashModeSha3_512;
       break;
     default:
       LOG_INFO("Invalid size for SHA3: %d bits", security_strength);

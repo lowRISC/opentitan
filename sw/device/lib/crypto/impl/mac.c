@@ -124,22 +124,22 @@ otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   // digest and message block sizes.
   size_t digest_words = 0;
   size_t message_block_words = 0;
-  hash_mode_t hash_mode;
+  otcrypto_hash_mode_t hash_mode;
   switch (key->config.key_mode) {
     case kOtcryptoKeyModeHmacSha256:
-      hash_mode = kHashModeSha256;
+      hash_mode = kOtcryptoHashModeSha256;
       digest_words = kSha256DigestWords;
       message_block_words = kSha256MessageBlockWords;
       break;
     case kOtcryptoKeyModeHmacSha384:
-      hash_mode = kHashModeSha384;
+      hash_mode = kOtcryptoHashModeSha384;
       digest_words = kSha384DigestWords;
       // Since SHA-512 and SHA-384 have the same core, they use the same
       // message block size.
       message_block_words = kSha512MessageBlockWords;
       break;
     case kOtcryptoKeyModeHmacSha512:
-      hash_mode = kHashModeSha512;
+      hash_mode = kOtcryptoHashModeSha512;
       digest_words = kSha512DigestWords;
       message_block_words = kSha512MessageBlockWords;
       break;

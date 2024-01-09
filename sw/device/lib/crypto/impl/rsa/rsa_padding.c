@@ -44,16 +44,16 @@ static const uint8_t kSha512DigestIdentifier[] = {
  * @param OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_info_length_get(const hash_mode_t hash_mode,
+static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
                                        size_t *len) {
   switch (hash_mode) {
-    case kHashModeSha256:
+    case kOtcryptoHashModeSha256:
       *len = sizeof(kSha256DigestIdentifier) + kSha256DigestBytes;
       return OTCRYPTO_OK;
-    case kHashModeSha384:
+    case kOtcryptoHashModeSha384:
       *len = sizeof(kSha384DigestIdentifier) + kSha384DigestBytes;
       return OTCRYPTO_OK;
-    case kHashModeSha512:
+    case kOtcryptoHashModeSha512:
       *len = sizeof(kSha512DigestIdentifier) + kSha512DigestBytes;
       return OTCRYPTO_OK;
     default:
@@ -85,21 +85,21 @@ OT_WARN_UNUSED_RESULT
 static status_t digest_info_write(const hash_digest_t *message_digest,
                                   uint32_t *encoding) {
   switch (message_digest->mode) {
-    case kHashModeSha256:
+    case kOtcryptoHashModeSha256:
       if (message_digest->len != kSha256DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       memcpy(encoding + kSha256DigestWords, &kSha256DigestIdentifier,
              sizeof(kSha256DigestIdentifier));
       break;
-    case kHashModeSha384:
+    case kOtcryptoHashModeSha384:
       if (message_digest->len != kSha384DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       memcpy(encoding + kSha384DigestWords, &kSha384DigestIdentifier,
              sizeof(kSha384DigestIdentifier));
       break;
-    case kHashModeSha512:
+    case kOtcryptoHashModeSha512:
       if (message_digest->len != kSha512DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -181,25 +181,25 @@ status_t rsa_padding_pkcs1v15_verify(const hash_digest_t *message_digest,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_wordlen_get(hash_mode_t hash_mode, size_t *num_words) {
+static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode, size_t *num_words) {
   *num_words = 0;
   switch (hash_mode) {
-    case kHashModeSha3_224:
+    case kOtcryptoHashModeSha3_224:
       *num_words = 224 / 32;
       break;
-    case kHashModeSha256:
+    case kOtcryptoHashModeSha256:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_256:
+    case kOtcryptoHashModeSha3_256:
       *num_words = 256 / 32;
       break;
-    case kHashModeSha384:
+    case kOtcryptoHashModeSha384:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_384:
+    case kOtcryptoHashModeSha3_384:
       *num_words = 384 / 32;
       break;
-    case kHashModeSha512:
+    case kOtcryptoHashModeSha512:
       OT_FALLTHROUGH_INTENDED;
-    case kHashModeSha3_512:
+    case kOtcryptoHashModeSha3_512:
       *num_words = 512 / 32;
       break;
     default:
@@ -227,7 +227,7 @@ static status_t digest_wordlen_get(hash_mode_t hash_mode, size_t *num_words) {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-static status_t mgf1(hash_mode_t hash_mode, const uint8_t *seed,
+static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
                      size_t seed_len, size_t mask_len, uint32_t *mask) {
   // Check that the number of iterations won't overflow the counter.
   size_t digest_wordlen;
@@ -461,7 +461,7 @@ status_t rsa_padding_pss_verify(const hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_oaep_max_message_bytelen(const hash_mode_t hash_mode,
+status_t rsa_padding_oaep_max_message_bytelen(const otcrypto_hash_mode_t hash_mode,
                                               size_t rsa_wordlen,
                                               size_t *max_message_bytelen) {
   // Get the hash digest length for the given hash function (and check that it
@@ -480,7 +480,7 @@ status_t rsa_padding_oaep_max_message_bytelen(const hash_mode_t hash_mode,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_oaep_encode(const hash_mode_t hash_mode,
+status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
                                  const uint8_t *message, size_t message_bytelen,
                                  const uint8_t *label, size_t label_bytelen,
                                  size_t encoded_message_len,
@@ -564,7 +564,7 @@ status_t rsa_padding_oaep_encode(const hash_mode_t hash_mode,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_oaep_decode(const hash_mode_t hash_mode,
+status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                                  const uint8_t *label, size_t label_bytelen,
                                  uint32_t *encoded_message,
                                  size_t encoded_message_len, uint8_t *message,

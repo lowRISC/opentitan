@@ -231,7 +231,7 @@ otcrypto_status_t otcrypto_rsa_verify(const otcrypto_unblinded_key_t *public_key
  * @return The result of the RSA encryption operation.
  */
 otcrypto_status_t otcrypto_rsa_encrypt(const otcrypto_unblinded_key_t *public_key,
-                                     const hash_mode_t hash_mode,
+                                     const otcrypto_hash_mode_t hash_mode,
                                      otcrypto_const_byte_buf_t message,
                                      otcrypto_const_byte_buf_t label,
                                      otcrypto_word32_buf_t *ciphertext);
@@ -267,7 +267,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(const otcrypto_unblinded_key_t *public_ke
  * @return Result of the RSA decryption operation.
  */
 otcrypto_status_t otcrypto_rsa_decrypt(const otcrypto_blinded_key_t *private_key,
-                                     const hash_mode_t hash_mode,
+                                     const otcrypto_hash_mode_t hash_mode,
                                      otcrypto_const_word32_buf_t ciphertext,
                                      otcrypto_const_byte_buf_t label,
                                      otcrypto_byte_buf_t *plaintext);
@@ -401,7 +401,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
  * @return The result of the RSA encryption start operation.
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
-    const otcrypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
+    const otcrypto_unblinded_key_t *public_key, const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_byte_buf_t message, otcrypto_const_byte_buf_t label);
 
 /**
@@ -444,7 +444,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  * @return Result of the RSA decryption finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
-    const hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
+    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
     otcrypto_byte_buf_t *plaintext);
 
 #ifdef __cplusplus

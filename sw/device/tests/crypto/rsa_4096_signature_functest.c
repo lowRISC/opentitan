@@ -212,7 +212,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
@@ -278,7 +278,7 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 

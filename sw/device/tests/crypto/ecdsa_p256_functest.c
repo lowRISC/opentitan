@@ -71,7 +71,7 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg, &msg_digest));
 

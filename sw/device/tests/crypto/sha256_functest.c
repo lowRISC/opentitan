@@ -60,7 +60,7 @@ static status_t run_test(otcrypto_const_byte_buf_t msg,
   hash_digest_t digest_buf = {
       .data = act_digest,
       .len = kHmacDigestNumWords,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg, &digest_buf));
   TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacDigestNumWords);
@@ -109,7 +109,7 @@ static status_t empty_test(void) {
  */
 static status_t one_update_streaming_test(void) {
   hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
   otcrypto_const_byte_buf_t msg_buf = {
       .data = kExactBlockMessage,
@@ -123,7 +123,7 @@ static status_t one_update_streaming_test(void) {
   hash_digest_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kExactBlockExpDigest,
@@ -136,7 +136,7 @@ static status_t one_update_streaming_test(void) {
  */
 static status_t multiple_update_streaming_test(void) {
   hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
   // Send 0 bytes, then 1, then 2, etc. until message is done.
   const unsigned char *next = kTwoBlockMessage;
@@ -159,7 +159,7 @@ static status_t multiple_update_streaming_test(void) {
   hash_digest_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kTwoBlockExpDigest,

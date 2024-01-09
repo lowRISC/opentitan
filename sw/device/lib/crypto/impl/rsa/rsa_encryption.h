@@ -37,7 +37,7 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
-                                const hash_mode_t hash_mode,
+                                const otcrypto_hash_mode_t hash_mode,
                                 const uint8_t *message, size_t message_bytelen,
                                 const uint8_t *label, size_t label_bytelen);
 
@@ -99,7 +99,7 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_decrypt_finalize(const hash_mode_t hash_mode, const uint8_t *label,
+status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode, const uint8_t *label,
                               size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_bytelen);
