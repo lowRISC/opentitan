@@ -22,7 +22,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
                               otcrypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
-  hmac_context_t ctx;
+  otcrypto_hmac_context_t ctx;
   HARDENED_TRY(otcrypto_hmac_init(&ctx, key));
   HARDENED_TRY(otcrypto_hmac_update(&ctx, input_message));
   return otcrypto_hmac_final(&ctx, tag);
@@ -31,7 +31,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
-                              kmac_mode_t kmac_mode,
+                              otcrypto_kmac_mode_t kmac_mode,
                               otcrypto_const_byte_buf_t customization_string,
                               size_t required_output_len,
                               otcrypto_word32_buf_t *tag) {
@@ -78,7 +78,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
   kmac_key.len = key_len;
 
   switch (kmac_mode) {
-    case kMacModeKmac128:
+    case kOtcryptoKmacModeKmac128:
       // Check `key_mode` matches `mac_mode`
       if (key->config.key_mode != kOtcryptoKeyModeKmac128) {
         return OTCRYPTO_BAD_ARGS;
@@ -88,7 +88,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                                  customization_string.len, tag->data,
                                  tag->len));
       break;
-    case kMacModeKmac256:
+    case kOtcryptoKmacModeKmac256:
       // Check `key_mode` matches `mac_mode`
       if (key->config.key_mode != kOtcryptoKeyModeKmac256) {
         return OTCRYPTO_BAD_ARGS;
@@ -106,7 +106,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
+otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
                                    const otcrypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -225,7 +225,7 @@ otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                 .data = (unsigned char *)outer_block});
 }
 
-otcrypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
                                      otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -235,7 +235,7 @@ otcrypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
   return otcrypto_hash_update(&ctx->inner, input_message);
 }
 
-otcrypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
+otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                     otcrypto_word32_buf_t *tag) {
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

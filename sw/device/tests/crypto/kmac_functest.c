@@ -97,13 +97,13 @@ status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode KMAC mode enum value.
  */
-status_t get_kmac_mode(size_t security_strength, kmac_mode_t *mode) {
+status_t get_kmac_mode(size_t security_strength, otcrypto_kmac_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kMacModeKmac128;
+      *mode = kOtcryptoKmacModeKmac128;
       break;
     case 256:
-      *mode = kMacModeKmac256;
+      *mode = kOtcryptoKmacModeKmac256;
       break;
     default:
       LOG_INFO("Invalid size for KMAC: %d bits", security_strength);
@@ -148,7 +148,7 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
-      kmac_mode_t mode;
+      otcrypto_kmac_mode_t mode;
       TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
       otcrypto_word32_buf_t tag_buf = {
           .data = digest_buf.data,
