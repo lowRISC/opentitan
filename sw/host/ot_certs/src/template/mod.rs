@@ -286,12 +286,12 @@ pub enum EcCurve {
 }
 
 /// Flags that can be set for a certificate.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Flags {
-    pub not_configured: bool,
-    pub not_secure: bool,
-    pub recovery: bool,
-    pub debug: bool,
+    pub not_configured: Value<bool>,
+    pub not_secure: Value<bool>,
+    pub recovery: Value<bool>,
+    pub debug: Value<bool>,
 }
 
 /// Firmware ID (fwid) field.
@@ -330,15 +330,8 @@ pub enum VariableType {
         /// Maximum size in bytes for this variable.
         size: usize,
     },
-}
-
-impl VariableType {
-    // Return the maximum size of the variable in bytes.
-    pub fn size(&self) -> usize {
-        match self {
-            Self::ByteArray { size } | Self::Integer { size } | Self::String { size } => *size,
-        }
-    }
+    /// Boolean variable.
+    Boolean,
 }
 
 impl Template {
@@ -525,10 +518,10 @@ mod tests {
                 },
             ])),
             flags: Some(Flags {
-                not_configured: true,
-                not_secure: false,
-                recovery: true,
-                debug: false,
+                not_configured: Value::Literal(true),
+                not_secure: Value::Literal(false),
+                recovery: Value::Literal(true),
+                debug: Value::Literal(false),
             }),
             signature: Signature::EcdsaWithSha256 {
                 value: Some(EcdsaSignature {

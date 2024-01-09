@@ -69,6 +69,18 @@
             type: "integer",
             size: 32,
         },
+        not_configured: {
+            type: "boolean",
+        }
+        not_secure: {
+            type: "boolean",
+        }
+        recovery: {
+            type: "boolean",
+        }
+        debug: {
+            type: "boolean",
+        }
     },
 
     certificate: {
@@ -99,10 +111,10 @@
             { hash_algorithm: "sha256", digest: { var: "hash_2" } },
         ],
         flags: {
-            not_configured: false,
-            not_secure: false,
-            recovery: false,
-            debug: false,
+            not_configured: { var: "not_configured" },
+            not_secure: { var: "not_secure" },
+            recovery: { var: "recovery" },
+            debug: { var: "debug" },
         }
         signature: {
             algorithm: "ecdsa-with-sha256",
