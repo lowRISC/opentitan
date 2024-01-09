@@ -66,8 +66,8 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7
 
   // Get the key type from the top 16 bits of the full mode and ensure that it
   // is not RSA. All other key types are acceptable for hardware-backed keys.
-  key_type_t key_type = (key_type_t)(key->config.key_mode >> 16);
-  if (key_type == kKeyTypeRsa) {
+  otcrypto_key_type_t key_type = (otcrypto_key_type_t)(key->config.key_mode >> 16);
+  if (key_type == kOtcryptoKeyTypeRsa) {
     return OTCRYPTO_BAD_ARGS;
   }
 

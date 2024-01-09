@@ -23,21 +23,21 @@
  */
 static size_t keyblob_share_num_bytes(const crypto_key_config_t config) {
   // Get the key type from the top 16 bits of the full mode.
-  key_type_t key_type = (key_type_t)(config.key_mode >> 16);
+  otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
   switch (launder32(key_type)) {
-    case kKeyTypeEcc:
+    case kOtcryptoKeyTypeEcc:
       // ECC keys have 64 extra redundant bits per share.
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeEcc);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
       return config.key_length + (64 / 8);
-    case kKeyTypeRsa:
+    case kOtcryptoKeyTypeRsa:
       // RSA key shares are the same size as the unmasked key.
       // TODO: update once masking is implemented for RSA keys.
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeRsa);
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
       return config.key_length;
     default:
       // Symmetric key shares are simply the same size as the unmasked key.
-      HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeEcc);
-      HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeRsa);
+      HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
+      HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
       return config.key_length;
   }
   HARDENED_TRAP();
@@ -140,38 +140,38 @@ status_t keyblob_ensure_xor_masked(const crypto_key_config_t config) {
   HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolFalse);
 
   // Get the key type from the top 16 bits of the full mode.
-  key_type_t key_type =
-      (key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
+  otcrypto_key_type_t key_type =
+      (otcrypto_key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
   int32_t result = (int32_t)launder32((uint32_t)(OTCRYPTO_OK.value ^ key_type));
   switch (launder32(key_type)) {
-    case kKeyTypeAes:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeAes);
-      result ^= launder32(kKeyTypeAes);
+    case kOtcryptoKeyTypeAes:
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeAes);
+      result ^= launder32(kOtcryptoKeyTypeAes);
       break;
-    case kKeyTypeHmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeHmac);
-      result ^= launder32(kKeyTypeHmac);
+    case kOtcryptoKeyTypeHmac:
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeHmac);
+      result ^= launder32(kOtcryptoKeyTypeHmac);
       break;
-    case kKeyTypeKmac:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeKmac);
-      result ^= launder32(kKeyTypeKmac);
+    case kOtcryptoKeyTypeKmac:
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKmac);
+      result ^= launder32(kOtcryptoKeyTypeKmac);
       break;
-    case kKeyTypeKdf:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kKeyTypeKdf);
-      result ^= launder32(kKeyTypeKdf);
+    case kOtcryptoKeyTypeKdf:
+      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKdf);
+      result ^= launder32(kOtcryptoKeyTypeKdf);
       break;
-    case kKeyTypeEcc:
+    case kOtcryptoKeyTypeEcc:
       // Asymmetric!
       return OTCRYPTO_BAD_ARGS;
-    case kKeyTypeRsa:
+    case kOtcryptoKeyTypeRsa:
       // Asymmetric!
       return OTCRYPTO_BAD_ARGS;
     default:
       // Unrecognized key type.
       return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeEcc);
-  HARDENED_CHECK_NE(config.key_mode >> 16, kKeyTypeRsa);
+  HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
+  HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
 
   // If we get here, the result should be OTCRYPTO_OK.
   return (status_t){.value = result};
