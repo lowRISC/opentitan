@@ -39,16 +39,16 @@ enum {
 /**
  * Get the enum value for a given tag length.
  */
-static aead_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
+static otcrypto_aes_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
   switch (tag_len_bytes) {
     case (128 / 8):
-      return kAeadGcmTagLen128;
+      return kOtcryptoAesGcmTagLen128;
     case (96 / 8):
-      return kAeadGcmTagLen96;
+      return kOtcryptoAesGcmTagLen96;
     case (64 / 8):
-      return kAeadGcmTagLen64;
+      return kOtcryptoAesGcmTagLen64;
     case (32 / 8):
-      return kAeadGcmTagLen32;
+      return kOtcryptoAesGcmTagLen32;
     default:
       // Should not get here.
       CHECK(false);
@@ -178,7 +178,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
       .len = test->plaintext_len,
   };
 
-  aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
+  otcrypto_aes_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
 
   if (streaming) {
     uint64_t t_start = profile_start();
@@ -275,7 +275,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       .len = test->plaintext_len,
   };
 
-  aead_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
+  otcrypto_aes_gcm_tag_len_t tag_len = get_tag_length(test->tag_len);
 
   if (streaming) {
     aes_gcm_ctx_t ctx;

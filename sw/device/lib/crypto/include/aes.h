@@ -21,16 +21,16 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum aead_gcm_tag_len {
+typedef enum otcrypto_aes_gcm_tag_len{
   // Tag length 128 bits.
-  kAeadGcmTagLen128 = 0x167,
+  kOtcryptoAesGcmTagLen128 = 0x167,
   // Tag length 96 bits.
-  kAeadGcmTagLen96 = 0x35a,
+  kOtcryptoAesGcmTagLen96 = 0x35a,
   // Tag length 64 bits.
-  kAeadGcmTagLen64 = 0x5d4,
+  kOtcryptoAesGcmTagLen64 = 0x5d4,
   // Tag length 32 bits.
-  kAeadGcmTagLen32 = 0xf06,
-} aead_gcm_tag_len_t;
+  kOtcryptoAesGcmTagLen32 = 0xf06,
+} otcrypto_aes_gcm_tag_len_t;
 
 /**
  * Enum to define AES mode of operation.
@@ -164,7 +164,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
                                          otcrypto_const_byte_buf_t plaintext,
                                          otcrypto_const_word32_buf_t iv,
                                          otcrypto_const_byte_buf_t aad,
-                                         aead_gcm_tag_len_t tag_len,
+                                         otcrypto_aes_gcm_tag_len_t tag_len,
                                          otcrypto_byte_buf_t *ciphertext,
                                          otcrypto_word32_buf_t *auth_tag);
 
@@ -198,7 +198,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
-    aead_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_byte_buf_t *plaintext, hardened_bool_t *success);
 
 /**
@@ -317,7 +317,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * @return Result of the final operation.
  */
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
-                                               aead_gcm_tag_len_t tag_len,
+                                               otcrypto_aes_gcm_tag_len_t tag_len,
                                                otcrypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
                                                otcrypto_word32_buf_t *auth_tag);
@@ -347,7 +347,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
  */
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     aes_gcm_ctx_t *ctx, otcrypto_const_word32_buf_t auth_tag,
-    aead_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
 
 /**
