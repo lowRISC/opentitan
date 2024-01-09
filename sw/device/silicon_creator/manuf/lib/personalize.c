@@ -42,7 +42,7 @@ static const ecc_curve_t kCurveP256 = {
 
 // ECDH private key configuration.
 static const crypto_key_config_t kEcdhPrivateKeyConfig = {
-    .version = kCryptoLibVersion1,
+    .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
@@ -51,7 +51,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
 
 // ECDH shared secret configuration.
 static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
-    .version = kCryptoLibVersion1,
+    .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesEcb,
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,

@@ -104,7 +104,7 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the private key buffer and configuration.
   crypto_key_config_t private_key_config = {
-      .version = kCryptoLibVersion1,
+      .version = kOtcryptoLibVersion1,
       .key_mode = kTestKeyMode,
       .key_length = kRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
