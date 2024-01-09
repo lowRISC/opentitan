@@ -352,7 +352,7 @@ typedef enum otcrypto_lib_version{
 /**
  * Struct to represent the configuration of a blinded key.
  */
-typedef struct crypto_key_config {
+typedef struct otcrypto_key_config{
   // Crypto library version for this key.
   otcrypto_lib_version_t version;
   // Mode for which the key usage is intended.
@@ -367,7 +367,7 @@ typedef struct crypto_key_config {
   hardened_bool_t exportable;
   // Key security level.
   otcrypto_key_security_level_t security_level;
-} crypto_key_config_t;
+} otcrypto_key_config_t;
 
 /**
  * Struct to handle unmasked key type.
@@ -388,7 +388,7 @@ typedef struct crypto_unblinded_key {
  */
 typedef struct crypto_blinded_key {
   // Key configuration information.
-  const crypto_key_config_t config;
+  const otcrypto_key_config_t config;
   // Length of blinded key material in bytes.
   const size_t keyblob_length;
   // Implementation specific, storage provided by caller.

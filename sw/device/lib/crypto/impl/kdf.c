@@ -63,7 +63,7 @@ otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
 
   // Construct a blinded key struct for the intermediate key.
-  crypto_key_config_t prk_config = {
+  otcrypto_key_config_t prk_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = ikm.config.key_mode,
       .key_length = digest_bytelen,
@@ -195,7 +195,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
   // the salt is not actually secret.
   uint32_t salt_mask[ARRAYSIZE(salt_aligned_data)];
   memset(salt_mask, 0, sizeof(salt_mask));
-  crypto_key_config_t salt_key_config = {
+  otcrypto_key_config_t salt_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = ikm.config.key_mode,
       .key_length = salt_bytelen,
