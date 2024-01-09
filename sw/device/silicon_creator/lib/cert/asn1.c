@@ -49,13 +49,11 @@ rom_error_t asn1_start_tag(asn1_state_t *state, asn1_tag_t *new_tag,
   RETURN_IF_ERROR(asn1_push_byte(state, id));
   new_tag->len_offset = state->offset;
   // We do not yet known how many bytes we need to encode the length. For now
-  // reserve three bytes so we can use the 16-bit encoding. This is then fixed
-  // in asn1_finish_tag.
+  // reserve one byte which is the minimum. This is then fixed in
+  // asn1_finish_tag by moving the data if necessary.
 
-  // Three bytes: one to hold the number of octets to use
-  // and two to store the length.
-  RETURN_IF_ERROR(asn1_push_bytes(state, (uint8_t[]){0x82, 0, 0}, 3));
-  new_tag->len_size = 3;
+  RETURN_IF_ERROR(asn1_push_byte(state, 0));
+  new_tag->len_size = 1;
   return kErrorOk;
 }
 
@@ -64,41 +62,60 @@ rom_error_t asn1_finish_tag(asn1_tag_t *tag) {
   if (tag->state == NULL) {
     return kErrorAsn1Internal;
   }
-  // Sanity check: asn1_start_tag should have output three bytes.
-  if (tag->len_size != 3) {
+  // Sanity check: asn1_start_tag should have output one byte.
+  if (tag->len_size != 1) {
     return kErrorAsn1Internal;
   }
   // Compute actually used length.
   size_t length = tag->state->offset - tag->len_offset - tag->len_size;
-  // Fixup the length bytes and compute the size of the minimal encoding.
+  // Compute the size of the minimal encoding.
   size_t final_len_size;
   if (length <= 0x7f) {
     // We only need one byte to hold the length.
-    tag->state->buffer[tag->len_offset] = (uint8_t)length;
     final_len_size = 1;
   } else if (length <= 0xff) {
-    // We need two bytes to hold the length.
-    tag->state->buffer[tag->len_offset + 0] = 0x81;
-    tag->state->buffer[tag->len_offset + 1] = (uint8_t)length;
+    // We need two bytes to hold the length: we need to move the data before
+    // we can write the second byte.
     final_len_size = 2;
   } else if (length <= 0xffff) {
-    // We need three bytes to hold the length.
-    tag->state->buffer[tag->len_offset + 0] = 0x82;
-    tag->state->buffer[tag->len_offset + 1] = (uint8_t)(length >> 8);
-    tag->state->buffer[tag->len_offset + 2] = (uint8_t)(length & 0xff);
+    // We need three bytes to hold the length: we need to move the data before
+    // we can write the second and third bytes.
     final_len_size = 3;
   } else {
     // Length too large.
     return kErrorAsn1Internal;
   }
-  // If the final length uses less bytes than we initially allocated, we
-  // need to shift all the tag data forward.
-  for (size_t i = 0; i < length; i++) {
-    tag->state->buffer[tag->len_offset + final_len_size + i] =
-        tag->state->buffer[tag->len_offset + tag->len_size + i];
+  // If the final length uses more bytes than we initially allocated, we
+  // need to shift all the tag data backwards.
+  if (tag->len_size != final_len_size) {
+    // Make sure that the data actually fits into the buffer.
+    size_t new_buffer_size =
+        tag->state->offset + final_len_size - tag->len_size;
+    if (new_buffer_size > tag->state->size) {
+      return kErrorAsn1BufferExhausted;
+    }
+    // Copy backwards.
+    for (size_t i = 0; i < length; i++) {
+      tag->state->buffer[tag->len_offset + final_len_size + length - 1 - i] =
+          tag->state->buffer[tag->len_offset + tag->len_size + length - 1 - i];
+    }
+  }
+  // Write the length in the buffer.
+  if (length <= 0x7f) {
+    tag->state->buffer[tag->len_offset] = (uint8_t)length;
+  } else if (length <= 0xff) {
+    tag->state->buffer[tag->len_offset + 0] = 0x81;
+    tag->state->buffer[tag->len_offset + 1] = (uint8_t)length;
+  } else if (length <= 0xffff) {
+    tag->state->buffer[tag->len_offset + 0] = 0x82;
+    tag->state->buffer[tag->len_offset + 1] = (uint8_t)(length >> 8);
+    tag->state->buffer[tag->len_offset + 2] = (uint8_t)(length & 0xff);
+  } else {
+    // Length too large.
+    return kErrorAsn1Internal;
   }
   // Fix up state offset.
-  tag->state->offset -= tag->len_size - final_len_size;
+  tag->state->offset += final_len_size - tag->len_size;
   // Hardening: clear out the tag structure to prevent accidental reuse.
   tag->state = NULL;
   tag->len_offset = 0;
