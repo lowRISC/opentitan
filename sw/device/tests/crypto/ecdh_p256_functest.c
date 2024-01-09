@@ -23,8 +23,8 @@ enum {
   kP256SharedKeyWords = kP256SharedKeyBytes / sizeof(uint32_t),
 };
 
-static const ecc_curve_t kCurveP256 = {
-    .curve_type = kEccCurveTypeNistP256,
+static const otcrypto_ecc_curve_t kCurveP256 = {
+    .curve_type = kOtcryptoEccCurveTypeNistP256,
     .domain_parameter = NULL,
 };
 
