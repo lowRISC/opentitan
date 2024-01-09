@@ -25,6 +25,7 @@ pub enum SubstValue {
     ByteArray(Vec<u8>),
     Int32(i32),
     String(String),
+    Boolean(bool),
 }
 
 /// Substitution data for a certificate: it maps certain variables to concrete
@@ -68,6 +69,7 @@ impl SubstValue {
             VariableType::ByteArray { size } => self.parse_as_byte_array(size),
             VariableType::Integer { size } => self.parse_as_integer(size),
             VariableType::String { size } => self.parse_as_string(size),
+            VariableType::Boolean => self.parse_as_boolean(),
         }
     }
 
@@ -143,6 +145,7 @@ impl SubstValue {
                 }
                 Ok(SubstValue::ByteArray(bytes))
             }
+            _ => bail!("cannot parse value {self:?} as an integer"),
         }
     }
 
@@ -158,6 +161,18 @@ impl SubstValue {
             }
             _ => bail!("cannot parse value {self:?} as a string"),
         }
+    }
+
+    fn parse_as_boolean(&self) -> Result<SubstValue> {
+        Ok(match self {
+            SubstValue::Boolean(_) => self.clone(),
+            SubstValue::String(s) => match s.as_str() {
+                "true" => SubstValue::Boolean(true),
+                "false" => SubstValue::Boolean(false),
+                _ => bail!("cannot parse string '{s}' as a boolean, used either 'true' or 'false'"),
+            },
+            _ => bail!("cannot parse value {self:?} as a boolean"),
+        })
     }
 }
 
@@ -283,6 +298,25 @@ impl ConvertValue<String> for SubstValue {
     }
 }
 
+impl ConvertValue<bool> for SubstValue {
+    fn convert(&self, convert: &Option<Conversion>) -> Result<bool> {
+        let SubstValue::Boolean(b) = self else {
+            bail!("cannot substitute a boolean field with value {:?}", self)
+        };
+        // No conversion supported.
+        ensure!(
+            convert.is_none(),
+            "substitution of a boolean field with a boolean value cannot specify a conversion"
+        );
+        Ok(*b)
+    }
+
+    fn unconvert(val: &bool) -> Result<SubstValue> {
+        // Big-endian byte array.
+        Ok(SubstValue::Boolean(*val))
+    }
+}
+
 impl<T> Subst for Value<T>
 where
     Value<T>: Clone,
@@ -369,8 +403,25 @@ impl Subst for FirmwareId {
 }
 
 impl Subst for Flags {
-    fn subst(&self, _data: &SubstData) -> Result<Flags> {
-        Ok(*self)
+    fn subst(&self, data: &SubstData) -> Result<Flags> {
+        Ok(Flags {
+            not_configured: self
+                .not_configured
+                .subst(data)
+                .context("cannot substitute not_configured flag")?,
+            not_secure: self
+                .not_secure
+                .subst(data)
+                .context("cannot substitute not_configured flag")?,
+            recovery: self
+                .recovery
+                .subst(data)
+                .context("cannot substitute not_configured flag")?,
+            debug: self
+                .debug
+                .subst(data)
+                .context("cannot substitute not_configured flag")?,
+        })
     }
 }
 
@@ -572,6 +623,17 @@ mod tests {
         assert!(s.parse(&VariableType::String { size: 8 }).is_err());
     }
 
+    /// Test parsing of booleans.
+    #[test]
+    fn parse_booleans() {
+        for b in [false, true] {
+            let b_val = SubstValue::Boolean(b);
+            assert_eq!(b_val.parse(&VariableType::Boolean).unwrap(), b_val);
+            let b_str = SubstValue::String(format!("{b}"));
+            assert_eq!(b_str.parse(&VariableType::Boolean).unwrap(), b_val);
+        }
+    }
+
     /// Test conversion to byte arrays.
     #[test]
     fn convert_to_byte_array() {
@@ -634,5 +696,20 @@ mod tests {
         assert_eq!(conv_none.unwrap(), array_int);
         assert!(conv_lowercase.is_err());
         assert_eq!(conv_bigendian.unwrap(), array_int);
+    }
+
+    /// Test conversion to booleans.
+    #[test]
+    fn convert_to_boolean() {
+        // The only valid conversion from a boolean to a boolean is None.
+        let b = false;
+        let b_val = SubstValue::Boolean(b);
+        let conv_none: Result<bool> = b_val.convert(&None);
+        let conv_lowercase: Result<bool> = b_val.convert(&Some(Conversion::LowercaseHex));
+        let conv_bigendian: Result<bool> = b_val.convert(&Some(Conversion::BigEndian));
+
+        assert_eq!(conv_none.unwrap(), b);
+        assert!(conv_lowercase.is_err());
+        assert!(conv_bigendian.is_err());
     }
 }

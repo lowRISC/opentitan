@@ -250,11 +250,15 @@ impl X509 {
                 Some("key_usage".into()),
                 &Tag::BitString,
                 &[
-                    /* digitalSignature */ false, /* nonRepudiation */ false,
-                    /* keyEncipherment */ false, /* dataEncipherment */ false,
-                    /* keyAgreement */ false, /* keyCertSign */ true,
-                    /* cRLSign */ false, /* encipherOnly */ false,
-                    /* decipherOnly */ false,
+                    /* digitalSignature */ Value::Literal(false),
+                    /* nonRepudiation */ Value::Literal(false),
+                    /* keyEncipherment */ Value::Literal(false),
+                    /* dataEncipherment */ Value::Literal(false),
+                    /* keyAgreement */ Value::Literal(false),
+                    /* keyCertSign */ Value::Literal(true),
+                    /* cRLSign */ Value::Literal(false),
+                    /* encipherOnly */ Value::Literal(false),
+                    /* decipherOnly */ Value::Literal(false),
                 ],
             )
         })

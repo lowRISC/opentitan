@@ -5,7 +5,7 @@
 //! This module is capable of generating C code for generating a binary X.509
 //! certificate according to a [`Template`](crate::template::Template).
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use heck::ToUpperCamelCase;
 use std::collections::HashMap;
 use std::fmt::Write;
@@ -149,11 +149,13 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         // Only consider variables whose size can vary, ie pointers.
         let (codegen, _) = c_variable_info(var_name, "", var_type);
         if let VariableCodegenInfo::Pointer { .. } = codegen {
-            writeln!(
-                source_h,
-                "// - {var_name} is of size at most {} bytes.",
-                var_type.size()
-            )?;
+            let size = match var_type {
+                VariableType::ByteArray { size }
+                | VariableType::Integer { size }
+                | VariableType::String { size } => *size,
+                VariableType::Boolean => bail!("internal error: boolean represented by a pointer"),
+            };
+            writeln!(source_h, "// - {var_name} is of size at most {size} bytes.")?;
         }
     }
     source_h.push_str(&indoc::formatdoc! {"enum {{
@@ -203,29 +205,13 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
             }
             SubstValue::String(s) => writeln!(source_unittest, "char g_{var_name}[] = \"{s}\";")?,
             SubstValue::Int32(val) => writeln!(source_unittest, "uint32_t g_{var_name} = {val};")?,
+            SubstValue::Boolean(val) => writeln!(source_unittest, "bool g_{var_name} = {val};")?,
         }
     }
     // Generate structure to hold the TBS data.
     source_unittest.push('\n');
     writeln!(source_unittest, "{tbs_value_struct_name} g_tbs_values = {{")?;
-    for (var_name, var_type) in tbs_vars {
-        let (codegen, _) = c_variable_info(&var_name, "", &var_type);
-        match codegen {
-            VariableCodegenInfo::Pointer {
-                ptr_expr,
-                size_expr,
-            } => {
-                writeln!(source_unittest, "{INDENT}.{ptr_expr} = g_{var_name},")?;
-                writeln!(
-                    source_unittest,
-                    "{INDENT}.{size_expr} = sizeof(g_{var_name}),"
-                )?
-            }
-            VariableCodegenInfo::Int32 { value_expr } => {
-                writeln!(source_unittest, "{INDENT}.{value_expr} = g_{var_name},")?
-            }
-        }
-    }
+    source_unittest.push_str(&generate_value_struct_assignment(&tbs_vars)?);
     source_unittest.push_str("};\n");
     // Generate buffer for the TBS data.
     source_unittest.push('\n');
@@ -236,25 +222,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     // Generate structure to hold the certificate data.
     source_unittest.push('\n');
     writeln!(source_unittest, "{sig_value_struct_name} g_sig_values = {{")?;
-    for (var_name, var_type) in sig_vars {
-        let (codegen, _) = c_variable_info(&var_name, "", &var_type);
-        // The TBS variable is special
-        match codegen {
-            VariableCodegenInfo::Pointer {
-                ptr_expr,
-                size_expr,
-            } => {
-                writeln!(source_unittest, "{INDENT}.{ptr_expr} = g_{var_name},")?;
-                writeln!(
-                    source_unittest,
-                    "{INDENT}.{size_expr} = sizeof(g_{var_name}),"
-                )?;
-            }
-            VariableCodegenInfo::Int32 { value_expr } => {
-                writeln!(source_unittest, "{INDENT}.{value_expr} = g_{var_name},\n")?;
-            }
-        }
-    }
+    source_unittest.push_str(&generate_value_struct_assignment(&sig_vars)?);
     source_unittest.push_str("};\n");
     // Generate buffer for the certificate data.
     source_unittest.push('\n');
@@ -304,6 +272,30 @@ fn generate_value_struct(
     }
     writeln!(source, "}} {value_struct_name}_t;\n").unwrap();
     source
+}
+
+// Generate an assignment of a structure holding the values of the variables.
+// This is used in the unittest to fill the TBS and sig structures.
+fn generate_value_struct_assignment(variables: &HashMap<String, VariableType>) -> Result<String> {
+    let mut source = String::new();
+    for (var_name, var_type) in variables {
+        let (codegen, _) = c_variable_info(var_name, "", var_type);
+        // The TBS variable is special
+        match codegen {
+            VariableCodegenInfo::Pointer {
+                ptr_expr,
+                size_expr,
+            } => {
+                writeln!(source, "{INDENT}.{ptr_expr} = g_{var_name},")?;
+                writeln!(source, "{INDENT}.{size_expr} = sizeof(g_{var_name}),")?;
+            }
+            VariableCodegenInfo::Int32 { value_expr }
+            | VariableCodegenInfo::Boolean { value_expr } => {
+                writeln!(source, "{INDENT}.{value_expr} = g_{var_name},\n")?;
+            }
+        }
+    }
+    Ok(source)
 }
 
 // Decide if a variable appears in a signature field (if not, it is in the TBS).
@@ -432,6 +424,12 @@ fn c_variable_info(
                 {INDENT}size_t {name}_len;
                 "#
             },
+        ),
+        VariableType::Boolean => (
+            VariableCodegenInfo::Boolean {
+                value_expr: format!("{struct_expr}{name}"),
+            },
+            format!("{INDENT}bool {name};\n"),
         ),
     }
 }
