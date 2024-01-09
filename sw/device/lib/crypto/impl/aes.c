@@ -476,23 +476,23 @@ static status_t aes_gcm_key_construct(const otcrypto_blinded_key_t *blinded_key,
  * @param tag_len Tag length enum value.
  * @return OK if the tag length is acceptable, BAD_ARGS otherwise.
  */
-status_t aes_gcm_check_tag_length(size_t word_len, aead_gcm_tag_len_t tag_len) {
+status_t aes_gcm_check_tag_length(size_t word_len, otcrypto_aes_gcm_tag_len_t tag_len) {
   size_t bit_len = 0;
   switch (launder32(tag_len)) {
-    case kAeadGcmTagLen128:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen128);
+    case kOtcryptoAesGcmTagLen128:
+      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen128);
       bit_len = 128;
       break;
-    case kAeadGcmTagLen96:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen96);
+    case kOtcryptoAesGcmTagLen96:
+      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen96);
       bit_len = 96;
       break;
-    case kAeadGcmTagLen64:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen64);
+    case kOtcryptoAesGcmTagLen64:
+      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen64);
       bit_len = 64;
       break;
-    case kAeadGcmTagLen32:
-      HARDENED_CHECK_EQ(tag_len, kAeadGcmTagLen32);
+    case kOtcryptoAesGcmTagLen32:
+      HARDENED_CHECK_EQ(tag_len, kOtcryptoAesGcmTagLen32);
       bit_len = 32;
       break;
     default:
@@ -570,7 +570,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
                                          otcrypto_const_byte_buf_t plaintext,
                                          otcrypto_const_word32_buf_t iv,
                                          otcrypto_const_byte_buf_t aad,
-                                         aead_gcm_tag_len_t tag_len,
+                                         otcrypto_aes_gcm_tag_len_t tag_len,
                                          otcrypto_byte_buf_t *ciphertext,
                                          otcrypto_word32_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
@@ -614,7 +614,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
     const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
-    aead_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_byte_buf_t *plaintext, hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
@@ -766,7 +766,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
-                                               aead_gcm_tag_len_t tag_len,
+                                               otcrypto_aes_gcm_tag_len_t tag_len,
                                                otcrypto_byte_buf_t *ciphertext,
                                                size_t *ciphertext_bytes_written,
                                                otcrypto_word32_buf_t *auth_tag) {
@@ -807,7 +807,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(aes_gcm_ctx_t *ctx,
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     aes_gcm_ctx_t *ctx, otcrypto_const_word32_buf_t auth_tag,
-    aead_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
   if (ctx == NULL || plaintext == NULL || plaintext_bytes_written == NULL ||
       auth_tag.data == NULL || success == NULL) {
