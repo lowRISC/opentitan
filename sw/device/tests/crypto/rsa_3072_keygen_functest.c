@@ -32,7 +32,7 @@ status_t keygen_then_sign_test(void) {
   // Allocate buffer for the public key.
   uint32_t public_key_data[ceil_div(kRsa3072PublicKeyBytes, sizeof(uint32_t))];
   memset(public_key_data, 0, sizeof(public_key_data));
-  crypto_unblinded_key_t public_key = {
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
       .key_length = kRsa3072PublicKeyBytes,
       .key = public_key_data,
@@ -43,7 +43,7 @@ status_t keygen_then_sign_test(void) {
       ceil_div(kRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
   memset(keyblob, 0, sizeof(keyblob));
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config =
           {
               .version = kOtcryptoLibVersion1,

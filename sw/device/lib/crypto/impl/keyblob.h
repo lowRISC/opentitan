@@ -56,7 +56,7 @@ size_t keyblob_share_num_words(const otcrypto_key_config_t config);
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
+status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1);
 
 /**
@@ -109,7 +109,7 @@ status_t keyblob_buffer_to_keymgr_diversification(
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(
-    const crypto_blinded_key_t *key, keymgr_diversification_t *diversification);
+    const otcrypto_blinded_key_t *key, keymgr_diversification_t *diversification);
 
 /**
  * Checks that the configuration represents a key masked with XOR.
@@ -161,7 +161,7 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask);
+status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask);
 
 #ifdef __cplusplus
 }  // extern "C"

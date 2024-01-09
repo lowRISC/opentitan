@@ -28,8 +28,8 @@ static const otcrypto_key_config_t kWrappingKeyConfig = {
  * @param key_to_wrap Blinded key to wrap/unwrap.
  * @param kek_kek AES-KWP key to wrap with.
  */
-static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
-                                const crypto_blinded_key_t *key_kek) {
+static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
+                                const otcrypto_blinded_key_t *key_kek) {
   size_t wrapped_num_words;
   TRY(otcrypto_aes_kwp_wrapped_len(key_to_wrap->config, &wrapped_num_words));
 
@@ -46,7 +46,7 @@ static status_t run_wrap_unwrap(const crypto_blinded_key_t *key_to_wrap,
   TRY_CHECK(key_to_wrap->keyblob_length % sizeof(uint32_t) == 0);
   size_t keyblob_words = key_to_wrap->keyblob_length / sizeof(uint32_t);
   uint32_t unwrapped_key_keyblob[keyblob_words];
-  crypto_blinded_key_t unwrapped_key = {
+  otcrypto_blinded_key_t unwrapped_key = {
       .keyblob_length = keyblob_words * sizeof(uint32_t),
       .keyblob = unwrapped_key_keyblob,
   };
@@ -83,7 +83,7 @@ static status_t wrap_unwrap_random_test(void) {
 
   // Generate a random KMAC key.
   uint32_t keyblob[(kKmacKeyConfig.key_length * 2) / sizeof(uint32_t)];
-  crypto_blinded_key_t kmac_key = {
+  otcrypto_blinded_key_t kmac_key = {
       .config = kKmacKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -93,7 +93,7 @@ static status_t wrap_unwrap_random_test(void) {
 
   // Generate a random AES-KWP key.
   uint32_t kek_keyblob[(kWrappingKeyConfig.key_length * 2) / sizeof(uint32_t)];
-  crypto_blinded_key_t kek = {
+  otcrypto_blinded_key_t kek = {
       .config = kWrappingKeyConfig,
       .keyblob_length = sizeof(kek_keyblob),
       .keyblob = kek_keyblob,

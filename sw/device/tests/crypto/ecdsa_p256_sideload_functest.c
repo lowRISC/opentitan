@@ -51,7 +51,7 @@ static const uint32_t kPrivateKeyVersion = 0x9;
 status_t sign_then_verify_test(void) {
   // Allocate space for a hardware-backed key.
   uint32_t keyblob[8] = {0};
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -63,7 +63,7 @@ status_t sign_then_verify_test(void) {
 
   // Allocate space for a public key.
   uint32_t pk[kP256PublicKeyWords] = {0};
-  crypto_unblinded_key_t public_key = {
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdsa,
       .key_length = sizeof(pk),
       .key = pk,

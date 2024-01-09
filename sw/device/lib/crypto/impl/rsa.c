@@ -36,8 +36,8 @@ static_assert(kRsa4096PrivateKeyblobBytes == sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
 
 otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
-                                    crypto_unblinded_key_t *public_key,
-                                    crypto_blinded_key_t *private_key) {
+                                    otcrypto_unblinded_key_t *public_key,
+                                    otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
   return otcrypto_rsa_keygen_async_finalize(public_key, private_key);
 }
@@ -67,7 +67,7 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
 
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t exponent,
-    crypto_unblinded_key_t *public_key) {
+    otcrypto_unblinded_key_t *public_key) {
   if (modulus.data == NULL || public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -125,7 +125,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t private_key_structural_check(
-    const rsa_size_t size, const crypto_blinded_key_t *private_key) {
+    const rsa_size_t size, const otcrypto_blinded_key_t *private_key) {
   // Check that the key mode is a valid RSA mode.
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
 
@@ -170,7 +170,7 @@ static status_t private_key_structural_check(
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
-    crypto_blinded_key_t *private_key) {
+    otcrypto_blinded_key_t *private_key) {
   if (modulus.data == NULL || d_share0.data == NULL || d_share1.data == NULL ||
       private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -250,7 +250,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1,
-    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_start(
       size, modulus, e, cofactor_share0, cofactor_share1));
   HARDENED_TRY(otcrypto_rsa_keypair_from_cofactor_async_finalize(public_key,
@@ -286,7 +286,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                   const hash_digest_t *message_digest,
                                   rsa_padding_t padding_mode,
                                   otcrypto_word32_buf_t *signature) {
@@ -295,7 +295,7 @@ otcrypto_status_t otcrypto_rsa_sign(const crypto_blinded_key_t *private_key,
   return otcrypto_rsa_sign_async_finalize(signature);
 }
 
-otcrypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_verify(const otcrypto_unblinded_key_t *public_key,
                                     const hash_digest_t *message_digest,
                                     rsa_padding_t padding_mode,
                                     otcrypto_const_word32_buf_t signature,
@@ -305,7 +305,7 @@ otcrypto_status_t otcrypto_rsa_verify(const crypto_unblinded_key_t *public_key,
                                             verification_result);
 }
 
-otcrypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
+otcrypto_status_t otcrypto_rsa_encrypt(const otcrypto_unblinded_key_t *public_key,
                                      const hash_mode_t hash_mode,
                                      otcrypto_const_byte_buf_t message,
                                      otcrypto_const_byte_buf_t label,
@@ -315,7 +315,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(const crypto_unblinded_key_t *public_key,
   return otcrypto_rsa_encrypt_async_finalize(ciphertext);
 }
 
-otcrypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
+otcrypto_status_t otcrypto_rsa_decrypt(const otcrypto_blinded_key_t *private_key,
                                      const hash_mode_t hash_mode,
                                      otcrypto_const_word32_buf_t ciphertext,
                                      otcrypto_const_byte_buf_t label,
@@ -332,7 +332,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(const crypto_blinded_key_t *private_key,
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t rsa_size_from_public_key(
-    const crypto_unblinded_key_t *public_key, rsa_size_t *key_size) {
+    const otcrypto_unblinded_key_t *public_key, rsa_size_t *key_size) {
   switch (launder32(public_key->key_length)) {
     case kRsa2048PublicKeyBytes:
       HARDENED_CHECK_EQ(public_key->key_length, kRsa2048PublicKeyBytes);
@@ -364,7 +364,7 @@ static status_t rsa_size_from_public_key(
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t rsa_size_from_private_key(
-    const crypto_blinded_key_t *private_key, rsa_size_t *key_size) {
+    const otcrypto_blinded_key_t *private_key, rsa_size_t *key_size) {
   switch (launder32(private_key->config.key_length)) {
     case kRsa2048PrivateKeyBytes:
       HARDENED_CHECK_EQ(private_key->config.key_length,
@@ -402,7 +402,7 @@ static status_t rsa_size_from_private_key(
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
  */
 static status_t public_key_structural_check(
-    const crypto_unblinded_key_t *public_key) {
+    const otcrypto_unblinded_key_t *public_key) {
   // Check that the key mode is a valid RSA mode.
   return rsa_mode_check(public_key->key_mode);
 }
@@ -428,7 +428,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size) {
 }
 
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
-    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
@@ -531,7 +531,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
-    crypto_unblinded_key_t *public_key, crypto_blinded_key_t *private_key) {
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
@@ -609,7 +609,7 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
 }
 
 otcrypto_status_t otcrypto_rsa_sign_async_start(
-    const crypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     const hash_digest_t *message_digest, rsa_padding_t padding_mode) {
   // Check for NULL pointers.
   if (message_digest == NULL || message_digest->data == NULL ||
@@ -692,7 +692,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_verify_async_start(
-    const crypto_unblinded_key_t *public_key,
+    const otcrypto_unblinded_key_t *public_key,
     otcrypto_const_word32_buf_t signature) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || signature.data == NULL) {
@@ -767,7 +767,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_start(
-    const crypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
+    const otcrypto_unblinded_key_t *public_key, const hash_mode_t hash_mode,
     otcrypto_const_byte_buf_t message, otcrypto_const_byte_buf_t label) {
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL) {
@@ -855,7 +855,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
-    const crypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *private_key,
     otcrypto_const_word32_buf_t ciphertext) {
   // Check for NULL pointers.
   if (private_key == NULL || private_key->keyblob == NULL ||

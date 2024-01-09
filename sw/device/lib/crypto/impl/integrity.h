@@ -25,7 +25,7 @@ extern "C" {
  * @param key Unblinded key.
  * @returns Checksum value.
  */
-uint32_t integrity_unblinded_checksum(const crypto_unblinded_key_t *key);
+uint32_t integrity_unblinded_checksum(const otcrypto_unblinded_key_t *key);
 
 /**
  * Compute the checksum of a blinded key.
@@ -36,7 +36,7 @@ uint32_t integrity_unblinded_checksum(const crypto_unblinded_key_t *key);
  * @param key Blinded key.
  * @returns Checksum value.
  */
-uint32_t integrity_blinded_checksum(const crypto_blinded_key_t *key);
+uint32_t integrity_blinded_checksum(const otcrypto_blinded_key_t *key);
 
 /**
  * Perform an integrity check on the unblinded key.
@@ -49,7 +49,7 @@ uint32_t integrity_blinded_checksum(const crypto_blinded_key_t *key);
  */
 OT_WARN_UNUSED_RESULT
 hardened_bool_t integrity_unblinded_key_check(
-    const crypto_unblinded_key_t *key);
+    const otcrypto_unblinded_key_t *key);
 
 /**
  * Perform an integrity check on the blinded key.
@@ -61,7 +61,7 @@ hardened_bool_t integrity_unblinded_key_check(
  * @returns Whether the integrity check passed.
  */
 OT_WARN_UNUSED_RESULT
-hardened_bool_t integrity_blinded_key_check(const crypto_blinded_key_t *key);
+hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key);
 
 #ifdef __cplusplus
 }  // extern "C"

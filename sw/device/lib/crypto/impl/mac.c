@@ -18,7 +18,7 @@
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
                               otcrypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
@@ -29,7 +29,7 @@ otcrypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
 }
 
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                               otcrypto_const_byte_buf_t input_message,
                               kmac_mode_t kmac_mode,
                               otcrypto_const_byte_buf_t customization_string,
@@ -107,7 +107,7 @@ otcrypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
 }
 
 otcrypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key) {
+                                   const otcrypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

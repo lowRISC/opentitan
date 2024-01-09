@@ -67,7 +67,7 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
                         const uint32_t *input, uint32_t *output) {
   // Construct the key.
   uint32_t keyblob[8];
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

@@ -193,7 +193,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   size_t keyblob_words =
       ceil_div(kRsa4096PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config = private_key_config,
       .keyblob = keyblob,
       .keyblob_length = kRsa4096PrivateKeyblobBytes,
@@ -264,7 +264,7 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
       .len = ARRAYSIZE(kTestModulus),
   };
   uint32_t public_key_data[ceil_div(kRsa4096PublicKeyBytes, sizeof(uint32_t))];
-  crypto_unblinded_key_t public_key = {
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = key_mode,
       .key_length = kRsa4096PublicKeyBytes,
       .key = public_key_data,

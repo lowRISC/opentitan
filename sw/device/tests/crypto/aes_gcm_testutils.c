@@ -136,7 +136,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -233,7 +233,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
   TRY(keyblob_from_key_and_mask(test->key, kKeyMask, config, keyblob));
 
   // Construct the blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

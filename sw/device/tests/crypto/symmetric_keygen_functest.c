@@ -83,7 +83,7 @@ static status_t basic_keygen_test(otcrypto_key_config_t config) {
   memset(keyblob, 0, sizeof(keyblob));
 
   // Create the blinded key structure and call keygen.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -129,12 +129,12 @@ static status_t generate_multiple_keys_test(void) {
   memset(keyblob_buffer, 0, sizeof(keyblob_buffer));
 
   // Generate two AES keys.
-  crypto_blinded_key_t key1 = {
+  otcrypto_blinded_key_t key1 = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob1,
   };
-  crypto_blinded_key_t key2 = {
+  otcrypto_blinded_key_t key2 = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob2,

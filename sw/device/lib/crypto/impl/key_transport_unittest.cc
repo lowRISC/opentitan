@@ -64,7 +64,7 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
 
   // Create a key handle from the test data.
   uint32_t keyblob[32] = {0};
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigHwBackedAesCtr128,
       .keyblob_length = 32,
       .keyblob = keyblob,
@@ -95,7 +95,7 @@ TEST(KeyTransport, HwBackedRsaKeyFails) {
 
   // Create a key handle from the test data.
   uint32_t keyblob[32] = {0};
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigRsaInvalid,
       .keyblob_length = 32,
       .keyblob = keyblob,
@@ -120,7 +120,7 @@ TEST(KeyTransport, BlindedKeyImportExport) {
   }
 
   uint32_t keyblob[share0.size() * 2];
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -170,7 +170,7 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
 
   // Create destination struct.
   uint32_t keyblob[share0.size() * 2];
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -203,7 +203,7 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
             false);
 
   // Set a bad length for the keyblob and expect the import to fail.
-  crypto_blinded_key_t bad_blinded_key = {
+  otcrypto_blinded_key_t bad_blinded_key = {
       .config = kConfigExportableAesCtr128,
       .keyblob_length = sizeof(keyblob) - 1,
       .keyblob = keyblob,
@@ -229,7 +229,7 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
 
   // Create destination struct.
   uint32_t keyblob[share0.size() * 2];
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -268,7 +268,7 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
             false);
 
   // Set a bad length for the keyblob and expect the export to fail.
-  crypto_blinded_key_t bad_blinded_key = {
+  otcrypto_blinded_key_t bad_blinded_key = {
       .config = kConfigExportableAesCtr128,
       .keyblob_length = sizeof(keyblob) - 1,
       .keyblob = keyblob,
@@ -287,7 +287,7 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
 
   // Create destination struct.
   uint32_t keyblob[share0.size() * 2];
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = kConfigNonExportableAesCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

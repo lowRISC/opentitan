@@ -43,7 +43,7 @@ static const otcrypto_key_config_t kPrivateKeyConfig = {
 status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Allocate space for a masked private key.
   uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -51,7 +51,7 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 
   // Allocate space for a public key.
   uint32_t pk[kP256PublicKeyWords] = {0};
-  crypto_unblinded_key_t public_key = {
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEcdsa,
       .key_length = sizeof(pk),
       .key = pk,

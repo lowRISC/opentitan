@@ -141,7 +141,7 @@ TEST(Keyblob, FromToSharesNoop) {
                       keyblob);
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -179,7 +179,7 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -215,7 +215,7 @@ TEST(Keyblob, ToKeymgrDiversificationSimple) {
   }
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -248,7 +248,7 @@ TEST(Keyblob, ToKeymgrDiversificationBadlength) {
   }
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -275,7 +275,7 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   }
 
   // Construct blinded key for CTR mode.
-  crypto_blinded_key_t key1 = {
+  otcrypto_blinded_key_t key1 = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -283,7 +283,7 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   };
 
   // Construct blinded key for OFB mode.
-  crypto_blinded_key_t key2 = {
+  otcrypto_blinded_key_t key2 = {
       .config = kConfigOfbSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -326,7 +326,7 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -370,7 +370,7 @@ TEST(Keyblob, RemaskWithZero) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
