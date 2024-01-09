@@ -48,6 +48,7 @@ impl ConstantPool {
 }
 
 /// Information about how to refer to a variable in the code.
+#[derive(Debug, Clone)]
 pub enum VariableCodegenInfo {
     /// Variable can be referred to as a pointer.
     Pointer {
@@ -61,9 +62,15 @@ pub enum VariableCodegenInfo {
         // Expression generating the value.
         value_expr: String,
     },
+    /// Variable is a boolean,
+    Boolean {
+        // Expression generating the value.
+        value_expr: String,
+    },
 }
 
 /// Information about a variable.
+#[derive(Debug, Clone)]
 pub struct VariableInfo {
     /// Type of the variable.
     pub var_type: VariableType,
@@ -218,6 +225,40 @@ impl Codegen<'_> {
             "RETURN_IF_ERROR(asn1_push_oid_raw(&state, {expr}, {expr_size}));\n"
         ))
     }
+
+    /// Push a bit in a bitstring.
+    fn push_bit(&mut self, bitstring_tagname: &str, val: &Value<bool>) -> Result<()> {
+        match val {
+            Value::Literal(x) => {
+                self.push_str_with_indent(&format!(
+                    "RETURN_IF_ERROR(asn1_bitstring_push_bit({bitstring_tagname}, {x}));\n"
+                ));
+            }
+            Value::Variable(Variable { name, convert }) => {
+                let VariableInfo {
+                    codegen,
+                    var_type: source_type,
+                } = (self.variable_info)(name)?;
+                match source_type {
+                    VariableType::Boolean => {
+                        ensure!(
+                            convert.is_none(),
+                            "cannot use a convertion from boolean to boolean"
+                        );
+                        let VariableCodegenInfo::Boolean { value_expr } = codegen else {
+                            bail!("internal error: boolean not represented by a VariableCodegenInfo::Boolean");
+                        };
+                        self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_bitstring_push_bit({bitstring_tagname}, {value_expr}));\n"));
+                    }
+                    _ => bail!(
+                        "conversion from to {:?} to boolean is not supported",
+                        source_type
+                    ),
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Tag {
@@ -321,9 +362,8 @@ impl Builder for Codegen<'_> {
                         size
                     }
                     _ => bail!(
-                        "using a variable of type {:?} for an integer field is not supported",
-                        source_type
-                    ),
+                        "using a variable of type {source_type:?} for an integer field is not supported"
+                        ),
                 };
                 self.max_out_size += Self::tag_and_content_size(1 + size);
                 // For variables, an integer can either be represented by a pointer to a big-endian
@@ -343,6 +383,7 @@ impl Builder for Codegen<'_> {
                         // Make sure the type is correct and get the size.
                         self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_integer(&state, {}, false, {ptr_expr}, {size_expr}));\n", tag.codestring()))
                     }
+                    _ => bail!("internal error: integer represented by a {source_type:?}"),
                 }
             }
         }
@@ -388,8 +429,7 @@ impl Builder for Codegen<'_> {
                         ))
                     }
                     _ => bail!(
-                        "using a variable of type {:?} for a padded integer field is not supported",
-                        source_type
+                        "using a variable of type {source_type:?} for a padded integer field is not supported"
                     ),
                 }
             }
@@ -429,8 +469,7 @@ impl Builder for Codegen<'_> {
                         ))
                     }
                     _ => bail!(
-                        "using a variable of type {:?} for a byte-array field is not supported",
-                        source_type
+                        "using a variable of type {source_type:?} for a byte-array field is not supported",
                     ),
                 }
             }
@@ -491,17 +530,47 @@ impl Builder for Codegen<'_> {
                                 self.push_str_with_indent(
                                     &format!("RETURN_IF_ERROR(asn1_push_hexstring(&state, {str_type}, {ptr_expr}, {size_expr}));\n"))
                             }
-                            _ => bail!("conversion {:?} from byte array to string is not supported", convert),
+                            _ => bail!("conversion {convert:?} from byte array to string is not supported"),
                         }
                     }
-                    _ => bail!(
-                        "conversion from to {:?} to string is not supported",
-                        source_type
-                    ),
+                    _ => bail!("conversion from to {source_type:?} to string is not supported",),
                 }
             }
         }
         Ok(())
+    }
+
+    fn push_bitstring<'a>(
+        &mut self,
+        name_hint: Option<String>,
+        tag: &Tag,
+        bits: &[Value<bool>],
+    ) -> Result<()> {
+        self.push_tag(name_hint.clone(), tag, |builder| {
+            let tag_name = format!(
+                "bit{}_{}",
+                builder.tag_idx,
+                name_hint.map(|x| x.to_snake_case()).unwrap_or("".into())
+            );
+            builder.tag_idx += 1;
+            builder.push_str_with_indent(&format!("asn1_bitstring_t {tag_name};\n"));
+            builder.push_str_with_indent(&format!(
+                "RETURN_IF_ERROR(asn1_start_bitstring(&state, &{tag_name}));\n"
+            ));
+            builder.push_str_with_indent("{\n");
+            builder.indent_lvl += 1;
+            for bit in bits {
+                builder.push_bit(&format!("&{tag_name}"), bit)?;
+            }
+            // One byte for the unused bits and then one byte per 8 bits.
+            builder.max_out_size += 1 + (bits.len() + 7) / 8;
+            builder.indent_lvl -= 1;
+            builder.push_str_with_indent("}\n");
+            builder.push_str_with_indent(&format!(
+                "RETURN_IF_ERROR(asn1_finish_bitstring(&{tag_name}));\n"
+            ));
+            Ok(())
+        })
     }
 
     fn push_oid(&mut self, oid: &Oid) -> Result<()> {
