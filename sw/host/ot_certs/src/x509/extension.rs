@@ -8,7 +8,7 @@ use foreign_types::{ForeignType, ForeignTypeRef};
 use openssl::asn1::{Asn1Object, Asn1OctetStringRef};
 use openssl::x509::X509;
 
-use crate::template;
+use crate::template::{Flags, Value};
 
 // Unfortunately, the rust openssl binding does not have an API to extract arbitrary extension but it exports
 // the low level function from the C library to do that.
@@ -64,13 +64,13 @@ pub fn x509_get_ext_by_obj<'a>(x509: &'a X509, obj: &Asn1Object) -> Result<&'a A
 //     recovery (2),
 //     debug (3)
 // }
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read)]
 pub struct Fwid<'a> {
     pub hash_alg: asn1::ObjectIdentifier,
     pub digest: &'a [u8],
 }
 
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+#[derive(asn1::Asn1Read)]
 pub struct DiceTcbInfo<'a> {
     #[implicit(0)]
     pub vendor: Option<asn1::Utf8String<'a>>,
@@ -87,36 +87,14 @@ pub struct DiceTcbInfo<'a> {
     #[implicit(6)]
     pub fwids: Option<asn1::SequenceOf<'a, Fwid<'a>>>,
     #[implicit(7)]
-    pub flags: Option<template::Flags>,
+    pub flags: Option<Flags>,
     #[implicit(8)]
     pub vendor_info: Option<&'a [u8]>,
     #[implicit(9)]
     pub tcb_type: Option<&'a [u8]>,
 }
 
-impl asn1::SimpleAsn1Writable for template::Flags {
-    const TAG: asn1::Tag = asn1::OwnedBitString::TAG;
-    fn write_data(&self, w: &mut asn1::WriteBuf) -> asn1::WriteResult {
-        let mut val = 0u8;
-        if self.not_configured {
-            val |= 1 << 7;
-        }
-        if self.not_secure {
-            val |= 1 << 6;
-        }
-        if self.recovery {
-            val |= 1 << 5;
-        }
-        if self.debug {
-            val |= 1 << 4;
-        }
-        let bitstring = asn1::OwnedBitString::new(vec![val], 4)
-            .expect("cannot create an OwnedBitString for flags");
-        bitstring.write_data(w)
-    }
-}
-
-impl<'a> asn1::SimpleAsn1Readable<'a> for template::Flags {
+impl<'a> asn1::SimpleAsn1Readable<'a> for Flags {
     const TAG: asn1::Tag = asn1::OwnedBitString::TAG;
     fn parse_data(_data: &'a [u8]) -> asn1::ParseResult<Self> {
         let result = asn1::OwnedBitString::parse_data(_data)?;
@@ -125,11 +103,11 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for template::Flags {
             // We expect 4 bits.
             asn1::ParseResult::Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidLength))
         } else {
-            Ok(template::Flags {
-                not_configured: bs.has_bit_set(0),
-                not_secure: bs.has_bit_set(1),
-                recovery: bs.has_bit_set(2),
-                debug: bs.has_bit_set(3),
+            Ok(Flags {
+                not_configured: Value::Literal(bs.has_bit_set(0)),
+                not_secure: Value::Literal(bs.has_bit_set(1)),
+                recovery: Value::Literal(bs.has_bit_set(2)),
+                debug: Value::Literal(bs.has_bit_set(3)),
             })
         }
     }

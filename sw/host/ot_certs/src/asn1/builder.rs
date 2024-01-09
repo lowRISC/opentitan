@@ -129,23 +129,6 @@ pub trait Builder {
         &mut self,
         name_hint: Option<String>,
         tag: &Tag,
-        bits: &[bool],
-    ) -> Result<()> {
-        // See X.690 spec section 8.6 for encoding details.
-        // Note: the encoding of an empty bitstring must be the number of unused bits to 0 and have no content.
-        let nr_bytes = (bits.len() + 7) / 8;
-        let mut bytes = vec![0u8; nr_bytes];
-        for (i, bit) in bits.iter().enumerate() {
-            if *bit {
-                bytes[i / 8] |= 1u8 << (7 - (i % 8));
-            }
-        }
-
-        self.push_as_bit_string(
-            concat_suffix(&name_hint, "bitstring"),
-            tag,
-            bytes.len() * 8 - bits.len(),
-            |builder| builder.push_byte_array(name_hint.clone(), &Value::Literal(bytes.clone())),
-        )
-    }
+        bits: &[Value<bool>],
+    ) -> Result<()>;
 }
