@@ -79,7 +79,7 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
  */
 status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
                                const uint8_t *expected_digest) {
-  hash_context_t ctx;
+  otcrypto_hash_context_t ctx;
   TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha384));
 
   // Send the message 5 bytes at a time.
