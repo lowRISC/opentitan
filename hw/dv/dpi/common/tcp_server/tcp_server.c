@@ -419,7 +419,7 @@ struct tcp_server_ctx *tcp_server_create(const char *display_name,
 
   if (pthread_mutex_init(&ctx->sock_mutex, NULL) != 0 ||
       pthread_create(&ctx->sock_thread, NULL, server_create, (void *)ctx) !=
-      0) {
+          0) {
     fprintf(stderr, "%s: Unable to create TCP socket thread\n",
             ctx->display_name);
     ctx_free(ctx);

@@ -42,7 +42,6 @@ module chip_sim_tb (
 
   // GPIO DPI
   gpiodpi #(
-    .ListenPort(44855),
     .N_GPIO(32)
   ) u_gpiodpi (
     .clk_i      (clk_i),
@@ -60,7 +59,6 @@ module chip_sim_tb (
   // frequency must match the settings used in the on-chip software at
   // `sw/top_darjeeling/sw/device/arch/device_sim_verilator.c`.
   uartdpi #(
-    .ListenPort(44854),
     .BAUD('d7_200),
     .FREQ('d500_000)
   ) u_uart (
@@ -106,9 +104,7 @@ module chip_sim_tb (
 `endif
 
   // SPI DPI
-  spidpi #(
-    .ListenPort(44856)
-  ) u_spi (
+  spidpi u_spi (
     .clk_i  (clk_i),
     .rst_ni (cio_gpio_rst_n),
     .spi_device_sck_o     (cio_spi_device_sck_p2d),

@@ -12,7 +12,7 @@
 extern "C" {
 
 #define MAX_TRANSACTION (8 * 1024)
-#define MAX_TRANSFER    (4 * 1024)
+#define MAX_TRANSFER (4 * 1024)
 struct spidpi_ctx;
 
 // SPI Host States

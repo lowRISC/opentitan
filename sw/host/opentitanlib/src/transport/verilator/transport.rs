@@ -15,8 +15,8 @@ use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
-use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::spi::VerilatorSpi;
+use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
@@ -74,7 +74,11 @@ impl Verilator {
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
-            inner: Rc::new(RefCell::new(Inner { gpio, spi: None, uart: None })),
+            inner: Rc::new(RefCell::new(Inner {
+                gpio,
+                spi: None,
+                uart: None,
+            })),
         })
     }
 
@@ -96,7 +100,9 @@ impl Drop for Verilator {
 
 impl Transport for Verilator {
     fn capabilities(&self) -> Result<Capabilities> {
-        Ok(Capabilities::new(Capability::GPIO | Capability::SPI | Capability::UART))
+        Ok(Capabilities::new(
+            Capability::GPIO | Capability::SPI | Capability::UART,
+        ))
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {

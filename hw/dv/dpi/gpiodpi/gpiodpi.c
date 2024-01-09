@@ -144,7 +144,8 @@ void *gpiodpi_create(const char *name, int listen_port, int n_bits) {
     assert(cwd != NULL);
 
     int path_len;
-    path_len = snprintf(ctx->dev_to_host_path, PATH_MAX, "%s/%s-read", cwd, name);
+    path_len =
+        snprintf(ctx->dev_to_host_path, PATH_MAX, "%s/%s-read", cwd, name);
     assert(path_len > 0 && path_len <= PATH_MAX);
     path_len =
         snprintf(ctx->host_to_dev_path, PATH_MAX, "%s/%s-write", cwd, name);
@@ -256,7 +257,7 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
           read_len++;
         }
       } while (read_len > 0 && read_len < 256 &&
-               (gpio_str[read_len - 1] != '\0'  &&
+               (gpio_str[read_len - 1] != '\0' &&
                 gpio_str[read_len - 1] != '\r' &&
                 gpio_str[read_len - 1] != '\n'));
     } else {
@@ -288,7 +289,7 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               CLR_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
-            } else if (idx == 255){
+            } else if (idx == 255) {
               ctx->rst_n = 0;
             } else {
               fprintf(stderr,
@@ -310,7 +311,7 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
               }
               SET_BIT(ctx->driven_pin_values, idx);
               set_bit_val(&ctx->weak_pins, idx, weak);
-            } else if (idx == 255){
+            } else if (idx == 255) {
               ctx->rst_n = 1;
             } else {
               fprintf(stderr,
@@ -355,12 +356,12 @@ void gpiodpi_close(void *ctx_void) {
     tcp_server_close(ctx->sock);
   } else {
     if (close(ctx->dev_to_host_fifo) != 0) {
-      printf("GPIO: Failed to close FIFO file at %s: %s\n", ctx->dev_to_host_path,
-             strerror(errno));
+      printf("GPIO: Failed to close FIFO file at %s: %s\n",
+             ctx->dev_to_host_path, strerror(errno));
     }
     if (close(ctx->host_to_dev_fifo) != 0) {
-      printf("GPIO: Failed to close FIFO file at %s: %s\n", ctx->host_to_dev_path,
-             strerror(errno));
+      printf("GPIO: Failed to close FIFO file at %s: %s\n",
+             ctx->host_to_dev_path, strerror(errno));
     }
 
     if (unlink(ctx->dev_to_host_path) != 0) {

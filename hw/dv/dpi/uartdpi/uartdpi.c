@@ -67,7 +67,8 @@ void *uartdpi_create(const char *name, int listen_port,
 
     printf(
         "\n"
-        "UART: Created %s for %s. Connect to it with any terminal program, e.g.\n"
+        "UART: Created %s for %s. Connect to it with any terminal program, "
+        "e.g.\n"
         "$ screen %s\n",
         ctx->ptyname, name, ctx->ptyname);
   }

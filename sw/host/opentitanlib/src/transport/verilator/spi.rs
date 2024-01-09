@@ -4,19 +4,17 @@
 
 use anyhow::{anyhow, bail, ensure, Context, Result};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use std::cell::RefCell;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
 use std::io::{BufWriter, ErrorKind, Read, Write};
 use std::net::TcpStream;
+use std::rc::Rc;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
-use crate::io::spi::{
-    AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode,
-};
+use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
 use crate::proxy::protocol::{
     Message, Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
@@ -49,12 +47,12 @@ impl VerilatorSpi {
         let use_stream;
 
         // check if read_name is in TCP socket or pipe device format
-        if name.contains(":") && !name.contains("/") {
-            let stream  = TcpStream::connect(name)
-                .map_err(|e| return TransportError::ProxyConnectError(name.to_string(), e.to_string()))?;
+        if name.contains(':') && !name.contains('/') {
+            let stream = TcpStream::connect(name)
+                .map_err(|e| TransportError::ProxyConnectError(name.to_string(), e.to_string()))?;
 
             ref_pipe = None;
-            ref_stream  = Some(RefCell::new(stream));
+            ref_stream = Some(RefCell::new(stream));
             use_stream = true;
         } else {
             let pipe = OpenOptions::new()
@@ -62,22 +60,22 @@ impl VerilatorSpi {
                 .write(true)
                 .open(name)
                 .map_err(|e| TransportError::OpenError(name.to_string(), e.to_string()))?;
-    
+
             ref_pipe = Some(RefCell::new(pipe));
-            ref_stream  = None;
+            ref_stream = None;
             use_stream = false;
         }
 
         Ok(VerilatorSpi {
             instance: instance.to_string(),
-            use_stream: use_stream,
+            use_stream,
             stream: ref_stream,
             pipe: ref_pipe,
             recv_buf: RefCell::new(Vec::new()),
         })
     }
 
-     // Convenience method for issuing SPI commands via proxy protocol.
+    // Convenience method for issuing SPI commands via proxy protocol.
     fn execute_command(&self, command: SpiRequest) -> Result<SpiResponse> {
         match self.execute_request(Request::Spi {
             id: self.instance.clone(),
@@ -114,8 +112,7 @@ impl VerilatorSpi {
             writer.write_all(&[b'\n'])?;
             writer.flush()?;
         } else {
-            return Err(anyhow!("TCP socket not connected"))
-                .context("SPI write error");
+            return Err(anyhow!("TCP socket not connected")).context("SPI write error");
         }
         Ok(())
     }
@@ -130,8 +127,7 @@ impl VerilatorSpi {
             writer.write_all(&[b'\n'])?;
             writer.flush()?;
         } else {
-            return Err(anyhow!("Pipe not opened"))
-                .context("SPI write error");
+            return Err(anyhow!("Pipe not opened")).context("SPI write error");
         }
         Ok(())
     }
@@ -139,9 +135,9 @@ impl VerilatorSpi {
     /// Send a one-line JSON encoded requests, terminated with one newline.
     fn send_json_request(&self, req: Request) -> Result<()> {
         if self.use_stream {
-            return self.send_json_request_stream(req)
+            self.send_json_request_stream(req)
         } else {
-            return self.send_json_request_pipe(req)
+            self.send_json_request_pipe(req)
         }
     }
 
@@ -173,8 +169,7 @@ impl VerilatorSpi {
                 return Ok(result);
             }
         } else {
-            return Err(anyhow!("TCP socket not connected"))
-                .context("SPI read error");
+            Err(anyhow!("TCP socket not connected")).context("SPI read error")
         }
     }
 
@@ -206,17 +201,16 @@ impl VerilatorSpi {
                 return Ok(result);
             }
         } else {
-            return Err(anyhow!("Pipe not opened"))
-                .context("SPI read error");
+            Err(anyhow!("Pipe not opened")).context("SPI read error")
         }
     }
 
     /// Decode one JSON response, possibly waiting for more data.
     fn recv_json_response(&self) -> Result<Message> {
         if self.use_stream {
-            return self.recv_json_response_stream()
+            self.recv_json_response_stream()
         } else {
-            return self.recv_json_response_pipe()
+            self.recv_json_response_pipe()
         }
     }
 
@@ -279,16 +273,12 @@ impl Target for VerilatorSpi {
         let mut req: Vec<SpiTransferRequest> = Vec::new();
         for transfer in transaction.iter() {
             match transfer {
-                Transfer::Read(rbuf) => {
-                    req.push(SpiTransferRequest::Read {
-                        len: rbuf.len() as u32,
-                    })
-                },
-                Transfer::Write(wbuf) => {
-                    req.push(SpiTransferRequest::Write {
-                        data: wbuf.to_vec(),
-                    })
-                },
+                Transfer::Read(rbuf) => req.push(SpiTransferRequest::Read {
+                    len: rbuf.len() as u32,
+                }),
+                Transfer::Write(wbuf) => req.push(SpiTransferRequest::Write {
+                    data: wbuf.to_vec(),
+                }),
                 Transfer::Both(wbuf, rbuf) => {
                     ensure!(
                         rbuf.len() == wbuf.len(),

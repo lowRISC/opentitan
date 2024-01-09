@@ -11,8 +11,7 @@ extern "C" {
 
 struct uartdpi_ctx;
 
-void *uartdpi_create(const char *name,
-                     int listen_port,
+void *uartdpi_create(const char *name, int listen_port,
                      const char *log_file_path);
 void uartdpi_close(void *ctx_void);
 int uartdpi_can_read(void *ctx_void);

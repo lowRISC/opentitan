@@ -106,23 +106,28 @@ impl GpioInner {
         let write;
         let stream;
         let use_stream;
-        
+
         // check if read_name is in TCP socket or pipe device format
-        if read_name.contains(":") && !read_name.contains("/") {
+        if read_name.contains(':') && !read_name.contains('/') {
             read = None;
             write = None;
-            stream = Some(TcpStream::connect(read_name)
-                .map_err(|e| TransportError::ProxyConnectError(read_name.to_string(), e.to_string()))?);
+            stream = Some(TcpStream::connect(read_name).map_err(|e| {
+                TransportError::ProxyConnectError(read_name.to_string(), e.to_string())
+            })?);
             use_stream = true;
         } else {
-            read = Some(OpenOptions::new()
-                .read(true)
-                .open(read_name)
-                .map_err(|e| TransportError::OpenError(read_name.to_string(), e.to_string()))?);
-            write = Some(OpenOptions::new()
-                .write(true)
-                .open(write_name)
-                .map_err(|e| TransportError::OpenError(write_name.to_string(), e.to_string()))?);
+            read =
+                Some(OpenOptions::new().read(true).open(read_name).map_err(|e| {
+                    TransportError::OpenError(read_name.to_string(), e.to_string())
+                })?);
+            write = Some(
+                OpenOptions::new()
+                    .write(true)
+                    .open(write_name)
+                    .map_err(|e| {
+                        TransportError::OpenError(write_name.to_string(), e.to_string())
+                    })?,
+            );
             stream = None;
             use_stream = false;
         }
@@ -209,10 +214,8 @@ impl GpioInner {
                 }
             }
         } else {
-            return Err(anyhow!("TCP socket not connected"))
-                .context("GPIO read error");
+            Err(anyhow!("TCP socket not connected")).context("GPIO read error")
         }
-        Ok(())
     }
 
     fn read_pipe(&mut self) -> Result<()> {
@@ -255,8 +258,7 @@ impl GpioInner {
                 }
             }
         } else {
-            return Err(anyhow!("Read pipe not opened"))
-                .context("GPIO read error");
+            return Err(anyhow!("Read pipe not opened")).context("GPIO read error");
         }
         Ok(())
     }
@@ -287,18 +289,14 @@ impl GpioInner {
                     .write(command.as_bytes())
                     .context("GPIO write error")?;
             } else {
-                return Err(anyhow!("TCP socket not connected"))
-                    .context("GPIO write error");
+                return Err(anyhow!("TCP socket not connected")).context("GPIO write error");
             }
+        } else if let Some(ref mut write) = self.write {
+            write
+                .write(command.as_bytes())
+                .context("GPIO write error")?;
         } else {
-            if let Some(ref mut write) = self.write {
-                write
-                    .write(command.as_bytes())
-                    .context("GPIO write error")?;
-            } else {
-                return Err(anyhow!("Write pipe not opened"))
-                    .context("GPIO write error");
-            }
+            return Err(anyhow!("Write pipe not opened")).context("GPIO write error");
         }
         Ok(())
     }

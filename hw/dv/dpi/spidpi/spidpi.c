@@ -21,9 +21,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "verilator_sim_ctrl.h"
-
 #include "tcp_server.h"
+#include "verilator_sim_ctrl.h"
 
 // Enable this define to stop tracing at cycle 4
 // and resume at the first SPI packet
@@ -69,30 +68,35 @@ struct spidpi_ctx {
 static const char *json_find_next_char(char value, const char *ptr) {
   const char *tmp_ptr = ptr;
 
-  while (tmp_ptr != NULL &&
-         *tmp_ptr!= value && *tmp_ptr != ']' && *tmp_ptr != '\0') tmp_ptr++;
+  while (tmp_ptr != NULL && *tmp_ptr != value && *tmp_ptr != ']' &&
+         *tmp_ptr != '\0')
+    tmp_ptr++;
 
   // Exit conditions
-  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0') tmp_ptr = NULL;
+  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0')
+    tmp_ptr = NULL;
 
   return tmp_ptr;
 }
 
-static const char *json_parse_next_tag(char *tag, int tag_size, const char *ptr) {
+static const char *json_parse_next_tag(char *tag, int tag_size,
+                                       const char *ptr) {
   const char *tmp_ptr = ptr;
 
   tmp_ptr = json_find_next_char('"', tmp_ptr);
-  if (tmp_ptr != NULL) tmp_ptr++;
+  if (tmp_ptr != NULL)
+    tmp_ptr++;
 
   int index = 0;
-  while (index < (tag_size - 1) && tmp_ptr != NULL &&
-         *tmp_ptr != '"' && *tmp_ptr != ']' && *tmp_ptr != '\0') {
+  while (index < (tag_size - 1) && tmp_ptr != NULL && *tmp_ptr != '"' &&
+         *tmp_ptr != ']' && *tmp_ptr != '\0') {
     tag[index++] = *tmp_ptr++;
   }
   tag[index] = '\0';
 
   // Exit conditions
-  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0') tmp_ptr = NULL;
+  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0')
+    tmp_ptr = NULL;
 
   return tmp_ptr;
 }
@@ -101,7 +105,8 @@ static const char *json_parse_next_integer(int *val, const char *ptr) {
   const char *tmp_ptr = ptr;
   char digits[32];
 
-  while (tmp_ptr != NULL && isspace(*tmp_ptr)) tmp_ptr++;
+  while (tmp_ptr != NULL && isspace(*tmp_ptr))
+    tmp_ptr++;
 
   int index = 0;
   while (index < (sizeof(digits) - 1) && tmp_ptr != NULL &&
@@ -114,7 +119,8 @@ static const char *json_parse_next_integer(int *val, const char *ptr) {
   }
 
   // Exit conditions
-  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0') tmp_ptr = NULL;
+  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0')
+    tmp_ptr = NULL;
 
   return tmp_ptr;
 }
@@ -131,10 +137,12 @@ static const char *json_parse_next_integer_array(char *vals, int *num_vals,
   }
 
   tmp_ptr = json_find_next_char('[', tmp_ptr);
-  if (tmp_ptr != NULL) tmp_ptr++;
+  if (tmp_ptr != NULL)
+    tmp_ptr++;
 
   while (tmp_ptr != NULL && *tmp_ptr != ']') {
-    while (isspace(*tmp_ptr)) tmp_ptr++;
+    while (isspace(*tmp_ptr))
+      tmp_ptr++;
 
     int index = 0;
     while (index < (sizeof(digits) - 1) &&
@@ -146,13 +154,18 @@ static const char *json_parse_next_integer_array(char *vals, int *num_vals,
       vals[(*num_vals)++] = atoi(digits);
     }
 
-    while (isspace(*tmp_ptr)) tmp_ptr++;
-    if (*tmp_ptr == ',') tmp_ptr++;
-    if (*tmp_ptr == '\0') tmp_ptr = NULL;
+    while (isspace(*tmp_ptr))
+      tmp_ptr++;
+    if (*tmp_ptr == ',')
+      tmp_ptr++;
+    if (*tmp_ptr == '\0')
+      tmp_ptr = NULL;
   }
   // Exit conditions
-  if (tmp_ptr != NULL && *tmp_ptr == ']') tmp_ptr++;
-  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0') tmp_ptr = NULL;
+  if (tmp_ptr != NULL && *tmp_ptr == ']')
+    tmp_ptr++;
+  if (tmp_ptr == NULL || *tmp_ptr == ']' || *tmp_ptr == '\0')
+    tmp_ptr = NULL;
 
   return tmp_ptr;
 }
@@ -186,15 +199,14 @@ static const char *xfer_parse_next_trans(void *ctx_void, const char *xfer_ptr) {
       if (trans_ptr != NULL) {
         int data_size = sizeof(ctx->buf);
         trans_ptr++;
-        trans_ptr = json_parse_next_integer_array(ctx->buf, &data_size, trans_ptr);
+        trans_ptr =
+            json_parse_next_integer_array(ctx->buf, &data_size, trans_ptr);
         ctx->xfer_write = true;
         ctx->nmax = data_size;
       }
     }
     trans_ptr = json_find_next_char('}', trans_ptr);
-  }
-  else
-  if (strstr(tag, "Read") != NULL) {
+  } else if (strstr(tag, "Read") != NULL) {
     trans_ptr = json_find_next_char('{', trans_ptr);
     trans_ptr = json_parse_next_tag(tag, sizeof(tag), trans_ptr);
     if (strstr(tag, "len") != NULL) {
@@ -208,13 +220,12 @@ static const char *xfer_parse_next_trans(void *ctx_void, const char *xfer_ptr) {
       }
     }
     trans_ptr = json_find_next_char('}', trans_ptr);
-  }
-  else
-  if (strstr(tag, "Both") != NULL) {
+  } else if (strstr(tag, "Both") != NULL) {
     assert(false && "Both transaction not supported.");
   }
 
-  if (trans_ptr != NULL) trans_ptr++;
+  if (trans_ptr != NULL)
+    trans_ptr++;
   trans_ptr = json_find_next_char('}', trans_ptr);
 
   return trans_ptr;
@@ -231,8 +242,7 @@ static bool xfer_parse(void *ctx_void) {
   // Simple parser of SPI JSON transaction header
   char *ptr = ctx->xfer_buf_in;
   if ((ptr = strstr(ptr, "Req")) != NULL &&
-      (ptr = strstr(ptr, "Spi")) != NULL &&
-      (ptr = strstr(ptr, "id")) != NULL &&
+      (ptr = strstr(ptr, "Spi")) != NULL && (ptr = strstr(ptr, "id")) != NULL &&
       (ptr = strstr(ptr, "command")) != NULL &&
       (ptr = strstr(ptr, "RunTransaction")) != NULL &&
       (ptr = strstr(ptr, "transaction")) != NULL &&
@@ -250,7 +260,8 @@ static void xfer_respond_next_trans(void *ctx_void) {
 
   // assemble SPI JSON response
   if (!ctx->xfer_start) {
-    sprintf(ctx->xfer_buf_out, "{\"Res\":{\"Ok\":{"
+    sprintf(ctx->xfer_buf_out,
+            "{\"Res\":{\"Ok\":{"
             "\"Spi\":{\"RunTransaction\":{\"transaction\":[");
     ctx->xfer_start = true;
   } else {
@@ -259,11 +270,9 @@ static void xfer_respond_next_trans(void *ctx_void) {
 
   if (ctx->xfer_write && ctx->xfer_read) {
     assert(false && "Response to Both transaction not supported.");
-  } else
-  if (ctx->xfer_write) {
+  } else if (ctx->xfer_write) {
     strcat(ctx->xfer_buf_out, "\"Write\"");
-  } else
-  if (ctx->xfer_read) {
+  } else if (ctx->xfer_read) {
     char value[16];
 
     strcat(ctx->xfer_buf_out, "{\"Read\":{\"data\":[");
@@ -283,7 +292,8 @@ static void xfer_respond(void *ctx_void, bool error) {
   struct spidpi_ctx *ctx = (struct spidpi_ctx *)ctx_void;
 
   if (error) {
-    sprintf(ctx->xfer_buf_out, "{\"Res\":{\"Err\":{"
+    sprintf(ctx->xfer_buf_out,
+            "{\"Res\":{\"Err\":{"
             "\"description\":\"Error processing SPI device transaction\","
             "\"backtrace\":\"%s:%d\""
             "}}}\n",
@@ -377,7 +387,8 @@ void *spidpi_create(const char *name, int listen_port, int mode, int loglevel) {
 
     printf(
         "\n"
-        "SPI: Created %s for %s. Connect to it with any terminal program, e.g.\n"
+        "SPI: Created %s for %s. Connect to it with any terminal program, "
+        "e.g.\n"
         "$ screen %s\n"
         "NOTE: a SPI transaction is run for every 4 characters entered.\n",
         ctx->ptyname, name, ctx->ptyname);
@@ -432,8 +443,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         int result;
         if ((result = read(ctx->host, &buf, 1)) == 1) {
           valid = true;
-        } else
-        if (result == -1) {
+        } else if (result == -1) {
           if (errno != EAGAIN) {
             xfer_reset(ctx);
             fprintf(stderr, "Read on SPI FIFO gave %s\n", strerror(errno));
@@ -442,9 +452,8 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
       }
       if (valid) {
         if (buf == '\n') {
-           // Eat newlines
-        } else
-        if (ctx->xfer_start) {
+          // Eat newlines
+        } else if (ctx->xfer_start) {
           ctx->xfer_buf_in[ctx->xfer_count++] = buf;
           switch (buf) {
             case '{':
@@ -459,8 +468,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
           if (ctx->xfer_indent == 0) {
             ctx->xfer_finish = true;
           }
-        } else
-        if (buf == '{') {
+        } else if (buf == '{') {
           ctx->xfer_buf_in[ctx->xfer_count++] = buf;
           ctx->xfer_indent = 1;
           ctx->xfer_start = true;
@@ -474,8 +482,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
       fprintf(stderr, "Transaction size bigger than buffer\n");
       xfer_respond(ctx, true);
       xfer_reset(ctx);
-    } else
-    if (ctx->xfer_finish) {
+    } else if (ctx->xfer_finish) {
       if (xfer_parse(ctx)) {
         ctx->nout = 0;
         ctx->nin = 0;
@@ -557,8 +564,8 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         break;
       case SP_CSRISE:
         xfer_respond_next_trans(ctx);
-        if ((ctx->xfer_next =
-             xfer_parse_next_trans(ctx, ctx->xfer_next)) != NULL) {
+        if ((ctx->xfer_next = xfer_parse_next_trans(ctx, ctx->xfer_next)) !=
+            NULL) {
           ctx->nout = 0;
           ctx->nin = 0;
           ctx->bout = ctx->msbfirst ? 0x80 : 0x01;
@@ -573,7 +580,7 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
           ctx->driving = P2D_CSB;
           ctx->state = SP_IDLE;
           // TODO: Make this configurable.
-          ctx->delay = 100;
+          ctx->delay = 1000;
           xfer_respond(ctx, false);
           xfer_reset(ctx);
         }

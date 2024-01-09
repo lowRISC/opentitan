@@ -34,12 +34,12 @@ impl VerilatorUart {
         let use_stream;
 
         // check if read_name is in TCP socket or pipe device format
-        if name.contains(":") && !name.contains("/") {
-            let stream  = TcpStream::connect(name)
-                .map_err(|e| return TransportError::ProxyConnectError(name.to_string(), e.to_string()))?;
+        if name.contains(':') && !name.contains('/') {
+            let stream = TcpStream::connect(name)
+                .map_err(|e| TransportError::ProxyConnectError(name.to_string(), e.to_string()))?;
 
             ref_pipe = None;
-            ref_stream  = Some(RefCell::new(stream));
+            ref_stream = Some(RefCell::new(stream));
             use_stream = true;
         } else {
             let pipe = OpenOptions::new()
@@ -47,9 +47,9 @@ impl VerilatorUart {
                 .write(true)
                 .open(name)
                 .map_err(|e| TransportError::OpenError(name.to_string(), e.to_string()))?;
-    
+
             ref_pipe = Some(RefCell::new(pipe));
-            ref_stream  = None;
+            ref_stream = None;
             use_stream = false;
         }
 
@@ -60,7 +60,7 @@ impl VerilatorUart {
             // only deal with about 4 chars per second.
             baudrate: Cell::new(40),
             flow_control: Cell::new(FlowControl::None),
-            use_stream: use_stream,
+            use_stream,
             stream: ref_stream,
             pipe: ref_pipe,
             rxbuf: RefCell::default(),
@@ -131,8 +131,7 @@ impl VerilatorUart {
                 }
             }
         } else {
-            return Err(anyhow!("TCP socket not connected"))
-                .context("UART read error");
+            return Err(anyhow!("TCP socket not connected")).context("UART read error");
         }
         Ok(())
     }
@@ -175,17 +174,16 @@ impl VerilatorUart {
                 self.rxbuf.borrow_mut().push_back(ch);
             }
         } else {
-            return Err(anyhow!("Pipe not opened"))
-                .context("UART read error");
+            return Err(anyhow!("Pipe not opened")).context("UART read error");
         }
         Ok(())
     }
 
     fn read_worker(&self, timeout: Duration) -> Result<()> {
         if self.use_stream {
-            return self.read_stream(timeout)
+            self.read_stream(timeout)
         } else {
-            return self.read_pipe(timeout)
+            self.read_pipe(timeout)
         }
     }
 
@@ -256,19 +254,15 @@ impl Uart for VerilatorUart {
                         .write_all(std::slice::from_ref(b))
                         .context("UART write error")?;
                 } else {
-                    return Err(anyhow!("TCP socket not connected"))
-                        .context("UART write error");
-               }
-            } else {
-                if let Some(ref ref_pipe) = self.pipe {
-                    ref_pipe
-                        .borrow_mut()
-                        .write_all(std::slice::from_ref(b))
-                        .context("UART write error")?;
-                } else {
-                    return Err(anyhow!("Pipe not opened"))
-                        .context("UART write error");
+                    return Err(anyhow!("TCP socket not connected")).context("UART write error");
                 }
+            } else if let Some(ref ref_pipe) = self.pipe {
+                ref_pipe
+                    .borrow_mut()
+                    .write_all(std::slice::from_ref(b))
+                    .context("UART write error")?;
+            } else {
+                return Err(anyhow!("Pipe not opened")).context("UART write error");
             }
         }
         Ok(())
@@ -289,19 +283,17 @@ impl Uart for VerilatorUart {
                 }
 
                 while let Ok(size) = stream.read(&mut buf) {
-                    if size != buf.len() { break; }
+                    if size != buf.len() {
+                        break;
+                    }
                 }
             } else {
-                return Err(anyhow!("TCP socket not connected"))
-                    .context("UART reset error");
+                return Err(anyhow!("TCP socket not connected")).context("UART reset error");
             }
+        } else if let Some(ref ref_pipe) = self.pipe {
+            ref_pipe.borrow_mut().seek(SeekFrom::End(0))?;
         } else {
-            if let Some(ref ref_pipe) = self.pipe {
-                ref_pipe.borrow_mut().seek(SeekFrom::End(0))?;
-            } else {
-                return Err(anyhow!("Pipe not opened"))
-                    .context("UART reset error");
-            }
+            return Err(anyhow!("Pipe not opened")).context("UART reset error");
         }
         Ok(())
     }

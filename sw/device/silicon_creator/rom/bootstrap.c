@@ -21,9 +21,13 @@
 
 enum {
   /*
-   * Maximum ctn sram address, exclusive.
+   * Base ctn sram address, exclusive.
    */
-  kMaxAddress = TOP_DARJEELING_RAM_CTN_SIZE_BYTES,
+  kBaseAddress = TOP_DARJEELING_RAM_CTN_BASE_ADDR,
+  /*
+   * Maximum ctn sram size, exclusive.
+   */
+  kMaxSize = TOP_DARJEELING_RAM_CTN_SIZE_BYTES,
 };
 
 /**
@@ -66,8 +70,7 @@ typedef enum bootstrap_state {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_chip_erase(void) {
-  memset((void *)TOP_DARJEELING_RAM_CTN_BASE_ADDR,
-         0x0, TOP_DARJEELING_RAM_CTN_SIZE_BYTES);
+  memset((void *)kBaseAddress, 0x0, kMaxSize);
 
   return kErrorOk;
 }
@@ -88,12 +91,12 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
     kPageAddrMask = ~UINT32_C(4096) + 1,
   };
 
-  if (addr >= kMaxAddress) {
+  if (addr >= kMaxSize) {
     return kErrorBootstrapEraseAddress;
   }
   addr &= kPageAddrMask;
 
-  memset((void *)(TOP_DARJEELING_RAM_CTN_BASE_ADDR + addr), 0x0, 4096);
+  memset((void *)(kBaseAddress + addr), 0x0, 4096);
 
   return kErrorOk;
 }
@@ -110,10 +113,10 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
-  if (addr + byte_count >= kMaxAddress) {
+  if (addr + byte_count >= kMaxSize) {
     return kErrorBootstrapProgramAddress;
   }
-  memcpy((void *)addr, data, byte_count);
+  memcpy((void *)(kBaseAddress + addr), data, byte_count);
   return kErrorOk;
 }
 
@@ -167,16 +170,25 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  memset((void *)TOP_DARJEELING_RAM_CTN_BASE_ADDR,
-         0x0, TOP_DARJEELING_RAM_CTN_SIZE_BYTES);
+  memset((void *)kBaseAddress, 0x0, kMaxSize);
 
   rom_error_t err_0 = kErrorOk;
-  for (uint32_t i = 0; i < TOP_DARJEELING_RAM_CTN_SIZE_BYTES / 4; i++) {
+  // Check first page for zero
+  for (uint32_t i = 0; i < 4096 / 4; i++) {
     uint32_t zero = 0x0;
-    if (!memcmp((void *)(TOP_DARJEELING_RAM_CTN_BASE_ADDR + 4 * i),
-                (void *)zero, 4)) {
+    if (memcmp((void *)(kBaseAddress + 4 * i), (void *)&zero, 4)) {
+      err_0 = kErrorFlashCtrlDataEraseVerify;
+      break;
+    }
+  }
+  if (err_0 == kErrorOk) {
+    // Check subsequent pages for zero
+    for (uint32_t i = 1; i < kMaxSize / 4096; i++) {
+      if (memcmp((void *)(kBaseAddress), (void *)(kBaseAddress + 4096 * i),
+                 4096)) {
         err_0 = kErrorFlashCtrlDataEraseVerify;
         break;
+      }
     }
   }
   HARDENED_RETURN_IF_ERROR(err_0);
