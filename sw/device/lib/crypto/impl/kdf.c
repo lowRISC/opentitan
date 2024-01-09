@@ -15,7 +15,7 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
 otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t ikm,
-                                 kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
+                                 otcrypto_kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
                                  size_t required_bit_len,
                                  otcrypto_blinded_key_t keying_material) {
   // TODO: Implement HMAC-KDF-CTR and KMAC-KDF-CTR.
