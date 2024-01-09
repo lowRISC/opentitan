@@ -53,8 +53,8 @@ static status_t digest_num_words_from_key_mode(key_mode_t key_mode,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf(const crypto_blinded_key_t ikm,
-                                  crypto_const_byte_buf_t salt,
-                                  crypto_const_byte_buf_t info,
+                                  otcrypto_const_byte_buf_t salt,
+                                  otcrypto_const_byte_buf_t info,
                                   crypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
@@ -125,7 +125,7 @@ static status_t hkdf_check_prk(size_t digest_words,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
-                                          crypto_const_byte_buf_t salt,
+                                          otcrypto_const_byte_buf_t salt,
                                           crypto_blinded_key_t *prk) {
   // Check for null pointers.
   if (ikm.keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
@@ -186,7 +186,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
   for (size_t i = 0; i < ARRAYSIZE(unmasked_ikm_data); i++) {
     unmasked_ikm_data[i] = ikm_share0[i] ^ ikm_share1[i];
   }
-  crypto_const_byte_buf_t unmasked_ikm = {
+  otcrypto_const_byte_buf_t unmasked_ikm = {
       .data = (unsigned char *)unmasked_ikm_data,
       .len = ikm.config.key_length,
   };
@@ -214,7 +214,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
 
   // Call HMAC(salt, IKM).
   uint32_t tag_data[digest_words];
-  crypto_word32_buf_t tag = {.data = tag_data, .len = ARRAYSIZE(tag_data)};
+  otcrypto_word32_buf_t tag = {.data = tag_data, .len = ARRAYSIZE(tag_data)};
   HARDENED_TRY(otcrypto_hmac(&salt_key, unmasked_ikm, &tag));
 
   // Construct the blinded keyblob for PRK (with an all-zero mask for now
@@ -228,7 +228,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const crypto_blinded_key_t ikm,
 }
 
 otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
-                                         crypto_const_byte_buf_t info,
+                                         otcrypto_const_byte_buf_t info,
                                          crypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -276,7 +276,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
   uint8_t info_and_counter_data[info.len + 1];
   memcpy(info_and_counter_data, info.data, info.len);
   info_and_counter_data[info.len] = 0x00;
-  crypto_const_byte_buf_t info_and_counter = {
+  otcrypto_const_byte_buf_t info_and_counter = {
       .data = info_and_counter_data,
       .len = sizeof(info_and_counter_data),
   };
@@ -290,7 +290,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
     hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, &prk));
     if (launder32(i) != 0) {
-      crypto_const_byte_buf_t t_bytes = {
+      otcrypto_const_byte_buf_t t_bytes = {
           .data = (unsigned char *)t_data,
           .len = digest_words * sizeof(uint32_t),
       };
@@ -298,7 +298,7 @@ otcrypto_status_t otcrypto_kdf_hkdf_expand(const crypto_blinded_key_t prk,
       t_data += digest_words;
     }
     HARDENED_TRY(otcrypto_hmac_update(&ctx, info_and_counter));
-    crypto_word32_buf_t t_words = {
+    otcrypto_word32_buf_t t_words = {
         .data = t_data,
         .len = digest_words,
     };

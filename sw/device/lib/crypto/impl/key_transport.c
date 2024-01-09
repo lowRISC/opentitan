@@ -14,7 +14,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
-otcrypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string,
+otcrypto_status_t otcrypto_symmetric_keygen(otcrypto_const_byte_buf_t perso_string,
                                           crypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -31,18 +31,18 @@ otcrypto_status_t otcrypto_symmetric_keygen(crypto_const_byte_buf_t perso_string
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
   // Construct buffers to direct the DRBG output into the keyblob.
-  crypto_word32_buf_t share0_buf = {
+  otcrypto_word32_buf_t share0_buf = {
       .data = share0,
       .len = keyblob_share_num_words(key->config),
   };
-  crypto_word32_buf_t share1_buf = {
+  otcrypto_word32_buf_t share1_buf = {
       .data = share1,
       .len = keyblob_share_num_words(key->config),
   };
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
-  crypto_const_byte_buf_t empty = {.data = NULL, .len = 0};
+  otcrypto_const_byte_buf_t empty = {.data = NULL, .len = 0};
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
@@ -82,8 +82,8 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7
 }
 
 otcrypto_status_t otcrypto_import_blinded_key(
-    const crypto_const_word32_buf_t key_share0,
-    const crypto_const_word32_buf_t key_share1,
+    const otcrypto_const_word32_buf_t key_share0,
+    const otcrypto_const_word32_buf_t key_share1,
     crypto_blinded_key_t *blinded_key) {
   if (blinded_key == NULL || blinded_key->keyblob == NULL ||
       key_share0.data == NULL || key_share1.data == NULL) {
@@ -121,8 +121,8 @@ otcrypto_status_t otcrypto_import_blinded_key(
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
-    const crypto_blinded_key_t blinded_key, crypto_word32_buf_t *key_share0,
-    crypto_word32_buf_t *key_share1) {
+    const crypto_blinded_key_t blinded_key, otcrypto_word32_buf_t *key_share0,
+    otcrypto_word32_buf_t *key_share1) {
   if (blinded_key.keyblob == NULL || key_share0 == NULL || key_share1 == NULL ||
       key_share0->data == NULL || key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

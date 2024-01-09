@@ -105,13 +105,13 @@ OT_WARN_UNUSED_RESULT
 static status_t encrypt_rma_unlock_token(
     crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
   // Construct IV, which since we are using ECB mode, is empty.
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = NULL,
       .len = 0,
   };
 
   // Construct plaintext buffer.
-  crypto_const_byte_buf_t plaintext = {
+  otcrypto_const_byte_buf_t plaintext = {
       .data = (const unsigned char *)wrapped_token->data,
       .len = kRmaUnlockTokenSizeInBytes,
   };
@@ -119,7 +119,7 @@ static status_t encrypt_rma_unlock_token(
   // Construct ciphertext buffer. (No need for padding since RMA unlock token
   // is 128-bits already.)
   uint32_t ciphertext_data[kRmaUnlockTokenSizeInBytes];
-  crypto_byte_buf_t ciphertext = {
+  otcrypto_byte_buf_t ciphertext = {
       .data = (unsigned char *)ciphertext_data,
       .len = kRmaUnlockTokenSizeInBytes,
   };

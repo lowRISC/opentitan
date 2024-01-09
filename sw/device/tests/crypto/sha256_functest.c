@@ -54,7 +54,7 @@ static const uint8_t kExactBlockExpDigest[] = {
  * @param msg Input message.
  * @param exp_digest Expected digest (256 bits).
  */
-static status_t run_test(crypto_const_byte_buf_t msg,
+static status_t run_test(otcrypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
   uint32_t act_digest[kHmacDigestNumWords];
   hash_digest_t digest_buf = {
@@ -75,7 +75,7 @@ static status_t run_test(crypto_const_byte_buf_t msg,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -97,7 +97,7 @@ static status_t empty_test(void) {
       0x42c4b0e3, 0x141cfc98, 0xc8f4fb9a, 0x24b96f99,
       0xe441ae27, 0x4c939b64, 0x1b9995a4, 0x55b85278,
   };
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = NULL,
       .len = 0,
   };
@@ -111,7 +111,7 @@ static status_t one_update_streaming_test(void) {
   hash_context_t ctx;
   TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
 
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = kExactBlockMessage,
       .len = kExactBlockMessageLen,
   };
@@ -144,7 +144,7 @@ static status_t multiple_update_streaming_test(void) {
   size_t update_size = 0;
   while (len > 0) {
     update_size = len <= update_size ? len : update_size;
-    crypto_const_byte_buf_t msg_buf = {
+    otcrypto_const_byte_buf_t msg_buf = {
         .data = next,
         .len = update_size,
     };

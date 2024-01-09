@@ -32,10 +32,10 @@ typedef struct kmac_test_vector {
   kmac_test_operation_t test_operation;
   size_t security_strength;
   crypto_blinded_key_t key;
-  crypto_const_byte_buf_t input_msg;
-  crypto_const_byte_buf_t func_name;
-  crypto_const_byte_buf_t cust_str;
-  crypto_const_byte_buf_t digest;
+  otcrypto_const_byte_buf_t input_msg;
+  otcrypto_const_byte_buf_t func_name;
+  otcrypto_const_byte_buf_t cust_str;
+  otcrypto_const_byte_buf_t digest;
 } kmac_test_vector_t;
 
 static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {

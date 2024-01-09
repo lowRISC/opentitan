@@ -86,18 +86,18 @@ static uint32_t kTestPrimeQ[kRsa2048CofactorNumWords] = {
  */
 static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   // Create two shares for the cofactor (second share is all-zero).
-  crypto_const_word32_buf_t cofactor_share0 = {
+  otcrypto_const_word32_buf_t cofactor_share0 = {
       .data = cofactor,
       .len = kRsa2048CofactorNumWords,
   };
   uint32_t cofactor_share1_data[kRsa2048CofactorNumWords] = {0};
-  crypto_const_word32_buf_t cofactor_share1 = {
+  otcrypto_const_word32_buf_t cofactor_share1 = {
       .data = cofactor_share1_data,
       .len = ARRAYSIZE(cofactor_share1_data),
   };
 
   // Buffer for the modulus.
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };

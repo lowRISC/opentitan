@@ -144,12 +144,12 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   };
 
   // Create two shares for the private exponent (second share is all-zero).
-  crypto_const_word32_buf_t d_share0 = {
+  otcrypto_const_word32_buf_t d_share0 = {
       .data = kTestPrivateExponent,
       .len = ARRAYSIZE(kTestPrivateExponent),
   };
   uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
-  crypto_const_word32_buf_t d_share1 = {
+  otcrypto_const_word32_buf_t d_share1 = {
       .data = share1,
       .len = ARRAYSIZE(share1),
   };
@@ -169,7 +169,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
       .keyblob = keyblob,
       .keyblob_length = kRsa3072PrivateKeyblobBytes,
   };
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
@@ -178,7 +178,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
                                               d_share1, &private_key));
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha512DigestWords];
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
@@ -187,7 +187,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
-  crypto_word32_buf_t sig_buf = {
+  otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa3072NumWords,
   };
@@ -230,7 +230,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
   };
 
   // Construct the public key.
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
@@ -244,7 +244,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
                                         kTestPublicExponent, &public_key));
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha512DigestWords];
   hash_digest_t msg_digest = {
       .data = msg_digest_data,
@@ -253,7 +253,7 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
-  crypto_const_word32_buf_t sig_buf = {
+  otcrypto_const_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa3072NumWords,
   };

@@ -26,7 +26,7 @@ static const randomness_quality_significance_t kSignificance =
 
 // Personalization data for testing.
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
-static const crypto_const_byte_buf_t kPersonalization = {
+static const otcrypto_const_byte_buf_t kPersonalization = {
     .data = kPersonalizationData,
     .len = sizeof(kPersonalizationData),
 };

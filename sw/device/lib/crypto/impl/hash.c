@@ -183,7 +183,7 @@ static status_t check_digest_len(hash_digest_t *digest) {
  * @param[out] digest Output digest.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hmac_sha256(crypto_const_byte_buf_t message,
+static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
                             hash_digest_t *digest) {
   HARDENED_CHECK_EQ(digest->len, kHmacDigestNumWords);
   HARDENED_CHECK_EQ(digest->mode, kHashModeSha256);
@@ -202,7 +202,7 @@ static status_t hmac_sha256(crypto_const_byte_buf_t message,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
                               hash_digest_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -241,7 +241,7 @@ otcrypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
   return OTCRYPTO_FATAL_ERR;
 }
 
-otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
                                    hash_digest_t *digest) {
   switch (digest->mode) {
     case kHashXofModeShake128:
@@ -260,9 +260,9 @@ otcrypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
 }
 
 otcrypto_status_t otcrypto_xof_cshake(
-    crypto_const_byte_buf_t input_message,
-    crypto_const_byte_buf_t function_name_string,
-    crypto_const_byte_buf_t customization_string, hash_digest_t *digest) {
+    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t function_name_string,
+    otcrypto_const_byte_buf_t customization_string, hash_digest_t *digest) {
   // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
   // both `customization_string` and `function_name_string` are empty string
   if (customization_string.len == 0 && function_name_string.len == 0) {
@@ -334,7 +334,7 @@ otcrypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
 }
 
 otcrypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
-                                     crypto_const_byte_buf_t input_message) {
+                                     otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL || (input_message.data == NULL && input_message.len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }

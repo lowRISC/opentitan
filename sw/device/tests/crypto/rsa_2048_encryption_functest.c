@@ -102,7 +102,7 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
                                      const uint8_t *label, size_t label_len,
                                      uint32_t *ciphertext) {
   // Construct the public key.
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
@@ -115,9 +115,9 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_public_key_construct(kRsaSize2048, modulus,
                                         kTestPublicExponent, &public_key));
 
-  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  crypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
-  crypto_word32_buf_t ciphertext_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
+  otcrypto_word32_buf_t ciphertext_buf = {
       .data = ciphertext,
       .len = kRsa2048NumWords,
   };
@@ -150,12 +150,12 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
                                      const uint32_t *ciphertext, uint8_t *msg,
                                      size_t *msg_len) {
   // Create two shares for the private exponent (second share is all-zero).
-  crypto_const_word32_buf_t d_share0 = {
+  otcrypto_const_word32_buf_t d_share0 = {
       .data = kTestPrivateExponent,
       .len = ARRAYSIZE(kTestPrivateExponent),
   };
   uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
-  crypto_const_word32_buf_t d_share1 = {
+  otcrypto_const_word32_buf_t d_share1 = {
       .data = share1,
       .len = ARRAYSIZE(share1),
   };
@@ -176,7 +176,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
       .keyblob = keyblob,
       .keyblob_length = kRsa2048PrivateKeyblobBytes,
   };
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
@@ -184,9 +184,9 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
                                               kTestPublicExponent, d_share0,
                                               d_share1, &private_key));
 
-  crypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
-  crypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
-  crypto_const_word32_buf_t ciphertext_buf = {
+  otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
+  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
+  otcrypto_const_word32_buf_t ciphertext_buf = {
       .data = ciphertext,
       .len = kRsa2048NumWords,
   };

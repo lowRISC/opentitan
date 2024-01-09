@@ -128,11 +128,11 @@ TEST(KeyTransport, BlindedKeyImportExport) {
 
   // Import the key into the blinded key struct.
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size(),
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size(),
                     .data = share1.data(),
                 },
@@ -144,11 +144,11 @@ TEST(KeyTransport, BlindedKeyImportExport) {
   memset(share1.data(), 0, sizeof(share1));
 
   // Export the key again.
-  crypto_word32_buf_t share0_buf = {
+  otcrypto_word32_buf_t share0_buf = {
       .len = share0.size(),
       .data = share0.data(),
   };
-  crypto_word32_buf_t share1_buf = {
+  otcrypto_word32_buf_t share1_buf = {
       .len = share1.size(),
       .data = share1.data(),
   };
@@ -178,11 +178,11 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
 
   // Set a bad length for share 0 and expect the import to fail.
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size() - 1,
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size(),
                     .data = share1.data(),
                 },
@@ -191,11 +191,11 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
 
   // Set a bad length for share 1 and expect the import to fail.
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size(),
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size() - 1,
                     .data = share1.data(),
                 },
@@ -209,11 +209,11 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
       .keyblob = keyblob,
   };
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size(),
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size(),
                     .data = share1.data(),
                 },
@@ -237,22 +237,22 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
 
   // Import the key.
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size(),
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size(),
                     .data = share1.data(),
                 },
                 &blinded_key)),
             true);
 
-  crypto_word32_buf_t share_with_good_length = {
+  otcrypto_word32_buf_t share_with_good_length = {
       .len = share0.size(),
       .data = share0.data(),
   };
-  crypto_word32_buf_t share_with_bad_length = {
+  otcrypto_word32_buf_t share_with_bad_length = {
       .len = share1.size() - 1,
       .data = share1.data(),
   };
@@ -295,11 +295,11 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
 
   // Import the key.
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share0.size(),
                     .data = share0.data(),
                 },
-                (crypto_const_word32_buf_t){
+                (otcrypto_const_word32_buf_t){
                     .len = share1.size(),
                     .data = share1.data(),
                 },
@@ -307,11 +307,11 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
             true);
 
   // Expect key export to fail.
-  crypto_word32_buf_t share0_buf = {
+  otcrypto_word32_buf_t share0_buf = {
       .len = share0.size(),
       .data = share0.data(),
   };
-  crypto_word32_buf_t share1_buf = {
+  otcrypto_word32_buf_t share1_buf = {
       .len = share1.size(),
       .data = share1.data(),
   };

@@ -71,9 +71,9 @@ static aead_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
  * @param[out] output_bytes_written Number of output bytes written.
  * @return OK or error.
  */
-static status_t stream_gcm(aes_gcm_ctx_t *ctx, crypto_const_byte_buf_t aad,
-                           crypto_const_byte_buf_t input,
-                           crypto_byte_buf_t output,
+static status_t stream_gcm(aes_gcm_ctx_t *ctx, otcrypto_const_byte_buf_t aad,
+                           otcrypto_const_byte_buf_t input,
+                           otcrypto_byte_buf_t output,
                            size_t *output_bytes_written) {
   // Stream the AAD. The last chunk may have a different length than the others.
   if (aad.len > 0) {
@@ -84,7 +84,7 @@ static status_t stream_gcm(aes_gcm_ctx_t *ctx, crypto_const_byte_buf_t aad,
       if (offset + chunk_len > aad.len) {
         chunk_len = aad.len - offset;
       }
-      crypto_const_byte_buf_t aad_chunk = {
+      otcrypto_const_byte_buf_t aad_chunk = {
           .data = aad.data + offset,
           .len = chunk_len,
       };
@@ -103,11 +103,11 @@ static status_t stream_gcm(aes_gcm_ctx_t *ctx, crypto_const_byte_buf_t aad,
       if (offset + chunk_len > input.len) {
         chunk_len = input.len - offset;
       }
-      crypto_const_byte_buf_t input_chunk = {
+      otcrypto_const_byte_buf_t input_chunk = {
           .data = input.data + offset,
           .len = chunk_len,
       };
-      crypto_byte_buf_t output_with_offset = {
+      otcrypto_byte_buf_t output_with_offset = {
           .data = output.data + *output_bytes_written,
           .len = output.len - *output_bytes_written,
       };
@@ -150,15 +150,15 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test->iv, test->iv_len);
-  crypto_const_word32_buf_t iv = {
+  otcrypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };
-  crypto_const_byte_buf_t plaintext = {
+  otcrypto_const_byte_buf_t plaintext = {
       .data = test->plaintext,
       .len = test->plaintext_len,
   };
-  crypto_const_byte_buf_t aad = {
+  otcrypto_const_byte_buf_t aad = {
       .data = test->aad,
       .len = test->aad_len,
   };
@@ -166,14 +166,14 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
   size_t tag_num_words =
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t actual_tag_data[tag_num_words];
-  crypto_word32_buf_t actual_tag = {
+  otcrypto_word32_buf_t actual_tag = {
       .data = actual_tag_data,
       .len = tag_num_words,
   };
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
   uint8_t actual_ciphertext_data[ciphertext_blocks * kAesBlockNumBytes];
-  crypto_byte_buf_t actual_ciphertext = {
+  otcrypto_byte_buf_t actual_ciphertext = {
       .data = actual_ciphertext_data,
       .len = test->plaintext_len,
   };
@@ -187,7 +187,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
     size_t ciphertext_bytes_written;
     TRY(stream_gcm(&ctx, aad, plaintext, actual_ciphertext,
                    &ciphertext_bytes_written));
-    crypto_byte_buf_t final_ciphertext = {
+    otcrypto_byte_buf_t final_ciphertext = {
         .data = actual_ciphertext.data + ciphertext_bytes_written,
         .len = test->plaintext_len - ciphertext_bytes_written,
     };
@@ -247,15 +247,15 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       (test->iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test->iv, test->iv_len);
-  crypto_const_word32_buf_t iv = {
+  otcrypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };
-  crypto_const_byte_buf_t ciphertext = {
+  otcrypto_const_byte_buf_t ciphertext = {
       .data = test->ciphertext,
       .len = test->plaintext_len,
   };
-  crypto_const_byte_buf_t aad = {
+  otcrypto_const_byte_buf_t aad = {
       .data = test->aad,
       .len = test->aad_len,
   };
@@ -263,14 +263,14 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
       (test->tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t tag_data[tag_num_words];
   memcpy(tag_data, test->tag, test->tag_len);
-  crypto_const_word32_buf_t tag = {
+  otcrypto_const_word32_buf_t tag = {
       .data = tag_data,
       .len = tag_num_words,
   };
 
   size_t ciphertext_blocks = ceil_div(test->plaintext_len, kAesBlockNumBytes);
   uint8_t actual_plaintext_data[ciphertext_blocks * kAesBlockNumBytes];
-  crypto_byte_buf_t actual_plaintext = {
+  otcrypto_byte_buf_t actual_plaintext = {
       .data = actual_plaintext_data,
       .len = test->plaintext_len,
   };
@@ -284,7 +284,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     size_t plaintext_bytes_written;
     TRY(stream_gcm(&ctx, aad, ciphertext, actual_plaintext,
                    &plaintext_bytes_written));
-    crypto_byte_buf_t final_plaintext = {
+    otcrypto_byte_buf_t final_plaintext = {
         .data = actual_plaintext.data + plaintext_bytes_written,
         .len = actual_plaintext.len - plaintext_bytes_written,
     };

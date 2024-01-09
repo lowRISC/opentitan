@@ -35,13 +35,13 @@ typedef enum eddsa_sign_mode {
  */
 typedef struct ecc_domain {
   // Prime P (modulus of coordinate finite field).
-  crypto_const_byte_buf_t p;
+  otcrypto_const_byte_buf_t p;
   // Coefficient a.
-  crypto_const_byte_buf_t a;
+  otcrypto_const_byte_buf_t a;
   // Coefficient b.
-  crypto_const_byte_buf_t b;
+  otcrypto_const_byte_buf_t b;
   // q (order of G).
-  crypto_const_byte_buf_t q;
+  otcrypto_const_byte_buf_t q;
   // Value of x coordinate of G (basepoint). Same length as p.
   const uint32_t *gx;
   // Value of y coordinate of G (basepoint). Same length as p.
@@ -132,7 +132,7 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     const hash_digest_t *message_digest,
                                     const ecc_curve_t *elliptic_curve,
-                                    crypto_word32_buf_t signature);
+                                    otcrypto_word32_buf_t signature);
 
 /**
  * Performs the ECDSA digital signature verification.
@@ -158,7 +158,7 @@ otcrypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify(const crypto_unblinded_key_t *public_key,
                                       const hash_digest_t *message_digest,
-                                      crypto_const_word32_buf_t signature,
+                                      otcrypto_const_word32_buf_t signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
 
@@ -245,9 +245,9 @@ otcrypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
-                                      crypto_const_byte_buf_t input_message,
+                                      otcrypto_const_byte_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
-                                      crypto_word32_buf_t signature);
+                                      otcrypto_word32_buf_t signature);
 
 /**
  * Verifies an Ed25519 signature.
@@ -263,8 +263,8 @@ otcrypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    crypto_const_word32_buf_t signature, hardened_bool_t *verification_result);
+    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_const_word32_buf_t signature, hardened_bool_t *verification_result);
 
 /**
  * Generates a new key pair for X25519 key exchange.
@@ -387,7 +387,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
-    const ecc_curve_t *elliptic_curve, crypto_word32_buf_t signature);
+    const ecc_curve_t *elliptic_curve, otcrypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous ECDSA digital signature verification.
@@ -406,7 +406,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify_async_start(
     const crypto_unblinded_key_t *public_key,
-    const hash_digest_t *message_digest, crypto_const_word32_buf_t signature,
+    const hash_digest_t *message_digest, otcrypto_const_word32_buf_t signature,
     const ecc_curve_t *elliptic_curve);
 
 /**
@@ -429,7 +429,7 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
-    const ecc_curve_t *elliptic_curve, crypto_const_word32_buf_t signature,
+    const ecc_curve_t *elliptic_curve, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
 /**
@@ -572,8 +572,8 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    crypto_word32_buf_t signature);
+    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_word32_buf_t signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
@@ -587,7 +587,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
-    crypto_word32_buf_t signature);
+    otcrypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous Ed25519 digital signature verification.
@@ -604,8 +604,8 @@ otcrypto_status_t otcrypto_ed25519_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
-    crypto_const_word32_buf_t signature);
+    otcrypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    otcrypto_const_word32_buf_t signature);
 
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.
