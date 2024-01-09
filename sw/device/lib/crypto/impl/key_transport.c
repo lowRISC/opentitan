@@ -14,8 +14,8 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
-otcrypto_status_t otcrypto_symmetric_keygen(otcrypto_const_byte_buf_t perso_string,
-                                          otcrypto_blinded_key_t *key) {
+otcrypto_status_t otcrypto_symmetric_keygen(
+    otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -54,8 +54,9 @@ otcrypto_status_t otcrypto_symmetric_keygen(otcrypto_const_byte_buf_t perso_stri
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
-                                       otcrypto_blinded_key_t *key) {
+otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
+                                         const uint32_t salt[7],
+                                         otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -66,7 +67,8 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7
 
   // Get the key type from the top 16 bits of the full mode and ensure that it
   // is not RSA. All other key types are acceptable for hardware-backed keys.
-  otcrypto_key_type_t key_type = (otcrypto_key_type_t)(key->config.key_mode >> 16);
+  otcrypto_key_type_t key_type =
+      (otcrypto_key_type_t)(key->config.key_mode >> 16);
   if (key_type == kOtcryptoKeyTypeRsa) {
     return OTCRYPTO_BAD_ARGS;
   }

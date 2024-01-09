@@ -32,9 +32,9 @@ extern "C" {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_digest,
-                                     size_t encoded_message_len,
-                                     uint32_t *encoded_message);
+status_t rsa_padding_pkcs1v15_encode(
+    const otcrypto_hash_digest_t *message_digest, size_t encoded_message_len,
+    uint32_t *encoded_message);
 
 /**
  * Check if the PKCS#1 v1.5 encoded message represents the message.
@@ -55,10 +55,10 @@ status_t rsa_padding_pkcs1v15_encode(const otcrypto_hash_digest_t *message_diges
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_padding_pkcs1v15_verify(const otcrypto_hash_digest_t *message_digest,
-                                     const uint32_t *encoded_message,
-                                     const size_t encoded_message_len,
-                                     hardened_bool_t *result);
+status_t rsa_padding_pkcs1v15_verify(
+    const otcrypto_hash_digest_t *message_digest,
+    const uint32_t *encoded_message, const size_t encoded_message_len,
+    hardened_bool_t *result);
 
 /**
  * Encode the message with PSS encoding (RFC 8017, section 9.1.1).
@@ -129,9 +129,9 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
  * @param[out] max_message_bytelen Maximum length of message in bytes.
  * @return Result of the operation (OK or error).
  */
-status_t rsa_padding_oaep_max_message_bytelen(const otcrypto_hash_mode_t hash_mode,
-                                              size_t rsa_wordlen,
-                                              size_t *max_message_bytelen);
+status_t rsa_padding_oaep_max_message_bytelen(
+    const otcrypto_hash_mode_t hash_mode, size_t rsa_wordlen,
+    size_t *max_message_bytelen);
 
 /**
  * Encode the message with OAEP encoding (RFC 8017, section 7.1.1, steps 1-2).

@@ -30,7 +30,8 @@ static const otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
   // Allocate buffer for the public key.
-  uint32_t public_key_data[ceil_div(kOtcryptoRsa4096PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa4096PublicKeyBytes,
+                                    sizeof(uint32_t))];
   memset(public_key_data, 0, sizeof(public_key_data));
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
@@ -112,7 +113,8 @@ status_t keygen_then_sign_test(void) {
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs, &sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
+                        &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 

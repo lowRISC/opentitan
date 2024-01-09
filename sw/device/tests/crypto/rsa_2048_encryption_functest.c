@@ -106,7 +106,8 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = kOtcryptoRsa2048PublicKeyBytes,

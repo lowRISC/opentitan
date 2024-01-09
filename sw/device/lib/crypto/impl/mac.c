@@ -19,8 +19,8 @@
 
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                              otcrypto_const_byte_buf_t input_message,
-                              otcrypto_word32_buf_t *tag) {
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
   otcrypto_hmac_context_t ctx;
   HARDENED_TRY(otcrypto_hmac_init(&ctx, key));
@@ -30,11 +30,11 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
 
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
-                              otcrypto_const_byte_buf_t input_message,
-                              otcrypto_kmac_mode_t kmac_mode,
-                              otcrypto_const_byte_buf_t customization_string,
-                              size_t required_output_len,
-                              otcrypto_word32_buf_t *tag) {
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_kmac_mode_t kmac_mode,
+                                otcrypto_const_byte_buf_t customization_string,
+                                size_t required_output_len,
+                                otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
@@ -107,7 +107,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
 }
 
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
-                                   const otcrypto_blinded_key_t *key) {
+                                     const otcrypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -215,18 +215,19 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   HARDENED_TRY(otcrypto_hash_update(
       &ctx->inner,
       (otcrypto_const_byte_buf_t){.len = sizeof(inner_block),
-                                .data = (unsigned char *)inner_block}));
+                                  .data = (unsigned char *)inner_block}));
 
   // Start computing outer hash = H(K0 ^ opad || inner).
   HARDENED_TRY(otcrypto_hash_init(&ctx->outer, hash_mode));
   return otcrypto_hash_update(
       &ctx->outer,
       (otcrypto_const_byte_buf_t){.len = sizeof(outer_block),
-                                .data = (unsigned char *)outer_block});
+                                  .data = (unsigned char *)outer_block});
 }
 
-otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
-                                     otcrypto_const_byte_buf_t input_message) {
+otcrypto_status_t otcrypto_hmac_update(
+    otcrypto_hmac_context_t *const ctx,
+    otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -236,7 +237,7 @@ otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
 }
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                    otcrypto_word32_buf_t *tag) {
+                                      otcrypto_word32_buf_t *tag) {
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -257,7 +258,7 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   HARDENED_TRY(otcrypto_hash_update(
       &ctx->outer,
       (otcrypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag->len,
-                                .data = (unsigned char *)tag->data}));
+                                  .data = (unsigned char *)tag->data}));
 
   return otcrypto_hash_final(&ctx->outer, &digest_buf);
 }

@@ -103,7 +103,8 @@ OT_WARN_UNUSED_RESULT static status_t gen_rma_unlock_token_aes_key(
 
 OT_WARN_UNUSED_RESULT
 static status_t encrypt_rma_unlock_token(
-    otcrypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
+    otcrypto_blinded_key_t *aes_key,
+    wrapped_rma_unlock_token_t *wrapped_token) {
   // Construct IV, which since we are using ECB mode, is empty.
   otcrypto_word32_buf_t iv = {
       .data = NULL,
@@ -125,8 +126,9 @@ static status_t encrypt_rma_unlock_token(
   };
 
   // Run encryption and check the result.
-  TRY(otcrypto_aes(aes_key, iv, kOtcryptoAesModeEcb, kOtcryptoAesOperationEncrypt,
-                   plaintext, kOtcryptoAesPaddingNull, ciphertext));
+  TRY(otcrypto_aes(aes_key, iv, kOtcryptoAesModeEcb,
+                   kOtcryptoAesOperationEncrypt, plaintext,
+                   kOtcryptoAesPaddingNull, ciphertext));
 
   // Copy encrypted RMA unlock token to the output buffer.
   memcpy(wrapped_token->data, ciphertext.data, kRmaUnlockTokenSizeInBytes);

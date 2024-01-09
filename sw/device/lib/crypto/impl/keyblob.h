@@ -109,7 +109,8 @@ status_t keyblob_buffer_to_keymgr_diversification(
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(
-    const otcrypto_blinded_key_t *key, keymgr_diversification_t *diversification);
+    const otcrypto_blinded_key_t *key,
+    keymgr_diversification_t *diversification);
 
 /**
  * Checks that the configuration represents a key masked with XOR.

@@ -71,7 +71,8 @@ static otcrypto_aes_gcm_tag_len_t get_tag_length(size_t tag_len_bytes) {
  * @param[out] output_bytes_written Number of output bytes written.
  * @return OK or error.
  */
-static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t aad,
+static status_t stream_gcm(otcrypto_aes_gcm_context_t *ctx,
+                           otcrypto_const_byte_buf_t aad,
                            otcrypto_const_byte_buf_t input,
                            otcrypto_byte_buf_t output,
                            size_t *output_bytes_written) {

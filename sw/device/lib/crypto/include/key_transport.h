@@ -46,8 +46,8 @@ extern "C" {
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
-otcrypto_status_t otcrypto_symmetric_keygen(otcrypto_const_byte_buf_t perso_string,
-                                          otcrypto_blinded_key_t *key);
+otcrypto_status_t otcrypto_symmetric_keygen(
+    otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key);
 
 /**
  * Creates a handle for a hardware-backed key.
@@ -71,8 +71,9 @@ otcrypto_status_t otcrypto_symmetric_keygen(otcrypto_const_byte_buf_t perso_stri
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
-otcrypto_status_t otcrypto_hw_backed_key(uint32_t version, const uint32_t salt[7],
-                                       otcrypto_blinded_key_t *key);
+otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
+                                         const uint32_t salt[7],
+                                         otcrypto_blinded_key_t *key);
 
 /**
  * Creates a blinded key struct from masked key material.

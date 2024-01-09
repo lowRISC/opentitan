@@ -19,12 +19,15 @@
 /**
  * Ensure that the hash context is large enough for all SHA2 state structs.
  */
-static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha256_state_t),
-              "otcrypto_hash_context_t must be big enough to hold sha256_state_t");
-static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha384_state_t),
-              "otcrypto_hash_context_t must be big enough to hold sha384_state_t");
-static_assert(sizeof(otcrypto_hash_context_t) >= sizeof(sha512_state_t),
-              "otcrypto_hash_context_t must be big enough to hold sha512_state_t");
+static_assert(
+    sizeof(otcrypto_hash_context_t) >= sizeof(sha256_state_t),
+    "otcrypto_hash_context_t must be big enough to hold sha256_state_t");
+static_assert(
+    sizeof(otcrypto_hash_context_t) >= sizeof(sha384_state_t),
+    "otcrypto_hash_context_t must be big enough to hold sha384_state_t");
+static_assert(
+    sizeof(otcrypto_hash_context_t) >= sizeof(sha512_state_t),
+    "otcrypto_hash_context_t must be big enough to hold sha512_state_t");
 /**
  * Ensure that all SHA2 state structs are suitable for `hardened_memcpy()`.
  */
@@ -203,7 +206,7 @@ static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
 }
 
 otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
-                              otcrypto_hash_digest_t *digest) {
+                                otcrypto_hash_digest_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -242,7 +245,7 @@ otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
 }
 
 otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
-                                   otcrypto_hash_digest_t *digest) {
+                                     otcrypto_hash_digest_t *digest) {
   switch (digest->mode) {
     case kOtcryptoHashXofModeShake128:
       return kmac_shake_128(input_message.data, input_message.len, digest->data,
@@ -262,7 +265,8 @@ otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
 otcrypto_status_t otcrypto_xof_cshake(
     otcrypto_const_byte_buf_t input_message,
     otcrypto_const_byte_buf_t function_name_string,
-    otcrypto_const_byte_buf_t customization_string, otcrypto_hash_digest_t *digest) {
+    otcrypto_const_byte_buf_t customization_string,
+    otcrypto_hash_digest_t *digest) {
   // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
   // both `customization_string` and `function_name_string` are empty string
   if (customization_string.len == 0 && function_name_string.len == 0) {
@@ -300,7 +304,7 @@ otcrypto_status_t otcrypto_xof_cshake(
 }
 
 otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *const ctx,
-                                   otcrypto_hash_mode_t hash_mode) {
+                                     otcrypto_hash_mode_t hash_mode) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -333,8 +337,9 @@ otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *const ctx,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_hash_update(otcrypto_hash_context_t *const ctx,
-                                     otcrypto_const_byte_buf_t input_message) {
+otcrypto_status_t otcrypto_hash_update(
+    otcrypto_hash_context_t *const ctx,
+    otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL || (input_message.data == NULL && input_message.len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -373,7 +378,7 @@ otcrypto_status_t otcrypto_hash_update(otcrypto_hash_context_t *const ctx,
 }
 
 otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
-                                    otcrypto_hash_digest_t *digest) {
+                                      otcrypto_hash_digest_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
