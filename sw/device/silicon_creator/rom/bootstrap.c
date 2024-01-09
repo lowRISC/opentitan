@@ -99,93 +99,21 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 }
 
 /**
- * Handles access permissions and programs up to 256 bytes of flash memory
+ * Handles access permissions and programs up to 256 bytes of memory
  * starting at `addr`.
  *
- * If `byte_count` is not a multiple of flash word size, it's rounded up to next
- * flash word and missing bytes in `data` are set to `0xff`.
- *
- * @param addr Address to write to, must be flash word aligned.
- * @param byte_count Number of bytes to write. Rounded up to next flash word if
- * not a multiple of flash word size. Missing bytes in `data` are set to `0xff`.
- * @param data Data to write, must be word aligned. If `byte_count` is not a
- * multiple of flash word size, `data` must have enough space until the next
- * flash word.
+ * @param addr Address to write to data into memory.
+ * @param byte_count Number of bytes to write into memory.
+ * @param data Data to write into memory.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
-#if 0  // TODO: Implement for CTN SRAM
-  static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_WORD) == 1,
-                "Bytes per flash word must be a power of two.");
-  enum {
-    /**
-     * Mask for checking that `addr` is flash word aligned.
-     */
-    kFlashWordMask = FLASH_CTRL_PARAM_BYTES_PER_WORD - 1,
-    /**
-     * SPI flash programming page size in bytes.
-     */
-    kFlashProgPageSize = 256,
-    /**
-     * Mask for checking whether `addr` is flash programming page aligned.
-     *
-     * Flash programming page size is 256 bytes, writes that start at an `addr`
-     * with a non-zero LSB wrap to the start of the 256 byte region.
-     */
-    kFlashProgPageMask = kFlashProgPageSize - 1,
-  };
-
-  if (addr & kFlashWordMask || addr >= kMaxAddress) {
+  if (addr + byte_count >= kMaxAddress) {
     return kErrorBootstrapProgramAddress;
   }
-
-  // Round up to next flash word and fill missing bytes with `0xff`.
-  size_t flash_word_misalignment = byte_count & kFlashWordMask;
-  if (flash_word_misalignment > 0) {
-    size_t padding_byte_count =
-        FLASH_CTRL_PARAM_BYTES_PER_WORD - flash_word_misalignment;
-    for (size_t i = 0; i < padding_byte_count; ++i) {
-      data[byte_count++] = 0xff;
-    }
-  }
-  size_t rem_word_count = byte_count / sizeof(uint32_t);
-
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4True,
-      .erase = kMultiBitBool4False,
-  });
-  // Perform two writes if the start address is not page-aligned (256 bytes).
-  // Note: Address is flash-word-aligned (8 bytes) due to the check above.
-  rom_error_t err_0 = kErrorOk;
-  size_t prog_page_misalignment = addr & kFlashProgPageMask;
-  if (prog_page_misalignment > 0) {
-    size_t word_count =
-        (kFlashProgPageSize - prog_page_misalignment) / sizeof(uint32_t);
-    if (word_count > rem_word_count) {
-      word_count = rem_word_count;
-    }
-    err_0 = flash_ctrl_data_write(addr, word_count, data);
-    rem_word_count -= word_count;
-    data += word_count * sizeof(uint32_t);
-    // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
-    // a single page only.
-    addr &= ~(uint32_t)kFlashProgPageMask;
-  }
-  rom_error_t err_1 = kErrorOk;
-  if (rem_word_count > 0) {
-    err_1 = flash_ctrl_data_write(addr, rem_word_count, data);
-  }
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
-      .read = kMultiBitBool4False,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4False,
-  });
-
-  HARDENED_RETURN_IF_ERROR(err_0);
-#endif
+  memcpy((void *)addr, data, byte_count);
   return kErrorOk;
 }
 

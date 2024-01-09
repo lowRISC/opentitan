@@ -538,6 +538,12 @@ void spi_device_init(void) {
     abs_mmio_write32(kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + i, 0);
   }
 
+  // Reset the egress buffer to prevent access faults when reading beyond
+  // current depth (see #11782).
+  for (size_t i = 0; i < kSpiDeviceSfdpAreaOffset; i += sizeof(uint32_t)) {
+    abs_mmio_write32(kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + i, 0);
+  }
+
   // Write SFDP table to the reserved region in spi_device buffer.
   uint32_t dest = kSfdpAreaStartAddr;
   const char *table = (const char *)&kSpiDeviceSfdpTable;
