@@ -29,7 +29,7 @@ custom set of tests, or random tests, you'll need to populate the
 script for this for each algorithm, ending in `set_testvectors.py` (e.g.
 `rsa_3072_verify_set_testvectors.py`). It reads an HJSON file containing your
 test vectors, and writes a C header file containing the data in the format
-expected from `*_testvectors.h". For test vectors from an external source, you
+expected from `*_testvectors.h`. For test vectors from an external source, you
 may need an extra script to parse the test vectors into the shared HJSON
 format.
 
