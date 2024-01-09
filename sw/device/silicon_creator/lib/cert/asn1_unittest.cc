@@ -264,6 +264,40 @@ TEST(Asn1, PushHexStrings) {
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
 }
 
+// Make sure that the tag routines handle overflow correctly.
+TEST(Asn1, TagOverflow) {
+  // When creating a tag, `asn1_start_tag` initially assumes that
+  // the length encoding fits on one byte, and this is fixed-up
+  // in `asn1_finish_tag` by moving the data. There is a potential
+  // source of overflow here if (one byte length) + (data) fits into
+  // the buffer but (two byte length) + (data) which is the correct
+  // final value does not. In this test, we create create a buffer that
+  // is big enough to hold the final value but we pretend that it is one
+  // byte smaller. If the code is correct, it should return an error
+  // saying that the buffer is too small. If it is incorrect, it will
+  // (incorrect) proceed and write one byte after the end of the buffer.
+  asn1_state_t state;
+  std::vector<uint8_t> buf;
+  const uint8_t kPattern = 0xa5;
+  // Allocate one byte for the tag, one for the length, 0x100 for the data.
+  const size_t kBufferSize = 1 + 1 + 0x100;
+  buf.resize(kBufferSize + 1, kPattern);
+  EXPECT_EQ(asn1_start(&state, &buf[0], kBufferSize), kErrorOk);
+  // The function will allocate one byte for the tag length.
+  asn1_tag_t tag;
+  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberSequence), kErrorOk);
+  // Push 0x100 bytes so that the length tag requires two bytes.
+  std::vector<uint8_t> tmp;
+  tmp.resize(0x100, 0xff);
+  EXPECT_EQ(asn1_push_bytes(&state, &tmp[0], tmp.size()), kErrorOk);
+  // At this point, the function will need to move the data forward by one byte
+  // so it should hit the buffer size.
+  EXPECT_EQ(asn1_finish_tag(&tag), kErrorAsn1BufferExhausted);
+  // Make sure that that even though it returned an error, the function did not
+  // actually write anything past the end of the buffer.
+  EXPECT_EQ(buf[kBufferSize], kPattern);
+}
+
 // Make sure that the tag encoding is correct.
 TEST(Asn1, TagLengthEncoding) {
   asn1_state_t state;
