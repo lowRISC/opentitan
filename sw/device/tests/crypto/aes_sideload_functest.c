@@ -94,7 +94,7 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
       .len = sizeof(kAesPlaintextBlock),
   };
 
-  return otcrypto_aes(&key, iv, kBlockCipherModeCtr, operation, input_buf,
+  return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
                       kAesPaddingNull, output_buf);
 }
 
