@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
-
 """Rules for generating OTP images.
 
 OTP image generation begins with producing one or more (H)JSON files that
@@ -38,9 +36,9 @@ list of dicts, each of the form {"name": key, "value": value}, which is the
 format expected by the image generation tool.
 """
 
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
-load("//rules:host.bzl", "host_tools_transition")
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:const.bzl", "CONST", "hex")
 
 def get_otp_images():
