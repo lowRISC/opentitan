@@ -45,7 +45,6 @@ parameters:
     datatype: bool
     paramtype: vlogdefine
 
-
 targets:
   default: &default_target
     filesets:
