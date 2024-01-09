@@ -21,28 +21,28 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum rsa_padding {
+typedef enum otcrypto_rsa_padding{
   // Pads input data according to the PKCS#1 (v1.5) scheme.
-  kRsaPaddingPkcs = 0x94e,
+  kOtcryptoRsaPaddingPkcs = 0x94e,
   // Pads input data according to the PKCS#1-PSS scheme. The mask generation
   // function is MGF1 with the same hash function as the input message
   // (supported SHA2 or SHA3 hash functions only).
-  kRsaPaddingPss = 0x6b1,
-} rsa_padding_t;
+  kOtcryptoRsaPaddingPss = 0x6b1,
+} otcrypto_rsa_padding_t;
 
 /**
  * Enum to define possible lengths of RSA (public) keys.
  *
  * Values are hardened.
  */
-typedef enum rsa_size {
+typedef enum otcrypto_rsa_size{
   // 2048-bit RSA.
-  kRsaSize2048 = 0x5d1,
+  kOtcryptoRsaSize2048 = 0x5d1,
   // 3072-bit RSA.
-  kRsaSize3072 = 0xc35,
+  kOtcryptoRsaSize3072 = 0xc35,
   // 4096-bit RSA.
-  kRsaSize4096 = 0x8da,
-} rsa_size_t;
+  kOtcryptoRsaSize4096 = 0x8da,
+} otcrypto_rsa_size_t;
 
 enum {
   /**
@@ -52,9 +52,9 @@ enum {
    * to change. This is the length that the caller should set as `key_length`
    * and allocate for the `key` buffer in unblinded keys.
    */
-  kRsa2048PublicKeyBytes = 260,
-  kRsa3072PublicKeyBytes = 388,
-  kRsa4096PublicKeyBytes = 516,
+  kOtcryptoRsa2048PublicKeyBytes = 260,
+  kOtcryptoRsa3072PublicKeyBytes = 388,
+  kOtcryptoRsa4096PublicKeyBytes = 516,
   /**
    * Number of bytes needed for RSA private keys.
    *
@@ -62,9 +62,9 @@ enum {
    * to change. This is the length that the caller should set in `key_length`
    * for the blinded key configuration (NOT the blinded keyblob length).
    */
-  kRsa2048PrivateKeyBytes = 256,
-  kRsa3072PrivateKeyBytes = 384,
-  kRsa4096PrivateKeyBytes = 512,
+  kOtcryptoRsa2048PrivateKeyBytes = 256,
+  kOtcryptoRsa3072PrivateKeyBytes = 384,
+  kOtcryptoRsa4096PrivateKeyBytes = 512,
   /**
    * Number of bytes needed for RSA private keyblobs.
    *
@@ -72,9 +72,9 @@ enum {
    * to change. This is the length that the caller should set in
    * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
    */
-  kRsa2048PrivateKeyblobBytes = 512,
-  kRsa3072PrivateKeyblobBytes = 768,
-  kRsa4096PrivateKeyblobBytes = 1024,
+  kOtcryptoRsa2048PrivateKeyblobBytes = 512,
+  kOtcryptoRsa3072PrivateKeyblobBytes = 768,
+  kOtcryptoRsa4096PrivateKeyblobBytes = 1024,
 };
 
 /**
@@ -98,7 +98,7 @@ enum {
  * @param[out] private_key Pointer to blinded private key struct.
  * @return Result of the RSA key generation.
  */
-otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
+otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                     otcrypto_unblinded_key_t *public_key,
                                     otcrypto_blinded_key_t *private_key);
 
@@ -115,7 +115,7 @@ otcrypto_status_t otcrypto_rsa_keygen(rsa_size_t size,
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_public_key_construct(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t exponent,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t exponent,
     otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -133,7 +133,7 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
     otcrypto_blinded_key_t *private_key);
 
@@ -155,7 +155,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
@@ -176,7 +176,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
  */
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                   const otcrypto_hash_digest_t *message_digest,
-                                  rsa_padding_t padding_mode,
+                                  otcrypto_rsa_padding_t padding_mode,
                                   otcrypto_word32_buf_t *signature);
 
 /**
@@ -195,7 +195,7 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
  */
 otcrypto_status_t otcrypto_rsa_verify(const otcrypto_unblinded_key_t *public_key,
                                     const otcrypto_hash_digest_t *message_digest,
-                                    rsa_padding_t padding_mode,
+                                    otcrypto_rsa_padding_t padding_mode,
                                     otcrypto_const_word32_buf_t signature,
                                     hardened_bool_t *verification_result);
 
@@ -280,7 +280,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(const otcrypto_blinded_key_t *private_key
  * @param size RSA size parameter.
  * @return Result of async RSA keygen start operation.
  */
-otcrypto_status_t otcrypto_rsa_keygen_async_start(rsa_size_t size);
+otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size);
 
 /**
  * Finalizes the asynchronous RSA key generation function.
@@ -309,7 +309,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @return Result of the RSA key construction.
  */
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
-    rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus, uint32_t e,
     otcrypto_const_word32_buf_t cofactor_share0,
     otcrypto_const_word32_buf_t cofactor_share1);
 
@@ -345,7 +345,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest, rsa_padding_t padding_mode);
+    const otcrypto_hash_digest_t *message_digest, otcrypto_rsa_padding_t padding_mode);
 
 /**
  * Finalizes the asynchronous digital signature generation function.
@@ -385,7 +385,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
  * @return Result of async RSA verify finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
-    const otcrypto_hash_digest_t *message_digest, rsa_padding_t padding_mode,
+    const otcrypto_hash_digest_t *message_digest, otcrypto_rsa_padding_t padding_mode,
     hardened_bool_t *verification_result);
 
 /**

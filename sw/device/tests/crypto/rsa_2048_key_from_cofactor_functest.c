@@ -106,32 +106,32 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   otcrypto_key_config_t private_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kTestKeyMode,
-      .key_length = kRsa2048PrivateKeyBytes,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_words =
-      ceil_div(kRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
   otcrypto_blinded_key_t private_key = {
       .config = private_key_config,
       .keyblob = keyblob,
-      .keyblob_length = kRsa2048PrivateKeyblobBytes,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
   };
 
   // Construct the public key buffer.
-  size_t public_key_words = ceil_div(kRsa2048PublicKeyBytes, sizeof(uint32_t));
+  size_t public_key_words = ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t));
   uint32_t public_key_data[public_key_words];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
       .key = public_key_data,
-      .key_length = kRsa2048PublicKeyBytes,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
   };
 
   // Construct the RSA key pair using the cofactor.
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_keypair_from_cofactor(
-      kRsaSize2048, modulus, kTestPublicExponent, cofactor_share0,
+      kOtcryptoRsaSize2048, modulus, kTestPublicExponent, cofactor_share0,
       cofactor_share1, &public_key, &private_key));
   profile_end_and_print(t_start, "RSA keypair from cofactor");
 

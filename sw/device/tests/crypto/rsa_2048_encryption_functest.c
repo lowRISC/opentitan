@@ -106,13 +106,13 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  uint32_t public_key_data[ceil_div(kRsa2048PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t))];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
-      .key_length = kRsa2048PublicKeyBytes,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
       .key = public_key_data,
   };
-  TRY(otcrypto_rsa_public_key_construct(kRsaSize2048, modulus,
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, modulus,
                                         kTestPublicExponent, &public_key));
 
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
@@ -164,23 +164,23 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
   otcrypto_key_config_t private_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
-      .key_length = kRsa2048PrivateKeyBytes,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_words =
-      ceil_div(kRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
   otcrypto_blinded_key_t private_key = {
       .config = private_key_config,
       .keyblob = keyblob,
-      .keyblob_length = kRsa2048PrivateKeyblobBytes,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
   };
   otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  TRY(otcrypto_rsa_private_key_from_exponents(kRsaSize2048, modulus,
+  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048, modulus,
                                               kTestPublicExponent, d_share0,
                                               d_share1, &private_key));
 
