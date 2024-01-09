@@ -55,26 +55,26 @@ typedef enum otcrypto_aes_mode{
  *
  * Values are hardened.
  */
-typedef enum aes_operation {
+typedef enum otcrypto_aes_operation{
   // AES operation mode encrypt.
-  kAesOperationEncrypt = 0x2b6,
+  kOtcryptoAesOperationEncrypt = 0x2b6,
   // AES operation mode decrypt.
-  kAesOperationDecrypt = 0x5f0,
-} aes_operation_t;
+  kOtcryptoAesOperationDecrypt = 0x5f0,
+} otcrypto_aes_operation_t;
 
 /**
  * Enum to define padding scheme for AES data.
  *
  * Values are hardened.
  */
-typedef enum aes_padding {
+typedef enum otcrypto_aes_padding{
   // Pads with value same as the number of padding bytes.
-  kAesPaddingPkcs7 = 0xe7f,
+  kOtcryptoAesPaddingPkcs7 = 0xe7f,
   // Pads with 0x80 (10000000), followed by zero bytes.
-  kAesPaddingIso9797M2 = 0xfac,
+  kOtcryptoAesPaddingIso9797M2 = 0xfac,
   // Add no padding.
-  kAesPaddingNull = 0x8ce,
-} aes_padding_t;
+  kOtcryptoAesPaddingNull = 0x8ce,
+} otcrypto_aes_padding_t;
 
 /**
  * Context for a streaming AES-GCM operation.
@@ -100,7 +100,7 @@ typedef struct aes_gcm_ctx {
  * @return Result of the operation.
  */
 otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
-                                                     aes_padding_t aes_padding,
+                                                     otcrypto_aes_padding_t aes_padding,
                                                      size_t *padded_len);
 
 /**
@@ -131,9 +131,9 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
 otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
                              otcrypto_word32_buf_t iv,
                              otcrypto_aes_mode_t aes_mode,
-                             aes_operation_t aes_operation,
+                             otcrypto_aes_operation_t aes_operation,
                              otcrypto_const_byte_buf_t cipher_input,
-                             aes_padding_t aes_padding,
+                             otcrypto_aes_padding_t aes_padding,
                              otcrypto_byte_buf_t cipher_output);
 
 /**

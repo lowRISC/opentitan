@@ -125,8 +125,8 @@ static status_t encrypt_rma_unlock_token(
   };
 
   // Run encryption and check the result.
-  TRY(otcrypto_aes(aes_key, iv, kOtcryptoAesModeEcb, kAesOperationEncrypt,
-                   plaintext, kAesPaddingNull, ciphertext));
+  TRY(otcrypto_aes(aes_key, iv, kOtcryptoAesModeEcb, kOtcryptoAesOperationEncrypt,
+                   plaintext, kOtcryptoAesPaddingNull, ciphertext));
 
   // Copy encrypted RMA unlock token to the output buffer.
   memcpy(wrapped_token->data, ciphertext.data, kRmaUnlockTokenSizeInBytes);

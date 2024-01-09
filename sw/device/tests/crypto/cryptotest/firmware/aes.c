@@ -65,29 +65,29 @@ status_t handle_aes_block(ujson_t *uj) {
       return INVALID_ARGUMENT();
   }
 
-  aes_operation_t op;
+  otcrypto_aes_operation_t op;
   switch (uj_op) {
     case kCryptotestAesOperationEncrypt:
-      op = kAesOperationEncrypt;
+      op = kOtcryptoAesOperationEncrypt;
       break;
     case kCryptotestAesOperationDecrypt:
-      op = kAesOperationDecrypt;
+      op = kOtcryptoAesOperationDecrypt;
       break;
     default:
       LOG_ERROR("Unrecognized AES operation: %d", uj_op);
       return INVALID_ARGUMENT();
   }
 
-  aes_padding_t padding;
+  otcrypto_aes_padding_t padding;
   switch (uj_padding) {
     case kCryptotestAesPaddingPkcs7:
-      padding = kAesPaddingPkcs7;
+      padding = kOtcryptoAesPaddingPkcs7;
       break;
     case kCryptotestAesPaddingIso9797M2:
-      padding = kAesPaddingIso9797M2;
+      padding = kOtcryptoAesPaddingIso9797M2;
       break;
     case kCryptotestAesPaddingNull:
-      padding = kAesPaddingNull;
+      padding = kOtcryptoAesPaddingNull;
       break;
     default:
       LOG_ERROR("Unrecognized AES padding scheme: %d", uj_op);

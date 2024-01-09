@@ -63,7 +63,7 @@ static const uint32_t kAesPlaintextBlock[4] = {0};
  * @param[out] output Resulting output block(s).
  * @return OK or error.
  */
-static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
+static status_t run_aes(otcrypto_aes_operation_t operation, const uint32_t salt[7],
                         const uint32_t *input, uint32_t *output) {
   // Construct the key.
   uint32_t keyblob[8];
@@ -95,7 +95,7 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
   };
 
   return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
-                      kAesPaddingNull, output_buf);
+                      kOtcryptoAesPaddingNull, output_buf);
 }
 
 /**
@@ -109,7 +109,7 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
  * @return OK or error.
  */
 static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
-  return run_aes(kAesOperationEncrypt, salt, kAesPlaintextBlock, ciphertext);
+  return run_aes(kOtcryptoAesOperationEncrypt, salt, kAesPlaintextBlock, ciphertext);
 }
 
 /**
@@ -125,7 +125,7 @@ static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
  */
 static status_t decrypt(const uint32_t *salt, const uint32_t *ciphertext,
                         uint32_t *plaintext) {
-  return run_aes(kAesOperationDecrypt, salt, ciphertext, plaintext);
+  return run_aes(kOtcryptoAesOperationDecrypt, salt, ciphertext, plaintext);
 }
 
 /**
