@@ -53,10 +53,25 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_lock_cfg(const dif_sensor_ctrl_t *sensor_ctrl);
 
 /**
+ * Gets the value of a particular AST event trigger.
+ *
+ * @param sensor_ctrl A sensor_ctrl handle.
+ * @param event_idx The event to read.
+ * @param[out] enable The current trigger enable status.
+ * @return 'kDifBadArg' if `sensor_ctrl` or `enable` are null, or if `event_idx`
+ * is larger than the number of events supported.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sensor_ctrl_get_ast_event_trigger(
+    const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
+    dif_toggle_t *enable);
+
+/**
  * Sets the value for a particular AST event trigger.
  *
  * @param sensor_ctrl A sensor_ctrl handle.
  * @param event_idx The event to configure.
+ * @param enable The toggle status to set.
  * @return 'kDifBadArg' if `handle` is null or if `event_idx` is larger than the
  * number of events supported.
  */
@@ -71,9 +86,9 @@ dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
  * An event can be configured to be either fatal or recoverable.
  *
  * @param sensor_ctrl A sensor_ctrl handle.
+ * @param event_idx The event to configure.
  * @param en_fatal The fatality enablement state of an event. If
  * `kDifToggleEnabled`, the event is fatal.  Otherwise, it is recoverable.
- * @param event_idx The event to configure
  * @return 'kDifBadArg' if `handle` is null or `event_idx` is larger than the
  * number of events supported.
  */
