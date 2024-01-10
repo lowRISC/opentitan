@@ -379,6 +379,17 @@ dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
                                          uint32_t *causes);
 
 /**
+ * Gets the filter status.
+ *
+ * @param adc_ctrl An adc_ctrl handle.
+ * @param[out] status The current filter status.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_adc_ctrl_get_filter_status(const dif_adc_ctrl_t *adc_ctrl,
+                                            uint32_t *status);
+
+/**
  * Clears the cause(s) of a `debug_cable` IRQ.
  *
  * TODO(lowRISC/opentitan:#11354): future releases of the HW should hide the

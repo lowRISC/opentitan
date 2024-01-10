@@ -418,6 +418,17 @@ dif_result_t dif_adc_ctrl_irq_get_causes(const dif_adc_ctrl_t *adc_ctrl,
   return kDifOk;
 }
 
+dif_result_t dif_adc_ctrl_get_filter_status(const dif_adc_ctrl_t *adc_ctrl,
+                                            uint32_t *status) {
+  if (adc_ctrl == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+
+  *status = mmio_region_read32(adc_ctrl->base_addr,
+                               ADC_CTRL_FILTER_STATUS_REG_OFFSET);
+  return kDifOk;
+}
+
 dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
                                            uint32_t causes) {
   if (adc_ctrl == NULL || causes > kDifAdcCtrlIrqCauseAll) {
