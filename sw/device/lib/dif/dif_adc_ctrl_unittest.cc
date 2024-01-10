@@ -407,6 +407,21 @@ TEST_F(ResetFsmTest, Success) {
   EXPECT_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl_));
 }
 
+class FilterStatusTest : public AdcCtrlTest {};
+
+TEST_F(FilterStatusTest, NullArgs) {
+  uint32_t status;
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_filter_status(nullptr, &status));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_get_filter_status(&adc_ctrl_, nullptr));
+}
+
+TEST_F(FilterStatusTest, Success) {
+  uint32_t status;
+  EXPECT_READ32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0xFF);
+  EXPECT_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl_, &status));
+  EXPECT_EQ(status, 0xFF);
+}
+
 class IrqGetCausesTest : public AdcCtrlTest {};
 
 TEST_F(IrqGetCausesTest, NullArgs) {
