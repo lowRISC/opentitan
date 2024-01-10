@@ -312,6 +312,12 @@ module otbn_loop_controller
   assign prefetch_loop_end_addr_o  = next_loop_addr_info.loop_end;
   assign prefetch_loop_jump_addr_o = next_loop_addr_info.loop_start;
 
-  `ASSERT(NoLoopStackPushAndPop, !(loop_stack_push_req && loop_stack_pop))
-  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> !loop_stack_write)
+  // Check that an instruction that tries to cause a stack push and pop at the same time will be
+  // reported as a SW error.
+  `ASSERT(NoLoopStackPushAndPop, loop_stack_push_req && loop_stack_pop |-> sw_err_o)
+
+  // The stack counter shouldn't get decremented at the same time as we write to the top of the loop
+  // stack. This can only happen on a combined push and pop, which will cause a SW error (so the
+  // contents of the stack will no longer matter any more).
+  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> (!loop_stack_write | sw_err_o))
 endmodule
