@@ -471,6 +471,21 @@ cc_library(
 )
 
 cc_library(
+    name = "sysrst_ctrl_testutils",
+    srcs = ["sysrst_ctrl_testutils.c"],
+    hdrs = ["sysrst_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    visibility = ["//sw/device/tests:__pkg__"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "uart_testutils",
     srcs = ["uart_testutils.c"],
     hdrs = ["uart_testutils.h"],

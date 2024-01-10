@@ -4217,6 +4217,7 @@ opentitan_test(
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:sysrst_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
