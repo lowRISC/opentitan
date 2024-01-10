@@ -112,10 +112,88 @@ otp_json(
     ],
 )
 
+# Built from:
+# $ bazel run //sw/host/opentitantool -- rom-patch generate --patch second_rom_e2e_patch.hjson --key key_rsa.der --otp_size=8192
+# $ cat second_rom_e2e_patch.hjson
+# {
+#     patches: [
+#         {
+#             revision: 1
+#             base_addr: 0x10004000
+#             regions: [
+#                 {
+#                     // Patched code:
+#                     // 201b8: aad58413 [addi s0,a1,-1363 # baad <_stack_size+0x7aad>]
+#                     // 201bc: c91d     [beqz a0,201f2 <second_rom_test_main+0x4e> ] (if (rom_patch == 0))
+#                     // 201be: e2848513 [addi    a0,s1,-472]
+#                     //
+#                     // Patch:
+#                     // 201b8: aad58413 [addi s0,a1,-1363 # baad <_stack_size+0x7aad>]
+#                     // 201bc: e91d     [bnez a0,201f2 <second_rom_test_main+0x4e>] (if (rom_patch != 0))
+#                     // 201be: e2848513 [addi    a0,s1,-472]
+#                     match_addr: 0x000201b8
+#                     locked: true
+#                     patch_code: [
+#                         0xaad58413
+#                         0x8513e91d
+#                     ]
+#                 }
+#
+#                 {
+#                     // Patched code:
+#                     // 201c2: 2c8010ef [jal     ra,2148a <otp_read32>]
+#                     // 201c6: c515     [beqz    a0,201f2 <second_rom_test_main+0x4e>] (if (rom_patch == 0))
+#                     //
+#                     // Patch:
+#                     // 201c2: 2c8010ef [jal     ra,2148a <otp_read32>]
+#                     // 201c6: e515     [beqz    a0,201f2 <second_rom_test_main+0x4e>] (if (rom_patch != 0))
+#                     match_addr: 0x000201c4
+#                     locked: true
+#                     patch_code: [
+#                         0xe5152c80
+#                     ]
+#                 }
+#
+#                 {
+#                     // Patched code:
+#                     // 201d4: c511     [beqz    a0,201e0 <second_rom_test_main+0x3c>] (if (rom_patch == 0))
+#                     // 201d6: e2048513 [addi    a0,s1,-480]
+#                     //
+#                     // Patch:
+#                     // 201d4: e511     [bnez    a0,201e0 <second_rom_test_main+0x3c>] (if (rom_patch != 0))
+#                     // 201d6: e2048513 [addi    a0,s1,-480]
+#                     match_addr: 0x000201d4
+#                     locked: true
+#                     patch_code: [
+#                         0x8513e511
+#                     ]
+#                 }
+#             ]
+#         }
+#     ]
+# }
+otp_json(
+    name = "otp_json_second_rom_e2e_patch",
+    partitions = [
+        otp_partition(
+            name = "ROM_PATCH",
+            items = {
+                "ROM_PATCH_DATA": "86008728bb2c452a4aa55a0ad952bb711d7bf7f544da98df34434e160e904ae8c0998e0331afd6929aadb3568dc354958992116f16ab4e0e920dd392d16a93515989fb36b3659a5fda9075d2f83fe90bf6b071b0381f1ce4d772cfdc12faff00c89e1f5ac5661faad0b7c968bde445ae5a39b570c5c67573683784f4868d17ef28d4d17395548a3a3cd24dd07d6c173e31cadfff24772f9946c6c74c6b0a223efd19ce3bd6b0e94f82e96910d8da4592633e79e288dacc3fc4020d5bcaf4e8ef3c97b587352dd3b8fd004af97930e8d86ab20d906be8552cb17849adb464b54fc160b55428860a8cbdbbf0d5472564f5bbbcf9cd6a5250cdcb5d38e96089ee7e055d6d643f3a18777ca3f140c95701de0f42f3fcbb1bbb6c001c134b29e2b4f772c1a5ad700b230064c74d94de15f2252aa55da086dfdbe860534f733b8180c14e5655a56a85275f02022016113fa8ba84d92472ffdf235a909f155ede4d02efbf5dbe9f6fe82d02cdc0013de9171fd3d522383722d40175402053a9f23399bc8513e511e5152c808513e91daad58413000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000400c880201d410004008880201c410004000900201b80100a506",
+            },
+        ),
+    ],
+)
+
 otp_image(
     name = "otp_img_default",
     src = ":otp_json_default",
     visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "img_rma_second_rom_e2e_patch",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":otp_json_second_rom_e2e_patch"],
 )
 
 bitstream_splice(
@@ -249,6 +327,27 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:second_rom_linker_script",
         "//sw/device/lib/testing/test_rom:test_second_rom_lib",
+    ],
+)
+
+opentitan_functest(
+    name = "second_rom_e2e_patch",
+    srcs = ["second_rom_e2e_patch.c"],
+    targets = [
+        "dv",
+        "verilator",
+    ],
+    test_in_second_rom = True,
+    verilator = verilator_params(
+        timeout = "eternal",
+        otp = ":img_rma_second_rom_e2e_patch",
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/lib/testing/test_rom:second_rom_linker_script",
+        "//sw/device/lib/testing/test_rom:test_second_rom_lib",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
