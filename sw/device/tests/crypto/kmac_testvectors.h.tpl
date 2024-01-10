@@ -47,7 +47,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
   % if "key" in t:
         .key = {
             .config = {
-                .key_mode = ${"kKeyModeKmac" + str(t["security_str"])},
+                .key_mode = ${"kOtcryptoKeyModeKmac" + str(t["security_str"])},
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,
             },
