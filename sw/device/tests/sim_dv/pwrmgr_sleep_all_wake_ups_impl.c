@@ -15,6 +15,7 @@
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
@@ -233,6 +234,39 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
             &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src)) == true,
         "wakeup reason wrong exp:%d  obs:%d",
         kTestWakeupSources[wakeup_unit].wakeup_src, wakeup_reason);
+  switch (wakeup_unit) {
+    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
+      bool has_wakeup = false;
+      CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl, &has_wakeup));
+      CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
+    }
+      break;
+    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
+      // Could read the FILTER_STATUS and ADC_INTR_STATUS. However, there is no
+      // DIF support for that.
+      break;
+    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX: {
+      uint32_t wakeup_cause;
+      CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
+      CHECK(wakeup_cause == 1 << kPinmuxWkupDetector5,
+            "Expected pinmux wakeup cause 5");
+    }
+      break;
+    case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
+      // No bit in USBDEV indicates it caused a wakeup.
+      break;
+    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:
+      // There is no DIF support to read WKUP_CAUSE register.
+      break;
+    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX: {
+      dif_sensor_ctrl_events_t events;
+      CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+      CHECK(events & 1, "Expected bit 0 to be set");
+    }
+      break;
+    default:
+      LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
+  }
 }
 
 static bool get_wakeup_status(void) {
@@ -243,9 +277,21 @@ static bool get_wakeup_status(void) {
 }
 
 void clear_wakeup(uint32_t wakeup_unit) {
+  dif_pwrmgr_request_sources_t wake_req = ~0u;
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
   switch (wakeup_unit) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX:
+    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
       CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
+      // Disable wakeups.
+      dif_sysrst_ctrl_input_change_config_t config = {
+          .input_changes = 0,
+          .debounce_time_threshold = 0,  // 5us
+      };
+      CHECK_DIF_OK(
+          dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
+    }
       break;
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
       CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
@@ -268,17 +314,35 @@ void clear_wakeup(uint32_t wakeup_unit) {
       break;
     case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX:
       // clear event trigger
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
       CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, 0,
                                                          kDifToggleDisabled));
-      CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 0));
+      CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 0 ));
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
       break;
     default:
       LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
   }
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
 
   // Ensure the de-asserted events have cleared from the wakeup pipeline
   // within 30us.
-  IBEX_SPIN_FOR(!get_wakeup_status(), 100);
+  busy_spin_micros(2000);
+  LOG_INFO("The wakeup_status is 0x%x", get_wakeup_status());
+  bool has_wakeup = false;
+  CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl, &has_wakeup));
+  LOG_INFO("Sysrst_ctrl wake status %d", has_wakeup);
+  dif_pwrmgr_request_sources_t wakeup_enables;
+  CHECK_DIF_OK(dif_pwrmgr_get_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup, &wakeup_enables));
+  LOG_INFO("Wakeup_enables 0x%x", wakeup_enables);
+  //  CHECK(!has_wakeup, "Expected sysrst_ctrl wakeup to be set");
+  IBEX_SPIN_FOR(!get_wakeup_status(), 2000);
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 }
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,

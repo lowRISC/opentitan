@@ -19,22 +19,18 @@
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 /*
-  PWRMGR RANDOM SLEEP ALL WAKE UPS TEST
+  PWRMGR RANDOM SLEEP WAKE UP 5 TEST
 
   This test runs power manager wake up from normal or deep sleep mode by
   wake up inputs.
 
-  There are 6 wake up inputs.
-  0: sysrst_ctrl
-  1: adc_ctrl, only runnable in DV
-  2: pinmux
-  3: usb
-  4: aon_timer
+  It deals with wake up 5.
   5: sensor_ctrl
 
-  There are 10 cases to be tested. For each wake up this tests normal and
-  deep sleep in succession; for example, case 2 is adc_ctrl normal sleep and
-  case 3 is adc_ctrl deep sleep.
+  #1 is excluded in non-DV because it forces an internal signal.
+  #5 is excluded because sensor_ctrl is not in the aon domain.
+
+  For wake up 5 this tests normal and deep sleep in succession.
 
   This is tracked by a retention sram counter, given there are resets involved.
  */
@@ -76,7 +72,7 @@ bool test_main(void) {
   if (wakeup_reason.request_sources == 0) {
     // This is a POR. Prepare to start the test.
     CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
-    CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterCases));
+    CHECK_STATUS_OK(ret_sram_testutils_counter_set(kCounterCases, 10));
   } else if (wakeup_reason.types != kDifPwrmgrWakeupTypeRequest) {
     LOG_ERROR("Unexpected wakeup_reason.types 0x%x", wakeup_reason.types);
     return false;
@@ -100,7 +96,7 @@ bool test_main(void) {
     // There is a bug in the last wakeup (5), so this test skips that
     // and there is a separate test that triggers it.
     // TODO(lowrisc/opentitan#20798) Enable all wakeups once this is addressed.
-    if (wakeup_count >= 2 * (PWRMGR_PARAM_NUM_WKUPS - 1)) {
+    if (wakeup_count >= 2 * PWRMGR_PARAM_NUM_WKUPS) {
       return true;
     } else if (kDeviceType != kDeviceSimDV &&
                wakeup_count == 2 * PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
@@ -116,9 +112,17 @@ bool test_main(void) {
   deep_sleep = get_deep_sleep(wakeup_count);
   delay_n_clear(4);
   CHECK(!deep_sleep, "Should be normal sleep");
+  dif_pwrmgr_request_sources_t wake_req = ~0u;
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
   execute_test(wakeup_unit, deep_sleep);
   check_wakeup_reason(wakeup_unit);
   LOG_INFO("Woke up by source %d", wakeup_unit);
+  wake_req = ~0u;
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &wake_req));
+  LOG_INFO("Wake_status 0x%x", wake_req);
   clear_wakeup(wakeup_unit);
   // Prepare deep sleep. The check is done above where a reset is handled.
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
