@@ -26,6 +26,30 @@ class AonTimerTest : public Test, public MmioTest {
   dif_aon_timer_t aon_ = {.base_addr = dev().region()};
 };
 
+class WakeupStatusTest : public AonTimerTest {};
+
+TEST_F(WakeupStatusTest, GetNullArgs) {
+  bool cause;
+  EXPECT_DIF_BADARG(dif_aon_timer_get_wakeup_cause(nullptr, &cause));
+  EXPECT_DIF_BADARG(dif_aon_timer_get_wakeup_cause(&aon_, nullptr));
+}
+
+TEST_F(WakeupStatusTest, GetSuccess) {
+  bool cause = false;
+  EXPECT_READ32(AON_TIMER_WKUP_CAUSE_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_aon_timer_get_wakeup_cause(&aon_, &cause));
+  EXPECT_EQ(cause, true);
+}
+
+TEST_F(WakeupStatusTest, ClearNullArgs) {
+  EXPECT_DIF_BADARG(dif_aon_timer_clear_wakeup_cause(nullptr));
+}
+
+TEST_F(WakeupStatusTest, ClearSuccess) {
+  EXPECT_WRITE32(AON_TIMER_WKUP_CAUSE_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_));
+}
+
 class WakeupStartTest : public AonTimerTest {};
 
 TEST_F(WakeupStartTest, NullArgs) {

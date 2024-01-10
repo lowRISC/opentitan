@@ -72,6 +72,16 @@ dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_wakeup_is_enabled(const dif_aon_timer_t *aon,
                                              bool *is_enabled);
+/**
+ * Gets the wakeup cause.
+ *
+ * @param aon An Always-On Timer handle.
+ * @param[out] cause The current cause state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_get_wakeup_cause(const dif_aon_timer_t *aon,
+                                            bool *cause);
 
 /** Clear Always-On Timer wakeup cause
  *
