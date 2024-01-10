@@ -1655,6 +1655,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "flash_ctrl_mem_protection_test",
+    srcs = ["flash_ctrl_mem_protection_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        },
+    ),
+    verilator = new_verilator_params(timeout = "long"),
+    deps = [
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
     cw310 = hyper310_jtag_params(

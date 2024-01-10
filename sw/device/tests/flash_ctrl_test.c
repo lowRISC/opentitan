@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -32,8 +33,10 @@ static dif_flash_ctrl_state_t flash;
  */
 static void test_basic_io(void) {
   // The info partitions have no default access. Specifically set up a region.
+  // rom_ext locks the access of certain info pages.
+  // Select info page 5 to avoid uncessary conflict.
   dif_flash_ctrl_info_region_t info_region = {
-      .bank = 1, .partition_id = 0, .page = 0};
+      .bank = 1, .partition_id = 0, .page = 5};
   dif_flash_ctrl_region_properties_t region_properties = {
       .rd_en = kMultiBitBool4True,
       .prog_en = kMultiBitBool4True,
@@ -41,6 +44,7 @@ static void test_basic_io(void) {
       .scramble_en = kMultiBitBool4True,
       .ecc_en = kMultiBitBool4True,
       .high_endurance_en = kMultiBitBool4False};
+
   CHECK_DIF_OK(dif_flash_ctrl_set_info_region_properties(&flash, info_region,
                                                          region_properties));
   CHECK_DIF_OK(dif_flash_ctrl_set_info_region_enablement(&flash, info_region,
@@ -63,6 +67,9 @@ static void test_basic_io(void) {
 
   ptrdiff_t flash_bank_1_addr =
       (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
+  ptrdiff_t bank1_info5_addr =
+      flash_bank_1_addr + (ptrdiff_t)(FLASH_PAGE_SZ * 5);
+
   mmio_region_t flash_bank_1 = mmio_region_from_addr(
       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
 
@@ -71,14 +78,15 @@ static void test_basic_io(void) {
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
       &flash, (uint32_t)flash_bank_1_addr,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
+
   for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(
         ~mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t)));
   }
 
-  // Erasing flash info partition 0; this should turn one page to all ones.
+  // Erasing flash info partition 5; this should turn one page to all ones.
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
-      &flash, (uint32_t)flash_bank_1_addr,
+      &flash, (uint32_t)bank1_info5_addr,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeInfo));
 
   // Prepare an entire page of non-trivial data to program into flash.
@@ -115,18 +123,26 @@ static void test_basic_io(void) {
 
   // Similar check for info page.
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+      &flash, (uint32_t)bank1_info5_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeInfo, FLASH_UINT32_WORDS_PER_PAGE));
   CHECK_STATUS_OK(flash_ctrl_testutils_read(
-      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, output_page,
+      &flash, (uint32_t)bank1_info5_addr, /*partition_id=*/0, output_page,
       kDifFlashCtrlPartitionTypeInfo, FLASH_UINT32_WORDS_PER_PAGE,
       /*delay=*/0));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
-  // Set up default access for data partitions.
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  // If current platform uses sramble, you can't turn it off once you write your test
+  // with scrambled form.
+  // Add if / else to make sure not to revert scrambled region by default.
+  if (kBootStage == kBootStageOwner) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
+        /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
+  } else {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
+        /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  }
 
   // Perform similar test on the last page of the first bank.
   ptrdiff_t flash_bank_0_last_page_addr =
@@ -159,9 +175,18 @@ static void test_memory_protection(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Set up default access for data partitions.
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  // If current platform uses sramble, you can't turn it off once you write your test
+  // with scrambled form.
+  // Add if / else to make sure not to revert scrambled region by default.
+  if (kBootStage == kBootStageOwner) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
+        /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
+  } else {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
+        /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  }
 
   // A memory protection region representing the first page of the second bank.
   dif_flash_ctrl_region_properties_t protected_properties = {
@@ -196,7 +221,7 @@ static void test_memory_protection(void) {
   // Turn off flash access by default.
   CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+      /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
 
   // Enable protected region for access.
   CHECK_DIF_OK(
@@ -264,6 +289,5 @@ bool test_main(void) {
                                                         kDifToggleDisabled));
   CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
                                                         kDifToggleDisabled));
-
   return true;
 }
