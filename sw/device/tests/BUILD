@@ -4243,7 +4243,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
-        test_harness = "//sw/host/tests/chip/sysrst_ctrl",
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
