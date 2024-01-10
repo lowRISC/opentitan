@@ -2073,6 +2073,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_otp_image=OtpTypeCustom"]
     }
+    {
+      name: chip_sw_flash_ctrl_mem_protection
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:flash_ctrl_mem_protection_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
   ]
 
   // List of regressions.
