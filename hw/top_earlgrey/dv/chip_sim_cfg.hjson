@@ -1828,6 +1828,13 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000", "+do_random=1"]
     }
     {
+      name: chip_sw_pwrmgr_sleep_wake_5_bug
+      uvm_test_seq: "chip_sw_base_vseq"
+      sw_images: ["//sw/device/tests:pwrmgr_sleep_wake_5_bug_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+do_random=1"]
+    }
+    {
       name: chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up
       uvm_test_seq: "chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up_vseq"
       sw_images: ["//sw/device/tests:pwrmgr_sensor_ctrl_deep_sleep_wake_up:1:new_rules"]

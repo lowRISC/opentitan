@@ -28,7 +28,7 @@ static volatile top_earlgrey_plic_peripheral_t peripheral;
 static volatile bool interrupt_serviced;
 static volatile bool interrupt_failed;
 
-bool is_pwrmgr_irq_pending(void) {
+static bool is_pwrmgr_irq_pending(void) {
   bool status;
   CHECK_DIF_OK(dif_rv_plic_irq_is_pending(
       &plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup, &status));

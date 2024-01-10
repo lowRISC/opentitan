@@ -35,7 +35,7 @@ static dif_rstmgr_t rstmgr;
 /**
  * Initialize the peripherals used in this test.
  */
-void init_peripherals(void) {
+static void init_peripherals(void) {
   // Initialize pwrmgr.
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
