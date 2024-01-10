@@ -2590,7 +2590,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon = silicon_params(
@@ -2598,9 +2598,6 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
-    ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
     ),
     deps = [
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
