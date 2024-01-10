@@ -21,6 +21,7 @@
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static const uint32_t kPinmuxWkupDetector5 = 5;
+static const uint32_t kSensorCtrlEventIdx = 0;
 
 dif_adc_ctrl_t adc_ctrl;
 dif_aon_timer_t aon_timer;
@@ -146,8 +147,8 @@ static void prgm_aontimer_wakeup(void *dif) {
  * setup event trigger0
  */
 static void prgm_sensor_ctrl_wakeup(void *dif) {
-  CHECK_DIF_OK(
-      dif_sensor_ctrl_set_ast_event_trigger(dif, 0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(dif, kSensorCtrlEventIdx,
+                                                     kDifToggleEnabled));
 }
 
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
@@ -233,6 +234,50 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
             &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src)) == true,
         "wakeup reason wrong exp:%d  obs:%d",
         kTestWakeupSources[wakeup_unit].wakeup_src, wakeup_reason);
+  switch (wakeup_unit) {
+    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
+      bool has_wakeup = false;
+      CHECK_DIF_OK(
+          dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl, &has_wakeup));
+      CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
+    } break;
+    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX: {
+      uint32_t irq_causes = 0;
+      uint32_t filter_status = 0;
+      CHECK_DIF_OK(dif_adc_ctrl_irq_get_causes(&adc_ctrl, &irq_causes));
+      CHECK(irq_causes == (1 << kDifAdcCtrlFilter5),
+            "Expected bit %d set in irq causes", kDifAdcCtrlFilter5);
+      CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
+      CHECK(filter_status == (1 << kDifAdcCtrlFilter5),
+            "Expected bit %d set in irq causes", kDifAdcCtrlFilter5);
+    } break;
+    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX: {
+      uint32_t wakeup_cause;
+      CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
+      CHECK(wakeup_cause == 1 << kPinmuxWkupDetector5,
+            "Expected pinmux wakeup cause 5");
+    } break;
+    case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
+      // No bit in USBDEV indicates it caused a wakeup.
+      break;
+    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX: {
+      bool cause = false;
+      CHECK_DIF_OK(dif_aon_timer_get_wakeup_cause(&aon_timer, &cause));
+      CHECK(cause, "Expected aontimer wakeup cause to be enabled");
+    } break;
+    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX: {
+      dif_sensor_ctrl_events_t events;
+      dif_toggle_t enable;
+      CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
+          &sensor_ctrl, kSensorCtrlEventIdx, &enable));
+      CHECK(enable == kDifToggleEnabled, "Expected event trigger enabled");
+      CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+      CHECK(events & (1 << kSensorCtrlEventIdx), "Expected bit %d to be set",
+            kSensorCtrlEventIdx);
+    } break;
+    default:
+      LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
+  }
 }
 
 static bool get_wakeup_status(void) {
@@ -244,9 +289,16 @@ static bool get_wakeup_status(void) {
 
 void clear_wakeup(uint32_t wakeup_unit) {
   switch (wakeup_unit) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX:
+    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
       CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
-      break;
+      // Disable wakeups.
+      dif_sysrst_ctrl_input_change_config_t config = {
+          .input_changes = 0,
+          .debounce_time_threshold = 0,  // 5us
+      };
+      CHECK_DIF_OK(
+          dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
+    } break;
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
       CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
           &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
@@ -266,21 +318,35 @@ void clear_wakeup(uint32_t wakeup_unit) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
       CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
       break;
-    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX:
+    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX: {
       // clear event trigger
-      CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, 0,
-                                                         kDifToggleDisabled));
-      CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 0));
-      break;
+      CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
+          &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleDisabled));
+      CHECK_DIF_OK(
+          dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, kSensorCtrlEventIdx));
+      // For some reason bit 5 is also set. This is unexpected and needs
+      // clarification from the AST team.
+      // TODO(lowrisc/opentitan#20798) Update this once the issue is closed.
+      CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 5));
+      dif_toggle_t enable;
+      CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
+          &sensor_ctrl, kSensorCtrlEventIdx, &enable));
+      CHECK(enable == kDifToggleDisabled, "Expected event trigger disabled");
+      dif_sensor_ctrl_events_t events;
+      CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+      CHECK(events == 0, "EXpected recoverable events to be clear, got 0x%x",
+            events);
+    } break;
     default:
       LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
   }
 
   // Ensure the de-asserted events have cleared from the wakeup pipeline
-  // within 30us.
+  // within 100us.
   IBEX_SPIN_FOR(!get_wakeup_status(), 100);
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 }
+
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
                                   .hart_id = kTopEarlgreyPlicTargetIbex0};
 

@@ -33,9 +33,8 @@
   5: sensor_ctrl
 
   #1 is excluded in non-DV because it forces an internal signal.
-  #5 is excluded because sensor_ctrl is not in the aon domain.
 
-  There are 10 cases to be tested. For each wake up this tests the normal and
+  There are 10 cases to be tested. For each wake up this tests normal and
   deep sleep in succession; for example, case 2 is adc_ctrl normal sleep and
   case 3 is adc_ctrl deep sleep.
 
