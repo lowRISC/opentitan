@@ -1660,11 +1660,9 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
