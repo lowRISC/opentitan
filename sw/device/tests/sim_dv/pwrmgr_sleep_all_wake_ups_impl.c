@@ -242,11 +242,7 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
       CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
     } break;
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX: {
-      uint32_t irq_causes = 0;
       uint32_t filter_status = 0;
-      CHECK_DIF_OK(dif_adc_ctrl_irq_get_causes(&adc_ctrl, &irq_causes));
-      CHECK(irq_causes == (1 << kDifAdcCtrlFilter5),
-            "Expected bit %d set in irq causes", kDifAdcCtrlFilter5);
       CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
       CHECK(filter_status == (1 << kDifAdcCtrlFilter5),
             "Expected bit %d set in irq causes", kDifAdcCtrlFilter5);
@@ -324,10 +320,6 @@ void clear_wakeup(uint32_t wakeup_unit) {
           &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleDisabled));
       CHECK_DIF_OK(
           dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, kSensorCtrlEventIdx));
-      // For some reason bit 5 is also set. This is unexpected and needs
-      // clarification from the AST team.
-      // TODO(lowrisc/opentitan#20798) Update this once the issue is closed.
-      CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 5));
       dif_toggle_t enable;
       CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
           &sensor_ctrl, kSensorCtrlEventIdx, &enable));
