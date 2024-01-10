@@ -2722,6 +2722,53 @@ opentitan_test(
     ],
 )
 
+# This test reproduces a silicon failure, but passes in all other environments.
+# TODO(lowrisc/opentitan#20798)  Remove this test and extend
+# pwrmgr_random_sleep_all_wake_ups to cover all wakeups once this issue is
+# fixed.
+opentitan_test(
+    name = "pwrmgr_sleep_wake_5_bug_test",
+    srcs = ["pwrmgr_sleep_wake_5_bug_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    silicon = silicon_params(
+        tags = ["broken"],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
+    ],
+)
+
 opentitan_test(
     name = "pwrmgr_sensor_ctrl_deep_sleep_wake_up",
     srcs = ["pwrmgr_sensor_ctrl_deep_sleep_wake_up.c"],
