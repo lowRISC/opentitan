@@ -47,10 +47,17 @@ def args(p):
 % for p in helper.irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
+  csrng_index = irq_peripheral_names.index("csrng")
 %>\
+% if i == csrng_index:
+// TODO(lowrisc/opentitan#20747) Adjust csrng special handling once this is
+// fixed.
+static dif_${p.name}_t ${p.inst_name};
+% else:
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 static dif_${p.name}_t ${p.inst_name};
 #endif
+% endif
 
 % endfor
 static dif_rv_plic_t plic;
@@ -79,6 +86,13 @@ static volatile dif_${n}_irq_t ${n}_irq_serviced;
 #endif
 
 % endfor
+
+#if TEST_MIN_IRQ_PERIPHERAL <= ${csrng_index} < TEST_MAX_IRQ_PERIPHERAL
+static volatile bool allow_csrng_irq = true;
+#else
+static volatile bool allow_csrng_irq = false;
+#endif
+
 /**
  * Provides external IRQ handling for this test.
  *
@@ -98,45 +112,75 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_${top["name"]}_plic_peripheral_t peripheral = (top_${top["name"]}_plic_peripheral_t)
       top_${top["name"]}_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == peripheral_expected,
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        peripheral_expected, peripheral);
+  // TODO(lowrisc/opentitan#20747) Adjust code once this issue is fixed.
+  if (allow_csrng_irq && kBootStage == kBootStageOwner &&
+      peripheral != peripheral_expected &&
+      peripheral == kTopEarlgreyPlicPeripheralCsrng) {
+    dif_csrng_irq_t irq = (dif_csrng_irq_t)(
+        plic_irq_id -
+        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
 
-  switch (peripheral) {
+    dif_csrng_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
+    CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
+          "Only csrng IRQ %d expected to fire. Actual interrupt status = %x",
+          irq, snapshot);
+
+    // TODO: Check Interrupt type then clear INTR_TEST if needed.
+    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+  } else {
+    CHECK(peripheral == peripheral_expected,
+          "Interrupt from incorrect peripheral: exp = %d, obs = %d",
+          peripheral_expected, peripheral);
+
+    switch (peripheral) {
     % for p in helper.irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
-    case ${p.plic_name}: {
-      dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)${p.plic_start_irq});
-      CHECK(irq == ${p.name}_irq_expected,
-            "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
-            ${p.name}_irq_expected, irq);
-      ${p.name}_irq_serviced = irq;
+      case ${p.plic_name}: {
+        dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)${p.plic_start_irq});
+      % if i == irq_peripheral_names.index("csrng"):
+        // This special handling of CSRNG is because it is configured
+        // to constantly generate interrupts. There may be better ways
+        // to configure the entropy complex so it is less noisy.
+        // TODO(lowrisc/opentitan#20747) Adjust code once this is fixed.
+        if (kBootStage != kBootStageOwner) {
+          CHECK(irq == ${p.name}_irq_expected,
+                "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
+                ${p.name}_irq_expected, irq);
+        }
+      % else:
+        CHECK(irq == ${p.name}_irq_expected,
+              "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
+              ${p.name}_irq_expected, irq);
+      % endif
+        ${p.name}_irq_serviced = irq;
 
-      dif_${p.name}_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_${p.name}_irq_get_state(${args(p)}, &snapshot));
-      CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)(1 << irq),
-            "Only ${p.inst_name} IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_${p.name}_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_${p.name}_irq_get_state(${args(p)}, &snapshot));
+        CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)(1 << irq),
+              "Only ${p.inst_name} IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
-      CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
+        CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
+        break;
+      }
 #endif
 
     % endfor
-    default:
-      LOG_FATAL("ISR is not implemented!");
-      test_status_set(kTestStatusFailed);
+      default:
+        LOG_FATAL("ISR is not implemented!");
+        test_status_set(kTestStatusFailed);
+    }
   }
-
   // Complete the IRQ at PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
 }
