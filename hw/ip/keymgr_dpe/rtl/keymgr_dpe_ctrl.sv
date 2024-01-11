@@ -179,7 +179,7 @@ module keymgr_dpe_ctrl
   logic random_ack;
 
   // wipe and initialize take precedence
-  assign update_sel = wipe_req                         ? SlotQuickWipeAll   :
+  assign update_sel = wipe_req                         ? SlotWipeAll        :
                       (state_q == StCtrlDpeRandom)     ? SlotDestRandomize  :
                       init_o & en_i & root_key_i.valid ? SlotLoadRoot       : op_update_sel;
 
@@ -187,7 +187,7 @@ module keymgr_dpe_ctrl
   // when in invalid state, always update.
   // when in disabled state, always update unless a fault is encountered.
   // op_update marks the clock cycle where KMAC returns the digest. It is the time to latch the key.
-  assign op_update_sel = op_update & op_fault_err               ? SlotQuickWipeAll :
+  assign op_update_sel = op_update & op_fault_err               ? SlotWipeAll      :
                          op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle   :
                          op_update & adv_req                    ? SlotLoadFromKmac :
                          op_update & erase_req                  ? SlotErase        :
@@ -245,7 +245,7 @@ module keymgr_dpe_ctrl
   assign active_slot_policy     = active_key_slot_o.key_policy;
 
   assign data_valid_o = op_ack & gen_key_op & ~invalid_op;
-  assign wipe_key_o = update_sel == SlotQuickWipeAll;
+  assign wipe_key_o = update_sel == SlotWipeAll;
 
   logic destination_slot_valid;
   assign destination_slot_valid = key_slots_q[slot_dst_sel_i].valid;
@@ -297,7 +297,7 @@ module keymgr_dpe_ctrl
       // 1) Remove DPE contexts that should not be accessible in the later program flow
       // 2) Remove DPE contexts, so that the hardware keymgr slot can be used to derive another DPE
       // context through advance call.
-      // This is different than `SlotQuickWipeAll`, which removes all secrets inside keymgr_DPE when
+      // This is different than `SlotWipeAll`, which removes all secrets inside keymgr_DPE when
       // a fault is observed.
       SlotErase: begin
         for (int j = 0; j < Shares; j++) begin
@@ -307,9 +307,9 @@ module keymgr_dpe_ctrl
         end
       end
 
-      // `SlotQuickWipeAll` is used in a panic/terminal state where keymgr_dpe won't be reused until
+      // `SlotWipeAll` is used in a panic/terminal state where keymgr_dpe won't be reused until
       // next reboot. This is triggered by detection of a fault attack.
-      SlotQuickWipeAll: begin
+      SlotWipeAll: begin
         for (int i = 0; i < DpeNumSlots; i++) begin
           // Note that '0 for `key_policy` is a safe default, as it is the most restrictive policy
           key_slots_d[i] = '0;
