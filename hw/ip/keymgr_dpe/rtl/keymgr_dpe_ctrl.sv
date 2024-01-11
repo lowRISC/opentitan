@@ -89,11 +89,22 @@ module keymgr_dpe_ctrl
 
   keymgr_dpe_working_state_e state_q, state_d;
   // TODO(#384): Revisit SW-visible state mapping
-  assign working_state_o = (state_q inside {StCtrlDpeReset, StCtrlDpeEntropyReseed,
-                             StCtrlDpeRandom, StCtrlDpeRootKey}) ? StWorkDpeReset :
-                           (state_q == StCtrlDpeAvailable) ? StWorkDpeAvailable :
-                           (state_q inside {StCtrlDpeWipe, StCtrlDpeDisabled}) ? StWorkDpeDisabled :
-                           StWorkDpeInvalid;
+  always_comb begin
+    unique case (state_q)
+      StCtrlDpeReset,
+      StCtrlDpeEntropyReseed,
+      StCtrlDpeRandom,
+      StCtrlDpeRootKey:   working_state_o = StWorkDpeReset;
+
+      StCtrlDpeAvailable: working_state_o = StWorkDpeAvailable;
+
+      StCtrlDpeWipe,
+      StCtrlDpeDisabling,
+      StCtrlDpeDisabled:  working_state_o = StWorkDpeDisabled;
+
+      default:            working_state_o = StWorkDpeInvalid;
+    endcase
+  end
 
   logic [EntropyRndWidth-1:0] cnt;
 
@@ -134,10 +145,11 @@ module keymgr_dpe_ctrl
   logic fsm_at_disabled;
   logic fsm_at_invalid;
 
-  logic adv_req, gen_req, erase_req;
+  logic adv_req, gen_req, erase_req, dis_req;
   assign adv_req   = op_req & (op_i == OpDpeAdvance);
   assign gen_req   = op_req & gen_key_op;
   assign erase_req = op_req & (op_i == OpDpeErase);
+  assign dis_req   = op_req & (op_i == OpDpeDisable);
 
   ///////////////////////////
   //  interaction between operation fsm and software
@@ -188,6 +200,7 @@ module keymgr_dpe_ctrl
   // when in disabled state, always update unless a fault is encountered.
   // op_update marks the clock cycle where KMAC returns the digest. It is the time to latch the key.
   assign op_update_sel = op_update & op_fault_err               ? SlotWipeAll      :
+                         op_update & dis_req                    ? SlotWipeAll      :
                          op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle   :
                          op_update & adv_req                    ? SlotLoadFromKmac :
                          op_update & erase_req                  ? SlotErase        :
@@ -307,8 +320,9 @@ module keymgr_dpe_ctrl
         end
       end
 
-      // `SlotWipeAll` is used in a panic/terminal state where keymgr_dpe won't be reused until
-      // next reboot. This is triggered by detection of a fault attack.
+      // `SlotWipeAll` overwrites all slots with random bits from the entropy interface. This is
+      // used in a panic/terminal state or during SW-initiated disablement where keymgr_dpe's slots
+      // will not be reused until the next reboot.
       SlotWipeAll: begin
         for (int i = 0; i < DpeNumSlots; i++) begin
           // Note that '0 for `key_policy` is a safe default, as it is the most restrictive policy
@@ -480,7 +494,7 @@ module keymgr_dpe_ctrl
         if (!en_i | inv_state) begin
           state_d = StCtrlDpeWipe;
         end else if (disable_cmd) begin
-          state_d = StCtrlDpeDisabled;
+          state_d = StCtrlDpeDisabling;
         end
       end
 
@@ -498,6 +512,11 @@ module keymgr_dpe_ctrl
         invalid_op = op_start_i;
 
         state_d = StCtrlDpeInvalid;
+      end
+
+      StCtrlDpeDisabling: begin
+        op_req = op_start_i;
+        state_d = StCtrlDpeDisabled;
       end
 
       // TODO(#384): Revisit allowing transactions during Disabled and Invalid.
@@ -558,6 +577,7 @@ module keymgr_dpe_ctrl
     .adv_req_i(adv_req),
     .gen_req_i(gen_req),
     .erase_req_i(erase_req),
+    .dis_req_i(dis_req),
     .op_ack_o(op_ack),
     .op_busy_o(op_busy),
     .op_update_o(op_update),
