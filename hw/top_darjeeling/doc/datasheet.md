@@ -99,7 +99,7 @@ The following table provides a more detailed summary of the supported features:
             <li>1x SPI device</li>
             <li>9x DOE Mailboxes</li>
             <li>1x JTAG Mailbox</li>
-            <li>1x DMA Controller</li>
+            <li>1x DMA Controller with support for inline hashing of transferred data with SHA-256, SHA-384, or SHA-512</li>
             <li>1x SoC Proxy module for external alerts and interrupt requests</li>
           </ul>
         </li>
