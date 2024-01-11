@@ -70,7 +70,7 @@ class edn_err_vseq extends edn_base_vseq;
   // a chance of 100 - `await_pct` percent.
   task await_random_ack_sm_state(int timeout_clks = 1_000, int await_pct = 90);
     string state_path;
-    logic [8:0] exp_state;
+    state_ack_e exp_state;
     state_path = cfg.edn_vif.sm_err_path("edn_ack_sm", endpoint_port);
 
     if ($urandom_range(100, 1) > await_pct) begin
@@ -80,19 +80,19 @@ class edn_err_vseq extends edn_base_vseq;
 
     // TODO(#18968): The FSM states below should not be hardcoded here; instead, they should be
     // defined in a package (which they currently aren't) and imported from there.
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {9'b110001110,   // EndPointClear
-                                                                    9'b011101011,   // DataWait
-                                                                    9'b000100101};) // AckPls
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {EndPointClear,
+                                                                    DataWait,
+                                                                    AckPls};)
 
     `uvm_info(`gfn, $sformatf("Waiting for ack_sm[%0d] to reach state %09b",
                               endpoint_port, exp_state), UVM_HIGH)
     `DV_SPINWAIT_EXIT(
       forever begin
         uvm_hdl_data_t val;
-        state_e act_state;
+        state_ack_e act_state;
         cfg.clk_rst_vif.wait_n_clks(1);
         `DV_CHECK(uvm_hdl_read(state_path, val))
-        act_state = state_e'(val);
+        act_state = state_ack_e'(val);
         if (act_state == exp_state) break;
       end
       `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH),
