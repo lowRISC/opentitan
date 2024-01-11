@@ -25,8 +25,8 @@ package keymgr_dpe_pkg;
   } keymgr_dpe_ops_e;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 8 -n 10 \
-  //      -s 4101887575 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 9 -n 10 \
+  //      -s 3359281180 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -35,28 +35,29 @@ package keymgr_dpe_pkg;
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (50.00%)
-  //  6: |||||||||||||| (35.71%)
-  //  7: || (7.14%)
-  //  8: || (7.14%)
+  //  5: |||||||||||||||||||| (52.78%)
+  //  6: ||||||||||||||| (41.67%)
+  //  7: | (2.78%)
+  //  8: | (2.78%)
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 8
-  // Minimum Hamming weight: 2
+  // Minimum Hamming weight: 3
   // Maximum Hamming weight: 8
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StCtrlDpeReset          = 10'b1001010101,
-    StCtrlDpeEntropyReseed  = 10'b0100000100,
-    StCtrlDpeRandom         = 10'b0010110011,
-    StCtrlDpeRootKey        = 10'b1111110110,
-    StCtrlDpeAvailable      = 10'b0111101000,
-    StCtrlDpeWipe           = 10'b0001001011,
-    StCtrlDpeInvalid        = 10'b1100111001,
-    StCtrlDpeDisabled       = 10'b1010001110
+    StCtrlDpeReset         = 10'b1000011111,
+    StCtrlDpeEntropyReseed = 10'b1111000011,
+    StCtrlDpeRandom        = 10'b0001110010,
+    StCtrlDpeRootKey       = 10'b0110101010,
+    StCtrlDpeAvailable     = 10'b0111111101,
+    StCtrlDpeWipe          = 10'b0001000101,
+    StCtrlDpeDisabling     = 10'b1010110001,
+    StCtrlDpeDisabled      = 10'b1100100100,
+    StCtrlDpeInvalid       = 10'b1101011000
   } keymgr_dpe_working_state_e;
 
   // Enumeration for working state exposed to software

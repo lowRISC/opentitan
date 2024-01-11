@@ -17,6 +17,7 @@ module keymgr_dpe_op_state_ctrl
   input adv_req_i,
   input gen_req_i,
   input erase_req_i,
+  input dis_req_i,
 
   // `op_ack_o` signals to the top module that the requested operation is completed
   output logic op_ack_o,
@@ -32,12 +33,35 @@ module keymgr_dpe_op_state_ctrl
 
 );
 
-  localparam int OpStateWidth = 8;
-  typedef enum logic [OpStateWidth-1:0] {
-    StIdle   = 8'b10010101,
-    StAdv    = 8'b00101000,
-    StErase  = 8'b01000011,
-    StWait   = 8'b11111110
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
+  //      -s 1155716906 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (60.00%)
+  //  6: ||||||||||||| (40.00%)
+  //  7: --
+  //  8: --
+  //  9: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidth = 9;
+  typedef enum logic [StateWidth-1:0] {
+    StIdle  = 9'b011001110,
+    StAdv   = 9'b010010011,
+    StErase = 9'b101011001,
+    StWait  = 9'b110100000,
+    StDis   = 9'b000101101
   } state_e;
 
   state_e state_q, state_d;
@@ -60,7 +84,9 @@ module keymgr_dpe_op_state_ctrl
 
     unique case (state_q)
       StIdle: begin
-        if (adv_req_i) begin
+        if (dis_req_i) begin
+          state_d = StDis;
+        end else if (adv_req_i) begin
           state_d = StAdv;
         end else if (gen_req_i) begin
           state_d = StWait;
@@ -69,10 +95,12 @@ module keymgr_dpe_op_state_ctrl
         end
       end
 
-      // Erasing happens in a single clock cycle in keymgr slot MUX of ctrl, therefore:
+      // Erasing and disabling happens in a single clock cycle in keymgr slot MUX of ctrl,
+      // therefore:
       // `op_update_o` signal is used as input to MUX (so that MUX is activated to update the slot)
       // `op_ack_o` signal is used to communicate successful completion of command
-      StErase:begin
+      StErase,
+      StDis: begin
         op_ack_o = 1'b1;
         op_update_o = 1'b1;
         state_d = StIdle;
