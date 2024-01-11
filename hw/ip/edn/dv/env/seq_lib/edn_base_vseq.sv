@@ -155,7 +155,7 @@ class edn_base_vseq extends cip_base_vseq #(
   virtual task wr_cmd(edn_env_pkg::cmd_type_e cmd_type, csrng_pkg::acmd_e acmd = csrng_pkg::INV,
                       bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
                       bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0,
-                      edn_env_pkg::hw_req_mode_e mode);
+                      edn_env_pkg::hw_req_mode_e mode, bit wait_for_ack = 1);
 
     if (!additional_data) begin
       cov_vif.cg_cs_cmds_sample(.acmd(acmd), .clen(clen), .flags(flags),
@@ -202,7 +202,7 @@ class edn_base_vseq extends cip_base_vseq #(
             additional_data = clen;
           end
         end
-        if (!additional_data && !cfg.abort_sw_cmd) begin
+        if (!additional_data && !cfg.abort_sw_cmd && wait_for_ack) begin
           wait_cmd_req_done();
         end
       end
