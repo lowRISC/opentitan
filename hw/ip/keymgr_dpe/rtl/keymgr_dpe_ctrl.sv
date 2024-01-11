@@ -199,11 +199,11 @@ module keymgr_dpe_ctrl
   // when in invalid state, always update.
   // when in disabled state, always update unless a fault is encountered.
   // op_update marks the clock cycle where KMAC returns the digest. It is the time to latch the key.
-  assign op_update_sel = op_update & op_fault_err               ? SlotWipeAll      :
-                         op_update & dis_req                    ? SlotWipeAll      :
-                         op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle   :
-                         op_update & adv_req                    ? SlotLoadFromKmac :
-                         op_update & erase_req                  ? SlotErase        :
+  assign op_update_sel = op_update & op_fault_err               ? SlotWipeAll          :
+                         op_update & dis_req                    ? SlotWipeInternalOnly :
+                         op_update & (op_err | fsm_at_disabled) ? SlotUpdateIdle       :
+                         op_update & adv_req                    ? SlotLoadFromKmac     :
+                         op_update & erase_req                  ? SlotErase            :
                          SlotUpdateIdle;
 
   ///////////////////////////
@@ -320,10 +320,12 @@ module keymgr_dpe_ctrl
         end
       end
 
-      // `SlotWipeAll` overwrites all slots with random bits from the entropy interface. This is
-      // used in a panic/terminal state or during SW-initiated disablement where keymgr_dpe's slots
-      // will not be reused until the next reboot.
-      SlotWipeAll: begin
+      // `SlotWipeAll` and `SlotWipeInternalOnly` overwrite all internal key slots with random bits
+      // from the entropy interface. The former is used in a panic/terminal state; the latter is
+      // used during SW-initiated disablement. (`SlotWipeAll` additionally wipes keys in the
+      // sideload interfaces, but that is outside the scope of this mux.)
+      SlotWipeAll,
+      SlotWipeInternalOnly: begin
         for (int i = 0; i < DpeNumSlots; i++) begin
           // Note that '0 for `key_policy` is a safe default, as it is the most restrictive policy
           key_slots_d[i] = '0;

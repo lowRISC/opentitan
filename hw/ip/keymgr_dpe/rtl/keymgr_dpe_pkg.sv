@@ -90,6 +90,7 @@ package keymgr_dpe_pkg;
     SlotLoadRoot,
     SlotLoadFromKmac,
     SlotErase,
+    SlotWipeInternalOnly,
     SlotWipeAll
   } keymgr_dpe_key_update_e;
 
