@@ -115,6 +115,15 @@ package edn_env_pkg;
     fifo_state_error = 2
   } which_fifo_err_e;
 
+  typedef enum logic [8:0] {
+    Disabled      = 9'b100110010, // Disabled
+    EndPointClear = 9'b110001110, // Clear out end point before beginning
+    AckIdle       = 9'b001011100, // idle
+    DataWait      = 9'b011101011, // wait for data to return
+    AckPls        = 9'b000100101, // signal ack to endpoint
+    AckError      = 9'b111010001  // illegal state reached and hang
+  } state_ack_e;
+
   // package sources
   `include "edn_env_cfg.sv"
   `include "edn_env_cov.sv"
