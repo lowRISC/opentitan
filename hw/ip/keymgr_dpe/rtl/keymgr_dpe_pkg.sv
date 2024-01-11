@@ -89,7 +89,7 @@ package keymgr_dpe_pkg;
     SlotLoadRoot,
     SlotLoadFromKmac,
     SlotErase,
-    SlotQuickWipeAll
+    SlotWipeAll
   } keymgr_dpe_key_update_e;
 
   localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
