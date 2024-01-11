@@ -13,8 +13,8 @@ from Crypto.Util.asn1 import DerSequence
 
 # Mapping from the curve names used by Wycheproof to those used by cryptotest
 EC_NAME_MAPPING = {
-    "secp256k1": "p-256",
-    "secp384r1": "p-384",
+    "secp256k1": "p256",
+    "secp384r1": "p384",
 }
 
 
