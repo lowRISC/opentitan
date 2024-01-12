@@ -90,9 +90,9 @@ typedef struct otcrypto_aes_gcm_context {
  * Get the number of blocks needed for the plaintext length and padding mode.
  *
  * This returns the size of the padded plaintext, which is the same as the
- * ciphertext size. Returns `kOtcryptoStatusBadArgs` if the padding mode and
- * length are incompatible (for instance, if the padding mode is "no padding"
- * but the input length is not a multiple of the AES block size).
+ * ciphertext size. Returns `kOtcryptoStatusValueBadArgs` if the padding mode
+ * and length are incompatible (for instance, if the padding mode is "no
+ * padding" but the input length is not a multiple of the AES block size).
  *
  * @param plaintext_len Plaintext data length in bytes.
  * @param aes_padding Padding scheme to be used for the data.

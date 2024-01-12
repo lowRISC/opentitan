@@ -63,7 +63,7 @@ otcrypto_status_t otcrypto_kdf_ctr(
  *
  * HKDF is defined in IETF RFC 5869 and is based on HMAC. The HMAC hash
  * function is determined by the mode of the key derivation key, e.g. the key
- * mode kOtcryptoKeyModeHmacSha256 results in HMAC with SHA-256. The key mode
+ * mode `kOtcryptoKeyModeHmacSha256` results in HMAC with SHA-256. The key mode
  * for the output pseudo-random key (PRK) should match the key mode for the
  * input key derivation key.
  *

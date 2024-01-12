@@ -46,7 +46,7 @@ status_t rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
       return OTCRYPTO_RECOV_ERR;
     }
     // Error code may be OK or BAD_ARGS, but other errors indicate a problem.
-    if (!status_ok(err) && err.value != kOtcryptoStatusBadArgs) {
+    if (!status_ok(err) && err.value != kOtcryptoStatusValueBadArgs) {
       LOG_ERROR("Unexpected error on invalid signature: %r.", err);
       return err;
     }

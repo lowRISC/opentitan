@@ -59,18 +59,18 @@ typedef status_t otcrypto_status_t;
  */
 typedef enum otcrypto_status_value {
   // Status is OK; no errors.
-  kOtcryptoStatusOk = (int32_t)0x739,
+  kOtcryptoStatusValueOk = (int32_t)0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kOtcryptoStatusBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
+  kOtcryptoStatusValueBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
   // Error after which it is OK to retry (e.g. timeout).
-  kOtcryptoStatusInternalError = (int32_t)0x80005340 | kAborted,
+  kOtcryptoStatusValueInternalError = (int32_t)0x80005340 | kAborted,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
+  kOtcryptoStatusValueFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
   // An asynchronous operation is still in progress.
-  kOtcryptoStatusAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
+  kOtcryptoStatusValueAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kOtcryptoStatusNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
+  kOtcryptoStatusValueNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
 } otcrypto_status_value_t;
 
 /**
