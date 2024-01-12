@@ -12,12 +12,15 @@ use std::time::Duration;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
+
+mod sysrst_ctrl;
+
+use sysrst_ctrl::{Config, setup_pins, set_pins};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -33,16 +36,6 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-struct Config {
-    // List to the IO names of the transport, the order should match the pin
-    // values in `kTestExpected` on the device C code: the ith item corresponds
-    // to the i-th bit.
-    pins: Vec<&'static str>,
-    // If true, the pin will be setup in open drain mode (with a pullup), otherwise
-    // in push-pull mode. The order must match the one in pins.
-    open_drain: Vec<bool>,
-}
-
 static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
     collection! {
         "hyper310" => Config {
@@ -51,36 +44,6 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
         },
     }
 });
-
-/// Configure earlgrey and debugger pins.
-fn setup_pins(transport: &TransportWrapper, config: &Config) -> Result<()> {
-    log::info!("Configuring transport GPIOs");
-    // Since the EC reset and flash WP pins are open drain, configure those hyperdebug pins as
-    // open drain with pullup.
-    assert_eq!(config.pins.len(), config.open_drain.len());
-    for (pin,od) in std::iter::zip(&config.pins, &config.open_drain) {
-        log::info!("pin {}: {}", pin, od);
-        if *od {
-            transport.gpio_pin(pin)?.set_mode(PinMode::OpenDrain)?;
-            transport.gpio_pin(pin)?.set_pull_mode(PullMode::PullUp)?;
-        }
-        else {
-            transport.gpio_pin(pin)?.set_mode(PinMode::PushPull)?;
-        }
-    }
-    Ok(())
-}
-
-fn set_pins(transport: &TransportWrapper, config: &Config, values: u8) -> Result<()> {
-    log::info!("Set pins to {:b}", values);
-    // Set pins on the transport.
-    for (i, pin) in config.pins.iter().enumerate() {
-        transport
-            .gpio_pin(pin)?
-            .write(((values >> i) & 0b1) == 0b1)?;
-    }
-    Ok(())
-}
 
 fn chip_sw_sysrst_ctrl_input(
     opts: &Opts,
