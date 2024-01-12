@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
-        url = "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
-        sha256 = "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
+        strip_prefix = "tock-d0042ffb83330d6d874471e0b06cc26591844ece",
+        url = "https://github.com/tock/tock/archive/d0042ffb83330d6d874471e0b06cc26591844ece.tar.gz",
+        sha256 = "cea19af8e364f991e93c8062e776aded3b4a61127d336a3a2eab1b4d6e523549",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
@@ -152,9 +152,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "libtock",
         local = libtock,
-        strip_prefix = "libtock-rs-a2c6ad80648e3ba073e7433b4330706df052a6ae",
-        url = "https://github.com/tock/libtock-rs/archive/a2c6ad80648e3ba073e7433b4330706df052a6ae.tar.gz",
-        sha256 = "888d1925cd760e818385d13187286d6b87f763c548a4dc1bb26e55786dc95636",
+        strip_prefix = "libtock-rs-75c92fc92c2ee3d8dbbbb288a2521837e069e0be",
+        url = "https://github.com/tock/libtock-rs/archive/75c92fc92c2ee3d8dbbbb288a2521837e069e0be.tar.gz",
+        sha256 = "0c56524b2534313404f600c24328307c565f61621d83ae32ba68ea9174863614",
         additional_files_content = {
             "BUILD": crate_build(
                 name = "libtock",
@@ -167,10 +167,12 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "//apis/buzzer",
                     "//apis/console",
                     "//apis/gpio",
+                    "//apis/i2c_master_slave",
                     "//apis/leds",
                     "//apis/low_level_debug",
                     "//apis/ninedof",
                     "//apis/proximity",
+                    "//apis/rng",
                     "//apis/sound_pressure",
                     "//apis/temperature",
                     "//panic_handlers/debug_panic",
@@ -218,6 +220,11 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
+            "apis/i2c_master_slave/BUILD": crate_build(
+                name = "i2c_master_slave",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
             "apis/leds/BUILD": crate_build(
                 name = "leds",
                 crate_name = "libtock_{name}",
@@ -238,6 +245,11 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
             ),
             "apis/proximity/BUILD": crate_build(
                 name = "proximity",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/rng/BUILD": crate_build(
+                name = "rng",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),

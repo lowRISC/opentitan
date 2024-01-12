@@ -36,6 +36,7 @@ rust_binary(
         "src/io.rs",
         "src/main.rs",
         "src/otbn.rs",
+        "src/pinmux_layout.rs",
     ],
     rustc_flags = [
         "-g",
