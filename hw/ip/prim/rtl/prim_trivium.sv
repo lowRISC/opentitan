@@ -58,10 +58,12 @@
 
 module prim_trivium import prim_trivium_pkg::*;
 #(
-  parameter bit          BiviumVariant = 0,     // 0: Trivium, 1: Bivium
-  parameter int unsigned OutputWidth = 64,      // Number of output bits generated per update.
-  parameter bit          LockupProtection = 1,  // Upon entering an all zero state, 1: restore to
-                                                // the default seed, or 0: keep the all zero state.
+  parameter bit          BiviumVariant = 0,          // 0: Trivium, 1: Bivium
+  parameter int unsigned OutputWidth = 64,           // Number of output bits generated per update.
+  parameter bit          StrictLockupProtection = 1, // Upon entering an all zero state, 1: always
+                                                     // restore to the default seed, or 0: allow
+                                                     // to keep the all zero state if requested by
+                                                     // allow_lockup_i.
   parameter seed_type_e  SeedType = SeedTypeStateFull, // Reseeding inteface selection, see
                                                        // prim_trivium_pkg.sv for possible values.
   parameter int unsigned PartialSeedWidth = PartialSeedWidthDefault,
@@ -78,6 +80,9 @@ module prim_trivium import prim_trivium_pkg::*;
   input logic rst_ni,
 
   input  logic                        en_i,                 // Update the primitive.
+  input  logic                        allow_lockup_i,       // Allow locking up in all zero state.
+                                                            // Only taken into account if
+                                                            // LockupParameter = 0
   input  logic                        seed_en_i,            // Start reseeding (pulse or level).
   output logic                        seed_done_o,          // Reseeding is done (pulse).
   output logic                        seed_req_o,           // Seed REQ handshake signal
@@ -90,8 +95,9 @@ module prim_trivium import prim_trivium_pkg::*;
   output logic [OutputWidth-1:0] key_o, // Key stream output
   output logic                   err_o  // The primitive entered an all zero state and may have
                                         // locked up or entered the default state defined by
-                                        // RndCnstTriviumLfsrSeed depending on the LockupProtection
-                                        // parameter.
+                                        // RndCnstTriviumLfsrSeed depending on the
+                                        // StrictLockupProtection parameter and the allow_lockup_i
+                                        // signal.
 );
 
   localparam int unsigned LastStatePartFractional = StateWidth % PartialSeedWidth != 0 ? 1 : 0;
@@ -108,7 +114,7 @@ module prim_trivium import prim_trivium_pkg::*;
   logic update, update_init, wr_en_seed;
   logic [StateIdxWidth-1:0] state_idx_d, state_idx_q;
   logic last_state_part;
-  logic lockup;
+  logic lockup, restore;
 
   assign update = en_i | update_init;
   assign wr_en_seed = seed_req_o & seed_ack_i;
@@ -175,12 +181,14 @@ module prim_trivium import prim_trivium_pkg::*;
   // State register and updating //
   /////////////////////////////////
 
-  // The lockup protection is optional, as it may be required to put the primitive into an all zero
-  // state, e.g., to switch off masking countermeasures for analysis if the primitive is used for
-  // generating masks. However, the err_o bit always signals this condition to the outside.
-  assign state_d = (LockupProtection && lockup) ? StateSeed    :
-                                    wr_en_seed  ? state_seed   :
-                                    update      ? state_update : state_q;
+  // The lockup protection can optionally be disabled at run time. This may be required to put the
+  // primitive into an all zero state, e.g., to switch off masking countermeasures for analysis if
+  // the primitive is used for generating masks. However, the err_o bit always signals this
+  // condition to the outside.
+  assign restore = lockup & (StrictLockupProtection | ~allow_lockup_i);
+  assign state_d = restore     ? StateSeed    :
+                   wr_en_seed  ? state_seed   :
+                   update      ? state_update : state_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : state_reg
     if (!rst_ni) begin
