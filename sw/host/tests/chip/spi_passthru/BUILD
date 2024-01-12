@@ -17,6 +17,7 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:object",
         "@crate_index//:serde_json",
     ],
 )

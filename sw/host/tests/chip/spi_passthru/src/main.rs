@@ -4,8 +4,12 @@
 
 use anyhow::Result;
 use clap::Parser;
+use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
 use std::time::Duration;
 
+use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::eeprom::AddressMode;
@@ -13,6 +17,7 @@ use opentitanlib::io::spi::{Target, Transfer};
 use opentitanlib::spiflash::sfdp::SectorErase;
 use opentitanlib::spiflash::{EraseMode, ReadMode, Sfdp, SpiFlash};
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::mem::MemWrite32Req;
 use opentitanlib::test_utils::spi_passthru::{
     ConfigJedecId, SfdpData, SpiFlashEraseSector, SpiFlashReadSfdp, SpiFlashWrite, SpiMailboxMap,
     SpiMailboxWrite, SpiPassthruSwapMap, StatusRegister, UploadInfo,
@@ -23,6 +28,13 @@ use opentitanlib::uart::console::UartConsole;
 const FLASH_STATUS_WIP: u32 = 0x01;
 const FLASH_STATUS_WEL: u32 = 0x02;
 const FLASH_STATUS_STD_BITS: u32 = FLASH_STATUS_WEL | FLASH_STATUS_WIP;
+
+#[derive(Debug, PartialEq)]
+enum ReadPipelineMode {
+    ZeroStages,
+    TwoStagesHalfCycle,
+    TwoStagesFullCycle,
+}
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -36,6 +48,10 @@ struct Opts {
     /// Name of the debugger's SPI interface.
     #[arg(long, default_value = "BOOTSTRAP")]
     spi: String,
+
+    /// Path to the firmware's ELF file, for querying symbol addresses.
+    #[arg(value_name = "FIRMWARE_ELF")]
+    firmware_elf: PathBuf,
 }
 
 fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
@@ -326,8 +342,18 @@ fn test_write_status(opts: &Opts, transport: &TransportWrapper, opcode: u8) -> R
     Ok(())
 }
 
-fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) -> Result<()> {
-    log::info!("using read mode {:?}", mode);
+fn test_read_flash(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    mode: ReadMode,
+    read_pipeline_mode: ReadPipelineMode,
+    pipeline_mode_addr: u32,
+) -> Result<()> {
+    log::info!(
+        "using read mode {:?}, with read pipeline set to {:?}",
+        mode,
+        read_pipeline_mode
+    );
     let capability = match mode {
         ReadMode::Standard => Ok(()),
         ReadMode::Fast => Ok(()),
@@ -350,12 +376,30 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
         length: 256u16,
     };
     let sfdp_data = sfdp_read.execute(&*uart)?;
-    let sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
+
+    // Parse SFDP and adjust wait states for the read pipeline.
+    let sfdp = {
+        let mut sfdp = Sfdp::try_from(sfdp_data.data.as_slice())?;
+        if read_pipeline_mode != ReadPipelineMode::ZeroStages {
+            sfdp.jedec.param_112.wait_states += 2;
+            sfdp.jedec.param_114.wait_states += 2;
+        }
+        sfdp
+    };
+
     let spi_flash = {
         let mut flash = SpiFlash::from_sfdp(sfdp);
         flash.read_mode = mode;
         flash
     };
+
+    // Configure device's read payload pipeline.
+    let pipeline_mode: u32 = match read_pipeline_mode {
+        ReadPipelineMode::ZeroStages => 0,
+        ReadPipelineMode::TwoStagesHalfCycle => 1,
+        ReadPipelineMode::TwoStagesFullCycle => 2,
+    };
+    MemWrite32Req::execute(&*uart, pipeline_mode_addr, pipeline_mode)?;
 
     // Put increasing count at 0x1000.
     let address_inc = 0x1000u32;
@@ -443,6 +487,18 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
+    /* Load the ELF binary and get the address of the `kReadPipelineMode` variable
+     * in example_sival.c */
+    let elf_binary = fs::read(&opts.firmware_elf)?;
+    let elf_file = object::File::parse(&*elf_binary)?;
+    let mut symbols = HashMap::<String, u32>::new();
+    for sym in elf_file.symbols() {
+        symbols.insert(sym.name()?.to_owned(), sym.address() as u32);
+    }
+    let pipeline_mode_address = symbols
+        .get("kReadPipelineMode")
+        .expect("Provided ELF missing 'kReadPipelineMode' symbol");
+
     let transport = opts.init.init_target()?;
 
     let uart = transport.uart("console")?;
@@ -450,10 +506,70 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Standard);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Fast);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Dual);
-    execute_test!(test_read_flash, &opts, &transport, ReadMode::Quad);
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Standard,
+        ReadPipelineMode::ZeroStages,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Fast,
+        ReadPipelineMode::ZeroStages,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Dual,
+        ReadPipelineMode::ZeroStages,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Dual,
+        ReadPipelineMode::TwoStagesHalfCycle,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Dual,
+        ReadPipelineMode::TwoStagesFullCycle,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Quad,
+        ReadPipelineMode::ZeroStages,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Quad,
+        ReadPipelineMode::TwoStagesHalfCycle,
+        *pipeline_mode_address
+    );
+    execute_test!(
+        test_read_flash,
+        &opts,
+        &transport,
+        ReadMode::Quad,
+        ReadPipelineMode::TwoStagesFullCycle,
+        *pipeline_mode_address
+    );
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_enter_exit_4b_mode, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);

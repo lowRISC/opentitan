@@ -3859,19 +3859,27 @@ opentitan_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
     cw310 = new_cw310_params(
-        # TODO: This test will need hyperdebug once we start using multi-lane
-        # SPI modes.
-        # interface = "hyper310",
-        # tags = ["manual"],
         test_cmd = """
             --bitstream={bitstream}
             --bootstrap="{firmware}"
+            "{firmware:elf}"
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": "hyper310",
     },
+    hyper310 = new_cw310_params(
+        tags = ["manual"],  # TODO: QE bit handling
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_passthru",
+    ),
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
@@ -3882,6 +3890,7 @@ opentitan_test(
         "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
     ],
 )
 
