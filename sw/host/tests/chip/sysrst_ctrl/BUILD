@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "sysrst_ctrl_inputs",
     srcs = [
+        "sysrst_ctrl.rs",
         "sysrst_ctrl_inputs.rs",
     ],
     deps = [
