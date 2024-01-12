@@ -19,12 +19,16 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/lib/testing/test_framework/ujson_ottf_commands.h"
 #include "sw/device/lib/ujson/ujson.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
+volatile uint32_t kReadPipelineMode = 0;
+
+static uint32_t current_read_pipeline_mode;
 static dif_spi_device_handle_t spid;
 static dif_spi_host_t spih;
 
@@ -170,6 +174,18 @@ status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
     TRY(ujson_deserialize_test_command_t(uj, &command));
+    status_t result = ujson_ottf_dispatch(uj, command);
+    if (status_ok(result)) {
+      // Check for changes to pipeline mode.
+      if (current_read_pipeline_mode != kReadPipelineMode) {
+        current_read_pipeline_mode = kReadPipelineMode;
+        CHECK_STATUS_OK(spi_device_testutils_configure_read_pipeline(
+            &spid, current_read_pipeline_mode, current_read_pipeline_mode));
+      }
+      continue;
+    } else if (status_err(result) != kUnimplemented) {
+      return result;
+    }
     switch (command) {
       case kTestCommandSpiConfigureJedecId:
         RESP_ERR(uj, configure_jedec_id(uj, &spid));
@@ -260,6 +276,10 @@ bool test_main(void) {
   };
   CHECK_DIF_OK(
       dif_spi_device_set_passthrough_intercept_config(&spid, passthru_cfg));
+
+  current_read_pipeline_mode = kReadPipelineMode;
+  CHECK_STATUS_OK(spi_device_testutils_configure_read_pipeline(
+      &spid, current_read_pipeline_mode, current_read_pipeline_mode));
 
   ujson_t uj = ujson_ottf_console();
   status_t s = command_processor(&uj);
