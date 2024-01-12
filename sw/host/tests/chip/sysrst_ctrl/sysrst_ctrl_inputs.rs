@@ -12,6 +12,7 @@ use std::time::Duration;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
@@ -48,11 +49,11 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
 fn chip_sw_sysrst_ctrl_input(
     opts: &Opts,
     transport: &TransportWrapper,
+    uart: &dyn Uart,
     config: &Config,
     test_phase_addr: u32,
     test_expected_addr: u32,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
 
     /* Setup transport pins */
     setup_pins(transport, config)?;
@@ -81,13 +82,13 @@ fn chip_sw_sysrst_ctrl_input(
             pin_values,
             phase_idx
         );
-        MemWriteReq::execute(&*uart, test_expected_addr, &[pin_values])?;
+        MemWriteReq::execute(uart, test_expected_addr, &[pin_values])?;
         /* Set kTestPhase on the device */
-        MemWriteReq::execute(&*uart, test_phase_addr, &[phase_idx as u8])?;
+        MemWriteReq::execute(uart, test_phase_addr, &[phase_idx as u8])?;
         /* Wait until the device does test_set_status(kStatusWfi) */
-        UartConsole::wait_for(&*uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
+        UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
     }
-    let _ = UartConsole::wait_for(&*uart, r"PASS!", opts.timeout)?;
+    let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
     Ok(())
 }
 
@@ -135,6 +136,7 @@ fn main() -> Result<()> {
         chip_sw_sysrst_ctrl_input,
         &opts,
         &transport,
+        &*uart,
         config,
         *test_phase_address,
         *test_expected_address
