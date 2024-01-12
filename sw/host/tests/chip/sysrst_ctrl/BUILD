@@ -23,3 +23,21 @@ rust_binary(
         "@crate_index//:serde_json",
     ],
 )
+
+rust_binary(
+    name = "sysrst_ctrl_in_irq",
+    srcs = [
+        "sysrst_ctrl.rs",
+        "sysrst_ctrl_in_irq.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:once_cell",
+        "@crate_index//:serde_json",
+    ],
+)
