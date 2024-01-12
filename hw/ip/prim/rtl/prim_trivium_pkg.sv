@@ -17,7 +17,7 @@ package prim_trivium_pkg;
   parameter int unsigned MinNfsrWidth = 84;
 
   // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 287 --seed 31468618 --prefix "Trivium"
+  // $ ./util/design/gen-lfsr-seed.py --width 288 --seed 31468618 --prefix "Trivium"
   parameter int TriviumLfsrWidth = 288;
   typedef logic [TriviumLfsrWidth-1:0] trivium_lfsr_seed_t;
   parameter trivium_lfsr_seed_t RndCnstTriviumLfsrSeedDefault = {

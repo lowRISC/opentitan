@@ -137,14 +137,15 @@ module prim_trivium_tb (
     .rst_ni(rst_ni),
 
     .en_i                (trivium_en),
+    .allow_lockup_i      (1'b0),
     .seed_en_i           (trivium_seed_en),
     .seed_done_o         (trivium_seed_done_seed_key_iv),
     .seed_req_o          (),
     .seed_ack_i          (trivium_seed_en),
     .seed_key_i          (seed_key),
     .seed_iv_i           (seed_iv),
-    .seed_state_full_i   (),
-    .seed_state_partial_i(),
+    .seed_state_full_i   ('0), // unused
+    .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_key_iv),
     .err_o()
@@ -159,14 +160,15 @@ module prim_trivium_tb (
     .rst_ni(rst_ni),
 
     .en_i                (trivium_en),
+    .allow_lockup_i      (1'b0),
     .seed_en_i           (trivium_seed_en),
     .seed_done_o         (trivium_seed_done_seed_state_full),
     .seed_req_o          (),
     .seed_ack_i          (trivium_seed_en),
-    .seed_key_i          (),
-    .seed_iv_i           (),
+    .seed_key_i          ('0), // unused
+    .seed_iv_i           ('0), // unused
     .seed_state_full_i   (seed_state_full),
-    .seed_state_partial_i(),
+    .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_state_full),
     .err_o()
@@ -182,13 +184,14 @@ module prim_trivium_tb (
     .rst_ni(rst_ni),
 
     .en_i                (trivium_en),
+    .allow_lockup_i      (1'b0),
     .seed_en_i           (trivium_seed_en),
     .seed_done_o         (trivium_seed_done_seed_state_partial),
     .seed_req_o          (),
     .seed_ack_i          (trivium_seed_ack_seed_state_partial),
-    .seed_key_i          (),
-    .seed_iv_i           (),
-    .seed_state_full_i   (),
+    .seed_key_i          ('0), // unused
+    .seed_iv_i           ('0), // unused
+    .seed_state_full_i   ('0), // unused
     .seed_state_partial_i(trivium_seed_state_partial),
 
     .key_o(key_seed_state_partial),
@@ -315,14 +318,15 @@ module prim_trivium_tb (
     .rst_ni(rst_ni),
 
     .en_i                (bivium_en),
+    .allow_lockup_i      (1'b0),
     .seed_en_i           (bivium_seed_en),
     .seed_done_o         (bivium_seed_done_seed_key_iv),
     .seed_req_o          (),
     .seed_ack_i          (bivium_seed_en),
     .seed_key_i          (seed_key),
     .seed_iv_i           (seed_iv),
-    .seed_state_full_i   (),
-    .seed_state_partial_i(),
+    .seed_state_full_i   ('0), // unused
+    .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_key_iv),
     .err_o()
@@ -337,37 +341,39 @@ module prim_trivium_tb (
     .rst_ni(rst_ni),
 
     .en_i                (bivium_en),
+    .allow_lockup_i      (1'b0),
     .seed_en_i           (bivium_seed_en),
     .seed_done_o         (bivium_seed_done_seed_state_full),
     .seed_req_o          (),
     .seed_ack_i          (bivium_seed_en),
-    .seed_key_i          (),
-    .seed_iv_i           (),
+    .seed_key_i          ('0), // unused
+    .seed_iv_i           ('0), // unused
     .seed_state_full_i   (seed_state_full[BiviumStateWidth-1:0]),
-    .seed_state_partial_i(),
+    .seed_state_partial_i('0), // unused
 
     .key_o(key_seed_state_full),
     .err_o()
   );
 
   prim_trivium #(
-    .BiviumVariant   (1),
-    .OutputWidth     (OutputWidth),
-    .LockupProtection(0),
-    .SeedType        (SeedTypeStatePartial),
-    .PartialSeedWidth(PartialSeedWidth)
+    .BiviumVariant         (1),
+    .OutputWidth           (OutputWidth),
+    .StrictLockupProtection(0),
+    .SeedType              (SeedTypeStatePartial),
+    .PartialSeedWidth      (PartialSeedWidth)
   ) u_prim_bivium_seed_state_partial (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
 
     .en_i                (bivium_en),
+    .allow_lockup_i      (1'b1),
     .seed_en_i           (bivium_seed_en_seed_state_partial),
     .seed_done_o         (bivium_seed_done_seed_state_partial),
     .seed_req_o          (),
     .seed_ack_i          (bivium_seed_ack_seed_state_partial),
-    .seed_key_i          (),
-    .seed_iv_i           (),
-    .seed_state_full_i   (),
+    .seed_key_i          ('0), // unused
+    .seed_iv_i           ('0), // unused
+    .seed_state_full_i   ('0), // unused
     .seed_state_partial_i(bivium_seed_state_partial),
 
     .key_o(),
