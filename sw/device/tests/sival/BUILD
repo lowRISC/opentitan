@@ -144,5 +144,6 @@ test_suite(
         "//sw/device/tests:sram_ctrl_memset_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
         "//sw/device/tests:sram_ctrl_subword_access_test",
+        "//sw/device/tests/autogen:alert_test",
     ],
 )

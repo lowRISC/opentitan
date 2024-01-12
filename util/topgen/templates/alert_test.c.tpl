@@ -7,6 +7,7 @@ ${gencmd}
 <%
 alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(alert_peripheral_names + ["alert_handler"]):
 #include "sw/device/lib/dif/dif_${n}.h"
@@ -98,19 +99,29 @@ static void trigger_alert_test(void) {
   dif_alert_handler_alert_t exp_alert;
   % for p in helper.alert_peripherals:
 
-  // Write ${p.name}'s alert_test reg and check alert_cause.
-  for (dif_${p.name}_alert_t i = 0; i < ${p.num_alerts}; ++i) {
-    CHECK_DIF_OK(dif_${p.name}_alert_force(&${p.inst_name}, ${p.dif_alert_name} + i));
+    % if p.name == "otp_ctrl":
+<% indent = "  " %>\
+  // TODO(lowrisc/opentitan#20348): Enable otp_ctrl when this is fixed.
+  if (kBootStage != kBootStageOwner) {
+    % else:
+<% indent = "" %>\
+    % endif
+${indent}  // Write ${p.name}'s alert_test reg and check alert_cause.
+${indent}  for (dif_${p.name}_alert_t i = 0; i < ${p.num_alerts}; ++i) {
+${indent}    CHECK_DIF_OK(dif_${p.name}_alert_force(&${p.inst_name}, ${p.dif_alert_name} + i));
 
-    // Verify that alert handler received it.
-    exp_alert = ${p.top_alert_name} + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
+${indent}    // Verify that alert handler received it.
+${indent}    exp_alert = ${p.top_alert_name} + i;
+${indent}    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+${indent}        &alert_handler, exp_alert, &is_cause));
+${indent}    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
+${indent}    // Clear alert cause register
+${indent}    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+${indent}        &alert_handler, exp_alert));
+    % if p.name == "otp_ctrl":
+${indent}  }
+    % endif
   }
   % endfor
 }

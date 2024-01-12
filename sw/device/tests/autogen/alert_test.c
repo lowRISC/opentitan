@@ -8,6 +8,7 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 // -o hw/top_earlgrey
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -550,19 +551,22 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write otp_ctrl's alert_test reg and check alert_cause.
-  for (dif_otp_ctrl_alert_t i = 0; i < 5; ++i) {
-    CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
+  // TODO(lowrisc/opentitan#20348): Enable otp_ctrl when this is fixed.
+  if (kBootStage != kBootStageOwner) {
+    // Write otp_ctrl's alert_test reg and check alert_cause.
+    for (dif_otp_ctrl_alert_t i = 0; i < 5; ++i) {
+      CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
 
-    // Verify that alert handler received it.
-    exp_alert = kTopEarlgreyAlertIdOtpCtrlFatalMacroError + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
+      // Verify that alert handler received it.
+      exp_alert = kTopEarlgreyAlertIdOtpCtrlFatalMacroError + i;
+      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+          &alert_handler, exp_alert, &is_cause));
+      CHECK(is_cause, "Expect alert %d!", exp_alert);
 
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
+      // Clear alert cause register
+      CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+          &alert_handler, exp_alert));
+    }
   }
 
   // Write pattgen's alert_test reg and check alert_cause.
