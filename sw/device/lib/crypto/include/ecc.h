@@ -320,8 +320,8 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
- * Returns `kOtcryptoStatusOk` if the operation was successfully
- * started, or`kOtcryptoStatusInternalError` if the operation cannot be
+ * Returns `kOtcryptoStatusValueOk` if the operation was successfully
+ * started, or`kOtcryptoStatusValueInternalError` if the operation cannot be
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
@@ -336,10 +336,10 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
  *
- * Returns `kOtcryptoStatusOk` and copies the private key (d) and public
+ * Returns `kOtcryptoStatusValueOk` and copies the private key (d) and public
  * key (Q), if the OTBN status is done, or
- * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kOtcryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -378,9 +378,9 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
  *
- * Returns `kOtcryptoStatusOk` and copies the signature if the OTBN
- * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN is
- * busy or `kOtcryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusValueOk` and copies the signature if the OTBN
+ * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is
+ * busy or `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -419,9 +419,9 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_start(
 /**
  * Finalizes the asynchronous ECDSA digital signature verification.
  *
- * Returns `kOtcryptoStatusOk` and populates the `verification result`
- * if the OTBN status is done. `kOtcryptoStatusAsyncIncomplete` if the
- * OTBN is busy or `kOtcryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusValueOk` and populates the `verification result`
+ * if the OTBN status is done. `kOtcryptoStatusValueAsyncIncomplete` if the
+ * OTBN is busy or `kOtcryptoStatusValueInternalError` if there is an error.
  * The computed signature is compared against the input signature
  * and a PASS or FAIL is returned.
  *
@@ -453,8 +453,8 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * only for a custom curve. For named curves this field is ignored
  * and can be set to `NULL`.
  *
- * Returns `kOtcryptoStatusOk` if the operation was successfully
- * started, or`kOtcryptoStatusInternalError` if the operation cannot be
+ * Returns `kOtcryptoStatusValueOk` if the operation was successfully
+ * started, or`kOtcryptoStatusValueInternalError` if the operation cannot be
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
@@ -469,10 +469,10 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
 /**
  * Finalizes the asynchronous key generation for ECDSA operation.
  *
- * Returns `kOtcryptoStatusOk` and copies the private key (d) and public
+ * Returns `kOtcryptoStatusValueOk` and copies the private key (d) and public
  * key (Q), if the OTBN status is done, or
- * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kOtcryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -512,9 +512,9 @@ otcrypto_status_t otcrypto_ecdh_async_start(
  * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
  * secret generation.
  *
- * Returns `kOtcryptoStatusOk` and copies `shared_secret` if the OTBN
- * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN
- * is busy or `kOtcryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusValueOk` and copies `shared_secret` if the OTBN
+ * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN
+ * is busy or `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * The caller must ensure that the `elliptic_curve` parameter matches the one
  * that was previously passed to the corresponding `_start` function; a
@@ -550,9 +550,9 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_start(
 /**
  * Finalizes the asynchronous key generation for Ed25519.
  *
- * Returns `kOtcryptoStatusOk` and copies private key (d) and public key
- * (Q), if the OTBN status is done, or `kOtcryptoStatusAsyncIncomplete`
- * if the OTBN is busy or `kOtcryptoStatusInternalError` if there is an
+ * Returns `kOtcryptoStatusValueOk` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kOtcryptoStatusValueAsyncIncomplete`
+ * if the OTBN is busy or `kOtcryptoStatusValueInternalError` if there is an
  * error.
  *
  * The caller must ensure that `config` matches the key configuration initially
@@ -588,9 +588,9 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
 /**
  * Finalizes the asynchronous Ed25519 digital signature generation.
  *
- * Returns `kOtcryptoStatusOk` and copies the signature if the OTBN
- * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN is
- * busy or `kOtcryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusValueOk` and copies the signature if the OTBN
+ * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is
+ * busy or `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * @param[out] signature Pointer to the EdDSA signature to get (s) value.
  * @return Result of async Ed25519 finalize operation.
@@ -621,10 +621,10 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 /**
  * Finalizes the asynchronous Ed25519 digital signature verification.
  *
- * Returns `kOtcryptoStatusOk` and populates the `verification result`
+ * Returns `kOtcryptoStatusValueOk` and populates the `verification result`
  * with a PASS or FAIL, if the OTBN status is done,
- * `kOtcryptoStatusAsyncIncomplete` if the OTBN is busy or
- * `kOtcryptoStatusInternalError` if there is an error.
+ * `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is busy or
+ * `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * @param[out] verification_result Result of signature verification
  * (Pass/Fail).
@@ -655,9 +655,9 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 /**
  * Finalizes the asynchronous key generation for X25519.
  *
- * Returns `kOtcryptoStatusOk` and copies private key (d) and public key
- * (Q), if the OTBN status is done, or `kOtcryptoStatusAsyncIncomplete`
- * if the OTBN is busy or `kOtcryptoStatusInternalError` if there is an
+ * Returns `kOtcryptoStatusValueOk` and copies private key (d) and public key
+ * (Q), if the OTBN status is done, or `kOtcryptoStatusValueAsyncIncomplete`
+ * if the OTBN is busy or `kOtcryptoStatusValueInternalError` if there is an
  * error.
  *
  * The caller must ensure that `config` matches the key configuration initially
@@ -692,9 +692,9 @@ otcrypto_status_t otcrypto_x25519_async_start(
  * Finalizes the asynchronous X25519 Diffie Hellman shared secret
  * generation.
  *
- * Returns `kOtcryptoStatusOk` and copies `shared_secret` if the OTBN
- * status is done, or `kOtcryptoStatusAsyncIncomplete` if the OTBN
- * is busy or `kOtcryptoStatusInternalError` if there is an error.
+ * Returns `kOtcryptoStatusValueOk` and copies `shared_secret` if the OTBN
+ * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN
+ * is busy or `kOtcryptoStatusValueInternalError` if there is an error.
  *
  * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
  * @return Result of async X25519 finalize operation.

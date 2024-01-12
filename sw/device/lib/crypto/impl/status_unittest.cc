@@ -16,7 +16,7 @@ namespace status_unittest {
 namespace {
 
 TEST(Status, OkIsHardenedTrue) {
-  EXPECT_EQ(kOtcryptoStatusOk, kHardenedBoolTrue);
+  EXPECT_EQ(kOtcryptoStatusValueOk, kHardenedBoolTrue);
 }
 
 int HammingDistance(int32_t a, int32_t b) {
@@ -32,8 +32,8 @@ TEST(Status, TopLevelStatusHammingDistance) {
       OTCRYPTO_ASYNC_INCOMPLETE, OTCRYPTO_NOT_IMPLEMENTED};
 
   // Expect the "OK" code to have a significant Hamming distance from 0.
-  EXPECT_GE(HammingDistance(kOtcryptoStatusOk, 0), kMinimumHammingDistance)
-      << "The 'OK' status code " << kOtcryptoStatusOk
+  EXPECT_GE(HammingDistance(kOtcryptoStatusValueOk, 0), kMinimumHammingDistance)
+      << "The 'OK' status code " << kOtcryptoStatusValueOk
       << " is too close to zero.";
 
   for (const otcrypto_status_t status1 : error_codes) {
@@ -41,10 +41,10 @@ TEST(Status, TopLevelStatusHammingDistance) {
     EXPECT_GE(HammingDistance(status1.value, 0), kMinimumHammingDistance)
         << "Error code " << status1.value << " is too close to zero.";
     // Expect an extra significant Hamming distance from the "OK" code.
-    EXPECT_GE(HammingDistance(status1.value, kOtcryptoStatusOk),
+    EXPECT_GE(HammingDistance(status1.value, kOtcryptoStatusValueOk),
               kMinimumHammingDistance)
         << "Error code " << status1.value << " is too close to the 'OK' value ("
-        << kOtcryptoStatusOk << ").";
+        << kOtcryptoStatusValueOk << ").";
 
     // Expect a significant Hamming distance from all other error codes.
     for (const otcrypto_status_t status2 : error_codes) {
