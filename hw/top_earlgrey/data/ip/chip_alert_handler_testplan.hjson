@@ -23,6 +23,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_test"]
+      bazel: ["//sw/device/tests/autogen:alert_test"]
     }
     {
       name: chip_sw_alert_handler_escalations
