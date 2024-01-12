@@ -60,25 +60,25 @@
                name: alert_handler
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/{top_chip}/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson"]
-               rel_path: "{proj_root}/hw/{top_chip}/ip_autogen/alert_handler/dv/"
+               rel_path: "hw/{top_chip}/ip_autogen/alert_handler/dv"
              },
              {
                name: clkmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/clkmgr/dv/clkmgr_sim_cfg.hjson"]
-               rel_path: "{proj_root}/hw/ip/clkmgr/dv/"
+               rel_path: "hw/ip/clkmgr/dv"
              },
              {
                name: pwrmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/pwrmgr/dv/pwrmgr_sim_cfg.hjson"]
-               rel_path: "{proj_root}/hw/ip/pwrmgr/dv/"
+               rel_path: "hw/ip/pwrmgr/dv"
              },
              {
                name: rstmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson"]
-               rel_path: "{proj_root}/hw/ip/rstmgr/dv/"
+               rel_path: "hw/ip/rstmgr/dv"
              },
              "{proj_root}/hw/{top_chip}/ip/xbar_dbg/dv/autogen/xbar_dbg_sim_cfg.hjson",
              "{proj_root}/hw/{top_chip}/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
