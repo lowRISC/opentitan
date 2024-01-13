@@ -213,10 +213,6 @@ module spi_device_reg_top (
   logic [1:0] control_mode_qs;
   logic [1:0] control_mode_wd;
   logic cfg_we;
-  logic cfg_cpol_qs;
-  logic cfg_cpol_wd;
-  logic cfg_cpha_qs;
-  logic cfg_cpha_wd;
   logic cfg_tx_order_qs;
   logic cfg_tx_order_wd;
   logic cfg_rx_order_qs;
@@ -2046,60 +2042,6 @@ module spi_device_reg_top (
 
 
   // R[cfg]: V(False)
-  //   F[cpol]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_cfg_cpol (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (cfg_we),
-    .wd     (cfg_cpol_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.cpol.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (cfg_cpol_qs)
-  );
-
-  //   F[cpha]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_cfg_cpha (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (cfg_we),
-    .wd     (cfg_cpha_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cfg.cpha.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (cfg_cpha_qs)
-  );
-
   //   F[tx_order]: 2:2
   prim_subreg #(
     .DW      (1),
@@ -19567,10 +19509,6 @@ module spi_device_reg_top (
   assign control_mode_wd = reg_wdata[5:4];
   assign cfg_we = addr_hit[5] & reg_we & !reg_error;
 
-  assign cfg_cpol_wd = reg_wdata[0];
-
-  assign cfg_cpha_wd = reg_wdata[1];
-
   assign cfg_tx_order_wd = reg_wdata[2];
 
   assign cfg_rx_order_wd = reg_wdata[3];
@@ -20989,8 +20927,6 @@ module spi_device_reg_top (
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[0] = cfg_cpol_qs;
-        reg_rdata_next[1] = cfg_cpha_qs;
         reg_rdata_next[2] = cfg_tx_order_qs;
         reg_rdata_next[3] = cfg_rx_order_qs;
         reg_rdata_next[24] = cfg_mailbox_en_qs;

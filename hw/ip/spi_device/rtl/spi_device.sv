@@ -178,8 +178,6 @@ module spi_device
   // Control signals //
   /////////////////////
 
-  logic cpol; // Clock polarity
-  logic cpha; // Phase : Not complete
   logic txorder; // TX bitstream order: 0(bit 7 to 0), 1(bit 0 to 7)
   logic rxorder; // RX bitstream order: 0(bit 7 to 0), 1(bit 0 to 7)
 
@@ -365,8 +363,6 @@ module spi_device
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
 
-  assign cpol = reg2hw.cfg.cpol.q;
-  assign cpha = reg2hw.cfg.cpha.q;
   assign txorder = reg2hw.cfg.tx_order.q;
   assign rxorder = reg2hw.cfg.rx_order.q;
 
@@ -1084,7 +1080,6 @@ module spi_device
     .s_en_o       (internal_sd_en),
     .s_o          (internal_sd),
 
-    .cpha_i       (cpha),
     .order_i      (txorder),
     .io_mode_i    (io_mode_outclk)
   );
@@ -1447,9 +1442,6 @@ module spi_device
     .rst_ni    (rst_spi_n),
     .clk_out_i (clk_spi_out_buf),
 
-    // Configurations
-    .cfg_cpol_i (cpol),
-
     .cfg_cmd_filter_i (cmd_filter),
 
     .cfg_addr_mask_i  (addr_swap_mask),
@@ -1469,7 +1461,6 @@ module spi_device
 
     // Host SPI
     .host_sck_i  (cio_sck_i),
-    .host_isck_i (sck_n    ), // inverted cio_sck_i
     .host_csb_i  (cio_csb_i),
     .host_s_i    (cio_sd_i),
     .host_s_o    (passthrough_sd),

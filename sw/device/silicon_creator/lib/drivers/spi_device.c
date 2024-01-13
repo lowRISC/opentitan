@@ -498,9 +498,7 @@ static void cmd_info_set(cmd_info_t cmd_info) {
 
 void spi_device_init(void) {
   // CPOL = 0, CPHA = 0, MSb-first TX and RX, 3-byte addressing.
-  uint32_t reg = bitfield_bit32_write(0, SPI_DEVICE_CFG_CPOL_BIT, false);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_CPHA_BIT, false);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_TX_ORDER_BIT, false);
+  uint32_t reg = bitfield_bit32_write(0, SPI_DEVICE_CFG_TX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_RX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, false);
   abs_mmio_write32(kBase + SPI_DEVICE_CFG_REG_OFFSET, reg);

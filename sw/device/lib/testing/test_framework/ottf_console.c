@@ -83,8 +83,6 @@ void ottf_console_init(void) {
       CHECK_DIF_OK(dif_spi_device_configure(
           &ottf_console_spi_device,
           (dif_spi_device_config_t){
-              .clock_polarity = kDifSpiDeviceEdgePositive,
-              .data_phase = kDifSpiDeviceEdgeNegative,
               .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
               .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
               .device_mode = kDifSpiDeviceModeFlashEmulation,

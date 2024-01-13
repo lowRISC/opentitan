@@ -41,11 +41,6 @@ static inline uint32_t build_control_word(
     const dif_spi_device_config_t config) {
   uint32_t val = 0;
 
-  val =
-      bitfield_bit32_write(val, SPI_DEVICE_CFG_CPOL_BIT,
-                           config.clock_polarity == kDifSpiDeviceEdgeNegative);
-  val = bitfield_bit32_write(val, SPI_DEVICE_CFG_CPHA_BIT,
-                             config.data_phase == kDifSpiDeviceEdgePositive);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_TX_ORDER_BIT,
                              config.tx_order == kDifSpiDeviceBitOrderLsbToMsb);
   val = bitfield_bit32_write(val, SPI_DEVICE_CFG_RX_ORDER_BIT,

@@ -291,16 +291,6 @@
             '''
     }
     {
-      name: "SPI_DEVICE.HW.CPOL",
-      desc: '''The SPI clock polarity is configurable at runtime via the "CSR.CFG.CPOL" register.
-            '''
-    }
-    {
-      name: "SPI_DEVICE.HW.CPHA",
-      desc: '''The SPI clock phase is configurable at runtime via the "CSR.CFG.CPHA" register.
-            '''
-    }
-    {
       name: "SPI_DEVICE.HW.LANES",
       desc: '''1,2 or 4 lane operation is supported by the block.
             '''
@@ -509,16 +499,6 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
-          name: "CPOL",
-          desc: "Clock polarity. 0 for normal SPI, 1 for negative edge latch",
-          resval: "0",
-        },
-        { bits: "1",
-          name: "CPHA",
-          desc: "Data phase. 0 for negative edge change, 1 for positive edge change",
-          resval: "0",
-        },
         { bits: "2",
           name: "tx_order",
           desc: "TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB",

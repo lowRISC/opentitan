@@ -65,8 +65,6 @@ static void spi_device_config(void *dif) {
       ((uintptr_t)dif - offsetof(dif_spi_device_handle_t, dev));
   dif_spi_device_handle_t *handle = (dif_spi_device_handle_t *)handle_address;
   dif_spi_device_config_t cfg = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderLsbToMsb,
       .rx_order = kDifSpiDeviceBitOrderLsbToMsb,
       .device_mode = kDifSpiDeviceModeDisabled,

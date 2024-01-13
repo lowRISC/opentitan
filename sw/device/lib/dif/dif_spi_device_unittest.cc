@@ -30,8 +30,6 @@ class SpiTest : public testing::Test, public MmioTest {
 };
 
 static constexpr dif_spi_device_config_t kDefaultConfig = {
-    .clock_polarity = kDifSpiDeviceEdgePositive,
-    .data_phase = kDifSpiDeviceEdgeNegative,
     .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
     .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
     .device_mode = kDifSpiDeviceModeDisabled,
@@ -42,8 +40,6 @@ class ConfigTest : public SpiTest {};
 TEST_F(ConfigTest, BasicInit) {
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_CPOL_BIT, 0},
-                     {SPI_DEVICE_CFG_CPHA_BIT, 0},
                      {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                      {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
                  });
@@ -67,8 +63,6 @@ TEST_F(ConfigTest, NullArgs) {
 class FlashTest : public SpiTest {
   void SetUp() {
     const dif_spi_device_config_t config = {
-        .clock_polarity = kDifSpiDeviceEdgePositive,
-        .data_phase = kDifSpiDeviceEdgeNegative,
         .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
         .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
         .device_mode = kDifSpiDeviceModePassthrough,
@@ -76,8 +70,6 @@ class FlashTest : public SpiTest {
     EXPECT_DIF_OK(dif_spi_device_init_handle(dev().region(), &spi_));
     EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                    {
-                       {SPI_DEVICE_CFG_CPOL_BIT, 0},
-                       {SPI_DEVICE_CFG_CPHA_BIT, 0},
                        {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                        {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
                    });
@@ -236,26 +228,26 @@ TEST_F(FlashTest, MailboxConfigTest) {
   uint32_t address = 0x3f0000;
   EXPECT_WRITE32(SPI_DEVICE_MAILBOX_ADDR_REG_OFFSET, address);
   EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET, {
-                                               {SPI_DEVICE_CFG_CPOL_BIT, 1},
-                                               {SPI_DEVICE_CFG_CPHA_BIT, 1},
+                                               {SPI_DEVICE_CFG_TX_ORDER_BIT, 1},
+                                               {SPI_DEVICE_CFG_RX_ORDER_BIT, 1},
                                            });
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_CPOL_BIT, 1},
-                     {SPI_DEVICE_CFG_CPHA_BIT, 1},
                      {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
+                     {SPI_DEVICE_CFG_TX_ORDER_BIT, 1},
+                     {SPI_DEVICE_CFG_RX_ORDER_BIT, 1},
                  });
   EXPECT_DIF_OK(dif_spi_device_enable_mailbox(&spi_, address));
   EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET,
                 {
                     {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                    {SPI_DEVICE_CFG_TX_ORDER_BIT, 1},
+                    {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                     {SPI_DEVICE_CFG_RX_ORDER_BIT, 1},
                 });
   EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
                  {
                      {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0},
-                     {SPI_DEVICE_CFG_TX_ORDER_BIT, 1},
+                     {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                      {SPI_DEVICE_CFG_RX_ORDER_BIT, 1},
                  });
   EXPECT_DIF_OK(dif_spi_device_disable_mailbox(&spi_));
