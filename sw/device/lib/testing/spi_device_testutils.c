@@ -13,8 +13,6 @@ status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
     bool upload_write_commands) {
   dif_spi_device_config_t spi_device_config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .device_mode = kDifSpiDeviceModePassthrough,

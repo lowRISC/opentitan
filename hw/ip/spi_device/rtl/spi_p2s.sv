@@ -20,11 +20,6 @@ module spi_p2s
   output logic [3:0] s_en_o,
   output logic [3:0] s_o,
 
-  // Configuration
-  // If CPHA=1, then the first byte should be delayed.
-  // But this does not matter in SPI Flash.
-  input cpha_i,
-
   // Control
   // txorder: controls which bit goes out first.
   input order_i,
@@ -42,19 +37,12 @@ module spi_p2s
 
   typedef logic [BitWidth-1:0] count_t;
 
-  typedef enum logic {
-    TxIdle,
-    TxActive
-  } tx_state_e;
-  tx_state_e tx_state;   // Only for handling CPHA
-
   // Latching io_mode_i when last beat is set.
   // This guarantees cnt not abruptly changed during operation
   // which affects `last_beat` again.
   io_mode_e io_mode;
 
   // in Mode3, the logic skips first clock edge to move to next bit.
-  // This is not necessary for Flash / Passthrough mode.
   logic first_beat, last_beat;
 
   count_t cnt;
@@ -183,7 +171,7 @@ module spi_p2s
       cnt <= BitWidth'(0);
     end else if (last_beat) begin
       cnt <= BitWidth'(0);
-    end else if (data_valid_i && (tx_state != TxIdle || cpha_i == 1'b 0)) begin
+    end else if (data_valid_i) begin
       cnt <= cnt + 1'b 1;
     end
   end
@@ -202,20 +190,6 @@ module spi_p2s
     endcase
   end
 
-
-  ///////////
-  // State //
-  ///////////
-
-  // At reset, tx state sits in TxIdle. It moves to TxActive.
-  // This is to delay the first posedge in Mode 3.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      tx_state <= TxIdle;
-    end else begin
-      tx_state <= TxActive;
-    end
-  end
 
   ////////////////
   // Assumption //

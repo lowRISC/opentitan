@@ -35,8 +35,6 @@ class InitTest : public SpiDeviceTest {};
 TEST_F(InitTest, Init) {
   EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_CFG_REG_OFFSET,
                      {
-                         {SPI_DEVICE_CFG_CPOL_BIT, 0},
-                         {SPI_DEVICE_CFG_CPHA_BIT, 0},
                          {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                          {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
                          {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0},

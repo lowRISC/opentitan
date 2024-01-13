@@ -61,8 +61,6 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     cfg.spi_host_agent_cfg.device_bit_dir = 0;
     ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
     ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
-    ral.cfg.cpol.set(1'b0);
-    ral.cfg.cpha.set(1'b0);
     csr_update(.csr(ral.cfg));
 
     // tpm_cfg needs to be included in cfg.spi_cfg_sema, because tpm and flash may be enabled

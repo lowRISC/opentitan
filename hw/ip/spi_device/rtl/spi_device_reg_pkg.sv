@@ -129,12 +129,6 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
     } tx_order;
-    struct packed {
-      logic        q;
-    } cpha;
-    struct packed {
-      logic        q;
-    } cpol;
   } spi_device_reg2hw_cfg_reg_t;
 
   typedef struct packed {
@@ -563,12 +557,12 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1564:1559]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1558:1553]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1552:1541]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1540:1539]
-    spi_device_reg2hw_control_reg_t control; // [1538:1536]
-    spi_device_reg2hw_cfg_reg_t cfg; // [1535:1531]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1562:1557]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1556:1551]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1550:1539]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1538:1537]
+    spi_device_reg2hw_control_reg_t control; // [1536:1534]
+    spi_device_reg2hw_cfg_reg_t cfg; // [1533:1531]
     spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1530:1527]
     spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1526:1525]
     spi_device_reg2hw_flash_status_reg_t flash_status; // [1524:1498]

@@ -27,12 +27,12 @@
  * attached SPI Flash device, mainly in order to not introduce glitches on the
  * CSb line. If the module does not hold the SPI_CLK, then CSb needs one more
  * clock to remove the glitch. The timing delay means that this design will miss
- * the tming to raise CSb in order to cancel the self-complete commands such as
+ * the timing to raise CSb in order to cancel the self-complete commands such as
  * chip erase command.
  *
  * To make CSb de-assertion work, there are a few assumptions:
  *
- * 1. De-asserting CSb in the middle of transmit does not degrade the device
+ * 1. De-asserting CSb in the middle of transaction does not degrade the device
  *    quality.
  * 2. If CSb is de-asserted prior to the 8th SPI_CLK, the SPI flash device
  *    cancels the process without making any assumptions about the expected
@@ -78,16 +78,6 @@ module spi_passthrough
 
   input clk_out_i, // SPI output clk
 
-  // Configurations
-  //
-  // Clock polarity
-  //
-  // CFG.CPOL informs the logic if the host sends inverted SCK or not. If
-  // CFG.CPOL is set, the filtering logic needs to account for the inverted
-  // clock. The logic gates the `host_inverted_sck_i` then sends out the
-  // inverted clock rather than `host_sck_i`.
-  input cfg_cpol_i,
-
   // command filter information is given as 256bit register. It is subject to be
   // changed if command config is stored in DPSRAM. If that is supported, the
   // command config is valid at the 6th command cycle and given only 8 bits.
@@ -122,7 +112,6 @@ module spi_passthrough
   // and cmdparse, but passthrough has to implement its own s2p and cmdparse to
   // support the A/B binary scheme.
   input              host_sck_i,
-  input              host_isck_i, // inverted SCK for CPOL:=1 case
   input              host_csb_i,
   input        [3:0] host_s_i,
   output logic [3:0] host_s_o,    // clk_out_i domain
@@ -694,7 +683,7 @@ module spi_passthrough
     else         host_s_en_o <= host_s_en_inclk;
   end
 
-  logic pt_gated_sck, pt_gated_isck, pt_gated_isck_inv;
+  logic pt_gated_sck;
   prim_clock_gating #(
     .NoFpgaGate    (1'b 0),
     .FpgaBufGlobal (1'b 1) // Going outside of chip
@@ -704,18 +693,8 @@ module spi_passthrough
     .test_en_i (1'b 0       ), // No FF connected to this gated SCK
     .clk_o     (pt_gated_sck)
   );
-  prim_clock_gating #(
-    .NoFpgaGate    (1'b 0),
-    .FpgaBufGlobal (1'b 1)  // Going outside of chip
-  ) u_pt_isck_cg (
-    .clk_i     (host_isck_i  ),
-    .en_i      (sck_gate_en  ),
-    .test_en_i (1'b 0        ), // No FF connected to this gated SCK
-    .clk_o     (pt_gated_isck)
-  );
-  assign pt_gated_isck_inv = ~pt_gated_isck;
 
-  assign passthrough_o.sck    = (cfg_cpol_i) ? pt_gated_isck_inv : pt_gated_sck;
+  assign passthrough_o.sck    = pt_gated_sck;
   assign passthrough_o.sck_en = 1'b 1;
 
   // CSb propagation:  csb_deassert signal should be an output of FF or latch to

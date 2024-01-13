@@ -393,10 +393,6 @@ SW is recommended to discard the current context if any transaction is ongoing t
 
 ## Clock and Phase
 
-The SPI device module has two programmable register bits to control the SPI clock, [`CFG.CPOL`](registers.md#cfg) and [`CFG.CPHA`](registers.md#cfg).
-CPOL controls clock polarity and CPHA controls the clock phase.
+The SPI device module only internally supports mode 0, where data is shifted out on the falling edge and sampled on the rising edge, and SPI clock returns to low at the end of the transaction.
 For further details, please refer to this diagram from Wikipedia:
 [File:SPI_timing_diagram2.svg](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg)
-
-This version of SPI_DEVICE HWIP supports mode 0 (CPHA and CPOL as 0) for Flash and Passthrough modes. Mode 3 (CPHA and CPOL as 1) is not supported in the current version.
-SW should configure the SPI_DEVICE to mode 0 to enable TPM mode along with other modes.

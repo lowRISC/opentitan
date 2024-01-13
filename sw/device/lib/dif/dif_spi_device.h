@@ -47,20 +47,6 @@ typedef enum dif_spi_device_mode {
 } dif_spi_device_mode_t;
 
 /**
- * A signal edge type: positive or negative.
- */
-typedef enum dif_spi_device_edge {
-  /**
-   * Represents a positive edge (i.e., from low to high).
-   */
-  kDifSpiDeviceEdgePositive,
-  /**
-   * Represents a negative edge (i.e., from high to low).
-   */
-  kDifSpiDeviceEdgeNegative,
-} dif_spi_device_edge_t;
-
-/**
  * A bit ordering within a byte.
  */
 typedef enum dif_spi_device_bit_order {
@@ -81,8 +67,6 @@ typedef enum dif_spi_device_bit_order {
  * hardware.
  */
 typedef struct dif_spi_device_config {
-  dif_spi_device_edge_t clock_polarity;
-  dif_spi_device_edge_t data_phase;
   dif_spi_device_bit_order_t tx_order;
   dif_spi_device_bit_order_t rx_order;
   dif_spi_device_mode_t device_mode;

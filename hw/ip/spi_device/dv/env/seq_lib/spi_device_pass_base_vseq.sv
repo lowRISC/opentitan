@@ -319,18 +319,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (`gmv(ral.tpm_cfg.en)) begin
       sck_polarity_phase = 0;
     end else begin
-      // flash mode only supports these 2 values.
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(sck_polarity_phase,
-          // TODO (#16339), add back 'b11 once this issue is fixed
-          sck_polarity_phase inside {0};)
+      // flash mode only supports mode 0
+      sck_polarity_phase = 0;
     end
     cfg.spi_host_agent_cfg.sck_polarity[0] = sck_polarity_phase[0];
     cfg.spi_host_agent_cfg.sck_phase[0] = sck_polarity_phase[1];
     cfg.spi_device_agent_cfg.sck_polarity[0] = sck_polarity_phase[0];
     cfg.spi_device_agent_cfg.sck_phase[0] = sck_polarity_phase[1];
-
-    ral.cfg.cpol.set(sck_polarity_phase[0]);
-    ral.cfg.cpha.set(sck_polarity_phase[1]);
 
     // bit dir is only supported in fw mode. Need to be 0 for other modes
     cfg.spi_host_agent_cfg.host_bit_dir = 0;

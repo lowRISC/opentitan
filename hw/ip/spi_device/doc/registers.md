@@ -208,12 +208,12 @@ This CSR automatically resets to 0.
 Configuration Register
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x100000f`
+- Reset mask: `0x100000c`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CPOL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CPHA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 20}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"bits": 2}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 20}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                                                                                    |
@@ -223,8 +223,7 @@ Configuration Register
 |  23:4  |        |         |            | Reserved                                                                                                                                                                                                                       |
 |   3    |   rw   |   0x0   | rx_order   | RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.                                                                                                                                                    |
 |   2    |   rw   |   0x0   | tx_order   | TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB                                                                                                                                                                        |
-|   1    |   rw   |   0x0   | CPHA       | Data phase. 0 for negative edge change, 1 for positive edge change                                                                                                                                                             |
-|   0    |   rw   |   0x0   | CPOL       | Clock polarity. 0 for normal SPI, 1 for negative edge latch                                                                                                                                                                    |
+|  1:0   |        |         |            | Reserved                                                                                                                                                                                                                       |
 
 ## STATUS
 SPI Device status register
