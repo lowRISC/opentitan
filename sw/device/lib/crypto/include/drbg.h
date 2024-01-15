@@ -96,7 +96,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  */
 otcrypto_status_t otcrypto_drbg_generate(
     otcrypto_const_byte_buf_t additional_input,
-    otcrypto_word32_buf_t *drbg_output);
+    otcrypto_word32_buf_t drbg_output);
 
 /**
  * DRBG function for generating random bits.
@@ -118,7 +118,7 @@ otcrypto_status_t otcrypto_drbg_generate(
  */
 otcrypto_status_t otcrypto_drbg_manual_generate(
     otcrypto_const_byte_buf_t additional_input,
-    otcrypto_word32_buf_t *drbg_output);
+    otcrypto_word32_buf_t drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.

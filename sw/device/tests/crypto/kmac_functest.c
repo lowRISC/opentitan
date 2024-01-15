@@ -157,7 +157,7 @@ static status_t run_test_vector(void) {
       TRY(otcrypto_kmac(&current_test_vector->key,
                         current_test_vector->input_msg, mode,
                         current_test_vector->cust_str,
-                        current_test_vector->digest.len, &tag_buf));
+                        current_test_vector->digest.len, tag_buf));
       break;
     }
     default: {
