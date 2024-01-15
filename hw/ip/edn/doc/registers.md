@@ -226,19 +226,48 @@ in the CSRNG documentation.
 EDN command status register
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                                                                         |
-|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |         | Reserved                                                                                                                                                                                                                            |
-|   1    |   ro   |   0x0   | CMD_STS | This one bit field is the status code returned with the application command ack. It is updated each time a command ack is asserted on the CSRNG interface. 0b0: Request completed successfully 0b1: Request completed with an error |
-|   0    |   ro   |   0x0   | CMD_RDY | This bit indicates when the command interface is ready to accept commands.                                                                                                                                                          |
+|  Bits  |  Type  |  Reset  | Name                                    |
+|:------:|:------:|:-------:|:----------------------------------------|
+|  31:4  |        |         | Reserved                                |
+|   3    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack)         |
+|   2    |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
+|   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy)         |
+|   0    |   ro   |   0x0   | [CMD_REG_RDY](#sw_cmd_sts--cmd_reg_rdy) |
+
+### SW_CMD_STS . CMD_ACK
+This one bit field indicates when a command has been acknowledged by the CSRNG.
+It is set to low each time a new command is written to [`SW_CMD_REQ.`](#sw_cmd_req)
+The field is set to high once a SW command request has been acknowledged by the CSRNG.
+0b0: The last command has not been acknowledged yet.
+0b1: The last command has been acknowledged.
+
+### SW_CMD_STS . CMD_STS
+This one bit field represents the status code returned with the CSRNG application command ack.
+It is updated each time a command is acknowledged by CSRNG.
+To check whether a command was succesful, wait for [`INTR_STATE.EDN_CMD_REQ_DONE`](#intr_state) or
+[`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
+0b0: Request completed successfully.
+0b1: Request completed with an error.
+
+### SW_CMD_STS . CMD_RDY
+This bit indicates when the EDN is ready to accept the next command.
+Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
+0b0: The EDN is not ready to accept commands or the last command hasn't been acked yet.
+0b1: The EDN is ready to accept the next command.
+
+### SW_CMD_STS . CMD_REG_RDY
+This bit indicates when [`SW_CMD_REQ`](#sw_cmd_req) is ready to accept the next word.
+This bit has to be polled before each word of a command is written to [`SW_CMD_REQ.`](#sw_cmd_req)
+0b0: The EDN is not ready to accept the next word yet.
+0b1: The EDN is ready to accept the next word.
 
 ## RESEED_CMD
 EDN csrng reseed command register
