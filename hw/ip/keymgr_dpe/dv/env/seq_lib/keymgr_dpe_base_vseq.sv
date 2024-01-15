@@ -11,6 +11,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(keymgr_dpe_base_vseq)
 
   // various knobs to enable certain routines
+  // otp_latched is common for all sequences which extend
+  // they will set it when they have successfully called their first
+  // advance operation out of reset
+  bit otp_latched = 1'b0;
   bit do_keymgr_dpe_init = 1'b1;
   bit do_wait_for_init_done = 1'b1;
   bit seq_check_en = 1'b1;
@@ -107,7 +111,12 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.reseed_interval_shadowed));
   endtask : keymgr_dpe_init
 
-  virtual task keymgr_dpe_erase(bit wait_done = 1);
+  virtual task keymgr_dpe_erase(
+      int num_gen_op = $urandom_range(1, 4),
+      int num_adv_op = $urandom_range(1, 4),
+      bit clr_output = $urandom_range(0, 1),
+      bit wait_done = 1
+  );
     `uvm_info(`gfn,
       $sformatf("Start keymgr_dpe_erase"), UVM_MEDIUM)
 
@@ -120,7 +129,56 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     if (wait_done)
       wait_op_done();
 
+    if (num_adv_op) begin
+      src_slot = dst_slot;
+    end
+
+    repeat (num_adv_op) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dst_slot)
+      keymgr_dpe_advance(wait_done);
+    end
+
+    repeat (num_gen_op) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
+      update_key_version();
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(key_dest)
+      keymgr_dpe_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
+      if (clr_output) keymgr_dpe_rd_clr();
+    end
   endtask : keymgr_dpe_erase
+
+  virtual task keymgr_dpe_disable(
+      int num_gen_op = $urandom_range(1, 4),
+      int num_adv_op = $urandom_range(1, 4),
+      bit clr_output = $urandom_range(0, 1),
+      bit wait_done = 1
+  );
+    `uvm_info(`gfn,
+      $sformatf("Start keymgr_dpe_disable"), UVM_MEDIUM)
+
+    ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeDisable);
+    ral.control_shadowed.slot_src_sel.set(src_slot);
+    ral.control_shadowed.slot_dst_sel.set(dst_slot);
+    csr_update(.csr(ral.control_shadowed));
+    csr_wr(.ptr(ral.start), .value(1));
+
+    if (wait_done)
+      wait_op_done();
+
+    repeat (num_adv_op) begin
+      keymgr_dpe_advance(wait_done);
+    end
+
+    repeat (num_gen_op) begin
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_key_version_err)
+      update_key_version();
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gen_operation)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(key_dest)
+      keymgr_dpe_generate(.operation(gen_operation), .key_dest(key_dest), .wait_done(wait_done));
+      if (clr_output) keymgr_dpe_rd_clr();
+    end
+  endtask : keymgr_dpe_disable
 
   // advance to next state and generate output, clear output
   virtual task keymgr_dpe_operations(bit advance_state = $urandom_range(0, 1),
@@ -194,6 +252,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
           end
           if (cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.retain_parent == 1) begin
             is_good_op &= (src_slot != dst_slot);
+            is_good_op &= !cfg.keymgr_dpe_vif.internal_key_slots[dst_slot].valid;
           end
         end
         `uvm_info(`gfn, $sformatf("wait_op_done: current_state %s is_good_op %d",
@@ -208,7 +267,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
           keymgr_dpe_pkg::StWorkDpeInvalid,
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeReset
-        })) ? key_version <= ral.max_key_ver_shadowed.get_mirrored_value() : 0;
+        })) ? key_version <=
+        cfg.keymgr_dpe_vif.internal_key_slots[src_slot].max_key_version : 0;
         is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
       end
       keymgr_dpe_pkg::OpDpeErase: begin
@@ -222,7 +282,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       keymgr_dpe_pkg::OpDpeDisable: begin
         is_good_op = !(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
-          keymgr_dpe_pkg::StWorkDpeDisabled
+          keymgr_dpe_pkg::StWorkDpeDisabled,
+          keymgr_dpe_pkg::StWorkDpeReset
         });
       end
       default: begin
@@ -287,7 +348,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   virtual task keymgr_dpe_advance(bit wait_done = 1,
                                   int sw_binding = $urandom(),
-                                  int max_key_ver = $urandom()
+                                  int max_key_ver = $urandom_range(0,4)
                                 );
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state = get_next_state(
       current_state, keymgr_dpe_pkg::OpDpeAdvance);
@@ -319,8 +380,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   virtual task keymgr_dpe_generate(
       keymgr_dpe_pkg::keymgr_dpe_ops_e operation,
       keymgr_pkg::keymgr_key_dest_e key_dest,
-      bit [31:0] salt = 0,
-      int key_version = 0,
+      bit [31:0] salt = $urandom(),
+      int key_version = $urandom_range(1,4),
       bit wait_done = 1
     );
     sema_update_control_csr.get();
