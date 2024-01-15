@@ -193,6 +193,12 @@ class edn_err_vseq extends edn_base_vseq;
 
     // Disable the EDN.
     wait_no_outstanding_access();
+    // CSRNG requests will drop if disablement is sent.
+    // The corresponding assertions can be disabled shortly since CSRNG must be disabled
+    // any time the EDN is disabled according to specification.
+    // https://opentitan.org/book/hw/ip/edn/doc/programmers_guide.html
+    $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
+    $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
     csr_update(.csr(ral.ctrl));
     // Notify the driver that the EDN was disabled.
@@ -208,6 +214,9 @@ class edn_err_vseq extends edn_base_vseq;
     csr_update(.csr(ral.ctrl));
     // Notify the driver that the EDN was enabled.
     cfg.edn_vif.drive_edn_disable(0);
+    // Reenable assertions since the EDN is now enabled again.
+    $asserton(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
+    $asserton(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
 
     // Load genbits data
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
