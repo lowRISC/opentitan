@@ -124,7 +124,7 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
   };
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, msg_buf, label_buf,
-                           &ciphertext_buf));
+                           ciphertext_buf));
   profile_end_and_print(t_start, "RSA-2048 encryption");
 
   return OK_STATUS();
@@ -193,7 +193,7 @@ static status_t run_rsa_2048_decrypt(const uint8_t *label, size_t label_len,
   };
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_decrypt(&private_key, kTestHashMode, ciphertext_buf,
-                           label_buf, &plaintext_buf));
+                           label_buf, plaintext_buf));
   profile_end_and_print(t_start, "RSA-2048 decryption");
 
   // Write the actual plaintext length to `msg_len`.

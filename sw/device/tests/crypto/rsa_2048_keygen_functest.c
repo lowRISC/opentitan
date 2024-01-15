@@ -112,7 +112,7 @@ status_t keygen_then_sign_test(void) {
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
   TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
-                        &sig_buf));
+                        sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 

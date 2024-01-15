@@ -113,8 +113,8 @@ otcrypto_status_t otcrypto_import_blinded_key(
  * @return Result of the blinded key export operation.
  */
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t *key_share0,
-    otcrypto_word32_buf_t *key_share1);
+    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
+    otcrypto_word32_buf_t key_share1);
 
 #ifdef __cplusplus
 }  // extern "C"

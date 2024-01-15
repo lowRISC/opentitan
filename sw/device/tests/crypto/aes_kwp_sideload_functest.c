@@ -49,7 +49,7 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
       .data = wrapped_key_data,
       .len = ARRAYSIZE(wrapped_key_data),
   };
-  TRY(otcrypto_aes_kwp_wrap(key_to_wrap, key_kek, &wrapped_key));
+  TRY(otcrypto_aes_kwp_wrap(key_to_wrap, key_kek, wrapped_key));
 
   // Unwrap the key.
   hardened_bool_t success;

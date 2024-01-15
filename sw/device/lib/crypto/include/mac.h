@@ -61,7 +61,7 @@ typedef struct otcrypto_hmac_context {
  */
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
-                                otcrypto_word32_buf_t *tag);
+                                otcrypto_word32_buf_t tag);
 
 /**
  * Performs the KMAC function on the input data.
@@ -90,7 +90,7 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_kmac_mode_t kmac_mode,
                                 otcrypto_const_byte_buf_t customization_string,
                                 size_t required_output_len,
-                                otcrypto_word32_buf_t *tag);
+                                otcrypto_word32_buf_t tag);
 
 /**
  * Performs the INIT operation for HMAC.
@@ -143,7 +143,7 @@ otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
  * @return Result of the HMAC final operation.
  */
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                      otcrypto_word32_buf_t *tag);
+                                      otcrypto_word32_buf_t tag);
 
 #ifdef __cplusplus
 }  // extern "C"
