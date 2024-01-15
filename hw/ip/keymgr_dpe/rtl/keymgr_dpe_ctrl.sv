@@ -623,7 +623,7 @@ module keymgr_dpe_ctrl
   assign invalid_allow_child = ~active_slot_policy.allow_child;
 
   logic invalid_max_boot_stage;
-  assign invalid_max_boot_stage = active_slot_boot_stage == DpeNumBootStages - 1;
+  assign invalid_max_boot_stage = active_slot_boot_stage >= DpeNumBootStages - 1;
 
   // Check source validity
   logic invalid_src_slot;
