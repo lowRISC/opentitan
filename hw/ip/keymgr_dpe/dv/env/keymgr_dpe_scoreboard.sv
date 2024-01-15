@@ -731,6 +731,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   $sformatf("process_tl_access: unrecognized state in the start case"))
               end
             endcase
+            if (get_invalid_op()) begin
+              set_exp_alert(.alert_name("recov_operation_err"));
+              current_op_status = keymgr_pkg::OpDoneFail;
+              void'(ral.intr_state.predict(.value(1'b1)));
+              void'(ral.err_code.invalid_op.predict(.value(1'b1)));
+            end
           end // start
         end else if (addr_phase_read) begin
           // start drops when op is done.
