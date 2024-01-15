@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST")
+load("//rules:const.bzl", "CONST", "hex_digits")
 load("//rules:opentitan.bzl", "SILICON_CREATOR_KEYS")
 
 MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
@@ -11,6 +11,17 @@ MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
     CONST.SHUTDOWN.PREFIX.BFV,
     "{0}",
 )
+
+def msg_template_bfv_all_except(bfv_const):
+    hex_str = hex_digits(bfv_const)
+    regex = "|".join([
+        "{}[^{}]".format(
+            hex_str[0:idx],
+            hex_str[idx],
+        )
+        for idx in range(1, 8)
+    ])
+    return "((FAIL|FAULT).*\n)|{}({})\r\n".format(CONST.SHUTDOWN.PREFIX.BFV, regex)
 
 MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
     CONST.SHUTDOWN.PREFIX.BFV,
