@@ -4287,6 +4287,27 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "sysrst_ctrl_ulp_z3_wakeup_test",
+    srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
+    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "sram_ctrl_memset_test",
     srcs = ["sram_ctrl_memset_test.c"],
     exec_env = dicts.add(
