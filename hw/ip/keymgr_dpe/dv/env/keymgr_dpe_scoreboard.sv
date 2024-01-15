@@ -1078,6 +1078,18 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   op.name, current_state.name), UVM_MEDIUM)
               return 1;
             end
+            // invalid op if dst slot is occupied (valid) and retain_parent == 1
+            // meaning it's an already occupied dst slot
+            if ((current_internal_key[current_key_slot.src_slot].key_policy.retain_parent == 1) &&
+                current_internal_key[current_key_slot.dst_slot].valid
+            ) begin
+              `uvm_info(`gfn,
+                $sformatf(
+                  {"get_invalid_op: op %s current_state: %s retain_parent == 1",
+                  "dst_slot valid err"},
+                  op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
             // invalid op if dst slot != src slot and retain_parent == 0
             if ((current_internal_key[current_key_slot.src_slot].key_policy.retain_parent == 0) &&
                 current_key_slot.src_slot != current_key_slot.dst_slot
@@ -1089,15 +1101,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             end
             // invalid op src_slot is invalid. src slot could have been "erased"
             if (current_internal_key[current_key_slot.src_slot].valid == 0) begin
-              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s valid == 0 err",
-                op.name, current_state.name), UVM_MEDIUM)
+              `uvm_info(`gfn,
+              $sformatf({"get_invalid_op: op %s current_state: %s",
+                  "src_slot valid == 0 err"}, op.name, current_state.name), UVM_MEDIUM)
               return 1;
             end
             return 0;
           end
           keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
             if (!current_internal_key[current_key_slot.src_slot].valid) begin
-              `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s valid == 0 err",
+              `uvm_info(`gfn,
+                $sformatf("get_invalid_op: op %s current_state: %s valid == 0 err",
                 op.name, current_state.name), UVM_MEDIUM)
               return 1;
             end
