@@ -27,7 +27,7 @@ trap 'echo "code failed rustfmt_check fix with ./bazelisk.sh run //quality:rustf
 set -o pipefail
 if ! git diff --quiet $merge_base -- "*.rs" ':!*/vendor/*'; then
     echo "Rust files changed, running Rust lint checks"
-    ./bazelisk.sh test //quality:rustfmt_check --test_output=streamed
+    ci/bazelisk.sh test //quality:rustfmt_check --test_output=streamed
 else
     echo "Rust files unchanged, skipping Rust lint checks"
 fi

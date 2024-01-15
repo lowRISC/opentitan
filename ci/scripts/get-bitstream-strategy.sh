@@ -33,12 +33,12 @@ else
 fi
 
 # Retrieve the most recent bitstream at or before HEAD.
-BITSTREAM="--refresh HEAD" ./bazelisk.sh build @bitstreams//:manifest
+BITSTREAM="--refresh HEAD" ci/bazelisk.sh build @bitstreams//:manifest
 
 # Find the bitstream commit from the manifest file.
 manifest_file=$(ci/scripts/target-location.sh @bitstreams//:manifest)
 
-bitstream_commit=$(./bazelisk.sh run //util/py/scripts:get_bitstream_build_id \
+bitstream_commit=$(ci/bazelisk.sh run //util/py/scripts:get_bitstream_build_id \
   -- --manifest ${manifest_file} \
   --schema ${REPO_TOP}/rules/scripts/bitstreams_manifest.schema.json \
   --design ${bitstream_design})

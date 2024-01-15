@@ -30,7 +30,7 @@ set -o pipefail
 (for F in $(git diff --name-only --diff-filter=ACMRTUXB "$merge_base"); do
     echo "--test_arg=\"$F\""
 done)| \
-    xargs -r ./bazelisk.sh test //quality:license_check --test_output=streamed || {
+    xargs -r ci/bazelisk.sh test //quality:license_check --test_output=streamed || {
 
     echo >&2 -n "##vso[task.logissue type=error]"
     echo >&2 "Licence header check failed."
