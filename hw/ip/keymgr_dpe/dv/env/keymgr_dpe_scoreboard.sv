@@ -76,6 +76,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // it's set by the process_kmac_data_rsp() function, during an
   // internal key update
   bit compare_internal_key_slot;
+  bit post_disable_compare_key_slots;
   keymgr_dpe_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
@@ -527,7 +528,46 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               );
             compare_internal_key_slot = 0;
           end
+          // compare all internal key slots valid to 0, and that key
+          // values in the key slots are no longer equal to the previous
+          // contents
+          if (current_op_status == keymgr_pkg::OpDoneSuccess &&
+              post_disable_compare_key_slots) begin
+            foreach(current_internal_key[slot]) begin
+              if (cfg.keymgr_dpe_vif.internal_key_slots[slot].valid) begin
+                `uvm_error(`gfn,
+                  $sformatf("After a disable key_slot[%0d] valid bit is still asserted", slot))
+              end
+              if (cfg.keymgr_dpe_vif.internal_key_slots[slot].key ==
+                  current_internal_key[slot].key) begin
+                `uvm_error(`gfn,
+                  $sformatf("After a disable key_slot[%0d] key_value retained it's value 'h%0h",
+                  slot, cfg.keymgr_dpe_vif.internal_key_slots[slot].key))
+              end
+            end
+            // check sideload keys are preserved from available to disable state
+            if (cfg.keymgr_dpe_vif.aes_key_exp != cfg.keymgr_dpe_vif.aes_key) begin
+                `uvm_error(`gfn,
+                  $sformatf({"After a disable aes sideload key was not preseved",
+                  "exp 'h%0h vs. act 'h%0h"},
+                  cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
+            end
 
+            if (cfg.keymgr_dpe_vif.otbn_key_exp != cfg.keymgr_dpe_vif.otbn_key) begin
+                `uvm_error(`gfn,
+                  $sformatf({"After a disable otbn sideload key was not preseved",
+                    "exp 'h%0h vs. act 'h%0h"},
+                  cfg.keymgr_dpe_vif.otbn_key_exp, cfg.keymgr_dpe_vif.otbn_key))
+            end
+
+            if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
+                `uvm_error(`gfn,
+                  $sformatf({"After a disable kmac sideload key was not preseved",
+                  "exp 'h%0h vs. act 'h%0h"},
+                  cfg.keymgr_dpe_vif.kmac_key_exp, cfg.keymgr_dpe_vif.kmac_key))
+            end
+            post_disable_compare_key_slots = 0;
+          end
           foreach (intr_exp[i]) begin
             keymgr_dpe_intr_e intr = keymgr_dpe_intr_e'(i);
 
@@ -722,17 +762,32 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                   end
                   keymgr_dpe_pkg::OpDpeDisable: begin
+                    foreach (current_internal_key[slot]) begin
+                      // The internal key slots get wiped, i.e.,
+                      // they are guaranteed to be invalid and have a different value.
+                      // The new value may be zero or a random value
+                      // (which could, with an infinitesimal probability, equal the previous value).
+                      // DV needs to check that the value has changed from the valid one,
+                      // and the scoreboard does this when post_disable_compare_key_slots == 1.
+                      current_internal_key[slot].valid = 0;
+                    end
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    post_disable_compare_key_slots = 1;
                   end
                   default: ;
                 endcase
               end
-              keymgr_dpe_pkg::StWorkDpeDisabled: begin
-                // TODO(#667) add handling of disabled and invalid states in "start" case of
-                // process_tl_access
-              end
-              keymgr_dpe_pkg::StWorkDpeInvalid: begin
-                // TODO(#667) add handling of disabled and invalid states in "start" case of
-                // process_tl_access
+              keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
+                // Any operation inside Disabled or Invalid state should lead to an error
+                current_op_status = keymgr_pkg::OpDoneFail;
+                // No KDF issued, done interrupt/alert is triggered in next cycle
+                void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                  begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    process_error_n_alert();
+                  end
+                join_none
               end
               default: begin
                 `uvm_fatal(`gfn,
