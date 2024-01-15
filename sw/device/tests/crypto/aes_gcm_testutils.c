@@ -192,14 +192,14 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
         .data = actual_ciphertext.data + ciphertext_bytes_written,
         .len = test->plaintext_len - ciphertext_bytes_written,
     };
-    TRY(otcrypto_aes_gcm_encrypt_final(&ctx, tag_len, &final_ciphertext,
-                                       &ciphertext_bytes_written, &actual_tag));
+    TRY(otcrypto_aes_gcm_encrypt_final(&ctx, tag_len, final_ciphertext,
+                                       &ciphertext_bytes_written, actual_tag));
     *cycles = profile_end(t_start);
   } else {
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
     otcrypto_status_t err = otcrypto_aes_gcm_encrypt(
-        &key, plaintext, iv, aad, tag_len, &actual_ciphertext, &actual_tag);
+        &key, plaintext, iv, aad, tag_len, actual_ciphertext, actual_tag);
     *cycles = profile_end(t_start);
 
     // Check for errors.
@@ -290,7 +290,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
         .len = actual_plaintext.len - plaintext_bytes_written,
     };
     size_t final_plaintext_bytes_written;
-    TRY(otcrypto_aes_gcm_decrypt_final(&ctx, tag, tag_len, &final_plaintext,
+    TRY(otcrypto_aes_gcm_decrypt_final(&ctx, tag, tag_len, final_plaintext,
                                        &final_plaintext_bytes_written,
                                        tag_valid));
     *cycles = profile_end(t_start);
@@ -299,7 +299,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
     icache_invalidate();
     uint64_t t_start = profile_start();
     otcrypto_status_t err = otcrypto_aes_gcm_decrypt(
-        &key, ciphertext, iv, aad, tag_len, tag, &actual_plaintext, tag_valid);
+        &key, ciphertext, iv, aad, tag_len, tag, actual_plaintext, tag_valid);
     *cycles = profile_end(t_start);
     icache_invalidate();
 
