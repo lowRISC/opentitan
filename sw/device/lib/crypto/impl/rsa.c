@@ -292,7 +292,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
 otcrypto_status_t otcrypto_rsa_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t *message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
@@ -311,7 +311,7 @@ otcrypto_status_t otcrypto_rsa_verify(
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t *ciphertext) {
+    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext) {
   HARDENED_TRY(
       otcrypto_rsa_encrypt_async_start(public_key, hash_mode, message, label));
   return otcrypto_rsa_encrypt_async_finalize(ciphertext);
@@ -321,7 +321,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t *plaintext) {
+    otcrypto_byte_buf_t plaintext) {
   HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
   return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext);
 }
@@ -668,23 +668,23 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
-    otcrypto_word32_buf_t *signature) {
+    otcrypto_word32_buf_t signature) {
   // Check for NULL pointers.
-  if (signature == NULL || signature->data == NULL) {
+  if (signature.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Determine the size based on the signature buffer length.
-  switch (signature->len) {
+  switch (signature.len) {
     case kRsa2048NumWords:
       return rsa_signature_generate_2048_finalize(
-          (rsa_2048_int_t *)signature->data);
+          (rsa_2048_int_t *)signature.data);
     case kRsa3072NumWords:
       return rsa_signature_generate_3072_finalize(
-          (rsa_3072_int_t *)signature->data);
+          (rsa_3072_int_t *)signature.data);
     case kRsa4096NumWords:
       return rsa_signature_generate_4096_finalize(
-          (rsa_4096_int_t *)signature->data);
+          (rsa_4096_int_t *)signature.data);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -838,17 +838,17 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
-    otcrypto_word32_buf_t *ciphertext) {
+    otcrypto_word32_buf_t ciphertext) {
   // Check for NULL pointers.
-  if (ciphertext == NULL || ciphertext->data == NULL) {
+  if (ciphertext.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  switch (launder32(ciphertext->len)) {
+  switch (launder32(ciphertext.len)) {
     case kRsa2048NumWords: {
-      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_2048_int_t));
-      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext->data;
+      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext.data;
       return rsa_encrypt_2048_finalize(ctext);
     }
     case kRsa3072NumWords: {
@@ -952,8 +952,8 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t *plaintext) {
-  if (plaintext == NULL || plaintext->data == NULL || label.data == NULL) {
+    otcrypto_byte_buf_t plaintext) {
+  if (plaintext.data == NULL || label.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -961,16 +961,16 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
   // from OTBN.
   size_t actual_plaintext_len;
   HARDENED_TRY(rsa_decrypt_finalize(hash_mode, label.data, label.len,
-                                    plaintext->len, plaintext->data,
+                                    plaintext.len, plaintext.data,
                                     &actual_plaintext_len));
 
   // Consistency check; this should never happen.
-  if (launder32(actual_plaintext_len) >= plaintext->len) {
+  if (launder32(actual_plaintext_len) >= plaintext.len) {
     HARDENED_TRAP();
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_LE(actual_plaintext_len, plaintext->len);
+  HARDENED_CHECK_LE(actual_plaintext_len, plaintext.len);
 
-  plaintext->len = actual_plaintext_len;
+  plaintext.len = actual_plaintext_len;
   return OTCRYPTO_OK;
 }

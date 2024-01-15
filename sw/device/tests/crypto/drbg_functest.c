@@ -49,10 +49,10 @@ static status_t kat_test(void) {
   // Generate output twice.
   LOG_INFO("Generating...");
   TRY(otcrypto_drbg_manual_generate(/*additional_input=*/kEmptyBuffer,
-                                    &actual_output));
+                                    actual_output));
   LOG_INFO("Generating again...");
   TRY(otcrypto_drbg_manual_generate(/*additional_input=*/kEmptyBuffer,
-                                    &actual_output));
+                                    actual_output));
 
   // Compare second result to expected output.
   TRY_CHECK_ARRAYS_EQ(kExpOutput, actual_output_words, ARRAYSIZE(kExpOutput));
@@ -71,7 +71,7 @@ static status_t random_test(void) {
       .data = output_data,
       .len = ARRAYSIZE(output_data),
   };
-  TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, &output));
+  TRY(otcrypto_drbg_generate(/*additional_input=*/kEmptyBuffer, output));
 
   // Run a basic randomness-quality check on the output.
   return randomness_quality_monobit_test(

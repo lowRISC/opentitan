@@ -46,8 +46,8 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
-  HARDENED_TRY(otcrypto_drbg_generate(empty, &share0_buf));
-  HARDENED_TRY(otcrypto_drbg_generate(empty, &share1_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(empty, share0_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(empty, share1_buf));
 
   // Populate the checksum and return.
   key->checksum = integrity_blinded_checksum(key);
@@ -123,10 +123,10 @@ otcrypto_status_t otcrypto_import_blinded_key(
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t *key_share0,
-    otcrypto_word32_buf_t *key_share1) {
-  if (blinded_key.keyblob == NULL || key_share0 == NULL || key_share1 == NULL ||
-      key_share0->data == NULL || key_share1->data == NULL) {
+    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
+    otcrypto_word32_buf_t key_share1) {
+  if (blinded_key.keyblob == NULL || key_share0.data == NULL ||
+      key_share1.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -149,13 +149,13 @@ otcrypto_status_t otcrypto_export_blinded_key(
 
   // Check the lengths of the shares.
   size_t share_words = launder32(keyblob_share_num_words(blinded_key.config));
-  if (launder32(key_share0->len) != share_words ||
-      launder32(key_share1->len) != share_words) {
+  if (launder32(key_share0.len) != share_words ||
+      launder32(key_share1.len) != share_words) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key_share0->len,
+  HARDENED_CHECK_EQ(key_share0.len,
                     keyblob_share_num_words(blinded_key.config));
-  HARDENED_CHECK_EQ(key_share1->len,
+  HARDENED_CHECK_EQ(key_share1.len,
                     keyblob_share_num_words(blinded_key.config));
 
   // Check the length of the keyblob.
@@ -172,7 +172,7 @@ otcrypto_status_t otcrypto_export_blinded_key(
   uint32_t *keyblob_share1;
   HARDENED_TRY(
       keyblob_to_shares(&blinded_key, &keyblob_share0, &keyblob_share1));
-  hardened_memcpy(key_share0->data, keyblob_share0, key_share0->len);
-  hardened_memcpy(key_share1->data, keyblob_share1, key_share1->len);
+  hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len);
+  hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len);
   return OTCRYPTO_OK;
 }

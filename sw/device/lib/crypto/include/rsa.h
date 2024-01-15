@@ -177,7 +177,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
 otcrypto_status_t otcrypto_rsa_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t *message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature);
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t signature);
 
 /**
  * Verifies the authenticity of the input signature.
@@ -233,7 +233,7 @@ otcrypto_status_t otcrypto_rsa_verify(
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t *ciphertext);
+    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext);
 
 /**
  * Decrypts a message with RSA.
@@ -269,7 +269,7 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t *plaintext);
+    otcrypto_byte_buf_t plaintext);
 /**
  * Starts the asynchronous RSA key generation function.
  *
@@ -356,7 +356,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
  * @return Result of async RSA sign finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
-    otcrypto_word32_buf_t *signature);
+    otcrypto_word32_buf_t signature);
 
 /**
  * Starts the asynchronous signature verification function.
@@ -417,7 +417,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
  * @return The result of the RSA encryption operation.
  */
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
-    otcrypto_word32_buf_t *ciphertext);
+    otcrypto_word32_buf_t ciphertext);
 
 /**
  * Starts the asynchronous decryption function.
@@ -446,7 +446,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t *plaintext);
+    otcrypto_byte_buf_t plaintext);
 
 #ifdef __cplusplus
 }  // extern "C"
