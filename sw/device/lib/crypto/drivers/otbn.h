@@ -193,6 +193,7 @@ typedef struct otbn_app {
  * @param dest The DMEM location to copy to.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest);
 
@@ -210,6 +211,7 @@ status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
  * @param dest The DMEM location to set.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
 
 /**
@@ -226,6 +228,7 @@ status_t otbn_dmem_set(size_t num_words, const uint32_t src, otbn_addr_t dest);
  * @param[out] dest The main memory location to copy to.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
 
 /**
@@ -235,6 +238,7 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_execute(void);
 
 /**
@@ -244,6 +248,7 @@ status_t otbn_execute(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_busy_wait_for_done(void);
 
 /**
@@ -270,6 +275,20 @@ uint32_t otbn_err_bits_get(void);
 uint32_t otbn_instruction_count_get(void);
 
 /**
+ * Get the checksum value of loaded data from OTBN.
+ *
+ * @return The contents of OTBN's LOAD_CHECKSUM register.
+ */
+uint32_t otbn_load_checksum_get(void);
+
+/**
+ * Reset the value of OTBN's LOAD_CHECKSUM register.
+ *
+ * Sets the checksum value to all-zero.
+ */
+void otbn_load_checksum_reset(void);
+
+/**
  * Wipe IMEM securely.
  *
  * This function returns an error if called when OTBN is not idle, and blocks
@@ -277,6 +296,7 @@ uint32_t otbn_instruction_count_get(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_imem_sec_wipe(void);
 
 /**
@@ -287,6 +307,7 @@ status_t otbn_imem_sec_wipe(void);
  *
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_dmem_sec_wipe(void);
 
 /**
@@ -300,6 +321,7 @@ status_t otbn_dmem_sec_wipe(void);
  * @param enable Enable or disable whether software errors are fatal.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 /**
@@ -314,6 +336,7 @@ status_t otbn_set_ctrl_software_errs_fatal(bool enable);
  * @param app The application to load into OTBN.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t otbn_load_app(const otbn_app_t app);
 
 #ifdef __cplusplus
