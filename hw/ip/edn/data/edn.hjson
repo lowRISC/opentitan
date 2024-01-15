@@ -309,19 +309,45 @@
                  "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "0",
-          name: "CMD_RDY",
+          name: "CMD_REG_RDY",
           desc: '''
-                This bit indicates when the command interface is ready to accept commands.
+                This bit indicates when !!SW_CMD_REQ is ready to accept the next word.
+                This bit has to be polled before each word of a command is written to !!SW_CMD_REQ.
+                0b0: The EDN is not ready to accept the next word yet.
+                0b1: The EDN is ready to accept the next word.
                 '''
           resval: "0"
         }
         { bits: "1",
+          name: "CMD_RDY",
+          desc: '''
+                This bit indicates when the EDN is ready to accept the next command.
+                Before starting to write a new command to !!SW_CMD_REQ, this field needs to be polled.
+                0b0: The EDN is not ready to accept commands or the last command hasn't been acked yet.
+                0b1: The EDN is ready to accept the next command.
+                '''
+          resval: "0"
+        }
+        { bits: "2",
           name: "CMD_STS",
           desc: '''
-                This one bit field is the status code returned with the application command ack.
-                It is updated each time a command ack is asserted on the CSRNG interface.
-                0b0: Request completed successfully
-                0b1: Request completed with an error
+                This one bit field represents the status code returned with the CSRNG application command ack.
+                It is updated each time a command is acknowledged by CSRNG.
+                To check whether a command was succesful, wait for !!INTR_STATE.EDN_CMD_REQ_DONE or
+                !!SW_CMD_STS.CMD_ACK to be high and then check the value of this field.
+                0b0: Request completed successfully.
+                0b1: Request completed with an error.
+                '''
+          resval: "0"
+        }
+        { bits: "3",
+          name: "CMD_ACK",
+          desc: '''
+                This one bit field indicates when a command has been acknowledged by the CSRNG.
+                It is set to low each time a new command is written to !!SW_CMD_REQ.
+                The field is set to high once a SW command request has been acknowledged by the CSRNG.
+                0b0: The last command has not been acknowledged yet.
+                0b1: The last command has been acknowledged.
                 '''
           resval: "0"
         }

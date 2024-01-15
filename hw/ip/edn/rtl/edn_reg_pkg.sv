@@ -123,11 +123,19 @@ package edn_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } cmd_reg_rdy;
+    struct packed {
+      logic        d;
+      logic        de;
     } cmd_rdy;
     struct packed {
       logic        d;
       logic        de;
     } cmd_sts;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cmd_ack;
   } edn_hw2reg_sw_cmd_sts_reg_t;
 
   typedef struct packed {
@@ -215,8 +223,8 @@ package edn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [45:42]
-    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [41:38]
+    edn_hw2reg_intr_state_reg_t intr_state; // [49:46]
+    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [45:38]
     edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [37:28]
     edn_hw2reg_err_code_reg_t err_code; // [27:10]
     edn_hw2reg_main_sm_state_reg_t main_sm_state; // [9:0]
