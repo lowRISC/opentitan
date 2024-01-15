@@ -15,7 +15,7 @@ class csrng_monitor extends dv_base_monitor #(
   // uvm_analysis_port #(csrng_item): analysis_port
 
   // Analysis port for the csrng_rsp_sts.
-  uvm_analysis_port #(bit) rsp_sts_ap;
+  uvm_analysis_port #(csrng_rsp_t) rsp_sts_ap;
 
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)))
       csrng_cmd_fifo;
@@ -156,7 +156,7 @@ class csrng_monitor extends dv_base_monitor #(
           end
         end
 
-        rsp_sts_ap.write(cfg.vif.cmd_rsp.csrng_rsp_sts);
+        rsp_sts_ap.write(cfg.vif.cmd_rsp);
        end
     end
   endtask

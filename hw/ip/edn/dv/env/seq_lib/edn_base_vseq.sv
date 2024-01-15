@@ -190,6 +190,11 @@ class edn_base_vseq extends cip_base_vseq #(
       end
       edn_env_pkg::Sw: begin
         if (additional_data) begin
+          `DV_SPINWAIT_EXIT(
+            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_reg_rdy), .exp_data(1'b1));,
+            wait(cfg.abort_sw_cmd);,
+            "Aborted SW command"
+          )
           csr_wr(.ptr(ral.sw_cmd_req), .value(cmd_data));
           additional_data -= 1;
         end
@@ -213,9 +218,12 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task wait_cmd_req_done();
+    bit [TL_DW-1:0] val;
     // Expect/Clear interrupt bit
     csr_spinwait(.ptr(ral.intr_state.edn_cmd_req_done), .exp_data(1'b1));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
+    // Read the sw_cmd_sts reg such that the scoreboard can check if the values are correct.
+    csr_rd(.ptr(ral.sw_cmd_sts), .value(val));
   endtask
 
   task force_fifo_err(string path1, string path2, bit value1, bit value2,

@@ -20,7 +20,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo#(cs_cmd_item_t) cs_cmd_fifo;
   uvm_tlm_analysis_fifo#(genbits_item_t) genbits_fifo;
   uvm_tlm_analysis_fifo#(endpoint_item_t) endpoint_fifo[MAX_NUM_ENDPOINTS];
-  uvm_tlm_analysis_fifo#(bit) rsp_sts_fifo;
+  uvm_tlm_analysis_fifo#(csrng_pkg::csrng_rsp_t) rsp_sts_fifo;
 
   // local queues to hold incoming packets pending comparison
   bit [FIPS_ENDPOINT_BUS_WIDTH - 1:0] endpoint_data_q[$];
@@ -42,6 +42,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
   bit auto_mode = 1'b0;
   // indicator bit, 1'b1 if EDN was instantiated
   bit instantiated = 1'b0;
+  // indicator bit, 1'b1 if EDN instantiate was not acked yet
+  bit inst_ack_outstanding = 1'b0;
   // indicator bit, 1'b1 if in boot_req_mode and generate cmd has been sent
   bit boot_gen_cmd_sent = 1'b0;
   // Indicator bit that equals 1'b1 if a backdoor disable has happened and
@@ -58,6 +60,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [NumEdnIntr-1:0] intr_pins;
+
+  // Variables to track the SW_CMD_STS bits.
+  // TODO: (#15561) replace this by using predicts. e.g. ral.sw_cmd_sts.sw_cmd_ack.predict(.value(1'b0));
+  // This can be done once there is a proper prediction model for the ready fields.
+  bit sw_cmd_ack = 1'b0;
+  bit sw_cmd_sts = 1'b0;
 
   `uvm_component_new
 
@@ -208,6 +216,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
             reqs_between_reseeds_ctr = 32'b0;
             instantiated = 1'b0;
             boot_gen_cmd_sent = 1'b0;
+            sw_cmd_ack = 1'b0;
+            sw_cmd_sts = 1'b0;
             sw_cmd_req_q.delete();
 
             // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
@@ -244,12 +254,22 @@ class edn_scoreboard extends cip_base_scoreboard #(
                              (!boot_mode && !auto_mode) ||
                              (auto_mode && !instantiated);
 
-        if (addr_phase_write && `gmv(ral.sw_cmd_sts.cmd_rdy) && sw_cmd_allowed) begin
+        if (addr_phase_write && `gmv(ral.sw_cmd_sts.cmd_reg_rdy) && sw_cmd_allowed) begin
+          sw_cmd_ack = 0;
           sw_cmd_req_q.push_back(item.a_data);
         end
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
+        // If the EDN was disabled via back door, the state tracking bits need to be cleared.
+        if (cfg.backdoor_disable) begin
+            sw_cmd_ack = 1'b0;
+            sw_cmd_sts = 1'b0;
+        end
+        if (data_phase_read) begin
+          `DV_CHECK_EQ(sw_cmd_ack, item.d_data[cmd_ack])
+          `DV_CHECK_EQ(sw_cmd_sts, item.d_data[cmd_sts])
+        end
       end
       "boot_ins_cmd": begin
         if (addr_phase_write) begin
@@ -326,6 +346,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
         // If this is the last word of an instantiate command, set the appropriate flags
         if ((acmd_cur == csrng_pkg::INS) && (clen_cntr == 0)) begin
           instantiated = 1'b1;
+          inst_ack_outstanding = 1'b1;
         end
 
         // Determine which fifo to compare the additional data with
@@ -405,6 +426,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
             // and set flags accordingly
             if (clen_cntr == 0) begin
               instantiated = 1'b1;
+              inst_ack_outstanding = 1'b1;
             end
 
             // If EDN is in boot_req_mode and boot sequence is not done
@@ -554,11 +576,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
             if (boot_gen_cmd_sent) begin
               boot_gen_cmd_sent = 1'b0;
-              boot_mode = 1'b0;
               `DV_CHECK_FATAL(cs_cmd == edn_pkg::BOOT_UNINSTANTIATE,
                               $sformatf({"Uninstantiate command 0x%h has to match",
                                          " the boot mode uninstantiate command 0x%h."},
                                         cs_cmd, edn_pkg::BOOT_UNINSTANTIATE))
+              csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+              boot_mode = 1'b0;
             end
 
             instantiated = 1'b0;
@@ -588,13 +611,20 @@ class edn_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task process_rsp_sts_fifo();
-    bit   rsp_sts;
+    csrng_pkg::csrng_rsp_t   rsp_sts;
 
     forever begin
       rsp_sts_fifo.get(rsp_sts);
-      if ((cfg.boot_req_mode == MuBi4False) && (cfg.auto_req_mode == MuBi4False)) begin
-        // Check register value if not boot_req_mode/auto_req_mode
-        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(rsp_sts));
+      // Check the register value if we are not in boot_req_mode or
+      // in auto_req_mode after the instantiate.
+      if (!boot_mode && (!auto_mode || inst_ack_outstanding)) begin
+        // Wait until the ack has propagated through the EDN to the register.
+        `DV_SPINWAIT_EXIT(
+            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack), .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
+            sw_cmd_ack = rsp_sts.csrng_rsp_ack;
+            sw_cmd_sts = rsp_sts.csrng_rsp_sts;,
+            wait (cfg.backdoor_disable);)
+        inst_ack_outstanding = 0;
       end
     end
   endtask
@@ -628,6 +658,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
+    sw_cmd_ack = 1'b0;
+    sw_cmd_sts = 1'b0;
   endfunction
 
   function void check_phase(uvm_phase phase);
