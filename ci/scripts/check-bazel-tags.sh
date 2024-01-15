@@ -25,7 +25,7 @@ check_empty () {
 
 # This check ensures OpenTitan software can be built with a wildcard without
 # waiting for Verilator using --build_tag_filters=-verilator
-untagged=$(./bazelisk.sh query \
+untagged=$(ci/bazelisk.sh query \
   "rdeps(
       //...,
       //hw:verilator
