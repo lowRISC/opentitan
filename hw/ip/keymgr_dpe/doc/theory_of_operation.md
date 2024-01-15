@@ -132,7 +132,7 @@ If the OTP creator root key is not valid during the latching cycle, keymgr_dpe m
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
-`KDF(child_key) = KDF(parent_key, message)`, where the message input might take few forms depending on the parent slot's `boot_stage` value.
+`child_key = KDF(parent_key, message)`, where the message input might take few forms depending on the parent slot's `boot_stage` value.
 In particular:
 * If `boot_stage = 0` for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`. See [KDF Details](#kdf-details) for more details on HW-backed inputs.
 * If `boot_stage = 1` for the parent, then `message = SW_CDI_INPUT || owner_seed`.
