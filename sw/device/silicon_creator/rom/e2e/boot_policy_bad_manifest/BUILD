@@ -40,6 +40,7 @@ load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_TEMPLATE_BFV",
     "SLOTS",
+    "msg_template_bfv_all_except",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -51,6 +52,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": "0",
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
     },
     {
         "name": "too_small",
@@ -59,6 +61,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "length": hex(CONST.ROM_EXT_SIZE_MIN - 1),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_LENGTH),
     },
     {
         "name": "too_large",
@@ -67,6 +70,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "length": hex(CONST.ROM_EXT_SIZE_MAX + 1),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_LENGTH),
     },
     {
         "name": "empty_code",
@@ -77,6 +81,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_CODE_REGION),
     },
     {
         "name": "code_in_manifest",
@@ -87,6 +92,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_CODE_REGION),
     },
     {
         "name": "code_outside_image",
@@ -97,6 +103,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_CODE_REGION),
     },
     {
         "name": "code_start_unaligned",
@@ -107,6 +114,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_CODE_REGION),
     },
     {
         "name": "code_end_unaligned",
@@ -117,6 +125,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_CODE_REGION),
     },
     {
         "name": "entry_before_code_start",
@@ -127,6 +136,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 4),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_ENTRY_POINT),
     },
     {
         "name": "entry_at_code_end",
@@ -137,6 +147,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 12),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_ENTRY_POINT),
     },
     {
         "name": "entry_unaligned",
@@ -147,6 +158,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "entry_point": hex(CONST.MANIFEST_SIZE + 10),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_ENTRY_POINT),
     },
     {
         "name": "rollback",
@@ -158,6 +170,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "security_version": "0",
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.ROLLBACK),
         "sec_ver": 1,
     },
 ]
@@ -219,6 +232,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
             assemble = "{firmware}@{offset}",
+            exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
             offset = SLOTS[slot],
             otp = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
