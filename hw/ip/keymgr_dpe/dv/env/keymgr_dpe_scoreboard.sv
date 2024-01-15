@@ -1443,6 +1443,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid,
                    current_internal_key[slot].valid)
+      if (current_internal_key[slot].valid) begin
+        `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot],
+                     current_internal_key[slot])
+      end
     end
     if (compare_internal_key_slot)
       `uvm_error(`gfn,
