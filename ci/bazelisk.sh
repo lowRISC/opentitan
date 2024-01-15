@@ -15,12 +15,13 @@ echo "Running bazelisk in $(pwd)."
 
 # An additional bazelrc must be synthesized to specify precisely how to use the
 # GCP bazel cache.
+GCP_CREDS_FILE="$GCP_BAZEL_CACHE_KEY_SECUREFILEPATH"
 GCP_BAZELRC="$(mktemp /tmp/XXXXXX.bazelrc)"
 trap 'rm ${GCP_BAZELRC}' EXIT
 
-if [[ -n "${GCP_BAZEL_CACHE_KEY}" && -f "${GCP_BAZEL_CACHE_KEY}" ]]; then
+if [[ -n "$GCP_CREDS_FILE" && -f "$GCP_CREDS_FILE" ]]; then
     echo "Applying GCP cache key; will upload to the cache."
-    echo "build --google_credentials=${GCP_BAZEL_CACHE_KEY}" >> "${GCP_BAZELRC}"
+    echo "build --google_credentials=${GCP_CREDS_FILE}" >> "${GCP_BAZELRC}"
 else
     echo "No key/invalid path to key. Download from cache only."
     echo "build --remote_upload_local_results=false" >> "${GCP_BAZELRC}"
