@@ -1106,7 +1106,7 @@
     {
       name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
       uvm_test_seq: chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_ulp_z3_wakeup_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
