@@ -244,7 +244,7 @@ module keymgr_dpe_ctrl
   assign active_slot_boot_stage = active_key_slot_o.boot_stage;
   assign active_slot_policy     = active_key_slot_o.key_policy;
 
-  assign data_valid_o = op_ack & gen_key_op;
+  assign data_valid_o = op_ack & gen_key_op & ~invalid_op;
   assign wipe_key_o = update_sel == SlotQuickWipeAll;
 
   logic destination_slot_valid;
