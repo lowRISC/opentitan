@@ -64,11 +64,6 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
             iter, src_slot ,dst_slot), UVM_HIGH)
         keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(1,4)), .clr_output(1));
       end
-
-      // check to make sure all key slots are valid
-      for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
-        `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
-      end
   endtask : body
 
 endclass : keymgr_dpe_smoke_vseq

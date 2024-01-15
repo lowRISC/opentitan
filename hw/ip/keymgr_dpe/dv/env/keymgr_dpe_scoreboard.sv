@@ -1440,6 +1440,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, req_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, rsp_fifo)
+    for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+      `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid,
+                   current_internal_key[slot].valid)
+    end
     if (compare_internal_key_slot)
       `uvm_error(`gfn,
         $sformatf("outstanding compare_internal_key_slot left unchecked %0d",
