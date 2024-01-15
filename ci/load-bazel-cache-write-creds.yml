@@ -1,0 +1,17 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure Pipelines template for downloading a "secure file" containing the write
+# credentials for a GCP bucket where we store a Bazel cache.
+#
+# The path to the downloaded file is automatically stored in an environment
+# variable `GCP_BAZEL_CACHE_KEY_SECUREFILEPATH`. This file is loaded by the
+# `ci/bazelisk.sh` script.
+
+steps:
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: GCP_BAZEL_CACHE_KEY
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
