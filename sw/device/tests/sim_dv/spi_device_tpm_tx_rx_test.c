@@ -217,6 +217,9 @@ bool test_main(void) {
     // Finished processing the write command
     ack_spi_tpm_header_irq(&spi_device);
 
+    LOG_INFO("SYNC: Waiting Read");
+    // Send the written data right back out for reads.
+
     // Wait for read interrupt.
     atomic_wait_for_interrupt();
     // Send the written data right back out for reads.
