@@ -285,7 +285,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       end
       // Should occur when a valid OpDpeGenSwOut is issued in the StWorkDpeAvailable state
       UpdateSwOut: begin
-        if (!get_fault_err) begin
+        if (!get_fault_err && !get_invalid_op()) begin
           bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
           // digest is 384 bits wide while SW output is only 256, need to truncate it
           sw_share_output = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
@@ -306,7 +306,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control_shadowed.dest_sel));
 
-        if (dest != keymgr_pkg::None && !get_fault_err()) begin
+        if (dest != keymgr_pkg::None && !get_fault_err() && !get_invalid_op()) begin
           cfg.keymgr_dpe_vif.update_sideload_key(key_shares, current_state, dest);
           `uvm_info(`gfn, $sformatf("Update sideload key 0x%0h for %s", key_shares, dest.name),
                     UVM_MEDIUM)
