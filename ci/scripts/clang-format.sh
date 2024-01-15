@@ -28,4 +28,4 @@ set -o pipefail
 (for F in $(git diff --name-only "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*'); do
     echo "--test_arg=\"$F\""
 done) | \
-    xargs -r ./bazelisk.sh test //quality:clang_format_check --test_output=streamed
+    xargs -r ci/bazelisk.sh test //quality:clang_format_check --test_output=streamed
