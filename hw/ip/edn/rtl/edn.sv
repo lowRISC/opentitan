@@ -119,11 +119,13 @@ module edn
 
     // These assertions check that EDN data will be stable from edn_ack until the next EDN request
     // or until next EDN enablement.
-    `ASSERT(EdnDataStable_A, $rose(edn_o[i].edn_ack) |=>
-            $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1],
-            clk_i, !rst_ni || !u_edn_core.edn_enable_q)
+    `ASSERT(EdnDataStable_A,
+            ($rose(edn_o[i].edn_ack) && $past(u_edn_core.edn_enable_fo[0])) |=>
+                $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1],
+            clk_i, !rst_ni)
 
-    `ASSERT(EdnDataStableDisable_A, u_edn_core.edn_enable_q == 0 |=> $stable(edn_o[i].edn_bus))
+    `ASSERT(EdnDataStableDisable_A,
+            u_edn_core.edn_enable_fo[0] == 0 |=> ##1 $stable(edn_o[i].edn_bus), clk_i, !rst_ni)
 
     `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts

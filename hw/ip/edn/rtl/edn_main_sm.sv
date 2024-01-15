@@ -20,9 +20,7 @@ module edn_main_sm import edn_pkg::*; #(
   output logic                  boot_wr_cmd_reg_o,
   output logic                  boot_wr_cmd_genfifo_o,
   output logic                  boot_wr_cmd_uni_o,
-  output logic                  auto_set_intr_gate_o,
-  output logic                  auto_clr_intr_gate_o,
-  output logic                  auto_first_ack_wait_o,
+  output logic                  accept_sw_cmds_pulse_o,
   output logic                  main_sm_done_pulse_o,
   input logic                   csrng_cmd_ack_i,
   output logic                  capt_gencmd_fifo_cnt_o,
@@ -34,7 +32,6 @@ module edn_main_sm import edn_pkg::*; #(
   input logic                   cmd_sent_i,
   input logic                   local_escalate_i,
   output logic                  auto_req_mode_busy_o,
-  output logic                  main_sm_busy_o,
   output logic [StateWidth-1:0] main_sm_state_o,
   output logic                  main_sm_err_o
 );
@@ -64,18 +61,13 @@ module edn_main_sm import edn_pkg::*; #(
 
   assign main_sm_state_o = state_q;
 
-  assign main_sm_busy_o = (state_q != Idle) && (state_q != BootPulse) &&
-         (state_q != SWPortMode);
-
   always_comb begin
     state_d                = state_q;
     boot_wr_cmd_reg_o      = 1'b0;
     boot_wr_cmd_genfifo_o  = 1'b0;
     boot_wr_cmd_uni_o      = 1'b0;
     boot_send_gencmd_o     = 1'b0;
-    auto_set_intr_gate_o   = 1'b0;
-    auto_clr_intr_gate_o   = 1'b0;
-    auto_first_ack_wait_o  = 1'b0;
+    accept_sw_cmds_pulse_o = 1'b0;
     auto_req_mode_busy_o   = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
     send_gencmd_o          = 1'b0;
@@ -89,9 +81,13 @@ module edn_main_sm import edn_pkg::*; #(
         if (boot_req_mode_i && edn_enable_i) begin
           state_d = BootLoadIns;
         end else if (auto_req_mode_i && edn_enable_i) begin
+          accept_sw_cmds_pulse_o = 1'b1;
+          sw_cmd_valid_o = 1'b1;
           state_d = AutoLoadIns;
         end else if (edn_enable_i) begin
           main_sm_done_pulse_o = 1'b1;
+          accept_sw_cmds_pulse_o = 1'b1;
+          sw_cmd_valid_o = 1'b1;
           state_d = SWPortMode;
         end
       end
@@ -144,17 +140,13 @@ module edn_main_sm import edn_pkg::*; #(
       //-----------------------------------
       AutoLoadIns: begin
         sw_cmd_valid_o = 1'b1;
-        auto_set_intr_gate_o = 1'b1;
-        auto_first_ack_wait_o = 1'b1;
         if (sw_cmd_req_load_i) begin
           state_d = AutoFirstAckWait;
         end
       end
       AutoFirstAckWait: begin
         sw_cmd_valid_o = 1'b1;
-        auto_first_ack_wait_o = 1'b1;
         if (csrng_cmd_ack_i) begin
-          auto_clr_intr_gate_o = 1'b1;
           state_d = AutoDispatch;
         end
       end
@@ -220,9 +212,7 @@ module edn_main_sm import edn_pkg::*; #(
       boot_wr_cmd_genfifo_o  = 1'b0;
       boot_wr_cmd_uni_o      = 1'b0;
       boot_send_gencmd_o     = 1'b0;
-      auto_set_intr_gate_o   = 1'b0;
-      auto_clr_intr_gate_o   = 1'b0;
-      auto_first_ack_wait_o  = 1'b0;
+      accept_sw_cmds_pulse_o = 1'b0;
       auto_req_mode_busy_o   = 1'b0;
       capt_gencmd_fifo_cnt_o = 1'b0;
       send_gencmd_o          = 1'b0;
@@ -244,9 +234,7 @@ module edn_main_sm import edn_pkg::*; #(
       boot_wr_cmd_genfifo_o  = 1'b0;
       boot_wr_cmd_uni_o      = 1'b0;
       boot_send_gencmd_o     = 1'b0;
-      auto_set_intr_gate_o   = 1'b0;
-      auto_clr_intr_gate_o   = 1'b0;
-      auto_first_ack_wait_o  = 1'b0;
+      accept_sw_cmds_pulse_o = 1'b0;
       auto_req_mode_busy_o   = 1'b0;
       capt_gencmd_fifo_cnt_o = 1'b0;
       send_gencmd_o          = 1'b0;
