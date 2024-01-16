@@ -100,7 +100,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit [keymgr_pkg::GenDataWidth-1:0] hw_data_a_array[
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
   keymgr_dpe_pkg::keymgr_dpe_policy_t key_policy;
-  logic [keymgr_dpe_pkg::KeyVersionWidth-1:0] max_key_version;
+  logic [keymgr_pkg::KeyVersionWidth-1:0] max_key_version;
 
   `uvm_component_new
 
