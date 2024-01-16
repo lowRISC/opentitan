@@ -222,7 +222,7 @@ jobs:
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       TARGET_PATTERN_FILE=target_pattern.txt
       mkdir "$BAZEL_EXEC_LOG_ROOT"
-      echo //sw/device/... > "${TARGET_PATTERN_FILE}"
+      echo //sw/device/lib/... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
@@ -288,6 +288,7 @@ jobs:
     artifact: target_pattern_file
   - bash: |
       TARGET_PATTERN_FILE="$(Pipeline.Workspace)/target_pattern_file/target_pattern.txt"
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
       ci/bazelisk.sh test \
         --build_tests_only=false \
         --test_output=errors \
