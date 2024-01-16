@@ -37,6 +37,13 @@ class mem_bkdr_util extends uvm_object;
   protected uint32_t addr_lsb;
   protected uint32_t addr_width;
   protected uint32_t byte_addr_width;
+  protected uint32_t non_ecc_bits_per_subword;
+  protected uint32_t ecc_bits_per_subword;
+  protected uint32_t bits_per_subword;
+  protected uint32_t subwords_per_word;
+  protected uint32_t redundant_bits_per_entry;
+  protected uint32_t interleave_bits_in_entry;
+  protected uint32_t scramble_before_integ;
 
   // Address range of this memory in the system address map.
   protected addr_range_t addr_range;
@@ -62,6 +69,8 @@ class mem_bkdr_util extends uvm_object;
   // package.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
+               int scramble_before_integ = 0,
+               int redundant_bits_per_entry = 0, int interleave_bits_in_entry = 0,
                int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
 
     bit res;
@@ -72,7 +81,10 @@ class mem_bkdr_util extends uvm_object;
 
     this.path  = path;
     this.depth = depth;
-    this.width = n_bits / depth;
+    this.interleave_bits_in_entry = interleave_bits_in_entry;
+    this.scramble_before_integ    = scramble_before_integ;
+    this.redundant_bits_per_entry = redundant_bits_per_entry;
+    this.width                    = (n_bits / depth) - redundant_bits_per_entry;
     this.err_detection_scheme = err_detection_scheme;
 
     if (`HAS_ECC) begin
@@ -81,11 +93,11 @@ class mem_bkdr_util extends uvm_object;
       import prim_secded_pkg::get_ecc_parity_width;
 
       prim_secded_e secded_eds = prim_secded_e'(err_detection_scheme);
-      int non_ecc_bits_per_subword = get_ecc_data_width(secded_eds);
-      int ecc_bits_per_subword = get_ecc_parity_width(secded_eds);
-      int bits_per_subword = non_ecc_bits_per_subword + ecc_bits_per_subword +
-                             extra_bits_per_subword;
-      int subwords_per_word;
+      non_ecc_bits_per_subword = get_ecc_data_width(secded_eds);
+      ecc_bits_per_subword     = get_ecc_parity_width(secded_eds);
+      bits_per_subword         = non_ecc_bits_per_subword + ecc_bits_per_subword +
+                                 extra_bits_per_subword;
+    //int subwords_per_word;
 
       // We shouldn't truncate the actual data word. This check ensures that err_detection_scheme
       // and width are related sensibly. This only checks we've got enough space for one data word
@@ -107,7 +119,7 @@ class mem_bkdr_util extends uvm_object;
 
     byte_width = `HAS_PARITY ? 9 : 8;
     bytes_per_word = data_width / byte_width;
-    `DV_CHECK_LE_FATAL(bytes_per_word, 32, "data width > 32 bytes is not supported")
+ // `DV_CHECK_LE_FATAL(bytes_per_word, 32, "data width > 32 bytes is not supported")
     size_bytes = depth * bytes_per_word;
     addr_lsb   = $clog2(bytes_per_word);
     addr_width = $clog2(depth);
@@ -212,10 +224,29 @@ class mem_bkdr_util extends uvm_object;
     bit res;
     uint32_t index;
     uvm_hdl_data_t data;
+    uvm_hdl_data_t raw_data;
+
     if (!check_addr_valid(addr)) return 'x;
+
     index = addr >> addr_lsb;
+
     res   = uvm_hdl_read($sformatf("%0s[%0d]", path, index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_read failed at index %0d", index))
+
+
+    // Adjust the row data for interleaving. Was interleaved, beg back to true position
+    if (interleave_bits_in_entry) begin
+      raw_data = data;
+      for (int subword_idx = 0; subword_idx < subwords_per_word; subword_idx++) begin
+         for (int b= 0; b < bits_per_subword; b++) begin
+             int true_col_pos;
+             int intrlv_col_pos;
+             intrlv_col_pos       = (subword_idx + (((b * 4) + 1) * 4));
+             true_col_pos         = (subword_idx * bits_per_subword) + b;
+             data[true_col_pos] = raw_data[intrlv_col_pos];
+         end
+      end
+    end
     return data;
   endfunction
 
@@ -325,8 +356,26 @@ class mem_bkdr_util extends uvm_object;
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
     bit res;
     uint32_t index;
+    uvm_hdl_data_t  raw_data;
     if (!check_addr_valid(addr)) return;
     index = addr >> addr_lsb;
+
+    // Adjust the row data for interleaving
+    // Data passed in assumes subwords in contiguous locations
+    // Data to be written is converted to interleaved position
+    // (note the interleaving function may be different for differen memory structures
+    if (interleave_bits_in_entry) begin
+      raw_data = data;
+      for (int subword_idx = 0; subword_idx < subwords_per_word; subword_idx++) begin
+         for (int b= 0; b < bits_per_subword; b++) begin
+             int true_col_pos;
+             int intrlv_col_pos;
+             intrlv_col_pos       = (subword_idx + (((b * 4) + 1) * 4));
+             true_col_pos         = (subword_idx * bits_per_subword) + b;
+             data[intrlv_col_pos] = raw_data[true_col_pos];
+         end
+      end
+    end
     res = uvm_hdl_deposit($sformatf("%0s[%0d]", path, index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_deposit failed at index %0d", index))
   endfunction
@@ -379,9 +428,26 @@ class mem_bkdr_util extends uvm_object;
 
   // this is used to write 32bit of data plus 7 raw integrity bits.
   virtual function void write39integ(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [38:0] data);
+    uvm_hdl_data_t  row_data;
+    uint32_t word_idx;
+    uint32_t byte_idx;
+    uint32_t subword_idx;
+
     `_ACCESS_CHECKS(addr, 32) // this is essentially an aligned 32bit access.
     if (!check_addr_valid(addr)) return;
-    write(addr, data);
+
+    // read-modify-write:
+    // Each entry may have more than one subword chunk stored
+    // So we get current data row and insert the new subword at the right location,
+    // The modified data is then written back
+    word_idx    = addr >> addr_lsb;
+    byte_idx    = addr - (word_idx << addr_lsb);
+    subword_idx = byte_idx >> 2;
+    // Note the read function eliminates interleaving, if used, and returns data in the contiguous locations
+    row_data    = read(addr);
+    row_data[subword_idx * 39 +:39]= data;
+    // Note the write function takes care of interleaving, if used.
+    write(addr, row_data);
   endfunction
 
   virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);
@@ -561,17 +627,50 @@ class mem_bkdr_util extends uvm_object;
     `uvm_info(`gfn, "Randomizing mem contents", UVM_LOW)
     for (int i = 0; i < depth; i++) begin
       uvm_hdl_data_t data;
+      uvm_hdl_data_t raw_data;
       `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization failed!", path)
+      raw_data = data;
+      `uvm_info(`gfn, $sformatf("Randomizing mem contents: \n Pre ECC Data is %h, \n Index: i: %d",
+                                 raw_data, i),
+                UVM_DEBUG)
       if (`HAS_PARITY) begin
-        uvm_hdl_data_t raw_data = data;
         for (int byte_idx = 0; byte_idx < bytes_per_word; byte_idx++) begin
           bit raw_byte = raw_data[byte_idx * 8 +: 8];
           bit parity = (err_detection_scheme == ParityOdd) ? ~(^raw_byte) : (^raw_byte);
           data[byte_idx * 9 +: 9] = {parity, raw_byte};
         end
       end else begin
-        data = get_ecc_computed_data(data);
+      // There may be multiple subwords within each row/entry.
+      // Need to update the randomized data for each subword chunk in a Row
+        for (int subword_idx = 0; subword_idx < subwords_per_word; subword_idx++) begin
+            logic [31:0] raw_subword;
+            logic [38:0] raw_subword_with_ecc;
+
+            // Get the raw data subword chunk without ECC from the input data
+            for (int b= 0; b < non_ecc_bits_per_subword; b++)
+              raw_subword[b] = raw_data[b+(subword_idx * non_ecc_bits_per_subword)];
+
+            // Compute the ECC Code
+            raw_subword_with_ecc = get_ecc_computed_data(raw_subword);
+            `uvm_info(`gfn,
+                      $sformatf("Randomizing mem contents: \n\
+                                 Pre  ECC subword: %h \n\
+                                 Post ECC subword: %h \n\
+                                 Index: i: %d",
+                                 raw_subword, raw_subword_with_ecc, i),
+                      UVM_DEBUG)
+           // Place the subword with ECC data at the right slot within the data to be written
+           for (int b= 0; b < bits_per_subword; b++) begin
+             int column_position;
+             column_position = ((subword_idx * bits_per_subword) + b);
+             data[column_position] = raw_subword_with_ecc[b];
+           end
+        end
       end
+       `uvm_info(`gfn, $sformatf("Randomizing mem contents: \n\
+                                  Post ECC Data is %h,\
+                                  Index: i: %d",
+                                 data, i), UVM_DEBUG)
       write(i * bytes_per_word, data);
     end
   endfunction
