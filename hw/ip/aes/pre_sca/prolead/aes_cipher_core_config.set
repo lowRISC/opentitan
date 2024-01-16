@@ -29,16 +29,16 @@ max_no_of_threads
 
 % total number of simulations (traces) in the tests, should be a factor of 64
 no_of_simulations
-10240000
+100000000
 
 % number of simulations in each step, should be a factor of 64, and a divisor of no_of_simulations
 no_of_step_simulations
-128000
+2000000
 
 % number of simulations in each step that result files are written, should be a factor of 64, and
 % a divisor of no_of_simulations and should be a factor of no_of_step_simulations
 no_of_step_write_results
-128000
+2000000
 
 waveform_simulation % yes/no: whether VCD files of individual simulations are stored to disk (in
                     % main directory) or not, can be useful for debugging the configuration
@@ -57,7 +57,7 @@ no
 compact_distributions % yes/no: whether distributions (of probes) should be considered as compact.
                       % it is recommended to use 'no' only for small circuits and low security
                       % orders
-no
+yes
 
 minimize_probe_sets % yes/no: whether it should be tried to find equivalent probing sets.
                     % it is recommended to use 'yes' only for small circuits and low security

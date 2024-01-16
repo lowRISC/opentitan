@@ -96,7 +96,7 @@ After downloading and building the PROLEAD tool, and synthesizing the AES cipher
    Prepare shared data for 16 threads ...done!
 
    Generate list of standard probes from 224 standard probe locations...12992 standard probes found...done!
-   Generate list of extended probes from 786 extended probe locations...943370 extended probes found...done!
+   Generate list of extended probes from 723 extended probe locations...962568 extended probes found...done!
    Generate univariate probing sets...done (last step)! 12992 probing sets generated!
    Extend all probing sets...done!
    Remove duplicated probes in the sets...done!
@@ -104,52 +104,38 @@ After downloading and building the PROLEAD tool, and synthesizing the AES cipher
    ----------------------------------------------------------------------------------------------------------------------------------
    | #Standard Probes | #Extended Probes | Security Order | Distance | #Entries in Report | #Probing Sets | Maximum #Probes per Set |
    ----------------------------------------------------------------------------------------------------------------------------------
-   |            12992 |            45588 |              1 |       10 |                 10 |         12992 |                     127 |
+   |            12992 |            41934 |              1 |       10 |                 10 |         12992 |                     152 |
    ----------------------------------------------------------------------------------------------------------------------------------
 
    Evaluate security under the robust probing model!
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | Elapsed Time | Required Ram | Processed Simulations |                                                                      Probing Set with highest Information Leakage | -log10(p) |  Status |
+   |  Elapsed Time | Required Ram | Processed Simulations |                                                                      Probing Set with highest Information Leakage | -log10(p) | Status |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  112.107951s |  12.510552GB |       128000 / 161575 | ...gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[2] (37) |  3.620547 |    OKAY |
+   |   331.772834s | 101.050288GB |               2000000 | \u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[0] (17) |  3.973875 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  235.358985s |  12.510552GB |       256000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[6] (17) |  5.025905 | LEAKAGE |
+   |   663.508580s | 101.050288GB |               4000000 | \u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[5] (38) |  3.280448 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  358.192534s |  12.510552GB |       384000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[0] (12) |  3.363567 |    OKAY |
+   |   984.316709s | 101.050288GB |               6000000 | ...gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (38) |  3.934658 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  473.133173s |  12.510552GB |       512000 / 161585 | ...gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[2] (37) |  3.921945 |    OKAY |
+   |  1326.190893s | 101.050288GB |               8000000 | ...gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (38) |  4.786719 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  590.334307s |  12.510552GB |       640000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[1] (12) |  4.717441 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  706.490746s |  12.510552GB |       768000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (57) |  3.492387 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   |  895.176681s |  12.510552GB |       896000 / 161585 |   ...gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.u_aes_dom_inverse_gf2p4.b_gamma_ss_d[1] (22) |  3.981567 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 1030.569630s |  12.510552GB |      1024000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[6] (62) |  3.393895 |    OKAY |
+   |  1662.860622s | 101.050288GB |              10000000 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[4] (37) |  3.379137 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    ...
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 8518.762592s |  12.510552GB |      9088000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (41) |  3.017296 |    OKAY |
+   | 16115.801588s | 101.050288GB |              90000000 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (17) |  3.505599 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 8639.829626s |  12.510552GB |      9216000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[6] (41) |  3.018391 |    OKAY |
+   | 16475.616037s | 101.050288GB |              92000000 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (17) |  3.886383 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 8758.906474s |  12.510552GB |      9344000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[5] (42) |  2.945251 |    OKAY |
+   | 16828.528801s | 101.050288GB |              94000000 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (17) |  3.938206 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 8881.120705s |  12.510552GB |      9472000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[4] (46) |  2.996482 |    OKAY |
+   | 17193.708467s | 101.050288GB |              96000000 | \u_aes_sub_bytes.gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[2] (17) |  3.841046 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 8998.628485s |  12.510552GB |      9600000 / 161585 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[7] (51) |  2.976931 |    OKAY |
+   | 17517.789999s | 101.050288GB |              98000000 | \u_aes_sub_bytes.gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[3] (67) |  3.761645 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 9111.867212s |  12.510552GB |      9728000 / 161585 | ...gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (57) |  3.198678 |    OKAY |
+   | 17863.879551s | 101.050288GB |             100000000 | \u_aes_sub_bytes.gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.prd1_d[0] (37) |  3.780986 |   OKAY |
    -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 9223.720210s |  12.510552GB |      9856000 / 161585 | ...gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (57) |  3.256948 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 9343.188344s |  12.510552GB |      9984000 / 161585 | ...gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (57) |  3.390740 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 9458.458347s |  12.510552GB |     10112000 / 161585 | ...gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (57) |  3.097989 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   | 9572.974702s |  12.510552GB |     10240000 / 161585 | ...gen_sbox_i[1].u_aes_sbox_ij.gen_sbox_masked.gen_sbox_dom.u_aes_sbox.u_aes_dom_inverse_gf2p8.b_y10_prd1[1] (57) |  3.264392 |    OKAY |
-   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   Evaluation done in 9573.98 seconds!
+   Evaluation done in 17864.4 seconds!
    done!
    ```
    It may be that PROLEAD reports several `-log10(p)` values greater than the threshold value of 5.0 and thus reports to have found leakage.
@@ -158,8 +144,7 @@ After downloading and building the PROLEAD tool, and synthesizing the AES cipher
    If the values do not grow in the further progression taking more simulations into account, the reported leakage probably occurred due to a false positive.
    It's further recommended to consider at least 10 or 100 Mio simulations for hardware designs when evaluating in the normal or compact mode, respectively.
 
-   In this particular example, the evaluation is performed in normal mode and all `-log10(p)` values for more than 384sk simulations are below the threshold.
-   It can thus be assumed that the values above the threshold are false positives.
+   In this particular example, the evaluation is performed in compact mode and all `-log10(p)` values are below the threshold.
 
    By default, the script will evaluate the AES cipher core including the PRNG.
    But you can actually specify the top module to evaluate.
