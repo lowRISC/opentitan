@@ -247,18 +247,18 @@ jobs:
   - template: ci/publish-bazel-exec-logs.yml
   - publish: target_pattern.txt
     artifact: target_pattern_file
-  - bash: |
-      set -x -e
-      . util/build_consts.sh
-      # copy the rom to a specific location
-      ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
-      mkdir -p "${ROM_TARGET}"
-      ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
-      ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
-      QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
-      ROM_REAL_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
-      ROM_FAKE_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
-      cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
+  # - bash: |
+  #     set -x -e
+  #     . util/build_consts.sh
+  #     # copy the rom to a specific location
+  #     ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
+  #     mkdir -p "${ROM_TARGET}"
+  #     ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
+  #     ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
+  #     QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
+  #     ROM_REAL_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
+  #     ROM_FAKE_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
+  #     cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
