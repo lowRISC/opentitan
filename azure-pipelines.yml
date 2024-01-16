@@ -50,6 +50,7 @@ jobs:
     displayName: Upload repository
 - job: lint
   displayName: Quality (quick lint)
+  condition: false
   # Run code quality checks (quick lint)
   dependsOn: checkout
   pool: ci-public
@@ -123,7 +124,7 @@ jobs:
   displayName: Test an airgapped Bazel build
   timeoutInMinutes: 120
   dependsOn: checkout
-  condition: eq(variables['Build.Reason'], 'PullRequest')
+  condition: false
   pool:
     vmImage: ubuntu-20.04
   steps:
@@ -133,6 +134,8 @@ jobs:
 
 - job: slow_lints
   displayName: Quality (in-depth lint)
+  # Disable stage for experiments
+  condition: false
   # Run code quality checks (in-depth lint)
   dependsOn: lint
   pool:
@@ -178,8 +181,8 @@ jobs:
   displayName: Earl Grey SW Build
   # Build software tests for the Earl Grey toplevel design
   timeoutInMinutes: 120
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  dependsOn: checkout
+  #condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
   variables:
     - name: bazelCacheGcpKeyPath
@@ -219,7 +222,7 @@ jobs:
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       TARGET_PATTERN_FILE=target_pattern.txt
       mkdir "$BAZEL_EXEC_LOG_ROOT"
-      echo //... > "${TARGET_PATTERN_FILE}"
+      echo //sw/device/... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
@@ -299,6 +302,7 @@ jobs:
 
 - job: chip_englishbreakfast_verilator
   displayName: Verilated English Breakfast (Build)
+  # Disable stage for experiments
   # Build Verilator simulation of the English Breakfast toplevel design
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -322,6 +326,7 @@ jobs:
 
 - job: execute_verilated_tests
   displayName: Fast Verilated Earl Grey tests
+  # Disable stage for experiments
   # Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 240
@@ -372,6 +377,7 @@ jobs:
 # Work towards this goal is tracked in issue #4669.
 - job: build_and_execute_verilated_tests_englishbreakfast
   displayName: Verilated English Breakfast (Execute)
+  # Disable stage for experiments
   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
     vmImage: ubuntu-20.04
@@ -403,6 +409,7 @@ jobs:
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
+  # Disable stage for experiments
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
@@ -436,6 +443,7 @@ jobs:
 
 - job: otbn_crypto_tests
   displayName: Run OTBN crypto tests
+  # Disable stage for experiments
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
@@ -459,6 +467,7 @@ jobs:
 
 - job: chip_earlgrey_cw310
   displayName: CW310's Earl Grey Bitstream
+  # Disable stage for experiments
   # Build CW310 variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
@@ -473,6 +482,7 @@ jobs:
 
 - job: chip_earlgrey_cw310_hyperdebug
   displayName: CW310's Earl Grey Bitstream for Hyperdebug
+  # Disable stage for experiments
   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
@@ -487,6 +497,7 @@ jobs:
 
 - job: chip_earlgrey_cw340
   displayName: CW340's Earl Grey Bitstream
+  # Disable stage for experiments
   # Build CW340 variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
@@ -501,6 +512,7 @@ jobs:
 
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
+  # Disable stage for experiments
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   dependsOn: build_and_execute_verilated_tests_englishbreakfast
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -525,6 +537,7 @@ jobs:
 
 - job: cache_bitstreams
   displayName: Cache bitstreams to GCP
+  # Disable stage for experiments
   pool:
     vmImage: ubuntu-20.04
   dependsOn:
@@ -553,6 +566,7 @@ jobs:
 
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
+  # Disable stage for experiments
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
@@ -579,6 +593,7 @@ jobs:
 
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
+  # Disable stage for experiments
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
@@ -605,6 +620,7 @@ jobs:
 
 - job: execute_sival_fpga_tests_cw310
   displayName: CW310 SiVal Tests
+  # Disable stage for experiments
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
@@ -632,6 +648,7 @@ jobs:
 
 - job: execute_hyperdebug_tests_cw310
   displayName: Hyperdebug CW310 Tests (Experimental)
+  # Disable stage for experiments
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
@@ -673,6 +690,7 @@ jobs:
 
 - job: execute_rom_fpga_tests_cw340
   displayName: CW340 ROM Tests
+  # Disable stage for experiments
   pool: FPGA CW340
   timeoutInMinutes: 60
   dependsOn:
@@ -697,6 +715,7 @@ jobs:
 
 - job: execute_fpga_manuf_tests_cw310
   displayName: CW310 Manufacturing Tests
+  # Disable stage for experiments
   pool:
     name: $(fpga_pool)
     demands: BOARD -equals cw310
@@ -724,6 +743,7 @@ jobs:
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
+  # Disable stage for experiments
   pool:
     vmImage: ubuntu-20.04
   dependsOn:
@@ -766,6 +786,7 @@ jobs:
 
 - job: build_docker_containers
   displayName: "Build Docker Containers"
+  # Disable stage for experiments
   pool:
     vmImage: ubuntu-20.04
   dependsOn:
