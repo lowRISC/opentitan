@@ -5,8 +5,8 @@
 // Binds functional coverage interaface to the top level keymgr_dpe module.
 module keymgr_dpe_cov_bind;
 
-  bind keymgr cip_lc_tx_cov_if u_lc_escalate_en_cov_if (
+  bind keymgr_dpe cip_lc_tx_cov_if u_lc_escalate_en_cov_if (
     .rst_ni (rst_ni),
-    .val    (lc_keymgr_dpe_en_i)
+    .val    (lc_keymgr_en_i)
   );
 endmodule

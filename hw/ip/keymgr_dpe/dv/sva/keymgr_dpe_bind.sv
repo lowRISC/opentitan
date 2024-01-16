@@ -4,7 +4,7 @@
 
 module keymgr_dpe_bind;
 
-  bind keymgr tlul_assert #(
+  bind keymgr_dpe tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (
     .clk_i,
@@ -13,7 +13,7 @@ module keymgr_dpe_bind;
     .d2h  (tl_o)
   );
 
-  bind keymgr keymgr_dpe_csr_assert_fpv keymgr_dpe_csr_assert (
+  bind keymgr_dpe keymgr_dpe_csr_assert_fpv keymgr_dpe_csr_assert (
     .clk_i,
     .rst_ni,
     .h2d    (tl_i),
