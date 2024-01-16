@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -140,10 +141,12 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   for (int i = 0; i < kNumLoops; ++i) {
-    do_info_partition_test(kFlashInfoPageIdCreatorSecret);
-    do_info_partition_test(kFlashInfoPageIdOwnerSecret);
-    do_info_partition_test(kFlashInfoPageIdIsoPart);
-    do_data_partition_test(kFlashDataBank0);
+    if (kBootStage != kBootStageOwner) {
+      do_info_partition_test(kFlashInfoPageIdCreatorSecret);
+      do_info_partition_test(kFlashInfoPageIdOwnerSecret);
+      do_info_partition_test(kFlashInfoPageIdIsoPart);
+      do_data_partition_test(kFlashDataBank0);
+    }
     do_data_partition_test(kFlashDataBank1);
   }
 
