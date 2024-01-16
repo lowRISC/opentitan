@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ibex:ibex_top
+      - lowrisc:ip:edn_requester
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
@@ -16,7 +17,6 @@ filesets:
       - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
-      - lowrisc:prim:edn_req
       - lowrisc:prim:esc
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender

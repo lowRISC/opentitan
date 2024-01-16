@@ -814,7 +814,7 @@ module rv_core_ibex
 
   assign edn_req = ~rnd_valid_q;
 
-  prim_edn_req #(
+  edn_requester #(
     .OutWidth(32)
   ) u_edn_if (
     .clk_i,

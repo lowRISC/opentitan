@@ -98,7 +98,7 @@ module alert_handler
   logic edn_req, edn_ack;
   logic [LfsrWidth-1:0] edn_data;
 
-  prim_edn_req #(
+  edn_requester #(
     .OutWidth(LfsrWidth)
   ) u_edn_req (
     // Alert handler side

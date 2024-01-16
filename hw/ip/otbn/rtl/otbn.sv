@@ -1016,12 +1016,12 @@ module otbn
   // These synchronize the data coming from EDN and stack the 32 bit EDN words to achieve an
   // internal entropy width of 256 bit.
 
-  prim_edn_req #(
+  edn_requester #(
     .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth),
     // SEC_CM: RND.BUS.CONSISTENCY
     .RepCheck(1'b1)
-  ) u_prim_edn_rnd_req (
+  ) u_edn_rnd_requester (
     .clk_i,
     .rst_ni     ( rst_n        ),
     .req_chk_i  ( 1'b1         ),
@@ -1036,10 +1036,10 @@ module otbn
     .edn_i      ( edn_rnd_i )
   );
 
-  prim_edn_req #(
+  edn_requester #(
     .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth)
-  ) u_prim_edn_urnd_req (
+  ) u_edn_urnd_requester (
     .clk_i,
     .rst_ni     ( rst_n         ),
     .req_chk_i  ( 1'b1          ),
