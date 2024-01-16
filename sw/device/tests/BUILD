@@ -1472,7 +1472,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -1608,12 +1607,13 @@ opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
+    # update: verilator pass
     cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
