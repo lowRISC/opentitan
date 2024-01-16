@@ -259,15 +259,16 @@ jobs:
   #     ROM_REAL_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
   #     ROM_FAKE_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
   #     cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/***"
+  # - template: ci/upload-artifacts-template.yml
+  #   parameters:
+  #     includePatterns:
+  #       - "/sw/***"
 
 - job: sw_test
   displayName: Earl Grey SW Test
   timeoutInMinutes: 120
   dependsOn: sw_build
+  condition: false
   pool: ci-public
   variables:
     - name: bazelCacheGcpKeyPath
