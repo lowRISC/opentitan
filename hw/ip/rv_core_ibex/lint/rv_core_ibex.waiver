@@ -120,6 +120,9 @@ waive -rules RESET_MUX            -location {ibex_lockstep.sv} -regexp {Asynchro
       -comment "The test enable input used to control the bypass can be considered static"
 waive -rules RESET_USE            -location {ibex_lockstep.sv} -regexp {'rst_shadow_set_q' is used for some other purpose, and as asynchronous reset 'rst_ni' at}
       -comment "A synchronous counter is needed to release the shadow core reset with a delay of LockstepOffset clock cycles and start the comparison logic one clock cycle later"
+waive -rules {CLOCK_USE RESET_USE} -location {ibex_register_file_ff.sv} \
+      -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux)' port} \
+      -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

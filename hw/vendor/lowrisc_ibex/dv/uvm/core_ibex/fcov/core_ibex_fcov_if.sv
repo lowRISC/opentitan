@@ -643,7 +643,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
       // No interrupt would be taken in M-mode when its mstatus.MIE = 0 unless it's an NMI
       illegal_bins mmode_mstatus_mie =
         binsof(cs_registers_i.mstatus_q.mie) intersect {1'b0} &&
-        binsof(cp_priv_mode_id) intersect {PRIV_LVL_M} with (cp_interrupt_taken[5:4] == 2'b00);
+        binsof(cp_priv_mode_id) intersect {PRIV_LVL_M} with (cp_interrupt_taken >> 4 == 6'd0);
     }
 
     priv_mode_exception_cross: cross cp_priv_mode_id, cp_ls_pmp_exception, cp_ls_error_exception {

@@ -398,6 +398,13 @@ def add_configs_and_handwritten_directed_tests():
   iterations: 1
   test_srcs: access_pmp_overlap/access_pmp_overlap.S
   config: riscv-tests
+
+- test: u_mode_exec_test
+  desc: >
+    PMP U mode exec test
+  iterations: 1
+  test_srcs: u_mode_exec_test/u_mode_exec_test.S
+  config: riscv-tests
 '''
     testlist_string += available_directed_tests
     with open('directed_testlist.yaml', "a") as f:

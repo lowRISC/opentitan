@@ -925,6 +925,14 @@ module rv_core_ibex
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
       u_core.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check, alert_tx_o[2])
 
+  // Alert assertions for reg_raddr_a onehot checks
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegRaddrAOnehotCheck_A,
+      u_core.gen_regfile_ff.register_file_i.gen_rdata_mux_check.u_prim_onehot_check_raddr_a,
+      alert_tx_o[2])
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegRaddrBOnehotCheck_A,
+      u_core.gen_regfile_ff.register_file_i.gen_rdata_mux_check.u_prim_onehot_check_raddr_b,
+      alert_tx_o[2])
+
 `ifdef INC_ASSERT
   if (ICache && ICacheScramble) begin : gen_icache_scramble_asserts
 

@@ -109,6 +109,7 @@ def run_cmd(cmd, timeout_s=999, exit_on_error=1, check_return_code=True,
                               executable='/bin/bash',
                               universal_newlines=True,
                               start_new_session=True,
+                              env=os.environ,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:

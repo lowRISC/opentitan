@@ -42,11 +42,11 @@ def merge_cov_vcs(md: RegressionMetadata, cov_dirs: Set[pathlib.Path]) -> int:
     logging.info("Generating merged coverage directory")
     cmd = (['urg', '-full64',
             '-format', 'both',
-            '-dbname', str(md.cov_dir/'merged.vdb'),
-            '-report', str(md.cov_dir/'report'),
-            '-log', str(md.cov_dir/'merge.log'),
+            '-dbname', str(md.dir_cov/'merged.vdb'),
+            '-report', str(md.dir_cov/'report'),
+            '-log', str(md.dir_cov/'merge.log'),
             '-dir'] +
-           list(cov_dirs))
+           [str(cov_dir) for cov_dir in list(cov_dirs)])
     return run_one(md.verbose, cmd, redirect_stdstreams='/dev/null')
 
 

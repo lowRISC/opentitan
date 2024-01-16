@@ -150,13 +150,18 @@ def filter_tests_by_config(cfg: ibex_config.Config,
 
     for test in test_list:
         if "rtl_params" not in test:
-            # We currently only exclude tests by mismatching 'rtl_params', so if
-            # that key is missing then the test is accepted by default.
+            # We currently only exclude tests by mismatching 'rtl_params', so
+            # if that key is missing then the test is accepted by default.
             filtered_test_list.append(test)
         else:
             param_dict = test['rtl_params']
             assert isinstance(param_dict, dict)
             for p, p_val in param_dict.items():
+                # Parameters are strings or ints, or lists of those two. Coerce
+                # to the latter to make the code below simpler.
+                if isinstance(p_val, str) or isinstance(p_val, int):
+                    p_val = [p_val]
+
                 config_val = cfg.params.get(p, None)
 
                 # Throw an error if required RTL parameters in the testlist
@@ -171,11 +176,11 @@ def filter_tests_by_config(cfg: ibex_config.Config,
                 # bitmanipulation tests). If this is the case, the testlist
                 # will specify all legal enum values, check if any of them
                 # match the config.
-                if ((isinstance(p_val, list) and (config_val not in p_val)) or
-                    (isinstance(p_val, str)  and (config_val != p_val))):
+                if config_val not in p_val:
                     logger.warning(
-                        f"Rejecting test {test['test']}, 'rtl_params' specified "
-                        "not compatible with ibex_config")
+                        f"Rejecting test: {test['test']}. It specifies "
+                        f"rtl_params of {p_val}, which doesn't contain the "
+                        f"expected '{config_val}'.")
                     break
 
                 # The test is accepted if we got this far

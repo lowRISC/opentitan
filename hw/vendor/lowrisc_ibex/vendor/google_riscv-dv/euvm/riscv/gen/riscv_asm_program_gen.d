@@ -736,7 +736,7 @@ class riscv_asm_program_gen : uvm_object
   }
 
   // get a random double precision floating value
-  ubvec!XLEN get_rand_dpf_value() {
+  ubvec!64 get_rand_dpf_value() {
     ubvec!64 value;
 
     int randint = urandom(0,6);
