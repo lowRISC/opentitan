@@ -46,6 +46,10 @@ def _pip_wheel_impl(rctx):
     rctx.report_progress("Installing the Python wheel package")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -66,6 +70,10 @@ def _pip_wheel_impl(rctx):
     rctx.report_progress("Pre-building Python wheels")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -81,6 +89,10 @@ def _pip_wheel_impl(rctx):
     rctx.report_progress("Generating sanitzed requirements file")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
         working_directory = "./",
