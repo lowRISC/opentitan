@@ -21,6 +21,8 @@ variables:
   # This controls where the bazel execution logs go
   BAZEL_EXEC_LOG_ROOT: $(Build.ArtifactStagingDirectory)/bazel_exec_logs
 
+  PYTHONDONTWRITEBYTECODE: 1
+
 trigger:
   batch: true
   branches:
