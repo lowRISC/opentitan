@@ -218,7 +218,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       `DV_SPINWAIT_EXIT(
           forever begin
             @(posedge in_edn_fetch);
-            // Entropy interface is native 32 bits - prim_edn_req component internally
+            // Entropy interface is native 32 bits - edn_requester component internally
             // does as many EDN fetches as necessary to fill up the required data bus size
             // of the "host".
             repeat (kmac_reg_pkg::NumSeedsEntropyLfsr) begin

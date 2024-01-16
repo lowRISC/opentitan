@@ -53,7 +53,7 @@ filesets:
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:lc_sync
       - lowrisc:ip:edn_pkg
-      - lowrisc:prim:edn_req
+      - lowrisc:ip:edn_requester
       - lowrisc:ip:otbn_pkg
       - lowrisc:ip:otp_ctrl_pkg
     files:

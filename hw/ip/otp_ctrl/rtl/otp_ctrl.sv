@@ -672,9 +672,9 @@ module otp_ctrl
 
   // This synchronizes the data coming from EDN and stacks the
   // 32bit EDN words to achieve an internal entropy width of 64bit.
-  prim_edn_req #(
+  edn_requester #(
     .OutWidth(EdnDataWidth)
-  ) u_prim_edn_req (
+  ) u_edn_req (
     .clk_i,
     .rst_ni,
     .req_chk_i ( ~lc_escalate_en_any ),

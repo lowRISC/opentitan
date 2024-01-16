@@ -10,7 +10,7 @@ class otbn_urnd_err_vseq extends otbn_base_vseq;
   `uvm_object_new
 
   task body();
-    // Inject error on signal after `prim_edn_req`, which may at some point implement its own
+    // Inject error on signal after `edn_requester, which may at some point implement its own
     // countermeasure against spurious ACKs.
     string err_path = "tb.dut.edn_urnd_ack";
     bit skip_err_injection = 1'b0;

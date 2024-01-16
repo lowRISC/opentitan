@@ -57,7 +57,7 @@ module keymgr_reseed_ctrl import keymgr_pkg::*; (
   assign seed_en_o = edn_ack;
   assign reseed_ack_o = reseed_req_i & edn_ack;
 
-  prim_edn_req #(
+  edn_requester #(
     .OutWidth(LfsrWidth)
   ) u_edn_req (
     .clk_i,
