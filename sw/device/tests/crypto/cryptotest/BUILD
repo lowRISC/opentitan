@@ -76,6 +76,38 @@ opentitan_test(
     },
 )
 
+ECDH_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_ecdh_{}".format(mode)
+    for mode in [
+        "p256",
+        # TODO uncomment when ECDH supports P-384
+        # "p384",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_ecdh_sp_800_56a_json",
+]
+
+ECDH_TESTVECTOR_ARGS = " ".join([
+    "--ecdh-json=\"$(rootpath {})\"".format(target)
+    for target in ECDH_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "ecdh_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = ECDH_TESTVECTOR_TARGETS,
+        test_cmd = """
+            --bootstrap={firmware}
+        """ + ECDH_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
+
 HASH_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_{}_{}_{}_json".format(
         src_repo,

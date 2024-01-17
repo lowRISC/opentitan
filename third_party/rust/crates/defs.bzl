@@ -338,6 +338,7 @@ _NORMAL_DEPENDENCIES = {
             "openssl": "@crate_index__openssl-0.10.59//:openssl",
             "openssl-sys": "@crate_index__openssl-sys-0.9.95//:openssl_sys",
             "p256": "@crate_index__p256-0.13.2//:p256",
+            "p384": "@crate_index__p384-0.13.0//:p384",
             "pem-rfc7468": "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
             "pest": "@crate_index__pest-2.7.3//:pest",
             "pqcrypto-sphincsplus": "@crate_index__pqcrypto-sphincsplus-0.6.4//:pqcrypto_sphincsplus",
@@ -2117,6 +2118,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/p256/0.13.2/download"],
         strip_prefix = "p256-0.13.2",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.p256-0.13.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__p384-0.13.0",
+        sha256 = "70786f51bcc69f6a4c0360e063a4cac5419ef7c5cd5b3c99ad70f3be5ba79209",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/p384/0.13.0/download"],
+        strip_prefix = "p384-0.13.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.p384-0.13.0.bazel"),
     )
 
     maybe(
