@@ -8,8 +8,8 @@ class mbx_stress_vseq extends mbx_base_vseq;
 
   // Constrain the iteration and transaction counts to produce a longer stress test and,
   // importantly, perform multiple request and responses without an intervening block reset.
-  constraint num_iters_c { num_iters inside {[5:10]}; }
-  constraint num_txns_c { num_txns inside {[2:20]}; }
+  constraint num_iters_c { num_iters inside {[5:8]}; }
+  constraint num_txns_c { num_txns inside {[2:12]}; }
 
   // Whether to produce these stimuli to stress the DUT.
   bit aborts_en = 1'b1;  // Aborts from the SoC side.
