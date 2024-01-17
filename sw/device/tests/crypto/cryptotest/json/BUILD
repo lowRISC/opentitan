@@ -40,6 +40,13 @@ cc_library(
 )
 
 cc_library(
+    name = "ecdh_commands",
+    srcs = ["ecdh_commands.c"],
+    hdrs = ["ecdh_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "aes_sca_commands",
     srcs = ["aes_sca_commands.c"],
     hdrs = ["aes_sca_commands.h"],

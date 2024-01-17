@@ -50,6 +50,24 @@ cc_library(
 )
 
 cc_library(
+    name = "ecdh",
+    srcs = ["ecdh.c"],
+    hdrs = ["ecdh.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = ["hash.h"],
@@ -187,6 +205,7 @@ opentitan_binary(
     deps = [
         ":aes",
         ":aes_sca",
+        ":ecdh",
         ":ecdsa",
         ":hash",
         ":ibex_fi",
@@ -202,6 +221,7 @@ opentitan_binary(
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
         "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
         "//sw/device/tests/crypto/cryptotest/json:hash_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
@@ -220,6 +240,7 @@ opentitan_test(
     deps = [
         ":aes",
         ":aes_sca",
+        ":ecdh",
         ":ecdsa",
         ":hash",
         ":ibex_fi",
@@ -235,6 +256,7 @@ opentitan_test(
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
         "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
         "//sw/device/tests/crypto/cryptotest/json:ecdsa_commands",
         "//sw/device/tests/crypto/cryptotest/json:hash_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
