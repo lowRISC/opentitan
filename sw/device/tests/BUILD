@@ -1107,6 +1107,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    verilator = new_verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/ip/aes:model",
         "//hw/ip/edn/data:edn_regs",
@@ -1131,14 +1134,13 @@ opentitan_test(
     srcs = ["edn_kat.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
         },
     ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
+    verilator = new_verilator_params(
+        timeout = "long",
     ),
     deps = [
         "//hw/ip/edn/data:edn_regs",
