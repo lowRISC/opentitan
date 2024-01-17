@@ -125,9 +125,17 @@ typedef struct dif_edn_auto_params {
  */
 typedef enum dif_edn_status {
   /**
+   * SW command register is ready to receive the next word of a command.
+   */
+  kDifEdnStatusRegReady,
+  /**
    * Device is ready to receive a command.
    */
   kDifEdnStatusReady,
+  /**
+   * Device has received an error from the CSRNG block.
+   */
+  kDifEdnStatusCsrngStatus,
   /**
    * Device has recieved an ACK from the CSRNG block.
    */

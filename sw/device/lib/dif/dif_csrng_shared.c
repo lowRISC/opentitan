@@ -6,6 +6,9 @@
 
 #include "sw/device/lib/base/multibits.h"
 
+#include "csrng_regs.h"  // Generated
+#include "edn_regs.h"    // Generated
+
 // The application command header is not specified as a register in the
 // hardware specification, so the fields are mapped here by hand. The
 // command register also accepts arbitrary 32bit data.
@@ -29,8 +32,30 @@ uint32_t csrng_cmd_header_build(
   return reg;
 }
 
-dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
+dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
+                                csrng_app_cmd_type_t cmd_type,
                                 csrng_app_cmd_t cmd) {
+  bool ready;
+  ptrdiff_t offset;
+  uint32_t reg;
+
+  switch (cmd_type) {
+    case kCsrngAppCmdTypeCsrng:
+      offset = CSRNG_CMD_REQ_REG_OFFSET;
+      break;
+    case kCsrngAppCmdTypeEdnSw:
+      offset = EDN_SW_CMD_REQ_REG_OFFSET;
+      break;
+    case kCsrngAppCmdTypeEdnGen:
+      offset = EDN_GENERATE_CMD_REG_OFFSET;
+      break;
+    case kCsrngAppCmdTypeEdnRes:
+      offset = EDN_RESEED_CMD_REG_OFFSET;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
   // Ensure the `seed_material` array is word-aligned, so it can be loaded to a
   // CPU register with natively aligned loads.
   if (cmd.seed_material != NULL &&
@@ -54,10 +79,26 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
     return kDifOutOfRange;
   }
 
+  if (cmd_type == kCsrngAppCmdTypeEdnSw) {
+    // Wait for the status register to be ready to accept the next command.
+    do {
+      reg = mmio_region_read32(base_addr, EDN_SW_CMD_STS_REG_OFFSET);
+      ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT);
+    } while (!ready);
+  }
+
   mmio_region_write32(base_addr, offset,
                       csrng_cmd_header_build(cmd.id, cmd.entropy_src_enable,
                                              cmd_len, cmd.generate_len));
   for (size_t i = 0; i < cmd_len; ++i) {
+    // If the command is issued to the SW register of the EDN, the reg ready
+    // bit needs to be polled before writing each word of additional data.
+    if (cmd_type == kCsrngAppCmdTypeEdnSw) {
+      do {
+        reg = mmio_region_read32(base_addr, EDN_SW_CMD_STS_REG_OFFSET);
+        ready = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
+      } while (!ready);
+    }
     mmio_region_write32(base_addr, offset, cmd.seed_material->seed_material[i]);
   }
   return kDifOk;

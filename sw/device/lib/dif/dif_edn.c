@@ -141,12 +141,13 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   // Wait until CSRNG acknowledges command.
   ready = false;
   while (!ready) {
-    DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusReady, &ready));
+    DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ready));
   }
 
   // Read request acknowledge error and return accordingly.
   bool ack_err;
-  DIF_RETURN_IF_ERROR(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ack_err));
+  DIF_RETURN_IF_ERROR(
+      dif_edn_get_status(edn, kDifEdnStatusCsrngStatus, &ack_err));
   return ack_err ? kDifError : kDifOk;
 }
 
@@ -158,11 +159,17 @@ dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
 
   uint32_t bit;
   switch (flag) {
+    case kDifEdnStatusRegReady:
+      bit = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      break;
     case kDifEdnStatusReady:
       bit = EDN_SW_CMD_STS_CMD_RDY_BIT;
       break;
-    case kDifEdnStatusCsrngAck:
+    case kDifEdnStatusCsrngStatus:
       bit = EDN_SW_CMD_STS_CMD_STS_BIT;
+      break;
+    case kDifEdnStatusCsrngAck:
+      bit = EDN_SW_CMD_STS_CMD_ACK_BIT;
       break;
     default:
       return kDifBadArg;
@@ -280,7 +287,7 @@ dif_result_t dif_edn_instantiate(
     return kDifBadArg;
   }
   return csrng_send_app_cmd(
-      edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+      edn->base_addr, kCsrngAppCmdTypeEdnSw,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdInstantiate,
           .entropy_src_enable =
@@ -296,7 +303,7 @@ dif_result_t dif_edn_reseed(const dif_edn_t *edn,
   }
   dif_csrng_seed_material_t seed_material2;
   memcpy(&seed_material2, seed_material, sizeof(seed_material2));
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdReseed,
                                 .seed_material = &seed_material2,
@@ -310,7 +317,7 @@ dif_result_t dif_edn_update(const dif_edn_t *edn,
   }
   dif_csrng_seed_material_t seed_material2;
   memcpy(&seed_material2, seed_material, sizeof(seed_material2));
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdUpdate,
                                 .seed_material = &seed_material2,
@@ -325,7 +332,7 @@ dif_result_t dif_edn_generate_start(const dif_edn_t *edn, size_t len) {
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
   const uint32_t num_128bit_blocks = (len + 3) / 4;
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdGenerate,
                                 .generate_len = num_128bit_blocks,
@@ -336,7 +343,7 @@ dif_result_t dif_edn_uninstantiate(const dif_edn_t *edn) {
   if (edn == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(edn->base_addr, kCsrngAppCmdTypeEdnSw,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdUninstantiate,
                             });
