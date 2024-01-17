@@ -42,6 +42,7 @@ class mbx_base_vseq extends cip_base_vseq #(
   mbx_soc_reg_block m_mbx_soc_ral;
 
   mbx_seq_item mbx_config;
+  bit p_expect_error = 1'b0; // Predictor variable
 
   // Number of words of memory available to the mailbox(es)
   int unsigned mbx_mem_words = 'h400;
@@ -137,6 +138,12 @@ class mbx_base_vseq extends cip_base_vseq #(
     seq_h.d_error_pct = pct;
   endfunction
 
+  virtual function void randomize_mbx_config();
+    `DV_CHECK_RANDOMIZE_FATAL(mbx_config)
+    `uvm_info(`gfn, $sformatf("MBX: Randomized a new transaction:%s",
+                              mbx_config.convert2string()), UVM_HIGH)
+  endfunction
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
   endtask: dut_init
@@ -208,7 +215,7 @@ class mbx_base_vseq extends cip_base_vseq #(
       $sformatf("mbx_init -- Start"),
       UVM_DEBUG)
 
-    `DV_CHECK_RANDOMIZE_FATAL(mbx_config)
+    randomize_mbx_config();
 
     `uvm_info(get_full_name(),
       $sformatf("mbx_init -- End"),
@@ -384,6 +391,9 @@ class mbx_base_vseq extends cip_base_vseq #(
 
         // Generate a new configuration for the transaction.
         `DV_CHECK_RANDOMIZE_FATAL(mbx_config);
+
+        // Generate a new configuration for the transaction.
+        randomize_mbx_config();
 
         set_address_range(mbx_config.ibmbx_base_addr, mbx_config.ibmbx_limit_addr,
                           mbx_config.obmbx_base_addr, mbx_config.obmbx_limit_addr,
@@ -607,9 +617,18 @@ class mbx_base_vseq extends cip_base_vseq #(
         // Collect SoC.STATUS bits
         obs_busy  = get_field_val(m_mbx_soc_ral.soc_status.busy,  rd_data);
         obs_error = get_field_val(m_mbx_soc_ral.soc_status.error, rd_data);
-        if (obs_error) begin
-          `DV_CHECK_EQ(errored, 1'b1, "Unsignaled ERROR occurred")
 
+        if (!p_expect_error) begin
+          if (obs_error) `DV_CHECK_EQ(errored, 1'b1, "ERROR occurred, but not due to stressors!")
+        end else if (p_expect_error && !obs_error && !(aborted || panicked)) begin
+          // If we aborted/panicked, then even if the stimulus should have generated an error, we
+          // won't see it.
+          `uvm_error(`gfn, "Didn't observe an error when stimulus expected to generate one!")
+        end
+        p_expect_error = 1'b0;
+
+         // Cleanup after error
+        if (obs_error) begin
           `uvm_info(`gfn, "Clearing ERROR condition from SoC side using ABORT mechanism", UVM_HIGH)
           mbx_abort();
           aborted = 1'b1;

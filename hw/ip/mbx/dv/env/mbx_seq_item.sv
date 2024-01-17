@@ -44,6 +44,9 @@ class mbx_seq_item extends uvm_sequence_item;
     (ibmbx_limit_addr < 32'h4000_0000);
 
     (ibmbx_limit_addr >= ibmbx_base_addr);
+  }
+
+  constraint imbx_addr_range_lock_limit_c {
     // Ensure that the allocated address range is large enough for all valid messages because
     // otherwise we run the risk of making all subsequent response messages artificially small
     // because the address range has been locked.
