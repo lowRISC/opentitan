@@ -104,3 +104,27 @@ genrule(
         "LongMsg",
     ] + extra_msg_types
 ]
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "//sw/vendor/wycheproof/testvectors:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location //sw/vendor/wycheproof/testvectors:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json)",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdh_parser",
+    )
+    for src_name, cryptotest_name in [
+        ("ecdh_secp256r1_test.json", "wycheproof_ecdh_p256"),
+        ("ecdh_secp384r1_test.json", "wycheproof_ecdh_p384"),
+    ]
+]
