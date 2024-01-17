@@ -23,6 +23,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "ecdh_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:ecdh_commands"],
+)
+
+ujson_rust(
     name = "ecdsa_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:ecdsa_commands"],
 )
@@ -32,6 +37,7 @@ rust_library(
     srcs = [
         "src/aes_commands.rs",
         "src/commands.rs",
+        "src/ecdh_commands.rs",
         "src/ecdsa_commands.rs",
         "src/hash_commands.rs",
         "src/lib.rs",
@@ -39,12 +45,14 @@ rust_library(
     compile_data = [
         ":commands_rust",
         ":aes_commands_rust",
+        ":ecdh_commands_rust",
         ":ecdsa_commands_rust",
         ":hash_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "aes_commands_loc": "$(execpath :aes_commands_rust)",
+        "ecdh_commands_loc": "$(execpath :ecdh_commands_rust)",
         "ecdsa_commands_loc": "$(execpath :ecdsa_commands_rust)",
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
     },
