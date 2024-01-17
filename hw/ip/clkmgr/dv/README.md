@@ -31,8 +31,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * CLKMGR IOs: `hw/ip/clkmgr/dv/env/clkmgr_if.sv`
 
-The Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md)) interface should be connected once the RTL adds support for it.
-
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 

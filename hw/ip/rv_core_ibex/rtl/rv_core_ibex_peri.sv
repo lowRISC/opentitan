@@ -46,8 +46,7 @@ module rv_core_ibex_peri
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o (intg_err),
-    .devmode_i  (1'b1) // connect to real devmode signal in the future
+    .intg_err_o (intg_err)
   );
 
   ///////////////////////

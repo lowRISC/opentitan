@@ -461,8 +461,7 @@ module hmac
     .hw2reg,
 
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o (alerts[0]),
-    .devmode_i  (1'b1)
+    .intg_err_o (alerts[0])
   );
 
   // Alerts

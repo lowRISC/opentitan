@@ -145,9 +145,7 @@ module keymgr
     .hw2reg,
     .shadowed_storage_err_o (shadowed_storage_err),
     .shadowed_update_err_o  (shadowed_update_err),
-    .intg_err_o             (regfile_intg_err),
-
-    .devmode_i (1'b1) // connect to real devmode signal in the future
+    .intg_err_o             (regfile_intg_err)
   );
 
   /////////////////////////////////////

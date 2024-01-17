@@ -39,8 +39,7 @@ module pwm
     .tl_o       (tl_o),
     .reg2hw     (reg2hw),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o (alerts[0]),
-    .devmode_i  (1'b1)
+    .intg_err_o (alerts[0])
   );
 
   assign alert_test = {

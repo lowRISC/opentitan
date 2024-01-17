@@ -53,10 +53,6 @@ module tb;
     .rst_n(rst_root_usb_n)
   );
 
-
-  // This is yet to be connected.
-  wire devmode;
-  pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -205,7 +201,6 @@ module tb;
     // FIXME Un-comment this once interrupts are created for this ip.
     // uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);

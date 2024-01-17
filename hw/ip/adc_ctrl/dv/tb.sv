@@ -41,7 +41,6 @@ module tb;
 
   wire clk, rst_n;
   wire clk_aon, rst_aon_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire wakeup_req;
   wire [ADC_CTRL_CHANNELS - 1 : 0] adc_channel_sel, adc_data_valid;
@@ -74,7 +73,6 @@ module tb;
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
   pins_if #(1) wakeup_if (wakeup_req);
-  pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -113,7 +111,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_aon_rst_vif", clk_aon_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(wakeup_vif_t)::set(null, "*.env", "wakeup_vif", wakeup_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

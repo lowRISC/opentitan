@@ -761,8 +761,7 @@ module otbn
     .reg2hw,
     .hw2reg,
 
-    .intg_err_o(reg_bus_intg_violation),
-    .devmode_i (1'b1)
+    .intg_err_o(reg_bus_intg_violation)
   );
 
   // SEC_CM: BUS.INTEGRITY

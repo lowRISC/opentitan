@@ -15,7 +15,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire devmode;
 
   wire [NUM_PATTGEN_CHANNELS-1:0] pda_tx_o;
   wire [NUM_PATTGEN_CHANNELS-1:0] pcl_tx_o;
@@ -26,7 +25,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
   pattgen_if #(NUM_PATTGEN_CHANNELS) pattgen_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
@@ -71,7 +69,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pattgen_if)::set(null, "*.env.m_pattgen_agent*", "vif", pattgen_if);
     $timeformat(-12, 0, " ps", 12);

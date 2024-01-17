@@ -36,7 +36,6 @@ package dv_utils_pkg;
 
   // typedef parameterized pins_if for ease of implementation for interrupts and alerts
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
-  typedef virtual pins_if #(1)                  devmode_vif;
 
   // interface direction / mode - Host or Device
   typedef enum bit {

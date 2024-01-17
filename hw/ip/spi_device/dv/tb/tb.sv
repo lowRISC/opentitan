@@ -15,7 +15,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [3:0]                    pass_so_pulldown;
   wire [3:0]                    pass_si_pulldown;
@@ -46,7 +45,6 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  pins_if #(1) devmode_if(devmode);
   spi_if  spi_if(.rst_n(rst_n));
   spi_if  spi_if_pass(.rst_n(rst_n));
 
@@ -136,7 +134,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_host_agent*", "vif", spi_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.spi_device*", "vif", spi_if_pass);

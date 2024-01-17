@@ -101,8 +101,7 @@ module rv_dm
     .tl_o      (regs_tl_d_o    ),
     .reg2hw    (regs_reg2hw    ),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(regs_intg_error),
-    .devmode_i (1'b1           )
+    .intg_err_o(regs_intg_error)
   );
 
   // We are not instantiating the generated rv_dm_mem_reg_top, since the registers are actually

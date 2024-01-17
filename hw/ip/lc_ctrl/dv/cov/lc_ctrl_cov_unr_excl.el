@@ -262,10 +262,6 @@ Condition 73 "1745532433" "(addr_hit[34] & ((|(4'b1111 & (~reg_be))))) 1 -1" (3 
 ANNOTATION: "VC_COV_UNR"
 Condition 75 "8186339" "(err_q | intg_err | reg_we_err) 1 -1" (3 "010")
 ANNOTATION: "VC_COV_UNR"
-Condition 76 "4240635020" "((devmode_i & addrmiss) | wr_err | intg_err) 1 -1" (2 "001")
-ANNOTATION: "VC_COV_UNR"
-Condition 76 "4240635020" "((devmode_i & addrmiss) | wr_err | intg_err) 1 -1" (3 "010")
-ANNOTATION: "VC_COV_UNR"
 Condition 89 "2063942038" "(addr_hit[0] & reg_we & ((!reg_error))) 1 -1" (3 "110")
 ANNOTATION: "VC_COV_UNR"
 Condition 90 "1325017644" "(addr_hit[1] & reg_re & ((!reg_error))) 1 -1" (3 "110")

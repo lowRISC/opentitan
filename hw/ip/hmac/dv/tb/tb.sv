@@ -15,7 +15,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0]  interrupts;
 
   wire intr_hmac_done;
@@ -25,7 +24,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   hmac_if hmac_if(.clk_i(clk), .rst_ni(rst_n));
 
@@ -58,7 +56,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual hmac_if)::set(null, "*.env", "hmac_vif", hmac_if);
     $timeformat(-12, 0, " ps", 12);

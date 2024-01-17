@@ -678,8 +678,7 @@ module usbdev
     .hw2reg(hw2reg_regtop),
 
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o (alerts[0]),
-    .devmode_i (1'b1)
+    .intg_err_o (alerts[0])
   );
 
   // Stub off all register connections to reg_top.

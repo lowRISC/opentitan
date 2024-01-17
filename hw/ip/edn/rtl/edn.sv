@@ -57,8 +57,7 @@ module edn
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(intg_err_alert[1]), // Assign this alert to the fatal alert index.
-    .devmode_i(1'b1)
+    .intg_err_o(intg_err_alert[1]) // Assign this alert to the fatal alert index.
   );
 
   edn_core #(

@@ -14,7 +14,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire   clk, rst_n;
-  wire   devmode;
   wire   intr_edn_cmd_req_done, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0]   interrupts;
   // This is used to notify the csrng_agent that the EDN is disabled, and will drop the current
@@ -26,7 +25,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   csrng_if csrng_if(.clk(clk), .rst_n(edn_disable_o === 1 ? ~edn_disable_o : rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
@@ -77,7 +75,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual csrng_if)::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     uvm_config_db#(virtual edn_cov_if)::set(null, "*.env", "edn_cov_if", dut.u_edn_cov_if);

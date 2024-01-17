@@ -14,7 +14,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire devmode;
 % if is_cip:
 % if has_interrupts:
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -27,7 +26,6 @@ module tb;
 % if has_interrupts:
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 % endif
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 % endif
 % for agent in env_agents:
@@ -72,7 +70,6 @@ module tb;
 % if has_interrupts:
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 % endif
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 % endif
 % for agent in env_agents:

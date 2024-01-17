@@ -108,8 +108,7 @@ module sram_ctrl
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(bus_integ_error[0]),
-    .devmode_i (1'b1)
+    .intg_err_o(bus_integ_error[0])
    );
 
   // Key and attribute outputs to scrambling device

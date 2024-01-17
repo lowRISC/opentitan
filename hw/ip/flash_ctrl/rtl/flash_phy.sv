@@ -341,7 +341,6 @@ module flash_phy
     .rst_ni,
     .tl_i,
     .tl_o,
-    .devmode_i(1'b1),
     .flash_req_i(prim_flash_req),
     .flash_rsp_o(prim_flash_rsp),
     .prog_type_avail_o(prog_type_avail),

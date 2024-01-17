@@ -389,10 +389,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
     if (unmapped_err) begin
-      // if devmode is enabled, d_error will be set
-      if (cfg.en_devmode || cfg.devmode_vif.sample()) begin
-        exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
-      end
+      exp_d_error = !cfg.ral_models[ral_name].get_unmapped_access_ok();
     end
 
     mem_access_err = !is_tl_mem_access_allowed(item, ral_name, mem_byte_access_err, mem_wo_err,

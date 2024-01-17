@@ -32,7 +32,6 @@ module tb;
   end
 
   wire clk, rst_n, rst_shadowed_n;
-  wire devmode;
   wire intr_prog_empty;
   wire intr_prog_lvl;
   wire intr_rd_full;
@@ -51,7 +50,6 @@ module tb;
     .rst_shadowed_n(rst_shadowed_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
-  pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -338,7 +336,6 @@ module tb;
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_core_reg_block*", "vif",
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_eflash_reg_block*", "vif",

@@ -51,8 +51,7 @@ module clkmgr import clkmgr_pkg::*; (
     .tl_i,
     .tl_o,
     .reg2hw,
-    .hw2reg,
-    .devmode_i(1'b1)
+    .hw2reg
   );
 
 

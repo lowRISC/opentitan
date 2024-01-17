@@ -30,7 +30,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * PWRMGR interface [`hw/top_earlgrey/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv).
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 * Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
-* Devmode ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

@@ -687,8 +687,7 @@ module rv_core_ibex
     .hw2reg,
     .intg_err_o (intg_err),
     .tl_win_o(tl_win_h2d),
-    .tl_win_i(tl_win_d2h),
-    .devmode_i  (1'b1) // connect to real devmode signal in the future
+    .tl_win_i(tl_win_d2h)
   );
 
   ///////////////////////

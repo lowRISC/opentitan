@@ -19,10 +19,7 @@ module rom_ctrl_rom_reg_top (
   // To HW
 
   // Integrity check errors
-  output logic intg_err_o,
-
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+  output logic intg_err_o
 );
 
   import rom_ctrl_reg_pkg::* ;
@@ -60,7 +57,4 @@ module rom_ctrl_rom_reg_top (
   assign tl_o_pre = tl_win_i;
 
   // Unused signal tieoff
-  // devmode_i is not used if there are no registers
-  logic unused_devmode;
-  assign unused_devmode = ^devmode_i;
 endmodule

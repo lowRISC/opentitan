@@ -106,8 +106,7 @@ module prim_generic_otp
     .tl_o      (test_tl_o ),
     .reg2hw    (reg2hw    ),
     .hw2reg    (hw2reg    ),
-    .intg_err_o(intg_err  ),
-    .devmode_i (1'b1      )
+    .intg_err_o(intg_err  )
   );
 
   logic unused_reg_sig;

@@ -23,7 +23,7 @@
               - address and size aren't aligned, e.g. `a_address = 0x01`, `a_size != 0`
               - size is greater than 2
             - OpenTitan defined error cases
-              - access unmapped address, expect `d_error = 1` when `devmode_i == 1`
+              - access unmapped address, expect `d_error = 1`
               - write a CSR with unaligned address, e.g. `a_address[1:0] != 0`
               - write a CSR less than its width, e.g. when CSR is 2 bytes wide, only write 1 byte
               - write a memory with `a_mask != '1` when it doesn't support partial accesses

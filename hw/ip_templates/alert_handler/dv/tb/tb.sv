@@ -15,7 +15,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n, rst_shadowed_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [NUM_MAX_ESC_SEV-1:0]    esc_en;
   wire [NUM_CRASHDUMP-1:0]      crashdump;
@@ -25,7 +24,6 @@ module tb;
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   alert_handler_if alert_handler_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
@@ -104,7 +102,6 @@ module tb;
                                                  rst_shadowed_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(crashdump_vif)::set(null, "*.env", "crashdump_vif", crashdump_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual alert_handler_if)::set(null, "*.env", "alert_handler_vif",
                    alert_handler_if);

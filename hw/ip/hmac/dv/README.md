@@ -30,7 +30,6 @@ interfaces and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

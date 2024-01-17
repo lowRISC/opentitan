@@ -15,7 +15,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire                        clk, rst_n;
-  wire                        devmode;
   bit                         digest_cal_done;
   kmac_pkg::app_rsp_t         kmac_data_in;
   kmac_pkg::app_req_t         kmac_data_out;
@@ -26,7 +25,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
@@ -85,7 +83,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null,
         "*.env", "clk_rst_vif_rom_ctrl_rom_reg_block", rom_clk_rst_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null,
         "*.env.m_tl_agent_rom_ctrl_rom_reg_block*", "vif", tl_rom_if);
     uvm_config_db#(virtual tl_if)::set(null,

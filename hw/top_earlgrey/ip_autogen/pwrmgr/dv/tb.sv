@@ -17,7 +17,6 @@ module tb;
   wire clk_esc, rst_esc_n;
   wire clk_lc, rst_lc_n;
   wire clk_slow, rst_slow_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
@@ -42,7 +41,6 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -127,7 +125,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "esc_clk_rst_vif", esc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "lc_clk_rst_vif", lc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual alert_esc_if)::set(null, "*.env.m_esc_agent*", "vif", esc_if);
     uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
